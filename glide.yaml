@@ -1,0 +1,4 @@
+package: github.com/sapcc/kubernikus
+import:
+- package: github.com/spf13/cobra/cobra
+
