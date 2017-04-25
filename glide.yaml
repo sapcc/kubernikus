@@ -1,4 +1,6 @@
 package: github.com/sapcc/kubernikus
 import:
 - package: github.com/spf13/cobra/cobra
+- package: k8s.io/client-go
+  version: v3.0.0-beta.0
 

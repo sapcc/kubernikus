@@ -3,12 +3,14 @@ package main
 import (
 	"fmt"
 
+	"github.com/sapcc/kubernikus/pkg/controller/ground"
 	"github.com/spf13/cobra"
 )
 
+var name string
+
 func init() {
-	caCmd.AddCommand(etcdCmd)
-	certificatesCmd.AddCommand(caCmd)
+	certificatesCmd.AddCommand(generateCmd)
 	RootCmd.AddCommand(certificatesCmd)
 }
 
@@ -16,13 +18,13 @@ var certificatesCmd = &cobra.Command{
 	Use: "certificates",
 }
 
-var caCmd = &cobra.Command{
-	Use: "generate",
-}
-
-var etcdCmd = &cobra.Command{
-	Use: "etcd",
+var generateCmd = &cobra.Command{
+	Use: "generate [name]",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("Generated CA certificates for etcd")
+		if len(args) != 1 {
+			fmt.Println("You need to give a satellite name")
+			return
+		}
+		ground.WriteCertificateAuthorities(args[0])
 	},
 }
