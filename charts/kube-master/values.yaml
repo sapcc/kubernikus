@@ -43,8 +43,7 @@ certsSecretName: secrets
 
 api:
   replicaCount: 1
-  ingress:
-    host: apiserver.x.cke.eu-nl-1.cloud.sap
+  # ingressHost:
   flags:
     secure-port: 6443
     admission-control: NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,ResourceQuota

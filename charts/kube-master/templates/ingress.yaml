@@ -1,4 +1,5 @@
 {{/* vim: set filetype=gotexttmpl: */ -}}
+{{- if .Values.api.ingressHost }}
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
@@ -10,12 +11,13 @@ metadata:
 spec:
   tls:
      - secretName: apiserver
-       hosts: [{{.Values.api.ingress.host}}]
+       hosts: [{{.Values.api.ingressHost}}]
   rules:
-    - host: {{.Values.api.ingress.host}}
+    - host: {{.Values.api.ingressHost}}
       http:
         paths:
         - path: /
           backend:
             serviceName: apiserver
             servicePort: {{ index .Values.api.flags "secure-port" }}
+{{- end }}
