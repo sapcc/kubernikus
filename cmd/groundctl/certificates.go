@@ -25,6 +25,6 @@ var generateCmd = &cobra.Command{
 			fmt.Println("You need to give a satellite name")
 			return
 		}
-		ground.WriteCertificateAuthorities(args[0])
+		ground.NewCluster(args[0]).WriteConfig(&ground.FilePersister{"."})
 	},
 }

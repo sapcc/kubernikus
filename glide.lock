@@ -1,14 +1,23 @@
-hash: 132195369ba0f82f9f6433779a0ac05f78302eea04564afde66a6217693aa506
-updated: 2017-04-25T11:16:23.881160967+02:00
+hash: 573117d979545f7af92bf8820c119dfb9f9e264cc1ad9fbec257da8f78b1e583
+updated: 2017-04-26T10:04:27.401964901+02:00
 imports:
 - name: github.com/inconshreveable/mousetrap
   version: 76626ae9c91c4f2a10f34cad8ce83ea42c93bb75
+- name: github.com/kennygrant/sanitize
+  version: 6a0bfdde8629a3a3a7418a7eae45c54154692514
 - name: github.com/spf13/cobra
   version: f4f10f6873175e78bb1503da7e78c260a7f3ef63
   subpackages:
   - cobra
 - name: github.com/spf13/pflag
   version: 2300d0f8576fe575f71aaa5b9bbe4e1b0dc2eb51
+- name: golang.org/x/net
+  version: e90d6d0afc4c315a0d87a568ae68577cc15149a0
+  subpackages:
+  - html
+  - html/atom
 - name: k8s.io/client-go
   version: 3627aeb7d4f6ade38f995d2c923e459146493c7e
+  subpackages:
+  - util/cert
 testImports: []
