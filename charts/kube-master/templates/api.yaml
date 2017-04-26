@@ -8,6 +8,10 @@ metadata:
 spec:
   revisionHistoryLimit: {{ .Values.revisionHistoryLimit }}
   replicas: {{ .Values.api.replicaCount }}
+  strategy:
+    rollingUpdate:
+      maxUnavailable: {{ if eq (toString .Values.api.replicaCount) "1" }}0{{else}}1{{end}}
+      maxSurge: 1
   template:
     metadata:
       labels:
