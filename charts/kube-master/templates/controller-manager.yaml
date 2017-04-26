@@ -31,8 +31,8 @@ spec:
           configMap:
             name: config
         - name: cloudprovider
-          configMap:
-            name: secrets
+          secret:
+            secretName: secrets
             items:
               - key: openstack.config
                 path: openstack.config

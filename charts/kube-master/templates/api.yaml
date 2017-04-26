@@ -22,8 +22,8 @@ spec:
             items:
 {{- include "certItemsFromFlags" .Values.api.flags |indent 14 }}
         - name: cloudprovider
-          configMap:
-            name: secrets
+          secret:
+            secretName: secrets
             items:
               - key: openstack.config
                 path: openstack.config
