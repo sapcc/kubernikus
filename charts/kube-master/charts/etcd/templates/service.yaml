@@ -1,0 +1,13 @@
+{{/* vim: set filetype=gotexttmpl: */ -}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: etcd
+  labels:
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}"
+spec:
+  type: ClusterIP
+  ports:
+  - port: 2379
+  selector:
+    app: etcd

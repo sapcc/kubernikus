@@ -1,0 +1,44 @@
+{{/* vim: set filetype=gotexttmpl: */ -}}
+apiVersion: "extensions/v1beta1"
+kind: Deployment
+metadata:
+  name: apiserver
+  labels:
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}"
+spec:
+  replicas: {{ .Values.api.replicaCount }}
+  template:
+    metadata:
+      labels:
+        app: apiserver
+    spec:
+      volumes:
+        - name: certs
+          secret:
+            secretName: {{ .Values.certsSecretName }}
+            items:
+{{- include "certItemsFromFlags" .Values.api.flags |indent 14 }}
+        - name: cloudprovider
+          configMap:
+            name: secrets
+            items:
+              - key: openstack.config
+                path: openstack.config
+      containers:
+        - name: apiserver
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          args:
+            - /hyperkube
+            - apiserver
+{{- range $key, $value := .Values.api.flags }}
+            - --{{ $key }}={{ $value -}}
+{{ end }}
+          volumeMounts:
+            - mountPath: /etc/kubernetes/certs
+              name: certs
+              readOnly: true
+            - mountPath: /etc/kubernetes/cloudprovider
+              name: cloudprovider
+              readOnly: true
+          resources:
+{{ toYaml .Values.api.resources | indent 12 }}

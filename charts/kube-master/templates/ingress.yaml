@@ -1,0 +1,21 @@
+{{/* vim: set filetype=gotexttmpl: */ -}}
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: apiserver
+  annotations:
+    ingress.kubernetes.io/ssl-passthrough: "true"
+  labels:
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}"
+spec:
+  tls:
+     - secretName: apiserver
+       hosts: [{{.Values.api.ingress.host}}]
+  rules:
+    - host: {{.Values.api.ingress.host}}
+      http:
+        paths:
+        - path: /
+          backend:
+            serviceName: apiserver
+            servicePort: {{ index .Values.api.flags "secure-port" }}

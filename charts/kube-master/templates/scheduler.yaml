@@ -1,0 +1,46 @@
+{{/* vim: set filetype=gotexttmpl: */ -}}
+apiVersion: "extensions/v1beta1"
+kind: Deployment
+metadata:
+  name: scheduler
+  labels:
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}"
+spec:
+  replicas:  {{ .Values.scheduler.replicaCount }}
+  template:
+    metadata:
+      labels:
+        app: scheduler
+    spec:
+      volumes:
+        - name: certs
+          secret:
+            secretName: {{ .Values.certsSecretName }}
+            items:
+              - key: tls-ca.pem
+                path: tls-ca.pem
+              - key: kube-scheduler.pem
+                path: kube-client.pem
+              - key: kube-scheduler.key
+                path: kube-client.key
+        - name: config
+          configMap:
+            name: config
+      containers:
+        - name: scheduler
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          args:
+            - /hyperkube
+            - scheduler
+{{- range $key, $value := .Values.scheduler.flags }}
+            - --{{ $key }}={{ $value -}}
+{{ end }}
+          volumeMounts:
+            - mountPath: /etc/kubernetes/certs
+              name: certs
+              readOnly: true
+            - mountPath: /etc/kubernetes/config
+              name: config
+              readOnly: true
+          resources:
+{{ toYaml .Values.scheduler.resources | indent 12 }}

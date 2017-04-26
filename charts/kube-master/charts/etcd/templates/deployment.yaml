@@ -1,0 +1,68 @@
+{{/* vim: set filetype=gotexttmpl: */ -}}
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: etcd
+  labels:
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}"
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: etcd
+    spec:
+      volumes:
+        {{- if false }}
+        - name: etcd-clients
+          secret:
+            secretName: etcd-clients
+        - name: etcd-peers
+          secret:
+            secretName: etcd-peers
+        {{- end }}
+        - name: data
+          {{- if .Values.persistence.enabled }}
+          persistentVolumeClaim:
+            claimName: {{ .Values.persistence.existingClaim | default "etcd" }}
+          {{- else }}
+          emptyDir: {}
+          {{- end }}
+      containers:
+        - name: etcd
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          env:
+            - name: ETCD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+          command: [ etcd ]
+          args:
+            - --name cke
+            - --data-dir /var/lib/etcd
+            - --advertise-client-urls http://$(ETCD_IP):2379
+            - --initial-advertise-peer-urls http://$(ETCD_IP):2380
+            - --initial-cluster cke=http://$(ETCD_IP):2380
+            - --listen-client-urls http://0.0.0.0:2379
+            - --listen-peer-urls http://$(ETCD_IP):2380
+            {{- if false }}
+            - --trusted-ca-file /etc/etcd/certs/etcd-clients/ca.pem
+            - --cert-file /etc/etcd/certs/etcd-clients/etcd-server.pem
+            - --key-file /etc/etcd/certs/etcd-clients/etcd-server-key.pem
+            - --peer-ca-file /etc/etcd/certs/etcd-peers/ca.pem
+            - --peer-cert-file /etc/etcd/certs/etcd-peers/etcd-0.pem
+            - ---peer-key-file /etc/etcd/certs/etcd-peers/etcd-0-key.pem
+            {{- end }}
+          volumeMounts:
+            {{- if false }}
+            - mountPath: /etc/etcd/certs/etcd-clients
+              name: etcd-clients
+              readOnly: true
+            - mountPath: /etc/etcd/certs/etcd-peers
+              name: etcd-peers
+              readOnly: true
+            {{- end }}
+            - mountPath: /var/lib/etcd
+              name: data
+          resources:
+{{ toYaml .Values.resources | indent 12 }}
