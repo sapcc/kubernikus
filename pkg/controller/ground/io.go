@@ -45,7 +45,7 @@ func NewHelmValuePersister(result *string) *HelmValuePersister {
 }
 
 func (fp FilePersister) WriteConfig(cluster Cluster) error {
-	for _, bundle := range cluster.Certificates.bundles() {
+	for _, bundle := range cluster.Certificates.all() {
 		err := fp.writeToFiles(bundle)
 		if err != nil {
 			return err
@@ -72,7 +72,18 @@ func (fp FilePersister) writeToFiles(b *Bundle) error {
 }
 
 func (bp BasePersister) basename(b *Bundle) string {
-	return sanitize.BaseName(strings.ToLower(strings.Join(b.Certificate.Subject.Province, "-")))
+	stem := ""
+	suffix := ""
+
+	if b.Certificate.IsCA {
+		stem = b.Certificate.Subject.CommonName
+		suffix = "ca"
+	} else {
+		stem = b.Certificate.Issuer.CommonName
+		suffix = b.Certificate.Subject.CommonName
+	}
+
+	return sanitize.BaseName(strings.ToLower(fmt.Sprintf("%s-%s", stem, suffix)))
 }
 
 func (bp BasePersister) nameForKey(b *Bundle) string {
@@ -88,11 +99,11 @@ func (fp FilePersister) pathForCert(b *Bundle) string {
 }
 
 func (fp FilePersister) pathForKey(b *Bundle) string {
-	return path.Join(fp.basedir(b))
+	return path.Join(fp.basedir(b), fp.nameForKey(b))
 }
 
 func (fp FilePersister) basedir(b *Bundle) string {
-	return sanitize.BaseName(strings.ToLower(strings.Join(b.Certificate.Subject.Locality, "-")))
+	return sanitize.BaseName(strings.ToLower(b.Certificate.Subject.OrganizationalUnit[len(b.Certificate.Subject.OrganizationalUnit)-1]))
 }
 
 func (hvp HelmValuePersister) WriteConfig(cluster Cluster) error {
@@ -100,7 +111,7 @@ func (hvp HelmValuePersister) WriteConfig(cluster Cluster) error {
 		Certs: map[string]string{},
 	}
 
-	for _, bundle := range cluster.Certificates.bundles() {
+	for _, bundle := range cluster.Certificates.all() {
 		values.Certs[hvp.nameForCert(bundle)] = string(certutil.EncodeCertPEM(bundle.Certificate))
 		values.Certs[hvp.nameForKey(bundle)] = string(certutil.EncodePrivateKeyPEM(bundle.PrivateKey))
 	}

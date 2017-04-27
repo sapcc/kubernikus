@@ -1,14 +1,18 @@
 package ground
 
 type Cluster struct {
-	Certificates ClusterCerts
+	Certificates *Certificates
 }
 
-func NewCluster(name string) *Cluster {
+func NewCluster(name string) (*Cluster, error) {
 	cluster := &Cluster{}
-	cluster.Certificates = newClusterCerts(name)
+	if certs, err := newCertificates(name); err != nil {
+		return cluster, err
+	} else {
+		cluster.Certificates = certs
+	}
 
-	return cluster
+	return cluster, nil
 }
 
 func (c Cluster) WriteConfig(persister ConfigPersister) error {

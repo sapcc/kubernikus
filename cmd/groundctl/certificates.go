@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/sapcc/kubernikus/pkg/controller/ground"
 	"github.com/spf13/cobra"
@@ -25,6 +26,16 @@ var generateCmd = &cobra.Command{
 			fmt.Println("You need to give a satellite name")
 			return
 		}
-		ground.NewCluster(args[0]).WriteConfig(ground.NewFilePersister("."))
+		cluster, err := ground.NewCluster(args[0])
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(-1)
+		}
+
+		err = cluster.WriteConfig(ground.NewFilePersister("."))
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(-1)
+		}
 	},
 }

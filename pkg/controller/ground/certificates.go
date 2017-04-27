@@ -19,26 +19,34 @@ const (
 	duration365d = time.Hour * 24 * 365
 )
 
-type ClusterCerts struct {
-	Name       string
-	Etcd       *EtcdCerts
-	Kubernetes *KubernetesCerts
-}
+type Certificates struct {
+	Etcd struct {
+		Clients struct {
+			CA        *Bundle
+			Apiserver *Bundle
+		}
+	}
 
-type EtcdCerts struct {
-	Peers   *Pool
-	Clients *Pool
-}
+	Kubernetes struct {
+		Clients struct {
+			CA                *Bundle
+			ControllerManager *Bundle
+			Scheduler         *Bundle
+			Proxy             *Bundle
+			Kubelet           *Bundle
+			ClusterAdmin      *Bundle
+		}
+		Nodes struct {
+			CA      *Bundle
+			Generic *Bundle
+		}
+	}
 
-type KubernetesCerts struct {
-	Clients  *Pool
-	Kubelets *Pool
-	TLS      *Pool
-}
-
-type Pool struct {
-	CA           *Bundle
-	Certificates []*Bundle
+	TLS struct {
+		CA        *Bundle
+		ApiServer *Bundle
+		Etcd      *Bundle
+	}
 }
 
 type Bundle struct {
@@ -50,8 +58,6 @@ type Config struct {
 	CommonName         string
 	Organization       []string
 	OrganizationalUnit []string
-	Locality           []string
-	Province           []string
 	AltNames           AltNames
 	Usages             []x509.ExtKeyUsage
 }
@@ -61,57 +67,147 @@ type AltNames struct {
 	IPs      []net.IP
 }
 
-func newClusterCerts(name string) ClusterCerts {
-	dict := ClusterCerts{
-		Name: name,
-	}
-
-	dict.Etcd = dict.initializeEtcdCerts()
-	dict.Kubernetes = dict.initializeKubernetesCerts()
-
-	return dict
-}
-
-func (dict ClusterCerts) initializeEtcdCerts() *EtcdCerts {
-	return &EtcdCerts{
-		Peers:   dict.newPool("Etcd Peers"),
-		Clients: dict.newPool("Etcd Clients"),
-	}
-}
-
-func (dict ClusterCerts) initializeKubernetesCerts() *KubernetesCerts {
-	return &KubernetesCerts{
-		Clients:  dict.newPool("Kubernetes Clients"),
-		Kubelets: dict.newPool("Kubernetes Kubelets"),
-		TLS:      dict.newPool("Kubernetes TLS"),
+func (c Certificates) all() []*Bundle {
+	return []*Bundle{
+		c.Etcd.Clients.Apiserver,
+		c.Etcd.Clients.CA,
+		c.Kubernetes.Clients.CA,
+		c.Kubernetes.Clients.ControllerManager,
+		c.Kubernetes.Clients.Scheduler,
+		c.Kubernetes.Clients.Proxy,
+		c.Kubernetes.Clients.Kubelet,
+		c.Kubernetes.Clients.ClusterAdmin,
+		c.Kubernetes.Nodes.CA,
+		c.Kubernetes.Nodes.Generic,
+		c.TLS.CA,
+		c.TLS.ApiServer,
+		c.TLS.Etcd,
 	}
 }
 
-func (c ClusterCerts) bundles() []*Bundle {
-	bundles := []*Bundle{}
-	bundles = append(bundles, c.Etcd.Clients.bundles()...)
-	bundles = append(bundles, c.Etcd.Peers.bundles()...)
-	bundles = append(bundles, c.Kubernetes.Clients.bundles()...)
-	bundles = append(bundles, c.Kubernetes.Kubelets.bundles()...)
-	bundles = append(bundles, c.Kubernetes.TLS.bundles()...)
+func newCertificates(satellite string) (*Certificates, error) {
+	certs := &Certificates{}
 
-	return bundles
-}
-
-func (p Pool) bundles() []*Bundle {
-	return append(p.Certificates, p.CA)
-}
-
-func (dict ClusterCerts) newPool(name string) *Pool {
-	ca, err := dict.newCA(name)
-	if err != nil {
-		panic(err)
+	if ca, err := newCA(satellite, "Etcd Clients"); err != nil {
+		return certs, err
+	} else {
+		certs.Etcd.Clients.CA = ca
 	}
-	pool := &Pool{CA: ca}
-	return pool
+
+	if ca, err := newCA(satellite, "Kubernetes Clients"); err != nil {
+		return certs, err
+	} else {
+		certs.Kubernetes.Clients.CA = ca
+	}
+
+	if ca, err := newCA(satellite, "Kubernetes Nodes"); err != nil {
+		return certs, err
+	} else {
+		certs.Kubernetes.Nodes.CA = ca
+	}
+
+	if ca, err := newCA(satellite, "TLS"); err != nil {
+		return certs, err
+	} else {
+		certs.TLS.CA = ca
+	}
+
+	if cert, err := newSignedBundle(Config{
+		CommonName: "apiserver",
+		Usages:     []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth},
+	}, certs.Etcd.Clients.CA); err != nil {
+		return certs, err
+	} else {
+		certs.Etcd.Clients.Apiserver = cert
+	}
+
+	if cert, err := newSignedBundle(Config{
+		CommonName:   "cluster-admin",
+		Organization: []string{"system:masters"},
+		Usages:       []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth},
+	}, certs.Kubernetes.Clients.CA); err != nil {
+		return certs, err
+	} else {
+		certs.Kubernetes.Clients.ClusterAdmin = cert
+	}
+
+	if cert, err := newSignedBundle(Config{
+		CommonName: "system:kube-controller-manager",
+		Usages:     []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth},
+	}, certs.Kubernetes.Clients.CA); err != nil {
+		return certs, err
+	} else {
+		certs.Kubernetes.Clients.ControllerManager = cert
+	}
+
+	if cert, err := newSignedBundle(Config{
+		CommonName:   "kuelet",
+		Organization: []string{"system:nodes"},
+		Usages:       []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth},
+	}, certs.Kubernetes.Clients.CA); err != nil {
+		return certs, err
+	} else {
+		certs.Kubernetes.Clients.Kubelet = cert
+	}
+
+	if cert, err := newSignedBundle(Config{
+		CommonName: "system:kube-proxy",
+		Usages:     []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth},
+	}, certs.Kubernetes.Clients.CA); err != nil {
+		return certs, err
+	} else {
+		certs.Kubernetes.Clients.Proxy = cert
+	}
+
+	if cert, err := newSignedBundle(Config{
+		CommonName: "system:kube-scheduler",
+		Usages:     []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth},
+	}, certs.Kubernetes.Clients.CA); err != nil {
+		return certs, err
+	} else {
+		certs.Kubernetes.Clients.Scheduler = cert
+	}
+
+	if cert, err := newSignedBundle(Config{
+		CommonName:   "kubelet",
+		Organization: []string{"system:nodes"},
+		Usages:       []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth},
+	}, certs.Kubernetes.Nodes.CA); err != nil {
+		return certs, err
+	} else {
+		certs.Kubernetes.Nodes.Generic = cert
+	}
+
+	if cert, err := newSignedBundle(Config{
+		CommonName: "apiserver",
+		Usages:     []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth},
+		AltNames: AltNames{
+			DNSNames: []string{"kubernetes", "kubernetes.default", "apiserver", "TODO:external.dns.name"},
+			IPs:      []net.IP{net.IPv4(127, 0, 0, 1)},
+		},
+	}, certs.TLS.CA); err != nil {
+		return certs, err
+	} else {
+		certs.TLS.ApiServer = cert
+	}
+
+	if cert, err := newSignedBundle(Config{
+		CommonName: "etcd",
+		Usages:     []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth},
+		AltNames: AltNames{
+			DNSNames: []string{"etcd"},
+			IPs:      []net.IP{net.IPv4(127, 0, 0, 1)},
+		},
+	}, certs.TLS.CA); err != nil {
+		return certs, err
+	} else {
+		certs.TLS.Etcd = cert
+	}
+
+	return certs, nil
 }
 
-func (dict ClusterCerts) newCA(name string) (*Bundle, error) {
+func newCA(satellite, name string) (*Bundle, error) {
 	key, err := certutil.NewPrivateKey()
 	if err != nil {
 		panic(err)
@@ -119,14 +215,30 @@ func (dict ClusterCerts) newCA(name string) (*Bundle, error) {
 	}
 
 	config := Config{
-		OrganizationalUnit: []string{"SAP Converged Cloud", "Kubernikus"},
-		Province:           []string{fmt.Sprintf("%s CA", name)},
-		Locality:           []string{dict.Name},
+		CommonName:         name,
+		OrganizationalUnit: []string{"SAP Converged Cloud", "Kubernikus", satellite},
 	}
 	cert, err := NewSelfSignedCACert(config, key)
 
 	if err != nil {
 		panic(err)
+		return &Bundle{}, fmt.Errorf("unable to create self-signed certificate [%v]", err)
+	}
+
+	return &Bundle{cert, key}, nil
+}
+
+func newSignedBundle(config Config, ca *Bundle) (*Bundle, error) {
+	key, err := certutil.NewPrivateKey()
+	if err != nil {
+		return &Bundle{}, fmt.Errorf("unable to create private key [%v]", err)
+	}
+
+	config.OrganizationalUnit = ca.Certificate.Subject.OrganizationalUnit
+
+	cert, err := NewSignedCert(config, key, ca.Certificate, ca.PrivateKey)
+
+	if err != nil {
 		return &Bundle{}, fmt.Errorf("unable to create self-signed certificate [%v]", err)
 	}
 
@@ -141,8 +253,6 @@ func NewSelfSignedCACert(cfg Config, key *rsa.PrivateKey) (*x509.Certificate, er
 			CommonName:         cfg.CommonName,
 			Organization:       cfg.Organization,
 			OrganizationalUnit: cfg.OrganizationalUnit,
-			Province:           cfg.Province,
-			Locality:           cfg.Locality,
 		},
 		NotBefore:             now.UTC(),
 		NotAfter:              now.Add(duration365d * 10).UTC(),
@@ -180,7 +290,7 @@ func NewSignedCert(cfg Config, key *rsa.PrivateKey, caCert *x509.Certificate, ca
 		IPAddresses:  cfg.AltNames.IPs,
 		SerialNumber: serial,
 		NotBefore:    caCert.NotBefore,
-		NotAfter:     time.Now().Add(duration365d).UTC(),
+		NotAfter:     time.Now().Add(duration365d * 10).UTC(),
 		KeyUsage:     x509.KeyUsageKeyEncipherment | x509.KeyUsageDigitalSignature,
 		ExtKeyUsage:  cfg.Usages,
 	}

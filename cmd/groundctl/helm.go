@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/sapcc/kubernikus/pkg/controller/ground"
 	"github.com/spf13/cobra"
@@ -25,7 +26,17 @@ var valuesCmd = &cobra.Command{
 		}
 
 		var result = ""
-		ground.NewCluster(args[0]).WriteConfig(ground.NewHelmValuePersister(&result))
+		cluster, err := ground.NewCluster(args[0])
+
+		if err == nil {
+			err = cluster.WriteConfig(ground.NewHelmValuePersister(&result))
+		}
+
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(-1)
+		}
+
 		fmt.Println(result)
 	},
 }
