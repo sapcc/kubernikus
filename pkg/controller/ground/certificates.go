@@ -25,6 +25,10 @@ type Certificates struct {
 			CA        *Bundle
 			Apiserver *Bundle
 		}
+		Peers struct {
+			CA        *Bundle
+			Universal *Bundle
+		}
 	}
 
 	Kubernetes struct {
@@ -37,8 +41,8 @@ type Certificates struct {
 			ClusterAdmin      *Bundle
 		}
 		Nodes struct {
-			CA      *Bundle
-			Generic *Bundle
+			CA        *Bundle
+			Universal *Bundle
 		}
 	}
 
@@ -71,6 +75,8 @@ func (c Certificates) all() []*Bundle {
 	return []*Bundle{
 		c.Etcd.Clients.Apiserver,
 		c.Etcd.Clients.CA,
+		c.Etcd.Peers.Universal,
+		c.Etcd.Peers.CA,
 		c.Kubernetes.Clients.CA,
 		c.Kubernetes.Clients.ControllerManager,
 		c.Kubernetes.Clients.Scheduler,
@@ -78,7 +84,7 @@ func (c Certificates) all() []*Bundle {
 		c.Kubernetes.Clients.Kubelet,
 		c.Kubernetes.Clients.ClusterAdmin,
 		c.Kubernetes.Nodes.CA,
-		c.Kubernetes.Nodes.Generic,
+		c.Kubernetes.Nodes.Universal,
 		c.TLS.CA,
 		c.TLS.ApiServer,
 		c.TLS.Etcd,
@@ -92,6 +98,12 @@ func newCertificates(satellite string) (*Certificates, error) {
 		return certs, err
 	} else {
 		certs.Etcd.Clients.CA = ca
+	}
+
+	if ca, err := newCA(satellite, "Etcd Peers"); err != nil {
+		return certs, err
+	} else {
+		certs.Etcd.Peers.CA = ca
 	}
 
 	if ca, err := newCA(satellite, "Kubernetes Clients"); err != nil {
@@ -122,6 +134,15 @@ func newCertificates(satellite string) (*Certificates, error) {
 	}
 
 	if cert, err := newSignedBundle(Config{
+		CommonName: "universal",
+		Usages:     []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth, x509.ExtKeyUsageServerAuth},
+	}, certs.Etcd.Peers.CA); err != nil {
+		return certs, err
+	} else {
+		certs.Etcd.Peers.Universal = cert
+	}
+
+	if cert, err := newSignedBundle(Config{
 		CommonName:   "cluster-admin",
 		Organization: []string{"system:masters"},
 		Usages:       []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth},
@@ -141,7 +162,7 @@ func newCertificates(satellite string) (*Certificates, error) {
 	}
 
 	if cert, err := newSignedBundle(Config{
-		CommonName:   "kuelet",
+		CommonName:   "kubelet",
 		Organization: []string{"system:nodes"},
 		Usages:       []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth},
 	}, certs.Kubernetes.Clients.CA); err != nil {
@@ -169,13 +190,13 @@ func newCertificates(satellite string) (*Certificates, error) {
 	}
 
 	if cert, err := newSignedBundle(Config{
-		CommonName:   "kubelet",
+		CommonName:   "universal",
 		Organization: []string{"system:nodes"},
 		Usages:       []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth},
 	}, certs.Kubernetes.Nodes.CA); err != nil {
 		return certs, err
 	} else {
-		certs.Kubernetes.Nodes.Generic = cert
+		certs.Kubernetes.Nodes.Universal = cert
 	}
 
 	if cert, err := newSignedBundle(Config{
