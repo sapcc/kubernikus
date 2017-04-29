@@ -5,11 +5,12 @@ type Cluster struct {
 }
 
 func NewCluster(name string) (*Cluster, error) {
-	cluster := &Cluster{}
-	if certs, err := newCertificates(name); err != nil {
+	cluster := &Cluster{
+		Certificates: &Certificates{},
+	}
+
+	if err := cluster.Certificates.populateForSatellite(name); err != nil {
 		return cluster, err
-	} else {
-		cluster.Certificates = certs
 	}
 
 	return cluster, nil

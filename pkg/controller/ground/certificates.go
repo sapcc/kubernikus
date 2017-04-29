@@ -5,8 +5,6 @@ import (
 	"crypto/rsa"
 	"crypto/x509"
 	"crypto/x509/pkix"
-	"errors"
-	"fmt"
 	"math"
 	"math/big"
 	"net"
@@ -22,34 +20,39 @@ const (
 type Certificates struct {
 	Etcd struct {
 		Clients struct {
-			CA        *Bundle
-			Apiserver *Bundle
+			CA        Bundle
+			ApiServer Bundle
 		}
 		Peers struct {
-			CA        *Bundle
-			Universal *Bundle
+			CA        Bundle
+			Universal Bundle
 		}
 	}
 
-	Kubernetes struct {
+	ApiServer struct {
 		Clients struct {
-			CA                *Bundle
-			ControllerManager *Bundle
-			Scheduler         *Bundle
-			Proxy             *Bundle
-			Kubelet           *Bundle
-			ClusterAdmin      *Bundle
+			CA                Bundle
+			ControllerManager Bundle
+			Scheduler         Bundle
+			Proxy             Bundle
+			ClusterAdmin      Bundle
 		}
 		Nodes struct {
-			CA        *Bundle
-			Universal *Bundle
+			CA        Bundle
+			Universal Bundle
+		}
+	}
+
+	Kubelet struct {
+		Clients struct {
+			CA        Bundle
+			ApiServer Bundle
 		}
 	}
 
 	TLS struct {
-		CA        *Bundle
-		ApiServer *Bundle
-		Etcd      *Bundle
+		CA        Bundle
+		ApiServer Bundle
 	}
 }
 
@@ -59,7 +62,7 @@ type Bundle struct {
 }
 
 type Config struct {
-	CommonName         string
+	sign               string
 	Organization       []string
 	OrganizationalUnit []string
 	AltNames           AltNames
@@ -71,209 +74,112 @@ type AltNames struct {
 	IPs      []net.IP
 }
 
-func (c Certificates) all() []*Bundle {
-	return []*Bundle{
-		c.Etcd.Clients.Apiserver,
+func (c Certificates) all() []Bundle {
+	return []Bundle{
 		c.Etcd.Clients.CA,
-		c.Etcd.Peers.Universal,
+		c.Etcd.Clients.ApiServer,
 		c.Etcd.Peers.CA,
-		c.Kubernetes.Clients.CA,
-		c.Kubernetes.Clients.ControllerManager,
-		c.Kubernetes.Clients.Scheduler,
-		c.Kubernetes.Clients.Proxy,
-		c.Kubernetes.Clients.Kubelet,
-		c.Kubernetes.Clients.ClusterAdmin,
-		c.Kubernetes.Nodes.CA,
-		c.Kubernetes.Nodes.Universal,
+		c.Etcd.Peers.Universal,
+		c.ApiServer.Clients.CA,
+		c.ApiServer.Clients.ControllerManager,
+		c.ApiServer.Clients.Scheduler,
+		c.ApiServer.Clients.Proxy,
+		c.ApiServer.Clients.ClusterAdmin,
+		c.ApiServer.Nodes.CA,
+		c.ApiServer.Nodes.Universal,
+		c.Kubelet.Clients.CA,
+		c.Kubelet.Clients.ApiServer,
 		c.TLS.CA,
 		c.TLS.ApiServer,
-		c.TLS.Etcd,
 	}
 }
 
-func newCertificates(satellite string) (*Certificates, error) {
-	certs := &Certificates{}
+func (certs *Certificates) populateForSatellite(satellite string) error {
+	createCA(satellite, "Etcd Clients", &certs.Etcd.Clients.CA)
+	createCA(satellite, "Etcd Peers", &certs.Etcd.Peers.CA)
+	createCA(satellite, "ApiServer Clients", &certs.ApiServer.Clients.CA)
+	createCA(satellite, "ApiServer Nodes", &certs.ApiServer.Nodes.CA)
+	createCA(satellite, "Kubelet Clients", &certs.Kubelet.Clients.CA)
+	createCA(satellite, "TLS", &certs.TLS.CA)
 
-	if ca, err := newCA(satellite, "Etcd Clients"); err != nil {
-		return certs, err
-	} else {
-		certs.Etcd.Clients.CA = ca
-	}
+	certs.Etcd.Clients.ApiServer = certs.signEtcdClient("apiserver")
+	certs.Etcd.Peers.Universal = certs.signEtcdPeer("universal")
+	certs.ApiServer.Clients.ClusterAdmin = certs.signApiServerClient("cluster-admin", "system:masters")
+	certs.ApiServer.Clients.ControllerManager = certs.signApiServerClient("system:kube-controller-manager")
+	certs.ApiServer.Clients.Proxy = certs.signApiServerClient("system:kube-proxy")
+	certs.ApiServer.Clients.Scheduler = certs.signApiServerClient("system:kube-scheduler")
+	certs.ApiServer.Nodes.Universal = certs.signApiServerNode("universal")
+	certs.Kubelet.Clients.ApiServer = certs.signKubeletClient("apiserver")
+	certs.TLS.ApiServer = certs.signTLS("apiserver",
+		[]string{"kubernetes", "kubernetes.default", "apiserver", "TODO:external.dns.name"},
+		[]net.IP{net.IPv4(127, 0, 0, 1)})
 
-	if ca, err := newCA(satellite, "Etcd Peers"); err != nil {
-		return certs, err
-	} else {
-		certs.Etcd.Peers.CA = ca
-	}
-
-	if ca, err := newCA(satellite, "Kubernetes Clients"); err != nil {
-		return certs, err
-	} else {
-		certs.Kubernetes.Clients.CA = ca
-	}
-
-	if ca, err := newCA(satellite, "Kubernetes Nodes"); err != nil {
-		return certs, err
-	} else {
-		certs.Kubernetes.Nodes.CA = ca
-	}
-
-	if ca, err := newCA(satellite, "TLS"); err != nil {
-		return certs, err
-	} else {
-		certs.TLS.CA = ca
-	}
-
-	if cert, err := newSignedBundle(Config{
-		CommonName: "apiserver",
-		Usages:     []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth},
-	}, certs.Etcd.Clients.CA); err != nil {
-		return certs, err
-	} else {
-		certs.Etcd.Clients.Apiserver = cert
-	}
-
-	if cert, err := newSignedBundle(Config{
-		CommonName: "universal",
-		Usages:     []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth, x509.ExtKeyUsageServerAuth},
-	}, certs.Etcd.Peers.CA); err != nil {
-		return certs, err
-	} else {
-		certs.Etcd.Peers.Universal = cert
-	}
-
-	if cert, err := newSignedBundle(Config{
-		CommonName:   "cluster-admin",
-		Organization: []string{"system:masters"},
-		Usages:       []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth},
-	}, certs.Kubernetes.Clients.CA); err != nil {
-		return certs, err
-	} else {
-		certs.Kubernetes.Clients.ClusterAdmin = cert
-	}
-
-	if cert, err := newSignedBundle(Config{
-		CommonName: "system:kube-controller-manager",
-		Usages:     []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth},
-	}, certs.Kubernetes.Clients.CA); err != nil {
-		return certs, err
-	} else {
-		certs.Kubernetes.Clients.ControllerManager = cert
-	}
-
-	if cert, err := newSignedBundle(Config{
-		CommonName:   "kubelet",
-		Organization: []string{"system:nodes"},
-		Usages:       []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth},
-	}, certs.Kubernetes.Clients.CA); err != nil {
-		return certs, err
-	} else {
-		certs.Kubernetes.Clients.Kubelet = cert
-	}
-
-	if cert, err := newSignedBundle(Config{
-		CommonName: "system:kube-proxy",
-		Usages:     []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth},
-	}, certs.Kubernetes.Clients.CA); err != nil {
-		return certs, err
-	} else {
-		certs.Kubernetes.Clients.Proxy = cert
-	}
-
-	if cert, err := newSignedBundle(Config{
-		CommonName: "system:kube-scheduler",
-		Usages:     []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth},
-	}, certs.Kubernetes.Clients.CA); err != nil {
-		return certs, err
-	} else {
-		certs.Kubernetes.Clients.Scheduler = cert
-	}
-
-	if cert, err := newSignedBundle(Config{
-		CommonName:   "universal",
-		Organization: []string{"system:nodes"},
-		Usages:       []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth},
-	}, certs.Kubernetes.Nodes.CA); err != nil {
-		return certs, err
-	} else {
-		certs.Kubernetes.Nodes.Universal = cert
-	}
-
-	if cert, err := newSignedBundle(Config{
-		CommonName: "apiserver",
-		Usages:     []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth},
-		AltNames: AltNames{
-			DNSNames: []string{"kubernetes", "kubernetes.default", "apiserver", "TODO:external.dns.name"},
-			IPs:      []net.IP{net.IPv4(127, 0, 0, 1)},
-		},
-	}, certs.TLS.CA); err != nil {
-		return certs, err
-	} else {
-		certs.TLS.ApiServer = cert
-	}
-
-	if cert, err := newSignedBundle(Config{
-		CommonName: "etcd",
-		Usages:     []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth},
-		AltNames: AltNames{
-			DNSNames: []string{"etcd"},
-			IPs:      []net.IP{net.IPv4(127, 0, 0, 1)},
-		},
-	}, certs.TLS.CA); err != nil {
-		return certs, err
-	} else {
-		certs.TLS.Etcd = cert
-	}
-
-	return certs, nil
+	return nil
 }
 
-func newCA(satellite, name string) (*Bundle, error) {
-	key, err := certutil.NewPrivateKey()
-	if err != nil {
-		panic(err)
-		return &Bundle{}, fmt.Errorf("unable to create private key [%v]", err)
-	}
-
+func (c Certificates) signEtcdClient(name string) Bundle {
 	config := Config{
-		CommonName:         name,
-		OrganizationalUnit: []string{"SAP Converged Cloud", "Kubernikus", satellite},
+		sign:   name,
+		Usages: []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth},
 	}
-	cert, err := NewSelfSignedCACert(config, key)
-
-	if err != nil {
-		panic(err)
-		return &Bundle{}, fmt.Errorf("unable to create self-signed certificate [%v]", err)
-	}
-
-	return &Bundle{cert, key}, nil
+	return c.Etcd.Clients.CA.sign(config)
 }
 
-func newSignedBundle(config Config, ca *Bundle) (*Bundle, error) {
-	key, err := certutil.NewPrivateKey()
-	if err != nil {
-		return &Bundle{}, fmt.Errorf("unable to create private key [%v]", err)
+func (c Certificates) signEtcdPeer(name string) Bundle {
+	config := Config{
+		sign:   name,
+		Usages: []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth, x509.ExtKeyUsageServerAuth},
 	}
-
-	config.OrganizationalUnit = ca.Certificate.Subject.OrganizationalUnit
-
-	cert, err := NewSignedCert(config, key, ca.Certificate, ca.PrivateKey)
-
-	if err != nil {
-		return &Bundle{}, fmt.Errorf("unable to create self-signed certificate [%v]", err)
-	}
-
-	return &Bundle{cert, key}, nil
+	return c.Etcd.Peers.CA.sign(config)
 }
 
-func NewSelfSignedCACert(cfg Config, key *rsa.PrivateKey) (*x509.Certificate, error) {
+func (c Certificates) signApiServerClient(name string, groups ...string) Bundle {
+	config := Config{
+		sign:         name,
+		Organization: groups,
+		Usages:       []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth},
+	}
+	return c.ApiServer.Clients.CA.sign(config)
+}
+
+func (c Certificates) signApiServerNode(name string) Bundle {
+	config := Config{
+		sign:         name,
+		Organization: []string{"system:nodes"},
+		Usages:       []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth},
+	}
+	return c.ApiServer.Nodes.CA.sign(config)
+}
+
+func (c Certificates) signKubeletClient(name string) Bundle {
+	config := Config{
+		sign:   name,
+		Usages: []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth},
+	}
+	return c.Kubelet.Clients.CA.sign(config)
+}
+
+func (c Certificates) signTLS(name string, dnsNames []string, ips []net.IP) Bundle {
+	config := Config{
+		sign:   name,
+		Usages: []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth},
+		AltNames: AltNames{
+			DNSNames: dnsNames,
+			IPs:      ips,
+		},
+	}
+	return c.TLS.CA.sign(config)
+}
+
+func createCA(satellite, name string, bundle *Bundle) {
+	bundle.PrivateKey, _ = certutil.NewPrivateKey()
+
 	now := time.Now()
 	tmpl := x509.Certificate{
 		SerialNumber: new(big.Int).SetInt64(0),
 		Subject: pkix.Name{
-			CommonName:         cfg.CommonName,
-			Organization:       cfg.Organization,
-			OrganizationalUnit: cfg.OrganizationalUnit,
+			CommonName:         name,
+			OrganizationalUnit: []string{"SAP Converged Cloud", "Kubernikus", satellite},
 		},
 		NotBefore:             now.UTC(),
 		NotAfter:              now.Add(duration365d * 10).UTC(),
@@ -282,42 +188,36 @@ func NewSelfSignedCACert(cfg Config, key *rsa.PrivateKey) (*x509.Certificate, er
 		IsCA: true,
 	}
 
-	certDERBytes, err := x509.CreateCertificate(rand.Reader, &tmpl, &tmpl, key.Public(), key)
-	if err != nil {
-		return nil, err
-	}
-	return x509.ParseCertificate(certDERBytes)
+	certDERBytes, _ := x509.CreateCertificate(rand.Reader, &tmpl, &tmpl, bundle.PrivateKey.Public(), bundle.PrivateKey)
+	bundle.Certificate, _ = x509.ParseCertificate(certDERBytes)
 }
 
-func NewSignedCert(cfg Config, key *rsa.PrivateKey, caCert *x509.Certificate, caKey *rsa.PrivateKey) (*x509.Certificate, error) {
-	serial, err := rand.Int(rand.Reader, new(big.Int).SetInt64(math.MaxInt64))
-	if err != nil {
-		return nil, err
+func (ca Bundle) sign(config Config) Bundle {
+	if !ca.Certificate.IsCA {
+		panic("You can't use this certificate for signing. It's not a CA...")
 	}
-	if len(cfg.CommonName) == 0 {
-		return nil, errors.New("must specify a CommonName")
-	}
-	if len(cfg.Usages) == 0 {
-		return nil, errors.New("must specify at least one ExtKeyUsage")
-	}
+
+	key, _ := certutil.NewPrivateKey()
+	serial, _ := rand.Int(rand.Reader, new(big.Int).SetInt64(math.MaxInt64))
 
 	certTmpl := x509.Certificate{
 		Subject: pkix.Name{
-			CommonName:         cfg.CommonName,
-			Organization:       cfg.Organization,
-			OrganizationalUnit: cfg.OrganizationalUnit,
+			CommonName:         config.sign,
+			Organization:       config.Organization,
+			OrganizationalUnit: ca.Certificate.Subject.OrganizationalUnit,
 		},
-		DNSNames:     cfg.AltNames.DNSNames,
-		IPAddresses:  cfg.AltNames.IPs,
+		DNSNames:     config.AltNames.DNSNames,
+		IPAddresses:  config.AltNames.IPs,
 		SerialNumber: serial,
-		NotBefore:    caCert.NotBefore,
+		NotBefore:    ca.Certificate.NotBefore,
 		NotAfter:     time.Now().Add(duration365d * 10).UTC(),
 		KeyUsage:     x509.KeyUsageKeyEncipherment | x509.KeyUsageDigitalSignature,
-		ExtKeyUsage:  cfg.Usages,
+		ExtKeyUsage:  config.Usages,
 	}
-	certDERBytes, err := x509.CreateCertificate(rand.Reader, &certTmpl, caCert, key.Public(), caKey)
-	if err != nil {
-		return nil, err
-	}
-	return x509.ParseCertificate(certDERBytes)
+
+	certDERBytes, _ := x509.CreateCertificate(rand.Reader, &certTmpl, ca.Certificate, key.Public(), ca.PrivateKey)
+
+	cert, _ := x509.ParseCertificate(certDERBytes)
+
+	return Bundle{cert, key}
 }

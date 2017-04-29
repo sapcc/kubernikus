@@ -55,7 +55,7 @@ func (fp FilePersister) WriteConfig(cluster Cluster) error {
 	return nil
 }
 
-func (fp FilePersister) writeToFiles(b *Bundle) error {
+func (fp FilePersister) writeToFiles(b Bundle) error {
 	fmt.Println(fp.pathForCert(b))
 	err := certutil.WriteCert(fp.pathForCert(b), certutil.EncodeCertPEM(b.Certificate))
 	if err != nil {
@@ -71,7 +71,7 @@ func (fp FilePersister) writeToFiles(b *Bundle) error {
 	return nil
 }
 
-func (bp BasePersister) basename(b *Bundle) string {
+func (bp BasePersister) basename(b Bundle) string {
 	stem := ""
 	suffix := ""
 
@@ -86,23 +86,23 @@ func (bp BasePersister) basename(b *Bundle) string {
 	return sanitize.BaseName(strings.ToLower(fmt.Sprintf("%s-%s", stem, suffix)))
 }
 
-func (bp BasePersister) nameForKey(b *Bundle) string {
+func (bp BasePersister) nameForKey(b Bundle) string {
 	return fmt.Sprintf("%s-key.pem", bp.basename(b))
 }
 
-func (bp BasePersister) nameForCert(b *Bundle) string {
+func (bp BasePersister) nameForCert(b Bundle) string {
 	return fmt.Sprintf("%s.pem", bp.basename(b))
 }
 
-func (fp FilePersister) pathForCert(b *Bundle) string {
+func (fp FilePersister) pathForCert(b Bundle) string {
 	return path.Join(fp.basedir(b), fp.nameForCert(b))
 }
 
-func (fp FilePersister) pathForKey(b *Bundle) string {
+func (fp FilePersister) pathForKey(b Bundle) string {
 	return path.Join(fp.basedir(b), fp.nameForKey(b))
 }
 
-func (fp FilePersister) basedir(b *Bundle) string {
+func (fp FilePersister) basedir(b Bundle) string {
 	return sanitize.BaseName(strings.ToLower(b.Certificate.Subject.OrganizationalUnit[len(b.Certificate.Subject.OrganizationalUnit)-1]))
 }
 
