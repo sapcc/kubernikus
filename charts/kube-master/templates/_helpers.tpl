@@ -15,14 +15,32 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
 {{- printf "%s-%s" .Release.Name $name | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 
+{{/*
+Get filenames of certificates referenced in given flags map seperated by space.
+*/}}
+{{- define "certNamesFromFlags" }}
+{{- range . }}
+{{- range toString . | splitList ","  }}
+{{- if contains "/etc/kubernetes/certs/" . }} {{ trimPrefix "/etc/kubernetes/certs/" . }}{{ end }}
+{{- end }}
+{{- end }}
+{{- end }}
 
+{{/*
+Generate secret item selection for certificates referenced in flags
+*/}}
 {{- define "certItemsFromFlags"}}
-{{- range $value := . }}
-{{- range $value := splitList "," (toString $value)}}
-{{- if contains "/etc/kubernetes/certs/" $value }}
-- key: {{ trimPrefix "/etc/kubernetes/certs/" $value }}
-  path: {{ trimPrefix "/etc/kubernetes/certs/" $value }}
+{{- range include "certNamesFromFlags" . | trim | splitList " " }}
+- key: {{ . }}
+  path: {{ . }}
 {{- end }}
 {{- end }}
-{{- end }}
+
+{{/*
+Space seperate list of all certificates referenced in flags
+*/}}
+{{- define "allCerts" }}
+{{- $apiCerts := include "certNamesFromFlags" .Values.api.flags | trim }}
+{{- $controllerManagerCerts := include "certNamesFromFlags" .Values.controllerManager.flags | trim }}
+{{- cat $apiCerts $controllerManagerCerts }}
 {{- end}}

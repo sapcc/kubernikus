@@ -6,21 +6,22 @@ image:
   tag: v1.6.1_coreos.0
   pullPolicy: IfNotPresent
 
-openstack:
-  authUrl:
-  username:
-  password:
-  domainName:
-  projectName:
-  region:
-  lbSubnetID:
-  routerID:
+# Settings for the openstack cloudprovider
+openstack: {}
+  #authURL:
+  #username:
+  #password:
+  #domainName:
+  #projectName:
+  #region:
+  #lbSubnetID:
+  #routerID:
 
 # specify a different certsSecretName if you want to use
 # an exiting secret
 certsSecretName: secrets
 # Use these keys to specify the certs as helm values
-#certs:
+certs: {}
 #  kube-clients-ca.pem:
 #  etcd-clients-ca.pem:
 #  etcd-clients-apiserver.pem:
@@ -47,7 +48,6 @@ api:
   flags:
     secure-port: 6443
     admission-control: NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,ResourceQuota
-    advertise-address: 10.3.0.1
     allow-privileged: true
     authorization-mode: RBAC
     cloud-config: /etc/kubernetes/cloudprovider/openstack.config
@@ -56,7 +56,7 @@ api:
     experimental-bootstrap-token-auth: true
     runtime-config: rbac.authorization.k8s.io/v1alpha1,extensions/v1beta1=true,extensions/v1beta1/thirdpartyresources=true
     service-cluster-ip-range: 10.180.1.0/24
-    #Cert Spraz
+    #Cert Spratz
     client-ca-file: /etc/kubernetes/certs/kube-clients-ca.pem
     etcd-cafile: /etc/kubernetes/certs/etcd-clients-ca.pem
     etcd-certfile: /etc/kubernetes/certs/etcd-clients-apiserver.pem
