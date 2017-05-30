@@ -29,8 +29,10 @@ spec:
                 path: tls-ca.pem
               - key: kube-scheduler.pem
                 path: kube-client.pem
+{{- if eq .Values.certsSecretName "secret" }}{{$doof := required "missing cert kube-scheduler.pem" (index .Values.certs "kube-scheduler.pem")}}{{ end }}
               - key: kube-scheduler.key
                 path: kube-client.key
+{{- if eq .Values.certsSecretName "secret" }}{{$doof := required "missing cert kube-scheduler.key" (index .Values.certs "kube-scheduler.key")}}{{ end }}
         - name: config
           configMap:
             name: config

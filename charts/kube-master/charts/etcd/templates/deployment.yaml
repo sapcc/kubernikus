@@ -38,20 +38,20 @@ spec:
                   fieldPath: status.podIP
           command: [ etcd ]
           args:
-            - --name cke
-            - --data-dir /var/lib/etcd
-            - --advertise-client-urls http://$(ETCD_IP):2379
-            - --initial-advertise-peer-urls http://$(ETCD_IP):2380
-            - --initial-cluster cke=http://$(ETCD_IP):2380
-            - --listen-client-urls http://0.0.0.0:2379
-            - --listen-peer-urls http://$(ETCD_IP):2380
+            - --name=cke
+            - --data-dir=/var/lib/etcd
+            - --advertise-client-urls=http://$(ETCD_IP):2379
+            - --initial-advertise-peer-urls=http://$(ETCD_IP):2380
+            - --initial-cluster=cke=http://$(ETCD_IP):2380
+            - --listen-client-urls=http://0.0.0.0:2379
+            - --listen-peer-urls=http://$(ETCD_IP):2380
             {{- if false }}
-            - --trusted-ca-file /etc/etcd/certs/etcd-clients/ca.pem
-            - --cert-file /etc/etcd/certs/etcd-clients/etcd-server.pem
-            - --key-file /etc/etcd/certs/etcd-clients/etcd-server-key.pem
-            - --peer-ca-file /etc/etcd/certs/etcd-peers/ca.pem
-            - --peer-cert-file /etc/etcd/certs/etcd-peers/etcd-0.pem
-            - ---peer-key-file /etc/etcd/certs/etcd-peers/etcd-0-key.pem
+            - --trusted-ca-file=/etc/etcd/certs/etcd-clients/ca.pem
+            - --cert-file=/etc/etcd/certs/etcd-clients/etcd-server.pem
+            - --key-file=/etc/etcd/certs/etcd-clients/etcd-server-key.pem
+            - --peer-ca-file=/etc/etcd/certs/etcd-peers/ca.pem
+            - --peer-cert-file=/etc/etcd/certs/etcd-peers/etcd-0.pem
+            - --peer-key-file=/etc/etcd/certs/etcd-peers/etcd-0-key.pem
             {{- end }}
           volumeMounts:
             {{- if false }}
