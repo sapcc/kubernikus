@@ -1,0 +1,89 @@
+consumes:
+  - application/json
+info:
+  title: Kubernikus
+  version: 1.0.0
+produces:
+  - application/json
+swagger: '2.0'
+securityDefinitions:
+  keystone:
+    description: OpenStack Keystone Authentication
+    type: apiKey
+    in: header
+    name: x-auth-token
+
+security: []
+  
+paths:
+  /api/:
+    get:
+      summary: List available api versions
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/ApiVersions'
+        401:
+          description: Unauthorized
+  /api/v1/clusters/:
+    get:
+      summary: List available clusters
+      responses:
+        200:
+          description: OK 
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Cluster'
+      security:
+        - keystone: []
+    post:
+      summary: Create a cluster
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/Cluster'
+      parameters:
+        - name: body
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/Cluster'
+      security:
+        - keystone: []
+
+  /api/v1/clusters/{name}:
+    get:
+      summary: Show the specified cluser
+      responses:
+        200: 
+          description: OK
+          schema:
+            $ref: '#/definitions/Cluster'
+      security:
+        - keystone: []
+    parameters:
+      - uniqueItems: true
+        type: string
+        name: name
+        required: true
+        in: path
+
+definitions:
+  ApiVersions:
+    required:
+      - versions
+    properties:
+      versions:
+        description: versions are the api versions that are available.
+        type: array
+        items:
+          type: string
+  Cluster:
+    properties:
+      name:
+        description: name of the cluster
+        type: string
+

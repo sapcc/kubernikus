@@ -2,7 +2,7 @@ DATE     = $(shell date +%Y%m%d%H%M)
 IMAGE    ?= sapcc/kubernikus
 VERSION  = v$(DATE)
 GOOS     ?= $(shell go env | grep GOOS | cut -d'"' -f2)
-BINARIES := groundctl 
+BINARIES := groundctl apiserver
 
 LDFLAGS := -X github.com/sapcc/kubernikus/pkg/version.VERSION=$(VERSION)
 GOFLAGS := -ldflags "$(LDFLAGS)"
@@ -28,6 +28,13 @@ build: $(BINARIES:bin/linux/%)
 
 push:
 	docker push $(IMAGE):$(VERSION)
+
+pkg/api/rest/operations/kubernikus_api.go: swagger.yml
+	swagger generate server --name kubernikus --target pkg/api --model-package models \
+		--server-package rest --flag-strategy pflag --exclude-main
+
+swagger-generate:
+	make -B pkg/api/rest/operations/kubernikus_api.go
 
 clean:
 	rm -rf bin/*

@@ -4,3 +4,16 @@ import:
 - package: k8s.io/client-go
   version: v3.0.0-beta.0
 - package: github.com/kennygrant/sanitize
+# k8s.io/client-go carries some outdated depencencies in its Godeps.json
+# We don't import these dependencies via the go-client so this should be ok
+# that don't fly with swagger:
+- package: github.com/go-openapi/jsonpointer
+  version: 779f45308c19820f1a69e9a4cd965f496e0da10f
+- package: github.com/go-openapi/jsonreference
+  version: 36d33bfe519efae5632669801b180bf1a245da3b
+- package: github.com/go-openapi/spec
+  version: e51c28f07047ad90caff03f6450908720d337e0c
+- package: github.com/go-openapi/swag
+  version: e43299b4afa7bc7f22e5e82e3d48607230e4c177
+- package: github.com/mailru/easyjson
+  version: 44c0351a5bc860bcb2608d54aa03ea686c4e7b25
