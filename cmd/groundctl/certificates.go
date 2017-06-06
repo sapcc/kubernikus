@@ -1,41 +1,47 @@
 package main
 
 import (
-	"fmt"
-	"os"
+	"errors"
 
 	"github.com/sapcc/kubernikus/pkg/controller/ground"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
-var name string
-
 func init() {
-	certificatesCmd.AddCommand(generateCmd)
 	RootCmd.AddCommand(certificatesCmd)
+
+	certificatesCmd.Flags().String("name", "", "Name of the satellite cluster")
+	viper.BindPFlag("name", certificatesCmd.Flags().Lookup("name"))
 }
 
 var certificatesCmd = &cobra.Command{
-	Use: "certificates",
-}
+	Use: "certificates --name NAME",
 
-var generateCmd = &cobra.Command{
-	Use: "generate [name]",
-	Run: func(cmd *cobra.Command, args []string) {
-		if len(args) != 1 {
-			fmt.Println("You need to give a satellite name")
-			return
-		}
-		cluster, err := ground.NewCluster(args[0])
+	RunE: func(cmd *cobra.Command, args []string) error {
+		err := validateCertificateInputs()
 		if err != nil {
-			fmt.Println(err)
-			os.Exit(-1)
+			return err
+		}
+
+		cluster, err := ground.NewCluster(viper.GetString("name"))
+		if err != nil {
+			return err
 		}
 
 		err = cluster.WriteConfig(ground.NewFilePersister("."))
 		if err != nil {
-			fmt.Println(err)
-			os.Exit(-1)
+			return err
 		}
+
+		return nil
 	},
+}
+
+func validateCertificateInputs() error {
+	if viper.GetString("name") == "" {
+		return errors.New("You need to provide a name")
+	}
+
+	return nil
 }

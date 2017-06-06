@@ -1,42 +1,51 @@
 package main
 
 import (
+	"errors"
 	"fmt"
-	"os"
 
 	"github.com/sapcc/kubernikus/pkg/controller/ground"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 func init() {
-	helmCmd.AddCommand(valuesCmd)
 	RootCmd.AddCommand(helmCmd)
+
+	helmCmd.Flags().String("name", "", "Name of the satellite cluster")
+	viper.BindPFlag("name", certificatesCmd.Flags().Lookup("name"))
 }
 
 var helmCmd = &cobra.Command{
-	Use: "helm",
-}
-
-var valuesCmd = &cobra.Command{
-	Use: "values [NAME]",
-	Run: func(cmd *cobra.Command, args []string) {
-		if len(args) != 1 {
-			fmt.Println("You need to give a satellite name")
-			return
-		}
-
+	Use: "values --name NAME",
+	RunE: func(cmd *cobra.Command, args []string) error {
 		var result = ""
-		cluster, err := ground.NewCluster(args[0])
 
-		if err == nil {
-			err = cluster.WriteConfig(ground.NewHelmValuePersister(&result))
+		err := validateHelmInputs()
+		if err != nil {
+			return err
 		}
 
+		cluster, err := ground.NewCluster(viper.GetString("name"))
 		if err != nil {
-			fmt.Println(err)
-			os.Exit(-1)
+			return err
+		}
+
+		err = cluster.WriteConfig(ground.NewHelmValuePersister(&result))
+		if err != nil {
+			return err
 		}
 
 		fmt.Println(result)
+
+		return nil
 	},
+}
+
+func validateHelmInputs() error {
+	if viper.GetString("name") == "" {
+		return errors.New("You need to provide a name")
+	}
+
+	return nil
 }
