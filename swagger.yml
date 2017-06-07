@@ -18,6 +18,7 @@ security: []
 paths:
   /api/:
     get:
+      operationId: ListAPIVersions
       summary: List available api versions
       responses:
         200:
@@ -28,6 +29,7 @@ paths:
           description: Unauthorized
   /api/v1/clusters/:
     get:
+      operationId: ListClusters
       summary: List available clusters
       responses:
         200:
@@ -39,6 +41,7 @@ paths:
       security:
         - keystone: []
     post:
+      operationId: CreateCluster
       summary: Create a cluster
       responses:
         200:
@@ -56,6 +59,7 @@ paths:
 
   /api/v1/clusters/{name}:
     get:
+      operationId: ShowCluster
       summary: Show the specified cluser
       responses:
         200: 
@@ -82,8 +86,26 @@ definitions:
         items:
           type: string
   Cluster:
+    type: object
     properties:
       name:
         description: name of the cluster
         type: string
+  Principal:
+    type: object
+    properties:
+        name:
+          description: username
+          type: string
+        id:
+          description: userid
+          type: string
+        account:
+          description: account id
+          type: string
+        roles:
+          description: list of roles the user has in the given scope 
+          type: array 
+          items:
+            type: string
 

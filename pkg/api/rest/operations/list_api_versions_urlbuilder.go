@@ -9,15 +9,15 @@ import (
 	golangswaggerpaths "path"
 )
 
-// PostAPIV1ClustersURL generates an URL for the post API v1 clusters operation
-type PostAPIV1ClustersURL struct {
+// ListAPIVersionsURL generates an URL for the list API versions operation
+type ListAPIVersionsURL struct {
 	_basePath string
 }
 
 // WithBasePath sets the base path for this url builder, only required when it's different from the
 // base path specified in the swagger spec.
 // When the value of the base path is an empty string
-func (o *PostAPIV1ClustersURL) WithBasePath(bp string) *PostAPIV1ClustersURL {
+func (o *ListAPIVersionsURL) WithBasePath(bp string) *ListAPIVersionsURL {
 	o.SetBasePath(bp)
 	return o
 }
@@ -25,15 +25,15 @@ func (o *PostAPIV1ClustersURL) WithBasePath(bp string) *PostAPIV1ClustersURL {
 // SetBasePath sets the base path for this url builder, only required when it's different from the
 // base path specified in the swagger spec.
 // When the value of the base path is an empty string
-func (o *PostAPIV1ClustersURL) SetBasePath(bp string) {
+func (o *ListAPIVersionsURL) SetBasePath(bp string) {
 	o._basePath = bp
 }
 
 // Build a url path and query string
-func (o *PostAPIV1ClustersURL) Build() (*url.URL, error) {
+func (o *ListAPIVersionsURL) Build() (*url.URL, error) {
 	var result url.URL
 
-	var _path = "/api/v1/clusters/"
+	var _path = "/api/"
 
 	_basePath := o._basePath
 	result.Path = golangswaggerpaths.Join(_basePath, _path)
@@ -42,7 +42,7 @@ func (o *PostAPIV1ClustersURL) Build() (*url.URL, error) {
 }
 
 // Must is a helper function to panic when the url builder returns an error
-func (o *PostAPIV1ClustersURL) Must(u *url.URL, err error) *url.URL {
+func (o *ListAPIVersionsURL) Must(u *url.URL, err error) *url.URL {
 	if err != nil {
 		panic(err)
 	}
@@ -53,17 +53,17 @@ func (o *PostAPIV1ClustersURL) Must(u *url.URL, err error) *url.URL {
 }
 
 // String returns the string representation of the path with query string
-func (o *PostAPIV1ClustersURL) String() string {
+func (o *ListAPIVersionsURL) String() string {
 	return o.Must(o.Build()).String()
 }
 
 // BuildFull builds a full url with scheme, host, path and query string
-func (o *PostAPIV1ClustersURL) BuildFull(scheme, host string) (*url.URL, error) {
+func (o *ListAPIVersionsURL) BuildFull(scheme, host string) (*url.URL, error) {
 	if scheme == "" {
-		return nil, errors.New("scheme is required for a full url on PostAPIV1ClustersURL")
+		return nil, errors.New("scheme is required for a full url on ListAPIVersionsURL")
 	}
 	if host == "" {
-		return nil, errors.New("host is required for a full url on PostAPIV1ClustersURL")
+		return nil, errors.New("host is required for a full url on ListAPIVersionsURL")
 	}
 
 	base, err := o.Build()
@@ -77,6 +77,6 @@ func (o *PostAPIV1ClustersURL) BuildFull(scheme, host string) (*url.URL, error) 
 }
 
 // StringFull returns the string representation of a complete url
-func (o *PostAPIV1ClustersURL) StringFull(scheme, host string) string {
+func (o *ListAPIVersionsURL) StringFull(scheme, host string) string {
 	return o.Must(o.BuildFull(scheme, host)).String()
 }

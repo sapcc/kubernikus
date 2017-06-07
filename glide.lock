@@ -1,8 +1,12 @@
 hash: 4cbd90ff926268d772710d6aac0c8acd8005c4673ad72f9d5fed19f8fc1a7e5c
-updated: 2017-06-07T08:56:22.790044962+02:00
+updated: 2017-06-07T09:03:12.025872623+02:00
 imports:
 - name: github.com/asaskevich/govalidator
   version: 7664702784775e51966f0885f5cd27435916517b
+- name: github.com/databus23/keystone
+  version: 12c566d59fdb198f5a6d7ad7dfbf99f2a7e09929
+  subpackages:
+  - cache/memory
 - name: github.com/davecgh/go-spew
   version: 5215b55f46b2b919f50a1df0eaa5886afe4e3b3d
   subpackages:
@@ -96,6 +100,8 @@ imports:
   version: c37440a7cf42ac63b919c752ca73a85067e05992
 - name: github.com/pelletier/go-toml
   version: fe7536c3dee2596cdd23ee9976a17c22bdaae286
+- name: github.com/pmylund/go-cache
+  version: 93d85800f2fa6bd0a739e7bd612bfa3bc008b72d
 - name: github.com/PuerkitoBio/purell
   version: 8a290539e2e8629dbc4e6bad948158f790ec31f4
 - name: github.com/PuerkitoBio/urlesc

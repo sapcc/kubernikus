@@ -14,18 +14,18 @@ import (
 	"github.com/sapcc/kubernikus/pkg/api/models"
 )
 
-// NewPostAPIV1ClustersParams creates a new PostAPIV1ClustersParams object
+// NewCreateClusterParams creates a new CreateClusterParams object
 // with the default values initialized.
-func NewPostAPIV1ClustersParams() PostAPIV1ClustersParams {
+func NewCreateClusterParams() CreateClusterParams {
 	var ()
-	return PostAPIV1ClustersParams{}
+	return CreateClusterParams{}
 }
 
-// PostAPIV1ClustersParams contains all the bound params for the post API v1 clusters operation
+// CreateClusterParams contains all the bound params for the create cluster operation
 // typically these are obtained from a http.Request
 //
-// swagger:parameters PostAPIV1Clusters
-type PostAPIV1ClustersParams struct {
+// swagger:parameters CreateCluster
+type CreateClusterParams struct {
 
 	// HTTP Request Object
 	HTTPRequest *http.Request
@@ -39,7 +39,7 @@ type PostAPIV1ClustersParams struct {
 
 // BindRequest both binds and validates a request, it assumes that complex things implement a Validatable(strfmt.Registry) error interface
 // for simple values it will use straight method calls
-func (o *PostAPIV1ClustersParams) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {
+func (o *CreateClusterParams) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {
 	var res []error
 	o.HTTPRequest = r
 

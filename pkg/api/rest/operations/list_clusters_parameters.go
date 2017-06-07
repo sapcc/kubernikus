@@ -10,18 +10,18 @@ import (
 	"github.com/go-openapi/runtime/middleware"
 )
 
-// NewGetAPIParams creates a new GetAPIParams object
+// NewListClustersParams creates a new ListClustersParams object
 // with the default values initialized.
-func NewGetAPIParams() GetAPIParams {
+func NewListClustersParams() ListClustersParams {
 	var ()
-	return GetAPIParams{}
+	return ListClustersParams{}
 }
 
-// GetAPIParams contains all the bound params for the get API operation
+// ListClustersParams contains all the bound params for the list clusters operation
 // typically these are obtained from a http.Request
 //
-// swagger:parameters GetAPI
-type GetAPIParams struct {
+// swagger:parameters ListClusters
+type ListClustersParams struct {
 
 	// HTTP Request Object
 	HTTPRequest *http.Request
@@ -29,7 +29,7 @@ type GetAPIParams struct {
 
 // BindRequest both binds and validates a request, it assumes that complex things implement a Validatable(strfmt.Registry) error interface
 // for simple values it will use straight method calls
-func (o *GetAPIParams) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {
+func (o *ListClustersParams) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {
 	var res []error
 	o.HTTPRequest = r
 

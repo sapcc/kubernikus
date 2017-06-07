@@ -9,12 +9,13 @@ import (
 	middleware "github.com/go-openapi/runtime/middleware"
 	graceful "github.com/tylerb/graceful"
 
+	"github.com/sapcc/kubernikus/pkg/api/handlers"
 	"github.com/sapcc/kubernikus/pkg/api/rest/operations"
 )
 
 // This file is safe to edit. Once it exists it will not be overwritten
 
-//go:generate swagger generate server --target ../pkg/api --name kubernikus --spec ../swagger.yml --server-package rest --default-scheme https
+//go:generate swagger generate server --target ../pkg/api --name kubernikus --spec ../swagger.yml --server-package rest --principal models.Principal --exclude-main
 
 func configureFlags(api *operations.KubernikusAPI) {
 	// api.CommandLineOptionsGroups = []swag.CommandLineOptionsGroup{ ... }
@@ -35,22 +36,10 @@ func configureAPI(api *operations.KubernikusAPI) http.Handler {
 	api.JSONProducer = runtime.JSONProducer()
 
 	// Applies when the "x-auth-token" header is set
-	api.KeystoneAuth = func(token string) (interface{}, error) {
-		return nil, errors.NotImplemented("api key auth (keystone) x-auth-token from header param [x-auth-token] has not yet been implemented")
-	}
+	api.KeystoneAuth = keystoneAuth()
 
-	api.GetAPIHandler = operations.GetAPIHandlerFunc(func(params operations.GetAPIParams) middleware.Responder {
-		return middleware.NotImplemented("operation .GetAPI has not yet been implemented")
-	})
-	api.GetAPIV1ClustersHandler = operations.GetAPIV1ClustersHandlerFunc(func(params operations.GetAPIV1ClustersParams, principal interface{}) middleware.Responder {
-		return middleware.NotImplemented("operation .GetAPIV1Clusters has not yet been implemented")
-	})
-	api.GetAPIV1ClustersNameHandler = operations.GetAPIV1ClustersNameHandlerFunc(func(params operations.GetAPIV1ClustersNameParams, principal interface{}) middleware.Responder {
-		return middleware.NotImplemented("operation .GetAPIV1ClustersName has not yet been implemented")
-	})
-	api.PostAPIV1ClustersHandler = operations.PostAPIV1ClustersHandlerFunc(func(params operations.PostAPIV1ClustersParams, principal interface{}) middleware.Responder {
-		return middleware.NotImplemented("operation .PostAPIV1Clusters has not yet been implemented")
-	})
+	api.ListAPIVersionsHandler = operations.ListAPIVersionsHandlerFunc(handlers.ListAPIVersions)
+	api.ListClustersHandler = operations.ListClustersHandlerFunc(handlers.ListClusters)
 
 	api.ServerShutdown = func() {}
 
@@ -72,11 +61,11 @@ func configureServer(s *graceful.Server, scheme, addr string) {
 // The middleware configuration is for the handler executors. These do not apply to the swagger.json document.
 // The middleware executes after routing but before authentication, binding and validation
 func setupMiddlewares(handler http.Handler) http.Handler {
-	return handler
+	return middleware.Redoc(middleware.RedocOpts{}, handler)
 }
 
 // The middleware configuration happens before anything, this middleware also applies to serving the swagger.json document.
 // So this is a good place to plug in a panic handling middleware, logging and metrics
 func setupGlobalMiddleware(handler http.Handler) http.Handler {
-	return handler
+	return handlers.RootHandler(handler)
 }

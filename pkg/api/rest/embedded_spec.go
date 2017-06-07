@@ -27,6 +27,7 @@ func init() {
     "/api/": {
       "get": {
         "summary": "List available api versions",
+        "operationId": "ListAPIVersions",
         "responses": {
           "200": {
             "description": "OK",
@@ -43,6 +44,7 @@ func init() {
     "/api/v1/clusters/": {
       "get": {
         "summary": "List available clusters",
+        "operationId": "ListClusters",
         "security": [
           {
             "keystone": []
@@ -62,6 +64,7 @@ func init() {
       },
       "post": {
         "summary": "Create a cluster",
+        "operationId": "CreateCluster",
         "security": [
           {
             "keystone": []
@@ -90,6 +93,7 @@ func init() {
     "/api/v1/clusters/{name}": {
       "get": {
         "summary": "Show the specified cluser",
+        "operationId": "ShowCluster",
         "security": [
           {
             "keystone": []
@@ -131,10 +135,35 @@ func init() {
       }
     },
     "Cluster": {
+      "type": "object",
       "properties": {
         "name": {
           "description": "name of the cluster",
           "type": "string"
+        }
+      }
+    },
+    "Principal": {
+      "type": "object",
+      "properties": {
+        "account": {
+          "description": "account id",
+          "type": "string"
+        },
+        "id": {
+          "description": "userid",
+          "type": "string"
+        },
+        "name": {
+          "description": "username",
+          "type": "string"
+        },
+        "roles": {
+          "description": "list of roles the user has in the given scope",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         }
       }
     }

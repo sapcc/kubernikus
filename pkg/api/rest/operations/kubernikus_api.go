@@ -16,6 +16,8 @@ import (
 	spec "github.com/go-openapi/spec"
 	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
+
+	"github.com/sapcc/kubernikus/pkg/api/models"
 )
 
 // NewKubernikusAPI creates a new Kubernikus instance
@@ -30,21 +32,21 @@ func NewKubernikusAPI(spec *loads.Document) *KubernikusAPI {
 		ServeError:      errors.ServeError,
 		JSONConsumer:    runtime.JSONConsumer(),
 		JSONProducer:    runtime.JSONProducer(),
-		GetAPIHandler: GetAPIHandlerFunc(func(params GetAPIParams) middleware.Responder {
-			return middleware.NotImplemented("operation GetAPI has not yet been implemented")
+		CreateClusterHandler: CreateClusterHandlerFunc(func(params CreateClusterParams, principal *models.Principal) middleware.Responder {
+			return middleware.NotImplemented("operation CreateCluster has not yet been implemented")
 		}),
-		GetAPIV1ClustersHandler: GetAPIV1ClustersHandlerFunc(func(params GetAPIV1ClustersParams, principal interface{}) middleware.Responder {
-			return middleware.NotImplemented("operation GetAPIV1Clusters has not yet been implemented")
+		ListAPIVersionsHandler: ListAPIVersionsHandlerFunc(func(params ListAPIVersionsParams) middleware.Responder {
+			return middleware.NotImplemented("operation ListAPIVersions has not yet been implemented")
 		}),
-		GetAPIV1ClustersNameHandler: GetAPIV1ClustersNameHandlerFunc(func(params GetAPIV1ClustersNameParams, principal interface{}) middleware.Responder {
-			return middleware.NotImplemented("operation GetAPIV1ClustersName has not yet been implemented")
+		ListClustersHandler: ListClustersHandlerFunc(func(params ListClustersParams, principal *models.Principal) middleware.Responder {
+			return middleware.NotImplemented("operation ListClusters has not yet been implemented")
 		}),
-		PostAPIV1ClustersHandler: PostAPIV1ClustersHandlerFunc(func(params PostAPIV1ClustersParams, principal interface{}) middleware.Responder {
-			return middleware.NotImplemented("operation PostAPIV1Clusters has not yet been implemented")
+		ShowClusterHandler: ShowClusterHandlerFunc(func(params ShowClusterParams, principal *models.Principal) middleware.Responder {
+			return middleware.NotImplemented("operation ShowCluster has not yet been implemented")
 		}),
 
 		// Applies when the "x-auth-token" header is set
-		KeystoneAuth: func(token string) (interface{}, error) {
+		KeystoneAuth: func(token string) (*models.Principal, error) {
 			return nil, errors.NotImplemented("api key auth (keystone) x-auth-token from header param [x-auth-token] has not yet been implemented")
 		},
 	}
@@ -67,16 +69,16 @@ type KubernikusAPI struct {
 
 	// KeystoneAuth registers a function that takes a token and returns a principal
 	// it performs authentication based on an api key x-auth-token provided in the header
-	KeystoneAuth func(string) (interface{}, error)
+	KeystoneAuth func(string) (*models.Principal, error)
 
-	// GetAPIHandler sets the operation handler for the get API operation
-	GetAPIHandler GetAPIHandler
-	// GetAPIV1ClustersHandler sets the operation handler for the get API v1 clusters operation
-	GetAPIV1ClustersHandler GetAPIV1ClustersHandler
-	// GetAPIV1ClustersNameHandler sets the operation handler for the get API v1 clusters name operation
-	GetAPIV1ClustersNameHandler GetAPIV1ClustersNameHandler
-	// PostAPIV1ClustersHandler sets the operation handler for the post API v1 clusters operation
-	PostAPIV1ClustersHandler PostAPIV1ClustersHandler
+	// CreateClusterHandler sets the operation handler for the create cluster operation
+	CreateClusterHandler CreateClusterHandler
+	// ListAPIVersionsHandler sets the operation handler for the list API versions operation
+	ListAPIVersionsHandler ListAPIVersionsHandler
+	// ListClustersHandler sets the operation handler for the list clusters operation
+	ListClustersHandler ListClustersHandler
+	// ShowClusterHandler sets the operation handler for the show cluster operation
+	ShowClusterHandler ShowClusterHandler
 
 	// ServeError is called when an error is received, there is a default handler
 	// but you can set your own with this
@@ -144,20 +146,20 @@ func (o *KubernikusAPI) Validate() error {
 		unregistered = append(unregistered, "XAuthTokenAuth")
 	}
 
-	if o.GetAPIHandler == nil {
-		unregistered = append(unregistered, "GetAPIHandler")
+	if o.CreateClusterHandler == nil {
+		unregistered = append(unregistered, "CreateClusterHandler")
 	}
 
-	if o.GetAPIV1ClustersHandler == nil {
-		unregistered = append(unregistered, "GetAPIV1ClustersHandler")
+	if o.ListAPIVersionsHandler == nil {
+		unregistered = append(unregistered, "ListAPIVersionsHandler")
 	}
 
-	if o.GetAPIV1ClustersNameHandler == nil {
-		unregistered = append(unregistered, "GetAPIV1ClustersNameHandler")
+	if o.ListClustersHandler == nil {
+		unregistered = append(unregistered, "ListClustersHandler")
 	}
 
-	if o.PostAPIV1ClustersHandler == nil {
-		unregistered = append(unregistered, "PostAPIV1ClustersHandler")
+	if o.ShowClusterHandler == nil {
+		unregistered = append(unregistered, "ShowClusterHandler")
 	}
 
 	if len(unregistered) > 0 {
@@ -181,7 +183,9 @@ func (o *KubernikusAPI) AuthenticatorsFor(schemes map[string]spec.SecurityScheme
 
 		case "keystone":
 
-			result[name] = security.APIKeyAuth(scheme.Name, scheme.In, o.KeystoneAuth)
+			result[name] = security.APIKeyAuth(scheme.Name, scheme.In, func(token string) (interface{}, error) {
+				return o.KeystoneAuth(token)
+			})
 
 		}
 	}
@@ -253,25 +257,25 @@ func (o *KubernikusAPI) initHandlerCache() {
 		o.handlers = make(map[string]map[string]http.Handler)
 	}
 
-	if o.handlers["GET"] == nil {
-		o.handlers["GET"] = make(map[string]http.Handler)
-	}
-	o.handlers["GET"]["/api"] = NewGetAPI(o.context, o.GetAPIHandler)
-
-	if o.handlers["GET"] == nil {
-		o.handlers["GET"] = make(map[string]http.Handler)
-	}
-	o.handlers["GET"]["/api/v1/clusters"] = NewGetAPIV1Clusters(o.context, o.GetAPIV1ClustersHandler)
-
-	if o.handlers["GET"] == nil {
-		o.handlers["GET"] = make(map[string]http.Handler)
-	}
-	o.handlers["GET"]["/api/v1/clusters/{name}"] = NewGetAPIV1ClustersName(o.context, o.GetAPIV1ClustersNameHandler)
-
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
-	o.handlers["POST"]["/api/v1/clusters"] = NewPostAPIV1Clusters(o.context, o.PostAPIV1ClustersHandler)
+	o.handlers["POST"]["/api/v1/clusters"] = NewCreateCluster(o.context, o.CreateClusterHandler)
+
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/api"] = NewListAPIVersions(o.context, o.ListAPIVersionsHandler)
+
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/api/v1/clusters"] = NewListClusters(o.context, o.ListClustersHandler)
+
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/api/v1/clusters/{name}"] = NewShowCluster(o.context, o.ShowClusterHandler)
 
 }
 

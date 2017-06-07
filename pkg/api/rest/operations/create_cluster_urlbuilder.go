@@ -9,15 +9,15 @@ import (
 	golangswaggerpaths "path"
 )
 
-// GetAPIV1ClustersURL generates an URL for the get API v1 clusters operation
-type GetAPIV1ClustersURL struct {
+// CreateClusterURL generates an URL for the create cluster operation
+type CreateClusterURL struct {
 	_basePath string
 }
 
 // WithBasePath sets the base path for this url builder, only required when it's different from the
 // base path specified in the swagger spec.
 // When the value of the base path is an empty string
-func (o *GetAPIV1ClustersURL) WithBasePath(bp string) *GetAPIV1ClustersURL {
+func (o *CreateClusterURL) WithBasePath(bp string) *CreateClusterURL {
 	o.SetBasePath(bp)
 	return o
 }
@@ -25,12 +25,12 @@ func (o *GetAPIV1ClustersURL) WithBasePath(bp string) *GetAPIV1ClustersURL {
 // SetBasePath sets the base path for this url builder, only required when it's different from the
 // base path specified in the swagger spec.
 // When the value of the base path is an empty string
-func (o *GetAPIV1ClustersURL) SetBasePath(bp string) {
+func (o *CreateClusterURL) SetBasePath(bp string) {
 	o._basePath = bp
 }
 
 // Build a url path and query string
-func (o *GetAPIV1ClustersURL) Build() (*url.URL, error) {
+func (o *CreateClusterURL) Build() (*url.URL, error) {
 	var result url.URL
 
 	var _path = "/api/v1/clusters/"
@@ -42,7 +42,7 @@ func (o *GetAPIV1ClustersURL) Build() (*url.URL, error) {
 }
 
 // Must is a helper function to panic when the url builder returns an error
-func (o *GetAPIV1ClustersURL) Must(u *url.URL, err error) *url.URL {
+func (o *CreateClusterURL) Must(u *url.URL, err error) *url.URL {
 	if err != nil {
 		panic(err)
 	}
@@ -53,17 +53,17 @@ func (o *GetAPIV1ClustersURL) Must(u *url.URL, err error) *url.URL {
 }
 
 // String returns the string representation of the path with query string
-func (o *GetAPIV1ClustersURL) String() string {
+func (o *CreateClusterURL) String() string {
 	return o.Must(o.Build()).String()
 }
 
 // BuildFull builds a full url with scheme, host, path and query string
-func (o *GetAPIV1ClustersURL) BuildFull(scheme, host string) (*url.URL, error) {
+func (o *CreateClusterURL) BuildFull(scheme, host string) (*url.URL, error) {
 	if scheme == "" {
-		return nil, errors.New("scheme is required for a full url on GetAPIV1ClustersURL")
+		return nil, errors.New("scheme is required for a full url on CreateClusterURL")
 	}
 	if host == "" {
-		return nil, errors.New("host is required for a full url on GetAPIV1ClustersURL")
+		return nil, errors.New("host is required for a full url on CreateClusterURL")
 	}
 
 	base, err := o.Build()
@@ -77,6 +77,6 @@ func (o *GetAPIV1ClustersURL) BuildFull(scheme, host string) (*url.URL, error) {
 }
 
 // StringFull returns the string representation of a complete url
-func (o *GetAPIV1ClustersURL) StringFull(scheme, host string) string {
+func (o *CreateClusterURL) StringFull(scheme, host string) string {
 	return o.Must(o.BuildFull(scheme, host)).String()
 }

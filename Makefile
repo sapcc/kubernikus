@@ -31,7 +31,7 @@ push:
 
 pkg/api/rest/operations/kubernikus_api.go: swagger.yml
 	swagger generate server --name kubernikus --target pkg/api --model-package models \
-		--server-package rest --flag-strategy pflag --exclude-main
+		--server-package rest --flag-strategy pflag --principal models.Principal --exclude-main
 
 swagger-generate:
 	make -B pkg/api/rest/operations/kubernikus_api.go
