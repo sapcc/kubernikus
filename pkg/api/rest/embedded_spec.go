@@ -59,6 +59,9 @@ func init() {
                 "$ref": "#/definitions/Cluster"
               }
             }
+          },
+          "default": {
+            "$ref": "#/responses/errorResponse"
           }
         }
       },
@@ -86,6 +89,9 @@ func init() {
             "schema": {
               "$ref": "#/definitions/Cluster"
             }
+          },
+          "default": {
+            "$ref": "#/responses/errorResponse"
           }
         }
       }
@@ -105,6 +111,9 @@ func init() {
             "schema": {
               "$ref": "#/definitions/Cluster"
             }
+          },
+          "default": {
+            "$ref": "#/responses/errorResponse"
           }
         }
       },
@@ -165,6 +174,41 @@ func init() {
             "type": "string"
           }
         }
+      }
+    },
+    "error": {
+      "description": "the error model is a model for all the error responses coming from kvstore\n",
+      "type": "object",
+      "required": [
+        "message",
+        "code"
+      ],
+      "properties": {
+        "cause": {
+          "$ref": "#/definitions/error"
+        },
+        "code": {
+          "description": "The error code",
+          "type": "integer",
+          "format": "int64"
+        },
+        "helpUrl": {
+          "description": "link to help page explaining the error in more detail",
+          "type": "string",
+          "format": "uri"
+        },
+        "message": {
+          "description": "The error message",
+          "type": "string"
+        }
+      }
+    }
+  },
+  "responses": {
+    "errorResponse": {
+      "description": "Error",
+      "schema": {
+        "$ref": "#/definitions/error"
       }
     }
   },

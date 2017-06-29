@@ -15,7 +15,6 @@ var authURL string
 
 func init() {
 	flag.StringVar(&authURL, "auth-url", "", "Openstack identity v3 auth url")
-
 }
 
 func keystoneAuth() func(token string) (*models.Principal, error) {

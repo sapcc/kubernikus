@@ -1,12 +1,13 @@
 package main
 
 import (
+	goflag "flag"
 	"fmt"
 	"log"
 	"os"
 
 	loads "github.com/go-openapi/loads"
-	flag "github.com/spf13/pflag"
+	"github.com/spf13/pflag"
 
 	"github.com/sapcc/kubernikus/pkg/api/rest"
 	"github.com/sapcc/kubernikus/pkg/api/rest/operations"
@@ -24,7 +25,7 @@ func main() {
 
 	var server *rest.Server // make sure init is called
 
-	flag.Usage = func() {
+	pflag.Usage = func() {
 		fmt.Fprint(os.Stderr, "Usage:\n")
 		fmt.Fprint(os.Stderr, "  kubernikus-apiserver [OPTIONS]\n\n")
 
@@ -34,10 +35,15 @@ func main() {
 		if desc != "" {
 			fmt.Fprintf(os.Stderr, desc+"\n\n")
 		}
-		fmt.Fprintln(os.Stderr, flag.CommandLine.FlagUsages())
+		fmt.Fprintln(os.Stderr, pflag.CommandLine.FlagUsages())
 	}
 	// parse the CLI flags
-	flag.Parse()
+	if f := goflag.Lookup("logtostderr"); f != nil {
+		f.Value.Set("true") // log to stderr by default
+	}
+	pflag.CommandLine.AddGoFlagSet(goflag.CommandLine) //slurp in glog flags
+	pflag.Parse()
+	goflag.CommandLine.Parse([]string{}) //https://github.com/kubernetes/kubernetes/issues/17162
 
 	api := operations.NewKubernikusAPI(swaggerSpec)
 	// get server with flag values filled out

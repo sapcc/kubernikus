@@ -53,3 +53,61 @@ func (o *ShowClusterOK) WriteResponse(rw http.ResponseWriter, producer runtime.P
 		}
 	}
 }
+
+/*ShowClusterDefault Error
+
+swagger:response showClusterDefault
+*/
+type ShowClusterDefault struct {
+	_statusCode int
+
+	/*
+	  In: Body
+	*/
+	Payload *models.Error `json:"body,omitempty"`
+}
+
+// NewShowClusterDefault creates ShowClusterDefault with default headers values
+func NewShowClusterDefault(code int) *ShowClusterDefault {
+	if code <= 0 {
+		code = 500
+	}
+
+	return &ShowClusterDefault{
+		_statusCode: code,
+	}
+}
+
+// WithStatusCode adds the status to the show cluster default response
+func (o *ShowClusterDefault) WithStatusCode(code int) *ShowClusterDefault {
+	o._statusCode = code
+	return o
+}
+
+// SetStatusCode sets the status to the show cluster default response
+func (o *ShowClusterDefault) SetStatusCode(code int) {
+	o._statusCode = code
+}
+
+// WithPayload adds the payload to the show cluster default response
+func (o *ShowClusterDefault) WithPayload(payload *models.Error) *ShowClusterDefault {
+	o.Payload = payload
+	return o
+}
+
+// SetPayload sets the payload to the show cluster default response
+func (o *ShowClusterDefault) SetPayload(payload *models.Error) {
+	o.Payload = payload
+}
+
+// WriteResponse to the client
+func (o *ShowClusterDefault) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
+
+	rw.WriteHeader(o._statusCode)
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
+	}
+}

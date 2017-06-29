@@ -14,7 +14,12 @@ securityDefinitions:
     name: x-auth-token
 
 security: []
-  
+
+responses:
+  errorResponse:
+    description: Error
+    schema:
+      $ref: '#/definitions/error'
 paths:
   /api/:
     get:
@@ -33,11 +38,13 @@ paths:
       summary: List available clusters
       responses:
         200:
-          description: OK 
+          description: OK
           schema:
             type: array
             items:
               $ref: '#/definitions/Cluster'
+        default:
+          $ref: "#/responses/errorResponse"
       security:
         - keystone: []
     post:
@@ -48,6 +55,8 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/Cluster'
+        default:
+          $ref: "#/responses/errorResponse"
       parameters:
         - name: body
           in: body
@@ -62,10 +71,12 @@ paths:
       operationId: ShowCluster
       summary: Show the specified cluser
       responses:
-        200: 
+        200:
           description: OK
           schema:
             $ref: '#/definitions/Cluster'
+        default:
+          $ref: "#/responses/errorResponse"
       security:
         - keystone: []
     parameters:
@@ -105,7 +116,27 @@ definitions:
           type: string
         roles:
           description: list of roles the user has in the given scope 
-          type: array 
+          type: array
           items:
             type: string
-
+  error:
+    description: |
+      the error model is a model for all the error responses coming from kvstore
+    type: object
+    required:
+      - message
+      - code
+    properties:
+      code:
+        type: integer
+        format: int64
+        description: The error code
+      message:
+        description: The error message
+        type: string
+      helpUrl:
+        description: link to help page explaining the error in more detail
+        type: string
+        format: uri
+      cause:
+        $ref: '#/definitions/error'

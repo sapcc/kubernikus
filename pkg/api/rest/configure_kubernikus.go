@@ -2,13 +2,16 @@ package rest
 
 import (
 	"crypto/tls"
+	"fmt"
 	"net/http"
 
 	errors "github.com/go-openapi/errors"
 	runtime "github.com/go-openapi/runtime"
 	middleware "github.com/go-openapi/runtime/middleware"
+	"github.com/golang/glog"
 	graceful "github.com/tylerb/graceful"
 
+	apipkg "github.com/sapcc/kubernikus/pkg/api"
 	"github.com/sapcc/kubernikus/pkg/api/handlers"
 	"github.com/sapcc/kubernikus/pkg/api/rest/operations"
 )
@@ -29,7 +32,9 @@ func configureAPI(api *operations.KubernikusAPI) http.Handler {
 	// Expected interface func(string, ...interface{})
 	//
 	// Example:
-	// s.api.Logger = log.Printf
+	api.Logger = func(msg string, args ...interface{}) {
+		glog.InfoDepth(2, fmt.Sprintf(msg, args...))
+	}
 
 	api.JSONConsumer = runtime.JSONConsumer()
 
@@ -38,8 +43,13 @@ func configureAPI(api *operations.KubernikusAPI) http.Handler {
 	// Applies when the "x-auth-token" header is set
 	api.KeystoneAuth = keystoneAuth()
 
-	api.ListAPIVersionsHandler = operations.ListAPIVersionsHandlerFunc(handlers.ListAPIVersions)
-	api.ListClustersHandler = operations.ListClustersHandlerFunc(handlers.ListClusters)
+	rt := &apipkg.Runtime{}
+	rt.Client, rt.TPRClient, rt.TPRScheme = NewKubeClient()
+
+	api.ListAPIVersionsHandler = handlers.NewListAPIVersions(rt)
+	api.ListClustersHandler = handlers.NewListClusters(rt)
+	api.CreateClusterHandler = handlers.NewCreateCluster(rt)
+	api.ShowClusterHandler = handlers.NewShowCluster(rt)
 
 	api.ServerShutdown = func() {}
 
