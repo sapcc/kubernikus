@@ -17,6 +17,6 @@ type listAPIVersions struct {
 
 func (d *listAPIVersions) Handle(params operations.ListAPIVersionsParams) middleware.Responder {
 	return operations.NewListAPIVersionsOK().WithPayload(
-		models.APIVersions{Versions: []string{"v1"}},
+		&models.APIVersions{Versions: []string{"v1"}},
 	)
 }
