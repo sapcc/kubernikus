@@ -4,11 +4,13 @@ import (
 	"crypto/tls"
 	"fmt"
 	"net/http"
+	"os"
 
 	errors "github.com/go-openapi/errors"
 	runtime "github.com/go-openapi/runtime"
 	middleware "github.com/go-openapi/runtime/middleware"
 	"github.com/golang/glog"
+	gmiddleware "github.com/gorilla/handlers"
 	graceful "github.com/tylerb/graceful"
 
 	apipkg "github.com/sapcc/kubernikus/pkg/api"
@@ -77,5 +79,5 @@ func setupMiddlewares(handler http.Handler) http.Handler {
 // The middleware configuration happens before anything, this middleware also applies to serving the swagger.json document.
 // So this is a good place to plug in a panic handling middleware, logging and metrics
 func setupGlobalMiddleware(handler http.Handler) http.Handler {
-	return handlers.RootHandler(handler)
+	return gmiddleware.LoggingHandler(os.Stdout, handlers.RootHandler(handler))
 }
