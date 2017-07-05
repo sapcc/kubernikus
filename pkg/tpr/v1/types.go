@@ -24,9 +24,10 @@ type Kluster struct {
 type KlusterState string
 
 const (
-	KlusterPending KlusterState = "Pending"
-	KlusterCreated KlusterState = "Created"
-	klusterError   KlusterState = "Error"
+	KlusterPending  KlusterState = "Pending"
+	KlusterCreating KlusterState = "Creating"
+	KlusterCreated  KlusterState = "Created"
+	KlusterError    KlusterState = "Error"
 )
 
 type KlusterStatus struct {

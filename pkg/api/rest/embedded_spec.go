@@ -149,6 +149,10 @@ func init() {
         "name": {
           "description": "name of the cluster",
           "type": "string"
+        },
+        "status": {
+          "description": "status of the cluster",
+          "type": "string"
         }
       }
     },

@@ -7,6 +7,7 @@ import (
 	"github.com/sapcc/kubernikus/pkg/api/models"
 	"github.com/sapcc/kubernikus/pkg/api/rest/operations"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	tprv1 "github.com/sapcc/kubernikus/pkg/tpr/v1"
 )
@@ -21,13 +22,19 @@ type createCluster struct {
 
 func (d *createCluster) Handle(params operations.CreateClusterParams, principal *models.Principal) middleware.Responder {
 	kluster := &tprv1.Kluster{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:        params.Body.Name,
+			Labels:      map[string]string{"account": principal.Account},
+			Annotations: map[string]string{"creator": principal.Name},
+		},
 		Spec: tprv1.KlusterSpec{
 			Name:    params.Body.Name,
 			Account: principal.Account,
 		},
+		Status: tprv1.KlusterStatus{
+			State: tprv1.KlusterPending,
+		},
 	}
-	kluster.SetLabels(map[string]string{"account": principal.Account})
-	kluster.SetName(params.Body.Name)
 
 	if err := d.rt.TPRClient.Post().Namespace("kubernikus").Resource(tprv1.KlusterResourcePlural).Body(kluster).Do().Error(); err != nil {
 		glog.Errorf("Failed to create cluster: %s", err)

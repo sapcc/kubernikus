@@ -15,6 +15,9 @@ type Cluster struct {
 
 	// name of the cluster
 	Name string `json:"name,omitempty"`
+
+	// status of the cluster
+	Status string `json:"status,omitempty"`
 }
 
 // Validate validates this cluster
