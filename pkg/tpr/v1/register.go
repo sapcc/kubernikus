@@ -4,6 +4,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/client-go/pkg/api"
 )
 
 var (
@@ -28,7 +29,8 @@ func addKnownTypes(scheme *runtime.Scheme) error {
 		&Kluster{},
 		&KlusterList{},
 	)
-	//scheme.AddUnversionedTypes(api.Unversioned, &metav1.Status{})
+	//This can go when we move to a go-client containing this: https://github.com/kubernetes/kubernetes/pull/46112
+	scheme.AddUnversionedTypes(api.Unversioned, &metav1.Status{})
 	metav1.AddToGroupVersion(scheme, SchemeGroupVersion)
 	return nil
 }
