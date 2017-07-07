@@ -2,7 +2,7 @@ package: github.com/sapcc/kubernikus
 import:
 - package: github.com/spf13/cobra/cobra
 - package: k8s.io/client-go
-  version: v3.0.0-beta.0
+  version: release-4.0 
 - package: github.com/kennygrant/sanitize
 # k8s.io/client-go carries some outdated depencencies in its Godeps.json
 # that don't fly with swagger.
