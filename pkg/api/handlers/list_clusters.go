@@ -19,7 +19,7 @@ type listClusters struct {
 
 func (d *listClusters) Handle(params operations.ListClustersParams, principal *models.Principal) middleware.Responder {
 	clusterList := tprv1.KlusterList{}
-	if err := d.rt.TPRClient.Get().Namespace("kubernikus").Resource(tprv1.KlusterResourcePlural).LabelsSelectorParam(accountSelector(principal)).Do().Into(&clusterList); err != nil {
+	if err := d.rt.Clients.TPRClient().Get().Namespace("kubernikus").Resource(tprv1.KlusterResourcePlural).LabelsSelectorParam(accountSelector(principal)).Do().Into(&clusterList); err != nil {
 		return operations.NewListClustersDefault(500).WithPayload(modelsError(err))
 	}
 

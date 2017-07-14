@@ -36,7 +36,7 @@ func (d *createCluster) Handle(params operations.CreateClusterParams, principal 
 		},
 	}
 
-	if err := d.rt.TPRClient.Post().Namespace("kubernikus").Resource(tprv1.KlusterResourcePlural).Body(kluster).Do().Error(); err != nil {
+	if err := d.rt.Clients.TPRClient().Post().Namespace("kubernikus").Resource(tprv1.KlusterResourcePlural).Body(kluster).Do().Error(); err != nil {
 		glog.Errorf("Failed to create cluster: %s", err)
 		if apierrors.IsAlreadyExists(err) {
 			return operations.NewCreateClusterDefault(409).WithPayload(modelsError(err))

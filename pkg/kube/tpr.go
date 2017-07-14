@@ -16,7 +16,7 @@ import (
 	tprv1 "github.com/sapcc/kubernikus/pkg/tpr/v1"
 )
 
-func NewTPRClient(cfg *rest.Config) (*rest.RESTClient, *runtime.Scheme, error) {
+func newTPRClient(cfg *rest.Config) (*rest.RESTClient, *runtime.Scheme, error) {
 	scheme := runtime.NewScheme()
 	if err := tprv1.AddToScheme(scheme); err != nil {
 		return nil, nil, err
@@ -36,7 +36,7 @@ func NewTPRClient(cfg *rest.Config) (*rest.RESTClient, *runtime.Scheme, error) {
 	return client, scheme, nil
 }
 
-func EnsureTPR(clientset kubernetes.Interface) error {
+func ensureTPR(clientset kubernetes.Interface) error {
 	tpr := &v1beta1.ThirdPartyResource{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: "kluster." + tprv1.GroupName,
@@ -54,7 +54,7 @@ func EnsureTPR(clientset kubernetes.Interface) error {
 	return nil
 }
 
-func WaitForTPR(client *rest.RESTClient) error {
+func waitForTPR(client *rest.RESTClient) error {
 	return wait.Poll(100*time.Millisecond, 30*time.Second, func() (bool, error) {
 		_, err := client.Get().Namespace(apiv1.NamespaceDefault).Resource(tprv1.KlusterResourcePlural).DoRaw()
 		if err == nil {

@@ -1,10 +1,8 @@
 package rest
 
 import (
+	"github.com/golang/glog"
 	"github.com/spf13/pflag"
-	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/rest"
 
 	"github.com/sapcc/kubernikus/pkg/kube"
 )
@@ -15,6 +13,10 @@ func init() {
 	pflag.StringVar(&kubeconfig, "kubeconfig", "", "Path to kubeconfig file with authorization information")
 }
 
-func NewKubeClient() (*kubernetes.Clientset, *rest.RESTClient, *runtime.Scheme) {
-	return kube.NewClients(kube.Options{ConfigFile: kubeconfig})
+func NewKubeClients() *kube.ClientCache {
+	clients, err := kube.NewClientCache(kube.Options{ConfigFile: kubeconfig})
+	if err != nil {
+		glog.Fatal("Failed to create kubernetes clients: %s", err)
+	}
+	return clients
 }
