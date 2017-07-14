@@ -13,6 +13,7 @@ openstack: {}
   #password:
   #domainName:
   #projectName:
+  #projectID:
   #region:
   #lbSubnetID:
   #routerID:

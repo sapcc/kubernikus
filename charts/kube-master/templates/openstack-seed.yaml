@@ -1,0 +1,19 @@
+{{/* vim: set filetype=gotexttmpl: */ -}}
+apiVersion: "openstack.stable.sap.cc/v1"
+kind: "OpenstackSeed"
+metadata:
+  name: technical-user-seed
+spec:
+  requires:
+  - monsoon3/domain-default-seed
+  domains:
+  - name: {{ required "missing openstack.domainName" .Values.openstack.domainName }}
+    users:
+    - name: {{ required "missing openstack.username" .Values.openstack.username }}
+      description: "Kubernikus technical user for {{ .Values.openstack.projectDomainName }}/{{ .Values.openstack.projectName }}"
+      password: {{ required "missing openstack.password" .Values.openstack.password }}
+      roles:
+      - project: {{ required "missing projectName" .Values.openstack.projectName }}@{{ required "missing openstack.projectDomainName}" .Values.openstack.projectDomainName }}
+        role: member
+      - project: {{ .Values.openstack.projectName }}@{{ .Values.openstack.projectDomainName }}
+        role: network_admin

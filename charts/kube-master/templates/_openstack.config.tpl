@@ -1,11 +1,15 @@
 {{/* vim: set filetype=gotexttmpl: */ -}}
 [Global]
 auth-url = {{ required "missing openstack.authURL" .Values.openstack.authURL }}
-username = {{ required "missing openstack.username" .Values.openstack.username }} 
-password = {{ required "missing openstack.password" .Values.openstack.password }} 
-domain-name = {{ required "missing openstack.domainName" .Values.openstack.domainName }} 
-tenant-name = {{ required "missing openstack.projectName" .Values.openstack.projectName }} 
-region = {{ required "missing openstack.region" .Values.openstack.region }} 
+username = {{ required "missing openstack.username" .Values.openstack.username }}
+password = {{ required "missing openstack.password" .Values.openstack.password }}
+domain-name = {{ required "missing openstack.domainName" .Values.openstack.domainName }}
+{{- if .Values.openstack.projectID }}
+tenant-id = {{ required "missing openstack.projectID" .Values.openstack.projectID  }}
+{{- else }}
+tenant-name = {{ required "missing openstack.projectName" .Values.openstack.projectName }}
+{{- end }}
+region = {{ required "missing openstack.region" .Values.openstack.region }}
 [LoadBalancer]
 lb-version=v2
 subnet-id= {{ required "missing openstack.loadBalanderSubnetID" .Values.openstack.loadBalancerSubnetID }}
