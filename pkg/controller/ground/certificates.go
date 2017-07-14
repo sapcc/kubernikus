@@ -5,10 +5,14 @@ import (
 	"crypto/rsa"
 	"crypto/x509"
 	"crypto/x509/pkix"
+	"fmt"
 	"math"
 	"math/big"
 	"net"
+	"strings"
 	"time"
+
+	"github.com/kennygrant/sanitize"
 
 	certutil "k8s.io/client-go/util/cert"
 )
@@ -56,9 +60,42 @@ type Certificates struct {
 	}
 }
 
+func (c *Certificates) MarshalYAML() (interface{}, error) {
+	bundles := c.all()
+	result := make(map[string]string, len(bundles)*2)
+	for _, bundle := range bundles {
+		result[bundle.NameForCert()] = string(certutil.EncodeCertPEM(bundle.Certificate))
+		result[bundle.NameForKey()] = string(certutil.EncodePrivateKeyPEM(bundle.PrivateKey))
+	}
+
+	return result, nil
+}
+
 type Bundle struct {
 	Certificate *x509.Certificate
 	PrivateKey  *rsa.PrivateKey
+}
+
+func (b *Bundle) basename() string {
+	stem := ""
+	suffix := ""
+
+	if b.Certificate.IsCA {
+		stem = b.Certificate.Subject.CommonName
+		suffix = "ca"
+	} else {
+		stem = b.Certificate.Issuer.CommonName
+		suffix = b.Certificate.Subject.CommonName
+	}
+
+	return sanitize.BaseName(strings.ToLower(fmt.Sprintf("%s-%s", stem, suffix)))
+}
+
+func (b *Bundle) NameForKey() string {
+	return fmt.Sprintf("%s-key.pem", b.basename())
+}
+func (b *Bundle) NameForCert() string {
+	return fmt.Sprintf("%s.pem", b.basename())
 }
 
 type Config struct {

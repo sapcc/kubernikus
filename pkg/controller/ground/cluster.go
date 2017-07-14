@@ -1,7 +1,25 @@
 package ground
 
 type Cluster struct {
-	Certificates *Certificates
+	Certificates *Certificates `yaml:"certs"`
+	API          API           `yaml:"api,omitempty"`
+	OpenStack    OpenStack
+}
+
+type API struct {
+	IngressHost string `yaml:"ingressHost,omitempty"`
+}
+
+type OpenStack struct {
+	AuthURL     string `yaml:"authURL"`
+	Username    string
+	Password    string
+	DomainName  string `yaml:"domainName"`
+	ProjectName string `yaml:"projectName"`
+	ProjectID   string `yaml:"projectID,omitempty"`
+	Region      string
+	LBSubnetID  string `yaml:"lbSubnetID,omitempty"`
+	RouterID    string `yaml:"routerID,omitempty"`
 }
 
 func NewCluster(name string) (*Cluster, error) {

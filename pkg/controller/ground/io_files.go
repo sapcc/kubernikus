@@ -10,7 +10,6 @@ import (
 )
 
 type FilePersister struct {
-	BasePersister
 	BaseDir string
 }
 
@@ -48,11 +47,11 @@ func (fp FilePersister) writeToFiles(b Bundle) error {
 }
 
 func (fp FilePersister) pathForCert(b Bundle) string {
-	return path.Join(fp.basedir(b), fp.nameForCert(b))
+	return path.Join(fp.basedir(b), b.NameForCert())
 }
 
 func (fp FilePersister) pathForKey(b Bundle) string {
-	return path.Join(fp.basedir(b), fp.nameForKey(b))
+	return path.Join(fp.basedir(b), b.NameForKey())
 }
 
 func (fp FilePersister) basedir(b Bundle) string {

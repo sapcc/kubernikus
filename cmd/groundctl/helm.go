@@ -4,6 +4,8 @@ import (
 	"errors"
 	"fmt"
 
+	yaml "gopkg.in/yaml.v2"
+
 	"github.com/sapcc/kubernikus/pkg/controller/ground"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -13,14 +15,12 @@ func init() {
 	RootCmd.AddCommand(helmCmd)
 
 	helmCmd.Flags().String("name", "", "Name of the satellite cluster")
-	viper.BindPFlag("name", certificatesCmd.Flags().Lookup("name"))
+	viper.BindPFlag("name", helmCmd.Flags().Lookup("name"))
 }
 
 var helmCmd = &cobra.Command{
 	Use: "values --name NAME",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		var result = ""
-
 		err := validateHelmInputs()
 		if err != nil {
 			return err
@@ -31,12 +31,12 @@ var helmCmd = &cobra.Command{
 			return err
 		}
 
-		err = cluster.WriteConfig(ground.NewHelmValuePersister(&result))
+		result, err := yaml.Marshal(cluster)
 		if err != nil {
 			return err
 		}
 
-		fmt.Println(result)
+		fmt.Println(string(result))
 
 		return nil
 	},
