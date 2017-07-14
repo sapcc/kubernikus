@@ -4,6 +4,8 @@ import:
 - package: k8s.io/client-go
   version: release-4.0 
 - package: github.com/kennygrant/sanitize
+- package: k8s.io/helm
+  version: v2.5.0
 # k8s.io/client-go carries some outdated depencencies in its Godeps.json
 # that don't fly with swagger.
 # We don't import these dependencies via the go-client so this should be ok
