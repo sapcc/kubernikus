@@ -2,9 +2,10 @@
 apiVersion: "extensions/v1beta1"
 kind: Deployment
 metadata:
-  name: apiserver
+  name: {{ include "master.fullname" . }}-apiserver
   labels:
     chart: "{{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}"
+    release: {{ .Release.Name }}
 spec:
   revisionHistoryLimit: {{ .Values.revisionHistoryLimit }}
   replicas: {{ .Values.api.replicaCount }}
@@ -12,10 +13,14 @@ spec:
     rollingUpdate:
       maxUnavailable: {{ if eq (toString .Values.api.replicaCount) "1" }}0{{else}}1{{end}}
       maxSurge: 1
+  selector:
+    matchLabels:
+      app: {{ include "master.fullname" . }}-apiserver
   template:
     metadata:
       labels:
-        app: apiserver
+        app: {{ include "master.fullname" . }}-apiserver
+        release: {{ .Release.Name }}
       annotations:
         checksum/secrets: {{ include (print $.Template.BasePath "/secrets.yaml") . | sha256sum }}
         checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
@@ -23,12 +28,12 @@ spec:
       volumes:
         - name: certs
           secret:
-            secretName: {{ .Values.certsSecretName }}
+            secretName: {{ .Values.certsSecretName | default (include "master.fullname" .) }}
             items:
 {{- include "certItemsFromFlags" .Values.api.flags |indent 14 }}
         - name: cloudprovider
           secret:
-            secretName: secrets
+            secretName: {{ include "master.fullname" . }}
             items:
               - key: openstack.config
                 path: openstack.config
@@ -38,6 +43,7 @@ spec:
           args:
             - /hyperkube
             - apiserver
+            - --etcd-servers=http://{{ include "etcd.fullname" . }}:2379
 {{- range $key, $value := .Values.api.flags }}
             - --{{ $key }}={{ $value -}}
 {{ end }}

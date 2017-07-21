@@ -1,6 +1,8 @@
 package handlers
 
 import (
+	"fmt"
+
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/golang/glog"
 	"github.com/sapcc/kubernikus/pkg/api"
@@ -23,7 +25,7 @@ type createCluster struct {
 func (d *createCluster) Handle(params operations.CreateClusterParams, principal *models.Principal) middleware.Responder {
 	kluster := &tprv1.Kluster{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:        params.Body.Name,
+			Name:        fmt.Sprintf("%s-%s", params.Body.Name, principal.Account),
 			Labels:      map[string]string{"account": principal.Account},
 			Annotations: map[string]string{"creator": principal.Name},
 		},

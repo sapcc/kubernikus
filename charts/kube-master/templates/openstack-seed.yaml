@@ -2,7 +2,11 @@
 apiVersion: "openstack.stable.sap.cc/v1"
 kind: "OpenstackSeed"
 metadata:
-  name: technical-user-seed
+  name: {{ include "master.fullname" . }}-technical-user
+  labels:
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}"
+    release: {{ .Release.Name }}
+
 spec:
   requires:
   - monsoon3/domain-default-seed
@@ -10,10 +14,11 @@ spec:
   - name: {{ required "missing openstack.domainName" .Values.openstack.domainName }}
     users:
     - name: {{ required "missing openstack.username" .Values.openstack.username }}
-      description: "Kubernikus technical user for {{ .Values.openstack.projectDomainName }}/{{ .Values.openstack.projectName }}"
-      password: {{ required "missing openstack.password" .Values.openstack.password }}
+      description: "Kubernikus technical user for cluster {{ include "master.fullname" . }}"
+      password: {{ required "missing openstack.password" .Values.openstack.password | quote }}
+      default_project: {{ required "missing openstack.projectID" .Values.openstack.projectID }}
       roles:
-      - project: {{ required "missing projectName" .Values.openstack.projectName }}@{{ required "missing openstack.projectDomainName}" .Values.openstack.projectDomainName }}
+      - project_id: {{ required "missing openstack.projectID" .Values.openstack.projectID }}
         role: member
-      - project: {{ .Values.openstack.projectName }}@{{ .Values.openstack.projectDomainName }}
+      - project_id: {{ required "missing openstack.projectID" .Values.openstack.projectID }}
         role: network_admin

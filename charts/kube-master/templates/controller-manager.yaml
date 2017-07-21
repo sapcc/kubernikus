@@ -2,9 +2,10 @@
 apiVersion: "extensions/v1beta1"
 kind: Deployment
 metadata:
-  name: controller-manager
+  name: {{ include "master.fullname" . }}-controller-manager
   labels:
     chart: "{{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}"
+    release: {{ .Release.Name }}
 spec:
   revisionHistoryLimit: {{ .Values.revisionHistoryLimit }}
   replicas: {{ .Values.api.replicaCount }}
@@ -12,10 +13,14 @@ spec:
     rollingUpdate:
       maxUnavailable: {{ if eq (toString .Values.api.replicaCount) "1" }}0{{else}}1{{end}}
       maxSurge: 1
+  selector:
+    matchLabels:
+      app: {{ include "master.fullname" . }}-controller-manager
   template:
     metadata:
       labels:
-        app: controller-manager
+        app: {{ include "master.fullname" . }}-controller-manager
+        release: {{ .Release.Name }}
       annotations:
         checksum/secrets: {{ include (print $.Template.BasePath "/secrets.yaml") . | sha256sum }}
         checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
@@ -23,27 +28,27 @@ spec:
       volumes:
         - name: certs
           secret:
-            secretName: {{ .Values.certsSecretName }}
+            secretName: {{ .Values.certsSecretName | default (include "master.fullname" .) }}
             items:
               - key: tls-ca.pem
                 path: tls-ca.pem
-              - key: kube-controller-manager.pem
+              - key: apiserver-clients-system-kube-controller-manager.pem
                 path: kube-client.pem
-              - key: kube-controller-manager.key
+              - key: apiserver-clients-system-kube-controller-manager-key.pem
                 path: kube-client.key
 {{- include "certItemsFromFlags" .Values.controllerManager.flags |indent 14 }}
         - name: config
           configMap:
-            name: config
+            name: {{ include "master.fullname" . }}
         - name: cloudprovider
           secret:
-            secretName: secrets
+            secretName: {{ include "master.fullname" . }}
             items:
               - key: openstack.config
                 path: openstack.config
         - name: openstack-hacks
           configMap:
-            name: openstack-hacks
+            name: {{ include "master.fullname" . }}-openstack-hacks
       containers:
         - name: controller-manager
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
@@ -72,6 +77,9 @@ spec:
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: openstack-hacks
+  name: {{ include "master.fullname" . }}-openstack-hacks
+  labels:
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}"
+    release: {{ .Release.Name }}
 data:
   instance-id: gurkenwurst

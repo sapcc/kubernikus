@@ -148,7 +148,8 @@ func init() {
       "properties": {
         "name": {
           "description": "name of the cluster",
-          "type": "string"
+          "type": "string",
+          "pattern": "^[a-z]([-a-z0-9]*[a-z0-9])?$"
         },
         "status": {
           "description": "status of the cluster",

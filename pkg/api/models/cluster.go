@@ -7,6 +7,8 @@ import (
 	strfmt "github.com/go-openapi/strfmt"
 
 	"github.com/go-openapi/errors"
+	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 )
 
 // Cluster cluster
@@ -14,6 +16,7 @@ import (
 type Cluster struct {
 
 	// name of the cluster
+	// Pattern: ^[a-z]([-a-z0-9]*[a-z0-9])?$
 	Name string `json:"name,omitempty"`
 
 	// status of the cluster
@@ -24,8 +27,26 @@ type Cluster struct {
 func (m *Cluster) Validate(formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.validateName(formats); err != nil {
+		// prop
+		res = append(res, err)
+	}
+
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *Cluster) validateName(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.Name) { // not required
+		return nil
+	}
+
+	if err := validate.Pattern("name", "body", string(m.Name), `^[a-z]([-a-z0-9]*[a-z0-9])?$`); err != nil {
+		return err
+	}
+
 	return nil
 }

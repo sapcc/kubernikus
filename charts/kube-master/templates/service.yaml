@@ -2,12 +2,13 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: apiserver
+  name: {{ include "master.fullname" . }}-apiserver
   labels:
     chart: "{{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}"
+    release: {{ .Release.Name }}
 spec:
   type: ClusterIP
   ports:
   - port: {{ index .Values.api.flags "secure-port" }}
   selector:
-    app: apiserver
+    app: {{ include "master.fullname" . }}-apiserver

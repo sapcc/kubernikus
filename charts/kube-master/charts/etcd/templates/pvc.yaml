@@ -3,10 +3,10 @@
 kind: PersistentVolumeClaim
 apiVersion: v1
 metadata:
-  name: etcd 
+  name: {{ include "fullname" .}}
   labels:
-    app: etcd
     chart: "{{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}"
+    release: {{ .Release.Name }}
   annotations:
   {{- if .Values.persistence.storageClass }}
     volume.beta.kubernetes.io/storage-class: {{ .Values.persistence.storageClass | quote }}

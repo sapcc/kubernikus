@@ -3,21 +3,23 @@
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
-  name: apiserver
+  name: {{ include "master.fullname" . }}
   annotations:
     ingress.kubernetes.io/ssl-passthrough: "true"
   labels:
     chart: "{{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}"
+    release: {{ .Release.Name }}
+
 spec:
   tls:
-     - secretName: apiserver
-       hosts: [{{.Values.api.ingressHost}}]
+     - secretName: {{ include "master.fullname" }}
+       hosts: [{{ .Values.api.ingressHost }}]
   rules:
-    - host: {{.Values.api.ingressHost}}
+    - host: {{ .Values.api.ingressHost }}
       http:
         paths:
         - path: /
           backend:
-            serviceName: apiserver
+            serviceName: {{ include "master.fullname" . }}-apiserver
             servicePort: {{ index .Values.api.flags "secure-port" }}
 {{- end }}

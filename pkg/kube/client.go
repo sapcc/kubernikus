@@ -25,7 +25,7 @@ func NewClientCache(options Options) (*ClientCache, error) {
 	if err != nil {
 		return nil, err
 	}
-	glog.V(3).Infof("Using Kubernetes Api at %s", config)
+	glog.V(3).Infof("Using Kubernetes Api at %s", config.Host)
 	clients := &ClientCache{
 		config:    newClientConfig(options),
 		clientset: clientset,

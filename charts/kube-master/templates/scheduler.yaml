@@ -2,9 +2,11 @@
 apiVersion: "extensions/v1beta1"
 kind: Deployment
 metadata:
-  name: scheduler
+  name: {{ include "master.fullname" . }}-scheduler
   labels:
     chart: "{{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}"
+    kluster: {{ .Release.Name }}
+
 spec:
   revisionHistoryLimit: {{ .Values.revisionHistoryLimit }}
   replicas: {{ .Values.scheduler.replicaCount }}
@@ -12,10 +14,14 @@ spec:
     rollingUpdate:
       maxUnavailable: {{ if eq (toString .Values.api.replicaCount) "1" }}0{{else}}1{{end}}
       maxSurge: 1
+  selector:
+    matchLabels:
+      app: {{ include "master.fullname" . }}-scheduler
   template:
     metadata:
       labels:
-        app: scheduler
+        app: {{ include "master.fullname" . }}-scheduler
+        release: {{ .Release.Name }}
       annotations:
         checksum/secrets: {{ include (print $.Template.BasePath "/secrets.yaml") . | sha256sum }}
         checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
@@ -23,19 +29,17 @@ spec:
       volumes:
         - name: certs
           secret:
-            secretName: {{ .Values.certsSecretName }}
+            secretName: {{ .Values.certsSecretName | default (include "master.fullname" .) }}
             items:
               - key: tls-ca.pem
                 path: tls-ca.pem
-              - key: kube-scheduler.pem
+              - key: apiserver-clients-system-kube-scheduler.pem
                 path: kube-client.pem
-{{- if eq .Values.certsSecretName "secret" }}{{$doof := required "missing cert kube-scheduler.pem" (index .Values.certs "kube-scheduler.pem")}}{{ end }}
-              - key: kube-scheduler.key
+              - key: apiserver-clients-system-kube-scheduler-key.pem
                 path: kube-client.key
-{{- if eq .Values.certsSecretName "secret" }}{{$doof := required "missing cert kube-scheduler.key" (index .Values.certs "kube-scheduler.key")}}{{ end }}
         - name: config
           configMap:
-            name: config
+            name: {{ include "master.fullname" . }}
       containers:
         - name: scheduler
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"

@@ -1,7 +1,11 @@
+{{/* vim: set filetype=gotexttmpl: */ -}}
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: config
+  name: {{ include "master.fullname" . }}
+  labels:
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}"
+    release: {{ .Release.Name }}
 data:
   kubeconfig: |-
     apiVersion: v1

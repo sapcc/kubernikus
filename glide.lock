@@ -1,5 +1,5 @@
 hash: f2f6aff61361abe1c4a581bd428bf3046e02c294fbeed54b6ac33677c44c88a5
-updated: 2017-07-10T13:35:01.357168815+02:00
+updated: 2017-07-20T11:28:38.029058227+02:00
 imports:
 - name: github.com/asaskevich/govalidator
   version: 7664702784775e51966f0885f5cd27435916517b
@@ -79,7 +79,7 @@ imports:
   - proto
   - sortkeys
 - name: github.com/golang/glog
-  version: 23def4e6c14b4da8ac2ed8007337bc5eb5007998
+  version: 44145f04b68cf362d9c4df2182967c2275eaefed
 - name: github.com/golang/protobuf
   version: 4bd1920723d7b7c925de087aa32e2187708897f7
   subpackages:
@@ -88,6 +88,20 @@ imports:
   - ptypes/timestamp
 - name: github.com/google/gofuzz
   version: 44d81051d367757e1c7c6a5a86423ece9afcf63c
+- name: github.com/gophercloud/gophercloud
+  version: fd552c8a657302349c44fde99e1197a9f01a97c6
+  subpackages:
+  - openstack
+  - openstack/identity/v2/tenants
+  - openstack/identity/v2/tokens
+  - openstack/identity/v3/projects
+  - openstack/identity/v3/tokens
+  - openstack/networking/v2/extensions/layer3/routers
+  - openstack/networking/v2/networks
+  - openstack/networking/v2/ports
+  - openstack/networking/v2/subnets
+  - openstack/utils
+  - pagination
 - name: github.com/gorilla/context
   version: 14f550f51af52180c2eefed15e5fd18d63c0a64a
 - name: github.com/gorilla/handlers
@@ -125,6 +139,8 @@ imports:
   - buffer
   - jlexer
   - jwriter
+- name: github.com/Masterminds/goutils
+  version: 3391d3790d23d03408670993e957e8f408993c34
 - name: github.com/Masterminds/semver
   version: 3f0ab6d4ab4bed1c61caf056b63a6e62190c7801
 - name: github.com/mitchellh/mapstructure
@@ -152,7 +168,7 @@ imports:
 - name: github.com/spf13/jwalterweatherman
   version: 0efa5202c04663c757d84f90f5219c1250baf94f
 - name: github.com/spf13/pflag
-  version: b83537d79690b75cac5e021b036ae16792bf0f20
+  version: 9ff6c6923cfffbcd502984b8e0c80539a94968b7
 - name: github.com/spf13/viper
   version: 0967fc9aceab2ce9da34061253ac10fb99bba5b2
 - name: github.com/tylerb/graceful
@@ -269,7 +285,7 @@ imports:
   - third_party/forked/golang/netutil
   - third_party/forked/golang/reflect
 - name: k8s.io/client-go
-  version: df46f7f13b3da19b90b8b4f0d18b8adc6fbf28dc
+  version: 16b0436fa2a29868589e42607394fa291229e392
   subpackages:
   - discovery
   - kubernetes

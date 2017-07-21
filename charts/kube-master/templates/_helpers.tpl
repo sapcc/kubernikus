@@ -10,8 +10,12 @@ Expand the name of the chart.
 Create a default fully qualified app name.
 We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
 */}}
-{{- define "fullname" -}}
-{{- $name := default .Chart.Name .Values.nameOverride -}}
+{{- define "master.fullname" -}}
+{{- .Release.Name | trunc 63 -}}
+{{- end -}}
+
+{{- define "etcd.fullname" -}}
+{{- $name := default "etcd" .Values.etcd.nameOverride -}}
 {{- printf "%s-%s" .Release.Name $name | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 

@@ -11,15 +11,14 @@ type API struct {
 }
 
 type OpenStack struct {
-	AuthURL     string `yaml:"authURL"`
-	Username    string
-	Password    string
-	DomainName  string `yaml:"domainName"`
-	ProjectName string `yaml:"projectName"`
-	ProjectID   string `yaml:"projectID,omitempty"`
-	Region      string
-	LBSubnetID  string `yaml:"lbSubnetID,omitempty"`
-	RouterID    string `yaml:"routerID,omitempty"`
+	AuthURL    string `yaml:"authURL"`
+	Username   string
+	Password   string
+	DomainName string `yaml:"domainName,omitempty"`
+	ProjectID  string `yaml:"projectID,omitempty"`
+	Region     string `yaml:"region,omitempty"`
+	LBSubnetID string `yaml:"lbSubnetID,omitempty"`
+	RouterID   string `yaml:"routerID,omitempty"`
 }
 
 func NewCluster(name string) (*Cluster, error) {

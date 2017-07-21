@@ -2,15 +2,21 @@
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: etcd
+  name: {{ include "fullname" . }}
   labels:
     chart: "{{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}"
+    release: {{ .Release.Name }}
+
 spec:
   replicas: 1
+  selector:
+    matchLabels:
+      app: {{ include "fullname" . }}
   template:
     metadata:
       labels:
-        app: etcd
+        app: {{ include "fullname" . }}
+        release: {{ .Release.Name }}
     spec:
       volumes:
         {{- if false }}
@@ -24,7 +30,7 @@ spec:
         - name: data
           {{- if .Values.persistence.enabled }}
           persistentVolumeClaim:
-            claimName: {{ .Values.persistence.existingClaim | default "etcd" }}
+            claimName: {{ .Values.persistence.existingClaim | default (include "fullname" .) }}
           {{- else }}
           emptyDir: {}
           {{- end }}

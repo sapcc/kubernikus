@@ -43,7 +43,7 @@ func main() {
 	}
 	pflag.CommandLine.AddGoFlagSet(goflag.CommandLine) //slurp in glog flags
 	pflag.Parse()
-	goflag.CommandLine.Parse([]string{}) //https://github.com/kubernetes/kubernetes/issues/17162
+	//goflag.CommandLine.Parse([]string{}) //https://github.com/kubernetes/kubernetes/issues/17162
 
 	api := operations.NewKubernikusAPI(swaggerSpec)
 	// get server with flag values filled out
