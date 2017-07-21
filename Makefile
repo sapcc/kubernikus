@@ -16,6 +16,9 @@ ifneq ($(http_proxy),)
 BUILD_ARGS+= --build-arg http_proxy=$(http_proxy) --build-arg https_proxy=$(https_proxy) --build-arg no_proxy=$(no_proxy)
 endif
 
+HAS_GLIDE := $(shell command -v glide;)
+HAS_SWAGGER := $(shell command -v swagger;)
+
 .PHONY: all clean
 
 all: $(BINARIES:%=bin/$(GOOS)/%)
@@ -30,6 +33,9 @@ push:
 	docker push $(IMAGE):$(VERSION)
 
 pkg/api/rest/operations/kubernikus_api.go: swagger.yml
+ifndef HAS_SWAGGER
+	$(error You need to have go-swagger installed. Run make bootstrap to fix.)
+endif
 	swagger generate server --name kubernikus --target pkg/api --model-package models \
 		--server-package rest --flag-strategy pflag --principal models.Principal --exclude-main
 
@@ -39,3 +45,10 @@ swagger-generate:
 clean:
 	rm -rf bin/*
 
+bootstrap:
+ifndef HAS_GLIDE
+	brew install glide
+endif
+ifndef HAS_SWAGGER
+	brew install go-swagger
+endif
