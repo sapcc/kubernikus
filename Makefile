@@ -26,8 +26,14 @@ all: $(BINARIES:%=bin/$(GOOS)/%)
 bin/%: $(GOFILES) Makefile
 	GOOS=$(*D) GOARCH=amd64 go build $(GOFLAGS) -v -i -o $(@D)/$(@F) ./cmd/$(@F)
 
-build: $(BINARIES:bin/linux/%)
+build: build/docker.tar $(BINARIES:bin/linux/%)
 	docker build $(BUILD_ARGS) -t $(IMAGE):$(VERSION) .
+
+build/docker.tar:
+	make GOOS=linux all
+	wget -O bin/linux/dumb-init https://github.com/Yelp/dumb-init/releases/download/v1.2.0/dumb-init_1.2.0_amd64
+	chmod +x bin/linux/dumb-init
+	( cd bin/linux && tar cf - . ) > bin/linux/docker.tar
 
 push:
 	docker push $(IMAGE):$(VERSION)
