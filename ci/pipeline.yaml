@@ -1,0 +1,34 @@
+resources:
+  - name: kubernikus.git
+    type: git
+    source:
+      uri:    https://github.com/sapcc/kubernikus.git
+      branch: master
+
+  - name: secrets.git
+    type: git
+    source:
+      uri:         git@github.wdf.sap.corp:cc/secrets.git
+      private_key: {{secrets-ssh-key}}
+      branch:      master
+
+jobs:
+  - name: staging
+    serial: true
+    plan:
+      - aggregate:
+        - get: kubernikus.git
+          trigger: true
+        - get: secrets.git
+
+      - task: deploy
+        file: secrets.git/ci/kubernikus/task-helm-upgrade.yaml
+        params:
+          REGION: staging
+          GITHUB_TOKEN: {{github-access-token}}
+
+  # Add new regions above this line, but note that you need to do a
+  # manual `helm install` first. This pipeline can only `helm upgrade`.
+  # When the pipeline is up and running, set the image tag to
+  # `DEFINED_BY_PIPELINE` so that a manual `helm upgrade` fails cleanly
+  # and points the user to the pipeline.
