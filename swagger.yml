@@ -85,6 +85,24 @@ paths:
         name: name
         required: true
         in: path
+    delete:
+      operationId: DeleteCluster
+      summary: Delete the specified cluser
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/Cluster'
+        default:
+          $ref: "#/responses/errorResponse"
+      security:
+        - keystone: []
+    parameters:
+      - uniqueItems: true
+        type: string
+        name: name
+        required: true
+        in: path
 
 definitions:
   ApiVersions:
