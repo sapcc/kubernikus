@@ -30,6 +30,7 @@ build: build/docker.tar $(BINARIES:bin/linux/%)
 	docker build $(BUILD_ARGS) -t $(IMAGE):$(VERSION) .
 
 build/docker.tar:
+	if [ -a bin/linux ]; then rm -r bin/linux; fi;
 	make GOOS=linux all
 	wget -O bin/linux/dumb-init https://github.com/Yelp/dumb-init/releases/download/v1.2.0/dumb-init_1.2.0_amd64
 	chmod +x bin/linux/dumb-init

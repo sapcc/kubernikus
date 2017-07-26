@@ -12,13 +12,79 @@ resources:
       private_key: {{secrets-ssh-key}}
       branch:      master
 
+  - name: kubernikus.version
+    type: time-version-resource
+
+resource_types:
+  - name: time-version-resource
+    type: docker-image
+    source:
+      repository: hub.global.cloud.sap/concourse/time-version-resource
+
+image_resource: &monsoon-pipeline
+  image_resource:
+    type: docker-image
+    source:
+      repository: hub.global.cloud.sap/monsoon/monsoon-pipeline
+      tag: '1.8.4'
+
 jobs:
+  - name: build
+    serial: true
+    plan:
+      - aggregate:
+        - get: kubernikus.git
+          trigger: true
+        - get: kubernikus.version
+
+      - task: build
+        privileged: true
+        config:
+          platform: 'linux'
+          <<: *monsoon-pipeline
+          inputs:
+            - name: kubernikus.git
+            - name: kubernikus.version
+          run:
+            path: /bin/bash
+            dir:  kubernikus.git
+            args:
+              - -c
+              - |
+                set -ex
+                export TZ=UTC
+                source /tasks/common.sh
+                set -uo pipefail
+                IMAGE=sapcc/kubernikus:$(cat ../kubernikus.version/version)
+                docker login -e="." -u="$DOCKER_SAPCC_USER" -p="$DOCKER_SAPCC_PW" hub.docker.com
+                # patch the upstream Dockerfile to add SAP CAs
+                cat >>Dockerfile <<-EOF
+                RUN apk add --update wget ca-certificates && \
+                    wget -O /usr/local/share/ca-certificates/SAP_Global_Root_CA.crt http://aia.pki.co.sap.com/aia/SAP%20Global%20Root%20CA.crt && \
+                    wget -O /usr/local/share/ca-certificates/SAP_Global_Sub_CA_02.crt http://aia.pki.co.sap.com/aia/SAP%20Global%20Sub%20CA%2002.crt && \
+                    wget -O /usr/local/share/ca-certificates/SAP_Global_Sub_CA_04.crt http://aia.pki.co.sap.com/aia/SAP%20Global%20Sub%20CA%2004.crt && \
+                    wget -O /usr/local/share/ca-certificates/SAP_Global_Sub_CA_05.crt http://aia.pki.co.sap.com/aia/SAP%20Global%20Sub%20CA%2005.crt && \
+                    wget -O /usr/local/share/ca-certificates/SAPNetCA_G2.crt http://aia.pki.co.sap.com/aia/SAPNetCA_G2.crt && \
+                    update-ca-certificates && apk del wget
+                EOF
+                yum -y install gcc glibc-static
+                # cannot just `yum install go` because go-1.6 from the repo is too old
+                curl https://storage.googleapis.com/golang/go1.8.linux-amd64.tar.gz | ( cd /usr/local && tar xzf - )
+                export PATH=/usr/local/go/bin:$PATH
+                make build push
+          params:
+            DOCKER_SAPCC_USER: {{registry-username}}
+            DOCKER_SAPCC_PW: {{registry-password}}
+            HTTP_PROXY: "http://proxy.wdf.sap.corp:8080"
+            NO_PROXY: "sap.corp,cloud.sap,localhost,127.0.0.1"
+
   - name: staging
     serial: true
     plan:
       - aggregate:
         - get: kubernikus.git
           trigger: true
+          passed: [build]
         - get: secrets.git
 
       - task: deploy
