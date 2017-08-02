@@ -17,7 +17,7 @@ run:
     - -c
     - |
       set -exo pipefail
-      helm upgrade kubernikus kubernikus.git/charts/kube-master/ --values secrets.git/$REGION/values/kubernikus.yaml --namespace=$NAMESPACE --name=kubernikus
+      helm upgrade kubernikus kubernikus.git/charts/kube-master/ --values secrets.git/$REGION/values/kubernikus.yaml
       kubectl get deployments --namespace=$NAMESPACE -o jsonpath='{.items[*].metadata.name}' | tr ' ' '\n' | while read DEPLOYMENT; do
         kubectl rollout status deployment/"$DEPLOYMENT" --namespace=$NAMESPACE
       done
