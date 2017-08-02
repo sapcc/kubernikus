@@ -7,9 +7,9 @@ metadata:
 spec:
   tls:
      - secretName: kubernikus-api
-       hosts: [kubernikus.{{.Values.global.region}}.{{.Values.global.domain}}]
+       hosts: [kubernikus.{{.Values.openstack.region}}.cloud.sap]
   rules:
-    - host: kubernikus.{{.Values.global.region}}.{{.Values.global.domain}}
+    - host: kubernikus.{{.Values.openstack.region}}.cloud.sap
       http:
         paths:
         - path: /

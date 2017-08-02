@@ -14,9 +14,9 @@ spec:
   domains:
   - name: Default
     users:
-    - name: {{ default "kubernikus" .Values.openstack.service_user_id | quote }}
+    - name: {{ default "kubernikus" .Values.openstack.auth_user_id | quote }}
       description: 'Kubernikus'
-      password: {{ .Values.openstack.service_user_password | quote }}
+      password: {{ .Values.openstack.auth_user_password | quote }}
       roles:
       - project: service
         role: service
@@ -39,5 +39,5 @@ spec:
     description: 'Kubernikus service'
     endpoints:
     - interface: public
-      region: '{{.Values.global.region}}'
-      url: 'https://kubernikus.{{.Values.global.region}}.cloud.sap'
+      region: '{{.Values.openstack.region}}'
+      url: 'https://kubernikus.{{.Values.openstack.region}}.cloud.sap'
