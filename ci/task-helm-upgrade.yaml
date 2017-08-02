@@ -18,11 +18,11 @@ run:
     - |
       set -exo pipefail
       helm upgrade kubernikus kubernikus.git/charts/kube-master/ --values secrets.git/$REGION/values/kubernikus.yaml
-      kubectl get deployments --namespace=$NAMESPACE -o jsonpath='{.items[*].metadata.name}' | tr ' ' '\n' | while read DEPLOYMENT; do
+      kubectl get deployments --namespace=$NAMESPACE -o jsonpath='{.items[*].metadata.name}' | tr ' ' '\n' | grep kubernikus | while read DEPLOYMENT; do
         kubectl rollout status deployment/"$DEPLOYMENT" --namespace=$NAMESPACE
       done
       set +x
-      kubectl get deployments --namespace=$NAMESPACE -o jsonpath='{.items[*].metadata.name}' | tr ' ' '\n' | while read DEPLOYMENT; do
+      kubectl get deployments --namespace=$NAMESPACE -o jsonpath='{.items[*].metadata.name}' | tr ' ' '\n' | grep kubernikus | while read DEPLOYMENT; do
         echo "Waiting for $DEPLOYMENT deployment to succeed"
         until kubectl get deployment "$DEPLOYMENT" --namespace=$NAMESPACE -o json | \
                 jq -e '.status | .unavailableReplicas == null and .replicas == .updatedReplicas' >/dev/null; do
