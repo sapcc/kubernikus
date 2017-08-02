@@ -1,6 +1,6 @@
 DATE     = $(shell date +%Y%m%d%H%M)
 IMAGE    ?= sapcc/kubernikus
-VERSION  = v$(DATE)
+VERSION  ?= v$(DATE)
 GOOS     ?= $(shell go env | grep GOOS | cut -d'"' -f2)
 BINARIES := groundctl apiserver
 
@@ -11,6 +11,8 @@ SRCDIRS  := pkg cmd
 PACKAGES := $(shell find $(SRCDIRS) -type d)
 GOFILES  := $(addsuffix /*.go,$(PACKAGES))
 GOFILES  := $(wildcard $(GOFILES))
+
+BUILD_ARGS = --build-arg VERSION=$(VERSION)
 
 ifneq ($(http_proxy),)
 BUILD_ARGS+= --build-arg http_proxy=$(http_proxy) --build-arg https_proxy=$(https_proxy) --build-arg no_proxy=$(no_proxy)
@@ -26,15 +28,8 @@ all: $(BINARIES:%=bin/$(GOOS)/%)
 bin/%: $(GOFILES) Makefile
 	GOOS=$(*D) GOARCH=amd64 go build $(GOFLAGS) -v -i -o $(@D)/$(@F) ./cmd/$(@F)
 
-build: build/docker.tar $(BINARIES:bin/linux/%)
+build: $(BINARIES:bin/linux/%)
 	docker build $(BUILD_ARGS) -t $(IMAGE):$(VERSION) .
-
-build/docker.tar:
-	if [ -a bin/linux ]; then rm -r bin/linux; fi;
-	make GOOS=linux all
-	wget -O bin/linux/dumb-init https://github.com/Yelp/dumb-init/releases/download/v1.2.0/dumb-init_1.2.0_amd64
-	chmod +x bin/linux/dumb-init
-	( cd bin/linux && tar cf - . ) > bin/linux/docker.tar
 
 push:
 	docker push $(IMAGE):$(VERSION)
