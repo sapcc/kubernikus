@@ -14,4 +14,4 @@ RUN curl -Lo /bin/dumb-init https://github.com/Yelp/dumb-init/releases/download/
 COPY --from=builder /go/src/github.com/sapcc/kubernikus/bin/linux/ /usr/local/bin/
 COPY charts/ /etc/kubernikus/charts
 ENTRYPOINT ["dumb-init", "--"]
-CMD ["/bin/apiserver"]
+CMD ["apiserver"]
