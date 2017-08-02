@@ -17,7 +17,7 @@ run:
     - -c
     - |
       set -exo pipefail
-      helm upgrade kubernikus kubernikus.git/charts/kube-master/ --values secrets.git/$REGION/values/kubernikus.yaml
+      helm upgrade kubernikus kubernikus.git/charts/kube-master/ --values secrets.git/$REGION/values/kubernikus.yaml --namespace=$NAMESPACE --name=kubernikus
       kubectl get deployments --namespace=$NAMESPACE -o jsonpath='{.items[*].metadata.name}' | tr ' ' '\n' | while read DEPLOYMENT; do
         kubectl rollout status deployment/"$DEPLOYMENT" --namespace=$NAMESPACE
       done
@@ -37,6 +37,6 @@ run:
 params:
   STEP: 2
   TIMEOUT: 300
-  NAMESPACE: kubernikus
+  NAMESPACE: kube-system
   REGION:
   GITHUB_TOKEN:

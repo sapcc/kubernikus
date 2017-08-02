@@ -8,10 +8,10 @@ RUN make all
 FROM alpine:3.6
 MAINTAINER "Fabian Ruff <fabian.ruff@sap.com>"
 RUN apk add --no-cache curl
-RUN curl -Lo /usr/bin/dumb-init https://github.com/Yelp/dumb-init/releases/download/v1.2.0/dumb-init_1.2.0_amd64 \
-	&& chmod +x /usr/bin/dumb-init \
+RUN curl -Lo /bin/dumb-init https://github.com/Yelp/dumb-init/releases/download/v1.2.0/dumb-init_1.2.0_amd64 \
+	&& chmod +x /bin/dumb-init \
 	&& dumb-init -V
 COPY --from=builder /go/src/github.com/sapcc/kubernikus/bin/linux/ /usr/local/bin/
 COPY charts/ /etc/kubernikus/charts
-ENTRYPOINT ["/bin/dumb-init", "--"]
+ENTRYPOINT ["dumb-init", "--"]
 CMD ["/bin/apiserver"]
