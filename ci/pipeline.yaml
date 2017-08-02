@@ -16,6 +16,9 @@ resources:
 
   - name: kubernikus.version
     type: time-version-resource
+    source:
+      prefix: v
+      property_name: VERSION
 
   - name: kubernikus.image
     type: docker-image
@@ -29,8 +32,6 @@ resource_types:
     type: docker-image
     source:
       repository: hub.global.cloud.sap/d062392/time-version-resource
-      prefix: v
-      property_name: VERSION
 
 jobs:
   - name: build
