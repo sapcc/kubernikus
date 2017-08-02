@@ -7,12 +7,12 @@ resources:
       uri:    https://github.com/sapcc/kubernikus.git
       branch: ci
 
-#  - name: secrets.git
-#    type: git
-#    source:
-#      uri:         git@github.wdf.sap.corp:cc/secrets.git
-#      private_key: ((secrets-ssh-key))
-#      branch:      master
+  - name: secrets.git
+    type: git
+    source:
+      uri:         git@github.wdf.sap.corp:cc/secrets.git
+      private_key: ((secrets-ssh-key))
+      branch:      master
 
   - name: kubernikus.version
     type: time-version-resource
@@ -53,20 +53,20 @@ jobs:
             https_proxy: http://proxy.wdf.sap.corp:8080
             no_proxy: sap.corp,cloud.sap,127.0.0.1,localhost
 
-#  - name: staging
-#    serial: true
-#    plan:
-#      - aggregate:
-#        - get: kubernikus.git
-#          trigger: true
-#          passed: [build]
-#        - get: secrets.git
-#
-#      - task: deploy
-#        file: secrets.git/ci/kubernikus/task-helm-upgrade.yaml
-#        params:
-#          REGION: staging
-#          GITHUB_TOKEN: ((github-access-token))
+  - name: staging
+    serial: true
+    plan:
+      - aggregate:
+        - get: kubernikus.git
+          trigger: true
+          passed: [build]
+        - get: secrets.git
+
+      - task: deploy
+        file: secrets.git/ci/kubernikus/task-helm-upgrade.yaml
+        params:
+          REGION: staging
+          GITHUB_TOKEN: ((github-access-token))
 
   # Add new regions above this line, but note that you need to do a
   # manual `helm install` first. This pipeline can only `helm upgrade`.
