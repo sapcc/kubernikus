@@ -18,6 +18,7 @@ spec:
         - name: api
           image: {{ .Values.global.image | quote }}
           args:
+            - /bin/apiserver
             - --port={{ .Values.api.port }}
             - --auth-url={{ .Values.api.auth_url | quote }}
             - --v={{ default 1 .Values.api.log_level }}
