@@ -1,0 +1,18 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+
+metadata:
+  name: kubernikus-api
+
+spec:
+  tls:
+     - secretName: kubernikus-api
+       hosts: [kubernikus.{{.Values.global.region}}.{{.Values.global.domain}}]
+  rules:
+    - host: kubernikus.{{.Values.global.region}}.{{.Values.global.domain}}
+      http:
+        paths:
+        - path: /
+          backend:
+            serviceName: kubernikus-api
+            servicePort: {{ .Values.api.port }}

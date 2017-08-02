@@ -1,0 +1,26 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+
+metadata:
+  name: kubernikus-api
+  labels:
+    app: kubernikus
+    type: api
+
+spec:
+  template:
+    metadata:
+      labels:
+        app: kubernikus
+        type: api
+    spec:
+      containers:
+        - name: api
+          image: {{ .Values.global.image | quote }}
+          args:
+            - --port={{ .Values.api.port }}
+            - --auth-url={{ .Values.api.auth_url | quote }}
+            - --v={{ default 1 .Values.api.log_level }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.api.port }}
