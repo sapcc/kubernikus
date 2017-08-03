@@ -40,7 +40,7 @@ func (d *terminateCluster) Handle(params operations.TerminateClusterParams, prin
 		return operations.NewTerminateClusterDefault(0).WithPayload(modelsError(err))
 	}
 
-	if err := d.rt.Clients.TPRClient().Patch(patchType).Body(patchBytes).Do().Error(); err != nil {
+	if err := d.rt.Clients.TPRClient().Patch(patchType).Body(patchBytes).Namespace("kubernikus").Resource(tprv1.KlusterResourcePlural).LabelsSelectorParam(accountSelector(principal)).Name(qualifiedName(params.Name,principal.Account)).Do().Error(); err != nil {
 		glog.Errorf("Failed to patch %s/%s: %s",oldKluster.GetNamespace(),oldKluster.GetName(),err)
 		return operations.NewTerminateClusterDefault(0).WithPayload(modelsError(err))
 	}
