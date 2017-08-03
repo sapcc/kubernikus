@@ -9,6 +9,8 @@ import:
 # k8s.io/client-go carries some outdated depencencies in its Godeps.json
 # that don't fly with swagger.
 # We don't import these dependencies via the go-client so this should be ok
+- package: github.com/go-openapi/runtime
+  version: 73a94727f26953a79ffd70902d0f24977b6297d1
 - package: github.com/go-openapi/jsonpointer
   version: 779f45308c19820f1a69e9a4cd965f496e0da10f
 - package: github.com/go-openapi/jsonreference

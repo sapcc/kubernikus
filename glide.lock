@@ -1,5 +1,5 @@
-hash: f2f6aff61361abe1c4a581bd428bf3046e02c294fbeed54b6ac33677c44c88a5
-updated: 2017-08-03T13:17:44.257431464+02:00
+hash: 4d5962135d0914288f8b30de13f4b9124d66fdd00d4b51379a10b67ff02df23c
+updated: 2017-08-03T13:41:02.303609168+02:00
 imports:
 - name: github.com/asaskevich/govalidator
   version: 7664702784775e51966f0885f5cd27435916517b
@@ -47,7 +47,7 @@ imports:
 - name: github.com/go-openapi/loads
   version: a80dea3052f00e5f032e860dd7355cd0cc67e24d
 - name: github.com/go-openapi/runtime
-  version: 2e9e988df6c290425033bacd425e008950c96be6
+  version: 73a94727f26953a79ffd70902d0f24977b6297d1
   subpackages:
   - flagext
   - middleware
@@ -102,8 +102,6 @@ imports:
   - openstack/networking/v2/subnets
   - openstack/utils
   - pagination
-- name: github.com/gorilla/context
-  version: 14f550f51af52180c2eefed15e5fd18d63c0a64a
 - name: github.com/gorilla/handlers
   version: 8d15e1138fa414148ca497a280ff7d41046d619d
 - name: github.com/hashicorp/golang-lru
@@ -236,7 +234,7 @@ imports:
 - name: gopkg.in/yaml.v2
   version: a83829b6f1293c91addabc89d0571c246397bbf4
 - name: k8s.io/apimachinery
-  version: abe34e4f5b4413c282a83011892cbeea5b32223b
+  version: 1fd2e63a9a370677308a42f24fd40c86438afddf
   subpackages:
   - pkg/api/equality
   - pkg/api/errors
@@ -287,7 +285,7 @@ imports:
   - third_party/forked/golang/netutil
   - third_party/forked/golang/reflect
 - name: k8s.io/client-go
-  version: 16b0436fa2a29868589e42607394fa291229e392
+  version: d92e8497f71b7b4e0494e5bd204b48d34bd6f254
   subpackages:
   - discovery
   - kubernetes
