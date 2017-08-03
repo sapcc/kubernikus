@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: groundctl
-          image: {{ .Values.global.image | quote }}
+          image: "{{ .Values.image }}:{{ .Values.imageTag }}"
           args:
             - groundctl
             - --auth-url={{ .Values.openstack.auth_url }}

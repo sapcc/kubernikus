@@ -62,6 +62,8 @@ jobs:
         - get: kubernikus.git
           trigger: true
           passed: [build]
+        - get: kubernikus.version
+          passed: [build]
         - get: secrets.git
 
       - task: deploy

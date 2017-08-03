@@ -9,6 +9,7 @@ image_resource:
 
 inputs:
   - name: kubernikus.git
+  - name: kubernikus.version
   - name: secrets.git
 
 run:
@@ -17,7 +18,8 @@ run:
     - -c
     - |
       set -exo pipefail
-      helm upgrade kubernikus kubernikus.git/charts/kubernikus/ --values secrets.git/$REGION/values/kubernikus.yaml
+      VERSION=$(cat kubernikus.version/version)
+      helm upgrade kubernikus kubernikus.git/charts/kubernikus/ --values secrets.git/$REGION/values/kubernikus.yaml --set imageTag=$VERSION
       kubectl get deployments --namespace=$NAMESPACE -o jsonpath='{.items[*].metadata.name}' | tr ' ' '\n' | grep kubernikus | while read DEPLOYMENT; do
         kubectl rollout status deployment/"$DEPLOYMENT" --namespace=$NAMESPACE
       done

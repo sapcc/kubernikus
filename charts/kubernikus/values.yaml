@@ -1,5 +1,5 @@
-global:
-  image: sapcc/kubernikus:latest
+image: sapcc/kubernikus
+imageTag: latest
 
 openstack:
   auth_url: "http://identityv3.openstack:5000/v3"
