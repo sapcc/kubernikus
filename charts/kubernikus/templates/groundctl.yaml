@@ -19,10 +19,10 @@ spec:
           image: {{ .Values.global.image | quote }}
           args:
             - groundctl
-            - --auth-url={{ .Values.openstack.auth_url | quote }}
-            - --auth-username={{ .Values.openstack.auth_user_id | quote }}
-            - --auth-password={{ .Values.openstack.auth_user_password | quote }}
-            - --auth-domain={{ .Values.openstack.auth_domain | quote }}
-            - --auth-project={{ .Values.openstack.auth_project | quote }}
-            - --auth-project-domain={{ .Values.openstack.auth_project_domain | quote }}
+            - --auth-url={{ .Values.openstack.auth_url }}
+            - --auth-username={{ .Values.openstack.auth_user_id }}
+            - --auth-password={{ .Values.openstack.auth_user_password }}
+            - --auth-domain={{ .Values.openstack.auth_domain }}
+            - --auth-project={{ .Values.openstack.auth_project }}
+            - --auth-project-domain={{ .Values.openstack.auth_project_domain }}
             - --v={{ default 1 .Values.groundctl.log_level }}
