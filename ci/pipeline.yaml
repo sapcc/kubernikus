@@ -48,6 +48,8 @@ jobs:
           tag: kubernikus.version/version
           build_args_file: kubernikus.version/properties.json
           tag_as_latest: true
+          cache: true
+          cache_tag: latest
           build_args:
             http_proxy: http://proxy.wdf.sap.corp:8080
             https_proxy: http://proxy.wdf.sap.corp:8080
@@ -63,7 +65,7 @@ jobs:
         - get: secrets.git
 
       - task: deploy
-        file: secrets.git/ci/kubernikus/task-helm-upgrade.yaml
+        file: kubernikus.git/ci/task-helm-upgrade.yaml
         params:
           REGION: staging
           GITHUB_TOKEN: ((github-access-token))

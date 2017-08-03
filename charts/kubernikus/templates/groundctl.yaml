@@ -15,7 +15,7 @@ spec:
         type: groundctl
     spec:
       containers:
-        - name: api
+        - name: groundctl
           image: {{ .Values.global.image | quote }}
           args:
             - groundctl
