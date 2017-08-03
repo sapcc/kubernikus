@@ -52,6 +52,6 @@ ifndef HAS_GLIDE
 	brew install glide
 endif
 ifndef HAS_SWAGGER
-    brew tap go-swagger/go-swagger
+        brew tap go-swagger/go-swagger
 	brew install go-swagger
 endif
