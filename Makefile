@@ -5,7 +5,7 @@ GOOS     ?= $(shell go env | grep GOOS | cut -d'"' -f2)
 BINARIES := groundctl apiserver
 
 LDFLAGS := -X github.com/sapcc/kubernikus/pkg/version.VERSION=$(VERSION)
-GOFLAGS := -ldflags "$(LDFLAGS)"
+GOFLAGS := -ldflags "$(LDFLAGS) -s -w"
 
 SRCDIRS  := pkg cmd
 PACKAGES := $(shell find $(SRCDIRS) -type d)
