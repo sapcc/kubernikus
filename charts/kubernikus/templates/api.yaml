@@ -20,6 +20,7 @@ spec:
           args:
             - apiserver
             - --port={{ .Values.api.port }}
+            - --host=0.0.0.0
             - --auth-url={{ .Values.openstack.auth_url | quote }}
             - --v={{ default 1 .Values.api.log_level }}
           ports:
