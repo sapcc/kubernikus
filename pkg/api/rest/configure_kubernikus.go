@@ -73,15 +73,15 @@ func configureServer(s *graceful.Server, scheme, addr string) {
 // The middleware configuration is for the handler executors. These do not apply to the swagger.json document.
 // The middleware executes after routing but before authentication, binding and validation
 func setupMiddlewares(handler http.Handler) http.Handler {
-	c := cors.New(cors.Options{
-		AllowedHeaders: []string{"X-Auth-Token"},
-		AllowedMethods: []string{"GET", "HEAD", "POST", "DELETE"},
-	})
-	return middleware.Redoc(middleware.RedocOpts{}, c.Handler(handler))
+	return middleware.Redoc(middleware.RedocOpts{}, handler)
 }
 
 // The middleware configuration happens before anything, this middleware also applies to serving the swagger.json document.
 // So this is a good place to plug in a panic handling middleware, logging and metrics
 func setupGlobalMiddleware(handler http.Handler) http.Handler {
-	return gmiddleware.LoggingHandler(os.Stdout, handlers.RootHandler(handler))
+	c := cors.New(cors.Options{
+		AllowedHeaders: []string{"X-Auth-Token"},
+		AllowedMethods: []string{"GET", "HEAD", "POST", "DELETE"},
+	})
+	return gmiddleware.LoggingHandler(os.Stdout, handlers.RootHandler(c.Handler(handler)))
 }
