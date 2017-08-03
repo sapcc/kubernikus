@@ -5,7 +5,7 @@ resources:
       username: sapcc-bot
       password: ((github-com-access-token))
       uri:    https://github.com/sapcc/kubernikus.git
-      branch: ci
+      branch: master
 
   - name: secrets.git
     type: git

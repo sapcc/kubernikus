@@ -8,6 +8,7 @@ metadata:
     type: api
 
 spec:
+  revisionHistoryLimit: {{ .Values.revisionHistoryLimit }}
   template:
     metadata:
       labels:
@@ -26,3 +27,9 @@ spec:
           ports:
             - name: http
               containerPort: {{ .Values.api.port }}
+          readinessProbe:
+            httpGet:
+              path: /
+              port: {{ .Values.api.port }}
+            initialDelaySeconds: 3
+            periodSeconds: 5

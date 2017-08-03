@@ -16,3 +16,5 @@ api:
 
 groundctl:
   log_level: 1
+
+revisionHistoryLimit: 3

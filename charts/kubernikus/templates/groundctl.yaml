@@ -8,6 +8,7 @@ metadata:
     type: groundctl
 
 spec:
+  revisionHistoryLimit: {{ .Values.revisionHistoryLimit }}
   template:
     metadata:
       labels:
