@@ -10,6 +10,8 @@ import (
 	"k8s.io/apimachinery/pkg/util/strategicpatch"
 
 	tprv1 "github.com/sapcc/kubernikus/pkg/tpr/v1"
+	"fmt"
+	"strings"
 )
 
 func modelsError(err error) *models.Error {
@@ -20,6 +22,14 @@ func modelsError(err error) *models.Error {
 
 func accountSelector(principal *models.Principal) labels.Selector {
 	return labels.SelectorFromSet(map[string]string{"account": principal.Account})
+}
+
+// qualifiedName returns <cluster_name>-<account_id>
+func qualifiedName(name string, accountId string) string {
+	if strings.Contains(name,accountId) {
+		return name
+	}
+	return fmt.Sprintf("%s-%s",name,accountId)
 }
 
 func createPatch(old, new *tprv1.Kluster) (patchBytes []byte, patchType types.PatchType, err error) {

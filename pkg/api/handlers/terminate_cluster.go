@@ -20,22 +20,22 @@ type terminateCluster struct {
 }
 
 func (d *terminateCluster) Handle(params operations.TerminateClusterParams, principal *models.Principal) middleware.Responder {
-	var oldKluster *tprv1.Kluster
-	if err := d.rt.Clients.TPRClient().Get().Namespace("kubernikus").Resource(tprv1.KlusterResourcePlural).LabelsSelectorParam(accountSelector(principal)).Name(params.Name).Do().Into(oldKluster); err != nil {
+	var oldKluster tprv1.Kluster
+	if err := d.rt.Clients.TPRClient().Get().Namespace("kubernikus").Resource(tprv1.KlusterResourcePlural).LabelsSelectorParam(accountSelector(principal)).Name(qualifiedName(params.Name,principal.Account)).Do().Into(&oldKluster); err != nil {
 		if apierrors.IsNotFound(err) {
 			return operations.NewTerminateClusterDefault(404).WithPayload(modelsError(err))
 		}
 		return operations.NewTerminateClusterDefault(0).WithPayload(modelsError(err))
 	}
 
-	copy, err := d.rt.Clients.TPRScheme().Copy(oldKluster)
+	copy, err := d.rt.Clients.TPRScheme().Copy(&oldKluster)
 	if err != nil {
 
 	}
 	cpKluster := copy.(*tprv1.Kluster)
 	cpKluster.Status.State = tprv1.KlusterTerminating
 
-	patchBytes, patchType, err := createPatch(oldKluster,cpKluster)
+	patchBytes, patchType, err := createPatch(&oldKluster,cpKluster)
 	if err != nil {
 		return operations.NewTerminateClusterDefault(0).WithPayload(modelsError(err))
 	}
