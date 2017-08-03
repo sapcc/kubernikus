@@ -119,6 +119,26 @@ func init() {
           }
         }
       },
+      "delete": {
+        "summary": "Delete the specified cluser",
+        "operationId": "DeleteCluster",
+        "security": [
+          {
+            "keystone": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/Cluster"
+            }
+          },
+          "default": {
+            "$ref": "#/responses/errorResponse"
+          }
+        }
+      },
       "parameters": [
         {
           "uniqueItems": true,
