@@ -147,6 +147,23 @@ func init() {
             "keystone": []
           }
         ],
+        "parameters": [
+          {
+            "uniqueItems": true,
+            "type": "string",
+            "name": "name",
+            "in": "path",
+            "required": true
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/Cluster"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "OK",
@@ -166,14 +183,6 @@ func init() {
           "name": "name",
           "in": "path",
           "required": true
-        },
-        {
-          "name": "body",
-          "in": "body",
-          "required": true,
-          "schema": {
-            "$ref": "#/definitions/Cluster"
-          }
         }
       ]
     }

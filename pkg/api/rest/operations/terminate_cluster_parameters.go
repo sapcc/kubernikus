@@ -6,16 +6,12 @@ package operations
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-	"io"
 	"net/http"
 
 	"github.com/go-openapi/errors"
-	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
 
 	strfmt "github.com/go-openapi/strfmt"
-
-	"github.com/sapcc/kubernikus/pkg/api/models"
 )
 
 // NewTerminateClusterParams creates a new TerminateClusterParams object
@@ -36,11 +32,6 @@ type TerminateClusterParams struct {
 
 	/*
 	  Required: true
-	  In: body
-	*/
-	Body *models.Cluster
-	/*
-	  Required: true
 	  Unique: true
 	  In: path
 	*/
@@ -52,30 +43,6 @@ type TerminateClusterParams struct {
 func (o *TerminateClusterParams) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {
 	var res []error
 	o.HTTPRequest = r
-
-	if runtime.HasBody(r) {
-		defer r.Body.Close()
-		var body models.Cluster
-		if err := route.Consumer.Consume(r.Body, &body); err != nil {
-			if err == io.EOF {
-				res = append(res, errors.Required("body", "body"))
-			} else {
-				res = append(res, errors.NewParseError("body", "body", "", err))
-			}
-
-		} else {
-			if err := body.Validate(route.Formats); err != nil {
-				res = append(res, err)
-			}
-
-			if len(res) == 0 {
-				o.Body = &body
-			}
-		}
-
-	} else {
-		res = append(res, errors.Required("body", "body"))
-	}
 
 	rName, rhkName, _ := route.Params.GetOK("name")
 	if err := o.bindName(rName, rhkName, route.Formats); err != nil {

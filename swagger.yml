@@ -115,17 +115,17 @@ paths:
           $ref: "#/responses/errorResponse"
       security:
         - keystone: []
-    parameters:
-      - uniqueItems: true
-        type: string
-        name: name
-        required: true
-        in: path
-      - name: body
-        in: body
-        required: true
-        schema:
-          $ref: '#/definitions/Cluster'
+      parameters:
+        - uniqueItems: true
+          type: string
+          name: name
+          required: true
+          in: path
+        - name: body
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/Cluster'
 
 definitions:
   ApiVersions:
