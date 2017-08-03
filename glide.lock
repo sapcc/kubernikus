@@ -1,5 +1,5 @@
 hash: f2f6aff61361abe1c4a581bd428bf3046e02c294fbeed54b6ac33677c44c88a5
-updated: 2017-07-20T11:28:38.029058227+02:00
+updated: 2017-08-03T13:17:44.257431464+02:00
 imports:
 - name: github.com/asaskevich/govalidator
   version: 7664702784775e51966f0885f5cd27435916517b
@@ -155,6 +155,8 @@ imports:
   version: 8a290539e2e8629dbc4e6bad948158f790ec31f4
 - name: github.com/PuerkitoBio/urlesc
   version: 5bd2802263f21d8788851d5305584c82a5c75d7e
+- name: github.com/rs/cors
+  version: eabcc6af4bbe5ad3a949d36450326a2b0b9894b8
 - name: github.com/spf13/afero
   version: 9be650865eab0c12963d8753212f4f9c66cdcf12
   subpackages:

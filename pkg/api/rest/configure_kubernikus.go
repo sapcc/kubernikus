@@ -11,6 +11,7 @@ import (
 	middleware "github.com/go-openapi/runtime/middleware"
 	"github.com/golang/glog"
 	gmiddleware "github.com/gorilla/handlers"
+	"github.com/rs/cors"
 	graceful "github.com/tylerb/graceful"
 
 	apipkg "github.com/sapcc/kubernikus/pkg/api"
@@ -72,7 +73,11 @@ func configureServer(s *graceful.Server, scheme, addr string) {
 // The middleware configuration is for the handler executors. These do not apply to the swagger.json document.
 // The middleware executes after routing but before authentication, binding and validation
 func setupMiddlewares(handler http.Handler) http.Handler {
-	return middleware.Redoc(middleware.RedocOpts{}, handler)
+	c := cors.New(cors.Options{
+		AllowedHeaders: []string{"X-Auth-Token"},
+		AllowedMethods: []string{"GET", "HEAD", "POST", "DELETE"},
+	})
+	return middleware.Redoc(middleware.RedocOpts{}, c.Handler(handler))
 }
 
 // The middleware configuration happens before anything, this middleware also applies to serving the swagger.json document.
