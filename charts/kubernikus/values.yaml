@@ -1,0 +1,20 @@
+global:
+  image: sapcc/kubernikus:latest
+
+openstack:
+  auth_url: "http://identityv3.openstack:5000/v3"
+  auth_url: "http://identityv3.openstack:5000/v3"
+  auth_username: "openstack"
+  auth_password: "secret!"
+  auth_domain: "Default"
+  auth_project: "master"
+  auth_project_domain: "Default"
+
+api:
+  port: 1234
+  log_level: 1
+
+groundctl:
+  log_level: 1
+
+revisionHistoryLimit: 3

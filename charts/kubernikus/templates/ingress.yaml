@@ -1,0 +1,18 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+
+metadata:
+  name: kubernikus-api
+
+spec:
+  tls:
+     - secretName: kubernikus-api
+       hosts: [kubernikus.{{.Values.openstack.region}}.cloud.sap]
+  rules:
+    - host: kubernikus.{{.Values.openstack.region}}.cloud.sap
+      http:
+        paths:
+        - path: /
+          backend:
+            serviceName: kubernikus-api
+            servicePort: {{ .Values.api.port }}

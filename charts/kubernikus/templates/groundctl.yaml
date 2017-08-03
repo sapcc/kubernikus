@@ -1,0 +1,29 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+
+metadata:
+  name: kubernikus-groundctl
+  labels:
+    app: kubernikus
+    type: groundctl
+
+spec:
+  revisionHistoryLimit: {{ .Values.revisionHistoryLimit }}
+  template:
+    metadata:
+      labels:
+        app: kubernikus
+        type: groundctl
+    spec:
+      containers:
+        - name: groundctl
+          image: {{ .Values.global.image | quote }}
+          args:
+            - groundctl
+            - --auth-url={{ .Values.openstack.auth_url }}
+            - --auth-username={{ .Values.openstack.auth_user_id }}
+            - --auth-password={{ .Values.openstack.auth_user_password }}
+            - --auth-domain={{ .Values.openstack.auth_domain }}
+            - --auth-project={{ .Values.openstack.auth_project }}
+            - --auth-project-domain={{ .Values.openstack.auth_project_domain }}
+            - --v={{ default 1 .Values.groundctl.log_level }}

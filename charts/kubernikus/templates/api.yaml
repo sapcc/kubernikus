@@ -1,0 +1,35 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+
+metadata:
+  name: kubernikus-api
+  labels:
+    app: kubernikus
+    type: api
+
+spec:
+  revisionHistoryLimit: {{ .Values.revisionHistoryLimit }}
+  template:
+    metadata:
+      labels:
+        app: kubernikus
+        type: api
+    spec:
+      containers:
+        - name: api
+          image: {{ .Values.global.image | quote }}
+          args:
+            - apiserver
+            - --port={{ .Values.api.port }}
+            - --host=0.0.0.0
+            - --auth-url={{ .Values.openstack.auth_url | quote }}
+            - --v={{ default 1 .Values.api.log_level }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.api.port }}
+          readinessProbe:
+            httpGet:
+              path: /
+              port: {{ .Values.api.port }}
+            initialDelaySeconds: 3
+            periodSeconds: 5

@@ -1,6 +1,6 @@
 DATE     = $(shell date +%Y%m%d%H%M)
 IMAGE    ?= sapcc/kubernikus
-VERSION  = v$(DATE)
+VERSION  ?= v$(DATE)
 GOOS     ?= $(shell go env | grep GOOS | cut -d'"' -f2)
 BINARIES := groundctl apiserver
 
@@ -11,6 +11,8 @@ SRCDIRS  := pkg cmd
 PACKAGES := $(shell find $(SRCDIRS) -type d)
 GOFILES  := $(addsuffix /*.go,$(PACKAGES))
 GOFILES  := $(wildcard $(GOFILES))
+
+BUILD_ARGS = --build-arg VERSION=$(VERSION)
 
 ifneq ($(http_proxy),)
 BUILD_ARGS+= --build-arg http_proxy=$(http_proxy) --build-arg https_proxy=$(https_proxy) --build-arg no_proxy=$(no_proxy)
