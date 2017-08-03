@@ -13,40 +13,40 @@ import (
 	"github.com/sapcc/kubernikus/pkg/api/models"
 )
 
-// DeleteClusterHandlerFunc turns a function with the right signature into a delete cluster handler
-type DeleteClusterHandlerFunc func(DeleteClusterParams, *models.Principal) middleware.Responder
+// TerminateClusterHandlerFunc turns a function with the right signature into a terminate cluster handler
+type TerminateClusterHandlerFunc func(TerminateClusterParams, *models.Principal) middleware.Responder
 
 // Handle executing the request and returning a response
-func (fn DeleteClusterHandlerFunc) Handle(params DeleteClusterParams, principal *models.Principal) middleware.Responder {
+func (fn TerminateClusterHandlerFunc) Handle(params TerminateClusterParams, principal *models.Principal) middleware.Responder {
 	return fn(params, principal)
 }
 
-// DeleteClusterHandler interface for that can handle valid delete cluster params
-type DeleteClusterHandler interface {
-	Handle(DeleteClusterParams, *models.Principal) middleware.Responder
+// TerminateClusterHandler interface for that can handle valid terminate cluster params
+type TerminateClusterHandler interface {
+	Handle(TerminateClusterParams, *models.Principal) middleware.Responder
 }
 
-// NewDeleteCluster creates a new http.Handler for the delete cluster operation
-func NewDeleteCluster(ctx *middleware.Context, handler DeleteClusterHandler) *DeleteCluster {
-	return &DeleteCluster{Context: ctx, Handler: handler}
+// NewTerminateCluster creates a new http.Handler for the terminate cluster operation
+func NewTerminateCluster(ctx *middleware.Context, handler TerminateClusterHandler) *TerminateCluster {
+	return &TerminateCluster{Context: ctx, Handler: handler}
 }
 
-/*DeleteCluster swagger:route DELETE /api/v1/clusters/{name} deleteCluster
+/*TerminateCluster swagger:route DELETE /api/v1/clusters/{name} terminateCluster
 
-Delete the specified cluser
+Terminate the specified cluser
 
 */
-type DeleteCluster struct {
+type TerminateCluster struct {
 	Context *middleware.Context
-	Handler DeleteClusterHandler
+	Handler TerminateClusterHandler
 }
 
-func (o *DeleteCluster) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
+func (o *TerminateCluster) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	route, rCtx, _ := o.Context.RouteInfo(r)
 	if rCtx != nil {
 		r = rCtx
 	}
-	var Params = NewDeleteClusterParams()
+	var Params = NewTerminateClusterParams()
 
 	uprinc, aCtx, err := o.Context.Authorize(r, route)
 	if err != nil {

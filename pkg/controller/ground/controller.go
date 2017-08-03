@@ -85,7 +85,7 @@ func New(options Options) *Operator {
 	tprInformer.AddEventHandler(cache.ResourceEventHandlerFuncs{
 		AddFunc:    operator.klusterAdd,
 		UpdateFunc: operator.klusterUpdate,
-		DeleteFunc: operator.klusterDelete,
+		DeleteFunc: operator.klusterTerminate,
 	})
 	operator.tprInformer = tprInformer
 
@@ -187,7 +187,7 @@ func (op *Operator) klusterAdd(obj interface{}) {
 	op.queue.Add(key)
 }
 
-func (op *Operator) klusterDelete(obj interface{}) {
+func (op *Operator) klusterTerminate(obj interface{}) {
 	c := obj.(*tprv1.Kluster)
 	key, err := cache.DeletionHandlingMetaNamespaceKeyFunc(c)
 	if err != nil {

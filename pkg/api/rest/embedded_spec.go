@@ -120,8 +120,8 @@ func init() {
         }
       },
       "delete": {
-        "summary": "Delete the specified cluser",
-        "operationId": "DeleteCluster",
+        "summary": "Terminate the specified cluser",
+        "operationId": "TerminateCluster",
         "security": [
           {
             "keystone": []

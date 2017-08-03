@@ -86,8 +86,8 @@ paths:
         required: true
         in: path
     delete:
-      operationId: DeleteCluster
-      summary: Delete the specified cluser
+      operationId: TerminateCluster
+      summary: Terminate the specified cluser
       responses:
         200:
           description: OK

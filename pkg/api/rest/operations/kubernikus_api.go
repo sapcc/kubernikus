@@ -40,9 +40,6 @@ func NewKubernikusAPI(spec *loads.Document) *KubernikusAPI {
 		CreateClusterHandler: CreateClusterHandlerFunc(func(params CreateClusterParams, principal *models.Principal) middleware.Responder {
 			return middleware.NotImplemented("operation CreateCluster has not yet been implemented")
 		}),
-		DeleteClusterHandler: DeleteClusterHandlerFunc(func(params DeleteClusterParams, principal *models.Principal) middleware.Responder {
-			return middleware.NotImplemented("operation DeleteCluster has not yet been implemented")
-		}),
 		ListAPIVersionsHandler: ListAPIVersionsHandlerFunc(func(params ListAPIVersionsParams) middleware.Responder {
 			return middleware.NotImplemented("operation ListAPIVersions has not yet been implemented")
 		}),
@@ -51,6 +48,9 @@ func NewKubernikusAPI(spec *loads.Document) *KubernikusAPI {
 		}),
 		ShowClusterHandler: ShowClusterHandlerFunc(func(params ShowClusterParams, principal *models.Principal) middleware.Responder {
 			return middleware.NotImplemented("operation ShowCluster has not yet been implemented")
+		}),
+		TerminateClusterHandler: TerminateClusterHandlerFunc(func(params TerminateClusterParams, principal *models.Principal) middleware.Responder {
+			return middleware.NotImplemented("operation TerminateCluster has not yet been implemented")
 		}),
 
 		// Applies when the "x-auth-token" header is set
@@ -92,14 +92,14 @@ type KubernikusAPI struct {
 
 	// CreateClusterHandler sets the operation handler for the create cluster operation
 	CreateClusterHandler CreateClusterHandler
-	// DeleteClusterHandler sets the operation handler for the delete cluster operation
-	DeleteClusterHandler DeleteClusterHandler
 	// ListAPIVersionsHandler sets the operation handler for the list API versions operation
 	ListAPIVersionsHandler ListAPIVersionsHandler
 	// ListClustersHandler sets the operation handler for the list clusters operation
 	ListClustersHandler ListClustersHandler
 	// ShowClusterHandler sets the operation handler for the show cluster operation
 	ShowClusterHandler ShowClusterHandler
+	// TerminateClusterHandler sets the operation handler for the terminate cluster operation
+	TerminateClusterHandler TerminateClusterHandler
 
 	// ServeError is called when an error is received, there is a default handler
 	// but you can set your own with this
@@ -171,10 +171,6 @@ func (o *KubernikusAPI) Validate() error {
 		unregistered = append(unregistered, "CreateClusterHandler")
 	}
 
-	if o.DeleteClusterHandler == nil {
-		unregistered = append(unregistered, "DeleteClusterHandler")
-	}
-
 	if o.ListAPIVersionsHandler == nil {
 		unregistered = append(unregistered, "ListAPIVersionsHandler")
 	}
@@ -185,6 +181,10 @@ func (o *KubernikusAPI) Validate() error {
 
 	if o.ShowClusterHandler == nil {
 		unregistered = append(unregistered, "ShowClusterHandler")
+	}
+
+	if o.TerminateClusterHandler == nil {
+		unregistered = append(unregistered, "TerminateClusterHandler")
 	}
 
 	if len(unregistered) > 0 {
@@ -287,11 +287,6 @@ func (o *KubernikusAPI) initHandlerCache() {
 	}
 	o.handlers["POST"]["/api/v1/clusters"] = NewCreateCluster(o.context, o.CreateClusterHandler)
 
-	if o.handlers["DELETE"] == nil {
-		o.handlers["DELETE"] = make(map[string]http.Handler)
-	}
-	o.handlers["DELETE"]["/api/v1/clusters/{name}"] = NewDeleteCluster(o.context, o.DeleteClusterHandler)
-
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
@@ -306,6 +301,11 @@ func (o *KubernikusAPI) initHandlerCache() {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/api/v1/clusters/{name}"] = NewShowCluster(o.context, o.ShowClusterHandler)
+
+	if o.handlers["DELETE"] == nil {
+		o.handlers["DELETE"] = make(map[string]http.Handler)
+	}
+	o.handlers["DELETE"]["/api/v1/clusters/{name}"] = NewTerminateCluster(o.context, o.TerminateClusterHandler)
 
 }
 

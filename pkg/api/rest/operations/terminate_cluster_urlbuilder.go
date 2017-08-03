@@ -12,8 +12,8 @@ import (
 	"strings"
 )
 
-// DeleteClusterURL generates an URL for the delete cluster operation
-type DeleteClusterURL struct {
+// TerminateClusterURL generates an URL for the terminate cluster operation
+type TerminateClusterURL struct {
 	Name string
 
 	_basePath string
@@ -24,7 +24,7 @@ type DeleteClusterURL struct {
 // WithBasePath sets the base path for this url builder, only required when it's different from the
 // base path specified in the swagger spec.
 // When the value of the base path is an empty string
-func (o *DeleteClusterURL) WithBasePath(bp string) *DeleteClusterURL {
+func (o *TerminateClusterURL) WithBasePath(bp string) *TerminateClusterURL {
 	o.SetBasePath(bp)
 	return o
 }
@@ -32,12 +32,12 @@ func (o *DeleteClusterURL) WithBasePath(bp string) *DeleteClusterURL {
 // SetBasePath sets the base path for this url builder, only required when it's different from the
 // base path specified in the swagger spec.
 // When the value of the base path is an empty string
-func (o *DeleteClusterURL) SetBasePath(bp string) {
+func (o *TerminateClusterURL) SetBasePath(bp string) {
 	o._basePath = bp
 }
 
 // Build a url path and query string
-func (o *DeleteClusterURL) Build() (*url.URL, error) {
+func (o *TerminateClusterURL) Build() (*url.URL, error) {
 	var result url.URL
 
 	var _path = "/api/v1/clusters/{name}"
@@ -46,7 +46,7 @@ func (o *DeleteClusterURL) Build() (*url.URL, error) {
 	if name != "" {
 		_path = strings.Replace(_path, "{name}", name, -1)
 	} else {
-		return nil, errors.New("Name is required on DeleteClusterURL")
+		return nil, errors.New("Name is required on TerminateClusterURL")
 	}
 	_basePath := o._basePath
 	result.Path = golangswaggerpaths.Join(_basePath, _path)
@@ -55,7 +55,7 @@ func (o *DeleteClusterURL) Build() (*url.URL, error) {
 }
 
 // Must is a helper function to panic when the url builder returns an error
-func (o *DeleteClusterURL) Must(u *url.URL, err error) *url.URL {
+func (o *TerminateClusterURL) Must(u *url.URL, err error) *url.URL {
 	if err != nil {
 		panic(err)
 	}
@@ -66,17 +66,17 @@ func (o *DeleteClusterURL) Must(u *url.URL, err error) *url.URL {
 }
 
 // String returns the string representation of the path with query string
-func (o *DeleteClusterURL) String() string {
+func (o *TerminateClusterURL) String() string {
 	return o.Must(o.Build()).String()
 }
 
 // BuildFull builds a full url with scheme, host, path and query string
-func (o *DeleteClusterURL) BuildFull(scheme, host string) (*url.URL, error) {
+func (o *TerminateClusterURL) BuildFull(scheme, host string) (*url.URL, error) {
 	if scheme == "" {
-		return nil, errors.New("scheme is required for a full url on DeleteClusterURL")
+		return nil, errors.New("scheme is required for a full url on TerminateClusterURL")
 	}
 	if host == "" {
-		return nil, errors.New("host is required for a full url on DeleteClusterURL")
+		return nil, errors.New("host is required for a full url on TerminateClusterURL")
 	}
 
 	base, err := o.Build()
@@ -90,6 +90,6 @@ func (o *DeleteClusterURL) BuildFull(scheme, host string) (*url.URL, error) {
 }
 
 // StringFull returns the string representation of a complete url
-func (o *DeleteClusterURL) StringFull(scheme, host string) string {
+func (o *TerminateClusterURL) StringFull(scheme, host string) string {
 	return o.Must(o.BuildFull(scheme, host)).String()
 }
