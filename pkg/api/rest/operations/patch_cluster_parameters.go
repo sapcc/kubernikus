@@ -18,18 +18,18 @@ import (
 	"github.com/sapcc/kubernikus/pkg/api/models"
 )
 
-// NewTerminateClusterParams creates a new TerminateClusterParams object
+// NewPatchClusterParams creates a new PatchClusterParams object
 // with the default values initialized.
-func NewTerminateClusterParams() TerminateClusterParams {
+func NewPatchClusterParams() PatchClusterParams {
 	var ()
-	return TerminateClusterParams{}
+	return PatchClusterParams{}
 }
 
-// TerminateClusterParams contains all the bound params for the terminate cluster operation
+// PatchClusterParams contains all the bound params for the patch cluster operation
 // typically these are obtained from a http.Request
 //
-// swagger:parameters TerminateCluster
-type TerminateClusterParams struct {
+// swagger:parameters PatchCluster
+type PatchClusterParams struct {
 
 	// HTTP Request Object
 	HTTPRequest *http.Request
@@ -49,7 +49,7 @@ type TerminateClusterParams struct {
 
 // BindRequest both binds and validates a request, it assumes that complex things implement a Validatable(strfmt.Registry) error interface
 // for simple values it will use straight method calls
-func (o *TerminateClusterParams) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {
+func (o *PatchClusterParams) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {
 	var res []error
 	o.HTTPRequest = r
 
@@ -88,7 +88,7 @@ func (o *TerminateClusterParams) BindRequest(r *http.Request, route *middleware.
 	return nil
 }
 
-func (o *TerminateClusterParams) bindName(rawData []string, hasKey bool, formats strfmt.Registry) error {
+func (o *PatchClusterParams) bindName(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	var raw string
 	if len(rawData) > 0 {
 		raw = rawData[len(rawData)-1]
@@ -103,7 +103,7 @@ func (o *TerminateClusterParams) bindName(rawData []string, hasKey bool, formats
 	return nil
 }
 
-func (o *TerminateClusterParams) validateName(formats strfmt.Registry) error {
+func (o *PatchClusterParams) validateName(formats strfmt.Registry) error {
 
 	return nil
 }

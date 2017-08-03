@@ -46,6 +46,9 @@ func NewKubernikusAPI(spec *loads.Document) *KubernikusAPI {
 		ListClustersHandler: ListClustersHandlerFunc(func(params ListClustersParams, principal *models.Principal) middleware.Responder {
 			return middleware.NotImplemented("operation ListClusters has not yet been implemented")
 		}),
+		PatchClusterHandler: PatchClusterHandlerFunc(func(params PatchClusterParams, principal *models.Principal) middleware.Responder {
+			return middleware.NotImplemented("operation PatchCluster has not yet been implemented")
+		}),
 		ShowClusterHandler: ShowClusterHandlerFunc(func(params ShowClusterParams, principal *models.Principal) middleware.Responder {
 			return middleware.NotImplemented("operation ShowCluster has not yet been implemented")
 		}),
@@ -96,6 +99,8 @@ type KubernikusAPI struct {
 	ListAPIVersionsHandler ListAPIVersionsHandler
 	// ListClustersHandler sets the operation handler for the list clusters operation
 	ListClustersHandler ListClustersHandler
+	// PatchClusterHandler sets the operation handler for the patch cluster operation
+	PatchClusterHandler PatchClusterHandler
 	// ShowClusterHandler sets the operation handler for the show cluster operation
 	ShowClusterHandler ShowClusterHandler
 	// TerminateClusterHandler sets the operation handler for the terminate cluster operation
@@ -177,6 +182,10 @@ func (o *KubernikusAPI) Validate() error {
 
 	if o.ListClustersHandler == nil {
 		unregistered = append(unregistered, "ListClustersHandler")
+	}
+
+	if o.PatchClusterHandler == nil {
+		unregistered = append(unregistered, "PatchClusterHandler")
 	}
 
 	if o.ShowClusterHandler == nil {
@@ -296,6 +305,11 @@ func (o *KubernikusAPI) initHandlerCache() {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/api/v1/clusters"] = NewListClusters(o.context, o.ListClustersHandler)
+
+	if o.handlers["PATCH"] == nil {
+		o.handlers["PATCH"] = make(map[string]http.Handler)
+	}
+	o.handlers["PATCH"]["/api/v1/clusters/{name}"] = NewPatchCluster(o.context, o.PatchClusterHandler)
 
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)

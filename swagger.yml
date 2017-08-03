@@ -103,6 +103,29 @@ paths:
         name: name
         required: true
         in: path
+    patch:
+      operationId: PatchCluster
+      summary: Patch the specified cluser
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/Cluster'
+        default:
+          $ref: "#/responses/errorResponse"
+      security:
+        - keystone: []
+    parameters:
+      - uniqueItems: true
+        type: string
+        name: name
+        required: true
+        in: path
+      - name: body
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/Cluster'
 
 definitions:
   ApiVersions:

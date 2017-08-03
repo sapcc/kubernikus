@@ -139,6 +139,26 @@ func init() {
           }
         }
       },
+      "patch": {
+        "summary": "Patch the specified cluser",
+        "operationId": "PatchCluster",
+        "security": [
+          {
+            "keystone": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/Cluster"
+            }
+          },
+          "default": {
+            "$ref": "#/responses/errorResponse"
+          }
+        }
+      },
       "parameters": [
         {
           "uniqueItems": true,
@@ -146,6 +166,14 @@ func init() {
           "name": "name",
           "in": "path",
           "required": true
+        },
+        {
+          "name": "body",
+          "in": "body",
+          "required": true,
+          "schema": {
+            "$ref": "#/definitions/Cluster"
+          }
         }
       ]
     }
