@@ -1,6 +1,6 @@
 DATE     = $(shell date +%Y%m%d%H%M)
 IMAGE    ?= sapcc/kubernikus
-VERSION  ?= v$(DATE)
+VERSION  ?= latest
 GOOS     ?= $(shell go env | grep GOOS | cut -d'"' -f2)
 BINARIES := groundctl apiserver
 
@@ -52,6 +52,6 @@ ifndef HAS_GLIDE
 	brew install glide
 endif
 ifndef HAS_SWAGGER
-        brew tap go-swagger/go-swagger
+	brew tap go-swagger/go-swagger
 	brew install go-swagger
 endif
