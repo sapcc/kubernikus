@@ -22,7 +22,7 @@ func init() {
 
 func keystoneAuth() func(token string) (*models.Principal, error) {
 
-	if !(strings.HasSuffix("/v3") || strings.HasSuffix("/v3/")) {
+	if !(strings.HasSuffix(authURL, "/v3") || strings.HasSuffix(authURL, "/v3/")) {
 		authURL = path.Join(authURL, "/v3")
 	}
 
