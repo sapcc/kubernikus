@@ -20,6 +20,7 @@ spec:
           image: "{{ .Values.image }}:{{ .Values.imageTag }}"
           args:
             - groundctl
+            - --chart-directory=/etc/kubernikus/charts
             - --auth-url={{ .Values.openstack.auth_url }}
             - --auth-username={{ .Values.openstack.auth_user_id }}
             - --auth-password={{ .Values.openstack.auth_user_password }}

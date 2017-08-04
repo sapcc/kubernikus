@@ -2,6 +2,7 @@ package helm
 
 import (
 	"fmt"
+	"os"
 	"runtime"
 
 	"github.com/golang/glog"
@@ -14,7 +15,16 @@ import (
 
 func NewClient(kubeClient *kubernetes.Clientset, kubeConfig *rest.Config) (*helm.Client, error) {
 
-	tillerHost := "tiller-deploy.kube-system"
+	tillerHost := os.Getenv("TILLER_DEPLOY_SERVICE_HOST")
+	if tillerHost == "" {
+		tillerHost = "tiller-deploy.kube-system"
+	}
+	tillerPort := os.Getenv("TILLER_DEPLOY_SERVICE_PORT")
+	if tillerPort == "" {
+		tillerPort = "44134"
+	}
+	tillerHost = fmt.Sprintf("%s:%s", tillerHost, tillerPort)
+
 	if _, err := rest.InClusterConfig(); err != nil {
 		glog.V(2).Info("We are not running inside the cluster. Creating tunnel to tiller pod.")
 		tunnel, err := portforwarder.New("kube-system", kubeClient, kubeConfig)
