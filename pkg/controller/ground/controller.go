@@ -23,6 +23,8 @@ import (
 	"github.com/sapcc/kubernikus/pkg/openstack"
 	tprv1 "github.com/sapcc/kubernikus/pkg/tpr/v1"
 	"github.com/sapcc/kubernikus/pkg/version"
+	"google.golang.org/grpc"
+	"strings"
 )
 
 const (
@@ -155,7 +157,7 @@ func (op *Operator) handler(key string) error {
 		return fmt.Errorf("Failed to fetch key %s from cache: %s", key, err)
 	}
 	if !exists {
-		glog.Infof("Deleting kluster %s (not really, maybe in the future)", key)
+		glog.Infof("TPR of kluster %s deleted",key)
 	} else {
 		tpr := obj.(*tprv1.Kluster)
 		switch state := tpr.Status.State; state {
@@ -178,7 +180,9 @@ func (op *Operator) handler(key string) error {
 			glog.Infof("Terminating Kluster %s", tpr.GetName())
 			if err := op.terminateKluster(tpr); err != nil {
 				glog.Errorf("Failed to terminate kluster %s: %s",tpr.Name,err)
+				return err
 			}
+			glog.Infof("Terminated kluster %s",tpr.GetName())
 			return nil
 		}
 		}
@@ -298,13 +302,10 @@ func (op *Operator) terminateKluster(tpr *tprv1.Kluster) error {
 	if err != nil {
 		return fmt.Errorf("Failed to create helm client: %s", err)
 	}
-
-	_, err = helmClient.ReleaseContent(tpr.GetName())
-	if err != nil {
-		_, err = helmClient.DeleteRelease(tpr.GetName(),helm.DeletePurge(true))
-		if err != nil {
-			return err
-		}
+	glog.Infof("Deleting helm release %s",tpr.GetName())
+	_, err = helmClient.DeleteRelease(tpr.GetName(),helm.DeletePurge(true))
+	if err != nil && !strings.Contains(grpc.ErrorDesc(err),"release not found") {
+		return err
 	}
 	return op.clients.TPRClient().Delete().Namespace(tpr.GetNamespace()).Resource(tprv1.KlusterResourcePlural).Name(tpr.GetName()).Do().Error()
 }
