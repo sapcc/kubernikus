@@ -119,6 +119,63 @@ func init() {
           }
         }
       },
+      "put": {
+        "summary": "Update the specified cluser",
+        "operationId": "UpdateCluster",
+        "security": [
+          {
+            "keystone": []
+          }
+        ],
+        "parameters": [
+          {
+            "uniqueItems": true,
+            "type": "string",
+            "name": "name",
+            "in": "path",
+            "required": true
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/Cluster"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/Cluster"
+            }
+          },
+          "default": {
+            "$ref": "#/responses/errorResponse"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Terminate the specified cluser",
+        "operationId": "TerminateCluster",
+        "security": [
+          {
+            "keystone": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/Cluster"
+            }
+          },
+          "default": {
+            "$ref": "#/responses/errorResponse"
+          }
+        }
+      },
       "parameters": [
         {
           "uniqueItems": true,
