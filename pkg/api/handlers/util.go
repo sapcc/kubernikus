@@ -1,16 +1,13 @@
 package handlers
 
 import (
-	"encoding/json"
-
 	"github.com/go-openapi/swag"
 	"github.com/sapcc/kubernikus/pkg/api/models"
 	"k8s.io/apimachinery/pkg/labels"
-	"k8s.io/apimachinery/pkg/types"
-	"k8s.io/apimachinery/pkg/util/strategicpatch"
+	"k8s.io/client-go/rest"
 
-	tprv1 "github.com/sapcc/kubernikus/pkg/tpr/v1"
 	"fmt"
+	tprv1 "github.com/sapcc/kubernikus/pkg/tpr/v1"
 	"strings"
 )
 
@@ -26,29 +23,23 @@ func accountSelector(principal *models.Principal) labels.Selector {
 
 // qualifiedName returns <cluster_name>-<account_id>
 func qualifiedName(name string, accountId string) string {
-	if strings.Contains(name,accountId) {
+	if strings.Contains(name, accountId) {
 		return name
 	}
-	return fmt.Sprintf("%s-%s",name,accountId)
+	return fmt.Sprintf("%s-%s", name, accountId)
 }
 
-func createPatch(old, new *tprv1.Kluster) (patchBytes []byte, patchType types.PatchType, err error) {
-
-	oldData, err := json.Marshal(old)
-	if err != nil {
-		return nil, types.StrategicMergePatchType, err
+func editCluster(tprClient *rest.RESTClient, principal *models.Principal, name string, updateFunc func(k *tprv1.Kluster)) (*tprv1.Kluster, error) {
+	var kluster, updatedCluster tprv1.Kluster
+	if err := tprClient.Get().Namespace("kubernikus").Resource(tprv1.KlusterResourcePlural).LabelsSelectorParam(accountSelector(principal)).Name(qualifiedName(name, principal.Account)).Do().Into(&kluster); err != nil {
+		return nil, err
 	}
 
-	newData, err := json.Marshal(new)
-	if err != nil {
-		return nil, types.StrategicMergePatchType, err
-	}
+	updateFunc(&kluster)
 
-	patchBytes, err = strategicpatch.CreateTwoWayMergePatch(oldData, newData, tprv1.Kluster{})
-	if err != nil {
-		return nil, types.StrategicMergePatchType, err
+	if err := tprClient.Put().Body(&kluster).Namespace("kubernikus").Resource(tprv1.KlusterResourcePlural).LabelsSelectorParam(accountSelector(principal)).Name(qualifiedName(name, principal.Account)).Do().Into(&updatedCluster); err != nil {
+		return nil, err
 	}
-
-	return patchBytes, types.StrategicMergePatchType, nil
+	return &updatedCluster, nil
 
 }

@@ -103,9 +103,9 @@ paths:
         name: name
         required: true
         in: path
-    patch:
-      operationId: PatchCluster
-      summary: Patch the specified cluser
+    put:
+      operationId: UpdateCluster
+      summary: Update the specified cluser
       responses:
         200:
           description: OK

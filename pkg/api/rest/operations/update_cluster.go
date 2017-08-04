@@ -13,40 +13,40 @@ import (
 	"github.com/sapcc/kubernikus/pkg/api/models"
 )
 
-// PatchClusterHandlerFunc turns a function with the right signature into a patch cluster handler
-type PatchClusterHandlerFunc func(PatchClusterParams, *models.Principal) middleware.Responder
+// UpdateClusterHandlerFunc turns a function with the right signature into a update cluster handler
+type UpdateClusterHandlerFunc func(UpdateClusterParams, *models.Principal) middleware.Responder
 
 // Handle executing the request and returning a response
-func (fn PatchClusterHandlerFunc) Handle(params PatchClusterParams, principal *models.Principal) middleware.Responder {
+func (fn UpdateClusterHandlerFunc) Handle(params UpdateClusterParams, principal *models.Principal) middleware.Responder {
 	return fn(params, principal)
 }
 
-// PatchClusterHandler interface for that can handle valid patch cluster params
-type PatchClusterHandler interface {
-	Handle(PatchClusterParams, *models.Principal) middleware.Responder
+// UpdateClusterHandler interface for that can handle valid update cluster params
+type UpdateClusterHandler interface {
+	Handle(UpdateClusterParams, *models.Principal) middleware.Responder
 }
 
-// NewPatchCluster creates a new http.Handler for the patch cluster operation
-func NewPatchCluster(ctx *middleware.Context, handler PatchClusterHandler) *PatchCluster {
-	return &PatchCluster{Context: ctx, Handler: handler}
+// NewUpdateCluster creates a new http.Handler for the update cluster operation
+func NewUpdateCluster(ctx *middleware.Context, handler UpdateClusterHandler) *UpdateCluster {
+	return &UpdateCluster{Context: ctx, Handler: handler}
 }
 
-/*PatchCluster swagger:route PATCH /api/v1/clusters/{name} patchCluster
+/*UpdateCluster swagger:route PUT /api/v1/clusters/{name} updateCluster
 
-Patch the specified cluser
+Update the specified cluser
 
 */
-type PatchCluster struct {
+type UpdateCluster struct {
 	Context *middleware.Context
-	Handler PatchClusterHandler
+	Handler UpdateClusterHandler
 }
 
-func (o *PatchCluster) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
+func (o *UpdateCluster) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	route, rCtx, _ := o.Context.RouteInfo(r)
 	if rCtx != nil {
 		r = rCtx
 	}
-	var Params = NewPatchClusterParams()
+	var Params = NewUpdateClusterParams()
 
 	uprinc, aCtx, err := o.Context.Authorize(r, route)
 	if err != nil {
