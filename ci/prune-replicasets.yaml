@@ -1,0 +1,31 @@
+---
+platform: linux
+
+image_resource:
+  type: docker-image
+  source: { repository: hub.global.cloud.sap/monsoon/kubectl, tag: 'v1.4.6'}
+
+
+run:
+  path: sh
+  args:
+    - -ec
+    - |
+      set -o pipefail
+      RS_TO_DELETE=$(kubectl get rs --namespace=$NAMESPACE --sort-by='.metadata.creationTimestamp' --output-version="extensions/v1beta1" -l app=kubernius,type=groundctl -ojsonpath='{range .items[*]}{.metadata.name}{"\t"}{.spec.replicas}{"\n"}{end}' | grep '0$' | cut -f1 | head -n -$KEEP)
+      if [ -n "${RS_TO_DELETE}" ]; then
+        set -x
+        kubectl delete rs --namespace=$NAMESPACE $RS_TO_DELETE
+      fi
+      set +x
+      RS_TO_DELETE=$(kubectl get rs --namespace=$NAMESPACE --sort-by='.metadata.creationTimestamp' --output-version="extensions/v1beta1" -l app=kubernikus,type=api -ojsonpath='{range .items[*]}{.metadata.name}{"\t"}{.spec.replicas}{"\n"}{end}' | grep '0$' | cut -f1 | head -n -$KEEP)
+      if [ -n "${RS_TO_DELETE}" ]; then
+        set -x
+        kubectl delete rs --namespace=$NAMESPACE $RS_TO_DELETE
+      fi
+
+params:
+  KEEP: 3
+  NAMESPACE: kube-system
+  REGION:
+  GITHUB_TOKEN:

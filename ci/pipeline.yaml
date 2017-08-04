@@ -93,6 +93,11 @@ jobs:
         params:
           REGION: staging
           GITHUB_TOKEN: ((github-access-token))
+      - task: prune replicasets
+        file: kubernikus.git/ci/prune-replicasets.yaml
+        params:
+          REGION: staging
+          GITHUB_TOKEN: {{github-access-token}}
     on_failure:
       <<: *post_failure_to_slack
 
