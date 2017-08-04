@@ -1,3 +1,13 @@
+post_failure_to_slack: &post_failure_to_slack
+  put: slack-alert
+  params:
+    channel: '#kubernikus'
+    username: 'Concourse'
+    icon_emoji: ':airplane:'
+    silent: 'true'
+    text: |
+      :boom: <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|$BUILD_PIPELINE_NAME $BUILD_JOB_NAME job #$BUILD_NAME failed>
+
 resources:
   - name: kubernikus.git
     type: git
@@ -27,11 +37,21 @@ resources:
       username:   ((docker-hub-username))
       password:   ((docker-hub-password))
 
+  - name: slack-alert
+    type: slack-notification
+    source:
+      url: {{slack-webhook-url}}
+
 resource_types:
   - name: time-version-resource
     type: docker-image
     source:
       repository: hub.global.cloud.sap/d062392/time-version-resource
+  - name: slack-notification
+    type: docker-image
+    source:
+      repository: cfcommunity/slack-notification-resource
+      tag: latest
 
 jobs:
   - name: build
@@ -54,6 +74,8 @@ jobs:
             http_proxy: http://proxy.wdf.sap.corp:8080
             https_proxy: http://proxy.wdf.sap.corp:8080
             no_proxy: sap.corp,cloud.sap,127.0.0.1,localhost
+    on_failure:
+      <<: *post_failure_to_slack
 
   - name: staging
     serial: true
@@ -71,6 +93,8 @@ jobs:
         params:
           REGION: staging
           GITHUB_TOKEN: ((github-access-token))
+    on_failure:
+      <<: *post_failure_to_slack
 
   # Add new regions above this line, but note that you need to do a
   # manual `helm install` first. This pipeline can only `helm upgrade`.
