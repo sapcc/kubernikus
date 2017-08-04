@@ -5,8 +5,7 @@ import metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 const KlusterResourcePlural = "klusters"
 
 type KlusterSpec struct {
-	Name    string `json:"name"`
-	Account string `json:"account"`
+	Name string `json:"name"`
 }
 
 func (spec KlusterSpec) Validate() error {
@@ -19,6 +18,10 @@ type Kluster struct {
 	metav1.ObjectMeta `json:"metadata"`
 	Spec              KlusterSpec   `json:"spec"`
 	Status            KlusterStatus `json:"status,omitempty"`
+}
+
+func (spec Kluster) Account() string {
+	return spec.ObjectMeta.Labels["account"]
 }
 
 type KlusterState string

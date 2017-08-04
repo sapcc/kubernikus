@@ -30,8 +30,7 @@ func (d *createCluster) Handle(params operations.CreateClusterParams, principal 
 			Annotations: map[string]string{"creator": principal.Name},
 		},
 		Spec: tprv1.KlusterSpec{
-			Name:    params.Body.Name,
-			Account: principal.Account,
+			Name: params.Body.Name,
 		},
 		Status: tprv1.KlusterStatus{
 			State: tprv1.KlusterPending,

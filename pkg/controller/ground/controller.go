@@ -18,13 +18,14 @@ import (
 	"k8s.io/client-go/util/workqueue"
 	"k8s.io/helm/pkg/helm"
 
+	"strings"
+
 	helmutil "github.com/sapcc/kubernikus/pkg/helm"
 	"github.com/sapcc/kubernikus/pkg/kube"
 	"github.com/sapcc/kubernikus/pkg/openstack"
 	tprv1 "github.com/sapcc/kubernikus/pkg/tpr/v1"
 	"github.com/sapcc/kubernikus/pkg/version"
 	"google.golang.org/grpc"
-	"strings"
 )
 
 const (
@@ -157,34 +158,36 @@ func (op *Operator) handler(key string) error {
 		return fmt.Errorf("Failed to fetch key %s from cache: %s", key, err)
 	}
 	if !exists {
-		glog.Infof("TPR of kluster %s deleted",key)
+		glog.Infof("TPR of kluster %s deleted", key)
 	} else {
 		tpr := obj.(*tprv1.Kluster)
 		switch state := tpr.Status.State; state {
-		case tprv1.KlusterPending:  {
-			glog.Infof("Creating Kluster %s", tpr.GetName())
-			if err := op.updateStatus(tpr, tprv1.KlusterCreating, "Creating Cluster"); err != nil {
-				glog.Errorf("Failed to update status of kluster %s:%s", tpr.GetName(), err)
-			}
-			if err := op.createKluster(tpr); err != nil {
-				glog.Errorf("Creating kluster %s failed: %s", tpr.GetName(), err)
-				if err := op.updateStatus(tpr, tprv1.KlusterError, err.Error()); err != nil {
+		case tprv1.KlusterPending:
+			{
+				glog.Infof("Creating Kluster %s", tpr.GetName())
+				if err := op.updateStatus(tpr, tprv1.KlusterCreating, "Creating Cluster"); err != nil {
 					glog.Errorf("Failed to update status of kluster %s:%s", tpr.GetName(), err)
 				}
-				//We are making this a permanent error for now to avoid stomping the parent kluster
+				if err := op.createKluster(tpr); err != nil {
+					glog.Errorf("Creating kluster %s failed: %s", tpr.GetName(), err)
+					if err := op.updateStatus(tpr, tprv1.KlusterError, err.Error()); err != nil {
+						glog.Errorf("Failed to update status of kluster %s:%s", tpr.GetName(), err)
+					}
+					//We are making this a permanent error for now to avoid stomping the parent kluster
+					return nil
+				}
+				glog.Infof("Kluster %s created", tpr.GetName())
+			}
+		case tprv1.KlusterTerminating:
+			{
+				glog.Infof("Terminating Kluster %s", tpr.GetName())
+				if err := op.terminateKluster(tpr); err != nil {
+					glog.Errorf("Failed to terminate kluster %s: %s", tpr.Name, err)
+					return err
+				}
+				glog.Infof("Terminated kluster %s", tpr.GetName())
 				return nil
 			}
-			glog.Infof("Kluster %s created", tpr.GetName())
-		}
-		case tprv1.KlusterTerminating: {
-			glog.Infof("Terminating Kluster %s", tpr.GetName())
-			if err := op.terminateKluster(tpr); err != nil {
-				glog.Errorf("Failed to terminate kluster %s: %s",tpr.Name,err)
-				return err
-			}
-			glog.Infof("Terminated kluster %s",tpr.GetName())
-			return nil
-		}
 		}
 	}
 	return nil
@@ -257,12 +260,12 @@ func (op *Operator) createKluster(tpr *tprv1.Kluster) error {
 		return fmt.Errorf("Failed to create helm client: %s", err)
 	}
 
-	routers, err := op.oclient.GetRouters(tpr.Spec.Account)
+	routers, err := op.oclient.GetRouters(tpr.Account())
 	if err != nil {
-		return fmt.Errorf("Couldn't get routers for project %s: %s", tpr.Spec.Account, err)
+		return fmt.Errorf("Couldn't get routers for project %s: %s", tpr.Account(), err)
 	}
 
-	glog.V(2).Infof("Found routers for project %s: %#v", tpr.Spec.Account, routers)
+	glog.V(2).Infof("Found routers for project %s: %#v", tpr.Account(), routers)
 
 	if !(len(routers) == 1 && len(routers[0].Subnets) == 1) {
 		return fmt.Errorf("Project needs to contain a router with exactly one subnet")
@@ -281,7 +284,7 @@ func (op *Operator) createKluster(tpr *tprv1.Kluster) error {
 	}
 	cluster.OpenStack.Password = password
 	cluster.OpenStack.DomainName = "Default"
-	cluster.OpenStack.ProjectID = tpr.Spec.Account
+	cluster.OpenStack.ProjectID = tpr.Account()
 	cluster.OpenStack.RouterID = routers[0].ID
 	cluster.OpenStack.LBSubnetID = routers[0].Subnets[0].ID
 
@@ -302,9 +305,9 @@ func (op *Operator) terminateKluster(tpr *tprv1.Kluster) error {
 	if err != nil {
 		return fmt.Errorf("Failed to create helm client: %s", err)
 	}
-	glog.Infof("Deleting helm release %s",tpr.GetName())
-	_, err = helmClient.DeleteRelease(tpr.GetName(),helm.DeletePurge(true))
-	if err != nil && !strings.Contains(grpc.ErrorDesc(err),"release not found") {
+	glog.Infof("Deleting helm release %s", tpr.GetName())
+	_, err = helmClient.DeleteRelease(tpr.GetName(), helm.DeletePurge(true))
+	if err != nil && !strings.Contains(grpc.ErrorDesc(err), "release not found") {
 		return err
 	}
 	return op.clients.TPRClient().Delete().Namespace(tpr.GetNamespace()).Resource(tprv1.KlusterResourcePlural).Name(tpr.GetName()).Do().Error()
