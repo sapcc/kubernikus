@@ -158,7 +158,8 @@ func (op *Operator) handler(key string) error {
 		glog.Infof("Deleting kluster %s (not really, maybe in the future)", key)
 	} else {
 		tpr := obj.(*tprv1.Kluster)
-		if tpr.Status.State == tprv1.KlusterPending {
+		switch state := tpr.Status.State; state {
+		case tprv1.KlusterPending:  {
 			glog.Infof("Creating Kluster %s", tpr.GetName())
 			if err := op.updateStatus(tpr, tprv1.KlusterCreating, "Creating Cluster"); err != nil {
 				glog.Errorf("Failed to update status of kluster %s:%s", tpr.GetName(), err)
@@ -172,6 +173,14 @@ func (op *Operator) handler(key string) error {
 				return nil
 			}
 			glog.Infof("Kluster %s created", tpr.GetName())
+		}
+		case tprv1.KlusterTerminating: {
+			glog.Infof("Terminating Kluster %s", tpr.GetName())
+			if err := op.terminateKluster(tpr); err != nil {
+				glog.Errorf("Failed to terminate kluster %s: %s",tpr.Name,err)
+			}
+			return nil
+		}
 		}
 	}
 	return nil
@@ -282,4 +291,20 @@ func (op *Operator) createKluster(tpr *tprv1.Kluster) error {
 
 	_, err = helmClient.InstallRelease(path.Join(op.ChartDirectory, "kube-master"), tpr.Namespace, helm.ValueOverrides(rawValues), helm.ReleaseName(tpr.GetName()))
 	return err
+}
+
+func (op *Operator) terminateKluster(tpr *tprv1.Kluster) error {
+	helmClient, err := helmutil.NewClient(op.clients.Clientset(), op.clients.Config())
+	if err != nil {
+		return fmt.Errorf("Failed to create helm client: %s", err)
+	}
+
+	_, err = helmClient.ReleaseContent(tpr.GetName())
+	if err != nil {
+		_, err = helmClient.DeleteRelease(tpr.GetName(),helm.DeletePurge(true))
+		if err != nil {
+			return err
+		}
+	}
+	return op.clients.TPRClient().Delete().Namespace(tpr.GetNamespace()).Resource(tprv1.KlusterResourcePlural).Name(tpr.GetName()).Do().Error()
 }
