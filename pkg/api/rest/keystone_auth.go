@@ -2,7 +2,6 @@ package rest
 
 import (
 	"fmt"
-	"path"
 	"strings"
 	"time"
 
@@ -23,7 +22,7 @@ func init() {
 func keystoneAuth() func(token string) (*models.Principal, error) {
 
 	if !(strings.HasSuffix(authURL, "/v3") || strings.HasSuffix(authURL, "/v3/")) {
-		authURL = path.Join(authURL, "/v3")
+		authURL = fmt.Sprintf("%s/%s", strings.TrimRight(authURL, "/"), "/v3")
 	}
 
 	auth := keystone.New(authURL)
