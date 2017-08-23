@@ -46,9 +46,7 @@ spec:
           args:
             - /hyperkube
             - scheduler
-{{- range $key, $value := .Values.scheduler.flags }}
-            - --{{ $key }}={{ $value -}}
-{{ end }}
+            - --kubeconfig=/etc/kubernetes/config/kubeconfig
           volumeMounts:
             - mountPath: /etc/kubernetes/certs
               name: certs

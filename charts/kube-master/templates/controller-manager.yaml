@@ -36,7 +36,14 @@ spec:
                 path: kube-client.pem
               - key: apiserver-clients-system-kube-controller-manager-key.pem
                 path: kube-client.key
-{{- include "certItemsFromFlags" .Values.controllerManager.flags |indent 14 }}
+              - key: apiserver-nodes-ca.pem
+                path: apiserver-nodes-ca.pem
+              - key: apiserver-nodes-ca-key.pem
+                path: apiserver-nodes-ca-key.pem
+              - key: apiserver-clients-ca.pem
+                path: apiserver-clients-ca.pem
+              - key: apiserver-clients-ca-key.pem
+                path: apiserver-clients-ca-key.pem
         - name: config
           configMap:
             name: {{ include "master.fullname" . }}
@@ -55,9 +62,18 @@ spec:
           args:
             - /hyperkube
             - controller-manager
-{{- range $key, $value := .Values.controllerManager.flags }}
-            - --{{ $key }}={{ $value -}}
-{{ end }}
+            - --allocate-node-cidrs=true
+            - --cloud-config=/etc/kubernetes/cloudprovider/openstack.config
+            - --cloud-provider=openstack
+            - --cluster-cidr={{ .Values.clusterCIDR }}
+            - --cluster-name=kubernetes
+            - --cluster-signing-cert-file=/etc/kubernetes/certs/apiserver-nodes-ca.pem
+            - --cluster-signing-key-file=/etc/kubernetes/certs/apiserver-nodes-ca-key.pem
+            - --configure-cloud-routes=true
+            - --kubeconfig=/etc/kubernetes/config/kubeconfig
+            - --root-ca-file=/etc/kubernetes/certs/apiserver-clients-ca.pem
+            - --service-account-private-key-file=/etc/kubernetes/certs/apiserver-clients-ca-key.pem
+            - --service-cluster-ip-range={{ .Values.serviceCIDR }}
           volumeMounts:
             - mountPath: /etc/kubernetes/certs/
               name: certs
