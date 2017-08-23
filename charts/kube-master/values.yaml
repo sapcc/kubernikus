@@ -24,32 +24,12 @@ openstack: {}
 # Use these keys to specify the certs as helm values
 certs: {}
 
+clusterCIDR: 10.180.128.0/17
+serviceCIDR: 10.180.1.0/24
+
 api:
   replicaCount: 1
   # ingressHost:
-  flags:
-    secure-port: 6443
-    admission-control: NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,ResourceQuota
-    allow-privileged: true
-    authorization-mode: RBAC
-    cloud-config: /etc/kubernetes/cloudprovider/openstack.config
-    cloud-provider: openstack
-    experimental-bootstrap-token-auth: true
-    runtime-config: rbac.authorization.k8s.io/v1alpha1,extensions/v1beta1=true,extensions/v1beta1/thirdpartyresources=true
-    service-cluster-ip-range: 10.180.1.0/24
-    #Cert Spratz
-    client-ca-file: /etc/kubernetes/certs/apiserver-clients-ca.pem
-    etcd-cafile: /etc/kubernetes/certs/etcd-clients-ca.pem
-    etcd-certfile: /etc/kubernetes/certs/etcd-clients-apiserver.pem
-    etcd-keyfile: /etc/kubernetes/certs/etcd-clients-apiserver-key.pem
-    kubelet-certificate-authority: /etc/kubernetes/certs/kubelet-clients-ca-key.pem
-    kubelet-client-certificate: /etc/kubernetes/certs/kubelet-clients-apiserver.pem
-    kubelet-client-key: /etc/kubernetes/certs/kubelet-clients-apiserver-key.pem
-    tls-ca-file: /etc/kubernetes/certs/tls-ca.pem
-    tls-cert-file: /etc/kubernetes/certs/tls-apiserver.pem
-    tls-private-key-file: /etc/kubernetes/certs/tls-apiserver-key.pem
-    # tls-sni-cert-key: /etc/kubernetes/certs/tls-sni.pem,/etc/kubernetes/certs/tls-sni.key
-
   resources:
     limits:
       cpu: 100m
@@ -60,19 +40,6 @@ api:
 
 controllerManager:
   replicaCount: 1
-  flags:
-    allocate-node-cidrs: true
-    cloud-config: /etc/kubernetes/cloudprovider/openstack.config
-    cloud-provider: openstack
-    cluster-cidr: 10.180.128.0/17
-    cluster-name: kubernetes
-    cluster-signing-cert-file: /etc/kubernetes/certs/apiserver-nodes-ca.pem
-    cluster-signing-key-file: /etc/kubernetes/certs/apiserver-nodes-ca-key.pem
-    configure-cloud-routes: true
-    kubeconfig: /etc/kubernetes/config/kubeconfig
-    root-ca-file: /etc/kubernetes/certs/apiserver-clients-ca.pem
-    service-account-private-key-file: /etc/kubernetes/certs/apiserver-clients-ca-key.pem
-    service-cluster-ip-range: 10.180.1.0/24
   resources:
     limits:
       cpu: 100m
@@ -83,8 +50,6 @@ controllerManager:
 
 scheduler:
   replicaCount: 1
-  flags:
-    kubeconfig: /etc/kubernetes/config/kubeconfig
   resources:
     limits:
       cpu: 100m

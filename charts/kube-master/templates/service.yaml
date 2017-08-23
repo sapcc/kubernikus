@@ -9,6 +9,6 @@ metadata:
 spec:
   type: ClusterIP
   ports:
-  - port: {{ index .Values.api.flags "secure-port" }}
+  - port: 6443
   selector:
     app: {{ include "master.fullname" . }}-apiserver

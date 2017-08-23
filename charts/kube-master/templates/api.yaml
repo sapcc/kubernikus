@@ -30,7 +30,26 @@ spec:
           secret:
             secretName: {{ .Values.certsSecretName | default (include "master.fullname" .) }}
             items:
-{{- include "certItemsFromFlags" .Values.api.flags |indent 14 }}
+              - key: apiserver-clients-ca.pem
+                path: apiserver-clients-ca.pem
+              - key: etcd-clients-ca.pem
+                path: etcd-clients-ca.pem
+              - key: etcd-clients-apiserver.pem
+                path: etcd-clients-apiserver.pem
+              - key: etcd-clients-apiserver-key.pem
+                path: etcd-clients-apiserver-key.pem
+              - key: kubelet-clients-ca-key.pem
+                path: kubelet-clients-ca-key.pem
+              - key: kubelet-clients-apiserver.pem
+                path: kubelet-clients-apiserver.pem
+              - key: kubelet-clients-apiserver-key.pem
+                path: kubelet-clients-apiserver-key.pem
+              - key: tls-ca.pem
+                path: tls-ca.pem
+              - key: tls-apiserver.pem
+                path: tls-apiserver.pem
+              - key: tls-apiserver-key.pem
+                path: tls-apiserver-key.pem
         - name: cloudprovider
           secret:
             secretName: {{ include "master.fullname" . }}
@@ -44,9 +63,27 @@ spec:
             - /hyperkube
             - apiserver
             - --etcd-servers=http://{{ include "etcd.fullname" . }}:2379
-{{- range $key, $value := .Values.api.flags }}
-            - --{{ $key }}={{ $value -}}
-{{ end }}
+            - --secure-port=6443
+            - --admission-control=NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,ResourceQuota
+            - --allow-privileged=true
+            - --authorization-mode=RBAC
+            - --cloud-config=/etc/kubernetes/cloudprovider/openstack.config
+            - --cloud-provider=openstack
+            - --experimental-bootstrap-token-auth=true
+            - --runtime-config=rbac.authorization.k8s.io/v1alpha1,extensions/v1beta1=true,extensions/v1beta1/thirdpartyresources=true
+            - --service-cluster-ip-range={{ .Values.serviceCIDR }}
+            #Cert Spratz
+            - --client-ca-file=/etc/kubernetes/certs/apiserver-clients-ca.pem
+            - --etcd-cafile=/etc/kubernetes/certs/etcd-clients-ca.pem
+            - --etcd-certfile=/etc/kubernetes/certs/etcd-clients-apiserver.pem
+            - --etcd-keyfile=/etc/kubernetes/certs/etcd-clients-apiserver-key.pem
+            - --kubelet-certificate-authority=/etc/kubernetes/certs/kubelet-clients-ca-key.pem
+            - --kubelet-client-certificate=/etc/kubernetes/certs/kubelet-clients-apiserver.pem
+            - --kubelet-client-key=/etc/kubernetes/certs/kubelet-clients-apiserver-key.pem
+            - --tls-ca-file=/etc/kubernetes/certs/tls-ca.pem
+            - --tls-cert-file=/etc/kubernetes/certs/tls-apiserver.pem
+            - --tls-private-key-file=/etc/kubernetes/certs/tls-apiserver-key.pem
+            # --tls-sni-cert-key=/etc/kubernetes/certs/tls-sni.pem,/etc/kubernetes/certs/tls-sni.key
           volumeMounts:
             - mountPath: /etc/kubernetes/certs
               name: certs
