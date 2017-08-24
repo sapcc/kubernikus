@@ -129,13 +129,6 @@ func init() {
         ],
         "parameters": [
           {
-            "uniqueItems": true,
-            "type": "string",
-            "name": "name",
-            "in": "path",
-            "required": true
-          },
-          {
             "name": "body",
             "in": "body",
             "required": true,

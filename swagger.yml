@@ -67,6 +67,12 @@ paths:
         - keystone: []
 
   /api/v1/clusters/{name}:
+    parameters:
+      - uniqueItems: true
+        type: string
+        name: name
+        required: true
+        in: path
     get:
       operationId: ShowCluster
       summary: Show the specified cluser
@@ -79,12 +85,6 @@ paths:
           $ref: "#/responses/errorResponse"
       security:
         - keystone: []
-    parameters:
-      - uniqueItems: true
-        type: string
-        name: name
-        required: true
-        in: path
     delete:
       operationId: TerminateCluster
       summary: Terminate the specified cluser
@@ -97,12 +97,6 @@ paths:
           $ref: "#/responses/errorResponse"
       security:
         - keystone: []
-    parameters:
-      - uniqueItems: true
-        type: string
-        name: name
-        required: true
-        in: path
     put:
       operationId: UpdateCluster
       summary: Update the specified cluser
@@ -116,11 +110,6 @@ paths:
       security:
         - keystone: []
       parameters:
-        - uniqueItems: true
-          type: string
-          name: name
-          required: true
-          in: path
         - name: body
           in: body
           required: true
