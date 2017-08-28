@@ -216,7 +216,7 @@ func (op *Operator) klusterTerminate(obj interface{}) {
 func (op *Operator) klusterUpdate(cur, old interface{}) {
 	curKluster := cur.(*tprv1.Kluster)
 	oldKluster := old.(*tprv1.Kluster)
-	if !reflect.DeepEqual(oldKluster, curKluster) {
+	if !reflect.DeepEqual(oldKluster.Spec, curKluster.Spec) {
 		key, err := cache.MetaNamespaceIndexFunc(curKluster)
 		if err != nil {
 			return
