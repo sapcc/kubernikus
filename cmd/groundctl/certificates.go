@@ -12,7 +12,7 @@ func init() {
 	RootCmd.AddCommand(certificatesCmd)
 
 	certificatesCmd.Flags().String("name", "", "Name of the satellite cluster")
-	viper.BindPFlag("name", certificatesCmd.Flags().Lookup("name"))
+	viper.BindPFlag("certificates.name", certificatesCmd.Flags().Lookup("name"))
 }
 
 var certificatesCmd = &cobra.Command{
@@ -24,7 +24,7 @@ var certificatesCmd = &cobra.Command{
 			return err
 		}
 
-		cluster, err := ground.NewCluster(viper.GetString("name"))
+		cluster, err := ground.NewCluster(viper.GetString("certificates.name"), "localdomain")
 		if err != nil {
 			return err
 		}
@@ -39,7 +39,7 @@ var certificatesCmd = &cobra.Command{
 }
 
 func validateCertificateInputs() error {
-	if viper.GetString("name") == "" {
+	if viper.GetString("certificates.name") == "" {
 		return errors.New("You need to provide a name")
 	}
 

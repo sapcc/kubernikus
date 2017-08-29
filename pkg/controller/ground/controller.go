@@ -271,7 +271,7 @@ func (op *Operator) createKluster(tpr *tprv1.Kluster) error {
 		return fmt.Errorf("Project needs to contain a router with exactly one subnet")
 	}
 
-	cluster, err := NewCluster(tpr.GetName())
+	cluster, err := NewCluster(tpr.GetName(), "kluster.staging.cloud.sap")
 	if err != nil {
 		return err
 	}

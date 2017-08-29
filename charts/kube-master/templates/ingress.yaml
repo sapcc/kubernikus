@@ -12,7 +12,7 @@ metadata:
 
 spec:
   tls:
-     - secretName: {{ include "master.fullname" }}
+     - secretName: {{ include "master.fullname" . }}
        hosts: [{{ .Values.api.ingressHost }}]
   rules:
     - host: {{ .Values.api.ingressHost }}
@@ -21,5 +21,5 @@ spec:
         - path: /
           backend:
             serviceName: {{ include "master.fullname" . }}-apiserver
-            servicePort: {{ index .Values.api.flags "secure-port" }}
+            servicePort: 6443
 {{- end }}

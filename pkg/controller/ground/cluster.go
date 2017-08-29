@@ -1,5 +1,7 @@
 package ground
 
+import "fmt"
+
 type Cluster struct {
 	Certificates *Certificates `yaml:"certs"`
 	API          API           `yaml:"api,omitempty"`
@@ -21,12 +23,15 @@ type OpenStack struct {
 	RouterID   string `yaml:"routerID,omitempty"`
 }
 
-func NewCluster(name string) (*Cluster, error) {
+func NewCluster(name, domain string) (*Cluster, error) {
 	cluster := &Cluster{
 		Certificates: &Certificates{},
+		API: API{
+			IngressHost: fmt.Sprintf("%s.%s", name, domain),
+		},
 	}
 
-	if err := cluster.Certificates.populateForSatellite(name); err != nil {
+	if err := cluster.Certificates.populateForSatellite(name, domain); err != nil {
 		return cluster, err
 	}
 
