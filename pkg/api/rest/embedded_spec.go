@@ -234,20 +234,16 @@ func init() {
       }
     },
     "error": {
-      "description": "the error model is a model for all the error responses coming from kvstore\n",
+      "description": "the error model is a model for all the error responses coming from Kubernikus \n",
       "type": "object",
       "required": [
         "message",
         "code"
       ],
       "properties": {
-        "cause": {
-          "$ref": "#/definitions/error"
-        },
         "code": {
           "description": "The error code",
-          "type": "integer",
-          "format": "int64"
+          "type": "integer"
         },
         "helpUrl": {
           "description": "link to help page explaining the error in more detail",

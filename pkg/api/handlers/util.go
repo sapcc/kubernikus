@@ -1,21 +1,15 @@
 package handlers
 
 import (
-	"github.com/go-openapi/swag"
 	"github.com/sapcc/kubernikus/pkg/api/models"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/client-go/rest"
 
 	"fmt"
-	tprv1 "github.com/sapcc/kubernikus/pkg/tpr/v1"
 	"strings"
-)
 
-func modelsError(err error) *models.Error {
-	return &models.Error{
-		Message: swag.String(err.Error()),
-	}
-}
+	tprv1 "github.com/sapcc/kubernikus/pkg/tpr/v1"
+)
 
 func accountSelector(principal *models.Principal) labels.Selector {
 	return labels.SelectorFromSet(map[string]string{"account": principal.Account})

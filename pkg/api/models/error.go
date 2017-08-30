@@ -13,13 +13,10 @@ import (
 	"github.com/go-openapi/validate"
 )
 
-// Error the error model is a model for all the error responses coming from kvstore
+// Error the error model is a model for all the error responses coming from Kubernikus
 //
 // swagger:model error
 type Error struct {
-
-	// cause
-	Cause *Error `json:"cause,omitempty"`
 
 	// The error code
 	// Required: true
@@ -37,11 +34,6 @@ type Error struct {
 func (m *Error) Validate(formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.validateCause(formats); err != nil {
-		// prop
-		res = append(res, err)
-	}
-
 	if err := m.validateCode(formats); err != nil {
 		// prop
 		res = append(res, err)
@@ -55,25 +47,6 @@ func (m *Error) Validate(formats strfmt.Registry) error {
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
-	return nil
-}
-
-func (m *Error) validateCause(formats strfmt.Registry) error {
-
-	if swag.IsZero(m.Cause) { // not required
-		return nil
-	}
-
-	if m.Cause != nil {
-
-		if err := m.Cause.Validate(formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("cause")
-			}
-			return err
-		}
-	}
-
 	return nil
 }
 

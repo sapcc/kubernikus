@@ -155,7 +155,7 @@ definitions:
             type: string
   error:
     description: |
-      the error model is a model for all the error responses coming from kvstore
+      the error model is a model for all the error responses coming from Kubernikus 
     type: object
     required:
       - message
@@ -163,7 +163,6 @@ definitions:
     properties:
       code:
         type: integer
-        format: int64
         description: The error code
       message:
         description: The error message
@@ -172,5 +171,3 @@ definitions:
         description: link to help page explaining the error in more detail
         type: string
         format: uri
-      cause:
-        $ref: '#/definitions/error'

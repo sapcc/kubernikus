@@ -20,15 +20,16 @@ type terminateCluster struct {
 
 func (d *terminateCluster) Handle(params operations.TerminateClusterParams, principal *models.Principal) middleware.Responder {
 
-	_,err := editCluster(d.rt.Clients.TPRClient(),principal,params.Name,func(kluster *tprv1.Kluster){
+	_, err := editCluster(d.rt.Clients.TPRClient(), principal, params.Name, func(kluster *tprv1.Kluster) {
 		kluster.Status.State = tprv1.KlusterTerminating
 		kluster.Status.Message = "Cluster terminating"
 	})
 	if err != nil {
 		if apierrors.IsNotFound(err) {
-			return operations.NewTerminateClusterDefault(404).WithPayload(modelsError(err))
+			return NewErrorResponse(&operations.TerminateClusterDefault{}, 404, "Not found")
 		}
-		return operations.NewTerminateClusterDefault(0).WithPayload(modelsError(err))
+		return NewErrorResponse(&operations.TerminateClusterDefault{}, 500, err.Error())
+
 	}
 	return operations.NewTerminateClusterOK()
 }

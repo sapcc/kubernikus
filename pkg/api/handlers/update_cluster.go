@@ -25,9 +25,9 @@ func (d *updateCluster) Handle(params operations.UpdateClusterParams, principal 
 	})
 	if err != nil {
 		if apierrors.IsNotFound(err) {
-			return operations.NewUpdateClusterDefault(404).WithPayload(modelsError(err))
+			return NewErrorResponse(&operations.UpdateClusterDefault{}, 404, "Not found")
 		}
-		return operations.NewUpdateClusterDefault(0).WithPayload(modelsError(err))
+		return NewErrorResponse(&operations.UpdateClusterDefault{}, 500, err.Error())
 	}
 	return operations.NewUpdateClusterOK()
 }
