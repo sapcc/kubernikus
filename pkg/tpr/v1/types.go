@@ -5,7 +5,21 @@ import metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 const KlusterResourcePlural = "klusters"
 
 type KlusterSpec struct {
-	Name string `json:"name"`
+	Name      string     `json:"name"`
+	NodePools []NodePool `json:"nodePools"`
+}
+
+type NodePool struct {
+	Name   string         `json:"name"`
+	Size   int            `json:"size"`
+	Flavor string         `json:"flavor"`
+	Image  string         `json:"image"`
+	Config NodePoolConfig `json:"config"`
+}
+
+type NodePoolConfig struct {
+	Upgrade bool `json:"upgrade"`
+	Repair  bool `json:"repair"`
 }
 
 func (spec KlusterSpec) Validate() error {
