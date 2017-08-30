@@ -51,7 +51,7 @@ paths:
       operationId: CreateCluster
       summary: Create a cluster
       responses:
-        200:
+        201:
           description: OK
           schema:
             $ref: '#/definitions/Cluster'

@@ -13,14 +13,14 @@ import (
 	"github.com/sapcc/kubernikus/pkg/api/models"
 )
 
-// CreateClusterOKCode is the HTTP code returned for type CreateClusterOK
-const CreateClusterOKCode int = 200
+// CreateClusterCreatedCode is the HTTP code returned for type CreateClusterCreated
+const CreateClusterCreatedCode int = 201
 
-/*CreateClusterOK OK
+/*CreateClusterCreated OK
 
-swagger:response createClusterOK
+swagger:response createClusterCreated
 */
-type CreateClusterOK struct {
+type CreateClusterCreated struct {
 
 	/*
 	  In: Body
@@ -28,26 +28,26 @@ type CreateClusterOK struct {
 	Payload *models.Cluster `json:"body,omitempty"`
 }
 
-// NewCreateClusterOK creates CreateClusterOK with default headers values
-func NewCreateClusterOK() *CreateClusterOK {
-	return &CreateClusterOK{}
+// NewCreateClusterCreated creates CreateClusterCreated with default headers values
+func NewCreateClusterCreated() *CreateClusterCreated {
+	return &CreateClusterCreated{}
 }
 
-// WithPayload adds the payload to the create cluster o k response
-func (o *CreateClusterOK) WithPayload(payload *models.Cluster) *CreateClusterOK {
+// WithPayload adds the payload to the create cluster created response
+func (o *CreateClusterCreated) WithPayload(payload *models.Cluster) *CreateClusterCreated {
 	o.Payload = payload
 	return o
 }
 
-// SetPayload sets the payload to the create cluster o k response
-func (o *CreateClusterOK) SetPayload(payload *models.Cluster) {
+// SetPayload sets the payload to the create cluster created response
+func (o *CreateClusterCreated) SetPayload(payload *models.Cluster) {
 	o.Payload = payload
 }
 
 // WriteResponse to the client
-func (o *CreateClusterOK) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
+func (o *CreateClusterCreated) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
-	rw.WriteHeader(200)
+	rw.WriteHeader(201)
 	if o.Payload != nil {
 		payload := o.Payload
 		if err := producer.Produce(rw, payload); err != nil {

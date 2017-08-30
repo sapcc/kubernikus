@@ -86,7 +86,7 @@ func init() {
           }
         ],
         "responses": {
-          "200": {
+          "201": {
             "description": "OK",
             "schema": {
               "$ref": "#/definitions/Cluster"
