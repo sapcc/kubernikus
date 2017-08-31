@@ -58,6 +58,7 @@ func NewOperatorOptions() *OperatorOptions {
 }
 
 func (o *OperatorOptions) BindFlags(flags *pflag.FlagSet) {
+	flags.StringVar(&o.KubeConfig, "kubeconfig", o.KubeConfig, "Path to the kubeconfig file to use to talk to the Kubernetes apiserver. If unset, try the environment variable KUBECONFIG, as well as in-cluster configuration")
 	flags.StringVar(&o.ChartDirectory, "chart-directory", o.ChartDirectory, "Directory containing the kubernikus related charts")
 	flags.StringVar(&o.AuthURL, "auth-url", o.AuthURL, "Openstack keystone url")
 	flags.StringVar(&o.AuthUsername, "auth-username", o.AuthUsername, "Service user for kubernikus")
