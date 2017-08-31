@@ -2,7 +2,7 @@ apiVersion: extensions/v1beta1
 kind: Deployment
 
 metadata:
-  name: kubernikus-groundctl
+  name: kubernikus-operator
   labels:
     app: kubernikus
     type: operator
