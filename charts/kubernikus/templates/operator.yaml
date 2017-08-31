@@ -5,7 +5,7 @@ metadata:
   name: kubernikus-groundctl
   labels:
     app: kubernikus
-    type: groundctl
+    type: operator
 
 spec:
   revisionHistoryLimit: {{ .Values.revisionHistoryLimit }}
@@ -13,13 +13,13 @@ spec:
     metadata:
       labels:
         app: kubernikus
-        type: groundctl
+        type: operator
     spec:
       containers:
-        - name: groundctl
+        - name: operator
           image: "{{ .Values.image }}:{{ .Values.imageTag }}"
           args:
-            - groundctl
+            - operator
             - --chart-directory=/etc/kubernikus/charts
             - --auth-url={{ .Values.openstack.auth_url }}
             - --auth-username={{ .Values.openstack.auth_user_id }}

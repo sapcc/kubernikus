@@ -3,7 +3,7 @@ DATE     = $(shell date +%Y%m%d%H%M)
 IMAGE    ?= sapcc/kubernikus
 VERSION  ?= latest
 GOOS     ?= $(shell go env | grep GOOS | cut -d'"' -f2)
-BINARIES := apiserver groundctl 
+BINARIES := apiserver kubernikus 
 
 LDFLAGS := -X github.com/sapcc/kubernikus/pkg/version.VERSION=$(VERSION)
 GOFLAGS := -ldflags "$(LDFLAGS) -s -w"
