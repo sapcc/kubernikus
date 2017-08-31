@@ -178,6 +178,37 @@ func init() {
           "required": true
         }
       ]
+    },
+    "/api/v1/clusters/{name}/credentials": {
+      "get": {
+        "summary": "Get user specific credentials to access the cluster",
+        "operationId": "GetClusterCredentials",
+        "security": [
+          {
+            "keystone": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/Credentials"
+            }
+          },
+          "default": {
+            "$ref": "#/responses/errorResponse"
+          }
+        }
+      },
+      "parameters": [
+        {
+          "uniqueItems": true,
+          "type": "string",
+          "name": "name",
+          "in": "path",
+          "required": true
+        }
+      ]
     }
   },
   "definitions": {
@@ -197,6 +228,9 @@ func init() {
     },
     "Cluster": {
       "type": "object",
+      "required": [
+        "name"
+      ],
       "properties": {
         "name": {
           "description": "name of the cluster",
@@ -205,6 +239,14 @@ func init() {
         },
         "status": {
           "description": "status of the cluster",
+          "type": "string"
+        }
+      }
+    },
+    "Credentials": {
+      "type": "object",
+      "properties": {
+        "kubeconfig": {
           "type": "string"
         }
       }

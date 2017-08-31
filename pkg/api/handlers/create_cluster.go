@@ -23,14 +23,15 @@ type createCluster struct {
 }
 
 func (d *createCluster) Handle(params operations.CreateClusterParams, principal *models.Principal) middleware.Responder {
+	name := *params.Body.Name
 	kluster := &tprv1.Kluster{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:        fmt.Sprintf("%s-%s", params.Body.Name, principal.Account),
+			Name:        fmt.Sprintf("%s-%s", name, principal.Account),
 			Labels:      map[string]string{"account": principal.Account},
 			Annotations: map[string]string{"creator": principal.Name},
 		},
 		Spec: tprv1.KlusterSpec{
-			Name: params.Body.Name,
+			Name: name,
 		},
 		Status: tprv1.KlusterStatus{
 			State: tprv1.KlusterPending,
@@ -40,7 +41,7 @@ func (d *createCluster) Handle(params operations.CreateClusterParams, principal 
 	if err := d.rt.Clients.TPRClient().Post().Namespace("kubernikus").Resource(tprv1.KlusterResourcePlural).Body(kluster).Do().Error(); err != nil {
 		glog.Errorf("Failed to create cluster: %s", err)
 		if apierrors.IsAlreadyExists(err) {
-			return NewErrorResponse(&operations.CreateClusterDefault{}, 409, "Cluster with name %s already exists", params.Body.Name)
+			return NewErrorResponse(&operations.CreateClusterDefault{}, 409, "Cluster with name %s already exists", name)
 		}
 		return NewErrorResponse(&operations.CreateClusterDefault{}, 500, err.Error())
 	}

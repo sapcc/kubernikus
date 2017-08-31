@@ -25,7 +25,7 @@ func (d *listClusters) Handle(params operations.ListClustersParams, principal *m
 
 	clusters := make([]*models.Cluster, 0, len(clusterList.Items))
 	for _, c := range clusterList.Items {
-		clusters = append(clusters, &models.Cluster{Name: c.Spec.Name, Status: string(c.Status.State)})
+		clusters = append(clusters, &models.Cluster{Name: &c.Spec.Name, Status: string(c.Status.State)})
 	}
 	return operations.NewListClustersOK().WithPayload(clusters)
 }

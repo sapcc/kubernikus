@@ -22,12 +22,12 @@ func (d *showCluster) Handle(params operations.ShowClusterParams, principal *mod
 	var tprCluster tprv1.Kluster
 	if err := d.rt.Clients.TPRClient().Get().Namespace("kubernikus").Resource(tprv1.KlusterResourcePlural).LabelsSelectorParam(accountSelector(principal)).Name(qualifiedName(params.Name, principal.Account)).Do().Into(&tprCluster); err != nil {
 		if apierrors.IsNotFound(err) {
-			return NewErrorResponse(&operations.ShowClusterDefault{}, 409, "Not found")
+			return NewErrorResponse(&operations.ShowClusterDefault{}, 404, "Not found")
 		}
 		return NewErrorResponse(&operations.ShowClusterDefault{}, 500, err.Error())
 	}
 	c := models.Cluster{
-		Name:   tprCluster.Name,
+		Name:   &tprCluster.Name,
 		Status: string(tprCluster.Status.State),
 	}
 

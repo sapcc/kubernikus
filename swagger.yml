@@ -115,6 +115,25 @@ paths:
           required: true
           schema:
             $ref: '#/definitions/Cluster'
+  /api/v1/clusters/{name}/credentials:
+    parameters:
+      - uniqueItems: true
+        type: string
+        name: name
+        required: true
+        in: path
+    get:
+      operationId: GetClusterCredentials
+      summary: Get user specific credentials to access the cluster 
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: "#/definitions/Credentials"
+        default:
+          $ref: "#/responses/errorResponse"
+      security:
+        - keystone: []
 
 definitions:
   ApiVersions:
@@ -128,6 +147,8 @@ definitions:
           type: string
   Cluster:
     type: object
+    required:
+      - name
     properties:
       name:
         description: name of the cluster
@@ -136,6 +157,12 @@ definitions:
       status:
         description: status of the cluster
         type: string
+  Credentials:
+    type: object
+    properties:
+      kubeconfig:
+        type: string
+
   Principal:
     type: object
     properties:

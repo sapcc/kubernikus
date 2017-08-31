@@ -3,8 +3,10 @@ package ground
 import (
 	"crypto/rand"
 	"crypto/rsa"
+	"crypto/tls"
 	"crypto/x509"
 	"crypto/x509/pkix"
+	"errors"
 	"fmt"
 	"math"
 	"math/big"
@@ -71,6 +73,23 @@ func (c *Certificates) MarshalYAML() (interface{}, error) {
 	return result, nil
 }
 
+func NewBundle(key, cert []byte) (Bundle, error) {
+
+	certificate, err := tls.X509KeyPair(cert, key)
+	if err != nil {
+		return Bundle{}, err
+	}
+	rsaKey, ok := certificate.PrivateKey.(*rsa.PrivateKey)
+	if !ok {
+		return Bundle{}, errors.New("Key does not seem to be of type RSA")
+	}
+
+	// We should be fine ignoring this error because  tls.X509KeyPair already parsed it
+	x509Cert, _ := x509.ParseCertificate(certificate.Certificate[0])
+
+	return Bundle{PrivateKey: rsaKey, Certificate: x509Cert}, nil
+}
+
 type Bundle struct {
 	Certificate *x509.Certificate
 	PrivateKey  *rsa.PrivateKey
@@ -99,7 +118,7 @@ func (b *Bundle) NameForCert() string {
 }
 
 type Config struct {
-	sign               string
+	Sign               string
 	Organization       []string
 	OrganizationalUnit []string
 	AltNames           AltNames
@@ -156,56 +175,56 @@ func (certs *Certificates) populateForSatellite(satellite, domain string) error 
 
 func (c Certificates) signEtcdClient(name string) Bundle {
 	config := Config{
-		sign:   name,
+		Sign:   name,
 		Usages: []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth},
 	}
-	return c.Etcd.Clients.CA.sign(config)
+	return c.Etcd.Clients.CA.Sign(config)
 }
 
 func (c Certificates) signEtcdPeer(name string) Bundle {
 	config := Config{
-		sign:   name,
+		Sign:   name,
 		Usages: []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth, x509.ExtKeyUsageServerAuth},
 	}
-	return c.Etcd.Peers.CA.sign(config)
+	return c.Etcd.Peers.CA.Sign(config)
 }
 
 func (c Certificates) signApiServerClient(name string, groups ...string) Bundle {
 	config := Config{
-		sign:         name,
+		Sign:         name,
 		Organization: groups,
 		Usages:       []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth},
 	}
-	return c.ApiServer.Clients.CA.sign(config)
+	return c.ApiServer.Clients.CA.Sign(config)
 }
 
 func (c Certificates) signApiServerNode(name string) Bundle {
 	config := Config{
-		sign:         name,
+		Sign:         name,
 		Organization: []string{"system:nodes"},
 		Usages:       []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth},
 	}
-	return c.ApiServer.Nodes.CA.sign(config)
+	return c.ApiServer.Nodes.CA.Sign(config)
 }
 
 func (c Certificates) signKubeletClient(name string) Bundle {
 	config := Config{
-		sign:   name,
+		Sign:   name,
 		Usages: []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth},
 	}
-	return c.Kubelet.Clients.CA.sign(config)
+	return c.Kubelet.Clients.CA.Sign(config)
 }
 
 func (c Certificates) signTLS(name string, dnsNames []string, ips []net.IP) Bundle {
 	config := Config{
-		sign:   name,
+		Sign:   name,
 		Usages: []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth},
 		AltNames: AltNames{
 			DNSNames: dnsNames,
 			IPs:      ips,
 		},
 	}
-	return c.TLS.CA.sign(config)
+	return c.TLS.CA.Sign(config)
 }
 
 func createCA(satellite, name string, bundle *Bundle) {
@@ -229,7 +248,7 @@ func createCA(satellite, name string, bundle *Bundle) {
 	bundle.Certificate, _ = x509.ParseCertificate(certDERBytes)
 }
 
-func (ca Bundle) sign(config Config) Bundle {
+func (ca Bundle) Sign(config Config) Bundle {
 	if !ca.Certificate.IsCA {
 		panic("You can't use this certificate for signing. It's not a CA...")
 	}
@@ -239,7 +258,7 @@ func (ca Bundle) sign(config Config) Bundle {
 
 	certTmpl := x509.Certificate{
 		Subject: pkix.Name{
-			CommonName:         config.sign,
+			CommonName:         config.Sign,
 			Organization:       config.Organization,
 			OrganizationalUnit: ca.Certificate.Subject.OrganizationalUnit,
 		},

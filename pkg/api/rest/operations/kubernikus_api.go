@@ -40,6 +40,9 @@ func NewKubernikusAPI(spec *loads.Document) *KubernikusAPI {
 		CreateClusterHandler: CreateClusterHandlerFunc(func(params CreateClusterParams, principal *models.Principal) middleware.Responder {
 			return middleware.NotImplemented("operation CreateCluster has not yet been implemented")
 		}),
+		GetClusterCredentialsHandler: GetClusterCredentialsHandlerFunc(func(params GetClusterCredentialsParams, principal *models.Principal) middleware.Responder {
+			return middleware.NotImplemented("operation GetClusterCredentials has not yet been implemented")
+		}),
 		ListAPIVersionsHandler: ListAPIVersionsHandlerFunc(func(params ListAPIVersionsParams) middleware.Responder {
 			return middleware.NotImplemented("operation ListAPIVersions has not yet been implemented")
 		}),
@@ -95,6 +98,8 @@ type KubernikusAPI struct {
 
 	// CreateClusterHandler sets the operation handler for the create cluster operation
 	CreateClusterHandler CreateClusterHandler
+	// GetClusterCredentialsHandler sets the operation handler for the get cluster credentials operation
+	GetClusterCredentialsHandler GetClusterCredentialsHandler
 	// ListAPIVersionsHandler sets the operation handler for the list API versions operation
 	ListAPIVersionsHandler ListAPIVersionsHandler
 	// ListClustersHandler sets the operation handler for the list clusters operation
@@ -174,6 +179,10 @@ func (o *KubernikusAPI) Validate() error {
 
 	if o.CreateClusterHandler == nil {
 		unregistered = append(unregistered, "CreateClusterHandler")
+	}
+
+	if o.GetClusterCredentialsHandler == nil {
+		unregistered = append(unregistered, "GetClusterCredentialsHandler")
 	}
 
 	if o.ListAPIVersionsHandler == nil {
@@ -295,6 +304,11 @@ func (o *KubernikusAPI) initHandlerCache() {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
 	o.handlers["POST"]["/api/v1/clusters"] = NewCreateCluster(o.context, o.CreateClusterHandler)
+
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/api/v1/clusters/{name}/credentials"] = NewGetClusterCredentials(o.context, o.GetClusterCredentialsHandler)
 
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)

@@ -307,7 +307,7 @@ func (op *Operator) terminateKluster(tpr *tprv1.Kluster) error {
 	}
 	glog.Infof("Deleting helm release %s", tpr.GetName())
 	_, err = helmClient.DeleteRelease(tpr.GetName(), helm.DeletePurge(true))
-	if err != nil && !strings.Contains(grpc.ErrorDesc(err), "release not found") {
+	if err != nil && !strings.Contains(grpc.ErrorDesc(err), fmt.Sprintf(`release: "%s" not found`, tpr.GetName())) {
 		return err
 	}
 	return op.clients.TPRClient().Delete().Namespace(tpr.GetNamespace()).Resource(tprv1.KlusterResourcePlural).Name(tpr.GetName()).Do().Error()

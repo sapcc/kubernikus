@@ -18,8 +18,9 @@ import (
 type Cluster struct {
 
 	// name of the cluster
+	// Required: true
 	// Pattern: ^[a-z]([-a-z0-9]*[a-z0-9])?$
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name"`
 
 	// status of the cluster
 	Status string `json:"status,omitempty"`
@@ -42,11 +43,11 @@ func (m *Cluster) Validate(formats strfmt.Registry) error {
 
 func (m *Cluster) validateName(formats strfmt.Registry) error {
 
-	if swag.IsZero(m.Name) { // not required
-		return nil
+	if err := validate.Required("name", "body", m.Name); err != nil {
+		return err
 	}
 
-	if err := validate.Pattern("name", "body", string(m.Name), `^[a-z]([-a-z0-9]*[a-z0-9])?$`); err != nil {
+	if err := validate.Pattern("name", "body", string(*m.Name), `^[a-z]([-a-z0-9]*[a-z0-9])?$`); err != nil {
 		return err
 	}
 
