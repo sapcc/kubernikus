@@ -34,7 +34,7 @@ const (
 )
 
 type Options struct {
-	kube.Options
+	ConfigFile        string
 	ChartDirectory    string
 	AuthURL           string
 	AuthUsername      string
@@ -55,7 +55,7 @@ type Operator struct {
 
 func New(options Options) *Operator {
 
-	clients, err := kube.NewClientCache(options.Options)
+	clients, err := kube.NewClientCache(kube.Options{options.ConfigFile})
 	if err != nil {
 		glog.Fatalf("Failed to create kubenetes clients: %s", err)
 	}
