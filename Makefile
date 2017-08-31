@@ -1,10 +1,9 @@
-include *.mk
 
 DATE     = $(shell date +%Y%m%d%H%M)
 IMAGE    ?= sapcc/kubernikus
 VERSION  ?= latest
 GOOS     ?= $(shell go env | grep GOOS | cut -d'"' -f2)
-BINARIES := groundctl apiserver
+BINARIES := kubernikus 
 
 LDFLAGS := -X github.com/sapcc/kubernikus/pkg/version.VERSION=$(VERSION)
 GOFLAGS := -ldflags "$(LDFLAGS) -s -w"
@@ -49,6 +48,7 @@ swagger-generate:
 clean:
 	rm -rf bin/*
 
+include code-generate.mk
 code-gen: client-gen informer-gen lister-gen
 
 bootstrap:

@@ -5,7 +5,9 @@ API_BASE       := $(INPUT_BASE)/pkg/apis
 GENERATED_BASE := $(INPUT_BASE)/pkg/generated
 BIN            := $(OUTPUT)/bin
 
-client-gen: $(OUTPUT)/bin/client-gen
+.PHONY: client-gen informer-gen lister-gen
+
+client-gen: $(BIN)/client-gen
 	@rm -rf ./pkg/generated/clientset
 	@mkdir -p ./pkg/generated/clientset
 	$(BIN)/client-gen \
@@ -16,7 +18,7 @@ client-gen: $(OUTPUT)/bin/client-gen
 	  --input kubernikus/v1 \
 	  --clientset-name clientset 
 
-informer-gen: $(OUTPUT)/bin/informer-gen
+informer-gen: $(BIN)/bin/informer-gen
 	@rm -rf ./pkg/generated/informers
 	@mkdir -p ./pkg/generated/informers
 	$(BIN)/informer-gen \
@@ -29,10 +31,10 @@ informer-gen: $(OUTPUT)/bin/informer-gen
 	  --internal-clientset-package  $(GENERATED_BASE)/clientset \
 	  --versioned-clientset-package $(GENERATED_BASE)/clientset 
 
-lister-gen: $(OUTPUT)/bin/lister-gen
+lister-gen: $(BIN)/bin/lister-gen
 	@rm -rf ./pkg/generated/listers
 	@mkdir -p ./pkg/generated/listers
-	${BIN}/lister-gen \
+	$(BIN)/lister-gen \
 	  --logtostderr \
 	  --go-header-file /dev/null \
 	  --output-base    $(OUTPUT_BASE) \
