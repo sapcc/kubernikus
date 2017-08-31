@@ -1,3 +1,5 @@
+include *.mk
+
 DATE     = $(shell date +%Y%m%d%H%M)
 IMAGE    ?= sapcc/kubernikus
 VERSION  ?= latest
@@ -21,7 +23,7 @@ endif
 HAS_GLIDE := $(shell command -v glide;)
 HAS_SWAGGER := $(shell command -v swagger;)
 
-.PHONY: all clean
+.PHONY: all clean code-gen client-gen informer-gen lister-gen
 
 all: $(BINARIES:%=bin/$(GOOS)/%)
 
@@ -46,6 +48,8 @@ swagger-generate:
 
 clean:
 	rm -rf bin/*
+
+code-gen: client-gen informer-gen lister-gen
 
 bootstrap:
 ifndef HAS_GLIDE

@@ -1,5 +1,5 @@
-hash: 4d5962135d0914288f8b30de13f4b9124d66fdd00d4b51379a10b67ff02df23c
-updated: 2017-08-03T13:41:02.303609168+02:00
+hash: 56cc165b7ea4bd90814a0ad72aab3be6c775f6d44a3ad9da8a14f7af14700643
+updated: 2017-08-30T17:40:40.19949364+02:00
 imports:
 - name: github.com/asaskevich/govalidator
   version: 7664702784775e51966f0885f5cd27435916517b
@@ -288,6 +288,37 @@ imports:
   version: d92e8497f71b7b4e0494e5bd204b48d34bd6f254
   subpackages:
   - discovery
+  - discovery/fake
+  - informers
+  - informers/admissionregistration
+  - informers/admissionregistration/v1alpha1
+  - informers/apps
+  - informers/apps/v1beta1
+  - informers/autoscaling
+  - informers/autoscaling/v1
+  - informers/autoscaling/v2alpha1
+  - informers/batch
+  - informers/batch/v1
+  - informers/batch/v2alpha1
+  - informers/certificates
+  - informers/certificates/v1beta1
+  - informers/core
+  - informers/core/v1
+  - informers/extensions
+  - informers/extensions/v1beta1
+  - informers/internalinterfaces
+  - informers/networking
+  - informers/networking/v1
+  - informers/policy
+  - informers/policy/v1beta1
+  - informers/rbac
+  - informers/rbac/v1alpha1
+  - informers/rbac/v1beta1
+  - informers/settings
+  - informers/settings/v1alpha1
+  - informers/storage
+  - informers/storage/v1
+  - informers/storage/v1beta1
   - kubernetes
   - kubernetes/scheme
   - kubernetes/typed/admissionregistration/v1alpha1
@@ -310,6 +341,22 @@ imports:
   - kubernetes/typed/settings/v1alpha1
   - kubernetes/typed/storage/v1
   - kubernetes/typed/storage/v1beta1
+  - listers/admissionregistration/v1alpha1
+  - listers/apps/v1beta1
+  - listers/autoscaling/v1
+  - listers/autoscaling/v2alpha1
+  - listers/batch/v1
+  - listers/batch/v2alpha1
+  - listers/certificates/v1beta1
+  - listers/core/v1
+  - listers/extensions/v1beta1
+  - listers/networking/v1
+  - listers/policy/v1beta1
+  - listers/rbac/v1alpha1
+  - listers/rbac/v1beta1
+  - listers/settings/v1alpha1
+  - listers/storage/v1
+  - listers/storage/v1beta1
   - pkg/api
   - pkg/api/v1
   - pkg/api/v1/ref
@@ -350,6 +397,7 @@ imports:
   - pkg/version
   - rest
   - rest/watch
+  - testing
   - tools/auth
   - tools/cache
   - tools/clientcmd
@@ -366,6 +414,11 @@ imports:
   - util/homedir
   - util/integer
   - util/workqueue
+- name: k8s.io/code-generator
+  version: bf449d588b78132603c5e2dba7286e7d335abedc
+  repo: https://github.com/sttts/code-generator
+- name: k8s.io/gengo
+  version: 9e661e9308f078838e266cca1c673922088c0ea4
 - name: k8s.io/helm
   version: 012cb0ac1a1b2f888144ef5a67b8dab6c2d45be6
   subpackages:
