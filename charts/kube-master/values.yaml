@@ -41,20 +41,20 @@ api:
 controllerManager:
   replicaCount: 1
   resources:
-    limits:
+    requests:
       cpu: 250m
       memory: 256Mi
-    requests:
+    limits:
       cpu: 500m
       memory: 512Mi
 
 scheduler:
   replicaCount: 1
   resources:
-    limits:
+    requests:
       cpu: 250m
       memory: 256Mi
-    requests:
+    limits:
       cpu: 500m
       memory: 512Mi
 

@@ -11,9 +11,6 @@ metadata:
     release: {{ .Release.Name }}
 
 spec:
-  tls:
-     - secretName: {{ include "master.fullname" . }}
-       hosts: [{{ .Values.api.ingressHost }}]
   rules:
     - host: {{ .Values.api.ingressHost }}
       http:
