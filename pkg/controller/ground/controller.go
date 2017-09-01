@@ -107,6 +107,8 @@ func New(options Options) *Operator {
 		DeleteFunc: operator.klusterTerminate,
 	})
 
+	operator.tprInformer = operator.informers.Kubernikus().V1().Klusters().Informer()
+
 	return operator
 }
 
