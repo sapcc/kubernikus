@@ -1,10 +1,13 @@
 package openstack
 
 import (
+	"errors"
+
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack"
 	"github.com/gophercloud/gophercloud/openstack/identity/v3/projects"
 	"github.com/gophercloud/gophercloud/openstack/identity/v3/tokens"
+	"github.com/gophercloud/gophercloud/openstack/identity/v3/users"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/layer3/routers"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/networks"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/ports"
@@ -21,6 +24,7 @@ type client struct {
 type Client interface {
 	GetProject(id string) (*Project, error)
 	GetRouters(project_id string) ([]Router, error)
+	DeleteUser(username, domainID string) error
 }
 
 type Project struct {
@@ -125,6 +129,27 @@ func (c *client) GetRouters(project_id string) ([]Router, error) {
 	}
 	return resultList, nil
 
+}
+
+func (c *client) DeleteUser(username, domainID string) error {
+	identity, err := openstack.NewIdentityV3(c.provider, gophercloud.EndpointOpts{})
+	if err != nil {
+		return err
+	}
+	return users.List(identity, users.ListOpts{DomainID: domainID, Name: username}).EachPage(func(page pagination.Page) (bool, error) {
+		userList, err := users.ExtractUsers(page)
+		if err != nil {
+			return false, err
+		}
+		switch len(userList) {
+		case 0:
+			return false, nil
+		case 1:
+			return false, users.Delete(identity, userList[0].ID).ExtractErr()
+		default:
+			return false, errors.New("Multiple users found")
+		}
+	})
 }
 
 func getRouterNetworks(client *gophercloud.ServiceClient, routerID string) ([]string, error) {

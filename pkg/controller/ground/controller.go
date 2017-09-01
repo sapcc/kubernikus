@@ -277,7 +277,7 @@ func (op *Operator) createKluster(tpr *tprv1.Kluster) error {
 	}
 
 	cluster.OpenStack.AuthURL = op.AuthURL
-	cluster.OpenStack.Username = fmt.Sprintf("kubernikus-%s", tpr.GetName())
+	cluster.OpenStack.Username = serviceUsername(tpr.GetName())
 	password, err := goutils.RandomAscii(20)
 	if err != nil {
 		return fmt.Errorf("Failed to generate password: %s", err)
@@ -310,5 +310,14 @@ func (op *Operator) terminateKluster(tpr *tprv1.Kluster) error {
 	if err != nil && !strings.Contains(grpc.ErrorDesc(err), fmt.Sprintf(`release: "%s" not found`, tpr.GetName())) {
 		return err
 	}
+	u := serviceUsername(tpr.GetName())
+	glog.Infof("Deleting openstack user %s@default", u)
+	if err := op.oclient.DeleteUser(u, "default"); err != nil {
+		return err
+	}
 	return op.clients.TPRClient().Delete().Namespace(tpr.GetNamespace()).Resource(tprv1.KlusterResourcePlural).Name(tpr.GetName()).Do().Error()
+}
+
+func serviceUsername(name string) string {
+	return fmt.Sprintf("kubernikus-%s", name)
 }
