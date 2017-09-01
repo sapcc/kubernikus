@@ -26,7 +26,7 @@ type getClusterCredentials struct {
 
 func (d *getClusterCredentials) Handle(params operations.GetClusterCredentialsParams, principal *models.Principal) middleware.Responder {
 
-	secret, err := d.rt.Clients.Clientset().Secrets("kubernikus").Get(qualifiedName(params.Name, principal.Account), v1.GetOptions{})
+	secret, err := d.rt.Clients.Kubernetes.CoreV1().Secrets("kubernikus").Get(qualifiedName(params.Name, principal.Account), v1.GetOptions{})
 	if err != nil {
 		if apierrors.IsNotFound(err) {
 			return NewErrorResponse(&operations.GetClusterCredentialsDefault{}, 404, "Not found")

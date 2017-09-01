@@ -323,10 +323,9 @@ func (op *Operator) terminateKluster(tpr *v1.Kluster) error {
 	}
 	u := serviceUsername(tpr.GetName())
 	glog.Infof("Deleting openstack user %s@default", u)
-	if err := op.oclient.DeleteUser(u, "default"); err != nil {
+	if err := op.openstackClient.DeleteUser(u, "default"); err != nil {
 		return err
 	}
-
 
 	return op.kubernikusClient.Kubernikus().Klusters(tpr.Namespace).Delete(tpr.Name, &metav1.DeleteOptions{})
 }

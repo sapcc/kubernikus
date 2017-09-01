@@ -2,7 +2,7 @@ package kubernetes
 
 import (
 	"github.com/golang/glog"
-	kube "k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 )
@@ -23,13 +23,13 @@ func Config(kubeconfig string) (*rest.Config, error) {
 	return config, nil
 }
 
-func NewKubernetesClient(kubeconfig string) (kube.Interface, error) {
+func NewKubernetesClient(kubeconfig string) (kubernetes.Interface, error) {
 	config, err := Config(kubeconfig)
 	if err != nil {
 		return nil, err
 	}
 
-	clientset, err := kube.NewForConfig(config)
+	clientset, err := kubernetes.NewForConfig(config)
 	if err != nil {
 		return nil, err
 	}

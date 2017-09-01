@@ -5,6 +5,7 @@ import (
 	"github.com/spf13/pflag"
 
 	"github.com/sapcc/kubernikus/pkg/api"
+	"github.com/sapcc/kubernikus/pkg/client/kubernetes"
 	"github.com/sapcc/kubernikus/pkg/client/kubernikus"
 )
 
@@ -18,10 +19,16 @@ func NewKubeClients() *api.Clients {
 	client, err := kubernikus.NewKubernikusClient(kubeconfig)
 
 	if err != nil {
+		glog.Fatal("Failed to create kubernikus clients: %s", err)
+	}
+
+	kubernetesClient, err := kubernetes.NewKubernetesClient(kubeconfig)
+	if err != nil {
 		glog.Fatal("Failed to create kubernetes clients: %s", err)
 	}
 
 	return &api.Clients{
 		Kubernikus: client,
+		Kubernetes: kubernetesClient,
 	}
 }
