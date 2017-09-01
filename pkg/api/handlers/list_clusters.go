@@ -5,8 +5,7 @@ import (
 	"github.com/sapcc/kubernikus/pkg/api"
 	"github.com/sapcc/kubernikus/pkg/api/models"
 	"github.com/sapcc/kubernikus/pkg/api/rest/operations"
-
-	tprv1 "github.com/sapcc/kubernikus/pkg/tpr/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 func NewListClusters(rt *api.Runtime) operations.ListClustersHandler {
@@ -18,8 +17,10 @@ type listClusters struct {
 }
 
 func (d *listClusters) Handle(params operations.ListClustersParams, principal *models.Principal) middleware.Responder {
-	clusterList := tprv1.KlusterList{}
-	if err := d.rt.Clients.TPRClient().Get().Namespace("kubernikus").Resource(tprv1.KlusterResourcePlural).LabelsSelectorParam(accountSelector(principal)).Do().Into(&clusterList); err != nil {
+	listOpts := metav1.ListOptions{LabelSelector: accountSelector(principal).String()}
+	clusterList, err := d.rt.Clients.Kubernikus.Kubernikus().Klusters("kubernikus").List(listOpts)
+
+	if err != nil {
 		return NewErrorResponse(&operations.ListClustersDefault{}, 500, err.Error())
 	}
 

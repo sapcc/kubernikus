@@ -1,12 +1,13 @@
-package client
+package kubernikus
 
 import (
 	"github.com/golang/glog"
+	kube "github.com/sapcc/kubernikus/pkg/client/kubernetes"
 	"github.com/sapcc/kubernikus/pkg/generated/clientset"
 )
 
 func NewKubernikusClient(kubeconfig string) (clientset.Interface, error) {
-	config, err := config(kubeconfig)
+	config, err := kube.Config(kubeconfig)
 	if err != nil {
 		return nil, err
 	}

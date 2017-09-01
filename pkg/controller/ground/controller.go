@@ -12,18 +12,22 @@ import (
 	"github.com/Masterminds/goutils"
 	"github.com/golang/glog"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/util/wait"
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/util/workqueue"
 	"k8s.io/helm/pkg/helm"
 
 	"strings"
 
-	helmutil "github.com/sapcc/kubernikus/pkg/helm"
-	"github.com/sapcc/kubernikus/pkg/kube"
-	"github.com/sapcc/kubernikus/pkg/openstack"
-	tprv1 "github.com/sapcc/kubernikus/pkg/tpr/v1"
+	"github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
+	helmutil "github.com/sapcc/kubernikus/pkg/client/helm"
+	kube "github.com/sapcc/kubernikus/pkg/client/kubernetes"
+	"github.com/sapcc/kubernikus/pkg/client/kubernikus"
+	"github.com/sapcc/kubernikus/pkg/client/openstack"
+	"github.com/sapcc/kubernikus/pkg/generated/clientset"
+	kubernikus_informers "github.com/sapcc/kubernikus/pkg/generated/informers/externalversions"
 	"github.com/sapcc/kubernikus/pkg/version"
 	"google.golang.org/grpc"
 )
@@ -34,7 +38,8 @@ const (
 )
 
 type Options struct {
-	ConfigFile        string
+	KubeConfig string
+
 	ChartDirectory    string
 	AuthURL           string
 	AuthUsername      string
@@ -47,20 +52,33 @@ type Options struct {
 type Operator struct {
 	Options
 
-	clients     *kube.ClientCache
+	kubernikusClient clientset.Interface
+	kubernetesClient kubernetes.Interface
+	kubernetesConfig *rest.Config
+	openstackClient  openstack.Client
+
+	informers   kubernikus_informers.SharedInformerFactory
 	tprInformer cache.SharedIndexInformer
 	queue       workqueue.RateLimitingInterface
-	oclient     openstack.Client
 }
 
 func New(options Options) *Operator {
-
-	clients, err := kube.NewClientCache(kube.Options{options.ConfigFile})
+	kubernetesClient, err := kube.NewKubernetesClient(options.KubeConfig)
 	if err != nil {
-		glog.Fatalf("Failed to create kubenetes clients: %s", err)
+		glog.Fatalf("Failed to create kubernetes clients: %s", err)
 	}
 
-	oclient, err := openstack.NewClient(
+	kubernetesConfig, err := kube.Config(options.KubeConfig)
+	if err != nil {
+		glog.Fatalf("Failed to create kubernetes config: %s", err)
+	}
+
+	kubernikusClient, err := kubernikus.NewKubernikusClient(options.KubeConfig)
+	if err != nil {
+		glog.Fatalf("Failed to create kubernikus clients: %s", err)
+	}
+
+	openstackClient, err := openstack.NewClient(
 		options.AuthURL,
 		options.AuthUsername,
 		options.AuthPassword,
@@ -73,24 +91,21 @@ func New(options Options) *Operator {
 	}
 
 	operator := &Operator{
-		Options: options,
-		queue:   workqueue.NewRateLimitingQueue(workqueue.DefaultControllerRateLimiter()),
-		clients: clients,
-		oclient: oclient,
+		Options:          options,
+		queue:            workqueue.NewRateLimitingQueue(workqueue.DefaultControllerRateLimiter()),
+		kubernikusClient: kubernikusClient,
+		kubernetesClient: kubernetesClient,
+		openstackClient:  openstackClient,
+		kubernetesConfig: kubernetesConfig,
 	}
 
-	tprInformer := cache.NewSharedIndexInformer(
-		cache.NewListWatchFromClient(clients.TPRClient(), tprv1.KlusterResourcePlural, metav1.NamespaceAll, fields.Everything()),
-		&tprv1.Kluster{},
-		CACHE_RESYNC_PERIOD,
-		cache.Indexers{},
-	)
-	tprInformer.AddEventHandler(cache.ResourceEventHandlerFuncs{
+	operator.informers = kubernikus_informers.NewSharedInformerFactory(operator.kubernikusClient, 5*time.Minute)
+
+	operator.informers.Kubernikus().V1().Klusters().Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
 		AddFunc:    operator.klusterAdd,
 		UpdateFunc: operator.klusterUpdate,
 		DeleteFunc: operator.klusterTerminate,
 	})
-	operator.tprInformer = tprInformer
 
 	return operator
 }
@@ -160,17 +175,17 @@ func (op *Operator) handler(key string) error {
 	if !exists {
 		glog.Infof("TPR of kluster %s deleted", key)
 	} else {
-		tpr := obj.(*tprv1.Kluster)
+		tpr := obj.(*v1.Kluster)
 		switch state := tpr.Status.State; state {
-		case tprv1.KlusterPending:
+		case v1.KlusterPending:
 			{
 				glog.Infof("Creating Kluster %s", tpr.GetName())
-				if err := op.updateStatus(tpr, tprv1.KlusterCreating, "Creating Cluster"); err != nil {
+				if err := op.updateStatus(tpr, v1.KlusterCreating, "Creating Cluster"); err != nil {
 					glog.Errorf("Failed to update status of kluster %s:%s", tpr.GetName(), err)
 				}
 				if err := op.createKluster(tpr); err != nil {
 					glog.Errorf("Creating kluster %s failed: %s", tpr.GetName(), err)
-					if err := op.updateStatus(tpr, tprv1.KlusterError, err.Error()); err != nil {
+					if err := op.updateStatus(tpr, v1.KlusterError, err.Error()); err != nil {
 						glog.Errorf("Failed to update status of kluster %s:%s", tpr.GetName(), err)
 					}
 					//We are making this a permanent error for now to avoid stomping the parent kluster
@@ -178,7 +193,7 @@ func (op *Operator) handler(key string) error {
 				}
 				glog.Infof("Kluster %s created", tpr.GetName())
 			}
-		case tprv1.KlusterTerminating:
+		case v1.KlusterTerminating:
 			{
 				glog.Infof("Terminating Kluster %s", tpr.GetName())
 				if err := op.terminateKluster(tpr); err != nil {
@@ -194,7 +209,7 @@ func (op *Operator) handler(key string) error {
 }
 
 func (op *Operator) klusterAdd(obj interface{}) {
-	c := obj.(*tprv1.Kluster)
+	c := obj.(*v1.Kluster)
 	key, err := cache.MetaNamespaceKeyFunc(c)
 	if err != nil {
 		return
@@ -204,7 +219,7 @@ func (op *Operator) klusterAdd(obj interface{}) {
 }
 
 func (op *Operator) klusterTerminate(obj interface{}) {
-	c := obj.(*tprv1.Kluster)
+	c := obj.(*v1.Kluster)
 	key, err := cache.DeletionHandlingMetaNamespaceKeyFunc(c)
 	if err != nil {
 		return
@@ -214,8 +229,8 @@ func (op *Operator) klusterTerminate(obj interface{}) {
 }
 
 func (op *Operator) klusterUpdate(cur, old interface{}) {
-	curKluster := cur.(*tprv1.Kluster)
-	oldKluster := old.(*tprv1.Kluster)
+	curKluster := cur.(*v1.Kluster)
+	oldKluster := old.(*v1.Kluster)
 	if !reflect.DeepEqual(oldKluster, curKluster) {
 		key, err := cache.MetaNamespaceKeyFunc(curKluster)
 		if err != nil {
@@ -226,7 +241,7 @@ func (op *Operator) klusterUpdate(cur, old interface{}) {
 	}
 }
 
-func (op *Operator) updateStatus(tpr *tprv1.Kluster, state tprv1.KlusterState, message string) error {
+func (op *Operator) updateStatus(tpr *v1.Kluster, state v1.KlusterState, message string) error {
 	//Get a fresh copy from the cache
 	obj, exists, err := op.tprInformer.GetStore().Get(tpr)
 	if err != nil {
@@ -236,31 +251,27 @@ func (op *Operator) updateStatus(tpr *tprv1.Kluster, state tprv1.KlusterState, m
 		return fmt.Errorf("Not found cache: %#v", tpr)
 	}
 
+	kluster := obj.(*v1.Kluster)
+
 	//Never modify the cache, at leasts thats what I've been told
-	r, err := op.clients.TPRScheme().Copy(obj.(*tprv1.Kluster))
+	tpr, err = op.kubernikusClient.Kubernikus().Klusters(kluster.Namespace).Get(kluster.Name, metav1.GetOptions{})
 	if err != nil {
 		return err
 	}
-	tpr = r.(*tprv1.Kluster)
 	tpr.Status.Message = message
 	tpr.Status.State = state
 
-	return op.clients.TPRClient().Put().
-		Name(tpr.ObjectMeta.Name).
-		Namespace(tpr.ObjectMeta.Namespace).
-		Resource(tprv1.KlusterResourcePlural).
-		Body(tpr).
-		Do().
-		Error()
+	_, err = op.kubernikusClient.Kubernikus().Klusters(tpr.Namespace).Update(tpr)
+	return err
 }
 
-func (op *Operator) createKluster(tpr *tprv1.Kluster) error {
-	helmClient, err := helmutil.NewClient(op.clients.Clientset(), op.clients.Config())
+func (op *Operator) createKluster(tpr *v1.Kluster) error {
+	helmClient, err := helmutil.NewClient(op.kubernetesClient, op.kubernetesConfig)
 	if err != nil {
 		return fmt.Errorf("Failed to create helm client: %s", err)
 	}
 
-	routers, err := op.oclient.GetRouters(tpr.Account())
+	routers, err := op.openstackClient.GetRouters(tpr.Account())
 	if err != nil {
 		return fmt.Errorf("Couldn't get routers for project %s: %s", tpr.Account(), err)
 	}
@@ -300,8 +311,8 @@ func (op *Operator) createKluster(tpr *tprv1.Kluster) error {
 	return err
 }
 
-func (op *Operator) terminateKluster(tpr *tprv1.Kluster) error {
-	helmClient, err := helmutil.NewClient(op.clients.Clientset(), op.clients.Config())
+func (op *Operator) terminateKluster(tpr *v1.Kluster) error {
+	helmClient, err := helmutil.NewClient(op.kubernetesClient, op.kubernetesConfig)
 	if err != nil {
 		return fmt.Errorf("Failed to create helm client: %s", err)
 	}
@@ -315,7 +326,9 @@ func (op *Operator) terminateKluster(tpr *tprv1.Kluster) error {
 	if err := op.oclient.DeleteUser(u, "default"); err != nil {
 		return err
 	}
-	return op.clients.TPRClient().Delete().Namespace(tpr.GetNamespace()).Resource(tprv1.KlusterResourcePlural).Name(tpr.GetName()).Do().Error()
+
+
+	return op.kubernikusClient.Kubernikus().Klusters(tpr.Namespace).Delete(tpr.Name, &metav1.DeleteOptions{})
 }
 
 func serviceUsername(name string) string {

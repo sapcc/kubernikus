@@ -1,13 +1,13 @@
-package client
+package kubernetes
 
 import (
 	"github.com/golang/glog"
-	"k8s.io/client-go/kubernetes"
+	kube "k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 )
 
-func config(kubeconfig string) (*rest.Config, error) {
+func Config(kubeconfig string) (*rest.Config, error) {
 	rules := clientcmd.NewDefaultClientConfigLoadingRules()
 	overrides := &clientcmd.ConfigOverrides{}
 
@@ -23,13 +23,13 @@ func config(kubeconfig string) (*rest.Config, error) {
 	return config, nil
 }
 
-func NewKubernetesClient(kubeconfig string) (kubernetes.Interface, error) {
-	config, err := config(kubeconfig)
+func NewKubernetesClient(kubeconfig string) (kube.Interface, error) {
+	config, err := Config(kubeconfig)
 	if err != nil {
 		return nil, err
 	}
 
-	clientset, err := kubernetes.NewForConfig(config)
+	clientset, err := kube.NewForConfig(config)
 	if err != nil {
 		return nil, err
 	}

@@ -87,7 +87,7 @@ func (o *OperatorOptions) Run(c *cobra.Command) error {
 	wg := &sync.WaitGroup{}                            // Goroutines can add themselves to this to be waited on
 
 	opts := ground.Options{
-		ConfigFile:        o.KubeConfig,
+		KubeConfig:        o.KubeConfig,
 		ChartDirectory:    o.ChartDirectory,
 		AuthURL:           o.AuthURL,
 		AuthUsername:      o.AuthUsername,

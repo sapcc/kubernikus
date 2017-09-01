@@ -1,14 +1,14 @@
 package handlers
 
 import (
+	"github.com/sapcc/kubernikus/pkg/api"
 	"github.com/sapcc/kubernikus/pkg/api/models"
+	"github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
-	"k8s.io/client-go/rest"
 
 	"fmt"
 	"strings"
-
-	tprv1 "github.com/sapcc/kubernikus/pkg/tpr/v1"
 )
 
 func accountSelector(principal *models.Principal) labels.Selector {
@@ -23,17 +23,18 @@ func qualifiedName(name string, accountId string) string {
 	return fmt.Sprintf("%s-%s", name, accountId)
 }
 
-func editCluster(tprClient *rest.RESTClient, principal *models.Principal, name string, updateFunc func(k *tprv1.Kluster)) (*tprv1.Kluster, error) {
-	var kluster, updatedCluster tprv1.Kluster
-	if err := tprClient.Get().Namespace("kubernikus").Resource(tprv1.KlusterResourcePlural).LabelsSelectorParam(accountSelector(principal)).Name(qualifiedName(name, principal.Account)).Do().Into(&kluster); err != nil {
+func editCluster(clients *api.Clients, principal *models.Principal, name string, updateFunc func(k *v1.Kluster)) (*v1.Kluster, error) {
+	kluster, err := clients.Kubernikus.Kubernikus().Klusters("kubernikus").Get(qualifiedName(name, principal.Account), metav1.GetOptions{})
+	if err != nil {
 		return nil, err
 	}
 
-	updateFunc(&kluster)
+	updateFunc(kluster)
 
-	if err := tprClient.Put().Body(&kluster).Namespace("kubernikus").Resource(tprv1.KlusterResourcePlural).LabelsSelectorParam(accountSelector(principal)).Name(qualifiedName(name, principal.Account)).Do().Into(&updatedCluster); err != nil {
+	updatedCluster, err := clients.Kubernikus.Kubernikus().Klusters("kubernikus").Update(kluster)
+	if err != nil {
 		return nil, err
 	}
-	return &updatedCluster, nil
+	return updatedCluster, nil
 
 }

@@ -5,8 +5,8 @@ import (
 	"github.com/sapcc/kubernikus/pkg/api"
 	"github.com/sapcc/kubernikus/pkg/api/models"
 	"github.com/sapcc/kubernikus/pkg/api/rest/operations"
+	"github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
 
-	tprv1 "github.com/sapcc/kubernikus/pkg/tpr/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 )
 
@@ -20,7 +20,7 @@ type updateCluster struct {
 
 func (d *updateCluster) Handle(params operations.UpdateClusterParams, principal *models.Principal) middleware.Responder {
 
-	_, err := editCluster(d.rt.Clients.TPRClient(), principal, params.Name, func(kluster *tprv1.Kluster) {
+	_, err := editCluster(d.rt.Clients, principal, params.Name, func(kluster *v1.Kluster) {
 		//TODO: currently no field to update
 	})
 	if err != nil {

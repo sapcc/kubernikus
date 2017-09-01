@@ -6,8 +6,7 @@ import (
 	"github.com/sapcc/kubernikus/pkg/api/models"
 	"github.com/sapcc/kubernikus/pkg/api/rest/operations"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
-
-	tprv1 "github.com/sapcc/kubernikus/pkg/tpr/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 func NewShowCluster(rt *api.Runtime) operations.ShowClusterHandler {
@@ -19,8 +18,10 @@ type showCluster struct {
 }
 
 func (d *showCluster) Handle(params operations.ShowClusterParams, principal *models.Principal) middleware.Responder {
-	var tprCluster tprv1.Kluster
-	if err := d.rt.Clients.TPRClient().Get().Namespace("kubernikus").Resource(tprv1.KlusterResourcePlural).LabelsSelectorParam(accountSelector(principal)).Name(qualifiedName(params.Name, principal.Account)).Do().Into(&tprCluster); err != nil {
+	name := qualifiedName(params.Name, principal.Account)
+	tprCluster, err := d.rt.Clients.Kubernikus.Kubernikus().Klusters("kubernikus").Get(name, metav1.GetOptions{})
+
+	if err != nil {
 		if apierrors.IsNotFound(err) {
 			return NewErrorResponse(&operations.ShowClusterDefault{}, 404, "Not found")
 		}

@@ -26,7 +26,7 @@ import (
 	"k8s.io/client-go/pkg/api/v1"
 	"k8s.io/client-go/rest"
 
-	"github.com/sapcc/kubernikus/pkg/kube"
+	kube "github.com/sapcc/kubernikus/pkg/client/kubernetes"
 )
 
 // New creates a new and initialized tunnel.

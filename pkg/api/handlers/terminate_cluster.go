@@ -5,8 +5,8 @@ import (
 	"github.com/sapcc/kubernikus/pkg/api"
 	"github.com/sapcc/kubernikus/pkg/api/models"
 	"github.com/sapcc/kubernikus/pkg/api/rest/operations"
+	"github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
 
-	tprv1 "github.com/sapcc/kubernikus/pkg/tpr/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 )
 
@@ -20,8 +20,8 @@ type terminateCluster struct {
 
 func (d *terminateCluster) Handle(params operations.TerminateClusterParams, principal *models.Principal) middleware.Responder {
 
-	_, err := editCluster(d.rt.Clients.TPRClient(), principal, params.Name, func(kluster *tprv1.Kluster) {
-		kluster.Status.State = tprv1.KlusterTerminating
+	_, err := editCluster(d.rt.Clients, principal, params.Name, func(kluster *v1.Kluster) {
+		kluster.Status.State = v1.KlusterTerminating
 		kluster.Status.Message = "Cluster terminating"
 	})
 	if err != nil {

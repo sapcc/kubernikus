@@ -7,10 +7,11 @@ import (
 	"time"
 
 	"github.com/golang/glog"
-	"github.com/sapcc/kubernikus/pkg/client"
+	kube "github.com/sapcc/kubernikus/pkg/client/kubernetes"
+	"github.com/sapcc/kubernikus/pkg/client/kubernikus"
+	"github.com/sapcc/kubernikus/pkg/client/openstack"
 	"github.com/sapcc/kubernikus/pkg/generated/clientset"
 	kubernikus_informers "github.com/sapcc/kubernikus/pkg/generated/informers/externalversions"
-	"github.com/sapcc/kubernikus/pkg/openstack"
 	"github.com/sapcc/kubernikus/pkg/version"
 
 	"k8s.io/client-go/informers"
@@ -43,12 +44,12 @@ type Operator struct {
 }
 
 func New(options Options) *Operator {
-	kubernetesClient, err := client.NewKubernetesClient(options.kubeConfig)
+	kubernetesClient, err := kube.NewKubernetesClient(options.kubeConfig)
 	if err != nil {
 		glog.Fatalf("Failed to create kubernetes clients: %s", err)
 	}
 
-	kubernikusClient, err := client.NewKubernikusClient(options.kubeConfig)
+	kubernikusClient, err := kubernikus.NewKubernikusClient(options.kubeConfig)
 	if err != nil {
 		glog.Fatalf("Failed to create kubernikus clients: %s", err)
 	}

@@ -1,7 +1,13 @@
 package api
 
-import "github.com/sapcc/kubernikus/pkg/kube"
+import (
+	"github.com/sapcc/kubernikus/pkg/generated/clientset"
+)
 
 type Runtime struct {
-	Clients *kube.ClientCache
+	Clients *Clients
+}
+
+type Clients struct {
+	Kubernikus clientset.Interface
 }

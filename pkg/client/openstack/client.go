@@ -14,7 +14,7 @@ import (
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/subnets"
 	"github.com/gophercloud/gophercloud/pagination"
 
-	"github.com/sapcc/kubernikus/pkg/openstack/domains"
+	"github.com/sapcc/kubernikus/pkg/client/openstack/domains"
 )
 
 type client struct {

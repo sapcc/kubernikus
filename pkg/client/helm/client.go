@@ -10,10 +10,10 @@ import (
 	"k8s.io/client-go/rest"
 	"k8s.io/helm/pkg/helm"
 
-	"github.com/sapcc/kubernikus/pkg/helm/portforwarder"
+	"github.com/sapcc/kubernikus/pkg/client/helm/portforwarder"
 )
 
-func NewClient(kubeClient *kubernetes.Clientset, kubeConfig *rest.Config) (*helm.Client, error) {
+func NewClient(kubeClient kubernetes.Interface, kubeConfig *rest.Config) (*helm.Client, error) {
 
 	tillerHost := os.Getenv("TILLER_DEPLOY_SERVICE_HOST")
 	if tillerHost == "" {

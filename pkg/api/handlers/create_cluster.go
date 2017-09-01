@@ -8,10 +8,9 @@ import (
 	"github.com/sapcc/kubernikus/pkg/api"
 	"github.com/sapcc/kubernikus/pkg/api/models"
 	"github.com/sapcc/kubernikus/pkg/api/rest/operations"
+	"github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
-	tprv1 "github.com/sapcc/kubernikus/pkg/tpr/v1"
 )
 
 func NewCreateCluster(rt *api.Runtime) operations.CreateClusterHandler {
@@ -24,21 +23,21 @@ type createCluster struct {
 
 func (d *createCluster) Handle(params operations.CreateClusterParams, principal *models.Principal) middleware.Responder {
 	name := *params.Body.Name
-	kluster := &tprv1.Kluster{
+	kluster := &v1.Kluster{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:        fmt.Sprintf("%s-%s", name, principal.Account),
 			Labels:      map[string]string{"account": principal.Account},
 			Annotations: map[string]string{"creator": principal.Name},
 		},
-		Spec: tprv1.KlusterSpec{
+		Spec: v1.KlusterSpec{
 			Name: name,
 		},
-		Status: tprv1.KlusterStatus{
-			State: tprv1.KlusterPending,
+		Status: v1.KlusterStatus{
+			State: v1.KlusterPending,
 		},
 	}
 
-	if err := d.rt.Clients.TPRClient().Post().Namespace("kubernikus").Resource(tprv1.KlusterResourcePlural).Body(kluster).Do().Error(); err != nil {
+	if _, err := d.rt.Clients.Kubernikus.Kubernikus().Klusters("kubernikus").Create(kluster); err != nil {
 		glog.Errorf("Failed to create cluster: %s", err)
 		if apierrors.IsAlreadyExists(err) {
 			return NewErrorResponse(&operations.CreateClusterDefault{}, 409, "Cluster with name %s already exists", name)
