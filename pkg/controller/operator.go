@@ -14,9 +14,11 @@ import (
 	kubernikus_informers "github.com/sapcc/kubernikus/pkg/generated/informers/externalversions"
 	"github.com/sapcc/kubernikus/pkg/version"
 
+	helmutil "github.com/sapcc/kubernikus/pkg/client/helm"
 	kubernetes_informers "k8s.io/client-go/informers"
 	kubernetes_clientset "k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/cache"
+	"k8s.io/helm/pkg/helm"
 )
 
 type KubernikusOperatorOptions struct {
@@ -36,6 +38,25 @@ type Clients struct {
 	Kubernikus kubernikus_clientset.Interface
 	Kubernetes kubernetes_clientset.Interface
 	Openstack  openstack.Client
+	Helm       *helm.Client
+}
+
+type OpenstackConfig struct {
+	AuthURL           string
+	AuthUsername      string
+	AuthPassword      string
+	AuthDomain        string
+	AuthProject       string
+	AuthProjectDomain string
+}
+
+type HelmConfig struct {
+	ChartDirectory string
+}
+
+type Config struct {
+	Openstack OpenstackConfig
+	Helm      HelmConfig
 }
 
 type Factories struct {
@@ -44,8 +65,8 @@ type Factories struct {
 }
 
 type KubernikusOperator struct {
-	Options *KubernikusOperatorOptions
 	Clients
+	Config
 	Factories
 }
 
@@ -53,7 +74,18 @@ func NewKubernikusOperator(options *KubernikusOperatorOptions) *KubernikusOperat
 	var err error
 
 	o := &KubernikusOperator{
-		Options: options,
+		Config: Config{
+			Openstack: OpenstackConfig{
+				AuthURL:           options.AuthURL,
+				AuthUsername:      options.AuthUsername,
+				AuthPassword:      options.AuthPassword,
+				AuthProject:       options.AuthProjectDomain,
+				AuthProjectDomain: options.AuthProjectDomain,
+			},
+			Helm: HelmConfig{
+				ChartDirectory: options.ChartDirectory,
+			},
+		},
 	}
 
 	o.Clients.Kubernetes, err = kube.NewClient(options.KubeConfig)
@@ -76,6 +108,15 @@ func NewKubernikusOperator(options *KubernikusOperatorOptions) *KubernikusOperat
 	)
 	if err != nil {
 		glog.Fatalf("Failed to create openstack client: %s", err)
+	}
+
+	config, err := kube.NewConfig(options.KubeConfig)
+	if err != nil {
+		glog.Fatalf("Failed to create kubernetes config: %s", err)
+	}
+	o.Clients.Helm, err = helmutil.NewClient(o.Clients.Kubernetes, config)
+	if err != nil {
+		glog.Fatalf("Failed to create helm client: %s", err)
 	}
 
 	o.Factories.Kubernikus = kubernikus_informers.NewSharedInformerFactory(o.Clients.Kubernikus, 5*time.Minute)
@@ -106,6 +147,8 @@ func (o *KubernikusOperator) Run(stopCh <-chan struct{}, wg *sync.WaitGroup) {
 	o.Factories.Kubernetes.WaitForCacheSync(stopCh)
 
 	glog.Info("Cache primed. Ready for Action!")
+
+	go NewGroundController(o.Factories, o.Clients, o.Config).Run(1, stopCh, wg)
 }
 
 func (p *KubernikusOperator) debugAdd(obj interface{}) {
