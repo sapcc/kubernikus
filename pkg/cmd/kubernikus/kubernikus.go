@@ -3,8 +3,8 @@ package kubernikus
 import (
 	"flag"
 
-	"github.com/sapcc/kubernikus/pkg/cmd/cli/certificates"
-	"github.com/sapcc/kubernikus/pkg/cmd/cli/helm"
+	"github.com/sapcc/kubernikus/pkg/cmd/certificates"
+	"github.com/sapcc/kubernikus/pkg/cmd/helm"
 	"github.com/sapcc/kubernikus/pkg/cmd/operator"
 	"github.com/spf13/cobra"
 )
