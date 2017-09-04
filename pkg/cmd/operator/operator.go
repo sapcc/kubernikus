@@ -10,7 +10,7 @@ import (
 
 	"github.com/golang/glog"
 	"github.com/sapcc/kubernikus/pkg/cmd"
-	"github.com/sapcc/kubernikus/pkg/controller/ground"
+	"github.com/sapcc/kubernikus/pkg/controller"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 )
@@ -37,9 +37,11 @@ func NewCommand() *cobra.Command {
 	return c
 }
 
-type OperatorOptions struct {
-	KubeConfig        string
-	ChartDirectory    string
+type Options struct {
+	KubeConfig string
+
+	ChartDirectory string
+
 	AuthURL           string
 	AuthUsername      string
 	AuthPassword      string
@@ -48,8 +50,8 @@ type OperatorOptions struct {
 	AuthProjectDomain string
 }
 
-func NewOperatorOptions() *OperatorOptions {
-	return &OperatorOptions{
+func NewOperatorOptions() *Options {
+	return &Options{
 		ChartDirectory: "charts/",
 		AuthURL:        "http://keystone.monsoon3:5000/v3",
 		AuthUsername:   "kubernikus",
@@ -57,7 +59,7 @@ func NewOperatorOptions() *OperatorOptions {
 	}
 }
 
-func (o *OperatorOptions) BindFlags(flags *pflag.FlagSet) {
+func (o *Options) BindFlags(flags *pflag.FlagSet) {
 	flags.StringVar(&o.KubeConfig, "kubeconfig", o.KubeConfig, "Path to the kubeconfig file to use to talk to the Kubernetes apiserver. If unset, try the environment variable KUBECONFIG, as well as in-cluster configuration")
 	flags.StringVar(&o.ChartDirectory, "chart-directory", o.ChartDirectory, "Directory containing the kubernikus related charts")
 	flags.StringVar(&o.AuthURL, "auth-url", o.AuthURL, "Openstack keystone url")
@@ -68,7 +70,7 @@ func (o *OperatorOptions) BindFlags(flags *pflag.FlagSet) {
 	flags.StringVar(&o.AuthProjectDomain, "auth-project-domain", o.AuthProjectDomain, "Domain of the project")
 }
 
-func (o *OperatorOptions) Validate(c *cobra.Command, args []string) error {
+func (o *Options) Validate(c *cobra.Command, args []string) error {
 	if len(o.AuthPassword) == 0 {
 		return errors.New("you must specify the auth-password flag")
 	}
@@ -76,17 +78,17 @@ func (o *OperatorOptions) Validate(c *cobra.Command, args []string) error {
 	return nil
 }
 
-func (o *OperatorOptions) Complete(args []string) error {
+func (o *Options) Complete(args []string) error {
 	return nil
 }
 
-func (o *OperatorOptions) Run(c *cobra.Command) error {
+func (o *Options) Run(c *cobra.Command) error {
 	sigs := make(chan os.Signal, 1)
 	stop := make(chan struct{})
 	signal.Notify(sigs, os.Interrupt, syscall.SIGTERM) // Push signals into channel
 	wg := &sync.WaitGroup{}                            // Goroutines can add themselves to this to be waited on
 
-	opts := ground.Options{
+	opts := &controller.KubernikusOperatorOptions{
 		KubeConfig:        o.KubeConfig,
 		ChartDirectory:    o.ChartDirectory,
 		AuthURL:           o.AuthURL,
@@ -97,7 +99,7 @@ func (o *OperatorOptions) Run(c *cobra.Command) error {
 		AuthProjectDomain: o.AuthProjectDomain,
 	}
 
-	go ground.New(opts).Run(1, stop, wg)
+	go controller.NewKubernikusOperator(opts).Run(stop, wg)
 
 	<-sigs // Wait for signals (this hangs until a signal arrives)
 	glog.Info("Shutting down...")
