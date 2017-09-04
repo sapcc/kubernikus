@@ -44,12 +44,12 @@ type Operator struct {
 }
 
 func New(options Options) *Operator {
-	kubernetesClient, err := kube.NewKubernetesClient(options.kubeConfig)
+	kubernetesClient, err := kube.NewClient(options.kubeConfig)
 	if err != nil {
 		glog.Fatalf("Failed to create kubernetes clients: %s", err)
 	}
 
-	kubernikusClient, err := kubernikus.NewKubernikusClient(options.kubeConfig)
+	kubernikusClient, err := kubernikus.NewClient(options.kubeConfig)
 	if err != nil {
 		glog.Fatalf("Failed to create kubernikus clients: %s", err)
 	}

@@ -16,13 +16,13 @@ func init() {
 }
 
 func NewKubeClients() *api.Clients {
-	client, err := kubernikus.NewKubernikusClient(kubeconfig)
+	client, err := kubernikus.NewClient(kubeconfig)
 
 	if err != nil {
 		glog.Fatal("Failed to create kubernikus clients: %s", err)
 	}
 
-	kubernetesClient, err := kubernetes.NewKubernetesClient(kubeconfig)
+	kubernetesClient, err := kubernetes.NewClient(kubeconfig)
 	if err != nil {
 		glog.Fatal("Failed to create kubernetes clients: %s", err)
 	}

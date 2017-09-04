@@ -7,7 +7,7 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 )
 
-func Config(kubeconfig string) (*rest.Config, error) {
+func NewConfig(kubeconfig string) (*rest.Config, error) {
 	rules := clientcmd.NewDefaultClientConfigLoadingRules()
 	overrides := &clientcmd.ConfigOverrides{}
 
@@ -23,8 +23,8 @@ func Config(kubeconfig string) (*rest.Config, error) {
 	return config, nil
 }
 
-func NewKubernetesClient(kubeconfig string) (kubernetes.Interface, error) {
-	config, err := Config(kubeconfig)
+func NewClient(kubeconfig string) (kubernetes.Interface, error) {
+	config, err := NewConfig(kubeconfig)
 	if err != nil {
 		return nil, err
 	}
