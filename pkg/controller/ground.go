@@ -21,7 +21,6 @@ import (
 
 	"github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
 	"github.com/sapcc/kubernikus/pkg/controller/ground"
-	"github.com/sapcc/kubernikus/pkg/version"
 	"google.golang.org/grpc"
 )
 
@@ -59,7 +58,7 @@ func (op *GroundControl) Run(threadiness int, stopCh <-chan struct{}, wg *sync.W
 	defer op.queue.ShutDown()
 	defer wg.Done()
 	wg.Add(1)
-	glog.Infof("Kluster operator started!  %v\n", version.VERSION)
+	glog.Infof("GroundControl started!")
 
 	for i := 0; i < threadiness; i++ {
 		go wait.Until(op.runWorker, time.Second, stopCh)

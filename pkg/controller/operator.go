@@ -71,8 +71,9 @@ type KubernikusOperator struct {
 }
 
 const (
-	GROUNDCTL_WORKERS = 1
-	LAUNCHCTL_WORKERS = 1
+	GROUNDCTL_WORKERS       = 1
+	LAUNCHCTL_WORKERS       = 1
+	RECONCILIATION_DURATION = 5 * time.Minute
 )
 
 func NewKubernikusOperator(options *KubernikusOperatorOptions) *KubernikusOperator {
@@ -124,8 +125,8 @@ func NewKubernikusOperator(options *KubernikusOperatorOptions) *KubernikusOperat
 		glog.Fatalf("Failed to create helm client: %s", err)
 	}
 
-	o.Factories.Kubernikus = kubernikus_informers.NewSharedInformerFactory(o.Clients.Kubernikus, 5*time.Minute)
-	o.Factories.Kubernetes = kubernetes_informers.NewSharedInformerFactory(o.Clients.Kubernetes, 5*time.Minute)
+	o.Factories.Kubernikus = kubernikus_informers.NewSharedInformerFactory(o.Clients.Kubernikus, RECONCILIATION_DURATION)
+	o.Factories.Kubernetes = kubernetes_informers.NewSharedInformerFactory(o.Clients.Kubernetes, RECONCILIATION_DURATION)
 
 	o.Factories.Kubernetes.Core().V1().Nodes().Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
 		AddFunc:    o.debugAdd,
