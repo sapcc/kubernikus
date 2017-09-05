@@ -10,7 +10,8 @@ spec:
   #- monsoon3/keystone-seed                 # uncomment once keystone is deployed via its own helm-charts chart
   - monsoon3/domain-default-seed
   - monsoon3/domain-ccadmin-seed
-
+  roles:
+  - kubernetes_admin
   domains:
   - name: Default
     users:
