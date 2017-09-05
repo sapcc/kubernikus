@@ -71,7 +71,7 @@ type KubernikusOperator struct {
 }
 
 const (
-	GROUNDCTL_WORKERS       = 1
+	GROUNDCTL_WORKERS       = 10
 	LAUNCHCTL_WORKERS       = 1
 	RECONCILIATION_DURATION = 5 * time.Minute
 )
@@ -140,6 +140,9 @@ func NewKubernikusOperator(options *KubernikusOperatorOptions) *KubernikusOperat
 func (o *KubernikusOperator) Run(stopCh <-chan struct{}, wg *sync.WaitGroup) {
 	fmt.Printf("Welcome to Kubernikus %v\n", version.VERSION)
 
+	groundctl := NewGroundController(o.Factories, o.Clients, o.Config)
+	launchctl := NewLaunchController(o.Factories)
+
 	o.Factories.Kubernikus.Start(stopCh)
 	o.Factories.Kubernetes.Start(stopCh)
 
@@ -148,8 +151,8 @@ func (o *KubernikusOperator) Run(stopCh <-chan struct{}, wg *sync.WaitGroup) {
 
 	glog.Info("Cache primed. Ready for Action!")
 
-	go NewGroundController(o.Factories, o.Clients, o.Config).Run(GROUNDCTL_WORKERS, stopCh, wg)
-	go NewLaunchController(o.Factories).Run(LAUNCHCTL_WORKERS, stopCh, wg)
+	go groundctl.Run(GROUNDCTL_WORKERS, stopCh, wg)
+	go launchctl.Run(LAUNCHCTL_WORKERS, stopCh, wg)
 }
 
 func (p *KubernikusOperator) debugAdd(obj interface{}) {
