@@ -128,12 +128,6 @@ func NewKubernikusOperator(options *KubernikusOperatorOptions) *KubernikusOperat
 	o.Factories.Kubernikus = kubernikus_informers.NewSharedInformerFactory(o.Clients.Kubernikus, RECONCILIATION_DURATION)
 	o.Factories.Kubernetes = kubernetes_informers.NewSharedInformerFactory(o.Clients.Kubernetes, RECONCILIATION_DURATION)
 
-	o.Factories.Kubernetes.Core().V1().Nodes().Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
-		AddFunc:    o.debugAdd,
-		UpdateFunc: o.debugUpdate,
-		DeleteFunc: o.debugDelete,
-	})
-
 	o.Factories.Kubernikus.Kubernikus().V1().Klusters().Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
 		AddFunc:    o.debugAdd,
 		UpdateFunc: o.debugUpdate,
