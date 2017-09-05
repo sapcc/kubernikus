@@ -70,6 +70,11 @@ type KubernikusOperator struct {
 	Factories
 }
 
+const (
+	GROUNDCTL_WORKERS = 1
+	LAUNCHCTL_WORKERS = 1
+)
+
 func NewKubernikusOperator(options *KubernikusOperatorOptions) *KubernikusOperator {
 	var err error
 
@@ -148,7 +153,8 @@ func (o *KubernikusOperator) Run(stopCh <-chan struct{}, wg *sync.WaitGroup) {
 
 	glog.Info("Cache primed. Ready for Action!")
 
-	go NewGroundController(o.Factories, o.Clients, o.Config).Run(1, stopCh, wg)
+	go NewGroundController(o.Factories, o.Clients, o.Config).Run(GROUNDCTL_WORKERS, stopCh, wg)
+	go NewLaunchController(o.Factories).Run(LAUNCHCTL_WORKERS, stopCh, wg)
 }
 
 func (p *KubernikusOperator) debugAdd(obj interface{}) {
