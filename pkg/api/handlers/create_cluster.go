@@ -31,6 +31,7 @@ func (d *createCluster) Handle(params operations.CreateClusterParams, principal 
 		},
 		Spec: v1.KlusterSpec{
 			Name: name,
+			NodePools: []v1.NodePool,
 		},
 		Status: v1.KlusterStatus{
 			State: v1.KlusterPending,
