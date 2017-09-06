@@ -18,7 +18,7 @@ client-gen: $(BIN)/client-gen
 	  --input kubernikus/v1 \
 	  --clientset-name clientset 
 
-informer-gen: $(BIN)/bin/informer-gen
+informer-gen: $(BIN)/informer-gen
 	@rm -rf ./pkg/generated/informers
 	@mkdir -p ./pkg/generated/informers
 	$(BIN)/informer-gen \
@@ -31,7 +31,7 @@ informer-gen: $(BIN)/bin/informer-gen
 	  --internal-clientset-package  $(GENERATED_BASE)/clientset \
 	  --versioned-clientset-package $(GENERATED_BASE)/clientset 
 
-lister-gen: $(BIN)/bin/lister-gen
+lister-gen: $(BIN)/lister-gen
 	@rm -rf ./pkg/generated/listers
 	@mkdir -p ./pkg/generated/listers
 	$(BIN)/lister-gen \
