@@ -17,7 +17,7 @@ type NodePool struct {
 
 type KlusterSpec struct {
 	Name      string     `json:"name"`
-	NodePools []NodePool `json:"nodePools"`
+	NodePools []NodePool `json:"nodePools,omitempty"`
 }
 
 type KlusterState string
