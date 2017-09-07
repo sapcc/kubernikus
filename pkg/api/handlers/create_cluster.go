@@ -30,8 +30,8 @@ func (d *createCluster) Handle(params operations.CreateClusterParams, principal 
 			Annotations: map[string]string{"creator": principal.Name},
 		},
 		Spec: v1.KlusterSpec{
-			Name: name,
-			NodePools: []v1.NodePool,
+			Name:      name,
+			NodePools: []v1.NodePool{},
 		},
 		Status: v1.KlusterStatus{
 			State: v1.KlusterPending,
