@@ -96,10 +96,7 @@ func (o *HelmOptions) Run(c *cobra.Command) error {
 	}
 	if o.AuthURL != "" {
 		cluster.OpenStack.AuthURL = o.AuthURL
-		oclient, err := openstack.NewClient(o.AuthURL, o.AuthUsername, o.AuthPassword, o.AuthDomain, o.AuthProject, o.AuthProjectDomain)
-		if err != nil {
-			return err
-		}
+		oclient := openstack.NewClient(nil, o.AuthURL, o.AuthUsername, o.AuthPassword, o.AuthDomain, o.AuthProject, o.AuthProjectDomain)
 		if err := cluster.DiscoverValues(o.Name, o.ProjectID, oclient); err != nil {
 			return err
 		}
