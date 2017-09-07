@@ -4,6 +4,9 @@ auth-url = {{ required "missing openstack.authURL" .Values.openstack.authURL }}
 username = {{ required "missing openstack.username" .Values.openstack.username }}
 password = {{ required "missing openstack.password" .Values.openstack.password }}
 domain-name = {{ required "missing openstack.domainName" .Values.openstack.domainName }}
+{{- if .Values.openstack.projectScope }}
+tenant-id = {{ .Values.openstack.projectID }}
+{{- end }}
 {{- if .Values.openstack.region }}
 region = {{ .Values.openstack.region }}
 {{- end }}

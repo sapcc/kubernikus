@@ -9,7 +9,6 @@ import (
 
 	yaml "gopkg.in/yaml.v2"
 
-	"github.com/Masterminds/goutils"
 	"github.com/golang/glog"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
@@ -206,16 +205,6 @@ func (op *GroundControl) updateStatus(tpr *v1.Kluster, state v1.KlusterState, me
 }
 
 func (op *GroundControl) createKluster(tpr *v1.Kluster) error {
-	routers, err := op.Clients.Openstack.GetRouters(tpr.Account())
-	if err != nil {
-		return fmt.Errorf("Couldn't get routers for project %s: %s", tpr.Account(), err)
-	}
-
-	glog.V(2).Infof("Found routers for project %s: %#v", tpr.Account(), routers)
-
-	if !(len(routers) == 1 && len(routers[0].Subnets) == 1) {
-		return fmt.Errorf("Project needs to contain a router with exactly one subnet")
-	}
 
 	cluster, err := ground.NewCluster(tpr.GetName(), "kluster.staging.cloud.sap")
 	if err != nil {
@@ -223,16 +212,9 @@ func (op *GroundControl) createKluster(tpr *v1.Kluster) error {
 	}
 
 	cluster.OpenStack.AuthURL = op.Config.Openstack.AuthURL
-	cluster.OpenStack.Username = serviceUsername(tpr.GetName())
-	password, err := goutils.RandomAscii(20)
-	if err != nil {
-		return fmt.Errorf("Failed to generate password: %s", err)
+	if err := cluster.DiscoverValues(tpr.GetName(), tpr.Account(), op.Clients.Openstack); err != nil {
+		return err
 	}
-	cluster.OpenStack.Password = password
-	cluster.OpenStack.DomainName = "Default"
-	cluster.OpenStack.ProjectID = tpr.Account()
-	cluster.OpenStack.RouterID = routers[0].ID
-	cluster.OpenStack.LBSubnetID = routers[0].Subnets[0].ID
 
 	//Generate helm values from cluster struct
 	rawValues, err := yaml.Marshal(cluster)
