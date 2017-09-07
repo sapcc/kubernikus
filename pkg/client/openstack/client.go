@@ -2,9 +2,12 @@ package openstack
 
 import (
 	"errors"
+	"fmt"
 
+	"github.com/golang/glog"
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack"
+	"github.com/gophercloud/gophercloud/openstack/compute/v2/servers"
 	"github.com/gophercloud/gophercloud/openstack/identity/v3/projects"
 	"github.com/gophercloud/gophercloud/openstack/identity/v3/tokens"
 	"github.com/gophercloud/gophercloud/openstack/identity/v3/users"
@@ -13,15 +16,31 @@ import (
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/ports"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/subnets"
 	"github.com/gophercloud/gophercloud/pagination"
+	kubernikus_v1 "github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
+	"k8s.io/client-go/informers"
+	informers_core "k8s.io/client-go/informers/core/v1"
+	"k8s.io/client-go/pkg/api/v1"
 
 	"github.com/sapcc/kubernikus/pkg/client/openstack/domains"
 )
 
 type client struct {
-	provider *gophercloud.ProviderClient
+	domainProviders  map[string]*gophercloud.ProviderClient
+	projectProviders map[string]*gophercloud.ProviderClient
+
+	authURL           string
+	authUsername      string
+	authPassword      string
+	authDomain        string
+	authProject       string
+	authProjectDomain string
+
+	secrets informers_core.SecretInformer
 }
 
 type Client interface {
+	CreateNode(*kubernikus_v1.Kluster, *kubernikus_v1.NodePool) (string, error)
+	GetNodes(*kubernikus_v1.Kluster, *kubernikus_v1.NodePool) ([]Node, error)
 	GetProject(id string) (*Project, error)
 	GetRouters(project_id string) ([]Router, error)
 	DeleteUser(username, domainID string) error
@@ -44,33 +63,112 @@ type Subnet struct {
 	CIDR string
 }
 
-func NewClient(authURL, username, password, domain, project, projectDomain string) (Client, error) {
+type Node struct {
+	ID     string
+	Name   string
+	Status string
+}
 
-	provider, err := openstack.NewClient(authURL)
+func NewClient(informers informers.SharedInformerFactory, authURL, username, password, domain, project, projectDomain string) Client {
+	informers.Core().V1().Secrets().Informer()
+
+	return &client{
+		domainProviders:   make(map[string]*gophercloud.ProviderClient),
+		projectProviders:  make(map[string]*gophercloud.ProviderClient),
+		authURL:           authURL,
+		authUsername:      username,
+		authPassword:      password,
+		authDomain:        domain,
+		authProject:       project,
+		authProjectDomain: projectDomain,
+		secrets:           informers.Core().V1().Secrets(),
+	}
+}
+
+func (c *client) domainProvider() (*gophercloud.ProviderClient, error) {
+	return c.domainProviderFor(c.authDomain)
+}
+
+func (c *client) domainProviderFor(domain string) (*gophercloud.ProviderClient, error) {
+	if c.domainProviders[domain] != nil {
+		return c.domainProviders[domain], nil
+	}
+
+	provider, err := openstack.NewClient(c.authURL)
 	if err != nil {
 		return nil, err
 	}
-	err = openstack.AuthenticateV3(provider, &tokens.AuthOptions{
-		IdentityEndpoint: authURL,
-		Username:         username,
-		Password:         password,
-		DomainName:       domain,
+
+	authOptions := &tokens.AuthOptions{
+		IdentityEndpoint: c.authURL,
+		Username:         c.authUsername,
+		Password:         c.authPassword,
+		DomainName:       c.authDomain,
 		AllowReauth:      true,
 		Scope: tokens.Scope{
-			ProjectName: project,
-			DomainName:  projectDomain,
+			ProjectName: c.authProject,
+			DomainName:  c.authProjectDomain,
 		},
-	}, gophercloud.EndpointOpts{})
+	}
+
+	err = openstack.AuthenticateV3(provider, authOptions, gophercloud.EndpointOpts{})
 	if err != nil {
 		return nil, err
 	}
 
-	return &client{provider: provider}, nil
+	c.domainProviders[domain] = provider
 
+	return c.domainProviders[domain], nil
+}
+
+func (c *client) projectProviderFor(kluster *kubernikus_v1.Kluster) (*gophercloud.ProviderClient, error) {
+	project_id := kluster.Account()
+	secret_name := kluster.Name
+
+	if c.projectProviders[project_id] != nil {
+		return c.projectProviders[project_id], nil
+	}
+
+	secret, err := c.secrets.Lister().Secrets("kubernikus").Get(secret_name)
+	if err != nil {
+		return nil, fmt.Errorf("Couldn't retrieve secret kubernikus/%v: %v", secret_name, err)
+	}
+
+	provider, err := openstack.NewClient(string(secret.Data["openstack-auth-url"]))
+	if err != nil {
+		return nil, err
+	}
+
+	authOptions := &tokens.AuthOptions{
+		IdentityEndpoint: string(secret.Data["openstack-auth-url"]),
+		Username:         string(secret.Data["openstack-username"]),
+		Password:         string(secret.Data["openstack-password"]),
+		DomainName:       string(secret.Data["openstack-domain-name"]),
+		AllowReauth:      true,
+		Scope: tokens.Scope{
+			ProjectID: project_id,
+		},
+	}
+
+	glog.V(5).Infof("AuthOptions: %#v", authOptions)
+
+	err = openstack.AuthenticateV3(provider, authOptions, gophercloud.EndpointOpts{})
+	if err != nil {
+		return nil, err
+	}
+
+	c.projectProviders[project_id] = provider
+
+	return c.projectProviders[project_id], nil
 }
 
 func (c *client) GetProject(id string) (*Project, error) {
-	identity, err := openstack.NewIdentityV3(c.provider, gophercloud.EndpointOpts{})
+	provider, err := c.domainProvider()
+	if err != nil {
+		return nil, err
+	}
+
+	identity, err := openstack.NewIdentityV3(provider, gophercloud.EndpointOpts{})
 	if err != nil {
 		return nil, err
 	}
@@ -88,7 +186,12 @@ func (c *client) GetProject(id string) (*Project, error) {
 }
 
 func (c *client) GetRouters(project_id string) ([]Router, error) {
-	networkClient, err := openstack.NewNetworkV2(c.provider, gophercloud.EndpointOpts{})
+	provider, err := c.domainProvider()
+	if err != nil {
+		return nil, err
+	}
+
+	networkClient, err := openstack.NewNetworkV2(provider, gophercloud.EndpointOpts{})
 	if err != nil {
 		return nil, err
 	}
@@ -132,7 +235,12 @@ func (c *client) GetRouters(project_id string) ([]Router, error) {
 }
 
 func (c *client) DeleteUser(username, domainID string) error {
-	identity, err := openstack.NewIdentityV3(c.provider, gophercloud.EndpointOpts{})
+	provider, err := c.domainProvider()
+	if err != nil {
+		return err
+	}
+
+	identity, err := openstack.NewIdentityV3(provider, gophercloud.EndpointOpts{})
 	if err != nil {
 		return err
 	}
@@ -165,4 +273,71 @@ func getRouterNetworks(client *gophercloud.ServiceClient, routerID string) ([]st
 		return true, nil
 	})
 	return networks, err
+}
+
+func (c *client) GetNodes(kluster *kubernikus_v1.Kluster, pool *kubernikus_v1.NodePool) ([]Node, error) {
+	project_id := kluster.Account()
+	pool_id := pool.Name
+
+	provider, err := c.projectProviderFor(kluster)
+	if err != nil {
+		return nil, err
+	}
+
+	nodes := []Node{}
+	client, err := openstack.NewComputeV2(provider, gophercloud.EndpointOpts{})
+	if err != nil {
+		return nodes, err
+	}
+	glog.V(5).Infof("Listing nodes for %v/%v", project_id, pool_id)
+
+	prefix := fmt.Sprintf("kubernikus-%v", pool_id)
+	opts := servers.ListOpts{Name: prefix}
+
+	servers.List(client, opts).EachPage(func(page pagination.Page) (bool, error) {
+		serverList, err := servers.ExtractServers(page)
+		if err != nil {
+			glog.V(5).Infof("Couldn't extract server %v", err)
+			return false, err
+		}
+
+		for _, s := range serverList {
+			glog.V(5).Infof("Found node %v", s.ID)
+			nodes = append(nodes, Node{ID: s.ID, Name: s.Name, Status: s.Status})
+		}
+
+		return true, nil
+	})
+
+	return nodes, nil
+}
+
+func (c *client) CreateNode(kluster *kubernikus_v1.Kluster, pool *kubernikus_v1.NodePool) (string, error) {
+	provider, err := c.projectProviderFor(kluster)
+	if err != nil {
+		return "", err
+	}
+
+	client, err := openstack.NewComputeV2(provider, gophercloud.EndpointOpts{})
+	if err != nil {
+		return "", err
+	}
+
+	name := v1.SimpleNameGenerator.GenerateName(fmt.Sprintf("kubernikus-%v-", pool.Name))
+	glog.V(5).Infof("Creating node %v", name)
+
+	server, err := servers.Create(client, servers.CreateOpts{
+		Name:          name,
+		FlavorName:    pool.Flavor,
+		ImageName:     pool.Image,
+		Networks:      []servers.Network{servers.Network{UUID: "2c731ffb-b8ac-48ac-9ccc-1f8c57fb61ce"}},
+		ServiceClient: client,
+	}).Extract()
+
+	if err != nil {
+		glog.V(5).Infof("Couldn't create node %v: %v", name, err)
+		return "", err
+	}
+
+	return server.ID, nil
 }

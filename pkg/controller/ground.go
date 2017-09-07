@@ -24,7 +24,7 @@ import (
 )
 
 const (
-	TPR_RECHECK_INTERVAL = 5 * time.Minute
+	KLUSTER_RECHECK_INTERVAL = 5 * time.Minute
 )
 
 type GroundControl struct {
@@ -40,7 +40,8 @@ func NewGroundController(factories Factories, clients Clients, config Config) *G
 	operator := &GroundControl{
 		Clients:     clients,
 		Factories:   factories,
-		queue:       workqueue.NewRateLimitingQueue(workqueue.DefaultControllerRateLimiter()),
+		Config:      config,
+		queue:       workqueue.NewRateLimitingQueue(workqueue.NewItemExponentialFailureRateLimiter(5*time.Second, 300*time.Second)),
 		tprInformer: factories.Kubernikus.Kubernikus().V1().Klusters().Informer(),
 	}
 
@@ -63,12 +64,12 @@ func (op *GroundControl) Run(threadiness int, stopCh <-chan struct{}, wg *sync.W
 		go wait.Until(op.runWorker, time.Second, stopCh)
 	}
 
-	ticker := time.NewTicker(TPR_RECHECK_INTERVAL)
+	ticker := time.NewTicker(KLUSTER_RECHECK_INTERVAL)
 	go func() {
 		for {
 			select {
 			case <-ticker.C:
-				glog.V(2).Infof("I now would do reconciliation if its was implemented. Next run in %v", TPR_RECHECK_INTERVAL)
+				glog.V(2).Infof("I now would do reconciliation if its was implemented. Next run in %v", KLUSTER_RECHECK_INTERVAL)
 				//op.queue.Add(true)
 			case <-stopCh:
 				ticker.Stop()

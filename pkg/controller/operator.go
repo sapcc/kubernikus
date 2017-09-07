@@ -104,18 +104,6 @@ func NewKubernikusOperator(options *KubernikusOperatorOptions) *KubernikusOperat
 		glog.Fatalf("Failed to create kubernikus clients: %s", err)
 	}
 
-	o.Clients.Openstack, err = openstack.NewClient(
-		options.AuthURL,
-		options.AuthUsername,
-		options.AuthPassword,
-		options.AuthDomain,
-		options.AuthProject,
-		options.AuthProjectDomain,
-	)
-	if err != nil {
-		glog.Fatalf("Failed to create openstack client: %s", err)
-	}
-
 	config, err := kube.NewConfig(options.KubeConfig)
 	if err != nil {
 		glog.Fatalf("Failed to create kubernetes config: %s", err)
@@ -134,6 +122,16 @@ func NewKubernikusOperator(options *KubernikusOperatorOptions) *KubernikusOperat
 		DeleteFunc: o.debugDelete,
 	})
 
+	o.Clients.Openstack = openstack.NewClient(
+		o.Factories.Kubernetes,
+		options.AuthURL,
+		options.AuthUsername,
+		options.AuthPassword,
+		options.AuthDomain,
+		options.AuthProject,
+		options.AuthProjectDomain,
+	)
+
 	return o
 }
 
@@ -141,7 +139,7 @@ func (o *KubernikusOperator) Run(stopCh <-chan struct{}, wg *sync.WaitGroup) {
 	fmt.Printf("Welcome to Kubernikus %v\n", version.VERSION)
 
 	groundctl := NewGroundController(o.Factories, o.Clients, o.Config)
-	launchctl := NewLaunchController(o.Factories)
+	launchctl := NewLaunchController(o.Factories, o.Clients)
 
 	o.Factories.Kubernikus.Start(stopCh)
 	o.Factories.Kubernetes.Start(stopCh)
