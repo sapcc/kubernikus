@@ -117,8 +117,8 @@ func (op *GroundControl) handler(key string) error {
 		switch state := tpr.Status.State; state {
 		case v1.KlusterPending:
 			{
-				if op.requiresOpenstackDiscovery(tpr) {
-					if err := op.discoverOpenstackSpec(tpr); err != nil {
+				if op.requiresOpenstackInfo(tpr) {
+					if err := op.discoverOpenstackInfo(tpr); err != nil {
 						glog.Errorf("[%v] Discovery of openstack spec failed: %s", tpr.GetName(), err)
 						if err := op.updateStatus(tpr, v1.KlusterError, err.Error()); err != nil {
 							glog.Errorf("Failed to update status of kluster %s:%s", tpr.GetName(), err)
@@ -256,14 +256,14 @@ func (op *GroundControl) terminateKluster(tpr *v1.Kluster) error {
 	return op.Clients.Kubernikus.Kubernikus().Klusters(tpr.Namespace).Delete(tpr.Name, &metav1.DeleteOptions{})
 }
 
-func (op *GroundControl) requiresOpenstackDiscovery(kluster *v1.Kluster) bool {
-	return kluster.Spec.Openstack.ProjectID == "" ||
-		kluster.Spec.Openstack.NetworkID == "" ||
-		kluster.Spec.Openstack.RouterID == ""
+func (op *GroundControl) requiresOpenstackInfo(kluster *v1.Kluster) bool {
+	return kluster.Spec.OpenstackInfo.ProjectID == "" ||
+		kluster.Spec.OpenstackInfo.NetworkID == "" ||
+		kluster.Spec.OpenstackInfo.RouterID == ""
 }
 
-func (op *GroundControl) discoverOpenstackSpec(kluster *v1.Kluster) error {
-	glog.V(5).Infof("[%v] Discovering Openstack Spec", kluster.Name)
+func (op *GroundControl) discoverOpenstackInfo(kluster *v1.Kluster) error {
+	glog.V(5).Infof("[%v] Discovering Openstack Info", kluster.Name)
 
 	routers, err := op.Clients.Openstack.GetRouters(kluster.Account())
 	if err != nil {
@@ -275,25 +275,25 @@ func (op *GroundControl) discoverOpenstackSpec(kluster *v1.Kluster) error {
 		return err
 	}
 
-	if copy.Spec.Openstack.ProjectID == "" {
-		copy.Spec.Openstack.ProjectID = kluster.Account()
-		glog.V(5).Infof("[%v] Setting ProjectID to %v", kluster.Name, copy.Spec.Openstack.ProjectID)
+	if copy.Spec.OpenstackInfo.ProjectID == "" {
+		copy.Spec.OpenstackInfo.ProjectID = kluster.Account()
+		glog.V(5).Infof("[%v] Setting ProjectID to %v", kluster.Name, copy.Spec.OpenstackInfo.ProjectID)
 	}
 
-	if copy.Spec.Openstack.RouterID == "" {
+	if copy.Spec.OpenstackInfo.RouterID == "" {
 		if len(routers) == 1 {
-			copy.Spec.Openstack.RouterID = routers[0].ID
-			glog.V(5).Infof("[%v] Setting RouterID to %v", kluster.Name, copy.Spec.Openstack.RouterID)
+			copy.Spec.OpenstackInfo.RouterID = routers[0].ID
+			glog.V(5).Infof("[%v] Setting RouterID to %v", kluster.Name, copy.Spec.OpenstackInfo.RouterID)
 		} else {
 			glog.V(5).Infof("[%v] There's more than 1 router. Autodiscovery not possible!")
 		}
 	}
 
-	if copy.Spec.Openstack.NetworkID == "" {
+	if copy.Spec.OpenstackInfo.NetworkID == "" {
 		if len(routers) == 1 {
 			if len(routers[0].Networks) == 1 {
-				copy.Spec.Openstack.NetworkID = routers[0].Networks[0].ID
-				glog.V(5).Infof("[%v] Setting NetworkID to %v", kluster.Name, copy.Spec.Openstack.NetworkID)
+				copy.Spec.OpenstackInfo.NetworkID = routers[0].Networks[0].ID
+				glog.V(5).Infof("[%v] Setting NetworkID to %v", kluster.Name, copy.Spec.OpenstackInfo.NetworkID)
 			} else {
 				glog.V(5).Infof("[%v] There's more than 1 network on the router. Autodiscovery not possible!")
 			}

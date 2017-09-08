@@ -337,7 +337,7 @@ func (c *client) CreateNode(kluster *kubernikus_v1.Kluster, pool *kubernikus_v1.
 		Name:          name,
 		FlavorName:    pool.Flavor,
 		ImageName:     pool.Image,
-		Networks:      []servers.Network{servers.Network{UUID: kluster.Spec.Openstack.NetworkID}},
+		Networks:      []servers.Network{servers.Network{UUID: kluster.Spec.OpenstackInfo.NetworkID}},
 		ServiceClient: client,
 	}).Extract()
 
