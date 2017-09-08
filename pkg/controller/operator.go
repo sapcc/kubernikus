@@ -32,6 +32,8 @@ type KubernikusOperatorOptions struct {
 	AuthDomain        string
 	AuthProject       string
 	AuthProjectDomain string
+
+	KubernikusDomain string
 }
 
 type Clients struct {
@@ -54,9 +56,14 @@ type HelmConfig struct {
 	ChartDirectory string
 }
 
+type KubernikusConfig struct {
+	Domain string
+}
+
 type Config struct {
-	Openstack OpenstackConfig
-	Helm      HelmConfig
+	Openstack  OpenstackConfig
+	Kubernikus KubernikusConfig
+	Helm       HelmConfig
 }
 
 type Factories struct {
@@ -90,6 +97,9 @@ func NewKubernikusOperator(options *KubernikusOperatorOptions) *KubernikusOperat
 			},
 			Helm: HelmConfig{
 				ChartDirectory: options.ChartDirectory,
+			},
+			Kubernikus: KubernikusConfig{
+				Domain: options.KubernikusDomain,
 			},
 		},
 	}

@@ -48,14 +48,17 @@ type Options struct {
 	AuthDomain        string
 	AuthProject       string
 	AuthProjectDomain string
+
+	KubernikusDomain string
 }
 
 func NewOperatorOptions() *Options {
 	return &Options{
-		ChartDirectory: "charts/",
-		AuthURL:        "http://keystone.monsoon3:5000/v3",
-		AuthUsername:   "kubernikus",
-		AuthDomain:     "Default",
+		ChartDirectory:   "charts/",
+		AuthURL:          "http://keystone.monsoon3:5000/v3",
+		AuthUsername:     "kubernikus",
+		AuthDomain:       "Default",
+		KubernikusDomain: "kluster.staging.cloud.sap",
 	}
 }
 
@@ -68,6 +71,8 @@ func (o *Options) BindFlags(flags *pflag.FlagSet) {
 	flags.StringVar(&o.AuthDomain, "auth-domain", o.AuthDomain, "Service user domain")
 	flags.StringVar(&o.AuthProject, "auth-project", o.AuthProject, "Scope service user to this project")
 	flags.StringVar(&o.AuthProjectDomain, "auth-project-domain", o.AuthProjectDomain, "Domain of the project")
+
+	flags.StringVar(&o.KubernikusDomain, "kubernikus-domain", o.KubernikusDomain, "Regional domain name for all Kubernikus clusters")
 }
 
 func (o *Options) Validate(c *cobra.Command, args []string) error {
@@ -97,6 +102,7 @@ func (o *Options) Run(c *cobra.Command) error {
 		AuthDomain:        o.AuthDomain,
 		AuthProject:       o.AuthProject,
 		AuthProjectDomain: o.AuthProjectDomain,
+		KubernikusDomain:  o.KubernikusDomain,
 	}
 
 	go controller.NewKubernikusOperator(opts).Run(stop, wg)

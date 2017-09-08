@@ -114,12 +114,25 @@ func (op *GroundControl) handler(key string) error {
 		glog.Infof("TPR of kluster %s deleted", key)
 	} else {
 		tpr := obj.(*v1.Kluster)
+		glog.V(5).Infof("Handling kluster %v in state %q", tpr.Name, tpr.Status.State)
+
 		switch state := tpr.Status.State; state {
 		case v1.KlusterPending:
 			{
 				if op.requiresOpenstackInfo(tpr) {
 					if err := op.discoverOpenstackInfo(tpr); err != nil {
-						glog.Errorf("[%v] Discovery of openstack spec failed: %s", tpr.GetName(), err)
+						glog.Errorf("[%v] Discovery of openstack parameters failed: %s", tpr.GetName(), err)
+						if err := op.updateStatus(tpr, v1.KlusterError, err.Error()); err != nil {
+							glog.Errorf("Failed to update status of kluster %s:%s", tpr.GetName(), err)
+						}
+						return err
+					}
+					return nil
+				}
+
+				if op.requiresKubernikusInfo(tpr) {
+					if err := op.discoverKubernikusInfo(tpr); err != nil {
+						glog.Errorf("[%v] Discovery of kubernikus parameters failed: %s", tpr.GetName(), err)
 						if err := op.updateStatus(tpr, v1.KlusterError, err.Error()); err != nil {
 							glog.Errorf("Failed to update status of kluster %s:%s", tpr.GetName(), err)
 						}
@@ -218,8 +231,7 @@ func (op *GroundControl) updateStatus(tpr *v1.Kluster, state v1.KlusterState, me
 }
 
 func (op *GroundControl) createKluster(tpr *v1.Kluster) error {
-
-	cluster, err := ground.NewCluster(tpr.GetName(), "kluster.staging.cloud.sap")
+	cluster, err := ground.NewCluster(tpr.GetName(), op.Config.Kubernikus.Domain)
 	if err != nil {
 		return err
 	}
@@ -262,8 +274,29 @@ func (op *GroundControl) requiresOpenstackInfo(kluster *v1.Kluster) bool {
 		kluster.Spec.OpenstackInfo.RouterID == ""
 }
 
+func (op *GroundControl) requiresKubernikusInfo(kluster *v1.Kluster) bool {
+	return kluster.Spec.KubernikusInfo.Server == ""
+}
+
+func (op *GroundControl) discoverKubernikusInfo(kluster *v1.Kluster) error {
+	glog.V(5).Infof("[%v] Discovering KubernikusInfo", kluster.Name)
+
+	copy, err := op.Clients.Kubernikus.Kubernikus().Klusters(kluster.Namespace).Get(kluster.Name, metav1.GetOptions{})
+	if err != nil {
+		return err
+	}
+
+	if copy.Spec.KubernikusInfo.Server == "" {
+		copy.Spec.KubernikusInfo.Server = fmt.Sprintf("%s.%s", kluster.Spec.Name, op.Config.Kubernikus.Domain)
+		glog.V(5).Infof("[%v] Setting Server to %v", kluster.Name, copy.Spec.KubernikusInfo.Server)
+	}
+
+	_, err = op.Clients.Kubernikus.Kubernikus().Klusters(kluster.Namespace).Update(copy)
+	return err
+}
+
 func (op *GroundControl) discoverOpenstackInfo(kluster *v1.Kluster) error {
-	glog.V(5).Infof("[%v] Discovering Openstack Info", kluster.Name)
+	glog.V(5).Infof("[%v] Discovering OpenstackInfo", kluster.Name)
 
 	routers, err := op.Clients.Openstack.GetRouters(kluster.Account())
 	if err != nil {

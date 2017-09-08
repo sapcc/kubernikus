@@ -3,33 +3,33 @@ package v1
 import metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 type NodePoolConfig struct {
-	Upgrade bool
-	Repair  bool
+	Upgrade bool `json:"upgrade"`
+	Repair  bool `json:"repair"`
 }
 
 type NodePool struct {
-	Name   string
-	Size   int
-	Flavor string
-	Image  string
-	Config NodePoolConfig
+	Name   string         `json:"name"`
+	Size   int            `json:"size"`
+	Flavor string         `json:"flavor"`
+	Image  string         `json:"image"`
+	Config NodePoolConfig `json:"config"`
 }
 
 type OpenstackInfo struct {
-	ProjectID string
-	RouterID  string
-	NetworkID string
+	ProjectID string `json:"projectID"`
+	RouterID  string `json:"routerID"`
+	NetworkID string `json:"networkID"`
 }
 
-type KubernetesInfo struct {
-	Server string
+type KubernikusInfo struct {
+	Server string `json:"server"`
 }
 
 type KlusterSpec struct {
-	Name           string
-	OpenstackInfo  OpenstackInfo
-	KubernetesInfo KubernetesInfo
-	NodePools      []NodePool
+	Name           string         `json:"name"`
+	OpenstackInfo  OpenstackInfo  `json:"openstackInfo,omitempty"`
+	KubernikusInfo KubernikusInfo `json:"kubernikusInfo,omitempty"`
+	NodePools      []NodePool     `json:"nodePools,omitempty"`
 }
 
 type KlusterState string
@@ -44,8 +44,8 @@ const (
 )
 
 type KlusterStatus struct {
-	State   KlusterState
-	Message string
+	State   KlusterState `json:"state,omitempty"`
+	Message string       `json:"message,omitempty"`
 }
 
 // +genclient
