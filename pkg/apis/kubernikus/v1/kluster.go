@@ -15,8 +15,15 @@ type NodePool struct {
 	Config NodePoolConfig `json:"config"`
 }
 
+type Openstack struct {
+	ProjectID string `json:"projectID"`
+	RouterID  string `json:"routerID"`
+	NetworkID string `json:"networkID"`
+}
+
 type KlusterSpec struct {
 	Name      string     `json:"name"`
+	Openstack Openstack  `json:"openstack,omitempty"`
 	NodePools []NodePool `json:"nodePools,omitempty"`
 }
 

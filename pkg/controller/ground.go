@@ -117,10 +117,22 @@ func (op *GroundControl) handler(key string) error {
 		switch state := tpr.Status.State; state {
 		case v1.KlusterPending:
 			{
+				if op.requiresOpenstackDiscovery(tpr) {
+					if err := op.discoverOpenstackSpec(tpr); err != nil {
+						glog.Errorf("[%v] Discovery of openstack spec failed: %s", tpr.GetName(), err)
+						if err := op.updateStatus(tpr, v1.KlusterError, err.Error()); err != nil {
+							glog.Errorf("Failed to update status of kluster %s:%s", tpr.GetName(), err)
+						}
+						return err
+					}
+					return nil
+				}
+
 				glog.Infof("Creating Kluster %s", tpr.GetName())
 				if err := op.updateStatus(tpr, v1.KlusterCreating, "Creating Cluster"); err != nil {
 					glog.Errorf("Failed to update status of kluster %s:%s", tpr.GetName(), err)
 				}
+
 				if err := op.createKluster(tpr); err != nil {
 					glog.Errorf("Creating kluster %s failed: %s", tpr.GetName(), err)
 					if err := op.updateStatus(tpr, v1.KlusterError, err.Error()); err != nil {
@@ -242,6 +254,54 @@ func (op *GroundControl) terminateKluster(tpr *v1.Kluster) error {
 	}
 
 	return op.Clients.Kubernikus.Kubernikus().Klusters(tpr.Namespace).Delete(tpr.Name, &metav1.DeleteOptions{})
+}
+
+func (op *GroundControl) requiresOpenstackDiscovery(kluster *v1.Kluster) bool {
+	return kluster.Spec.Openstack.ProjectID == "" ||
+		kluster.Spec.Openstack.NetworkID == "" ||
+		kluster.Spec.Openstack.RouterID == ""
+}
+
+func (op *GroundControl) discoverOpenstackSpec(kluster *v1.Kluster) error {
+	glog.V(5).Infof("[%v] Discovering Openstack Spec", kluster.Name)
+
+	routers, err := op.Clients.Openstack.GetRouters(kluster.Account())
+	if err != nil {
+		return err
+	}
+
+	copy, err := op.Clients.Kubernikus.Kubernikus().Klusters(kluster.Namespace).Get(kluster.Name, metav1.GetOptions{})
+	if err != nil {
+		return err
+	}
+
+	if copy.Spec.Openstack.ProjectID == "" {
+		copy.Spec.Openstack.ProjectID = kluster.Account()
+		glog.V(5).Infof("[%v] Setting ProjectID to %v", kluster.Name, copy.Spec.Openstack.ProjectID)
+	}
+
+	if copy.Spec.Openstack.RouterID == "" {
+		if len(routers) == 1 {
+			copy.Spec.Openstack.RouterID = routers[0].ID
+			glog.V(5).Infof("[%v] Setting RouterID to %v", kluster.Name, copy.Spec.Openstack.RouterID)
+		} else {
+			glog.V(5).Infof("[%v] There's more than 1 router. Autodiscovery not possible!")
+		}
+	}
+
+	if copy.Spec.Openstack.NetworkID == "" {
+		if len(routers) == 1 {
+			if len(routers[0].Networks) == 1 {
+				copy.Spec.Openstack.NetworkID = routers[0].Networks[0].ID
+				glog.V(5).Infof("[%v] Setting NetworkID to %v", kluster.Name, copy.Spec.Openstack.NetworkID)
+			} else {
+				glog.V(5).Infof("[%v] There's more than 1 network on the router. Autodiscovery not possible!")
+			}
+		}
+	}
+
+	_, err = op.Clients.Kubernikus.Kubernikus().Klusters(kluster.Namespace).Update(copy)
+	return err
 }
 
 func serviceUsername(name string) string {

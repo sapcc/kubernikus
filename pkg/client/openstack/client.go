@@ -54,8 +54,13 @@ type Project struct {
 }
 
 type Router struct {
-	ID      string
-	Subnets []Subnet
+	ID       string
+	Networks []Network
+	Subnets  []Subnet
+}
+
+type Network struct {
+	ID string
 }
 
 type Subnet struct {
@@ -212,6 +217,8 @@ func (c *client) GetRouters(project_id string) ([]Router, error) {
 				if err != nil {
 					return false, err
 				}
+				resultRouter.Networks = append(resultRouter.Networks, Network{ID: network.ID})
+
 				for _, subnetID := range network.Subnets {
 					subnet, err := subnets.Get(networkClient, subnetID).Extract()
 					if err != nil {
@@ -330,7 +337,7 @@ func (c *client) CreateNode(kluster *kubernikus_v1.Kluster, pool *kubernikus_v1.
 		Name:          name,
 		FlavorName:    pool.Flavor,
 		ImageName:     pool.Image,
-		Networks:      []servers.Network{servers.Network{UUID: "2c731ffb-b8ac-48ac-9ccc-1f8c57fb61ce"}},
+		Networks:      []servers.Network{servers.Network{UUID: kluster.Spec.Openstack.NetworkID}},
 		ServiceClient: client,
 	}).Extract()
 
