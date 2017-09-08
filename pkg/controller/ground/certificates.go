@@ -3,7 +3,6 @@ package ground
 import (
 	"crypto/rand"
 	"crypto/rsa"
-	"crypto/tls"
 	"crypto/x509"
 	"crypto/x509/pkix"
 	"errors"
@@ -75,19 +74,23 @@ func (c *Certificates) MarshalYAML() (interface{}, error) {
 
 func NewBundle(key, cert []byte) (Bundle, error) {
 
-	certificate, err := tls.X509KeyPair(cert, key)
+	certificates, err := certutil.ParseCertsPEM(cert)
 	if err != nil {
 		return Bundle{}, err
 	}
-	rsaKey, ok := certificate.PrivateKey.(*rsa.PrivateKey)
-	if !ok {
+	if len(certificates) < 1 {
+		return Bundle{}, errors.New("No certificates found")
+	}
+	k, err := certutil.ParsePrivateKeyPEM(key)
+	if err != nil {
+		return Bundle{}, err
+	}
+	rsaKey, isRSAKey := k.(*rsa.PrivateKey)
+	if !isRSAKey {
 		return Bundle{}, errors.New("Key does not seem to be of type RSA")
 	}
 
-	// We should be fine ignoring this error because  tls.X509KeyPair already parsed it
-	x509Cert, _ := x509.ParseCertificate(certificate.Certificate[0])
-
-	return Bundle{PrivateKey: rsaKey, Certificate: x509Cert}, nil
+	return Bundle{PrivateKey: rsaKey, Certificate: certificates[0]}, nil
 }
 
 type Bundle struct {
