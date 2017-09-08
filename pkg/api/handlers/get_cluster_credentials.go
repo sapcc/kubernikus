@@ -9,10 +9,10 @@ import (
 	"github.com/sapcc/kubernikus/pkg/api"
 	"github.com/sapcc/kubernikus/pkg/api/models"
 	"github.com/sapcc/kubernikus/pkg/api/rest/operations"
+	"github.com/sapcc/kubernikus/pkg/client/kubernetes"
 	"github.com/sapcc/kubernikus/pkg/controller/ground"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/apis/meta/v1"
-	clientcmdapiv1 "k8s.io/client-go/tools/clientcmd/api/v1"
 	certutil "k8s.io/client-go/util/cert"
 )
 
@@ -50,43 +50,20 @@ func (d *getClusterCredentials) Handle(params operations.GetClusterCredentialsPa
 	if err != nil {
 		return NewErrorResponse(&operations.GetClusterCredentialsDefault{}, 500, "Failed to parse CA certificate: %s", err)
 	}
+
 	cert := bundle.Sign(ground.Config{
 		Sign:         principal.Name,
 		Organization: []string{"system:masters"},
 		Usages:       []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth},
 	})
-	config := clientcmdapiv1.Config{
-		APIVersion:     "v1",
-		Kind:           "Config",
-		CurrentContext: params.Name,
-		Clusters: []clientcmdapiv1.NamedCluster{
-			clientcmdapiv1.NamedCluster{
-				Name: params.Name,
-				Cluster: clientcmdapiv1.Cluster{
-					Server: fmt.Sprintf("https://%s.kluster.staging.cloud.sap", qualifiedName(params.Name, principal.Account)),
-					CertificateAuthorityData: serverCACert,
-				},
-			},
-		},
-		Contexts: []clientcmdapiv1.NamedContext{
-			clientcmdapiv1.NamedContext{
-				Name: params.Name,
-				Context: clientcmdapiv1.Context{
-					Cluster:  params.Name,
-					AuthInfo: principal.Name,
-				},
-			},
-		},
-		AuthInfos: []clientcmdapiv1.NamedAuthInfo{
-			clientcmdapiv1.NamedAuthInfo{
-				Name: principal.Name,
-				AuthInfo: clientcmdapiv1.AuthInfo{
-					ClientCertificateData: certutil.EncodeCertPEM(cert.Certificate),
-					ClientKeyData:         certutil.EncodePrivateKeyPEM(cert.PrivateKey),
-				},
-			},
-		},
-	}
+	config := kubernetes.NewClientConfigV1(
+		params.Name,
+		principal.Name,
+		fmt.Sprintf("https://%s.kluster.staging.cloud.sap", qualifiedName(params.Name, principal.Account)),
+		certutil.EncodePrivateKeyPEM(cert.PrivateKey),
+		certutil.EncodeCertPEM(cert.Certificate),
+		serverCACert,
+	)
 
 	kubeconfig, err := yaml.Marshal(config)
 	if err != nil {
