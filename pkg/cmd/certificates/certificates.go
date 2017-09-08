@@ -13,6 +13,7 @@ func NewCommand() *cobra.Command {
 	c.AddCommand(
 		NewFilesCommand(),
 		NewPlainCommand(),
+		NewSignCommand(),
 	)
 
 	return c
