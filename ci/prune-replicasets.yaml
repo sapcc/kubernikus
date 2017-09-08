@@ -12,7 +12,7 @@ run:
     - -ec
     - |
       set -o pipefail
-      RS_TO_DELETE=$(kubectl get rs --namespace=$NAMESPACE --sort-by='.metadata.creationTimestamp' --output-version="extensions/v1beta1" -l app=kubernikus,type=groundctl -ojsonpath='{range .items[*]}{.metadata.name}{"\t"}{.spec.replicas}{"\n"}{end}' | grep '0$' | cut -f1 | head -n -$KEEP)
+      RS_TO_DELETE=$(kubectl get rs --namespace=$NAMESPACE --sort-by='.metadata.creationTimestamp' --output-version="extensions/v1beta1" -l app=kubernikus,type=operator -ojsonpath='{range .items[*]}{.metadata.name}{"\t"}{.spec.replicas}{"\n"}{end}' | grep '0$' | cut -f1 | head -n -$KEEP)
       if [ -n "${RS_TO_DELETE}" ]; then
         set -x
         kubectl delete rs --namespace=$NAMESPACE $RS_TO_DELETE
