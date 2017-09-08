@@ -9,6 +9,7 @@ import (
 
 	yaml "gopkg.in/yaml.v2"
 
+	"github.com/Masterminds/goutils"
 	"github.com/golang/glog"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
@@ -231,13 +232,8 @@ func (op *GroundControl) updateStatus(tpr *v1.Kluster, state v1.KlusterState, me
 }
 
 func (op *GroundControl) createKluster(tpr *v1.Kluster) error {
-	cluster, err := ground.NewCluster(tpr.GetName(), op.Config.Kubernikus.Domain)
+	cluster, err := ground.NewCluster(tpr, op.Config.Openstack.AuthURL)
 	if err != nil {
-		return err
-	}
-
-	cluster.OpenStack.AuthURL = op.Config.Openstack.AuthURL
-	if err := cluster.DiscoverValues(tpr.GetName(), tpr.Account(), op.Clients.Openstack); err != nil {
 		return err
 	}
 
@@ -270,8 +266,12 @@ func (op *GroundControl) terminateKluster(tpr *v1.Kluster) error {
 
 func (op *GroundControl) requiresOpenstackInfo(kluster *v1.Kluster) bool {
 	return kluster.Spec.OpenstackInfo.ProjectID == "" ||
+		kluster.Spec.OpenstackInfo.RouterID == "" ||
 		kluster.Spec.OpenstackInfo.NetworkID == "" ||
-		kluster.Spec.OpenstackInfo.RouterID == ""
+		kluster.Spec.OpenstackInfo.LBSubnetID == "" ||
+		kluster.Spec.OpenstackInfo.Domain == "" ||
+		kluster.Spec.OpenstackInfo.Username == "" ||
+		kluster.Spec.OpenstackInfo.Password == ""
 }
 
 func (op *GroundControl) requiresKubernikusInfo(kluster *v1.Kluster) bool {
@@ -330,6 +330,34 @@ func (op *GroundControl) discoverOpenstackInfo(kluster *v1.Kluster) error {
 			} else {
 				glog.V(5).Infof("[%v] There's more than 1 network on the router. Autodiscovery not possible!")
 			}
+		}
+	}
+
+	if copy.Spec.OpenstackInfo.LBSubnetID == "" {
+		if len(routers) == 1 {
+			if len(routers[0].Subnets) == 1 {
+				copy.Spec.OpenstackInfo.LBSubnetID = routers[0].Subnets[0].ID
+				glog.V(5).Infof("[%v] Setting LBSubnetID to %v", kluster.Name, copy.Spec.OpenstackInfo.LBSubnetID)
+			} else {
+				glog.V(5).Infof("[%v] There's more than 1 subnet on the router. Autodiscovery not possible!")
+			}
+		}
+	}
+
+	if copy.Spec.OpenstackInfo.Domain == "" {
+		glog.V(5).Infof("[%v] Setting domain to %v", kluster.Name, "kubernikus")
+		copy.Spec.OpenstackInfo.Domain = "kubernikus"
+	}
+
+	if copy.Spec.OpenstackInfo.Username == "" {
+		glog.V(5).Infof("[%v] Setting Username to %v", kluster.Name, copy.Spec.OpenstackInfo.Username)
+		copy.Spec.OpenstackInfo.Username = fmt.Sprintf("kubernikus-%s", kluster.Name)
+	}
+
+	if copy.Spec.OpenstackInfo.Password == "" {
+		glog.V(5).Infof("[%v] Setting Password to %v", kluster.Name, "[redacted]")
+		if copy.Spec.OpenstackInfo.Password, err = goutils.RandomAscii(20); err != nil {
+			return fmt.Errorf("Failed to generate password: %s", err)
 		}
 	}
 

@@ -153,7 +153,7 @@ func (c Certificates) all() []Bundle {
 	}
 }
 
-func (certs *Certificates) populateForSatellite(satellite, domain string) error {
+func (certs *Certificates) populateForSatellite(satellite, fqSatelliteName string) error {
 	createCA(satellite, "Etcd Clients", &certs.Etcd.Clients.CA)
 	createCA(satellite, "Etcd Peers", &certs.Etcd.Peers.CA)
 	createCA(satellite, "ApiServer Clients", &certs.ApiServer.Clients.CA)
@@ -170,7 +170,7 @@ func (certs *Certificates) populateForSatellite(satellite, domain string) error 
 	certs.ApiServer.Nodes.Universal = certs.signApiServerNode("universal")
 	certs.Kubelet.Clients.ApiServer = certs.signKubeletClient("apiserver")
 	certs.TLS.ApiServer = certs.signTLS("apiserver",
-		[]string{"kubernetes", "kubernetes.default", "apiserver", satellite, fmt.Sprintf("%s.%s", satellite, domain)},
+		[]string{"kubernetes", "kubernetes.default", "apiserver", satellite, fqSatelliteName},
 		[]net.IP{net.IPv4(127, 0, 0, 1)})
 
 	return nil

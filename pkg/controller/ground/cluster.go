@@ -1,11 +1,7 @@
 package ground
 
 import (
-	"fmt"
-
-	"github.com/Masterminds/goutils"
-	"github.com/golang/glog"
-	"github.com/sapcc/kubernikus/pkg/client/openstack"
+	"github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
 )
 
 type Cluster struct {
@@ -30,15 +26,24 @@ type OpenStack struct {
 	RouterID   string `yaml:"routerID,omitempty"`
 }
 
-func NewCluster(name, domain string) (*Cluster, error) {
+func NewCluster(kluster *v1.Kluster, authURL string) (*Cluster, error) {
 	cluster := &Cluster{
 		Certificates: &Certificates{},
 		API: API{
-			IngressHost: fmt.Sprintf("%s.%s", name, domain),
+			IngressHost: kluster.Spec.KubernikusInfo.Server,
+		},
+		OpenStack: OpenStack{
+			AuthURL:    authURL,
+			Username:   kluster.Spec.OpenstackInfo.Username,
+			Password:   kluster.Spec.OpenstackInfo.Password,
+			DomainName: kluster.Spec.OpenstackInfo.Domain,
+			ProjectID:  kluster.Spec.OpenstackInfo.ProjectID,
+			LBSubnetID: kluster.Spec.OpenstackInfo.LBSubnetID,
+			RouterID:   kluster.Spec.OpenstackInfo.RouterID,
 		},
 	}
 
-	if err := cluster.Certificates.populateForSatellite(name, domain); err != nil {
+	if err := cluster.Certificates.populateForSatellite(kluster.Spec.Name, kluster.Spec.KubernikusInfo.Server); err != nil {
 		return cluster, err
 	}
 
@@ -47,42 +52,4 @@ func NewCluster(name, domain string) (*Cluster, error) {
 
 func (c Cluster) WriteConfig(persister ConfigPersister) error {
 	return persister.WriteConfig(c)
-}
-
-func (c *Cluster) DiscoverValues(name, projectID string, oclient openstack.Client) error {
-	if c.OpenStack.Username == "" {
-		c.OpenStack.Username = fmt.Sprintf("kubernikus-%s", name)
-	}
-	var err error
-	if c.OpenStack.Password == "" {
-		if c.OpenStack.Password, err = goutils.RandomAscii(20); err != nil {
-			return fmt.Errorf("Failed to generate password: %s", err)
-		}
-	}
-	if c.OpenStack.DomainName == "" {
-		c.OpenStack.DomainName = "Default"
-	}
-	if c.OpenStack.ProjectID == "" {
-		c.OpenStack.ProjectID = projectID
-	}
-	if c.OpenStack.RouterID == "" || c.OpenStack.LBSubnetID == "" {
-		routers, err := oclient.GetRouters(projectID)
-		if err != nil {
-			return fmt.Errorf("Couldn't get routers for project %s: %s", projectID, err)
-		}
-
-		glog.V(2).Infof("Found routers for project %s: %#v", projectID, routers)
-
-		if !(len(routers) == 1 && len(routers[0].Subnets) == 1) {
-			return fmt.Errorf("Project needs to contain a router with exactly one subnet")
-		}
-
-		if c.OpenStack.RouterID == "" {
-			c.OpenStack.RouterID = routers[0].ID
-		}
-		if c.OpenStack.LBSubnetID == "" {
-			c.OpenStack.LBSubnetID = routers[0].Subnets[0].ID
-		}
-	}
-	return nil
 }

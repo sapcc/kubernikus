@@ -3,6 +3,8 @@ package certificates
 import (
 	"errors"
 
+	"github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
+
 	"github.com/sapcc/kubernikus/pkg/cmd"
 	"github.com/sapcc/kubernikus/pkg/controller/ground"
 	"github.com/spf13/cobra"
@@ -52,7 +54,12 @@ func (o *FilesOptions) Complete(args []string) error {
 }
 
 func (o *FilesOptions) Run(c *cobra.Command) error {
-	cluster, err := ground.NewCluster(o.Name, "localdomain")
+	cluster, err := ground.NewCluster(
+		&v1.Kluster{
+			Spec: v1.KlusterSpec{
+				Name: o.Name,
+			},
+		}, "localdomain")
 	if err != nil {
 		return err
 	}

@@ -127,7 +127,7 @@ func (c *client) domainProviderFor(domain string) (*gophercloud.ProviderClient, 
 }
 
 func (c *client) projectProviderFor(kluster *kubernikus_v1.Kluster) (*gophercloud.ProviderClient, error) {
-	project_id := kluster.Account()
+	project_id := kluster.Spec.OpenstackInfo.ProjectID
 	secret_name := kluster.Name
 
 	if c.projectProviders[project_id] != nil {
@@ -283,7 +283,7 @@ func getRouterNetworks(client *gophercloud.ServiceClient, routerID string) ([]st
 }
 
 func (c *client) GetNodes(kluster *kubernikus_v1.Kluster, pool *kubernikus_v1.NodePool) ([]Node, error) {
-	project_id := kluster.Account()
+	project_id := kluster.Spec.OpenstackInfo.RouterID
 	pool_id := pool.Name
 
 	provider, err := c.projectProviderFor(kluster)

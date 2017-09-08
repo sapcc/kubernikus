@@ -6,7 +6,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/sapcc/kubernikus/pkg/client/openstack"
+	"github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
 	"github.com/sapcc/kubernikus/pkg/cmd"
 	"github.com/sapcc/kubernikus/pkg/controller/ground"
 	"github.com/spf13/cobra"
@@ -90,16 +90,17 @@ func (o *HelmOptions) Complete(args []string) error {
 
 func (o *HelmOptions) Run(c *cobra.Command) error {
 	nameA := strings.SplitN(o.Name, ".", 2)
-	cluster, err := ground.NewCluster(nameA[0], nameA[1])
+	cluster, err := ground.NewCluster(
+		&v1.Kluster{
+			Spec: v1.KlusterSpec{
+				Name: nameA[0],
+			},
+		}, nameA[1])
 	if err != nil {
 		return err
 	}
 	if o.AuthURL != "" {
 		cluster.OpenStack.AuthURL = o.AuthURL
-		oclient := openstack.NewClient(nil, o.AuthURL, o.AuthUsername, o.AuthPassword, o.AuthDomain, o.AuthProject, o.AuthProjectDomain)
-		if err := cluster.DiscoverValues(o.Name, o.ProjectID, oclient); err != nil {
-			return err
-		}
 	}
 
 	result, err := yaml.Marshal(cluster)

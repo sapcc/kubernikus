@@ -16,9 +16,13 @@ type NodePool struct {
 }
 
 type OpenstackInfo struct {
-	ProjectID string `json:"projectID"`
-	RouterID  string `json:"routerID"`
-	NetworkID string `json:"networkID"`
+	ProjectID  string `json:"projectID"`
+	RouterID   string `json:"routerID"`
+	NetworkID  string `json:"networkID"`
+	LBSubnetID string `json:"lbSubnetID"`
+	Domain     string `json:"domain"`
+	Username   string `json:"username"`
+	Password   string `json:"password"`
 }
 
 type KubernikusInfo struct {
