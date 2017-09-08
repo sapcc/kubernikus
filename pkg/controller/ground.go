@@ -255,9 +255,9 @@ func (op *GroundControl) terminateKluster(tpr *v1.Kluster) error {
 	if err != nil && !strings.Contains(grpc.ErrorDesc(err), fmt.Sprintf(`release: "%s" not found`, tpr.GetName())) {
 		return err
 	}
-	u := serviceUsername(tpr.GetName())
-	glog.Infof("Deleting openstack user %s@default", u)
-	if err := op.Clients.Openstack.DeleteUser(u, "default"); err != nil {
+
+	glog.Infof("Deleting openstack user %s@%s", tpr.Spec.OpenstackInfo.Username, tpr.Spec.OpenstackInfo.Domain)
+	if err := op.Clients.Openstack.DeleteUser(tpr.Spec.OpenstackInfo.Username, tpr.Spec.OpenstackInfo.Domain); err != nil {
 		return err
 	}
 
@@ -287,7 +287,7 @@ func (op *GroundControl) discoverKubernikusInfo(kluster *v1.Kluster) error {
 	}
 
 	if copy.Spec.KubernikusInfo.Server == "" {
-		copy.Spec.KubernikusInfo.Server = fmt.Sprintf("%s.%s", kluster.Spec.Name, op.Config.Kubernikus.Domain)
+		copy.Spec.KubernikusInfo.Server = fmt.Sprintf("%s.%s", kluster.GetName(), op.Config.Kubernikus.Domain)
 		glog.V(5).Infof("[%v] Setting Server to %v", kluster.Name, copy.Spec.KubernikusInfo.Server)
 	}
 
@@ -363,8 +363,4 @@ func (op *GroundControl) discoverOpenstackInfo(kluster *v1.Kluster) error {
 
 	_, err = op.Clients.Kubernikus.Kubernikus().Klusters(kluster.Namespace).Update(copy)
 	return err
-}
-
-func serviceUsername(name string) string {
-	return fmt.Sprintf("kubernikus-%s", name)
 }
