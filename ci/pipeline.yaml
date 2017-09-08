@@ -102,6 +102,29 @@ jobs:
           GITHUB_TOKEN: {{github-access-token}}
     on_failure:
       <<: *post_failure_to_slack
+  - name: eu-nl-1
+    serial: true
+    plan:
+      - aggregate:
+        - get: kubernikus.git
+          trigger: true
+          passed: [staging]
+        - get: kubernikus.version
+          passed: [staging]
+        - get: secrets.git
+
+      - task: deploy
+        file: kubernikus.git/ci/task-helm-upgrade.yaml
+        params:
+          REGION: eu-nl-1
+          GITHUB_TOKEN: ((github-access-token))
+      - task: prune replicasets
+        file: kubernikus.git/ci/prune-replicasets.yaml
+        params:
+          REGION: eu-nl-1
+          GITHUB_TOKEN: {{github-access-token}}
+    on_failure:
+      <<: *post_failure_to_slack
 
   # Add new regions above this line, but note that you need to do a
   # manual `helm install` first. This pipeline can only `helm upgrade`.
