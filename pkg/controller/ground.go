@@ -367,13 +367,13 @@ func (op *GroundControl) discoverOpenstackInfo(kluster *v1.Kluster) error {
 	}
 
 	if copy.Spec.OpenstackInfo.AuthURL == "" {
-		glog.V(5).Infof("[%v] Setting authURL to %v", kluster.Name, op.Config.Openstack.AuthURL)
 		copy.Spec.OpenstackInfo.AuthURL = op.Config.Openstack.AuthURL
+		glog.V(5).Infof("[%v] Setting authURL to %v", kluster.Name, op.Config.Openstack.AuthURL)
 	}
 
 	if copy.Spec.OpenstackInfo.Username == "" {
-		glog.V(5).Infof("[%v] Setting Username to %v", kluster.Name, copy.Spec.OpenstackInfo.Username)
 		copy.Spec.OpenstackInfo.Username = fmt.Sprintf("kubernikus-%s", kluster.Name)
+		glog.V(5).Infof("[%v] Setting Username to %v", kluster.Name, copy.Spec.OpenstackInfo.Username)
 	}
 
 	if copy.Spec.OpenstackInfo.Password == "" {
