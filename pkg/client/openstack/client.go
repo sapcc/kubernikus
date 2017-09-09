@@ -8,7 +8,9 @@ import (
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/servers"
+	"github.com/gophercloud/gophercloud/openstack/identity/v3/endpoints"
 	"github.com/gophercloud/gophercloud/openstack/identity/v3/projects"
+	"github.com/gophercloud/gophercloud/openstack/identity/v3/services"
 	"github.com/gophercloud/gophercloud/openstack/identity/v3/tokens"
 	"github.com/gophercloud/gophercloud/openstack/identity/v3/users"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/layer3/routers"
@@ -42,6 +44,7 @@ type Client interface {
 	CreateNode(*kubernikus_v1.Kluster, *kubernikus_v1.NodePool) (string, error)
 	GetNodes(*kubernikus_v1.Kluster, *kubernikus_v1.NodePool) ([]Node, error)
 	GetProject(id string) (*Project, error)
+	GetRegion() (string, error)
 	GetRouters(project_id string) ([]Router, error)
 	DeleteUser(username, domainID string) error
 }
@@ -347,4 +350,64 @@ func (c *client) CreateNode(kluster *kubernikus_v1.Kluster, pool *kubernikus_v1.
 	}
 
 	return server.ID, nil
+}
+
+func (c *client) GetRegion() (string, error) {
+	provider, err := c.domainProvider()
+	if err != nil {
+		return "", err
+	}
+
+	identity, err := openstack.NewIdentityV3(provider, gophercloud.EndpointOpts{})
+	if err != nil {
+		return "", err
+	}
+
+	opts := services.ListOpts{ServiceType: "compute"}
+	computeServiceID := ""
+	err = services.List(identity, opts).EachPage(func(page pagination.Page) (bool, error) {
+		serviceList, err := services.ExtractServices(page)
+		if err != nil {
+			return false, err
+		}
+
+		if computeServiceID == "" {
+			computeServiceID = serviceList[0].ID
+		}
+
+		return true, nil
+	})
+
+	if err != nil {
+		return "", err
+	}
+
+	if computeServiceID == "" {
+		return "", fmt.Errorf("Couldn't find a compute service. Bailing out.")
+	}
+
+	endpointOpts := endpoints.ListOpts{Availability: gophercloud.AvailabilityPublic, ServiceID: computeServiceID}
+	region := ""
+	err = endpoints.List(identity, endpointOpts).EachPage(func(page pagination.Page) (bool, error) {
+		endpoints, err := endpoints.ExtractEndpoints(page)
+		if err != nil {
+			return false, err
+		}
+
+		if region == "" {
+			region = endpoints[0].Region
+		}
+
+		return true, nil
+	})
+
+	if err != nil {
+		return "", err
+	}
+
+	if region == "" {
+		return "", fmt.Errorf("Couldn't find the region. Bailing out.")
+	}
+
+	return region, nil
 }

@@ -270,12 +270,16 @@ func (op *GroundControl) requiresOpenstackInfo(kluster *v1.Kluster) bool {
 		kluster.Spec.OpenstackInfo.NetworkID == "" ||
 		kluster.Spec.OpenstackInfo.LBSubnetID == "" ||
 		kluster.Spec.OpenstackInfo.Domain == "" ||
+		kluster.Spec.OpenstackInfo.Region == "" ||
 		kluster.Spec.OpenstackInfo.Username == "" ||
-		kluster.Spec.OpenstackInfo.Password == ""
+		kluster.Spec.OpenstackInfo.Password == "" ||
+		kluster.Spec.OpenstackInfo.AuthURL == ""
+
 }
 
 func (op *GroundControl) requiresKubernikusInfo(kluster *v1.Kluster) bool {
-	return kluster.Spec.KubernikusInfo.Server == ""
+	return kluster.Spec.KubernikusInfo.Server == "" ||
+		kluster.Spec.KubernikusInfo.ServerURL == ""
 }
 
 func (op *GroundControl) discoverKubernikusInfo(kluster *v1.Kluster) error {
@@ -289,6 +293,11 @@ func (op *GroundControl) discoverKubernikusInfo(kluster *v1.Kluster) error {
 	if copy.Spec.KubernikusInfo.Server == "" {
 		copy.Spec.KubernikusInfo.Server = fmt.Sprintf("%s.%s", kluster.GetName(), op.Config.Kubernikus.Domain)
 		glog.V(5).Infof("[%v] Setting Server to %v", kluster.Name, copy.Spec.KubernikusInfo.Server)
+	}
+
+	if copy.Spec.KubernikusInfo.ServerURL == "" {
+		copy.Spec.KubernikusInfo.ServerURL = fmt.Sprintf("https://%s.%s", kluster.GetName(), op.Config.Kubernikus.Domain)
+		glog.V(5).Infof("[%v] Setting Server to %v", kluster.Name, copy.Spec.KubernikusInfo.ServerURL)
 	}
 
 	_, err = op.Clients.Kubernikus.Kubernikus().Klusters(kluster.Namespace).Update(copy)
@@ -347,6 +356,19 @@ func (op *GroundControl) discoverOpenstackInfo(kluster *v1.Kluster) error {
 	if copy.Spec.OpenstackInfo.Domain == "" {
 		glog.V(5).Infof("[%v] Setting domain to %v", kluster.Name, "kubernikus")
 		copy.Spec.OpenstackInfo.Domain = "kubernikus"
+	}
+
+	if copy.Spec.OpenstackInfo.Region == "" {
+		copy.Spec.OpenstackInfo.Region, err = op.Clients.Openstack.GetRegion()
+		if err != nil {
+			return err
+		}
+		glog.V(5).Infof("[%v] Setting region to %v", kluster.Name, copy.Spec.OpenstackInfo.Region)
+	}
+
+	if copy.Spec.OpenstackInfo.AuthURL == "" {
+		glog.V(5).Infof("[%v] Setting authURL to %v", kluster.Name, op.Config.Openstack.AuthURL)
+		copy.Spec.OpenstackInfo.AuthURL = op.Config.Openstack.AuthURL
 	}
 
 	if copy.Spec.OpenstackInfo.Username == "" {

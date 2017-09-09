@@ -16,17 +16,20 @@ type NodePool struct {
 }
 
 type OpenstackInfo struct {
+	AuthURL    string `json:"authURL"`
 	ProjectID  string `json:"projectID"`
 	RouterID   string `json:"routerID"`
 	NetworkID  string `json:"networkID"`
 	LBSubnetID string `json:"lbSubnetID"`
 	Domain     string `json:"domain"`
+	Region     string `json:"region"`
 	Username   string `json:"username"`
 	Password   string `json:"password"`
 }
 
 type KubernikusInfo struct {
-	Server string `json:"server"`
+	Server    string `json:"server"`
+	ServerURL string `json:"serverURL"`
 }
 
 type KlusterSpec struct {
