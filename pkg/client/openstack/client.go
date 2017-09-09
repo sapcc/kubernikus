@@ -41,7 +41,7 @@ type client struct {
 }
 
 type Client interface {
-	CreateNode(*kubernikus_v1.Kluster, *kubernikus_v1.NodePool) (string, error)
+	CreateNode(*kubernikus_v1.Kluster, *kubernikus_v1.NodePool, []byte) (string, error)
 	GetNodes(*kubernikus_v1.Kluster, *kubernikus_v1.NodePool) ([]Node, error)
 	GetProject(id string) (*Project, error)
 	GetRegion() (string, error)
@@ -322,7 +322,7 @@ func (c *client) GetNodes(kluster *kubernikus_v1.Kluster, pool *kubernikus_v1.No
 	return nodes, nil
 }
 
-func (c *client) CreateNode(kluster *kubernikus_v1.Kluster, pool *kubernikus_v1.NodePool) (string, error) {
+func (c *client) CreateNode(kluster *kubernikus_v1.Kluster, pool *kubernikus_v1.NodePool, userData []byte) (string, error) {
 	provider, err := c.projectProviderFor(kluster)
 	if err != nil {
 		return "", err
@@ -341,6 +341,7 @@ func (c *client) CreateNode(kluster *kubernikus_v1.Kluster, pool *kubernikus_v1.
 		FlavorName:    pool.Flavor,
 		ImageName:     pool.Image,
 		Networks:      []servers.Network{servers.Network{UUID: kluster.Spec.OpenstackInfo.NetworkID}},
+		UserData:      userData,
 		ServiceClient: client,
 	}).Extract()
 

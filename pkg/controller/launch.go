@@ -7,6 +7,7 @@ import (
 
 	"github.com/golang/glog"
 	"github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
+	"github.com/sapcc/kubernikus/pkg/templates"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/tools/cache"
@@ -126,6 +127,11 @@ func (launchctl *LaunchControl) reconcile(key string) error {
 	kluster := obj.(*v1.Kluster)
 	glog.V(2).Infof("Handling kluster %v", kluster.Name)
 
+	_, err = templates.Ignition.GenerateNode(kluster, launchctl.Clients.Kubernetes)
+	if err != nil {
+		glog.Errorf("%v", err)
+	}
+
 	for _, pool := range kluster.Spec.NodePools {
 		err := launchctl.syncPool(kluster, &pool)
 		if err != nil {
@@ -159,7 +165,12 @@ func (launchctl *LaunchControl) syncPool(kluster *v1.Kluster, pool *v1.NodePool)
 func (launchctl *LaunchControl) createNode(kluster *v1.Kluster, pool *v1.NodePool) error {
 	glog.V(2).Infof("Pool %v/%v: Creating new node", kluster.Name, pool.Name)
 
-	id, err := launchctl.Clients.Openstack.CreateNode(kluster, pool)
+	userdata, err := templates.Ignition.GenerateNode(kluster, launchctl.Clients.Kubernetes)
+	if err != nil {
+		glog.Errorf("Ignition userdata couldn't be generated: %v", err)
+	}
+
+	id, err := launchctl.Clients.Openstack.CreateNode(kluster, pool, userdata)
 	if err != nil {
 		return err
 	}

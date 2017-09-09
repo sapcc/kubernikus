@@ -1,10 +1,41 @@
-hash: 56cc165b7ea4bd90814a0ad72aab3be6c775f6d44a3ad9da8a14f7af14700643
-updated: 2017-08-30T17:40:40.19949364+02:00
+hash: 0a7c46d3f030e44a5ba4231dedd3cef50307a2f8ce1882acb2adeb6161c1f68f
+updated: 2017-09-09T20:32:02.673298879+02:00
 imports:
+- name: github.com/ajeddeloh/yaml
+  version: 1072abfea31191db507785e2e0c1b8d1440d35a5
+- name: github.com/alecthomas/units
+  version: 6b4e7dc5e3143b85ea77909c72caf89416fc2915
+- name: github.com/aokoli/goutils
+  version: 3391d3790d23d03408670993e957e8f408993c34
 - name: github.com/asaskevich/govalidator
   version: 7664702784775e51966f0885f5cd27435916517b
 - name: github.com/BurntSushi/toml
   version: b26d9c308763d68093482582cea63d69be07a0f0
+- name: github.com/coreos/container-linux-config-transpiler
+  version: d42f09a1374bc318d853b53e5a31148db68a4e2a
+  subpackages:
+  - config
+  - config/astyaml
+  - config/platform
+  - config/templating
+  - config/types
+  - config/types/util
+- name: github.com/coreos/go-semver
+  version: 5e3acbb5668c4c3deb4842615c4098eb61fb6b1e
+  subpackages:
+  - semver
+- name: github.com/coreos/go-systemd
+  version: 7c9533367ef925dc1078d75e5b7141e10da2c4e8
+  subpackages:
+  - dbus
+  - unit
+- name: github.com/coreos/ignition
+  version: 11813c57bc05f30644bbae7891ae30a4a62e0b33
+  subpackages:
+  - config/types
+  - config/v2_0/types
+  - config/validate
+  - config/validate/report
 - name: github.com/databus23/keystone
   version: 12c566d59fdb198f5a6d7ad7dfbf99f2a7e09929
   subpackages:
@@ -32,8 +63,6 @@ imports:
   version: dcef7f55730566d41eae5db10e7d6981829720f6
 - name: github.com/facebookgo/symwalk
   version: 42004b9f322246749dd73ad71008b1f3160c0052
-- name: github.com/fsnotify/fsnotify
-  version: 4da3e2cfbabc9f751898f250b49f2439785783a1
 - name: github.com/ghodss/yaml
   version: 73d445a93680fa1a78ae23a5839bad48f32ba1ee
 - name: github.com/go-openapi/analysis
@@ -91,11 +120,18 @@ imports:
 - name: github.com/gophercloud/gophercloud
   version: fd552c8a657302349c44fde99e1197a9f01a97c6
   subpackages:
+  - internal
   - openstack
+  - openstack/compute/v2/flavors
+  - openstack/compute/v2/images
+  - openstack/compute/v2/servers
   - openstack/identity/v2/tenants
   - openstack/identity/v2/tokens
+  - openstack/identity/v3/endpoints
   - openstack/identity/v3/projects
+  - openstack/identity/v3/services
   - openstack/identity/v3/tokens
+  - openstack/identity/v3/users
   - openstack/networking/v2/extensions/layer3/routers
   - openstack/networking/v2/networks
   - openstack/networking/v2/ports
@@ -108,19 +144,10 @@ imports:
   version: a0d98a5f288019575c6d1f4bb1573fef2d1fcdc4
   subpackages:
   - simplelru
-- name: github.com/hashicorp/hcl
-  version: d8c773c4cba11b11539e3d45f93daeaa5dcf1fa1
-  subpackages:
-  - hcl/ast
-  - hcl/parser
-  - hcl/scanner
-  - hcl/strconv
-  - hcl/token
-  - json/parser
-  - json/scanner
-  - json/token
 - name: github.com/howeyc/gopass
   version: bf9dde6d0d2c004a008c27aaee91170c786f6db8
+- name: github.com/huandu/xstrings
+  version: d6590c0c31d16526217fa60fbd2067f7afcd78c5
 - name: github.com/imdario/mergo
   version: 6633656539c1639d9d78127b7d47c622b5d7b6dc
 - name: github.com/inconshreveable/mousetrap
@@ -129,8 +156,6 @@ imports:
   version: 5b9ff866471762aa2ab2dced63c9fb6f53921342
 - name: github.com/kennygrant/sanitize
   version: 6a0bfdde8629a3a3a7418a7eae45c54154692514
-- name: github.com/magiconair/properties
-  version: 51463bfca2576e06c62a8504b5c0f06d61312647
 - name: github.com/mailru/easyjson
   version: 44c0351a5bc860bcb2608d54aa03ea686c4e7b25
   subpackages:
@@ -141,12 +166,10 @@ imports:
   version: 3391d3790d23d03408670993e957e8f408993c34
 - name: github.com/Masterminds/semver
   version: 3f0ab6d4ab4bed1c61caf056b63a6e62190c7801
+- name: github.com/Masterminds/sprig
+  version: 9526be0327b26ad31aa70296a7b10704883976d5
 - name: github.com/mitchellh/mapstructure
   version: d0303fe809921458f417bcf828397a65db30a7e4
-- name: github.com/pelletier/go-buffruneio
-  version: c37440a7cf42ac63b919c752ca73a85067e05992
-- name: github.com/pelletier/go-toml
-  version: fe7536c3dee2596cdd23ee9976a17c22bdaae286
 - name: github.com/pmylund/go-cache
   version: 93d85800f2fa6bd0a739e7bd612bfa3bc008b72d
 - name: github.com/PuerkitoBio/purell
@@ -155,36 +178,33 @@ imports:
   version: 5bd2802263f21d8788851d5305584c82a5c75d7e
 - name: github.com/rs/cors
   version: eabcc6af4bbe5ad3a949d36450326a2b0b9894b8
-- name: github.com/spf13/afero
-  version: 9be650865eab0c12963d8753212f4f9c66cdcf12
-  subpackages:
-  - mem
-- name: github.com/spf13/cast
-  version: acbeb36b902d72a7a4c18e8f3241075e7ab763e4
+- name: github.com/satori/go.uuid
+  version: 879c5887cd475cd7864858769793b2ceb0d44feb
 - name: github.com/spf13/cobra
   version: f62e98d28ab7ad31d707ba837a966378465c7b57
   subpackages:
   - cobra
-- name: github.com/spf13/jwalterweatherman
-  version: 0efa5202c04663c757d84f90f5219c1250baf94f
 - name: github.com/spf13/pflag
   version: 9ff6c6923cfffbcd502984b8e0c80539a94968b7
-- name: github.com/spf13/viper
-  version: 0967fc9aceab2ce9da34061253ac10fb99bba5b2
 - name: github.com/tylerb/graceful
   version: d72b0151351a13d0421b763b88f791469c4f5dc7
 - name: github.com/ugorji/go
   version: ded73eae5db7e7a0ef6f55aace87a2873c5d2b74
   subpackages:
   - codec
+- name: github.com/vincent-petithory/dataurl
+  version: 9a301d65acbb728fcc3ace14f45f511a4cfeea9c
 - name: golang.org/x/crypto
   version: d172538b2cfce0c13cee31e647d0367aa8cd2486
   subpackages:
+  - pbkdf2
+  - scrypt
   - ssh/terminal
 - name: golang.org/x/net
   version: f2499483f923065a842d38eb4c7f1927e6fc6e6d
   subpackages:
   - context
+  - context/ctxhttp
   - html
   - html/atom
   - http2
@@ -232,14 +252,15 @@ imports:
   - bson
   - internal/json
 - name: gopkg.in/yaml.v2
-  version: a83829b6f1293c91addabc89d0571c246397bbf4
+  version: 53feefa2559fb8dfa8d81baad31be332c97d6c77
 - name: k8s.io/apimachinery
-  version: 1fd2e63a9a370677308a42f24fd40c86438afddf
+  version: 917740426ad66ff818da4809990480bcc0786a77
   subpackages:
   - pkg/api/equality
   - pkg/api/errors
   - pkg/api/meta
   - pkg/api/resource
+  - pkg/api/testing
   - pkg/apimachinery
   - pkg/apimachinery/announced
   - pkg/apimachinery/registered
@@ -271,21 +292,24 @@ imports:
   - pkg/util/httpstream/spdy
   - pkg/util/intstr
   - pkg/util/json
+  - pkg/util/mergepatch
   - pkg/util/net
   - pkg/util/rand
   - pkg/util/remotecommand
   - pkg/util/runtime
   - pkg/util/sets
+  - pkg/util/strategicpatch
   - pkg/util/validation
   - pkg/util/validation/field
   - pkg/util/wait
   - pkg/util/yaml
   - pkg/version
   - pkg/watch
+  - third_party/forked/golang/json
   - third_party/forked/golang/netutil
   - third_party/forked/golang/reflect
 - name: k8s.io/client-go
-  version: d92e8497f71b7b4e0494e5bd204b48d34bd6f254
+  version: 2a227f04f328fe506bd562f50b4d2a175fce80c5
   subpackages:
   - discovery
   - discovery/fake
@@ -415,7 +439,7 @@ imports:
   - util/integer
   - util/workqueue
 - name: k8s.io/code-generator
-  version: bf449d588b78132603c5e2dba7286e7d335abedc
+  version: 2e958d2f6f666e291ecc50467d58f0cc81e13299
   repo: https://github.com/sttts/code-generator
 - name: k8s.io/gengo
   version: 9e661e9308f078838e266cca1c673922088c0ea4

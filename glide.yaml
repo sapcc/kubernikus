@@ -25,3 +25,6 @@ import:
   repo: https://github.com/sttts/code-generator
 - package: k8s.io/gengo
   version: 9e661e9308f078838e266cca1c673922088c0ea4
+- package: github.com/coreos/container-linux-config-transpiler
+  version: v0.4.2
+
