@@ -7,6 +7,7 @@ import (
 
 	"github.com/golang/glog"
 	"github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
+	"github.com/sapcc/kubernikus/pkg/client/openstack"
 	"github.com/sapcc/kubernikus/pkg/templates"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/wait"
@@ -127,10 +128,10 @@ func (launchctl *LaunchControl) reconcile(key string) error {
 	kluster := obj.(*v1.Kluster)
 	glog.V(2).Infof("Handling kluster %v", kluster.Name)
 
-	_, err = templates.Ignition.GenerateNode(kluster, launchctl.Clients.Kubernetes)
-	if err != nil {
-		glog.Errorf("%v", err)
-	}
+	//_, err = templates.Ignition.GenerateNode(kluster, launchctl.Clients.Kubernetes)
+	//if err != nil {
+	//  glog.Errorf("%v", err)
+	//}
 
 	for _, pool := range kluster.Spec.NodePools {
 		err := launchctl.syncPool(kluster, &pool)
@@ -148,15 +149,17 @@ func (launchctl *LaunchControl) syncPool(kluster *v1.Kluster, pool *v1.NodePool)
 		return fmt.Errorf("Couldn't list nodes for %v/%v: %v", kluster.Name, pool.Name, err)
 	}
 
+	ready := ready(nodes)
+
 	switch {
-	case len(nodes) < pool.Size:
-		glog.V(3).Infof("Pool %v/%v: Running %v/%v. Too few nodes. Need to spawn more.", kluster.Name, pool.Name, len(nodes), pool.Size)
+	case ready < pool.Size:
+		glog.V(3).Infof("Pool %v/%v: Running %v/%v. Too few nodes. Need to spawn more.", kluster.Name, pool.Name, ready, pool.Size)
 		return launchctl.createNode(kluster, pool)
-	case len(nodes) > pool.Size:
-		glog.V(3).Infof("Pool %v/%v: Running %v/%v. Too many nodes. Need to delete some.", kluster.Name, pool.Name, len(nodes), pool.Size)
+	case ready > pool.Size:
+		glog.V(3).Infof("Pool %v/%v: Running %v/%v. Too many nodes. Need to delete some.", kluster.Name, pool.Name, ready, pool.Size)
 		return launchctl.terminateNode(kluster, nodes[0].ID)
-	case len(nodes) == pool.Size:
-		glog.V(3).Infof("Pool %v/%v: Running %v/%v. All good. Doing nothing.", kluster.Name, pool.Name, len(nodes), pool.Size)
+	case ready == pool.Size:
+		glog.V(3).Infof("Pool %v/%v: Running %v/%v. All good. Doing nothing.", kluster.Name, pool.Name, ready, pool.Size)
 	}
 
 	return nil
@@ -207,4 +210,15 @@ func (launchctl *LaunchControl) handleErr(err error, key interface{}) {
 
 	launchctl.queue.Forget(key)
 	glog.Infof("Dropping kluster %q out of the queue. Too many retries: %v", key, err)
+}
+
+func ready(nodes []openstack.Node) int {
+	ready := 0
+	for _, n := range nodes {
+		if n.Ready() {
+			ready = ready + 1
+		}
+	}
+
+	return ready
 }

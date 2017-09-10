@@ -72,9 +72,65 @@ type Subnet struct {
 }
 
 type Node struct {
-	ID     string
-	Name   string
-	Status string
+	ID         string
+	Name       string
+	Status     string
+	TaskState  string
+	VMState    string
+	PowerState int
+}
+
+func (n *Node) Ready() bool {
+	// 0: NOSTATE
+	// 1: RUNNING
+	// 3: PAUSED
+	// 4: SHUTDOWN
+	// 6: CRASHED
+	// 7: SUSPENDED
+	if n.PowerState != 1 {
+		if n.TaskState != "spawning" {
+			return false
+		}
+	}
+
+	//ACTIVE = 'active'
+	//BUILDING = 'building'
+	//PAUSED = 'paused'
+	//SUSPENDED = 'suspended'
+	//STOPPED = 'stopped'
+	//RESCUED = 'rescued'
+	//RESIZED = 'resized'
+	//SOFT_DELETED = 'soft-delete'
+	//DELETED = 'deleted'
+	//ERROR = 'error'
+	//SHELVED = 'shelved'
+	//SHELVED_OFFLOADED = 'shelved_offloaded'
+
+	if n.VMState != "active" || n.VMState != "building" {
+		return false
+	}
+
+	// https://github.com/openstack/nova/blob/be3a66781f7fd58e5c5c0fe89b33f8098cfb0f0d/nova/objects/fields.py#L884
+	if n.TaskState == "deleting" {
+		return false
+	}
+
+	return true
+}
+
+type StateExt struct {
+	TaskState  string `json:"OS-EXT-STS:task_state"`
+	VMState    string `json:"OS-EXT-STS:vm_state"`
+	PowerState int    `json:"OS-EXT-STS:power_state"`
+}
+
+type ServerExt struct {
+	servers.Server
+	StateExt
+}
+
+func (r *StateExt) UnmarshalJSON(b []byte) error {
+	return nil
 }
 
 func NewClient(informers informers.SharedInformerFactory, authURL, username, password, domain, project, projectDomain string) Client {
@@ -305,15 +361,15 @@ func (c *client) GetNodes(kluster *kubernikus_v1.Kluster, pool *kubernikus_v1.No
 	opts := servers.ListOpts{Name: prefix}
 
 	servers.List(client, opts).EachPage(func(page pagination.Page) (bool, error) {
-		serverList, err := servers.ExtractServers(page)
+		serverList, err := ExtractServers(page)
 		if err != nil {
 			glog.V(5).Infof("Couldn't extract server %v", err)
 			return false, err
 		}
 
 		for _, s := range serverList {
-			glog.V(5).Infof("Found node %v", s.ID)
-			nodes = append(nodes, Node{ID: s.ID, Name: s.Name, Status: s.Status})
+			node := Node{ID: s.ID, Name: s.Name, Status: s.Status, TaskState: s.TaskState, VMState: s.VMState}
+			nodes = append(nodes, node)
 		}
 
 		return true, nil
@@ -411,4 +467,10 @@ func (c *client) GetRegion() (string, error) {
 	}
 
 	return region, nil
+}
+
+func ExtractServers(r pagination.Page) ([]ServerExt, error) {
+	var s []ServerExt
+	err := servers.ExtractServersInto(r, &s)
+	return s, err
 }
