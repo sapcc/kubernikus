@@ -32,10 +32,12 @@ func (i *ignition) GenerateNode(kluster *v1.Kluster, client kubernetes.Interface
 	}
 
 	data := struct {
+		TLSCA                string
 		ApiserverClientsCA   string
 		ApiserverNodesCA     string
 		ApiserverNodesCAKkey string
 		ApiserverURL         string
+		BootstrapToken       string
 		OpenstackAuthURL     string
 		OpenstackUsername    string
 		OpenstackPassword    string
@@ -44,10 +46,12 @@ func (i *ignition) GenerateNode(kluster *v1.Kluster, client kubernetes.Interface
 		OpenstackLBSubnetID  string
 		OpenstackRouterID    string
 	}{
+		TLSCA:                string(secret.Data["tls-ca.pem"]),
 		ApiserverClientsCA:   string(secret.Data["apiserver-clients-ca.pem"]),
 		ApiserverNodesCA:     string(secret.Data["apiserver-nodes-ca.pem"]),
 		ApiserverNodesCAKkey: string(secret.Data["apiserver-nodes-ca-key.pem"]),
 		ApiserverURL:         kluster.Spec.KubernikusInfo.ServerURL,
+		BootstrapToken:       kluster.Spec.KubernikusInfo.BootstrapToken,
 		OpenstackAuthURL:     kluster.Spec.OpenstackInfo.AuthURL,
 		OpenstackUsername:    kluster.Spec.OpenstackInfo.Username,
 		OpenstackPassword:    kluster.Spec.OpenstackInfo.Password,

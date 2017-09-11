@@ -81,19 +81,13 @@ storage:
       contents: 
         inline: |-
 {{ .ApiserverClientsCA | indent 10 }}
-    - path: /etc/kubernetes/certs/kube-clients/nodes.pem
+    - path: /etc/kubernetes/certs/tls-ca.pem
       filesystem: root
       mode: 0644
       contents:
         inline: |-
-{{ .ApiserverNodesCA | indent 10 }}
-    - path: /etc/kubernetes/certs/kube-clients/nodes-key.pem
-      filesystem: root
-      mode: 0644
-      contents: 
-        inline: |-
-{{ .ApiserverNodesCAKkey | indent 10 }}
-    - path: /etc/kubernetes/kubeconfig
+{{ .TLSCA | indent 10 }}
+    - path: /etc/kubernetes/bootstrap/kubeconfig
       filesystem: root
       mode: 0644
       contents: 
@@ -103,6 +97,7 @@ storage:
           clusters:
             - name: local
               cluster:
+                 certificate-authority: /etc/kubernetes/certs/tls-ca.pem
                  server: {{ .ApiserverURL }}
           contexts:
             - name: local 
@@ -113,8 +108,7 @@ storage:
           users:
             - name: local
               user:
-                client-certificate: /etc/kubernetes/certs/kube-clients/nodes.pem
-                client-key: /etc/kubernetes/certs/kube-clients/nodes-key.pem
+                token: {{ .BootstrapToken }} 
     - path: /etc/kubernetes/openstack/openstack.config
       filesystem: root
       mode: 0644
