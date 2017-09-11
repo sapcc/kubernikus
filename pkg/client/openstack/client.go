@@ -89,7 +89,7 @@ func (n *Node) Ready() bool {
 	// 7: SUSPENDED
 	if n.PowerState != 1 {
 		if n.TaskState != "spawning" {
-			return false
+			return true 
 		}
 	}
 
