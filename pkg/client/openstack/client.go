@@ -87,10 +87,14 @@ func (n *Node) Ready() bool {
 	// 4: SHUTDOWN
 	// 6: CRASHED
 	// 7: SUSPENDED
-	if n.PowerState != 1 {
-		if n.TaskState != "spawning" || n.TaskState != "scheduling" || n.TaskState != "networking" {
-			return true
+	if n.PowerState == 0 {
+		if n.TaskState != "spawning" || n.TaskState != "scheduling" || n.TaskState != "networking" || n.TaskState != "block_device_mapping" {
+			return false
 		}
+	}
+
+	if n.PowerState > 1 {
+		return false
 	}
 
 	//ACTIVE = 'active'
