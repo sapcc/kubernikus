@@ -17,6 +17,9 @@ openstack: {}
   #lbSubnetID:
   #routerID:
 
+kubernikus: {}
+  #bootstrapToken
+
 # specify a different certsSecretName if you want to use
 # an exiting secret
 # certsSecretName:

@@ -279,7 +279,8 @@ func (op *GroundControl) requiresOpenstackInfo(kluster *v1.Kluster) bool {
 
 func (op *GroundControl) requiresKubernikusInfo(kluster *v1.Kluster) bool {
 	return kluster.Spec.KubernikusInfo.Server == "" ||
-		kluster.Spec.KubernikusInfo.ServerURL == ""
+		kluster.Spec.KubernikusInfo.ServerURL == "" ||
+		kluster.Spec.KubernikusInfo.BootstrapToken == ""
 }
 
 func (op *GroundControl) discoverKubernikusInfo(kluster *v1.Kluster) error {
@@ -298,6 +299,15 @@ func (op *GroundControl) discoverKubernikusInfo(kluster *v1.Kluster) error {
 	if copy.Spec.KubernikusInfo.ServerURL == "" {
 		copy.Spec.KubernikusInfo.ServerURL = fmt.Sprintf("https://%s.%s", kluster.GetName(), op.Config.Kubernikus.Domain)
 		glog.V(5).Infof("[%v] Setting Server to %v", kluster.Name, copy.Spec.KubernikusInfo.ServerURL)
+	}
+
+	if copy.Spec.KubernikusInfo.BootstrapToken == "" {
+		token, err := goutils.Random(16, 32, 127, true, true)
+		if err != nil {
+			return fmt.Errorf("Failed to generate bootstrap token: %s", err)
+		}
+		copy.Spec.KubernikusInfo.BootstrapToken = strings.ToLower(token)
+		glog.V(5).Infof("[%v] Setting bootstrap token to %v", kluster.Name, copy.Spec.KubernikusInfo.BootstrapToken)
 	}
 
 	_, err = op.Clients.Kubernikus.Kubernikus().Klusters(kluster.Namespace).Update(copy)

@@ -28,8 +28,9 @@ type OpenstackInfo struct {
 }
 
 type KubernikusInfo struct {
-	Server    string `json:"server"`
-	ServerURL string `json:"serverURL"`
+	Server         string `json:"server"`
+	ServerURL      string `json:"serverURL"`
+	BootstrapToken string `json:"bootstrapToken"`
 }
 
 type KlusterSpec struct {

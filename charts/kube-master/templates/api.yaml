@@ -56,6 +56,12 @@ spec:
             items:
               - key: openstack.config
                 path: openstack.config
+        - name: bootstrap 
+          secret:
+            secretName: {{ include "master.fullname" . }}
+            items:
+              - key: token.csv
+                path: token.csv
       containers:
         - name: apiserver
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
@@ -70,6 +76,7 @@ spec:
             - --cloud-config=/etc/kubernetes/cloudprovider/openstack.config
             - --cloud-provider=openstack
             - --experimental-bootstrap-token-auth=true
+            - --token-auth-file=/etc/kubernetes/bootstrap/token.csv
             - --runtime-config=rbac.authorization.k8s.io/v1alpha1,extensions/v1beta1=true,extensions/v1beta1/thirdpartyresources=true
             - --service-cluster-ip-range={{ .Values.serviceCIDR }}
             #Cert Spratz
@@ -90,6 +97,9 @@ spec:
               readOnly: true
             - mountPath: /etc/kubernetes/cloudprovider
               name: cloudprovider
+              readOnly: true
+            - mountPath: /etc/kubernetes/bootstrap
+              name: bootstrap 
               readOnly: true
           resources:
 {{ toYaml .Values.api.resources | indent 12 }}

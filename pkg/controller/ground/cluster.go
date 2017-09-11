@@ -8,6 +8,7 @@ type Cluster struct {
 	Certificates *Certificates `yaml:"certs"`
 	API          API           `yaml:"api,omitempty"`
 	OpenStack    OpenStack
+	Kubernikus   Kubernikus
 }
 
 type API struct {
@@ -26,6 +27,10 @@ type OpenStack struct {
 	RouterID   string `yaml:"routerID,omitempty"`
 }
 
+type Kubernikus struct {
+	BootstrapToken string `yaml:"bootstrapToken,omitempty"`
+}
+
 func NewCluster(kluster *v1.Kluster, authURL string) (*Cluster, error) {
 	cluster := &Cluster{
 		Certificates: &Certificates{},
@@ -40,6 +45,9 @@ func NewCluster(kluster *v1.Kluster, authURL string) (*Cluster, error) {
 			ProjectID:  kluster.Spec.OpenstackInfo.ProjectID,
 			LBSubnetID: kluster.Spec.OpenstackInfo.LBSubnetID,
 			RouterID:   kluster.Spec.OpenstackInfo.RouterID,
+		},
+		Kubernikus: Kubernikus{
+			BootstrapToken: kluster.Spec.KubernikusInfo.BootstrapToken,
 		},
 	}
 

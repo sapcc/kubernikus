@@ -57,7 +57,7 @@ type HelmConfig struct {
 }
 
 type KubernikusConfig struct {
-	Domain string
+	Domain         string
 }
 
 type Config struct {
