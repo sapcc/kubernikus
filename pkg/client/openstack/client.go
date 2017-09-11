@@ -88,7 +88,7 @@ func (n *Node) Ready() bool {
 	// 6: CRASHED
 	// 7: SUSPENDED
 	if n.PowerState != 1 {
-		if n.TaskState != "spawning" || n.TaskState != "scheduling" {
+		if n.TaskState != "spawning" || n.TaskState != "scheduling" || n.TaskState != "networking" {
 			return true
 		}
 	}
