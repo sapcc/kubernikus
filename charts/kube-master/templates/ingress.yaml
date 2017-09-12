@@ -17,6 +17,6 @@ spec:
         paths:
         - path: /
           backend:
-            serviceName: {{ include "master.fullname" . }}-apiserver
+            serviceName: {{ include "master.fullname" . }}
             servicePort: 6443
 {{- end }}
