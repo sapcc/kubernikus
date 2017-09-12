@@ -42,6 +42,7 @@ type client struct {
 
 type Client interface {
 	CreateNode(*kubernikus_v1.Kluster, *kubernikus_v1.NodePool, []byte) (string, error)
+	DeleteNode(*kubernikus_v1.Kluster, string) error
 	GetNodes(*kubernikus_v1.Kluster, *kubernikus_v1.NodePool) ([]Node, error)
 	GetProject(id string) (*Project, error)
 	GetRegion() (string, error)
@@ -410,6 +411,26 @@ func (c *client) CreateNode(kluster *kubernikus_v1.Kluster, pool *kubernikus_v1.
 	}
 
 	return server.ID, nil
+}
+
+func (c *client) DeleteNode(kluster *kubernikus_v1.Kluster, ID string) error {
+	provider, err := c.projectProviderFor(kluster)
+	if err != nil {
+		return err
+	}
+
+	client, err := openstack.NewComputeV2(provider, gophercloud.EndpointOpts{})
+	if err != nil {
+		return err
+	}
+
+	err = servers.Delete(client, ID).ExtractErr()
+	if err != nil {
+		glog.V(5).Infof("Couldn't delete node %v: %v", kluster.Name, err)
+		return err
+	}
+
+	return nil
 }
 
 func (c *client) GetRegion() (string, error) {
