@@ -47,6 +47,7 @@ spec:
             - /hyperkube
             - scheduler
             - --kubeconfig=/etc/kubernetes/config/kubeconfig
+            - --leader-elect=false
           volumeMounts:
             - mountPath: /etc/kubernetes/certs
               name: certs
