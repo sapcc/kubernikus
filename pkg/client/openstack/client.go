@@ -81,16 +81,20 @@ type Node struct {
 }
 
 func (n *Node) Ready() bool {
+	glog.V(6).Infof("[%v] PowerState: %v, VMState: %v, TaskState: %v", n.Name, n.PowerState, n.VMState, n.TaskState)
 	// 0: NOSTATE
 	// 1: RUNNING
 	// 3: PAUSED
 	// 4: SHUTDOWN
 	// 6: CRASHED
 	// 7: SUSPENDED
-	if n.PowerState == 0 {
-		if n.TaskState != "spawning" || n.TaskState != "scheduling" || n.TaskState != "networking" || n.TaskState != "block_device_mapping" {
-			return false
-		}
+	if n.TaskState == "spawning" || n.TaskState == "scheduling" || n.TaskState == "networking" || n.TaskState == "block_device_mapping" {
+		return true
+	}
+
+	// https://github.com/openstack/nova/blob/be3a66781f7fd58e5c5c0fe89b33f8098cfb0f0d/nova/objects/fields.py#L884
+	if n.TaskState == "deleting" {
+		return false
 	}
 
 	if n.PowerState > 1 {
@@ -110,12 +114,7 @@ func (n *Node) Ready() bool {
 	//SHELVED = 'shelved'
 	//SHELVED_OFFLOADED = 'shelved_offloaded'
 
-	if n.VMState != "active" || n.VMState != "building" {
-		return false
-	}
-
-	// https://github.com/openstack/nova/blob/be3a66781f7fd58e5c5c0fe89b33f8098cfb0f0d/nova/objects/fields.py#L884
-	if n.TaskState == "deleting" {
+	if !(n.VMState == "active" || n.VMState == "building") {
 		return false
 	}
 
