@@ -20,7 +20,7 @@ type updateCluster struct {
 
 func (d *updateCluster) Handle(params operations.UpdateClusterParams, principal *models.Principal) middleware.Responder {
 
-	_, err := editCluster(d.rt.Clients, principal, params.Name, func(kluster *v1.Kluster) {
+	_, err := editCluster(d.rt.Clients.Kubernikus.Kubernikus().Klusters(d.rt.Namespace), principal, params.Name, func(kluster *v1.Kluster) {
 		//TODO: currently no field to update
 	})
 	if err != nil {

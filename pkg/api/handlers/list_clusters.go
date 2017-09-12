@@ -18,7 +18,7 @@ type listClusters struct {
 
 func (d *listClusters) Handle(params operations.ListClustersParams, principal *models.Principal) middleware.Responder {
 	listOpts := metav1.ListOptions{LabelSelector: accountSelector(principal).String()}
-	clusterList, err := d.rt.Clients.Kubernikus.Kubernikus().Klusters("kubernikus").List(listOpts)
+	clusterList, err := d.rt.Clients.Kubernikus.Kubernikus().Klusters(d.rt.Namespace).List(listOpts)
 
 	if err != nil {
 		return NewErrorResponse(&operations.ListClustersDefault{}, 500, err.Error())

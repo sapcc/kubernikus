@@ -1,24 +1,32 @@
 package controller
 
 import (
+	"errors"
 	"fmt"
 	"reflect"
 	"sync"
 	"time"
 
 	"github.com/golang/glog"
+	"k8s.io/apimachinery/pkg/api/meta"
+	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/watch"
+	kubernetes_informers "k8s.io/client-go/informers"
+	kubernetes_clientset "k8s.io/client-go/kubernetes"
+	api_v1 "k8s.io/client-go/pkg/api/v1"
+	"k8s.io/client-go/tools/cache"
+	"k8s.io/helm/pkg/helm"
+
+	kubernikus_v1 "github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
+	helmutil "github.com/sapcc/kubernikus/pkg/client/helm"
 	kube "github.com/sapcc/kubernikus/pkg/client/kubernetes"
 	"github.com/sapcc/kubernikus/pkg/client/kubernikus"
 	"github.com/sapcc/kubernikus/pkg/client/openstack"
 	kubernikus_clientset "github.com/sapcc/kubernikus/pkg/generated/clientset"
 	kubernikus_informers "github.com/sapcc/kubernikus/pkg/generated/informers/externalversions"
+	kubernikus_informers_v1 "github.com/sapcc/kubernikus/pkg/generated/informers/externalversions/kubernikus/v1"
 	"github.com/sapcc/kubernikus/pkg/version"
-
-	helmutil "github.com/sapcc/kubernikus/pkg/client/helm"
-	kubernetes_informers "k8s.io/client-go/informers"
-	kubernetes_clientset "k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/tools/cache"
-	"k8s.io/helm/pkg/helm"
 )
 
 type KubernikusOperatorOptions struct {
@@ -34,6 +42,7 @@ type KubernikusOperatorOptions struct {
 	AuthProjectDomain string
 
 	KubernikusDomain string
+	Namespace        string
 }
 
 type Clients struct {
@@ -124,12 +133,40 @@ func NewKubernikusOperator(options *KubernikusOperatorOptions) *KubernikusOperat
 	}
 
 	o.Factories.Kubernikus = kubernikus_informers.NewSharedInformerFactory(o.Clients.Kubernikus, RECONCILIATION_DURATION)
-	o.Factories.Kubernetes = kubernetes_informers.NewSharedInformerFactory(o.Clients.Kubernetes, RECONCILIATION_DURATION)
-
+	//Manually create shared Kluster informer that only watches the given namespace
+	o.Factories.Kubernikus.InformerFor(
+		&kubernikus_v1.Kluster{},
+		func(client kubernikus_clientset.Interface, resyncPeriod time.Duration) cache.SharedIndexInformer {
+			return kubernikus_informers_v1.NewKlusterInformer(
+				client,
+				options.Namespace,
+				resyncPeriod,
+				cache.Indexers{},
+			)
+		},
+	)
 	o.Factories.Kubernikus.Kubernikus().V1().Klusters().Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
 		AddFunc:    o.debugAdd,
 		UpdateFunc: o.debugUpdate,
 		DeleteFunc: o.debugDelete,
+	})
+
+	o.Factories.Kubernetes = kubernetes_informers.NewSharedInformerFactory(o.Clients.Kubernetes, RECONCILIATION_DURATION)
+	//Manually create shared pod Informer that only watches the given namespace
+	o.Factories.Kubernetes.InformerFor(&api_v1.Pod{}, func(client kubernetes_clientset.Interface, resyncPeriod time.Duration) cache.SharedIndexInformer {
+		return cache.NewSharedIndexInformer(
+			&cache.ListWatch{
+				ListFunc: func(o meta_v1.ListOptions) (runtime.Object, error) {
+					return client.CoreV1().Pods(options.Namespace).List(o)
+				},
+				WatchFunc: func(o meta_v1.ListOptions) (watch.Interface, error) {
+					return client.CoreV1().Pods(options.Namespace).Watch(o)
+				},
+			},
+			&api_v1.Pod{},
+			resyncPeriod,
+			cache.Indexers{"kluster": MetaLabelReleaseIndexFunc},
+		)
 	})
 
 	o.Clients.Openstack = openstack.NewClient(
@@ -176,4 +213,19 @@ func (p *KubernikusOperator) debugDelete(obj interface{}) {
 func (p *KubernikusOperator) debugUpdate(cur, old interface{}) {
 	key, _ := cache.DeletionHandlingMetaNamespaceKeyFunc(cur)
 	glog.V(5).Infof("UPDATE %s (%s)", reflect.TypeOf(cur), key)
+}
+
+// MetaLabelReleaseIndexFunc is a default index function that indexes based on an object's release label
+func MetaLabelReleaseIndexFunc(obj interface{}) ([]string, error) {
+	meta, err := meta.Accessor(obj)
+	if err != nil {
+		return []string{""}, fmt.Errorf("object has no meta: %v", err)
+	}
+	if release, found := meta.GetLabels()["release"]; found {
+		glog.Infof("Found release %v for pod %v", release, meta.GetName())
+		return []string{release}, nil
+	}
+	glog.Infof("meta labels: %v", meta.GetLabels())
+	return []string{""}, errors.New("object has no release label")
+
 }

@@ -10,9 +10,11 @@ import (
 )
 
 var kubeconfig string
+var namespace string
 
 func init() {
 	pflag.StringVar(&kubeconfig, "kubeconfig", "", "Path to kubeconfig file with authorization information")
+	pflag.StringVar(&kubeconfig, "namespace", "kubernikus", "Namespace the apiserver should work in")
 }
 
 func NewKubeClients() *api.Clients {

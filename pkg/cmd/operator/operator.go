@@ -50,6 +50,7 @@ type Options struct {
 	AuthProjectDomain string
 
 	KubernikusDomain string
+	Namespace        string
 }
 
 func NewOperatorOptions() *Options {
@@ -59,6 +60,7 @@ func NewOperatorOptions() *Options {
 		AuthUsername:     "kubernikus",
 		AuthDomain:       "Default",
 		KubernikusDomain: "kluster.staging.cloud.sap",
+		Namespace:        "kubernikus",
 	}
 }
 
@@ -73,6 +75,7 @@ func (o *Options) BindFlags(flags *pflag.FlagSet) {
 	flags.StringVar(&o.AuthProjectDomain, "auth-project-domain", o.AuthProjectDomain, "Domain of the project")
 
 	flags.StringVar(&o.KubernikusDomain, "kubernikus-domain", o.KubernikusDomain, "Regional domain name for all Kubernikus clusters")
+	flags.StringVar(&o.Namespace, "namespace", o.Namespace, "Restrict operator to resources in the given namespace")
 }
 
 func (o *Options) Validate(c *cobra.Command, args []string) error {
@@ -103,6 +106,7 @@ func (o *Options) Run(c *cobra.Command) error {
 		AuthProject:       o.AuthProject,
 		AuthProjectDomain: o.AuthProjectDomain,
 		KubernikusDomain:  o.KubernikusDomain,
+		Namespace:         o.Namespace,
 	}
 
 	go controller.NewKubernikusOperator(opts).Run(stop, wg)

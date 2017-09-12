@@ -1,9 +1,9 @@
 package handlers
 
 import (
-	"github.com/sapcc/kubernikus/pkg/api"
 	"github.com/sapcc/kubernikus/pkg/api/models"
 	"github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
+	kubernikusv1 "github.com/sapcc/kubernikus/pkg/generated/clientset/typed/kubernikus/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 
@@ -23,15 +23,15 @@ func qualifiedName(name string, accountId string) string {
 	return fmt.Sprintf("%s-%s", name, accountId)
 }
 
-func editCluster(clients *api.Clients, principal *models.Principal, name string, updateFunc func(k *v1.Kluster)) (*v1.Kluster, error) {
-	kluster, err := clients.Kubernikus.Kubernikus().Klusters("kubernikus").Get(qualifiedName(name, principal.Account), metav1.GetOptions{})
+func editCluster(client kubernikusv1.KlusterInterface, principal *models.Principal, name string, updateFunc func(k *v1.Kluster)) (*v1.Kluster, error) {
+	kluster, err := client.Get(qualifiedName(name, principal.Account), metav1.GetOptions{})
 	if err != nil {
 		return nil, err
 	}
 
 	updateFunc(kluster)
 
-	updatedCluster, err := clients.Kubernikus.Kubernikus().Klusters("kubernikus").Update(kluster)
+	updatedCluster, err := client.Update(kluster)
 	if err != nil {
 		return nil, err
 	}

@@ -6,7 +6,8 @@ import (
 )
 
 type Runtime struct {
-	Clients *Clients
+	Clients   *Clients
+	Namespace string
 }
 
 type Clients struct {

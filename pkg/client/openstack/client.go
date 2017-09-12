@@ -197,9 +197,9 @@ func (c *client) projectProviderFor(kluster *kubernikus_v1.Kluster) (*gopherclou
 		return c.projectProviders[project_id], nil
 	}
 
-	secret, err := c.secrets.Lister().Secrets("kubernikus").Get(secret_name)
+	secret, err := c.secrets.Lister().Secrets(kluster.GetNamespace()).Get(secret_name)
 	if err != nil {
-		return nil, fmt.Errorf("Couldn't retrieve secret kubernikus/%v: %v", secret_name, err)
+		return nil, fmt.Errorf("Couldn't retrieve secret %s/%s: %v", kluster.GetNamespace(), secret_name, err)
 	}
 
 	provider, err := openstack.NewClient(string(secret.Data["openstack-auth-url"]))
