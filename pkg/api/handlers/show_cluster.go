@@ -27,10 +27,6 @@ func (d *showCluster) Handle(params operations.ShowClusterParams, principal *mod
 		}
 		return NewErrorResponse(&operations.ShowClusterDefault{}, 500, err.Error())
 	}
-	c := models.Cluster{
-		Name:   &tprCluster.Name,
-		Status: string(tprCluster.Status.State),
-	}
 
-	return operations.NewShowClusterOK().WithPayload(&c)
+	return operations.NewShowClusterOK().WithPayload(clusterModelFromTPR(tprCluster))
 }
