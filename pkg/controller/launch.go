@@ -121,17 +121,16 @@ func (launchctl *LaunchControl) reconcile(key string) error {
 		return fmt.Errorf("Failed to fetch key %s from cache: %s", key, err)
 	}
 	if !exists {
-		glog.Infof("Kluster %s deleted in the meantime", key)
+		glog.Infof("[%v] Kluster deleted in the meantime", key)
 		return nil
 	}
 
 	kluster := obj.(*v1.Kluster)
-	glog.V(2).Infof("Handling kluster %v", kluster.Name)
+	glog.V(5).Infof("[%v] Reconciling", kluster.Name)
 
-	//_, err = templates.Ignition.GenerateNode(kluster, launchctl.Clients.Kubernetes)
-	//if err != nil {
-	//  glog.Errorf("%v", err)
-	//}
+	if !(kluster.Status.State == v1.KlusterReady || kluster.Status.State == v1.KlusterTerminating) {
+		return fmt.Errorf("[%v] Kluster is not yet ready. Requeuing.", kluster.Name)
+	}
 
 	for _, pool := range kluster.Spec.NodePools {
 		err := launchctl.syncPool(kluster, &pool)
@@ -146,27 +145,39 @@ func (launchctl *LaunchControl) reconcile(key string) error {
 func (launchctl *LaunchControl) syncPool(kluster *v1.Kluster, pool *v1.NodePool) error {
 	nodes, err := launchctl.Clients.Openstack.GetNodes(kluster, pool)
 	if err != nil {
-		return fmt.Errorf("Couldn't list nodes for %v/%v: %v", kluster.Name, pool.Name, err)
+		return fmt.Errorf("[%v] Couldn't list nodes for pool %v: %v", kluster.Name, pool.Name, err)
+	}
+
+	if kluster.Status.State == v1.KlusterTerminating && toBeTerminated(nodes) > 0 {
+		glog.V(3).Infof("[%v] Kluster is terminating. Terminating Nodes for Pool %v.", kluster.Name, pool.Name)
+		for _, node := range nodes {
+			err := launchctl.terminateNode(kluster, node.ID)
+			if err != nil {
+				return err
+			}
+		}
+
+		return nil
 	}
 
 	ready := ready(nodes)
 
 	switch {
 	case ready < pool.Size:
-		glog.V(3).Infof("Pool %v/%v: Running %v/%v. Too few nodes. Need to spawn more.", kluster.Name, pool.Name, ready, pool.Size)
+		glog.V(3).Infof("[%v] Pool %v: Running %v/%v. Too few nodes. Need to spawn more.", kluster.Name, pool.Name, ready, pool.Size)
 		return launchctl.createNode(kluster, pool)
 	case ready > pool.Size:
-		glog.V(3).Infof("Pool %v/%v: Running %v/%v. Too many nodes. Need to delete some.", kluster.Name, pool.Name, ready, pool.Size)
+		glog.V(3).Infof("[%v] Pool %v: Running %v/%v. Too many nodes. Need to delete some.", kluster.Name, pool.Name, ready, pool.Size)
 		return launchctl.terminateNode(kluster, nodes[0].ID)
 	case ready == pool.Size:
-		glog.V(3).Infof("Pool %v/%v: Running %v/%v. All good. Doing nothing.", kluster.Name, pool.Name, ready, pool.Size)
+		glog.V(3).Infof("[%v] Pool %v: Running %v/%v. All good. Doing nothing.", kluster.Name, pool.Name, ready, pool.Size)
 	}
 
 	return nil
 }
 
 func (launchctl *LaunchControl) createNode(kluster *v1.Kluster, pool *v1.NodePool) error {
-	glog.V(2).Infof("Pool %v/%v: Creating new node", kluster.Name, pool.Name)
+	glog.V(2).Infof("[%v] Pool %v: Creating new node", kluster.Name, pool.Name)
 
 	userdata, err := templates.Ignition.GenerateNode(kluster, launchctl.Clients.Kubernetes)
 	if err != nil {
@@ -178,13 +189,18 @@ func (launchctl *LaunchControl) createNode(kluster *v1.Kluster, pool *v1.NodePoo
 		return err
 	}
 
-	glog.V(2).Infof("Pool %v/%v: Created node %v.", kluster.Name, pool.Name, id)
+	glog.V(2).Infof("[%v]Pool %v: Created node %v.", kluster.Name, pool.Name, id)
 
 	launchctl.requeue(kluster)
 	return nil
 }
 
 func (launchctl *LaunchControl) terminateNode(kluster *v1.Kluster, id string) error {
+	err := launchctl.Clients.Openstack.DeleteNode(kluster, id)
+	if err != nil {
+		return err
+	}
+
 	launchctl.requeue(kluster)
 	return nil
 }
@@ -200,7 +216,7 @@ func (launchctl *LaunchControl) handleErr(err error, key interface{}) {
 
 	// This controller retries 5 times if something goes wrong. After that, it stops trying.
 	if launchctl.queue.NumRequeues(key) < 5 {
-		glog.Errorf("Error while managing nodes for kluster %q: %v", key, err)
+		glog.V(6).Infof("Error while managing nodes for kluster %q: %v", key, err)
 
 		// Re-enqueue the key rate limited. Based on the rate limiter on the
 		// queue and the re-enqueue history, the key will be processed later again.
@@ -209,7 +225,7 @@ func (launchctl *LaunchControl) handleErr(err error, key interface{}) {
 	}
 
 	launchctl.queue.Forget(key)
-	glog.Infof("Dropping kluster %q out of the queue. Too many retries: %v", key, err)
+	glog.V(5).Infof("[%v] Dropping out of the queue. Too many retries...", key)
 }
 
 func ready(nodes []openstack.Node) int {
@@ -221,4 +237,17 @@ func ready(nodes []openstack.Node) int {
 	}
 
 	return ready
+}
+
+func toBeTerminated(nodes []openstack.Node) int {
+	toBeTerminated := 0
+	for _, n := range nodes {
+		if n.TaskState == "deleting" {
+			continue
+		}
+
+		toBeTerminated = toBeTerminated + 1
+	}
+
+	return toBeTerminated
 }
