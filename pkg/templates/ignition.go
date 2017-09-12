@@ -63,8 +63,8 @@ func (i *ignition) GenerateNode(kluster *v1.Kluster, client kubernetes.Interface
 		return nil, err
 	}
 
-	glog.V(5).Infof("IgnitionData: %v", data)
-	glog.V(5).Infof("IgnitionYAML: %v", string(buffer.Bytes()))
+	glog.V(6).Infof("IgnitionData: %v", data)
+	glog.V(6).Infof("IgnitionYAML: %v", string(buffer.Bytes()))
 
 	ignitionConfig, ast, report := config.Parse(buffer.Bytes())
 	if len(report.Entries) > 0 {
@@ -86,7 +86,7 @@ func (i *ignition) GenerateNode(kluster *v1.Kluster, client kubernetes.Interface
 	dataOut, err = json.MarshalIndent(&ignitionConfig2_0, "", "  ")
 	dataOut = append(dataOut, '\n')
 
-	glog.V(5).Infof("IgnitionJSON: %v", string(dataOut))
+	glog.V(6).Infof("IgnitionJSON: %v", string(dataOut))
 
 	if err != nil {
 		return nil, err
