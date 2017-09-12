@@ -70,7 +70,7 @@ spec:
             - --secure-port=6443
             - --admission-control=NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,ResourceQuota
             - --allow-privileged=true
-            - --authorization-mode=RBAC
+            - --authorization-mode=Node,RBAC
             - --cloud-config=/etc/kubernetes/cloudprovider/openstack.config
             - --cloud-provider=openstack
             - --experimental-bootstrap-token-auth=true
