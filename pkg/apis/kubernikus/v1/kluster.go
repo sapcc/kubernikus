@@ -45,7 +45,7 @@ type KlusterState string
 const (
 	KlusterPending     KlusterState = "Pending"
 	KlusterCreating    KlusterState = "Creating"
-	KlusterCreated     KlusterState = "Created"
+	KlusterReady       KlusterState = "Ready"
 	KlusterTerminating KlusterState = "Terminating"
 	KlusterTerminated  KlusterState = "Terminated"
 	KlusterError       KlusterState = "Error"

@@ -4,24 +4,24 @@ import (
 	"fmt"
 	"path"
 	"reflect"
+	"strings"
 	"sync"
 	"time"
 
-	yaml "gopkg.in/yaml.v2"
-
 	"github.com/Masterminds/goutils"
 	"github.com/golang/glog"
+	"google.golang.org/grpc"
+	yaml "gopkg.in/yaml.v2"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
+	api_v1 "k8s.io/client-go/pkg/api/v1"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/util/workqueue"
 	"k8s.io/helm/pkg/helm"
 
-	"strings"
-
 	"github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
+	"github.com/sapcc/kubernikus/pkg/client/kubernetes"
 	"github.com/sapcc/kubernikus/pkg/controller/ground"
-	"google.golang.org/grpc"
 )
 
 const (
@@ -35,6 +35,7 @@ type GroundControl struct {
 
 	queue       workqueue.RateLimitingInterface
 	tprInformer cache.SharedIndexInformer
+	podInformer cache.SharedIndexInformer
 }
 
 func NewGroundController(factories Factories, clients Clients, config Config) *GroundControl {
@@ -44,12 +45,19 @@ func NewGroundController(factories Factories, clients Clients, config Config) *G
 		Config:      config,
 		queue:       workqueue.NewRateLimitingQueue(workqueue.NewItemExponentialFailureRateLimiter(5*time.Second, 300*time.Second)),
 		tprInformer: factories.Kubernikus.Kubernikus().V1().Klusters().Informer(),
+		podInformer: factories.Kubernetes.Core().V1().Pods().Informer(),
 	}
 
 	operator.tprInformer.AddEventHandler(cache.ResourceEventHandlerFuncs{
 		AddFunc:    operator.klusterAdd,
 		UpdateFunc: operator.klusterUpdate,
 		DeleteFunc: operator.klusterTerminate,
+	})
+
+	operator.podInformer.AddEventHandler(cache.ResourceEventHandlerFuncs{
+		AddFunc:    operator.podAdd,
+		UpdateFunc: operator.podUpdate,
+		DeleteFunc: operator.podDelete,
 	})
 
 	return operator
@@ -156,6 +164,24 @@ func (op *GroundControl) handler(key string) error {
 					return nil
 				}
 				glog.Infof("Kluster %s created", tpr.GetName())
+			}
+		case v1.KlusterCreating:
+			pods, err := op.podInformer.GetIndexer().ByIndex("kluster", tpr.GetName())
+			if err != nil {
+				return err
+			}
+			podsReady := 0
+			for _, obj := range pods {
+				if kubernetes.IsPodReady(obj.(*api_v1.Pod)) {
+					podsReady++
+				}
+			}
+			glog.V(5).Infof("%d of %d pods ready for kluster %s", podsReady, len(pods), key)
+			if podsReady == 4 {
+				if err := op.updateStatus(tpr, v1.KlusterReady, ""); err != nil {
+					glog.Errorf("Failed to update status of kluster %s:%s", tpr.GetName(), err)
+				}
+				glog.Infof("Kluster %s is ready!", tpr.GetName())
 			}
 		case v1.KlusterTerminating:
 			{
@@ -395,4 +421,36 @@ func (op *GroundControl) discoverOpenstackInfo(kluster *v1.Kluster) error {
 
 	_, err = op.Clients.Kubernikus.Kubernikus().Klusters(kluster.Namespace).Update(copy)
 	return err
+}
+
+func (op *GroundControl) podAdd(obj interface{}) {
+	pod := obj.(*api_v1.Pod)
+
+	if klusterName, found := pod.GetLabels()["release"]; found && len(klusterName) > 0 {
+		klusterKey := pod.GetNamespace() + "/" + klusterName
+		glog.V(5).Infof("Pod %s added for kluster %s", pod.GetName(), klusterKey)
+		op.queue.Add(klusterKey)
+	}
+
+}
+
+func (op *GroundControl) podDelete(obj interface{}) {
+	pod := obj.(*api_v1.Pod)
+	if klusterName, found := pod.GetLabels()["release"]; found && len(klusterName) > 0 {
+		klusterKey := pod.GetNamespace() + "/" + klusterName
+		glog.V(5).Infof("Pod %s deleted for kluster %s", pod.GetName(), klusterKey)
+		op.queue.Add(klusterKey)
+	}
+}
+
+func (op *GroundControl) podUpdate(cur, old interface{}) {
+	pod := cur.(*api_v1.Pod)
+	oldPod := old.(*api_v1.Pod)
+	if klusterName, found := pod.GetLabels()["release"]; found && len(klusterName) > 0 {
+		if !reflect.DeepEqual(oldPod, pod) {
+			klusterKey := pod.GetNamespace() + "/" + klusterName
+			glog.V(5).Infof("Pod %s updated for kluster %s", pod.GetName(), klusterKey)
+			op.queue.Add(klusterKey)
+		}
+	}
 }
