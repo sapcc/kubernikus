@@ -13,47 +13,25 @@ import (
 	"github.com/sapcc/kubernikus/pkg/api/models"
 )
 
-// TerminateClusterOKCode is the HTTP code returned for type TerminateClusterOK
-const TerminateClusterOKCode int = 200
+// TerminateClusterAcceptedCode is the HTTP code returned for type TerminateClusterAccepted
+const TerminateClusterAcceptedCode int = 202
 
-/*TerminateClusterOK OK
+/*TerminateClusterAccepted OK
 
-swagger:response terminateClusterOK
+swagger:response terminateClusterAccepted
 */
-type TerminateClusterOK struct {
-
-	/*
-	  In: Body
-	*/
-	Payload *models.Cluster `json:"body,omitempty"`
+type TerminateClusterAccepted struct {
 }
 
-// NewTerminateClusterOK creates TerminateClusterOK with default headers values
-func NewTerminateClusterOK() *TerminateClusterOK {
-	return &TerminateClusterOK{}
-}
-
-// WithPayload adds the payload to the terminate cluster o k response
-func (o *TerminateClusterOK) WithPayload(payload *models.Cluster) *TerminateClusterOK {
-	o.Payload = payload
-	return o
-}
-
-// SetPayload sets the payload to the terminate cluster o k response
-func (o *TerminateClusterOK) SetPayload(payload *models.Cluster) {
-	o.Payload = payload
+// NewTerminateClusterAccepted creates TerminateClusterAccepted with default headers values
+func NewTerminateClusterAccepted() *TerminateClusterAccepted {
+	return &TerminateClusterAccepted{}
 }
 
 // WriteResponse to the client
-func (o *TerminateClusterOK) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
+func (o *TerminateClusterAccepted) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
-	rw.WriteHeader(200)
-	if o.Payload != nil {
-		payload := o.Payload
-		if err := producer.Produce(rw, payload); err != nil {
-			panic(err) // let the recovery middleware deal with this
-		}
-	}
+	rw.WriteHeader(202)
 }
 
 /*TerminateClusterDefault Error

@@ -31,5 +31,5 @@ func (d *terminateCluster) Handle(params operations.TerminateClusterParams, prin
 		return NewErrorResponse(&operations.TerminateClusterDefault{}, 500, err.Error())
 
 	}
-	return operations.NewTerminateClusterOK()
+	return operations.NewTerminateClusterAccepted()
 }

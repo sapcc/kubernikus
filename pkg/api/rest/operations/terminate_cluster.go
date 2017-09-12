@@ -33,7 +33,7 @@ func NewTerminateCluster(ctx *middleware.Context, handler TerminateClusterHandle
 
 /*TerminateCluster swagger:route DELETE /api/v1/clusters/{name} terminateCluster
 
-Terminate the specified cluser
+Terminate the specified cluster
 
 */
 type TerminateCluster struct {

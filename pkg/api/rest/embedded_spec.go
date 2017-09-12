@@ -150,7 +150,7 @@ func init() {
         }
       },
       "delete": {
-        "summary": "Terminate the specified cluser",
+        "summary": "Terminate the specified cluster",
         "operationId": "TerminateCluster",
         "security": [
           {
@@ -158,11 +158,8 @@ func init() {
           }
         ],
         "responses": {
-          "200": {
-            "description": "OK",
-            "schema": {
-              "$ref": "#/definitions/Cluster"
-            }
+          "202": {
+            "description": "OK"
           },
           "default": {
             "$ref": "#/responses/errorResponse"

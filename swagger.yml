@@ -87,12 +87,10 @@ paths:
         - keystone: []
     delete:
       operationId: TerminateCluster
-      summary: Terminate the specified cluser
+      summary: Terminate the specified cluster
       responses:
-        200:
+        202:
           description: OK
-          schema:
-            $ref: '#/definitions/Cluster'
         default:
           $ref: "#/responses/errorResponse"
       security:
