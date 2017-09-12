@@ -70,6 +70,7 @@ spec:
             - --cluster-signing-cert-file=/etc/kubernetes/certs/apiserver-nodes-ca.pem
             - --cluster-signing-key-file=/etc/kubernetes/certs/apiserver-nodes-ca-key.pem
             - --configure-cloud-routes=true
+            - --controllers=*,bootstrapsigner,tokencleaner
             - --kubeconfig=/etc/kubernetes/config/kubeconfig
             - --leader-elect=false
             - --root-ca-file=/etc/kubernetes/certs/apiserver-clients-ca.pem
