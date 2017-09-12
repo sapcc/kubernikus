@@ -148,12 +148,14 @@ func (launchctl *LaunchControl) syncPool(kluster *v1.Kluster, pool *v1.NodePool)
 		return fmt.Errorf("[%v] Couldn't list nodes for pool %v: %v", kluster.Name, pool.Name, err)
 	}
 
-	if kluster.Status.State == v1.KlusterTerminating && toBeTerminated(nodes) > 0 {
-		glog.V(3).Infof("[%v] Kluster is terminating. Terminating Nodes for Pool %v.", kluster.Name, pool.Name)
-		for _, node := range nodes {
-			err := launchctl.terminateNode(kluster, node.ID)
-			if err != nil {
-				return err
+	if kluster.Status.State == v1.KlusterTerminating {
+		if toBeTerminated(nodes) > 0 {
+			glog.V(3).Infof("[%v] Kluster is terminating. Terminating Nodes for Pool %v.", kluster.Name, pool.Name)
+			for _, node := range nodes {
+				err := launchctl.terminateNode(kluster, node.ID)
+				if err != nil {
+					return err
+				}
 			}
 		}
 
