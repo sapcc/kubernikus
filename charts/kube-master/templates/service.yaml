@@ -2,7 +2,7 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "master.fullname" . }}-apiserver
+  name: {{ include "master.fullname" . }}
   labels:
     chart: "{{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}"
     release: {{ .Release.Name }}
