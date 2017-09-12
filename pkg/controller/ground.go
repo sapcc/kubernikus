@@ -414,7 +414,7 @@ func (op *GroundControl) discoverOpenstackInfo(kluster *v1.Kluster) error {
 
 	if copy.Spec.OpenstackInfo.Password == "" {
 		glog.V(5).Infof("[%v] Setting Password to %v", kluster.Name, "[redacted]")
-		if copy.Spec.OpenstackInfo.Password, err = goutils.RandomAscii(20); err != nil {
+		if copy.Spec.OpenstackInfo.Password, err = goutils.Random(20, 32, 127, true, true); err != nil {
 			return fmt.Errorf("Failed to generate password: %s", err)
 		}
 	}
