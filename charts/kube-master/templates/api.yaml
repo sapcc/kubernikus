@@ -38,8 +38,6 @@ spec:
                 path: etcd-clients-apiserver.pem
               - key: etcd-clients-apiserver-key.pem
                 path: etcd-clients-apiserver-key.pem
-              - key: kubelet-clients-ca.pem
-                path: kubelet-clients-ca.pem
               - key: kubelet-clients-apiserver.pem
                 path: kubelet-clients-apiserver.pem
               - key: kubelet-clients-apiserver-key.pem
@@ -84,7 +82,6 @@ spec:
             - --etcd-cafile=/etc/kubernetes/certs/etcd-clients-ca.pem
             - --etcd-certfile=/etc/kubernetes/certs/etcd-clients-apiserver.pem
             - --etcd-keyfile=/etc/kubernetes/certs/etcd-clients-apiserver-key.pem
-            - --kubelet-certificate-authority=/etc/kubernetes/certs/kubelet-clients-ca.pem
             - --kubelet-client-certificate=/etc/kubernetes/certs/kubelet-clients-apiserver.pem
             - --kubelet-client-key=/etc/kubernetes/certs/kubelet-clients-apiserver-key.pem
             - --tls-ca-file=/etc/kubernetes/certs/tls-ca.pem
