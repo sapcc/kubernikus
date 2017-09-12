@@ -64,7 +64,7 @@ systemd:
           --pod-manifest-path=/etc/kubernetes/manifests \
           --allow-privileged \
           --cluster_domain=cluster.local \
-          --client-ca-file=/etc/kubernetes/certs/kube-clients/ca.pem \
+          --client-ca-file=/etc/kubernetes/certs/kubelet-clients-ca.pem \
           --anonymous-auth=false
         ExecStop=-/usr/bin/rkt stop --uuid-file=/var/run/kubelet-pod.uuid
         Restart=always
@@ -75,12 +75,12 @@ systemd:
 
 storage:
   files:
-    - path: /etc/kubernetes/certs/kube-clients/ca.pem
+    - path: /etc/kubernetes/certs/kubelet-clients-ca.pem
       filesystem: root
       mode: 0644
       contents: 
         inline: |-
-{{ .ApiserverClientsCA | indent 10 }}
+{{ .KubeletClientsCA | indent 10 }}
     - path: /etc/kubernetes/certs/tls-ca.pem
       filesystem: root
       mode: 0644
