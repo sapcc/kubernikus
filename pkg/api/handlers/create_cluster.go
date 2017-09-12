@@ -38,7 +38,8 @@ func (d *createCluster) Handle(params operations.CreateClusterParams, principal 
 		},
 	}
 
-	if _, err := d.Kubernikus.Kubernikus().Klusters(d.Namespace).Create(kluster); err != nil {
+	kluster, err := d.Kubernikus.Kubernikus().Klusters(d.Namespace).Create(kluster)
+	if err != nil {
 		glog.Errorf("Failed to create cluster: %s", err)
 		if apierrors.IsAlreadyExists(err) {
 			return NewErrorResponse(&operations.CreateClusterDefault{}, 409, "Cluster with name %s already exists", name)
@@ -46,5 +47,5 @@ func (d *createCluster) Handle(params operations.CreateClusterParams, principal 
 		return NewErrorResponse(&operations.CreateClusterDefault{}, 500, err.Error())
 	}
 
-	return operations.NewCreateClusterCreated()
+	return operations.NewCreateClusterCreated().WithPayload(clusterModelFromTPR(kluster))
 }

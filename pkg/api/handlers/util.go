@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"github.com/go-openapi/swag"
 	"github.com/sapcc/kubernikus/pkg/api/models"
 	"github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
 	kubernikusv1 "github.com/sapcc/kubernikus/pkg/generated/clientset/typed/kubernikus/v1"
@@ -37,4 +38,8 @@ func editCluster(client kubernikusv1.KlusterInterface, principal *models.Princip
 	}
 	return updatedCluster, nil
 
+}
+
+func clusterModelFromTPR(k *v1.Kluster) *models.Cluster {
+	return &models.Cluster{Name: swag.String(k.Spec.Name), Status: string(k.Status.State)}
 }
