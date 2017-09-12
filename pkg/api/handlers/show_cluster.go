@@ -10,16 +10,16 @@ import (
 )
 
 func NewShowCluster(rt *api.Runtime) operations.ShowClusterHandler {
-	return &showCluster{rt: rt}
+	return &showCluster{rt}
 }
 
 type showCluster struct {
-	rt *api.Runtime
+	*api.Runtime
 }
 
 func (d *showCluster) Handle(params operations.ShowClusterParams, principal *models.Principal) middleware.Responder {
 	name := qualifiedName(params.Name, principal.Account)
-	tprCluster, err := d.rt.Clients.Kubernikus.Kubernikus().Klusters(d.rt.Namespace).Get(name, metav1.GetOptions{})
+	tprCluster, err := d.Kubernikus.Kubernikus().Klusters(d.Namespace).Get(name, metav1.GetOptions{})
 
 	if err != nil {
 		if apierrors.IsNotFound(err) {

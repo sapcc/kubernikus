@@ -11,16 +11,16 @@ import (
 )
 
 func NewTerminateCluster(rt *api.Runtime) operations.TerminateClusterHandler {
-	return &terminateCluster{rt: rt}
+	return &terminateCluster{rt}
 }
 
 type terminateCluster struct {
-	rt *api.Runtime
+	*api.Runtime
 }
 
 func (d *terminateCluster) Handle(params operations.TerminateClusterParams, principal *models.Principal) middleware.Responder {
 
-	_, err := editCluster(d.rt.Clients.Kubernikus.Kubernikus().Klusters(d.rt.Namespace), principal, params.Name, func(kluster *v1.Kluster) {
+	_, err := editCluster(d.Kubernikus.Kubernikus().Klusters(d.Namespace), principal, params.Name, func(kluster *v1.Kluster) {
 		kluster.Status.State = v1.KlusterTerminating
 		kluster.Status.Message = "Cluster terminating"
 	})

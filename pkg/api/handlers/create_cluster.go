@@ -14,11 +14,11 @@ import (
 )
 
 func NewCreateCluster(rt *api.Runtime) operations.CreateClusterHandler {
-	return &createCluster{rt: rt}
+	return &createCluster{rt}
 }
 
 type createCluster struct {
-	rt *api.Runtime
+	*api.Runtime
 }
 
 func (d *createCluster) Handle(params operations.CreateClusterParams, principal *models.Principal) middleware.Responder {
@@ -38,7 +38,7 @@ func (d *createCluster) Handle(params operations.CreateClusterParams, principal 
 		},
 	}
 
-	if _, err := d.rt.Clients.Kubernikus.Kubernikus().Klusters(d.rt.Namespace).Create(kluster); err != nil {
+	if _, err := d.Kubernikus.Kubernikus().Klusters(d.Namespace).Create(kluster); err != nil {
 		glog.Errorf("Failed to create cluster: %s", err)
 		if apierrors.IsAlreadyExists(err) {
 			return NewErrorResponse(&operations.CreateClusterDefault{}, 409, "Cluster with name %s already exists", name)

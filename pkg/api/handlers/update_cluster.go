@@ -11,16 +11,16 @@ import (
 )
 
 func NewUpdateCluster(rt *api.Runtime) operations.UpdateClusterHandler {
-	return &updateCluster{rt: rt}
+	return &updateCluster{rt}
 }
 
 type updateCluster struct {
-	rt *api.Runtime
+	*api.Runtime
 }
 
 func (d *updateCluster) Handle(params operations.UpdateClusterParams, principal *models.Principal) middleware.Responder {
 
-	_, err := editCluster(d.rt.Clients.Kubernikus.Kubernikus().Klusters(d.rt.Namespace), principal, params.Name, func(kluster *v1.Kluster) {
+	_, err := editCluster(d.Kubernikus.Kubernikus().Klusters(d.Namespace), principal, params.Name, func(kluster *v1.Kluster) {
 		//TODO: currently no field to update
 	})
 	if err != nil {

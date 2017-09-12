@@ -17,16 +17,16 @@ import (
 )
 
 func NewGetClusterCredentials(rt *api.Runtime) operations.GetClusterCredentialsHandler {
-	return &getClusterCredentials{rt: rt}
+	return &getClusterCredentials{rt}
 }
 
 type getClusterCredentials struct {
-	rt *api.Runtime
+	*api.Runtime
 }
 
 func (d *getClusterCredentials) Handle(params operations.GetClusterCredentialsParams, principal *models.Principal) middleware.Responder {
 
-	secret, err := d.rt.Clients.Kubernetes.CoreV1().Secrets(d.rt.Namespace).Get(qualifiedName(params.Name, principal.Account), v1.GetOptions{})
+	secret, err := d.Kubernetes.CoreV1().Secrets(d.Namespace).Get(qualifiedName(params.Name, principal.Account), v1.GetOptions{})
 	if err != nil {
 		if apierrors.IsNotFound(err) {
 			return NewErrorResponse(&operations.GetClusterCredentialsDefault{}, 404, "Not found")

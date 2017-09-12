@@ -6,11 +6,7 @@ import (
 )
 
 type Runtime struct {
-	Clients   *Clients
-	Namespace string
-}
-
-type Clients struct {
 	Kubernikus clientset.Interface
 	Kubernetes kubernetes.Interface
+	Namespace  string
 }

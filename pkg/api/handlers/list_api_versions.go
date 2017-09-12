@@ -8,11 +8,11 @@ import (
 )
 
 func NewListAPIVersions(rt *api.Runtime) operations.ListAPIVersionsHandler {
-	return &listAPIVersions{rt: rt}
+	return &listAPIVersions{rt}
 }
 
 type listAPIVersions struct {
-	rt *api.Runtime
+	*api.Runtime
 }
 
 func (d *listAPIVersions) Handle(params operations.ListAPIVersionsParams) middleware.Responder {

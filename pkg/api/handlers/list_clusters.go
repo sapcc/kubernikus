@@ -9,16 +9,16 @@ import (
 )
 
 func NewListClusters(rt *api.Runtime) operations.ListClustersHandler {
-	return &listClusters{rt: rt}
+	return &listClusters{rt}
 }
 
 type listClusters struct {
-	rt *api.Runtime
+	*api.Runtime
 }
 
 func (d *listClusters) Handle(params operations.ListClustersParams, principal *models.Principal) middleware.Responder {
 	listOpts := metav1.ListOptions{LabelSelector: accountSelector(principal).String()}
-	clusterList, err := d.rt.Clients.Kubernikus.Kubernikus().Klusters(d.rt.Namespace).List(listOpts)
+	clusterList, err := d.Kubernikus.Kubernikus().Klusters(d.Namespace).List(listOpts)
 
 	if err != nil {
 		return NewErrorResponse(&operations.ListClustersDefault{}, 500, err.Error())

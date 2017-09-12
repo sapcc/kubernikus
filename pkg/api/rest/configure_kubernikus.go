@@ -46,7 +46,8 @@ func configureAPI(api *operations.KubernikusAPI) http.Handler {
 	// Applies when the "x-auth-token" header is set
 	api.KeystoneAuth = keystoneAuth()
 
-	rt := &apipkg.Runtime{Clients: NewKubeClients(), Namespace: namespace}
+	rt := &apipkg.Runtime{Namespace: namespace}
+	rt.Kubernikus, rt.Kubernetes = NewKubeClients()
 
 	api.ListAPIVersionsHandler = handlers.NewListAPIVersions(rt)
 	api.ListClustersHandler = handlers.NewListClusters(rt)
