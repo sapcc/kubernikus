@@ -56,7 +56,7 @@ func (launchctl *LaunchControl) Run(threadiness int, stopCh <-chan struct{}, wg 
 	defer launchctl.queue.ShutDown()
 	defer wg.Done()
 	wg.Add(1)
-	glog.Infof("LaunchControl started!")
+	glog.Infof(`Starting LaunchControl with %d "threads"`, threadiness)
 
 	for i := 0; i < threadiness; i++ {
 		go wait.Until(launchctl.runWorker, time.Second, stopCh)

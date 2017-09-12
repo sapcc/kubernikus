@@ -43,6 +43,7 @@ type KubernikusOperatorOptions struct {
 
 	KubernikusDomain string
 	Namespace        string
+	Controllers      []string
 }
 
 type Clients struct {
@@ -66,7 +67,8 @@ type HelmConfig struct {
 }
 
 type KubernikusConfig struct {
-	Domain         string
+	Domain      string
+	Controllers []string
 }
 
 type Config struct {
@@ -108,7 +110,8 @@ func NewKubernikusOperator(options *KubernikusOperatorOptions) *KubernikusOperat
 				ChartDirectory: options.ChartDirectory,
 			},
 			Kubernikus: KubernikusConfig{
-				Domain: options.KubernikusDomain,
+				Domain:      options.KubernikusDomain,
+				Controllers: options.Controllers,
 			},
 		},
 	}
@@ -196,8 +199,18 @@ func (o *KubernikusOperator) Run(stopCh <-chan struct{}, wg *sync.WaitGroup) {
 
 	glog.Info("Cache primed. Ready for Action!")
 
-	go groundctl.Run(GROUNDCTL_WORKERS, stopCh, wg)
-	go launchctl.Run(LAUNCHCTL_WORKERS, stopCh, wg)
+	for _, c := range o.Config.Kubernikus.Controllers {
+		if c == "groundctl" || c == "*" {
+			go groundctl.Run(GROUNDCTL_WORKERS, stopCh, wg)
+			break
+		}
+	}
+	for _, c := range o.Config.Kubernikus.Controllers {
+		if c == "launchctl" || c == "*" {
+			go launchctl.Run(LAUNCHCTL_WORKERS, stopCh, wg)
+			break
+		}
+	}
 }
 
 func (p *KubernikusOperator) debugAdd(obj interface{}) {

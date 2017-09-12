@@ -51,6 +51,7 @@ type Options struct {
 
 	KubernikusDomain string
 	Namespace        string
+	Controllers      []string
 }
 
 func NewOperatorOptions() *Options {
@@ -61,6 +62,7 @@ func NewOperatorOptions() *Options {
 		AuthDomain:       "Default",
 		KubernikusDomain: "kluster.staging.cloud.sap",
 		Namespace:        "kubernikus",
+		Controllers:      []string{"*"},
 	}
 }
 
@@ -76,6 +78,7 @@ func (o *Options) BindFlags(flags *pflag.FlagSet) {
 
 	flags.StringVar(&o.KubernikusDomain, "kubernikus-domain", o.KubernikusDomain, "Regional domain name for all Kubernikus clusters")
 	flags.StringVar(&o.Namespace, "namespace", o.Namespace, "Restrict operator to resources in the given namespace")
+	flags.StringSliceVar(&o.Controllers, "controllers", o.Controllers, "A list of controllers to enable.  '*' enables all. controllers: groundctl, launchctl")
 }
 
 func (o *Options) Validate(c *cobra.Command, args []string) error {
@@ -107,6 +110,7 @@ func (o *Options) Run(c *cobra.Command) error {
 		AuthProjectDomain: o.AuthProjectDomain,
 		KubernikusDomain:  o.KubernikusDomain,
 		Namespace:         o.Namespace,
+		Controllers:       o.Controllers,
 	}
 
 	go controller.NewKubernikusOperator(opts).Run(stop, wg)

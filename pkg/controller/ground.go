@@ -67,7 +67,7 @@ func (op *GroundControl) Run(threadiness int, stopCh <-chan struct{}, wg *sync.W
 	defer op.queue.ShutDown()
 	defer wg.Done()
 	wg.Add(1)
-	glog.Infof("GroundControl started!")
+	glog.Infof(`Starting GroundControl with %d \"threads\"`, threadiness)
 
 	for i := 0; i < threadiness; i++ {
 		go wait.Until(op.runWorker, time.Second, stopCh)
