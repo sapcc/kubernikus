@@ -71,6 +71,7 @@ spec:
             - --cluster-signing-key-file=/etc/kubernetes/certs/apiserver-nodes-ca-key.pem
             - --configure-cloud-routes=true
             - --kubeconfig=/etc/kubernetes/config/kubeconfig
+            - --leader-elect=false
             - --root-ca-file=/etc/kubernetes/certs/apiserver-clients-ca.pem
             - --service-account-private-key-file=/etc/kubernetes/certs/apiserver-clients-ca-key.pem
             - --service-cluster-ip-range={{ .Values.serviceCIDR }}
