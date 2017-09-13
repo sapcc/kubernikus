@@ -23,6 +23,17 @@ type createCluster struct {
 
 func (d *createCluster) Handle(params operations.CreateClusterParams, principal *models.Principal) middleware.Responder {
 	name := *params.Body.Name
+
+	nodePools := make([]v1.NodePool, len(params.Body.Spec.NodePools))
+	for _, pPool := range params.Body.Spec.NodePools {
+		nodePools = append(nodePools, v1.NodePool{
+			Name:   pPool.Name,
+			Size:   int(pPool.Size),
+			Flavor: pPool.Flavor,
+			Image:  pPool.Image,
+		})
+	}
+
 	kluster := &v1.Kluster{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:        fmt.Sprintf("%s-%s", name, principal.Account),
@@ -31,7 +42,7 @@ func (d *createCluster) Handle(params operations.CreateClusterParams, principal 
 		},
 		Spec: v1.KlusterSpec{
 			Name:      name,
-			NodePools: []v1.NodePool{},
+			NodePools: nodePools,
 		},
 		Status: v1.KlusterStatus{
 			State: v1.KlusterPending,

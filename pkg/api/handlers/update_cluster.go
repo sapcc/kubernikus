@@ -21,7 +21,42 @@ type updateCluster struct {
 func (d *updateCluster) Handle(params operations.UpdateClusterParams, principal *models.Principal) middleware.Responder {
 
 	kluster, err := editCluster(d.Kubernikus.Kubernikus().Klusters(d.Namespace), principal, params.Name, func(kluster *v1.Kluster) {
-		//TODO: currently no field to update
+		// Update Sizes
+		for _, pPool := range params.Body.Spec.NodePools {
+			isNewPool := true
+
+			for _, kPool := range kluster.Spec.NodePools {
+				if pPool.Name == kPool.Name {
+					kPool.Size = int(pPool.Size)
+					isNewPool = false
+				}
+			}
+
+			if isNewPool {
+				kluster.Spec.NodePools = append(kluster.Spec.NodePools, v1.NodePool{
+					Name:   pPool.Name,
+					Size:   int(pPool.Size),
+					Flavor: pPool.Flavor,
+					Image:  pPool.Image,
+				})
+			}
+		}
+
+		for i, kPool := range kluster.Spec.NodePools {
+			isDeleted := true
+			for _, pPool := range params.Body.Spec.NodePools {
+				if pPool.Name == kPool.Name {
+					isDeleted = false
+					break
+				}
+			}
+			if isDeleted {
+				// wtf? I want my ruby back...
+				kluster.Spec.NodePools[i] = kluster.Spec.NodePools[len(kluster.Spec.NodePools)-1]
+				kluster.Spec.NodePools = kluster.Spec.NodePools[:len(kluster.Spec.NodePools)-1]
+			}
+		}
+
 	})
 	if err != nil {
 		if apierrors.IsNotFound(err) {

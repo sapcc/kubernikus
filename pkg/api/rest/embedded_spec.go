@@ -234,6 +234,30 @@ func init() {
           "type": "string",
           "pattern": "^[a-z]([-a-z0-9]*[a-z0-9])?$"
         },
+        "spec": {
+          "properties": {
+            "nodePools": {
+              "type": "array",
+              "items": {
+                "properties": {
+                  "flavor": {
+                    "type": "string"
+                  },
+                  "image": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string",
+                    "pattern": "^[a-z]([a-z0-9]*)?$"
+                  },
+                  "size": {
+                    "type": "integer"
+                  }
+                }
+              }
+            }
+          }
+        },
         "status": {
           "description": "status of the cluster",
           "type": "string"

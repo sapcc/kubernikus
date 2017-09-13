@@ -40,6 +40,25 @@ func editCluster(client kubernikusv1.KlusterInterface, principal *models.Princip
 
 }
 
+func ClusterSpecNodePoolItems(k *v1.Kluster) []*models.ClusterSpecNodePoolsItems0 {
+	items := make([]*models.ClusterSpecNodePoolsItems0, int64(len(k.Spec.NodePools)))
+	for i, nodePool := range k.Spec.NodePools {
+		items[i] = &models.ClusterSpecNodePoolsItems0{
+			Name:   nodePool.Name,
+			Image:  nodePool.Image,
+			Flavor: nodePool.Flavor,
+			Size:   int64(nodePool.Size),
+		}
+	}
+	return items
+}
+
 func clusterModelFromTPR(k *v1.Kluster) *models.Cluster {
-	return &models.Cluster{Name: swag.String(k.Spec.Name), Status: string(k.Status.State)}
+	return &models.Cluster{
+		Name: swag.String(k.Spec.Name),
+		Spec: &models.ClusterSpec{
+			NodePools: ClusterSpecNodePoolItems(k),
+		},
+		Status: string(k.Status.State),
+	}
 }
