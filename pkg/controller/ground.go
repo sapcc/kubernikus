@@ -287,7 +287,12 @@ func (op *GroundControl) terminateKluster(tpr *v1.Kluster) error {
 		return err
 	}
 
-	return op.Clients.Kubernikus.Kubernikus().Klusters(tpr.Namespace).Delete(tpr.Name, &metav1.DeleteOptions{})
+	return op.Clients.Kubernikus.Discovery().RESTClient().Delete().AbsPath("apis/kubernikus.sap.cc/v1").
+		Namespace(tpr.Namespace).
+		Resource("klusters").
+		Name(tpr.Name).
+		Do().
+		Error()
 }
 
 func (op *GroundControl) requiresOpenstackInfo(kluster *v1.Kluster) bool {
