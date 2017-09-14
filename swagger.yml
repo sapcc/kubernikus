@@ -152,9 +152,37 @@ definitions:
         description: name of the cluster
         type: string
         pattern: '^[a-z]([-a-z0-9]*[a-z0-9])?$'
+      spec:
+        properties:
+          nodePools:
+            type: array
+            items:
+              properties:
+                name:
+                  type: string
+                  pattern: '^[a-z]([a-z0-9]*)?$'
+                size:
+                  type: integer
+                flavor:
+                  type: string
+                image:
+                  type: string
       status:
-        description: status of the cluster
-        type: string
+        properties:
+          kluster:
+            description: status of the cluster
+            type: string
+          nodePools:
+            type: array
+            items:
+              properties:
+                name:
+                  type: string
+                size:
+                  type: integer
+                ready:
+                  type: integer
+
   Credentials:
     type: object
     properties:

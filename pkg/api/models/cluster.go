@@ -27,8 +27,8 @@ type Cluster struct {
 	// spec
 	Spec *ClusterSpec `json:"spec,omitempty"`
 
-	// status of the cluster
-	Status string `json:"status,omitempty"`
+	// status
+	Status *ClusterStatus `json:"status,omitempty"`
 }
 
 // Validate validates this cluster
@@ -41,6 +41,11 @@ func (m *Cluster) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateSpec(formats); err != nil {
+		// prop
+		res = append(res, err)
+	}
+
+	if err := m.validateStatus(formats); err != nil {
 		// prop
 		res = append(res, err)
 	}
@@ -75,6 +80,25 @@ func (m *Cluster) validateSpec(formats strfmt.Registry) error {
 		if err := m.Spec.Validate(formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("spec")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *Cluster) validateStatus(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.Status) { // not required
+		return nil
+	}
+
+	if m.Status != nil {
+
+		if err := m.Status.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("status")
 			}
 			return err
 		}
@@ -226,6 +250,119 @@ func (m *ClusterSpecNodePoolsItems0) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *ClusterSpecNodePoolsItems0) UnmarshalBinary(b []byte) error {
 	var res ClusterSpecNodePoolsItems0
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// ClusterStatus cluster status
+// swagger:model ClusterStatus
+type ClusterStatus struct {
+
+	// status of the cluster
+	Kluster string `json:"kluster,omitempty"`
+
+	// node pools
+	NodePools []*ClusterStatusNodePoolsItems0 `json:"nodePools"`
+}
+
+// Validate validates this cluster status
+func (m *ClusterStatus) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateNodePools(formats); err != nil {
+		// prop
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ClusterStatus) validateNodePools(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.NodePools) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.NodePools); i++ {
+
+		if swag.IsZero(m.NodePools[i]) { // not required
+			continue
+		}
+
+		if m.NodePools[i] != nil {
+
+			if err := m.NodePools[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("status" + "." + "nodePools" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *ClusterStatus) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *ClusterStatus) UnmarshalBinary(b []byte) error {
+	var res ClusterStatus
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// ClusterStatusNodePoolsItems0 cluster status node pools items0
+// swagger:model ClusterStatusNodePoolsItems0
+type ClusterStatusNodePoolsItems0 struct {
+
+	// name
+	Name string `json:"name,omitempty"`
+
+	// ready
+	Ready int64 `json:"ready,omitempty"`
+
+	// size
+	Size int64 `json:"size,omitempty"`
+}
+
+// Validate validates this cluster status node pools items0
+func (m *ClusterStatusNodePoolsItems0) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *ClusterStatusNodePoolsItems0) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *ClusterStatusNodePoolsItems0) UnmarshalBinary(b []byte) error {
+	var res ClusterStatusNodePoolsItems0
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

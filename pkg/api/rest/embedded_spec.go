@@ -259,8 +259,28 @@ func init() {
           }
         },
         "status": {
-          "description": "status of the cluster",
-          "type": "string"
+          "properties": {
+            "kluster": {
+              "description": "status of the cluster",
+              "type": "string"
+            },
+            "nodePools": {
+              "type": "array",
+              "items": {
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "ready": {
+                    "type": "integer"
+                  },
+                  "size": {
+                    "type": "integer"
+                  }
+                }
+              }
+            }
+          }
         }
       }
     },
