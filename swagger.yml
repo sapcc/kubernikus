@@ -91,6 +91,11 @@ paths:
       responses:
         202:
           description: OK
+          # go-openapi always sends a content-type header also on empty response bodys
+          # jquery and other tools barf on this as the try to parse an empty string
+          # which is not valid json
+          schema:
+            type: object
         default:
           $ref: "#/responses/errorResponse"
       security:
