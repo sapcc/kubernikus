@@ -89,9 +89,10 @@ type KubernikusOperator struct {
 }
 
 const (
-	GROUNDCTL_WORKERS       = 10
-	LAUNCHCTL_WORKERS       = 1
-	RECONCILIATION_DURATION = 5 * time.Minute
+	GROUNDCTL_WORKERS         = 10
+	LAUNCHCTL_WORKERS         = 1
+	WORMHOLEGENERATOR_WORKERS = 1
+	RECONCILIATION_DURATION   = 5 * time.Minute
 )
 
 func NewKubernikusOperator(options *KubernikusOperatorOptions) *KubernikusOperator {
@@ -190,6 +191,7 @@ func (o *KubernikusOperator) Run(stopCh <-chan struct{}, wg *sync.WaitGroup) {
 
 	groundctl := NewGroundController(o.Factories, o.Clients, o.Config)
 	launchctl := NewLaunchController(o.Factories, o.Clients)
+	wormhole := NewWormholeGenerator(o.Factories, o.Clients)
 
 	o.Factories.Kubernikus.Start(stopCh)
 	o.Factories.Kubernetes.Start(stopCh)
@@ -200,13 +202,15 @@ func (o *KubernikusOperator) Run(stopCh <-chan struct{}, wg *sync.WaitGroup) {
 	glog.Info("Cache primed. Ready for Action!")
 
 	for _, c := range o.Config.Kubernikus.Controllers {
-		if c == "groundctl" || c == "*" {
+		switch c {
+		case "groundctl":
 			go groundctl.Run(GROUNDCTL_WORKERS, stopCh, wg)
-			break
-		}
-	}
-	for _, c := range o.Config.Kubernikus.Controllers {
-		if c == "launchctl" || c == "*" {
+		case "launchctl":
+			go launchctl.Run(LAUNCHCTL_WORKERS, stopCh, wg)
+		case "wormholegenerator":
+			go wormhole.Run(WORMHOLEGENERATOR_WORKERS, stopCh, wg)
+		case "*":
+			go groundctl.Run(GROUNDCTL_WORKERS, stopCh, wg)
 			go launchctl.Run(LAUNCHCTL_WORKERS, stopCh, wg)
 			break
 		}

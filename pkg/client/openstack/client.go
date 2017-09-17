@@ -42,10 +42,12 @@ type client struct {
 
 type Client interface {
 	CreateNode(*kubernikus_v1.Kluster, *kubernikus_v1.NodePool, []byte) (string, error)
+	CreateWormhole(*kubernikus_v1.Kluster) (string, error)
 	DeleteNode(*kubernikus_v1.Kluster, string) error
 	GetNodes(*kubernikus_v1.Kluster, *kubernikus_v1.NodePool) ([]Node, error)
 	GetProject(id string) (*Project, error)
 	GetRegion() (string, error)
+	GetWormhole(*kubernikus_v1.Kluster) (*Node, error)
 	GetRouters(project_id string) ([]Router, error)
 	DeleteUser(username, domainID string) error
 }
@@ -73,12 +75,8 @@ type Subnet struct {
 }
 
 type Node struct {
-	ID         string
-	Name       string
-	Status     string
-	TaskState  string
-	VMState    string
-	PowerState int
+	servers.Server
+	StateExt
 }
 
 func (n *Node) Ready() bool {
@@ -126,11 +124,6 @@ type StateExt struct {
 	TaskState  string `json:"OS-EXT-STS:task_state"`
 	VMState    string `json:"OS-EXT-STS:vm_state"`
 	PowerState int    `json:"OS-EXT-STS:power_state"`
-}
-
-type ServerExt struct {
-	servers.Server
-	StateExt
 }
 
 func (r *StateExt) UnmarshalJSON(b []byte) error {
@@ -365,21 +358,48 @@ func (c *client) GetNodes(kluster *kubernikus_v1.Kluster, pool *kubernikus_v1.No
 	opts := servers.ListOpts{Name: prefix}
 
 	servers.List(client, opts).EachPage(func(page pagination.Page) (bool, error) {
-		serverList, err := ExtractServers(page)
+		nodes, err = ExtractServers(page)
 		if err != nil {
 			glog.V(5).Infof("Couldn't extract server %v", err)
 			return false, err
-		}
-
-		for _, s := range serverList {
-			node := Node{ID: s.ID, Name: s.Name, Status: s.Status, TaskState: s.TaskState, VMState: s.VMState}
-			nodes = append(nodes, node)
 		}
 
 		return true, nil
 	})
 
 	return nodes, nil
+}
+
+func (c *client) GetWormhole(kluster *kubernikus_v1.Kluster) (*Node, error) {
+	provider, err := c.projectProviderFor(kluster)
+	if err != nil {
+		return nil, err
+	}
+
+	client, err := openstack.NewComputeV2(provider, gophercloud.EndpointOpts{})
+	if err != nil {
+		return nil, err
+	}
+
+	prefix := fmt.Sprintf("wormhole-%v", kluster.Name)
+	opts := servers.ListOpts{Name: prefix}
+
+	var node *Node
+	servers.List(client, opts).EachPage(func(page pagination.Page) (bool, error) {
+		serverList, err := ExtractServers(page)
+		if err != nil {
+			glog.V(5).Infof("Couldn't extract server %v", err)
+			return false, err
+		}
+
+		if len(serverList) > 0 {
+			node = &serverList[0]
+		}
+
+		return true, nil
+	})
+
+	return node, nil
 }
 
 func (c *client) CreateNode(kluster *kubernikus_v1.Kluster, pool *kubernikus_v1.NodePool, userData []byte) (string, error) {
@@ -407,6 +427,36 @@ func (c *client) CreateNode(kluster *kubernikus_v1.Kluster, pool *kubernikus_v1.
 
 	if err != nil {
 		glog.V(5).Infof("Couldn't create node %v: %v", name, err)
+		return "", err
+	}
+
+	return server.ID, nil
+}
+
+func (c *client) CreateWormhole(kluster *kubernikus_v1.Kluster) (string, error) {
+	provider, err := c.projectProviderFor(kluster)
+	if err != nil {
+		return "", err
+	}
+
+	client, err := openstack.NewComputeV2(provider, gophercloud.EndpointOpts{})
+	if err != nil {
+		return "", err
+	}
+
+	name := fmt.Sprintf("wormhole-%v", kluster.Name)
+	glog.V(5).Infof("Creating %v", name)
+
+	server, err := servers.Create(client, servers.CreateOpts{
+		Name:          name,
+		FlavorName:    "m1.tiny",
+		ImageName:     "cirros-vmware",
+		Networks:      []servers.Network{servers.Network{UUID: kluster.Spec.OpenstackInfo.NetworkID}},
+		ServiceClient: client,
+	}).Extract()
+
+	if err != nil {
+		glog.V(5).Infof("Couldn't create %v: %v", name, err)
 		return "", err
 	}
 
@@ -493,8 +543,8 @@ func (c *client) GetRegion() (string, error) {
 	return region, nil
 }
 
-func ExtractServers(r pagination.Page) ([]ServerExt, error) {
-	var s []ServerExt
+func ExtractServers(r pagination.Page) ([]Node, error) {
+	var s []Node
 	err := servers.ExtractServersInto(r, &s)
 	return s, err
 }
