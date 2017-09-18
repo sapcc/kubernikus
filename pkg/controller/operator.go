@@ -150,11 +150,6 @@ func NewKubernikusOperator(options *KubernikusOperatorOptions) *KubernikusOperat
 		options.AuthProjectDomain,
 	)
 
-	o.Clients.Satellites = kube.NewSharedClientFactory(
-		o.Clients.Kubernetes.Core().Secrets(options.Namespace),
-		o.Factories.Kubernikus.Kubernikus().V1().Klusters().Informer(),
-	)
-
 	for _, k := range options.Controllers {
 		switch k {
 		case "groundctl":
@@ -165,6 +160,11 @@ func NewKubernikusOperator(options *KubernikusOperatorOptions) *KubernikusOperat
 			o.Config.Kubernikus.Controllers["wormholegenerator"] = NewWormholeGenerator(o.Factories, o.Clients)
 		}
 	}
+
+	o.Clients.Satellites = kube.NewSharedClientFactory(
+		o.Clients.Kubernetes.Core().Secrets(options.Namespace),
+		o.Factories.Kubernikus.Kubernikus().V1().Klusters().Informer(),
+	)
 
 	return o
 }
