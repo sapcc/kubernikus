@@ -74,7 +74,7 @@ func (base *Base) Run(threadiness int, stopCh <-chan struct{}, wg *sync.WaitGrou
 		for {
 			select {
 			case <-ticker.C:
-				for key := range base.informer.GetStore().ListKeys() {
+				for _, key := range base.informer.GetStore().ListKeys() {
 					base.queue.Add(key)
 				}
 			case <-stopCh:
