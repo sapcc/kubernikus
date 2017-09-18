@@ -41,6 +41,7 @@ type KubernikusOperatorOptions struct {
 type Clients struct {
 	Kubernikus kubernikus_clientset.Interface
 	Kubernetes kubernetes_clientset.Interface
+	Satellites *kube.SharedClientFactory
 	Openstack  openstack.Client
 	Helm       *helm.Client
 }
@@ -149,6 +150,11 @@ func NewKubernikusOperator(options *KubernikusOperatorOptions) *KubernikusOperat
 		options.AuthProjectDomain,
 	)
 
+	o.Clients.Satellites = kube.NewSharedClientFactory(
+		o.Clients.Kubernetes.Core().Secrets(options.Namespace),
+		o.Factories.Kubernikus.Kubernikus().V1().Klusters().Informer(),
+	)
+
 	for _, k := range options.Controllers {
 		switch k {
 		case "groundctl":
@@ -160,7 +166,6 @@ func NewKubernikusOperator(options *KubernikusOperatorOptions) *KubernikusOperat
 		}
 	}
 
-	return o
 }
 
 func (o *KubernikusOperator) Run(stopCh <-chan struct{}, wg *sync.WaitGroup) {

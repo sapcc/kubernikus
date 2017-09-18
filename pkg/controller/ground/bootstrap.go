@@ -9,6 +9,17 @@ import (
 	rbac "k8s.io/client-go/pkg/apis/rbac/v1beta1"
 )
 
+func SeedKluster(client clientset.Interface) error {
+	if err := SeedAllowBootstrapTokensToPostCSRs(client); err != nil {
+		return err
+	}
+	if err := SeedAutoApproveNodeBootstrapTokens(client); err != nil {
+		return err
+	}
+	return nil
+
+}
+
 func SeedAllowBootstrapTokensToPostCSRs(client clientset.Interface) error {
 	return CreateOrUpdateClusterRoleBinding(client, &rbac.ClusterRoleBinding{
 		ObjectMeta: metav1.ObjectMeta{

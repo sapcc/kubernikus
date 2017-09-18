@@ -212,6 +212,13 @@ func (op *GroundControl) handler(key string) error {
 			}
 			glog.V(5).Infof("%d of %d pods ready for kluster %s", podsReady, len(pods), key)
 			if podsReady == 4 {
+				clientset, err := op.Clients.Satellites.ClientFor(tpr)
+				if err != nil {
+					return err
+				}
+				if err := ground.SeedKluster(clientset); err != nil {
+					return err
+				}
 				if err := op.updateStatus(tpr, v1.KlusterReady, ""); err != nil {
 					glog.Errorf("Failed to update status of kluster %s:%s", tpr.GetName(), err)
 				}
