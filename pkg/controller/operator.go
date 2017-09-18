@@ -49,6 +49,7 @@ type KubernikusOperatorOptions struct {
 type Clients struct {
 	Kubernikus kubernikus_clientset.Interface
 	Kubernetes kubernetes_clientset.Interface
+	Satellites *kube.SharedClientFactory
 	Openstack  openstack.Client
 	Helm       *helm.Client
 }
@@ -113,8 +114,7 @@ func NewKubernikusOperator(options *KubernikusOperatorOptions) *KubernikusOperat
 			Kubernikus: KubernikusConfig{
 				Domain:      options.KubernikusDomain,
 				Controllers: options.Controllers,
-			},
-		},
+			}},
 	}
 
 	o.Clients.Kubernetes, err = kube.NewClient(options.KubeConfig)
@@ -182,7 +182,10 @@ func NewKubernikusOperator(options *KubernikusOperatorOptions) *KubernikusOperat
 		options.AuthProject,
 		options.AuthProjectDomain,
 	)
-
+	o.Clients.Satellites = kube.NewSharedClientFactory(
+		o.Clients.Kubernetes.Core().Secrets(options.Namespace),
+		o.Factories.Kubernikus.Kubernikus().V1().Klusters().Informer(),
+	)
 	return o
 }
 
