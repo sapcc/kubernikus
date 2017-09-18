@@ -233,7 +233,7 @@ func (launchctl *LaunchControl) handleErr(err error, key interface{}) {
 func ready(nodes []openstack.Node) int {
 	ready := 0
 	for _, n := range nodes {
-		if n.Ready() {
+		if n.Running() {
 			ready = ready + 1
 		}
 	}

@@ -84,17 +84,32 @@ func (wg *WormholeGenerator) findOrCreateWormhole(state *State) (Transition, err
 }
 
 func (wg *WormholeGenerator) checkWormhole(state *State) (Transition, error) {
-	if state.node.Ready() {
+	if state.node.Running() {
 		state.message = "Wormhole ok"
 		return nil, nil
 	}
 
-	if time.Since(state.node.Created) > 5*time.Minute {
-		state.message = "Wormhole is hanging. Trying to repair."
-		return wg.repairWormhole, nil
+	if state.node.Starting() {
+		if time.Since(state.node.Created) < 5*time.Minute {
+			state.message = "Wormhole still spawning"
+			return wg.requeue, nil
+		} else {
+			state.message = "Wormhole hangs while spawning"
+			return wg.repairWormhole, nil
+		}
 	}
 
-	return nil, fmt.Errorf("Wormhole is not ready")
+	if state.node.Stopping() {
+		if time.Since(state.node.Updated) < 5*time.Minute {
+			state.message = "Wormhole still stopping"
+			return wg.requeue, nil
+		} else {
+			state.message = "Wormhole hangs while terminating"
+			return wg.repairWormhole, nil
+		}
+	}
+
+	return nil, fmt.Errorf("Wormhole is in an undefined state. If this happens the universe collapses.")
 }
 
 func (wg *WormholeGenerator) repairWormhole(state *State) (Transition, error) {
@@ -103,7 +118,7 @@ func (wg *WormholeGenerator) repairWormhole(state *State) (Transition, error) {
 		return nil, fmt.Errorf("Couldn't repair wormhole %v: %v", state.node.Name, err)
 	}
 	state.message = fmt.Sprintf("Terminated wormhole %v", state.node.Name)
-	return wg.findOrCreateWormhole, nil
+	return wg.requeue, nil
 }
 
 func (wg *WormholeGenerator) createWormhole(state *State) (Transition, error) {
@@ -113,5 +128,10 @@ func (wg *WormholeGenerator) createWormhole(state *State) (Transition, error) {
 	}
 
 	state.message = fmt.Sprintf("Wormhole %v ceated", name)
-	return wg.findOrCreateWormhole, nil
+	return wg.requeue, nil
+}
+
+func (wg *WormholeGenerator) requeue(state *State) (Transition, error) {
+	wg.queue.AddAfter(state.key, 10*time.Second)
+	return nil, nil
 }
