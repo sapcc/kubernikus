@@ -21,3 +21,8 @@ groundctl:
   log_level: 1
 
 revisionHistoryLimit: 3
+
+k8sniff:
+  tag: "8d5bf771eb906c58acfdd68e553f9408432043fa"
+  metrics_port: 9091
+  external_service_ip: ""

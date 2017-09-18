@@ -1,0 +1,40 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: k8sniff-ingress-lb
+  labels:
+    role: k8sniff-ingress-lb
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: {{ default "9091" .Values.k8sniff.metrics_port | quote }}
+
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      role: k8sniff-ingress-lb
+  template:
+    metadata:
+      labels:
+        role: k8sniff-ingress-lb
+    spec:
+      containers:
+      - image: kubermatic/k8sniff:{{ default "v1.0" .Values.k8sniff.tag }}
+        name: k8sniff-ingress-lb
+        imagePullPolicy: IfNotPresent
+        command:
+          - /bin/sh
+          - -c
+          - -x
+          - "/pipeline/source/k8sniff -logtostderr --v=9 --config /etc/config/k8sniff.json"
+        ports:
+        - name: https
+          containerPort: 8443
+        volumeMounts:
+        - name: k8sniff-config
+          mountPath: /etc/config
+          readOnly: true
+      volumes:
+        - name: k8sniff-config
+          configMap:
+            name: k8sniff-configmap
