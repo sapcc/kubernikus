@@ -68,7 +68,7 @@ type HelmConfig struct {
 
 type KubernikusConfig struct {
 	Domain      string
-	Controllers []string
+	Controllers map[string]Controller
 }
 
 type Config struct {
@@ -89,10 +89,16 @@ type KubernikusOperator struct {
 }
 
 const (
-	GROUNDCTL_WORKERS         = 10
-	LAUNCHCTL_WORKERS         = 1
-	WORMHOLEGENERATOR_WORKERS = 1
-	RECONCILIATION_DURATION   = 5 * time.Minute
+	DEFAULT_WORKERS        = 1
+	DEFAULT_RECONCILIATION = 5 * time.Minute
+)
+
+var (
+	CONTROLLER_OPTIONS = map[string]int{
+		"groundctl":         10,
+		"launchctl":         DEFAULT_WORKERS,
+		"wormholegenerator": DEFAULT_WORKERS,
+	}
 )
 
 func NewKubernikusOperator(options *KubernikusOperatorOptions) *KubernikusOperator {
@@ -112,7 +118,7 @@ func NewKubernikusOperator(options *KubernikusOperatorOptions) *KubernikusOperat
 			},
 			Kubernikus: KubernikusConfig{
 				Domain:      options.KubernikusDomain,
-				Controllers: options.Controllers,
+				Controllers: make(map[string]Controller),
 			},
 		},
 	}
@@ -136,7 +142,7 @@ func NewKubernikusOperator(options *KubernikusOperatorOptions) *KubernikusOperat
 		glog.Fatalf("Failed to create helm client: %s", err)
 	}
 
-	o.Factories.Kubernikus = kubernikus_informers.NewSharedInformerFactory(o.Clients.Kubernikus, RECONCILIATION_DURATION)
+	o.Factories.Kubernikus = kubernikus_informers.NewSharedInformerFactory(o.Clients.Kubernikus, DEFAULT_RECONCILIATION)
 	//Manually create shared Kluster informer that only watches the given namespace
 	o.Factories.Kubernikus.InformerFor(
 		&kubernikus_v1.Kluster{},
@@ -155,7 +161,7 @@ func NewKubernikusOperator(options *KubernikusOperatorOptions) *KubernikusOperat
 		DeleteFunc: o.debugDelete,
 	})
 
-	o.Factories.Kubernetes = kubernetes_informers.NewSharedInformerFactory(o.Clients.Kubernetes, RECONCILIATION_DURATION)
+	o.Factories.Kubernetes = kubernetes_informers.NewSharedInformerFactory(o.Clients.Kubernetes, DEFAULT_RECONCILIATION)
 	//Manually create shared pod Informer that only watches the given namespace
 	o.Factories.Kubernetes.InformerFor(&api_v1.Pod{}, func(client kubernetes_clientset.Interface, resyncPeriod time.Duration) cache.SharedIndexInformer {
 		return cache.NewSharedIndexInformer(
@@ -183,15 +189,22 @@ func NewKubernikusOperator(options *KubernikusOperatorOptions) *KubernikusOperat
 		options.AuthProjectDomain,
 	)
 
+	for _, k := range options.Controllers {
+		switch k {
+		case "groundctl":
+			o.Config.Kubernikus.Controllers["groundctl"] = NewGroundController(o.Factories, o.Clients, o.Config)
+		case "launchctl":
+			o.Config.Kubernikus.Controllers["launchctl"] = NewLaunchController(o.Factories, o.Clients)
+		case "wormholegenerator":
+			o.Config.Kubernikus.Controllers["wormholegenerator"] = NewWormholeGenerator(o.Factories, o.Clients)
+		}
+	}
+
 	return o
 }
 
 func (o *KubernikusOperator) Run(stopCh <-chan struct{}, wg *sync.WaitGroup) {
 	fmt.Printf("Welcome to Kubernikus %v\n", version.VERSION)
-
-	groundctl := NewGroundController(o.Factories, o.Clients, o.Config)
-	launchctl := NewLaunchController(o.Factories, o.Clients)
-	wormhole := NewWormholeGenerator(o.Factories, o.Clients)
 
 	o.Factories.Kubernikus.Start(stopCh)
 	o.Factories.Kubernetes.Start(stopCh)
@@ -201,19 +214,8 @@ func (o *KubernikusOperator) Run(stopCh <-chan struct{}, wg *sync.WaitGroup) {
 
 	glog.Info("Cache primed. Ready for Action!")
 
-	for _, c := range o.Config.Kubernikus.Controllers {
-		switch c {
-		case "groundctl":
-			go groundctl.Run(GROUNDCTL_WORKERS, stopCh, wg)
-		case "launchctl":
-			go launchctl.Run(LAUNCHCTL_WORKERS, stopCh, wg)
-		case "wormholegenerator":
-			go wormhole.Run(WORMHOLEGENERATOR_WORKERS, stopCh, wg)
-		case "*":
-			go groundctl.Run(GROUNDCTL_WORKERS, stopCh, wg)
-			go launchctl.Run(LAUNCHCTL_WORKERS, stopCh, wg)
-			break
-		}
+	for name, controller := range o.Config.Kubernikus.Controllers {
+		go controller.Run(CONTROLLER_OPTIONS[name], stopCh, wg)
 	}
 }
 

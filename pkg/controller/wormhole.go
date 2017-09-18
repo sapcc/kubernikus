@@ -30,7 +30,7 @@ func NewWormholeGenerator(factories Factories, clients Clients) Controller {
 		NewBaseController(clients, informers),
 	}
 
-	wg.Controller = interface{}(wg).(Controller)
+	wg.Controller = interface{}(wg).(BaseController)
 
 	return wg
 }

@@ -14,6 +14,10 @@ import (
 
 type Controller interface {
 	Run(threadiness int, stopCh <-chan struct{}, wg *sync.WaitGroup)
+}
+
+type BaseController interface {
+	Controller
 	reconcile(key string) error
 }
 
@@ -21,7 +25,7 @@ type Base struct {
 	Clients
 	queue      workqueue.RateLimitingInterface
 	informer   cache.SharedIndexInformer
-	Controller Controller
+	Controller BaseController
 }
 
 func NewBaseController(clients Clients, informer cache.SharedIndexInformer) Base {
