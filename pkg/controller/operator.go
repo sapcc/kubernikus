@@ -166,6 +166,7 @@ func NewKubernikusOperator(options *KubernikusOperatorOptions) *KubernikusOperat
 		}
 	}
 
+	return o
 }
 
 func (o *KubernikusOperator) Run(stopCh <-chan struct{}, wg *sync.WaitGroup) {
