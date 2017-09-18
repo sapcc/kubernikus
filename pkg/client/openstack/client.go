@@ -3,6 +3,7 @@ package openstack
 import (
 	"errors"
 	"fmt"
+	"sync"
 
 	"github.com/golang/glog"
 	"github.com/gophercloud/gophercloud"
@@ -18,17 +19,18 @@ import (
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/ports"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/subnets"
 	"github.com/gophercloud/gophercloud/pagination"
-	kubernikus_v1 "github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
-	"k8s.io/client-go/informers"
-	informers_core "k8s.io/client-go/informers/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	typedv1 "k8s.io/client-go/kubernetes/typed/core/v1"
 	"k8s.io/client-go/pkg/api/v1"
+	"k8s.io/client-go/tools/cache"
 
+	kubernikus_v1 "github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
 	"github.com/sapcc/kubernikus/pkg/client/openstack/domains"
 )
 
 type client struct {
-	domainProviders  map[string]*gophercloud.ProviderClient
-	projectProviders map[string]*gophercloud.ProviderClient
+	klusterClients      sync.Map
+	adminProviderClient *gophercloud.ProviderClient
 
 	authURL           string
 	authUsername      string
@@ -37,7 +39,7 @@ type client struct {
 	authProject       string
 	authProjectDomain string
 
-	secrets informers_core.SecretInformer
+	secrets typedv1.SecretInterface
 }
 
 type Client interface {
@@ -152,29 +154,32 @@ func (r *StateExt) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
-func NewClient(informers informers.SharedInformerFactory, authURL, username, password, domain, project, projectDomain string) Client {
-	informers.Core().V1().Secrets().Informer()
+func NewClient(secrets typedv1.SecretInterface, klusterEvents cache.SharedIndexInformer, authURL, username, password, domain, project, projectDomain string) Client {
 
-	return &client{
-		domainProviders:   make(map[string]*gophercloud.ProviderClient),
-		projectProviders:  make(map[string]*gophercloud.ProviderClient),
+	c := &client{
 		authURL:           authURL,
 		authUsername:      username,
 		authPassword:      password,
 		authDomain:        domain,
 		authProject:       project,
 		authProjectDomain: projectDomain,
-		secrets:           informers.Core().V1().Secrets(),
+		secrets:           secrets,
 	}
+
+	klusterEvents.AddEventHandler(cache.ResourceEventHandlerFuncs{
+		DeleteFunc: func(obj interface{}) {
+			if kluster, ok := obj.(*kubernikus_v1.Kluster); ok {
+				glog.V(5).Info("Deleting shared openstack client for kluster %s", kluster.Name)
+				c.klusterClients.Delete(kluster.GetUID())
+			}
+		},
+	})
+	return c
 }
 
-func (c *client) domainProvider() (*gophercloud.ProviderClient, error) {
-	return c.domainProviderFor(c.authDomain)
-}
-
-func (c *client) domainProviderFor(domain string) (*gophercloud.ProviderClient, error) {
-	if c.domainProviders[domain] != nil {
-		return c.domainProviders[domain], nil
+func (c *client) adminClient() (*gophercloud.ProviderClient, error) {
+	if c.adminProviderClient != nil {
+		return c.adminProviderClient, nil
 	}
 
 	provider, err := openstack.NewClient(c.authURL)
@@ -199,20 +204,19 @@ func (c *client) domainProviderFor(domain string) (*gophercloud.ProviderClient, 
 		return nil, err
 	}
 
-	c.domainProviders[domain] = provider
+	c.adminProviderClient = provider
 
-	return c.domainProviders[domain], nil
+	return c.adminProviderClient, nil
 }
 
-func (c *client) projectProviderFor(kluster *kubernikus_v1.Kluster) (*gophercloud.ProviderClient, error) {
-	project_id := kluster.Spec.OpenstackInfo.ProjectID
+func (c *client) klusterClientFor(kluster *kubernikus_v1.Kluster) (*gophercloud.ProviderClient, error) {
 	secret_name := kluster.Name
 
-	if c.projectProviders[project_id] != nil {
-		return c.projectProviders[project_id], nil
+	if obj, found := c.klusterClients.Load(kluster.GetUID()); found {
+		return obj.(*gophercloud.ProviderClient), nil
 	}
 
-	secret, err := c.secrets.Lister().Secrets(kluster.GetNamespace()).Get(secret_name)
+	secret, err := c.secrets.Get(secret_name, metav1.GetOptions{})
 	if err != nil {
 		return nil, fmt.Errorf("Couldn't retrieve secret %s/%s: %v", kluster.GetNamespace(), secret_name, err)
 	}
@@ -229,7 +233,7 @@ func (c *client) projectProviderFor(kluster *kubernikus_v1.Kluster) (*gopherclou
 		DomainName:       string(secret.Data["openstack-domain-name"]),
 		AllowReauth:      true,
 		Scope: tokens.Scope{
-			ProjectID: project_id,
+			ProjectID: kluster.Spec.OpenstackInfo.ProjectID,
 		},
 	}
 
@@ -240,13 +244,13 @@ func (c *client) projectProviderFor(kluster *kubernikus_v1.Kluster) (*gopherclou
 		return nil, err
 	}
 
-	c.projectProviders[project_id] = provider
+	c.klusterClients.Store(kluster.GetUID(), provider)
 
-	return c.projectProviders[project_id], nil
+	return provider, nil
 }
 
 func (c *client) GetProject(id string) (*Project, error) {
-	provider, err := c.domainProvider()
+	provider, err := c.adminClient()
 	if err != nil {
 		return nil, err
 	}
@@ -269,7 +273,7 @@ func (c *client) GetProject(id string) (*Project, error) {
 }
 
 func (c *client) GetRouters(project_id string) ([]Router, error) {
-	provider, err := c.domainProvider()
+	provider, err := c.adminClient()
 	if err != nil {
 		return nil, err
 	}
@@ -320,7 +324,7 @@ func (c *client) GetRouters(project_id string) ([]Router, error) {
 }
 
 func (c *client) DeleteUser(username, domainID string) error {
-	provider, err := c.domainProvider()
+	provider, err := c.adminClient()
 	if err != nil {
 		return err
 	}
@@ -364,7 +368,7 @@ func (c *client) GetNodes(kluster *kubernikus_v1.Kluster, pool *kubernikus_v1.No
 	project_id := kluster.Spec.OpenstackInfo.RouterID
 	pool_id := pool.Name
 
-	provider, err := c.projectProviderFor(kluster)
+	provider, err := c.klusterClientFor(kluster)
 	if err != nil {
 		return nil, err
 	}
@@ -393,7 +397,7 @@ func (c *client) GetNodes(kluster *kubernikus_v1.Kluster, pool *kubernikus_v1.No
 }
 
 func (c *client) GetWormhole(kluster *kubernikus_v1.Kluster) (*Node, error) {
-	provider, err := c.projectProviderFor(kluster)
+	provider, err := c.klusterClientFor(kluster)
 	if err != nil {
 		return nil, err
 	}
@@ -425,7 +429,7 @@ func (c *client) GetWormhole(kluster *kubernikus_v1.Kluster) (*Node, error) {
 }
 
 func (c *client) CreateNode(kluster *kubernikus_v1.Kluster, pool *kubernikus_v1.NodePool, userData []byte) (string, error) {
-	provider, err := c.projectProviderFor(kluster)
+	provider, err := c.klusterClientFor(kluster)
 	if err != nil {
 		return "", err
 	}
@@ -456,7 +460,7 @@ func (c *client) CreateNode(kluster *kubernikus_v1.Kluster, pool *kubernikus_v1.
 }
 
 func (c *client) CreateWormhole(kluster *kubernikus_v1.Kluster) (string, error) {
-	provider, err := c.projectProviderFor(kluster)
+	provider, err := c.klusterClientFor(kluster)
 	if err != nil {
 		return "", err
 	}
@@ -486,7 +490,7 @@ func (c *client) CreateWormhole(kluster *kubernikus_v1.Kluster) (string, error) 
 }
 
 func (c *client) DeleteNode(kluster *kubernikus_v1.Kluster, ID string) error {
-	provider, err := c.projectProviderFor(kluster)
+	provider, err := c.klusterClientFor(kluster)
 	if err != nil {
 		return err
 	}
@@ -506,7 +510,7 @@ func (c *client) DeleteNode(kluster *kubernikus_v1.Kluster, ID string) error {
 }
 
 func (c *client) GetRegion() (string, error) {
-	provider, err := c.domainProvider()
+	provider, err := c.adminClient()
 	if err != nil {
 		return "", err
 	}

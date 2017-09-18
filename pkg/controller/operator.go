@@ -140,16 +140,6 @@ func NewKubernikusOperator(options *KubernikusOperatorOptions) *KubernikusOperat
 	o.Factories.Kubernikus = kubernikus_informers.NewSharedInformerFactory(o.Clients.Kubernikus, DEFAULT_RECONCILIATION)
 	o.Factories.Kubernetes = kubernetes_informers.NewSharedInformerFactory(o.Clients.Kubernetes, DEFAULT_RECONCILIATION)
 
-	o.Clients.Openstack = openstack.NewClient(
-		o.Factories.Kubernetes,
-		options.AuthURL,
-		options.AuthUsername,
-		options.AuthPassword,
-		options.AuthDomain,
-		options.AuthProject,
-		options.AuthProjectDomain,
-	)
-
 	for _, k := range options.Controllers {
 		switch k {
 		case "groundctl":
@@ -161,8 +151,21 @@ func NewKubernikusOperator(options *KubernikusOperatorOptions) *KubernikusOperat
 		}
 	}
 
+	secrets := o.Clients.Kubernetes.Core().Secrets(options.Namespace)
+
+	o.Clients.Openstack = openstack.NewClient(
+		secrets,
+		o.Factories.Kubernikus.Kubernikus().V1().Klusters().Informer(),
+		options.AuthURL,
+		options.AuthUsername,
+		options.AuthPassword,
+		options.AuthDomain,
+		options.AuthProject,
+		options.AuthProjectDomain,
+	)
+
 	o.Clients.Satellites = kube.NewSharedClientFactory(
-		o.Clients.Kubernetes.Core().Secrets(options.Namespace),
+		secrets,
 		o.Factories.Kubernikus.Kubernikus().V1().Klusters().Informer(),
 	)
 
