@@ -28,8 +28,8 @@ type OpenstackInfo struct {
 }
 
 type KubernikusInfo struct {
-	Server         string `json:"server"`
 	ServerURL      string `json:"serverURL"`
+	WormholeURL    string `json:"wormholeURL"`
 	BootstrapToken string `json:"bootstrapToken"`
 }
 
