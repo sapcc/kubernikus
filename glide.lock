@@ -1,5 +1,5 @@
 hash: 0a7c46d3f030e44a5ba4231dedd3cef50307a2f8ce1882acb2adeb6161c1f68f
-updated: 2017-09-09T20:32:02.673298879+02:00
+updated: 2017-09-19T10:48:15.603276764+02:00
 imports:
 - name: github.com/ajeddeloh/yaml
   version: 1072abfea31191db507785e2e0c1b8d1440d35a5
@@ -11,6 +11,8 @@ imports:
   version: 7664702784775e51966f0885f5cd27435916517b
 - name: github.com/BurntSushi/toml
   version: b26d9c308763d68093482582cea63d69be07a0f0
+- name: github.com/cenkalti/backoff
+  version: 80e08cb804a3eb3e576876c777e957e874609a9a
 - name: github.com/coreos/container-linux-config-transpiler
   version: d42f09a1374bc318d853b53e5a31148db68a4e2a
   subpackages:
@@ -144,6 +146,8 @@ imports:
   version: a0d98a5f288019575c6d1f4bb1573fef2d1fcdc4
   subpackages:
   - simplelru
+- name: github.com/hashicorp/yamux
+  version: d1caa6c97c9fc1cc9e83bbe34d0603f9ff0ce8bd
 - name: github.com/howeyc/gopass
   version: bf9dde6d0d2c004a008c27aaee91170c786f6db8
 - name: github.com/huandu/xstrings
@@ -156,6 +160,12 @@ imports:
   version: 5b9ff866471762aa2ab2dced63c9fb6f53921342
 - name: github.com/kennygrant/sanitize
   version: 6a0bfdde8629a3a3a7418a7eae45c54154692514
+- name: github.com/koding/logging
+  version: 8b5a689ed69b1c7cd1e3595276fc2a352d7818e0
+- name: github.com/koding/tunnel
+  version: 35a8b95662bf50c5a3c47774762f7ddd1633885a
+  subpackages:
+  - proto
 - name: github.com/mailru/easyjson
   version: 44c0351a5bc860bcb2608d54aa03ea686c4e7b25
   subpackages:
@@ -439,8 +449,7 @@ imports:
   - util/integer
   - util/workqueue
 - name: k8s.io/code-generator
-  version: 2e958d2f6f666e291ecc50467d58f0cc81e13299
-  repo: https://github.com/sttts/code-generator
+  version: a8e1019df0df00506fe1db5232a2af30ff4c87aa
 - name: k8s.io/gengo
   version: 9e661e9308f078838e266cca1c673922088c0ea4
 - name: k8s.io/helm
