@@ -114,7 +114,6 @@ spec:
             - server
             - --kubeconfig=/etc/kubernetes/config/kubeconfig
             - --v=5
-            - --logtostderr
           volumeMounts:
             - mountPath: /etc/kubernetes/certs/
               name: certs
