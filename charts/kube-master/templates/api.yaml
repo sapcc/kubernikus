@@ -118,9 +118,9 @@ spec:
             - server
             - --kubeconfig=/etc/kubernetes/config/kubeconfig
             #- --client-ca-file=/etc/kubernetes/certs/apiserver-clients-and-nodes-ca.pem
-            - --ca /etc/kubernetes/certs/tls-ca.pem
-            - --cert /etc/kubernetes/certs/tls-wormhole.pem 
-            - --key /etc/kubernetes/certs/tls-wormhole-key.pem
+            - --ca=/etc/kubernetes/certs/tls-ca.pem
+            - --cert=/etc/kubernetes/certs/tls-wormhole.pem 
+            - --key=/etc/kubernetes/certs/tls-wormhole-key.pem
             - --v=5
           volumeMounts:
             - mountPath: /etc/kubernetes/certs/
