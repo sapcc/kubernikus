@@ -1,0 +1,32 @@
+apiVersion: kubernikus.sap.cc/v1
+kind: Kluster
+metadata:
+  creationTimestamp: 2017-09-05T09:48:34Z
+  labels:
+    account: 8b25871959204ff1a27605b7bcf873f7
+  name: m-8b25871959204ff1a27605b7bcf873f7
+  namespace: kubernikus
+spec:
+  name: m
+  nodePools: 
+    - name: small
+      size: flavor: m1.small
+      image: coreos-stable-amd64
+    - name: large
+      size: 2
+      flavor: m1.small
+      image: coreos-stable-amd64
+status:
+  state: Pending 
+  nodePools:
+    - name: small
+      desired: 2
+      running: 0
+      error: 0
+      resources:
+        pods:
+          availble: 20
+          useD: 10
+
+
+
