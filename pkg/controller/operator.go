@@ -33,9 +33,11 @@ type KubernikusOperatorOptions struct {
 	AuthProject       string
 	AuthProjectDomain string
 
-	KubernikusDomain string
-	Namespace        string
-	Controllers      []string
+	KubernikusDomain    string
+	KubernikusProjectID string
+	KubernikusNetworkID string
+	Namespace           string
+	Controllers         []string
 }
 
 type Clients struct {
@@ -62,6 +64,8 @@ type HelmConfig struct {
 type KubernikusConfig struct {
 	Domain      string
 	Namespace   string
+	ProjectID   string
+	NetworkID   string
 	Controllers map[string]Controller
 }
 
@@ -113,6 +117,8 @@ func NewKubernikusOperator(options *KubernikusOperatorOptions) *KubernikusOperat
 			Kubernikus: KubernikusConfig{
 				Domain:      options.KubernikusDomain,
 				Namespace:   options.Namespace,
+				ProjectID:   options.KubernikusProjectID,
+				NetworkID:   options.KubernikusNetworkID,
 				Controllers: make(map[string]Controller),
 			},
 		},
@@ -140,17 +146,6 @@ func NewKubernikusOperator(options *KubernikusOperatorOptions) *KubernikusOperat
 	o.Factories.Kubernikus = kubernikus_informers.NewSharedInformerFactory(o.Clients.Kubernikus, DEFAULT_RECONCILIATION)
 	o.Factories.Kubernetes = kubernetes_informers.NewSharedInformerFactory(o.Clients.Kubernetes, DEFAULT_RECONCILIATION)
 
-	for _, k := range options.Controllers {
-		switch k {
-		case "groundctl":
-			o.Config.Kubernikus.Controllers["groundctl"] = NewGroundController(o.Factories, o.Clients, o.Config)
-		case "launchctl":
-			o.Config.Kubernikus.Controllers["launchctl"] = NewLaunchController(o.Factories, o.Clients)
-		case "wormholegenerator":
-			o.Config.Kubernikus.Controllers["wormholegenerator"] = NewWormholeGenerator(o.Factories, o.Clients)
-		}
-	}
-
 	secrets := o.Clients.Kubernetes.Core().Secrets(options.Namespace)
 
 	o.Clients.Openstack = openstack.NewClient(
@@ -168,6 +163,17 @@ func NewKubernikusOperator(options *KubernikusOperatorOptions) *KubernikusOperat
 		secrets,
 		o.Factories.Kubernikus.Kubernikus().V1().Klusters().Informer(),
 	)
+
+	for _, k := range options.Controllers {
+		switch k {
+		case "groundctl":
+			o.Config.Kubernikus.Controllers["groundctl"] = NewGroundController(o.Factories, o.Clients, o.Config)
+		case "launchctl":
+			o.Config.Kubernikus.Controllers["launchctl"] = NewLaunchController(o.Factories, o.Clients)
+		case "wormholegenerator":
+			o.Config.Kubernikus.Controllers["wormholegenerator"] = NewWormholeGenerator(o.Factories, o.Clients, o.Config)
+		}
+	}
 
 	return o
 }

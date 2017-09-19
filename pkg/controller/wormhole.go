@@ -11,6 +11,7 @@ import (
 
 type WormholeGenerator struct {
 	Base
+	Config
 }
 
 type State struct {
@@ -18,16 +19,16 @@ type State struct {
 	kluster *v1.Kluster
 	node    *openstack.Node
 	message string
-	err     error
 }
 
 type Transition func(*State) (Transition, error)
 
-func NewWormholeGenerator(factories Factories, clients Clients) Controller {
+func NewWormholeGenerator(factories Factories, clients Clients, config Config) Controller {
 	informers := factories.Kubernikus.Kubernikus().V1().Klusters().Informer()
 
 	wg := &WormholeGenerator{
 		NewBaseController(clients, informers),
+		config,
 	}
 
 	wg.Controller = interface{}(wg).(BaseController)
@@ -122,7 +123,7 @@ func (wg *WormholeGenerator) repairWormhole(state *State) (Transition, error) {
 }
 
 func (wg *WormholeGenerator) createWormhole(state *State) (Transition, error) {
-	name, err := wg.Clients.Openstack.CreateWormhole(state.kluster)
+	name, err := wg.Clients.Openstack.CreateWormhole(state.kluster, wg.Config.Kubernikus.ProjectID, wg.Config.Kubernikus.NetworkID)
 	if err != nil {
 		return nil, err
 	}
