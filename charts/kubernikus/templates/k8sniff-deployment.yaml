@@ -19,14 +19,14 @@ spec:
         role: k8sniff-ingress-lb
     spec:
       containers:
-      - image: kubermatic/k8sniff:{{ default "v1.0" .Values.k8sniff.tag }}
+      - image: {{ default "kubermatic/k8sniff" .Values.k8sniff.image }}:{{ default "v1.0" .Values.k8sniff.tag }}
         name: k8sniff-ingress-lb
         imagePullPolicy: IfNotPresent
         command:
           - /bin/sh
           - -c
           - -x
-          - "/pipeline/source/k8sniff -logtostderr --v=9 --config /etc/config/k8sniff.json"
+          - "/pipeline/source/k8sniff -logtostderr --v={{ default 9 .Values.k8sniff.log_level }} --config /etc/config/k8sniff.json"
         ports:
         - name: https
           containerPort: 8443
