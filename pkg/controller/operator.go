@@ -16,6 +16,7 @@ import (
 	kube "github.com/sapcc/kubernikus/pkg/client/kubernetes"
 	"github.com/sapcc/kubernikus/pkg/client/kubernikus"
 	"github.com/sapcc/kubernikus/pkg/client/openstack"
+	"github.com/sapcc/kubernikus/pkg/controller/config"
 	kubernikus_clientset "github.com/sapcc/kubernikus/pkg/generated/clientset"
 	kubernikus_informers "github.com/sapcc/kubernikus/pkg/generated/informers/externalversions"
 	"github.com/sapcc/kubernikus/pkg/version"
@@ -48,33 +49,6 @@ type Clients struct {
 	Helm       *helm.Client
 }
 
-type OpenstackConfig struct {
-	AuthURL           string
-	AuthUsername      string
-	AuthPassword      string
-	AuthDomain        string
-	AuthProject       string
-	AuthProjectDomain string
-}
-
-type HelmConfig struct {
-	ChartDirectory string
-}
-
-type KubernikusConfig struct {
-	Domain      string
-	Namespace   string
-	ProjectID   string
-	NetworkID   string
-	Controllers map[string]Controller
-}
-
-type Config struct {
-	Openstack  OpenstackConfig
-	Kubernikus KubernikusConfig
-	Helm       HelmConfig
-}
-
 type Factories struct {
 	Kubernikus kubernikus_informers.SharedInformerFactory
 	Kubernetes kubernetes_informers.SharedInformerFactory
@@ -82,7 +56,7 @@ type Factories struct {
 
 type KubernikusOperator struct {
 	Clients
-	Config
+	config.Config
 	Factories
 }
 
@@ -103,23 +77,23 @@ func NewKubernikusOperator(options *KubernikusOperatorOptions) *KubernikusOperat
 	var err error
 
 	o := &KubernikusOperator{
-		Config: Config{
-			Openstack: OpenstackConfig{
+		Config: config.Config{
+			Openstack: config.OpenstackConfig{
 				AuthURL:           options.AuthURL,
 				AuthUsername:      options.AuthUsername,
 				AuthPassword:      options.AuthPassword,
 				AuthProject:       options.AuthProjectDomain,
 				AuthProjectDomain: options.AuthProjectDomain,
 			},
-			Helm: HelmConfig{
+			Helm: config.HelmConfig{
 				ChartDirectory: options.ChartDirectory,
 			},
-			Kubernikus: KubernikusConfig{
+			Kubernikus: config.KubernikusConfig{
 				Domain:      options.KubernikusDomain,
 				Namespace:   options.Namespace,
 				ProjectID:   options.KubernikusProjectID,
 				NetworkID:   options.KubernikusNetworkID,
-				Controllers: make(map[string]Controller),
+				Controllers: make(map[string]config.Controller),
 			},
 		},
 	}

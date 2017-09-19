@@ -6,6 +6,7 @@ import (
 	"github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
 
 	"github.com/sapcc/kubernikus/pkg/cmd"
+	"github.com/sapcc/kubernikus/pkg/controller/config"
 	"github.com/sapcc/kubernikus/pkg/controller/ground"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
@@ -59,7 +60,11 @@ func (o *FilesOptions) Run(c *cobra.Command) error {
 			Spec: v1.KlusterSpec{
 				Name: o.Name,
 			},
-		}, "localdomain")
+		}, config.Config{
+			Kubernikus: config.KubernikusConfig{
+				Domain: "local",
+			},
+		})
 	if err != nil {
 		return err
 	}

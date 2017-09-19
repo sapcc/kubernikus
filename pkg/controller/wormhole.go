@@ -7,11 +7,12 @@ import (
 	"github.com/golang/glog"
 	"github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
 	"github.com/sapcc/kubernikus/pkg/client/openstack"
+	"github.com/sapcc/kubernikus/pkg/controller/config"
 )
 
 type WormholeGenerator struct {
 	Base
-	Config
+	config.Config
 }
 
 type State struct {
@@ -23,7 +24,7 @@ type State struct {
 
 type Transition func(*State) (Transition, error)
 
-func NewWormholeGenerator(factories Factories, clients Clients, config Config) Controller {
+func NewWormholeGenerator(factories Factories, clients Clients, config config.Config) config.Controller {
 	informers := factories.Kubernikus.Kubernikus().V1().Klusters().Informer()
 
 	wg := &WormholeGenerator{

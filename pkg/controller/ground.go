@@ -24,6 +24,7 @@ import (
 
 	"github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
 	"github.com/sapcc/kubernikus/pkg/client/kubernetes"
+	"github.com/sapcc/kubernikus/pkg/controller/config"
 	"github.com/sapcc/kubernikus/pkg/controller/ground"
 	kubernikus_clientset "github.com/sapcc/kubernikus/pkg/generated/clientset"
 	kubernikus_informers_v1 "github.com/sapcc/kubernikus/pkg/generated/informers/externalversions/kubernikus/v1"
@@ -36,14 +37,14 @@ const (
 type GroundControl struct {
 	Clients
 	Factories
-	Config
+	config.Config
 
 	queue       workqueue.RateLimitingInterface
 	tprInformer cache.SharedIndexInformer
 	podInformer cache.SharedIndexInformer
 }
 
-func NewGroundController(factories Factories, clients Clients, config Config) *GroundControl {
+func NewGroundController(factories Factories, clients Clients, config config.Config) *GroundControl {
 	operator := &GroundControl{
 		Clients:     clients,
 		Factories:   factories,
@@ -299,7 +300,7 @@ func (op *GroundControl) updateStatus(tpr *v1.Kluster, state v1.KlusterState, me
 }
 
 func (op *GroundControl) createKluster(tpr *v1.Kluster) error {
-	cluster, err := ground.NewCluster(tpr, op.Config.Openstack.AuthURL)
+	cluster, err := ground.NewCluster(tpr, op.Config)
 	if err != nil {
 		return err
 	}
@@ -350,8 +351,8 @@ func (op *GroundControl) requiresOpenstackInfo(kluster *v1.Kluster) bool {
 }
 
 func (op *GroundControl) requiresKubernikusInfo(kluster *v1.Kluster) bool {
-	return kluster.Spec.KubernikusInfo.Server == "" ||
-		kluster.Spec.KubernikusInfo.ServerURL == "" ||
+	return kluster.Spec.KubernikusInfo.ServerURL == "" ||
+		kluster.Spec.KubernikusInfo.WormholeURL == "" ||
 		kluster.Spec.KubernikusInfo.BootstrapToken == ""
 }
 
@@ -363,14 +364,14 @@ func (op *GroundControl) discoverKubernikusInfo(kluster *v1.Kluster) error {
 		return err
 	}
 
-	if copy.Spec.KubernikusInfo.Server == "" {
-		copy.Spec.KubernikusInfo.Server = fmt.Sprintf("%s.%s", kluster.GetName(), op.Config.Kubernikus.Domain)
-		glog.V(5).Infof("[%v] Setting Server to %v", kluster.Name, copy.Spec.KubernikusInfo.Server)
-	}
-
 	if copy.Spec.KubernikusInfo.ServerURL == "" {
 		copy.Spec.KubernikusInfo.ServerURL = fmt.Sprintf("https://%s.%s", kluster.GetName(), op.Config.Kubernikus.Domain)
-		glog.V(5).Infof("[%v] Setting Server to %v", kluster.Name, copy.Spec.KubernikusInfo.ServerURL)
+		glog.V(5).Infof("[%v] Setting ServerURL to %v", kluster.Name, copy.Spec.KubernikusInfo.ServerURL)
+	}
+
+	if copy.Spec.KubernikusInfo.WormholeURL == "" {
+		copy.Spec.KubernikusInfo.WormholeURL = fmt.Sprintf("https://%s-wormhole.%s", kluster.GetName(), op.Config.Kubernikus.Domain)
+		glog.V(5).Infof("[%v] Setting WormholeURL to %v", kluster.Name, copy.Spec.KubernikusInfo.WormholeURL)
 	}
 
 	if copy.Spec.KubernikusInfo.BootstrapToken == "" {

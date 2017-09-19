@@ -1,7 +1,10 @@
 package ground
 
 import (
+	"fmt"
+
 	"github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
+	"github.com/sapcc/kubernikus/pkg/controller/config"
 )
 
 type Cluster struct {
@@ -14,6 +17,7 @@ type Cluster struct {
 type API struct {
 	IngressHost  string `yaml:"ingressHost,omitempty"`
 	IngressClass string `yaml:"ingressClass,omitempty"`
+	WormholeHost string `yaml:"wormholeHost,omitempty"`
 }
 
 type OpenStack struct {
@@ -31,14 +35,15 @@ type Kubernikus struct {
 	BootstrapToken string `yaml:"bootstrapToken,omitempty"`
 }
 
-func NewCluster(kluster *v1.Kluster, authURL string) (*Cluster, error) {
+func NewCluster(kluster *v1.Kluster, config config.Config) (*Cluster, error) {
 	cluster := &Cluster{
 		Certificates: &Certificates{},
 		API: API{
-			IngressHost: kluster.Spec.KubernikusInfo.Server,
+			IngressHost:  fmt.Sprintf("%v.%v", kluster.Spec.Name, config.Kubernikus.Domain),
+			WormholeHost: fmt.Sprintf("%v-wormhole.%v", kluster.Spec.Name, config.Kubernikus.Domain),
 		},
 		OpenStack: OpenStack{
-			AuthURL:    authURL,
+			AuthURL:    kluster.Spec.OpenstackInfo.AuthURL,
 			Username:   kluster.Spec.OpenstackInfo.Username,
 			Password:   kluster.Spec.OpenstackInfo.Password,
 			DomainName: kluster.Spec.OpenstackInfo.Domain,
@@ -51,7 +56,7 @@ func NewCluster(kluster *v1.Kluster, authURL string) (*Cluster, error) {
 		},
 	}
 
-	if err := cluster.Certificates.populateForSatellite(kluster.Spec.Name, kluster.Spec.KubernikusInfo.Server); err != nil {
+	if err := cluster.Certificates.populateForSatellite(kluster.Spec.Name, config); err != nil {
 		return cluster, err
 	}
 

@@ -7,17 +7,14 @@ import (
 	"time"
 
 	"github.com/golang/glog"
+	"github.com/sapcc/kubernikus/pkg/controller/config"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/util/workqueue"
 )
 
-type Controller interface {
-	Run(threadiness int, stopCh <-chan struct{}, wg *sync.WaitGroup)
-}
-
 type BaseController interface {
-	Controller
+	config.Controller
 	reconcile(key string) error
 }
 
@@ -131,7 +128,7 @@ func (base *Base) handleErr(err error, key interface{}) {
 	base.queue.Forget(key)
 }
 
-func getControllerName(c Controller) string {
+func getControllerName(c config.Controller) string {
 	return reflect.TypeOf(c).Elem().Name()
 
 }

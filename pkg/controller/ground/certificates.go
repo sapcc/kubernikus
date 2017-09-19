@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/kennygrant/sanitize"
+	"github.com/sapcc/kubernikus/pkg/controller/config"
 
 	certutil "k8s.io/client-go/util/cert"
 )
@@ -59,6 +60,7 @@ type Certificates struct {
 	TLS struct {
 		CA        Bundle
 		ApiServer Bundle
+		Wormhole  Bundle
 	}
 }
 
@@ -152,10 +154,11 @@ func (c Certificates) all() []Bundle {
 		c.Kubelet.Clients.ApiServer,
 		c.TLS.CA,
 		c.TLS.ApiServer,
+		c.TLS.Wormhole,
 	}
 }
 
-func (certs *Certificates) populateForSatellite(satellite, fqSatelliteName string) error {
+func (certs *Certificates) populateForSatellite(satellite string, config config.Config) error {
 	createCA(satellite, "Etcd Clients", &certs.Etcd.Clients.CA)
 	createCA(satellite, "Etcd Peers", &certs.Etcd.Peers.CA)
 	createCA(satellite, "ApiServer Clients", &certs.ApiServer.Clients.CA)
@@ -173,7 +176,10 @@ func (certs *Certificates) populateForSatellite(satellite, fqSatelliteName strin
 	certs.ApiServer.Nodes.Universal = certs.signApiServerNode("universal")
 	certs.Kubelet.Clients.ApiServer = certs.signKubeletClient("apiserver")
 	certs.TLS.ApiServer = certs.signTLS("apiserver",
-		[]string{"kubernetes", "kubernetes.default", "apiserver", satellite, fqSatelliteName},
+		[]string{"kubernetes", "kubernetes.default", "apiserver", satellite, fmt.Sprintf("%v.%v", satellite, config.Kubernikus.Domain)},
+		[]net.IP{net.IPv4(127, 0, 0, 1)})
+	certs.TLS.Wormhole = certs.signTLS("wormhole",
+		[]string{fmt.Sprintf("%v-wormhole.%v", satellite, config.Kubernikus.Domain)},
 		[]net.IP{net.IPv4(127, 0, 0, 1)})
 
 	return nil
