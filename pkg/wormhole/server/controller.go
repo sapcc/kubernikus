@@ -251,7 +251,7 @@ func (c *Controller) writeTunnelRedirect(key string, filterRules *bytes.Buffer) 
 
 	writeLine(filterRules,
 		"-A", string(KUBERNIKUS_TUNNELS),
-		"-m", "comment", "--comment", fmt.Sprintf(`"tunnel to %v"`, key),
+		"-m", "comment", "--comment", fmt.Sprintf("tunnel to %v", key),
 		"-t", "nat",
 		"-I", "PREROUTING",
 		"-p", "tcp",
