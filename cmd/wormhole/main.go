@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"os"
 	"path/filepath"
 
@@ -12,6 +13,9 @@ import (
 
 func main() {
 	defer glog.Flush()
+	if f := flag.Lookup("logtostderr"); f != nil {
+		f.Value.Set("true") // log to stderr by default
+	}
 
 	baseName := filepath.Base(os.Args[0])
 
