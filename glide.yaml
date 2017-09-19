@@ -21,7 +21,8 @@ import:
   version: e43299b4afa7bc7f22e5e82e3d48607230e4c177
 - package: github.com/mailru/easyjson
   version: 44c0351a5bc860bcb2608d54aa03ea686c4e7b25
-- package:  k8s.io/code-generator
+- package: k8s.io/code-generator
+- package: k8s.io/utils
 - package: k8s.io/gengo
   version: 9e661e9308f078838e266cca1c673922088c0ea4
 - package: github.com/coreos/container-linux-config-transpiler

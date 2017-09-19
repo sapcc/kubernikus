@@ -22,7 +22,6 @@ import (
 	"bytes"
 	"fmt"
 	"log"
-	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
@@ -38,7 +37,6 @@ import (
 
 type Generator struct {
 	Common               args.GeneratorArgs
-	APIMachineryPackages string
 	Packages             string
 	OutputBase           string
 	VendorOutputBase     string
@@ -58,24 +56,51 @@ func New() *Generator {
 		GoHeaderFilePath: filepath.Join(sourceTree, "k8s.io/kubernetes/hack/boilerplate/boilerplate.go.txt"),
 	}
 	defaultProtoImport := filepath.Join(sourceTree, "k8s.io", "kubernetes", "vendor", "github.com", "gogo", "protobuf", "protobuf")
-	cwd, err := os.Getwd()
-	if err != nil {
-		log.Fatalf("Cannot get current directory.")
-	}
 	return &Generator{
 		Common:           common,
 		OutputBase:       sourceTree,
-		VendorOutputBase: filepath.Join(cwd, "vendor"),
+		VendorOutputBase: filepath.Join(sourceTree, "k8s.io", "kubernetes", "vendor"),
 		ProtoImport:      []string{defaultProtoImport},
-		APIMachineryPackages: strings.Join([]string{
+		Packages: strings.Join([]string{
 			`+k8s.io/apimachinery/pkg/util/intstr`,
 			`+k8s.io/apimachinery/pkg/api/resource`,
 			`+k8s.io/apimachinery/pkg/runtime/schema`,
 			`+k8s.io/apimachinery/pkg/runtime`,
 			`k8s.io/apimachinery/pkg/apis/meta/v1`,
 			`k8s.io/apimachinery/pkg/apis/meta/v1alpha1`,
+			`k8s.io/apiserver/pkg/apis/example/v1`,
+			`k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1`,
+			`k8s.io/kube-aggregator/pkg/apis/apiregistration/v1beta1`,
+			`k8s.io/api/core/v1`,
+			`k8s.io/api/policy/v1beta1`,
+			`k8s.io/api/extensions/v1beta1`,
+			`k8s.io/api/autoscaling/v1`,
+			`k8s.io/api/authorization/v1`,
+			`k8s.io/api/autoscaling/v2alpha1`,
+			`k8s.io/api/authorization/v1beta1`,
+			`k8s.io/api/batch/v1`,
+			`k8s.io/api/batch/v1beta1`,
+			`k8s.io/api/batch/v2alpha1`,
+			`k8s.io/api/apps/v1beta1`,
+			`k8s.io/api/apps/v1beta2`,
+			`k8s.io/api/authentication/v1`,
+			`k8s.io/api/authentication/v1beta1`,
+			`k8s.io/api/rbac/v1alpha1`,
+			`k8s.io/api/rbac/v1beta1`,
+			`k8s.io/api/certificates/v1beta1`,
+			`k8s.io/api/imagepolicy/v1alpha1`,
+			`k8s.io/api/scheduling/v1alpha1`,
+			`k8s.io/api/settings/v1alpha1`,
+			`k8s.io/api/storage/v1beta1`,
+			`k8s.io/api/storage/v1`,
+			`k8s.io/api/admissionregistration/v1alpha1`,
+			`k8s.io/api/admission/v1alpha1`,
+			`k8s.io/api/networking/v1`,
+			`k8s.io/kubernetes/federation/apis/federation/v1beta1`,
+			`k8s.io/metrics/pkg/apis/metrics/v1alpha1`,
+			`k8s.io/metrics/pkg/apis/custom_metrics/v1alpha1`,
+			`k8s.io/apiserver/pkg/apis/audit/v1alpha1`,
 		}, ","),
-		Packages:           "",
 		DropEmbeddedFields: "k8s.io/apimachinery/pkg/apis/meta/v1.TypeMeta",
 	}
 }
@@ -84,10 +109,8 @@ func (g *Generator) BindFlags(flag *flag.FlagSet) {
 	flag.StringVarP(&g.Common.GoHeaderFilePath, "go-header-file", "h", g.Common.GoHeaderFilePath, "File containing boilerplate header text. The string YEAR will be replaced with the current 4-digit year.")
 	flag.BoolVar(&g.Common.VerifyOnly, "verify-only", g.Common.VerifyOnly, "If true, only verify existing output, do not write anything.")
 	flag.StringVarP(&g.Packages, "packages", "p", g.Packages, "comma-separated list of directories to get input types from. Directories prefixed with '-' are not generated, directories prefixed with '+' only create types with explicit IDL instructions.")
-	flag.StringVar(&g.APIMachineryPackages, "apimachinery-packages", g.APIMachineryPackages, "comma-separated list of directories to get apimachinery input types from which are needed by any API. Directories prefixed with '-' are not generated, directories prefixed with '+' only create types with explicit IDL instructions.")
 	flag.StringVarP(&g.OutputBase, "output-base", "o", g.OutputBase, "Output base; defaults to $GOPATH/src/")
-	flag.StringVar(&g.VendorOutputBase, "vendor-output-base", g.VendorOutputBase, "The vendor/ directory to look for packages in; defaults to $PWD/vendor/.")
-	flag.StringSliceVar(&g.ProtoImport, "proto-import", g.ProtoImport, "The search path for the core protobuf .protos, required; defaults $GOPATH/src/k8s.io/kubernetes/vendor/github.com/gogo/protobuf/protobuf.")
+	flag.StringSliceVar(&g.ProtoImport, "proto-import", g.ProtoImport, "The search path for the core protobuf .protos, required, defaults to GODEPS on path.")
 	flag.StringVar(&g.Conditional, "conditional", g.Conditional, "An optional Golang build tag condition to add to the generated Go code")
 	flag.BoolVar(&g.Clean, "clean", g.Clean, "If true, remove all generated files for the specified Packages.")
 	flag.BoolVar(&g.OnlyIDL, "only-idl", g.OnlyIDL, "If true, only generate the IDL for each package.")
@@ -121,25 +144,13 @@ func Run(g *Generator) {
 
 	boilerplate, err := g.Common.LoadGoBoilerplate()
 	if err != nil {
-		log.Fatalf("Failed loading boilerplate (consider using the go-header-file flag): %v", err)
+		log.Fatalf("Failed loading boilerplate: %v", err)
 	}
 
 	protobufNames := NewProtobufNamer()
 	outputPackages := generator.Packages{}
 	nonOutputPackages := map[string]struct{}{}
-
-	var packages []string
-	if len(g.APIMachineryPackages) != 0 {
-		packages = append(packages, strings.Split(g.APIMachineryPackages, ",")...)
-	}
-	if len(g.Packages) != 0 {
-		packages = append(packages, strings.Split(g.Packages, ",")...)
-	}
-	if len(packages) == 0 {
-		log.Fatalf("Both apimachinery-packages and packages are empty. At least one package must be specified.")
-	}
-
-	for _, d := range packages {
+	for _, d := range strings.Split(g.Packages, ",") {
 		generateAllTypes, outputPackage := true, true
 		switch {
 		case strings.HasPrefix(d, "+"):
