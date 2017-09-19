@@ -19,4 +19,11 @@ spec:
           backend:
             serviceName: {{ include "master.fullname" . }}
             servicePort: 6443
+    - host: {{ .Values.api.wormholeHost }}
+      http:
+        paths:
+        - path: /
+          backend:
+            serviceName: {{ include "master.fullname" . }}
+            servicePort: 6553
 {{- end }}

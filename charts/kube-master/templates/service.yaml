@@ -10,5 +10,6 @@ spec:
   type: ClusterIP
   ports:
   - port: 6443
+  - port: 6553
   selector:
     app: {{ include "master.fullname" . }}-apiserver

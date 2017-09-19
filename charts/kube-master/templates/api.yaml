@@ -52,6 +52,10 @@ spec:
                 path: tls-apiserver.pem
               - key: tls-apiserver-key.pem
                 path: tls-apiserver-key.pem
+              - key: tls-wormhole.pem
+                path: tls-wormhole.pem
+              - key: tls-wormhole-key.pem
+                path: tls-wormhole-key.pem
         - name: cloudprovider
           secret:
             secretName: {{ include "master.fullname" . }}
@@ -113,6 +117,10 @@ spec:
             - wormhole 
             - server
             - --kubeconfig=/etc/kubernetes/config/kubeconfig
+            #- --client-ca-file=/etc/kubernetes/certs/apiserver-clients-and-nodes-ca.pem
+            - --ca /etc/kubernetes/certs/tls-ca.pem
+            - --cert /etc/kubernetes/certs/tls-wormhole.pem 
+            - --key /etc/kubernetes/certs/tls-wormhole-key.pem
             - --v=5
           volumeMounts:
             - mountPath: /etc/kubernetes/certs/
