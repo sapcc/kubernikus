@@ -50,7 +50,6 @@ func NewGroundController(factories Factories, clients Clients, config config.Con
 		Factories:   factories,
 		Config:      config,
 		queue:       workqueue.NewRateLimitingQueue(workqueue.NewItemExponentialFailureRateLimiter(5*time.Second, 300*time.Second)),
-		podInformer: factories.Kubernetes.Core().V1().Pods().Informer(),
 	}
 
 	//Manually create shared Kluster informer that only watches the given namespace
