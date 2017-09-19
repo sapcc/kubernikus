@@ -42,6 +42,10 @@ spec:
                 path: kubelet-clients-apiserver.pem
               - key: kubelet-clients-apiserver-key.pem
                 path: kubelet-clients-apiserver-key.pem
+              - key: apiserver-clients-system-kube-controller-manager.pem
+                path: kube-client.pem
+              - key: apiserver-clients-system-kube-controller-manager-key.pem
+                path: kube-client.key
               - key: tls-ca.pem
                 path: tls-ca.pem
               - key: tls-apiserver.pem
@@ -60,6 +64,9 @@ spec:
             items:
               - key: token.csv
                 path: token.csv
+        - name: config
+          configMap:
+            name: {{ include "master.fullname" . }}
       containers:
         - name: apiserver
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
@@ -100,3 +107,18 @@ spec:
               readOnly: true
           resources:
 {{ toYaml .Values.api.resources | indent 12 }}
+        - name: wormhole
+          image: sapcc/kubernikus:latest
+          args:
+            - wormhole 
+            - server
+            - --kubeconfig=/etc/kubernetes/config/kubeconfig
+            - --v=5
+            - --logtostderr
+          volumeMounts:
+            - mountPath: /etc/kubernetes/certs/
+              name: certs
+              readOnly: true
+            - mountPath: /etc/kubernetes/config
+              name: config
+              readOnly: true
