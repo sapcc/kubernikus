@@ -39,8 +39,8 @@ func NewCluster(kluster *v1.Kluster, config config.Config) (*Cluster, error) {
 	cluster := &Cluster{
 		Certificates: &Certificates{},
 		API: API{
-			IngressHost:  fmt.Sprintf("%v.%v", kluster.Spec.Name, config.Kubernikus.Domain),
-			WormholeHost: fmt.Sprintf("%v-wormhole.%v", kluster.Spec.Name, config.Kubernikus.Domain),
+			IngressHost:  fmt.Sprintf("%v.%v", kluster.GetName(), config.Kubernikus.Domain),
+			WormholeHost: fmt.Sprintf("%v-wormhole.%v", kluster.GetName(), config.Kubernikus.Domain),
 		},
 		OpenStack: OpenStack{
 			AuthURL:    kluster.Spec.OpenstackInfo.AuthURL,
@@ -56,7 +56,7 @@ func NewCluster(kluster *v1.Kluster, config config.Config) (*Cluster, error) {
 		},
 	}
 
-	if err := cluster.Certificates.populateForSatellite(kluster.Spec.Name, config); err != nil {
+	if err := cluster.Certificates.populateForSatellite(kluster.GetName(), config); err != nil {
 		return cluster, err
 	}
 
