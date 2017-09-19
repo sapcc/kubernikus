@@ -20,6 +20,7 @@ const (
 
 type ServerOptions struct {
 	KubeConfig string
+	server.TunnelOptions
 }
 
 type Server struct {
@@ -39,7 +40,7 @@ func NewServer(options *ServerOptions) *Server {
 
 	s.client = client
 	s.factory = informers.NewSharedInformerFactory(s.client, DEFAULT_RECONCILIATION)
-	s.tunnel = server.NewTunnel(&server.TunnelOptions{})
+	s.tunnel = server.NewTunnel(&options.TunnelOptions)
 	s.controller = server.NewController(s.factory.Core().V1().Nodes(), s.tunnel.Server)
 
 	return s
