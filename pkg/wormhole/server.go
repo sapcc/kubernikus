@@ -26,6 +26,7 @@ type Server struct {
 	factory    informers.SharedInformerFactory
 	client     kubernetes.Interface
 	controller *server.Controller
+	tunnel     *server.Tunnel
 }
 
 func NewServer(options *ServerOptions) *Server {
@@ -38,7 +39,8 @@ func NewServer(options *ServerOptions) *Server {
 
 	s.client = client
 	s.factory = informers.NewSharedInformerFactory(s.client, DEFAULT_RECONCILIATION)
-	s.controller = server.NewController(s.factory.Core().V1().Nodes())
+	s.tunnel = server.NewTunnel(&server.TunnelOptions{})
+	s.controller = server.NewController(s.factory.Core().V1().Nodes(), s.tunnel.Server)
 
 	return s
 }
@@ -52,4 +54,5 @@ func (s *Server) Run(stopCh <-chan struct{}, wg *sync.WaitGroup) {
 	glog.Info("Cache primed. Ready for Action!")
 
 	go s.controller.Run(1, stopCh, wg)
+	go s.tunnel.Run(stopCh, wg)
 }
