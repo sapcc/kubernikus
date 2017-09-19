@@ -42,9 +42,9 @@ spec:
                 path: kubelet-clients-apiserver.pem
               - key: kubelet-clients-apiserver-key.pem
                 path: kubelet-clients-apiserver-key.pem
-              - key: apiserver-clients-system-kube-controller-manager.pem
+              - key: apiserver-clients-kubernikus-wormhole.pem
                 path: kube-client.pem
-              - key: apiserver-clients-system-kube-controller-manager-key.pem
+              - key: apiserver-clients-kubernikus-wormhole-key.pem
                 path: kube-client.key
               - key: tls-ca.pem
                 path: tls-ca.pem

@@ -41,6 +41,7 @@ type Certificates struct {
 			Scheduler         Bundle
 			Proxy             Bundle
 			ClusterAdmin      Bundle
+			Wormhole          Bundle
 		}
 		Nodes struct {
 			CA        Bundle
@@ -144,6 +145,7 @@ func (c Certificates) all() []Bundle {
 		c.ApiServer.Clients.Scheduler,
 		c.ApiServer.Clients.Proxy,
 		c.ApiServer.Clients.ClusterAdmin,
+		c.ApiServer.Clients.Wormhole,
 		c.ApiServer.Nodes.CA,
 		c.ApiServer.Nodes.Universal,
 		c.Kubelet.Clients.CA,
@@ -167,6 +169,7 @@ func (certs *Certificates) populateForSatellite(satellite, fqSatelliteName strin
 	certs.ApiServer.Clients.ControllerManager = certs.signApiServerClient("system:kube-controller-manager")
 	certs.ApiServer.Clients.Proxy = certs.signApiServerClient("system:kube-proxy")
 	certs.ApiServer.Clients.Scheduler = certs.signApiServerClient("system:kube-scheduler")
+	certs.ApiServer.Clients.Wormhole = certs.signApiServerClient("kubernikus:wormhole")
 	certs.ApiServer.Nodes.Universal = certs.signApiServerNode("universal")
 	certs.Kubelet.Clients.ApiServer = certs.signKubeletClient("apiserver")
 	certs.TLS.ApiServer = certs.signTLS("apiserver",
