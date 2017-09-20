@@ -114,7 +114,7 @@ spec:
         - name: wormhole
           image: sapcc/kubernikus:latest
           args:
-            - wormhole 
+            - wormhole
             - server
             - --kubeconfig=/etc/kubernetes/config/kubeconfig
             #- --client-ca-file=/etc/kubernetes/certs/apiserver-clients-and-nodes-ca.pem
@@ -122,6 +122,10 @@ spec:
             - --cert=/etc/kubernetes/certs/tls-wormhole.pem 
             - --key=/etc/kubernetes/certs/tls-wormhole-key.pem
             - --v=5
+         securityContext:
+           capabilities:
+             add:
+               - NET_ADMIN
           volumeMounts:
             - mountPath: /etc/kubernetes/certs/
               name: certs
