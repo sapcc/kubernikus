@@ -139,10 +139,10 @@ spec:
             - --cert=/etc/kubernetes/certs/tls-wormhole.pem
             - --key=/etc/kubernetes/certs/tls-wormhole-key.pem
             - --v=5
-         securityContext:
-           capabilities:
-             add:
-               - NET_ADMIN
+          securityContext:
+            capabilities:
+              add:
+                - NET_ADMIN
           volumeMounts:
             - mountPath: /etc/kubernetes/certs/
               name: wormhole-certs
