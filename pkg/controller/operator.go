@@ -124,11 +124,11 @@ func NewKubernikusOperator(options *KubernikusOperatorOptions) *KubernikusOperat
 		glog.Fatalf("Failed to create helm client: %s", err)
 	}
 
-	if err := kube.EnsureTPR(clientset); err != nil {
+	if err := kube.EnsureTPR(o.Clients.Kubernetes); err != nil {
 		glog.Fatalf("Couldn't create TPRs: %s", err)
 	}
 
-	if err := kube.waitForTPR(clientset); err != nil {
+	if err := kube.WaitForTPR(o.Clients.Kubernetes); err != nil {
 		glog.Fatalf("Couldn't find TPRs: %s", err)
 	}
 
@@ -166,6 +166,8 @@ func NewKubernikusOperator(options *KubernikusOperatorOptions) *KubernikusOperat
 
 func (o *KubernikusOperator) Run(stopCh <-chan struct{}, wg *sync.WaitGroup) {
 	fmt.Printf("Welcome to Kubernikus %v\n", version.VERSION)
+
+	kube.WaitForServer(o.Clients.Kubernetes, stopCh)
 
 	o.Factories.Kubernikus.Start(stopCh)
 	o.Factories.Kubernetes.Start(stopCh)

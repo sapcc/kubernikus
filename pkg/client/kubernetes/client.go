@@ -2,6 +2,8 @@ package kubernetes
 
 import (
 	"errors"
+	"fmt"
+	"net/http"
 	"sync"
 	"time"
 
@@ -183,4 +185,26 @@ func WaitForTPR(clientset kubernetes.Interface) error {
 		}
 		return false, err
 	})
+}
+
+func WaitForServer(client kubernetes.Interface, stopCh <-chan struct{}) error {
+	var healthzContent string
+
+	err := wait.PollUntil(time.Second, func() (bool, error) {
+		healthStatus := 0
+		resp := client.Discovery().RESTClient().Get().AbsPath("/healthz").Do().StatusCode(&healthStatus)
+		if healthStatus != http.StatusOK {
+			glog.Errorf("Server isn't healthy yet.  Waiting a little while.")
+			return false, nil
+		}
+		content, _ := resp.Raw()
+		healthzContent = string(content)
+
+		return true, nil
+	}, stopCh)
+	if err != nil {
+		return fmt.Errorf("Failed to contact apiserver. Last health: %v  Error: %v", healthzContent, err)
+	}
+
+	return nil
 }

@@ -49,6 +49,8 @@ func NewServer(options *ServerOptions) *Server {
 func (s *Server) Run(stopCh <-chan struct{}, wg *sync.WaitGroup) {
 	fmt.Printf("Welcome to Wormhole %v\n", version.VERSION)
 
+	kube.WaitForServer(s.client, stopCh)
+
 	s.factory.Start(stopCh)
 	s.factory.WaitForCacheSync(stopCh)
 
