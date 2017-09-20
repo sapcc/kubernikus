@@ -180,7 +180,7 @@ func (c *Controller) delNode(key string) error {
 }
 
 func (c *Controller) redoIPTablesSpratz() error {
-	table := iptables.TableFilter
+	table := iptables.TableNAT
 
 	if _, err := c.iptables.EnsureChain(table, KUBERNIKUS_TUNNELS); err != nil {
 		glog.Errorf("Failed to ensure that %s chain %s exists: %v", table, KUBERNIKUS_TUNNELS, err)
@@ -188,39 +188,39 @@ func (c *Controller) redoIPTablesSpratz() error {
 	}
 
 	args := []string{"-m", "comment", "--comment", "kubernikus tunnels", "-j", string(KUBERNIKUS_TUNNELS)}
-	if _, err := c.iptables.EnsureRule(iptables.Append, table, iptables.ChainInput, args...); err != nil {
-		glog.Errorf("Failed to ensure that %s chain %s jumps to %s: %v", table, iptables.ChainInput, KUBERNIKUS_TUNNELS, err)
+	if _, err := c.iptables.EnsureRule(iptables.Append, table, iptables.ChainPrerouting, args...); err != nil {
+		glog.Errorf("Failed to ensure that %s chain %s jumps to %s: %v", table, iptables.ChainPrerouting, KUBERNIKUS_TUNNELS, err)
 		return err
 	}
 
 	iptablesSaveRaw := bytes.NewBuffer(nil)
-	existingFilterChains := make(map[iptables.Chain]string)
+	existingNatChains := make(map[iptables.Chain]string)
 	err := c.iptables.SaveInto(table, iptablesSaveRaw)
 	if err != nil {
 		glog.Errorf("Failed to execute iptables-save, syncing all rules: %v", err)
 	} else {
-		existingFilterChains = iptables.GetChainLines(table, iptablesSaveRaw.Bytes())
+		existingNatChains = iptables.GetChainLines(table, iptablesSaveRaw.Bytes())
 	}
 
-	filterChains := bytes.NewBuffer(nil)
-	filterRules := bytes.NewBuffer(nil)
-	writeLine(filterChains, "*filter")
-	if chain, ok := existingFilterChains[KUBERNIKUS_TUNNELS]; ok {
-		writeLine(filterChains, chain)
+	natChains := bytes.NewBuffer(nil)
+	natRules := bytes.NewBuffer(nil)
+	writeLine(natChains, "*nat")
+	if chain, ok := existingNatChains[KUBERNIKUS_TUNNELS]; ok {
+		writeLine(natChains, chain)
 	} else {
-		writeLine(filterChains, iptables.MakeChainLine(KUBERNIKUS_TUNNELS))
+		writeLine(natChains, iptables.MakeChainLine(KUBERNIKUS_TUNNELS))
 	}
 
 	for key, _ := range c.store {
-		err := c.writeTunnelRedirect(key, filterRules)
+		err := c.writeTunnelRedirect(key, natRules)
 		if err != nil {
 			return err
 		}
 	}
 
-	writeLine(filterRules, "COMMIT")
+	writeLine(natRules, "COMMIT")
 
-	lines := append(filterChains.Bytes(), filterRules.Bytes()...)
+	lines := append(natChains.Bytes(), natRules.Bytes()...)
 	glog.V(6).Infof("Restoring iptables rules: %s", lines)
 	err = c.iptables.RestoreAll(lines, iptables.NoFlushTables, iptables.RestoreCounters)
 	if err != nil {
@@ -251,14 +251,12 @@ func (c *Controller) writeTunnelRedirect(key string, filterRules *bytes.Buffer) 
 
 	writeLine(filterRules,
 		"-A", string(KUBERNIKUS_TUNNELS),
-		"-m", "comment", "--comment", fmt.Sprintf("tunnel to %v", key),
-		"-t", "nat",
-		"-I", "PREROUTING",
-		"-p", "tcp",
+		"-m", "comment", "--comment", key,
 		"--dst", ip.String(),
+		"-p", "tcp",
 		"--dport", "22",
-		"--to-ports", fmt.Sprintf("%v", port),
 		"-j", "REDIRECT",
+		"--to-ports", fmt.Sprintf("%v", port),
 	)
 
 	return nil
