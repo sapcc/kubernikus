@@ -22,7 +22,8 @@ spec:
             - kubernikus
             - operator
             - --chart-directory=/etc/kubernikus/charts
-            - --auth-url={{ .Values.openstack.auth_url }}
+            {{- /* This is a bit convoluted but making sure that the url ends with /v3 */}}
+            - --auth-url={{ trimSuffix "/" .Values.openstack.auth_url | trimSuffix "/v3" }}/v3
             - --auth-username={{ .Values.openstack.auth_user_id }}
             - --auth-password={{ .Values.openstack.auth_user_password }}
             - --auth-domain={{ .Values.openstack.auth_domain }}
