@@ -13,10 +13,7 @@ import (
 	"google.golang.org/grpc"
 	yaml "gopkg.in/yaml.v2"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/wait"
-	"k8s.io/apimachinery/pkg/watch"
-	kubernetes_clientset "k8s.io/client-go/kubernetes"
 	api_v1 "k8s.io/client-go/pkg/api/v1"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/util/workqueue"
@@ -26,8 +23,6 @@ import (
 	"github.com/sapcc/kubernikus/pkg/client/kubernetes"
 	"github.com/sapcc/kubernikus/pkg/controller/config"
 	"github.com/sapcc/kubernikus/pkg/controller/ground"
-	kubernikus_clientset "github.com/sapcc/kubernikus/pkg/generated/clientset"
-	kubernikus_informers_v1 "github.com/sapcc/kubernikus/pkg/generated/informers/externalversions/kubernikus/v1"
 )
 
 const (
@@ -50,37 +45,9 @@ func NewGroundController(factories Factories, clients Clients, config config.Con
 		Factories:   factories,
 		Config:      config,
 		queue:       workqueue.NewRateLimitingQueue(workqueue.NewItemExponentialFailureRateLimiter(5*time.Second, 300*time.Second)),
+		tprInformer: factories.Kubernikus.Kubernikus().V1().Klusters().Informer(),
+		podInformer: factories.Kubernetes.Core().V1().Pods().Informer(),
 	}
-
-	//Manually create shared Kluster informer that only watches the given namespace
-	operator.tprInformer = operator.Factories.Kubernikus.InformerFor(
-		&v1.Kluster{},
-		func(client kubernikus_clientset.Interface, resyncPeriod time.Duration) cache.SharedIndexInformer {
-			return kubernikus_informers_v1.NewKlusterInformer(
-				client,
-				config.Kubernikus.Namespace,
-				resyncPeriod,
-				cache.Indexers{},
-			)
-		},
-	)
-
-	//Manually create shared pod Informer that only watches the given namespace
-	operator.podInformer = operator.Factories.Kubernetes.InformerFor(&api_v1.Pod{}, func(client kubernetes_clientset.Interface, resyncPeriod time.Duration) cache.SharedIndexInformer {
-		return cache.NewSharedIndexInformer(
-			&cache.ListWatch{
-				ListFunc: func(o metav1.ListOptions) (runtime.Object, error) {
-					return client.CoreV1().Pods(config.Kubernikus.Namespace).List(o)
-				},
-				WatchFunc: func(o metav1.ListOptions) (watch.Interface, error) {
-					return client.CoreV1().Pods(config.Kubernikus.Namespace).Watch(o)
-				},
-			},
-			&api_v1.Pod{},
-			resyncPeriod,
-			cache.Indexers{"kluster": MetaLabelReleaseIndexFunc},
-		)
-	})
 
 	operator.tprInformer.AddEventHandler(cache.ResourceEventHandlerFuncs{
 		AddFunc:    operator.klusterAdd,

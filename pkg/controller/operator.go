@@ -8,10 +8,16 @@ import (
 
 	"github.com/golang/glog"
 	"k8s.io/apimachinery/pkg/api/meta"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/watch"
 	kubernetes_informers "k8s.io/client-go/informers"
 	kubernetes_clientset "k8s.io/client-go/kubernetes"
+	api_v1 "k8s.io/client-go/pkg/api/v1"
+	"k8s.io/client-go/tools/cache"
 	"k8s.io/helm/pkg/helm"
 
+	"github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
 	helmutil "github.com/sapcc/kubernikus/pkg/client/helm"
 	kube "github.com/sapcc/kubernikus/pkg/client/kubernetes"
 	"github.com/sapcc/kubernikus/pkg/client/kubernikus"
@@ -19,6 +25,7 @@ import (
 	"github.com/sapcc/kubernikus/pkg/controller/config"
 	kubernikus_clientset "github.com/sapcc/kubernikus/pkg/generated/clientset"
 	kubernikus_informers "github.com/sapcc/kubernikus/pkg/generated/informers/externalversions"
+	kubernikus_informers_v1 "github.com/sapcc/kubernikus/pkg/generated/informers/externalversions/kubernikus/v1"
 	"github.com/sapcc/kubernikus/pkg/version"
 )
 
@@ -119,12 +126,12 @@ func NewKubernikusOperator(options *KubernikusOperatorOptions) *KubernikusOperat
 
 	o.Factories.Kubernikus = kubernikus_informers.NewSharedInformerFactory(o.Clients.Kubernikus, DEFAULT_RECONCILIATION)
 	o.Factories.Kubernetes = kubernetes_informers.NewSharedInformerFactory(o.Clients.Kubernetes, DEFAULT_RECONCILIATION)
+	o.initializeCustomInformers()
 
 	secrets := o.Clients.Kubernetes.Core().Secrets(options.Namespace)
+	klusters := o.Factories.Kubernikus.Kubernikus().V1().Klusters().Informer()
 
-	o.Clients.Openstack = openstack.NewClient(
-		secrets,
-		o.Factories.Kubernikus.Kubernikus().V1().Klusters().Informer(),
+	o.Clients.Openstack = openstack.NewClient(secrets, klusters,
 		options.AuthURL,
 		options.AuthUsername,
 		options.AuthPassword,
@@ -132,6 +139,8 @@ func NewKubernikusOperator(options *KubernikusOperatorOptions) *KubernikusOperat
 		options.AuthProject,
 		options.AuthProjectDomain,
 	)
+
+	o.Clients.Satellites = kube.NewSharedClientFactory(secrets, klusters)
 
 	for _, k := range options.Controllers {
 		switch k {
@@ -143,11 +152,6 @@ func NewKubernikusOperator(options *KubernikusOperatorOptions) *KubernikusOperat
 			o.Config.Kubernikus.Controllers["wormholegenerator"] = NewWormholeGenerator(o.Factories, o.Clients, o.Config)
 		}
 	}
-
-	o.Clients.Satellites = kube.NewSharedClientFactory(
-		secrets,
-		o.Factories.Kubernikus.Kubernikus().V1().Klusters().Informer(),
-	)
 
 	return o
 }
@@ -175,10 +179,41 @@ func MetaLabelReleaseIndexFunc(obj interface{}) ([]string, error) {
 		return []string{""}, fmt.Errorf("object has no meta: %v", err)
 	}
 	if release, found := meta.GetLabels()["release"]; found {
-		glog.Infof("Found release %v for pod %v", release, meta.GetName())
+		glog.V(6).Infof("Found release %v for pod %v", release, meta.GetName())
 		return []string{release}, nil
 	}
-	glog.Infof("meta labels: %v", meta.GetLabels())
+	glog.V(6).Infof("meta labels: %v", meta.GetLabels())
 	return []string{""}, errors.New("object has no release label")
+}
 
+func (o *KubernikusOperator) initializeCustomInformers() {
+	//Manually create shared Kluster informer that only watches the given namespace
+	o.Factories.Kubernikus.InformerFor(
+		&v1.Kluster{},
+		func(client kubernikus_clientset.Interface, resyncPeriod time.Duration) cache.SharedIndexInformer {
+			return kubernikus_informers_v1.NewKlusterInformer(
+				client,
+				o.Config.Kubernikus.Namespace,
+				resyncPeriod,
+				cache.Indexers{},
+			)
+		},
+	)
+
+	//Manually create shared pod Informer that only watches the given namespace
+	o.Factories.Kubernetes.InformerFor(&api_v1.Pod{}, func(client kubernetes_clientset.Interface, resyncPeriod time.Duration) cache.SharedIndexInformer {
+		return cache.NewSharedIndexInformer(
+			&cache.ListWatch{
+				ListFunc: func(opt metav1.ListOptions) (runtime.Object, error) {
+					return client.CoreV1().Pods(o.Config.Kubernikus.Namespace).List(opt)
+				},
+				WatchFunc: func(opt metav1.ListOptions) (watch.Interface, error) {
+					return client.CoreV1().Pods(o.Config.Kubernikus.Namespace).Watch(opt)
+				},
+			},
+			&api_v1.Pod{},
+			resyncPeriod,
+			cache.Indexers{"kluster": MetaLabelReleaseIndexFunc},
+		)
+	})
 }
