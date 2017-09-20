@@ -116,14 +116,6 @@ func NewClient(kubeconfig string) (kubernetes.Interface, error) {
 
 	glog.V(3).Infof("Using Kubernetes Api at %s", config.Host)
 
-	if err := ensureTPR(clientset); err != nil {
-		return nil, err
-	}
-
-	if err := waitForTPR(clientset); err != nil {
-		return nil, err
-	}
-
 	return clientset, nil
 }
 
@@ -162,7 +154,7 @@ func NewClientConfigV1(name, user, url string, key, cert, ca []byte) clientcmdap
 	}
 }
 
-func ensureTPR(clientset kubernetes.Interface) error {
+func EnsureTPR(clientset kubernetes.Interface) error {
 	tpr := &v1beta1.ThirdPartyResource{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: "kluster." + kubernikus_v1.GroupName,
@@ -180,7 +172,7 @@ func ensureTPR(clientset kubernetes.Interface) error {
 	return nil
 }
 
-func waitForTPR(clientset kubernetes.Interface) error {
+func WaitForTPR(clientset kubernetes.Interface) error {
 	return wait.Poll(100*time.Millisecond, 30*time.Second, func() (bool, error) {
 		_, err := clientset.ExtensionsV1beta1().ThirdPartyResources().Get("kluster."+kubernikus_v1.GroupName, metav1.GetOptions{})
 		if err == nil {

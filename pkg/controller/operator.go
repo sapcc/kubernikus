@@ -124,6 +124,14 @@ func NewKubernikusOperator(options *KubernikusOperatorOptions) *KubernikusOperat
 		glog.Fatalf("Failed to create helm client: %s", err)
 	}
 
+	if err := kube.EnsureTPR(clientset); err != nil {
+		glog.Fatalf("Couldn't create TPRs: %s", err)
+	}
+
+	if err := kube.waitForTPR(clientset); err != nil {
+		glog.Fatalf("Couldn't find TPRs: %s", err)
+	}
+
 	o.Factories.Kubernikus = kubernikus_informers.NewSharedInformerFactory(o.Clients.Kubernikus, DEFAULT_RECONCILIATION)
 	o.Factories.Kubernetes = kubernetes_informers.NewSharedInformerFactory(o.Clients.Kubernetes, DEFAULT_RECONCILIATION)
 	o.initializeCustomInformers()
