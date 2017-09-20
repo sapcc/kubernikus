@@ -59,7 +59,7 @@ func SeedAutoApproveNodeBootstrapTokens(client clientset.Interface) error {
 		RoleRef: rbac.RoleRef{
 			APIGroup: rbac.GroupName,
 			Kind:     "ClusterRole",
-			Name:     "kubernikus:kubelet-bootstrap",
+			Name:     "kubernikus:approve-node-client-csr",
 		},
 		Subjects: []rbac.Subject{
 			{
