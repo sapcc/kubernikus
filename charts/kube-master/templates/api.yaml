@@ -56,6 +56,8 @@ spec:
           secret:
             secretName: {{ include "master.fullname" . }}
             items:
+              - key: tls-ca.pem
+                path: tls-ca.pem
               - key: tls-wormhole.pem
                 path: tls-wormhole.pem
               - key: tls-wormhole-key.pem
@@ -135,7 +137,7 @@ spec:
             - wormhole
             - server
             - --kubeconfig=/etc/kubernetes/config/kubeconfig
-            - --ca=/etc/kubernetes/certs/apiserver-nodes-ca.pem.pem
+            - --ca=/etc/kubernetes/certs/apiserver-nodes-ca.pem
             - --cert=/etc/kubernetes/certs/tls-wormhole.pem
             - --key=/etc/kubernetes/certs/tls-wormhole-key.pem
             - --v=5
