@@ -76,6 +76,7 @@ spec:
             - --root-ca-file=/etc/kubernetes/certs/apiserver-clients-ca.pem
             - --service-account-private-key-file=/etc/kubernetes/certs/apiserver-clients-ca-key.pem
             - --service-cluster-ip-range={{ .Values.serviceCIDR }}
+            - --use-service-account-credentials
           volumeMounts:
             - mountPath: /etc/kubernetes/certs/
               name: certs
