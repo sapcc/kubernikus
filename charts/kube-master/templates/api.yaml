@@ -32,6 +32,8 @@ spec:
             items:
               - key: apiserver-clients-and-nodes-ca.pem
                 path: apiserver-clients-and-nodes-ca.pem
+              - key: apiserver-clients-ca-key.pem
+                path: apiserver-clients-ca-key.pem
               - key: etcd-clients-ca.pem
                 path: etcd-clients-ca.pem
               - key: etcd-clients-apiserver.pem
@@ -115,6 +117,7 @@ spec:
             - --etcd-keyfile=/etc/kubernetes/certs/etcd-clients-apiserver-key.pem
             - --kubelet-client-certificate=/etc/kubernetes/certs/kubelet-clients-apiserver.pem
             - --kubelet-client-key=/etc/kubernetes/certs/kubelet-clients-apiserver-key.pem
+            - --service-account-key-file=/etc/kubernetes/certs/apiserver-clients-ca-key.pem
             - --tls-ca-file=/etc/kubernetes/certs/tls-ca.pem
             - --tls-cert-file=/etc/kubernetes/certs/tls-apiserver.pem
             - --tls-private-key-file=/etc/kubernetes/certs/tls-apiserver-key.pem
