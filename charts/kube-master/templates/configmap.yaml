@@ -26,3 +26,22 @@ data:
         user:
           client-certificate: /etc/kubernetes/certs/kube-client.pem
           client-key: /etc/kubernetes/certs/kube-client.key
+  local-kubeconfig: |-
+    apiVersion: v1
+    kind: Config
+    clusters:
+      - name: local
+        cluster:
+           certificate-authority: /etc/kubernetes/certs/tls-ca.pem
+           server: https://127.0.0.1:6443
+    contexts:
+      - name: local
+        context:
+          cluster: local
+          user: local
+    current-context: local
+    users:
+      - name: local
+        user:
+          client-certificate: /etc/kubernetes/certs/kube-client.pem
+          client-key: /etc/kubernetes/certs/kube-client.key

@@ -64,9 +64,7 @@ spec:
                 path: apiserver-nodes-ca.pem
               #Todo: Replace with wormhole client cert but that needs some RBAC seeding
               - key: apiserver-clients-cluster-admin.pem
-              # - key: apiserver-clients-kubernikus-wormhole.pem
                 path: kube-client.pem
-              # - key: apiserver-clients-kubernikus-wormhole-key.pem
               - key: apiserver-clients-cluster-admin-key.pem
                 path: kube-client.key
 
@@ -85,6 +83,12 @@ spec:
         - name: config
           configMap:
             name: {{ include "master.fullname" . }}
+        - name: wormhole-config
+          configMap:
+            name: {{ include "master.fullname" . }}
+            items:
+              - key: local-kubeconfig
+                path: kubeconfig
       containers:
         - name: apiserver
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
@@ -144,5 +148,5 @@ spec:
               name: wormhole-certs
               readOnly: true
             - mountPath: /etc/kubernetes/config
-              name: config
+              name: wormhole-config
               readOnly: true
