@@ -233,7 +233,7 @@ func (launchctl *LaunchControl) handleErr(err error, key interface{}) {
 func ready(nodes []openstack.Node) int {
 	ready := 0
 	for _, n := range nodes {
-		if n.Running() {
+		if n.Running() || n.Starting() {
 			ready = ready + 1
 		}
 	}
@@ -244,7 +244,7 @@ func ready(nodes []openstack.Node) int {
 func toBeTerminated(nodes []openstack.Node) int {
 	toBeTerminated := 0
 	for _, n := range nodes {
-		if n.TaskState == "deleting" {
+		if n.Stopping() {
 			continue
 		}
 
