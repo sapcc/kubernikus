@@ -103,6 +103,33 @@ systemd:
       contents: |
         [Path]
         PathExists=/var/lib/kubelet/kubeconfig
+        [Install]
+        WantedBy=multi-user.target
+    - name: kube-proxy.service
+      enable: true
+      contents: |
+        [Unit]
+        Description=Kube-Proxy
+        Requires=network-online.target
+        After=network-online.target
+
+        [Service]
+        Slice=machine.slice
+        ExecStart=/usr/bin/rkt run \
+          --trust-keys-from-https \
+          --inherit-env \
+          --net=host \
+          --dns=host \
+          --volume etc-kubernetes,kind=host,source=/etc/kubernetes,readOnly=true \
+          --mount volume=etc-kubernetes,target=/etc/kubernetes \
+          quay.io/coreos/hyperkube:v1.7.5_coreos.0 \
+          --exec=kube-proxy \
+          -- \
+          --config=/etc/kubernetes/kube-proxy/config
+        ExecStopPost=/usr/bin/rkt gc --mark-only
+        KillMode=mixed
+        Restart=always
+        RestartSec=10s
 
         [Install]
         WantedBy=multi-user.target
@@ -115,6 +142,18 @@ storage:
       contents: 
         inline: |-
 {{ .KubeletClientsCA | indent 10 }}
+    - path: /etc/kubernetes/certs/apiserver-clients-system-kube-proxy-key.pem
+      filesystem: root
+      mode: 0644
+      contents: 
+        inline: |-
+{{ .ApiserverClientsSystemKubeProxyKey | indent 10 }}
+    - path: /etc/kubernetes/certs/apiserver-clients-system-kube-proxy.pem
+      filesystem: root
+      mode: 0644
+      contents: 
+        inline: |-
+{{ .ApiserverClientsSystemKubeProxy | indent 10 }}    
     - path: /etc/kubernetes/certs/tls-ca.pem
       filesystem: root
       mode: 0644
@@ -143,6 +182,66 @@ storage:
             - name: local
               user:
                 token: {{ .BootstrapToken }} 
+    - path: /etc/kubernetes/kube-proxy/kubeconfig
+      filesystem: root
+      mode: 0644
+      contents: 
+        inline: |-
+          apiVersion: v1
+          kind: Config
+          clusters:
+            - name: local
+              cluster:
+                 certificate-authority: /etc/kubernetes/certs/tls-ca.pem
+                 server: {{ .ApiserverURL }}
+          contexts:
+            - name: local 
+              context:
+                cluster: local
+                user: local 
+          current-context: local
+          users:
+            - name: local
+              user:
+                client-certificate: /etc/kubernetes/certs/apiserver-clients-system-kube-proxy.pem 
+                client-key: /etc/kubernetes/certs/apiserver-clients-system-kube-proxy-key.pem 
+    - path: /etc/kubernetes/kube-proxy/config
+      filesystem: root
+      mode: 0644
+      contents: 
+        inline: |-
+          apiVersion: componentconfig/v1alpha1
+          kind: KubeProxyConfiguration
+          bindAddress: 0.0.0.0
+          clientConnection:
+            acceptContentTypes: ""
+            burst: 10
+            contentType: application/vnd.kubernetes.protobuf
+            kubeconfig: "/etc/kubernetes/kube-proxy/kubeconfig"
+            qps: 5
+          clusterCIDR: "10.180.127.0/17"
+          configSyncPeriod: 15m0s
+          conntrack:
+            max: 0
+            maxPerCore: 32768
+            min: 131072
+            tcpCloseWaitTimeout: 1h0m0s
+            tcpEstablishedTimeout: 24h0m0s
+          enableProfiling: false
+          featureGates: ""
+          healthzBindAddress: 0.0.0.0:10256
+          hostnameOverride: ""
+          iptables:
+            masqueradeAll: false
+            masqueradeBit: 14
+            minSyncPeriod: 0s
+            syncPeriod: 30s
+          metricsBindAddress: 127.0.0.1:10249
+          mode: ""
+          oomScoreAdj: -999
+          portRange: ""
+          resourceContainer: /kube-proxy
+          udpTimeoutMilliseconds: 250ms
     - path: /etc/kubernetes/openstack/openstack.config
       filesystem: root
       mode: 0644

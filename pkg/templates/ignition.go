@@ -44,17 +44,19 @@ func (i *ignition) GenerateNode(kluster *v1.Kluster, client kubernetes.Interface
 		OpenstackLBSubnetID string
 		OpenstackRouterID   string
 	}{
-		TLSCA:               string(secret.Data["tls-ca.pem"]),
-		KubeletClientsCA:    string(secret.Data["kubelet-clients-ca.pem"]),
-		ApiserverURL:        kluster.Spec.KubernikusInfo.ServerURL,
-		BootstrapToken:      kluster.Spec.KubernikusInfo.BootstrapToken,
-		OpenstackAuthURL:    kluster.Spec.OpenstackInfo.AuthURL,
-		OpenstackUsername:   kluster.Spec.OpenstackInfo.Username,
-		OpenstackPassword:   kluster.Spec.OpenstackInfo.Password,
-		OpenstackDomain:     kluster.Spec.OpenstackInfo.Domain,
-		OpenstackRegion:     kluster.Spec.OpenstackInfo.Region,
-		OpenstackLBSubnetID: kluster.Spec.OpenstackInfo.LBSubnetID,
-		OpenstackRouterID:   kluster.Spec.OpenstackInfo.RouterID,
+		TLSCA:                              string(secret.Data["tls-ca.pem"]),
+		KubeletClientsCA:                   string(secret.Data["kubelet-clients-ca.pem"]),
+		ApiserverClientsSystemKubeProxy:    string(secret.Data["apiserver-clients-system-kube-proxy.pem"]),
+		ApiserverClientsSystemKubeProxyKey: string(secret.Data["apiserver-clients-system-kube-proxy-key.pem"]),
+		ApiserverURL:                       kluster.Spec.KubernikusInfo.ServerURL,
+		BootstrapToken:                     kluster.Spec.KubernikusInfo.BootstrapToken,
+		OpenstackAuthURL:                   kluster.Spec.OpenstackInfo.AuthURL,
+		OpenstackUsername:                  kluster.Spec.OpenstackInfo.Username,
+		OpenstackPassword:                  kluster.Spec.OpenstackInfo.Password,
+		OpenstackDomain:                    kluster.Spec.OpenstackInfo.Domain,
+		OpenstackRegion:                    kluster.Spec.OpenstackInfo.Region,
+		OpenstackLBSubnetID:                kluster.Spec.OpenstackInfo.LBSubnetID,
+		OpenstackRouterID:                  kluster.Spec.OpenstackInfo.RouterID,
 	}
 
 	var buffer bytes.Buffer
