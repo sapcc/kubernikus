@@ -110,6 +110,7 @@ spec:
             - --token-auth-file=/etc/kubernetes/bootstrap/token.csv
             - --runtime-config=rbac.authorization.k8s.io/v1alpha1,extensions/v1beta1=true,extensions/v1beta1/thirdpartyresources=true
             - --service-cluster-ip-range={{ .Values.serviceCIDR }}
+            - --kubelet-preferred-address-types=InternalIP
             #Cert Spratz
             - --client-ca-file=/etc/kubernetes/certs/apiserver-clients-and-nodes-ca.pem
             - --etcd-cafile=/etc/kubernetes/certs/etcd-clients-ca.pem
