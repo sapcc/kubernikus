@@ -153,6 +153,7 @@ func (c *Controller) addNode(key string, node *v1.Node) error {
 
 		c.store[key] = listener
 		c.tunnel.AddAddr(listener, nil, identifier)
+		c.tunnel.AddHost(identifier, identifier)
 
 		if err := c.redoIPTablesSpratz(); err != nil {
 			return err
@@ -281,3 +282,4 @@ func GetNodeHostIP(node *v1.Node) (net.IP, error) {
 	}
 	return nil, fmt.Errorf("host IP unknown; known addresses: %v", addresses)
 }
+
