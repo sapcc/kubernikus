@@ -5,6 +5,7 @@ kind: Ingress
 metadata:
   name: {{ include "master.fullname" . }}
   annotations:
+    kubernetes.io/ingress.class: k8sniff
     ingress.kubernetes.io/ssl-passthrough: "true"
   labels:
     chart: "{{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}"

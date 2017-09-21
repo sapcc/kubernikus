@@ -3,8 +3,6 @@ kind: Ingress
 
 metadata:
   name: kubernikus-api
-  annotations:
-    kubernetes.io/ingress.class: k8sniff
 
 spec:
   tls:
