@@ -133,11 +133,13 @@ func (o *ClientOptions) Run(c *cobra.Command) error {
 		serverAddr = fmt.Sprintf("%s:%s", strings.Join(c, "."), "443")
 	}
 
+	tcpProxy := tunnel.TCPProxy{LocalAddr: "127.0.0.1:22"}
 	cfg := &tunnel.ClientConfig{
 		Log:        new(log.KodingToGlogAdapter),
 		Debug:      true,
 		Identifier: x509cert.Subject.CommonName,
 		ServerAddr: serverAddr,
+		Proxy:      tcpProxy.Proxy,
 		Dial: func(network, address string) (net.Conn, error) {
 			conn, err := tls.Dial(network, address, &tls.Config{
 				RootCAs:      rootCAs,
