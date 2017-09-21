@@ -190,8 +190,8 @@ func (c *Controller) redoIPTablesSpratz() error {
 	}
 
 	args := []string{"-m", "comment", "--comment", "kubernikus tunnels", "-j", string(KUBERNIKUS_TUNNELS)}
-	if _, err := c.iptables.EnsureRule(iptables.Append, table, iptables.ChainPrerouting, args...); err != nil {
-		glog.Errorf("Failed to ensure that %s chain %s jumps to %s: %v", table, iptables.ChainPrerouting, KUBERNIKUS_TUNNELS, err)
+	if _, err := c.iptables.EnsureRule(iptables.Append, table, iptables.ChainOutput, args...); err != nil {
+		glog.Errorf("Failed to ensure that %s chain %s jumps to %s: %v", table, iptables.ChainOutput, KUBERNIKUS_TUNNELS, err)
 		return err
 	}
 
@@ -256,7 +256,7 @@ func (c *Controller) writeTunnelRedirect(key string, filterRules *bytes.Buffer) 
 		"-m", "comment", "--comment", key,
 		"--dst", ip.String(),
 		"-p", "tcp",
-		"--dport", "22",
+		"--dport", "10250",
 		"-j", "REDIRECT",
 		"--to-ports", fmt.Sprintf("%v", port),
 	)
@@ -282,4 +282,3 @@ func GetNodeHostIP(node *v1.Node) (net.IP, error) {
 	}
 	return nil, fmt.Errorf("host IP unknown; known addresses: %v", addresses)
 }
-
