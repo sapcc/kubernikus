@@ -122,8 +122,10 @@ systemd:
           --dns=host \
           --volume etc-kubernetes,kind=host,source=/etc/kubernetes,readOnly=true \
           --mount volume=etc-kubernetes,target=/etc/kubernetes \
+          --stage1-from-dir=stage1-fly.aci \
           quay.io/coreos/hyperkube:v1.7.5_coreos.0 \
-          --exec=kube-proxy \
+          --exec=hyperkube \
+          proxy \
           -- \
           --config=/etc/kubernetes/kube-proxy/config
         ExecStopPost=/usr/bin/rkt gc --mark-only
