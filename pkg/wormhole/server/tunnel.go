@@ -61,7 +61,7 @@ func (t *Tunnel) Run(stopCh <-chan struct{}, wg *sync.WaitGroup) {
 		},
 	}
 
-	glog.Info("Starting tunnel server. Listening on %s ", server.Addr)
+	glog.Infof("Starting tunnel server. Listening on %s", server.Addr)
 	go func() {
 		err := server.ListenAndServeTLS(t.options.Certificate, t.options.PrivateKey)
 		if err != http.ErrServerClosed {
