@@ -125,8 +125,8 @@ systemd:
           --stage1-from-dir=stage1-fly.aci \
           quay.io/coreos/hyperkube:v1.7.5_coreos.0 \
           --exec=hyperkube \
-          proxy \
           -- \
+          proxy \
           --config=/etc/kubernetes/kube-proxy/config
         ExecStopPost=/usr/bin/rkt gc --mark-only
         KillMode=mixed
