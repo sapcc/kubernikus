@@ -72,40 +72,40 @@ systemd:
 
         [Install]
         WantedBy=multi-user.target
-      - name: wormhole.service
-        contents: |
-          [Unit]
-          Description=Kubernikus Wormhole
-          Requires=network-online.target
-          After=network-online.target
+    - name: wormhole.service
+      contents: |
+        [Unit]
+        Description=Kubernikus Wormhole
+        Requires=network-online.target
+        After=network-online.target
 
-          [Service]
-          Slice=machine.slice
-          ExecStartPre=/usr/bin/rkt fetch --insecure-options=image --pull-policy=new docker://sapcc/kubernikus:latest
-          ExecStart=/usr/bin/rkt run \
-            --inherit-env \
-            --net=host \
-            --dns=host \
-            --volume var-lib-kubelet,kind=host,source=/var/lib/kubelet,readOnly=true \
-            --mount volume=var-lib-kubelet,target=/var/lib/kubelet \
-            --volume var-run-kubernetes,kind=host,source=/var/run/kubernetes,readOnly=true \
-            --mount volume=var-run-kubernetes,target=/var/run/kubernetes \
-            --volume etc-kubernetes-certs,kind=host,source=/etc/kubernetes/certs,readOnly=true \
-            --mount volume=etc-kubernetes-certs,target=/etc/kubernetes/certs \
-            docker://sapcc/kubernikus:latest \
-            --exec wormhole -- client --kubeconfig=/var/lib/kubelet/kubeconfig
-          ExecStopPost=/usr/bin/rkt gc --mark-only
-          KillMode=mixed
-          Restart=always
-          RestartSec=10s
-      - name: wormhole.path
-        enable: true
-        contents: |
-          [Path]
-          PathExists=/var/lib/kubelet/kubeconfig
+        [Service]
+        Slice=machine.slice
+        ExecStartPre=/usr/bin/rkt fetch --insecure-options=image --pull-policy=new docker://sapcc/kubernikus:latest
+        ExecStart=/usr/bin/rkt run \
+          --inherit-env \
+          --net=host \
+          --dns=host \
+          --volume var-lib-kubelet,kind=host,source=/var/lib/kubelet,readOnly=true \
+          --mount volume=var-lib-kubelet,target=/var/lib/kubelet \
+          --volume var-run-kubernetes,kind=host,source=/var/run/kubernetes,readOnly=true \
+          --mount volume=var-run-kubernetes,target=/var/run/kubernetes \
+          --volume etc-kubernetes-certs,kind=host,source=/etc/kubernetes/certs,readOnly=true \
+          --mount volume=etc-kubernetes-certs,target=/etc/kubernetes/certs \
+          docker://sapcc/kubernikus:latest \
+          --exec wormhole -- client --kubeconfig=/var/lib/kubelet/kubeconfig
+        ExecStopPost=/usr/bin/rkt gc --mark-only
+        KillMode=mixed
+        Restart=always
+        RestartSec=10s
+    - name: wormhole.path
+      enable: true
+      contents: |
+        [Path]
+        PathExists=/var/lib/kubelet/kubeconfig
 
-          [Install]
-          WantedBy=multi-user.target
+        [Install]
+        WantedBy=multi-user.target
 
 storage:
   files:

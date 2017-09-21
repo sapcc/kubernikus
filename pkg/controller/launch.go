@@ -191,7 +191,7 @@ func (launchctl *LaunchControl) createNode(kluster *v1.Kluster, pool *v1.NodePoo
 		return err
 	}
 
-	glog.V(2).Infof("[%v]Pool %v: Created node %v.", kluster.Name, pool.Name, id)
+	glog.V(2).Infof("[%v] Pool %v: Created node %v.", kluster.Name, pool.Name, id)
 
 	launchctl.requeue(kluster)
 	return nil
