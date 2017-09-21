@@ -148,10 +148,11 @@ func (c *Controller) addNode(key string, node *v1.Node) error {
 			return err
 		}
 
-		glog.Infof("Listening to node %v on %v", key, listener.Addr())
+		identifier := fmt.Sprintf("system:node:%v", node.GetName())
+		glog.Infof("Listening to node %v on %v", identifier, listener.Addr())
 
 		c.store[key] = listener
-		c.tunnel.AddAddr(listener, nil, fmt.Sprintf("system:node:%v", node.Spec.ExternalID))
+		c.tunnel.AddAddr(listener, nil, identifier)
 
 		if err := c.redoIPTablesSpratz(); err != nil {
 			return err
