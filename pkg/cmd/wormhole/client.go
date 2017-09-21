@@ -130,7 +130,7 @@ func (o *ClientOptions) Run(c *cobra.Command) error {
 		c := strings.Split(url.Hostname(), ".")
 		//Add "-t" to first component of hostname
 		c[0] = fmt.Sprintf("%s-wormhole", c[0])
-		serverAddr = fmt.Sprintf("%s:%s", strings.Join(c, "."), url.Port())
+		serverAddr = fmt.Sprintf("%s:%s", strings.Join(c, "."), "443")
 	}
 
 	cfg := &tunnel.ClientConfig{
