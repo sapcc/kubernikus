@@ -219,7 +219,7 @@ storage:
             contentType: application/vnd.kubernetes.protobuf
             kubeconfig: "/etc/kubernetes/kube-proxy/kubeconfig"
             qps: 5
-          clusterCIDR: "10.180.127.0/17"
+          clusterCIDR: "{{ .ClusterCIDR }}"
           configSyncPeriod: 15m0s
           conntrack:
             max: 0
