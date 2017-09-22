@@ -3,7 +3,7 @@ kind: Service
 metadata:
   name: k8sniff-ingress-lb
 spec:
-  type: LoadBalancer
+  type: ClusterIP
   ports:
     - port: 443
       targetPort: 8443
