@@ -181,13 +181,13 @@ func (launchctl *LaunchControl) syncPool(kluster *v1.Kluster, pool *v1.NodePool)
 
 	switch {
 	case ready < pool.Size:
-		glog.V(3).Infof("[%v] Pool %v: Starting/Running/Total: %v%v/%v. Too few nodes. Need to spawn more.", kluster.Name, pool.Name, starting, running, pool.Size)
+		glog.V(3).Infof("[%v] Pool %v: Starting/Running/Total: %v/%v/%v. Too few nodes. Need to spawn more.", kluster.Name, pool.Name, starting, running, pool.Size)
 		return launchctl.createNode(kluster, pool)
 	case ready > pool.Size:
-		glog.V(3).Infof("[%v] Pool %v: Starting/Running/Total: %v/%v/%v. Too many nodes. Need to delete some.", kluster.Name, pool.Name, pool.Name, starting, running, pool.Size)
+		glog.V(3).Infof("[%v] Pool %v: Starting/Running/Total: %v/%v/%v. Too many nodes. Need to delete some.", kluster.Name, pool.Name, starting, running, pool.Size)
 		return launchctl.terminateNode(kluster, nodes[0].ID)
 	case ready == pool.Size:
-		glog.V(3).Infof("[%v] Pool %v: Starting/Running/Total: %v/%v/%v. All good. Doing nothing.", kluster.Name, pool.Name, pool.Name, starting, running, pool.Size)
+		glog.V(3).Infof("[%v] Pool %v: Starting/Running/Total: %v/%v/%v. All good. Doing nothing.", kluster.Name, pool.Name, starting, running, pool.Size)
 	}
 
 	return nil
@@ -236,7 +236,8 @@ func (launchctl *LaunchControl) updateNodePoolStatus(kluster *v1.Kluster, newInf
 		}
 	}
 
-	return fmt.Errorf("Couldn't update Nodepool %v. It's not part of kluster %v.", newInfo.Name, copy.Name)
+	glog.Errorf("Couldn't update Nodepool %v. It's not part of kluster %v.", newInfo.Name, copy.Name)
+	return nil
 }
 
 func (launchctl *LaunchControl) handleErr(err error, key interface{}) {
@@ -247,6 +248,8 @@ func (launchctl *LaunchControl) handleErr(err error, key interface{}) {
 		launchctl.queue.Forget(key)
 		return
 	}
+
+	glog.Errorf("[%v] An error occured: %v", key, err)
 
 	// This controller retries 5 times if something goes wrong. After that, it stops trying.
 	if launchctl.queue.NumRequeues(key) < 5 {
