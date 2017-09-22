@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/validate"
 	"github.com/golang/glog"
 	"github.com/sapcc/kubernikus/pkg/api"
 	"github.com/sapcc/kubernikus/pkg/api/models"
@@ -23,6 +24,11 @@ type createCluster struct {
 
 func (d *createCluster) Handle(params operations.CreateClusterParams, principal *models.Principal) middleware.Responder {
 	name := *params.Body.Name
+
+	if err := validate.UniqueItems("name", "body", params.Body.Spec.NodePools); err != nil {
+		return NewErrorResponse(&operations.CreateClusterDefault{}, int(err.Code()), err.Error())
+	}
+
 	var nodePools []v1.NodePool
 	if params.Body.Spec != nil && params.Body.Spec.NodePools != nil {
 		nodePools = []v1.NodePool{}
