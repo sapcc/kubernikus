@@ -25,9 +25,9 @@ func (d *updateCluster) Handle(params operations.UpdateClusterParams, principal 
 		for _, pPool := range params.Body.Spec.NodePools {
 			isNewPool := true
 
-			for _, kPool := range kluster.Spec.NodePools {
+			for i, kPool := range kluster.Spec.NodePools {
 				if *pPool.Name == kPool.Name {
-					kPool.Size = int(*pPool.Size)
+					kluster.Spec.NodePools[i].Size = int(*pPool.Size)
 					isNewPool = false
 				}
 			}
