@@ -198,24 +198,39 @@ func (m *ClusterSpec) UnmarshalBinary(b []byte) error {
 type ClusterSpecNodePoolsItems0 struct {
 
 	// flavor
-	Flavor string `json:"flavor,omitempty"`
+	// Required: true
+	Flavor *string `json:"flavor"`
 
 	// image
 	Image string `json:"image,omitempty"`
 
 	// name
+	// Required: true
 	// Pattern: ^[a-z]([a-z0-9]*)?$
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name"`
 
 	// size
-	Size int64 `json:"size,omitempty"`
+	// Required: true
+	// Maximum: 127
+	// Minimum: 0
+	Size *int64 `json:"size"`
 }
 
 // Validate validates this cluster spec node pools items0
 func (m *ClusterSpecNodePoolsItems0) Validate(formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.validateFlavor(formats); err != nil {
+		// prop
+		res = append(res, err)
+	}
+
 	if err := m.validateName(formats); err != nil {
+		// prop
+		res = append(res, err)
+	}
+
+	if err := m.validateSize(formats); err != nil {
 		// prop
 		res = append(res, err)
 	}
@@ -226,13 +241,39 @@ func (m *ClusterSpecNodePoolsItems0) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *ClusterSpecNodePoolsItems0) validateName(formats strfmt.Registry) error {
+func (m *ClusterSpecNodePoolsItems0) validateFlavor(formats strfmt.Registry) error {
 
-	if swag.IsZero(m.Name) { // not required
-		return nil
+	if err := validate.Required("flavor", "body", m.Flavor); err != nil {
+		return err
 	}
 
-	if err := validate.Pattern("name", "body", string(m.Name), `^[a-z]([a-z0-9]*)?$`); err != nil {
+	return nil
+}
+
+func (m *ClusterSpecNodePoolsItems0) validateName(formats strfmt.Registry) error {
+
+	if err := validate.Required("name", "body", m.Name); err != nil {
+		return err
+	}
+
+	if err := validate.Pattern("name", "body", string(*m.Name), `^[a-z]([a-z0-9]*)?$`); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *ClusterSpecNodePoolsItems0) validateSize(formats strfmt.Registry) error {
+
+	if err := validate.Required("size", "body", m.Size); err != nil {
+		return err
+	}
+
+	if err := validate.MinimumInt("size", "body", int64(*m.Size), 0, false); err != nil {
+		return err
+	}
+
+	if err := validate.MaximumInt("size", "body", int64(*m.Size), 127, false); err != nil {
 		return err
 	}
 

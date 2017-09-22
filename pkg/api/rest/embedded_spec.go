@@ -242,6 +242,11 @@ func init() {
             "nodePools": {
               "type": "array",
               "items": {
+                "required": [
+                  "name",
+                  "size",
+                  "flavor"
+                ],
                 "properties": {
                   "flavor": {
                     "type": "string"
@@ -254,7 +259,9 @@ func init() {
                     "pattern": "^[a-z]([a-z0-9]*)?$"
                   },
                   "size": {
-                    "type": "integer"
+                    "type": "integer",
+                    "maximum": 127,
+                    "minimum": 0
                   }
                 }
               }

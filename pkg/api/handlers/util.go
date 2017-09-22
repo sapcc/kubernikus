@@ -44,10 +44,10 @@ func clusterSpecNodePoolItemsFromTPR(k *v1.Kluster) []*models.ClusterSpecNodePoo
 	items := make([]*models.ClusterSpecNodePoolsItems0, int64(len(k.Spec.NodePools)))
 	for i, nodePool := range k.Spec.NodePools {
 		items[i] = &models.ClusterSpecNodePoolsItems0{
-			Name:   nodePool.Name,
+			Name:   &nodePool.Name,
 			Image:  nodePool.Image,
-			Flavor: nodePool.Flavor,
-			Size:   int64(nodePool.Size),
+			Flavor: &nodePool.Flavor,
+			Size:   &[]int64{int64(nodePool.Size)}[0],
 		}
 	}
 	return items

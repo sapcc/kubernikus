@@ -26,17 +26,17 @@ func (d *updateCluster) Handle(params operations.UpdateClusterParams, principal 
 			isNewPool := true
 
 			for _, kPool := range kluster.Spec.NodePools {
-				if pPool.Name == kPool.Name {
-					kPool.Size = int(pPool.Size)
+				if *pPool.Name == kPool.Name {
+					kPool.Size = int(*pPool.Size)
 					isNewPool = false
 				}
 			}
 
 			if isNewPool {
 				kluster.Spec.NodePools = append(kluster.Spec.NodePools, v1.NodePool{
-					Name:   pPool.Name,
-					Size:   int(pPool.Size),
-					Flavor: pPool.Flavor,
+					Name:   *pPool.Name,
+					Size:   int(*pPool.Size),
+					Flavor: *pPool.Flavor,
 					Image:  pPool.Image,
 				})
 			}
@@ -45,7 +45,7 @@ func (d *updateCluster) Handle(params operations.UpdateClusterParams, principal 
 		for i, kPool := range kluster.Spec.NodePools {
 			isDeleted := true
 			for _, pPool := range params.Body.Spec.NodePools {
-				if pPool.Name == kPool.Name {
+				if *pPool.Name == kPool.Name {
 					isDeleted = false
 					break
 				}

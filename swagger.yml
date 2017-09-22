@@ -12,9 +12,7 @@ securityDefinitions:
     type: apiKey
     in: header
     name: x-auth-token
-
 security: []
-
 responses:
   errorResponse:
     description: Error
@@ -26,37 +24,37 @@ paths:
       operationId: ListAPIVersions
       summary: List available api versions
       responses:
-        200:
+        '200':
           description: OK
           schema:
             $ref: '#/definitions/ApiVersions'
-        401:
+        '401':
           description: Unauthorized
   /api/v1/clusters/:
     get:
       operationId: ListClusters
       summary: List available clusters
       responses:
-        200:
+        '200':
           description: OK
           schema:
             type: array
             items:
               $ref: '#/definitions/Cluster'
         default:
-          $ref: "#/responses/errorResponse"
+          $ref: '#/responses/errorResponse'
       security:
         - keystone: []
     post:
       operationId: CreateCluster
       summary: Create a cluster
       responses:
-        201:
+        '201':
           description: OK
           schema:
             $ref: '#/definitions/Cluster'
         default:
-          $ref: "#/responses/errorResponse"
+          $ref: '#/responses/errorResponse'
       parameters:
         - name: body
           in: body
@@ -65,8 +63,7 @@ paths:
             $ref: '#/definitions/Cluster'
       security:
         - keystone: []
-
-  /api/v1/clusters/{name}:
+  '/api/v1/clusters/{name}':
     parameters:
       - uniqueItems: true
         type: string
@@ -77,39 +74,36 @@ paths:
       operationId: ShowCluster
       summary: Show the specified cluser
       responses:
-        200:
+        '200':
           description: OK
           schema:
             $ref: '#/definitions/Cluster'
         default:
-          $ref: "#/responses/errorResponse"
+          $ref: '#/responses/errorResponse'
       security:
         - keystone: []
     delete:
       operationId: TerminateCluster
       summary: Terminate the specified cluster
       responses:
-        202:
+        '202':
           description: OK
-          # go-openapi always sends a content-type header also on empty response bodys
-          # jquery and other tools barf on this as the try to parse an empty string
-          # which is not valid json
           schema:
             type: object
         default:
-          $ref: "#/responses/errorResponse"
+          $ref: '#/responses/errorResponse'
       security:
         - keystone: []
     put:
       operationId: UpdateCluster
       summary: Update the specified cluser
       responses:
-        200:
+        '200':
           description: OK
           schema:
             $ref: '#/definitions/Cluster'
         default:
-          $ref: "#/responses/errorResponse"
+          $ref: '#/responses/errorResponse'
       security:
         - keystone: []
       parameters:
@@ -118,7 +112,7 @@ paths:
           required: true
           schema:
             $ref: '#/definitions/Cluster'
-  /api/v1/clusters/{name}/credentials:
+  '/api/v1/clusters/{name}/credentials':
     parameters:
       - uniqueItems: true
         type: string
@@ -127,17 +121,16 @@ paths:
         in: path
     get:
       operationId: GetClusterCredentials
-      summary: Get user specific credentials to access the cluster 
+      summary: Get user specific credentials to access the cluster
       responses:
-        200:
+        '200':
           description: OK
           schema:
-            $ref: "#/definitions/Credentials"
+            $ref: '#/definitions/Credentials'
         default:
-          $ref: "#/responses/errorResponse"
+          $ref: '#/responses/errorResponse'
       security:
         - keystone: []
-
 definitions:
   ApiVersions:
     required:
@@ -162,12 +155,18 @@ definitions:
           nodePools:
             type: array
             items:
+              required:
+                - name
+                - size
+                - flavor
               properties:
                 name:
                   type: string
                   pattern: '^[a-z]([a-z0-9]*)?$'
                 size:
                   type: integer
+                  maximum: 127
+                  minimum: 0
                 flavor:
                   type: string
                 image:
@@ -187,33 +186,32 @@ definitions:
                   type: integer
                 ready:
                   type: integer
-
   Credentials:
     type: object
     properties:
       kubeconfig:
         type: string
-
   Principal:
     type: object
     properties:
-        name:
-          description: username
+      name:
+        description: username
+        type: string
+      id:
+        description: userid
+        type: string
+      account:
+        description: account id
+        type: string
+      roles:
+        description: list of roles the user has in the given scope
+        type: array
+        items:
           type: string
-        id:
-          description: userid
-          type: string
-        account:
-          description: account id
-          type: string
-        roles:
-          description: list of roles the user has in the given scope 
-          type: array
-          items:
-            type: string
   error:
-    description: |
-      the error model is a model for all the error responses coming from Kubernikus 
+    description: >
+      the error model is a model for all the error responses coming from
+      Kubernikus 
     type: object
     required:
       - message
