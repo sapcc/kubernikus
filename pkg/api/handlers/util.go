@@ -42,12 +42,12 @@ func editCluster(client kubernikusv1.KlusterInterface, principal *models.Princip
 
 func clusterSpecNodePoolItemsFromTPR(k *v1.Kluster) []*models.ClusterSpecNodePoolsItems0 {
 	items := make([]*models.ClusterSpecNodePoolsItems0, int64(len(k.Spec.NodePools)))
-	for i, nodePool := range k.Spec.NodePools {
+	for i, _ := range k.Spec.NodePools {
 		items[i] = &models.ClusterSpecNodePoolsItems0{
-			Name:   &nodePool.Name,
-			Image:  nodePool.Image,
-			Flavor: &nodePool.Flavor,
-			Size:   &[]int64{int64(nodePool.Size)}[0],
+			Name:   &k.Spec.NodePools[i].Name,
+			Image:  k.Spec.NodePools[i].Image,
+			Flavor: &k.Spec.NodePools[i].Flavor,
+			Size:   &[]int64{int64(k.Spec.NodePools[i].Size)}[0],
 		}
 	}
 	return items
@@ -55,13 +55,13 @@ func clusterSpecNodePoolItemsFromTPR(k *v1.Kluster) []*models.ClusterSpecNodePoo
 
 func clusterStatusNodePoolItemsFromTPR(k *v1.Kluster) []*models.ClusterStatusNodePoolsItems0 {
 	items := make([]*models.ClusterStatusNodePoolsItems0, int64(len(k.Status.NodePools)))
-	for i, nodePool := range k.Status.NodePools {
+	for i, _ := range k.Status.NodePools {
 		items[i] = &models.ClusterStatusNodePoolsItems0{
-			Name:        &nodePool.Name,
-			Size:        &[]int64{int64(nodePool.Size)}[0],
-			Running:     &[]int64{int64(nodePool.Running)}[0],
-			Healthy:     &[]int64{int64(nodePool.Healthy)}[0],
-			Schedulable: &[]int64{int64(nodePool.Schedulable)}[0],
+			Name:        &k.Status.NodePools[i].Name,
+			Size:        &[]int64{int64(k.Status.NodePools[i].Size)}[0],
+			Running:     &[]int64{int64(k.Status.NodePools[i].Running)}[0],
+			Healthy:     &[]int64{int64(k.Status.NodePools[i].Healthy)}[0],
+			Schedulable: &[]int64{int64(k.Status.NodePools[i].Schedulable)}[0],
 		}
 	}
 	return items

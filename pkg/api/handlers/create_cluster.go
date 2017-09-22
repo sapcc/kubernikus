@@ -34,17 +34,17 @@ func (d *createCluster) Handle(params operations.CreateClusterParams, principal 
 	if params.Body.Spec != nil && params.Body.Spec.NodePools != nil {
 		nodePools = []v1.NodePool{}
 		nodePoolInfos = []v1.NodePoolInfo{}
-		for _, pPool := range params.Body.Spec.NodePools {
+		for i, _ := range params.Body.Spec.NodePools {
 			nodePools = append(nodePools, v1.NodePool{
-				Name:   *pPool.Name,
-				Size:   int(*pPool.Size),
-				Flavor: *pPool.Flavor,
+				Name:   *params.Body.Spec.NodePools[i].Name,
+				Size:   int(*params.Body.Spec.NodePools[i].Size),
+				Flavor: *params.Body.Spec.NodePools[i].Flavor,
 				Image:  "coreos-stable-amd64",
 			})
 
 			nodePoolInfos = append(nodePoolInfos, v1.NodePoolInfo{
-				Name:        *pPool.Name,
-				Size:        int(*pPool.Size),
+				Name:        *params.Body.Spec.NodePools[i].Name,
+				Size:        int(*params.Body.Spec.NodePools[i].Size),
 				Running:     0,
 				Healthy:     0,
 				Schedulable: 0,
