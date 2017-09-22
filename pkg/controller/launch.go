@@ -178,6 +178,10 @@ func (launchctl *LaunchControl) syncPool(kluster *v1.Kluster, pool *v1.NodePool)
 		glog.V(3).Infof("[%v] Pool %v: Starting/Running/Total: %v/%v/%v. All good. Doing nothing.", kluster.Name, pool.Name, starting, running, pool.Size)
 	}
 
+	if err = launchctl.updateNodePoolStatus(kluster, pool); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -240,6 +244,10 @@ func (launchctl *LaunchControl) updateNodePoolStatus(kluster *v1.Kluster, pool *
 
 	for i, curInfo := range copy.Status.NodePools {
 		if curInfo.Name == newInfo.Name {
+			if curInfo == newInfo {
+				return nil
+			}
+
 			copy.Status.NodePools[i] = newInfo
 			_, err = launchctl.Clients.Kubernikus.Kubernikus().Klusters(copy.Namespace).Update(copy)
 			return err
