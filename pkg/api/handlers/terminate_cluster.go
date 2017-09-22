@@ -21,8 +21,8 @@ type terminateCluster struct {
 func (d *terminateCluster) Handle(params operations.TerminateClusterParams, principal *models.Principal) middleware.Responder {
 
 	_, err := editCluster(d.Kubernikus.Kubernikus().Klusters(d.Namespace), principal, params.Name, func(kluster *v1.Kluster) {
-		kluster.Status.State = v1.KlusterTerminating
-		kluster.Status.Message = "Cluster terminating"
+		kluster.Status.Kluster.State = v1.KlusterTerminating
+		kluster.Status.Kluster.Message = "Cluster terminating"
 	})
 	if err != nil {
 		if apierrors.IsNotFound(err) {

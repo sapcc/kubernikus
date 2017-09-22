@@ -9,6 +9,7 @@ import (
 	"github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
 	"github.com/sapcc/kubernikus/pkg/client/openstack"
 	"github.com/sapcc/kubernikus/pkg/templates"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/tools/cache"
@@ -128,7 +129,7 @@ func (launchctl *LaunchControl) reconcile(key string) error {
 	kluster := obj.(*v1.Kluster)
 	glog.V(5).Infof("[%v] Reconciling", kluster.Name)
 
-	if !(kluster.Status.State == v1.KlusterReady || kluster.Status.State == v1.KlusterTerminating) {
+	if !(kluster.Status.Kluster.State == v1.KlusterReady || kluster.Status.Kluster.State == v1.KlusterTerminating) {
 		return fmt.Errorf("[%v] Kluster is not yet ready. Requeuing.", kluster.Name)
 	}
 
@@ -148,7 +149,7 @@ func (launchctl *LaunchControl) syncPool(kluster *v1.Kluster, pool *v1.NodePool)
 		return fmt.Errorf("[%v] Couldn't list nodes for pool %v: %v", kluster.Name, pool.Name, err)
 	}
 
-	if kluster.Status.State == v1.KlusterTerminating {
+	if kluster.Status.Kluster.State == v1.KlusterTerminating {
 		if toBeTerminated(nodes) > 0 {
 			glog.V(3).Infof("[%v] Kluster is terminating. Terminating Nodes for Pool %v.", kluster.Name, pool.Name)
 			for _, node := range nodes {
@@ -162,17 +163,31 @@ func (launchctl *LaunchControl) syncPool(kluster *v1.Kluster, pool *v1.NodePool)
 		return nil
 	}
 
-	ready := ready(nodes)
+	running := running(nodes)
+	starting := starting(nodes)
+	ready := running + starting
+
+	info := v1.NodePoolInfo{
+		Name:        pool.Name,
+		Size:        pool.Size,
+		Running:     running + starting, // Should be running only
+		Healthy:     running,
+		Schedulable: running,
+	}
+
+	if err = launchctl.updateNodePoolStatus(kluster, info); err != nil {
+		return err
+	}
 
 	switch {
 	case ready < pool.Size:
-		glog.V(3).Infof("[%v] Pool %v: Running %v/%v. Too few nodes. Need to spawn more.", kluster.Name, pool.Name, ready, pool.Size)
+		glog.V(3).Infof("[%v] Pool %v: Starting/Running/Total: %v%v/%v. Too few nodes. Need to spawn more.", kluster.Name, pool.Name, starting, running, pool.Size)
 		return launchctl.createNode(kluster, pool)
 	case ready > pool.Size:
-		glog.V(3).Infof("[%v] Pool %v: Running %v/%v. Too many nodes. Need to delete some.", kluster.Name, pool.Name, ready, pool.Size)
+		glog.V(3).Infof("[%v] Pool %v: Starting/Running/Total: %v/%v/%v. Too many nodes. Need to delete some.", kluster.Name, pool.Name, pool.Name, starting, running, pool.Size)
 		return launchctl.terminateNode(kluster, nodes[0].ID)
 	case ready == pool.Size:
-		glog.V(3).Infof("[%v] Pool %v: Running %v/%v. All good. Doing nothing.", kluster.Name, pool.Name, ready, pool.Size)
+		glog.V(3).Infof("[%v] Pool %v: Starting/Running/Total: %v/%v/%v. All good. Doing nothing.", kluster.Name, pool.Name, pool.Name, starting, running, pool.Size)
 	}
 
 	return nil
@@ -207,6 +222,23 @@ func (launchctl *LaunchControl) terminateNode(kluster *v1.Kluster, id string) er
 	return nil
 }
 
+func (launchctl *LaunchControl) updateNodePoolStatus(kluster *v1.Kluster, newInfo v1.NodePoolInfo) error {
+	copy, err := launchctl.Clients.Kubernikus.Kubernikus().Klusters(kluster.Namespace).Get(kluster.Name, metav1.GetOptions{})
+	if err != nil {
+		return err
+	}
+
+	for _, curInfo := range copy.Status.NodePools {
+		if curInfo.Name == newInfo.Name {
+			curInfo = newInfo
+			_, err = launchctl.Clients.Kubernikus.Kubernikus().Klusters(copy.Namespace).Update(copy)
+			return err
+		}
+	}
+
+	return fmt.Errorf("Couldn't update Nodepool %v. It's not part of kluster %v.", newInfo.Name, copy.Name)
+}
+
 func (launchctl *LaunchControl) handleErr(err error, key interface{}) {
 	if err == nil {
 		// Forget about the #AddRateLimited history of the key on every successful synchronization.
@@ -230,15 +262,26 @@ func (launchctl *LaunchControl) handleErr(err error, key interface{}) {
 	glog.V(5).Infof("[%v] Dropping out of the queue. Too many retries...", key)
 }
 
-func ready(nodes []openstack.Node) int {
-	ready := 0
+func starting(nodes []openstack.Node) int {
+	count := 0
 	for _, n := range nodes {
-		if n.Running() || n.Starting() {
-			ready = ready + 1
+		if n.Starting() {
+			count = count + 1
 		}
 	}
 
-	return ready
+	return count
+}
+
+func running(nodes []openstack.Node) int {
+	count := 0
+	for _, n := range nodes {
+		if n.Running() {
+			count = count + 1
+		}
+	}
+
+	return count
 }
 
 func toBeTerminated(nodes []openstack.Node) int {

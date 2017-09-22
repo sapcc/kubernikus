@@ -55,11 +55,13 @@ func clusterSpecNodePoolItemsFromTPR(k *v1.Kluster) []*models.ClusterSpecNodePoo
 
 func clusterStatusNodePoolItemsFromTPR(k *v1.Kluster) []*models.ClusterStatusNodePoolsItems0 {
 	items := make([]*models.ClusterStatusNodePoolsItems0, int64(len(k.Spec.NodePools)))
-	for i, nodePool := range k.Spec.NodePools {
+	for i, nodePool := range k.Status.NodePools {
 		items[i] = &models.ClusterStatusNodePoolsItems0{
-			Name:  nodePool.Name,
-			Size:  int64(nodePool.Size),
-			Ready: int64(nodePool.Size), // TODO
+			Name:        nodePool.Name,
+			Size:        int64(nodePool.Size),
+			Running:     int64(nodePool.Running),
+			Healthy:     int64(nodePool.Healthy),
+			Schedulable: int64(nodePool.Schedulable),
 		}
 	}
 	return items
@@ -72,7 +74,10 @@ func clusterModelFromTPR(k *v1.Kluster) *models.Cluster {
 			NodePools: clusterSpecNodePoolItemsFromTPR(k),
 		},
 		Status: &models.ClusterStatus{
-			Kluster:   string(k.Status.State),
+			Kluster: &models.ClusterStatusKluster{
+				State:   string(k.Status.Kluster.State),
+				Message: k.Status.Kluster.Message,
+			},
 			NodePools: clusterStatusNodePoolItemsFromTPR(k),
 		},
 	}

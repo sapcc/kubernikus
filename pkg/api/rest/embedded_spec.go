@@ -271,17 +271,30 @@ func init() {
         "status": {
           "properties": {
             "kluster": {
-              "description": "status of the cluster",
-              "type": "string"
+              "properties": {
+                "message": {
+                  "type": "string"
+                },
+                "state": {
+                  "description": "status of the cluster",
+                  "type": "string"
+                }
+              }
             },
             "nodePools": {
               "type": "array",
               "items": {
                 "properties": {
+                  "healthy": {
+                    "type": "integer"
+                  },
                   "name": {
                     "type": "string"
                   },
-                  "ready": {
+                  "running": {
+                    "type": "integer"
+                  },
+                  "schedulable": {
                     "type": "integer"
                   },
                   "size": {

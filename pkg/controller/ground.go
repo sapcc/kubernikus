@@ -124,9 +124,9 @@ func (op *GroundControl) handler(key string) error {
 		glog.Infof("TPR of kluster %s deleted", key)
 	} else {
 		tpr := obj.(*v1.Kluster)
-		glog.V(5).Infof("Handling kluster %v in state %q", tpr.Name, tpr.Status.State)
+		glog.V(5).Infof("Handling kluster %v in state %q", tpr.Name, tpr.Status.Kluster.State)
 
-		switch state := tpr.Status.State; state {
+		switch state := tpr.Status.Kluster.State; state {
 		case v1.KlusterPending:
 			{
 				if op.requiresOpenstackInfo(tpr) {
@@ -258,8 +258,8 @@ func (op *GroundControl) updateStatus(tpr *v1.Kluster, state v1.KlusterState, me
 	if err != nil {
 		return err
 	}
-	tpr.Status.Message = message
-	tpr.Status.State = state
+	tpr.Status.Kluster.Message = message
+	tpr.Status.Kluster.State = state
 
 	_, err = op.Clients.Kubernikus.Kubernikus().Klusters(tpr.Namespace).Update(tpr)
 	return err

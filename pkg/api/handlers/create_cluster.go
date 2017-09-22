@@ -53,7 +53,9 @@ func (d *createCluster) Handle(params operations.CreateClusterParams, principal 
 			NodePools: nodePools,
 		},
 		Status: v1.KlusterStatus{
-			State: v1.KlusterPending,
+			Kluster: v1.KlusterInfo{
+				State: v1.KlusterPending,
+			},
 		},
 	}
 

@@ -302,8 +302,8 @@ func (m *ClusterSpecNodePoolsItems0) UnmarshalBinary(b []byte) error {
 // swagger:model ClusterStatus
 type ClusterStatus struct {
 
-	// status of the cluster
-	Kluster string `json:"kluster,omitempty"`
+	// kluster
+	Kluster *ClusterStatusKluster `json:"kluster,omitempty"`
 
 	// node pools
 	NodePools []*ClusterStatusNodePoolsItems0 `json:"nodePools"`
@@ -313,6 +313,11 @@ type ClusterStatus struct {
 func (m *ClusterStatus) Validate(formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.validateKluster(formats); err != nil {
+		// prop
+		res = append(res, err)
+	}
+
 	if err := m.validateNodePools(formats); err != nil {
 		// prop
 		res = append(res, err)
@@ -321,6 +326,25 @@ func (m *ClusterStatus) Validate(formats strfmt.Registry) error {
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *ClusterStatus) validateKluster(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.Kluster) { // not required
+		return nil
+	}
+
+	if m.Kluster != nil {
+
+		if err := m.Kluster.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("status" + "." + "kluster")
+			}
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -369,15 +393,60 @@ func (m *ClusterStatus) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
+// ClusterStatusKluster cluster status kluster
+// swagger:model ClusterStatusKluster
+type ClusterStatusKluster struct {
+
+	// message
+	Message string `json:"message,omitempty"`
+
+	// status of the cluster
+	State string `json:"state,omitempty"`
+}
+
+// Validate validates this cluster status kluster
+func (m *ClusterStatusKluster) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *ClusterStatusKluster) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *ClusterStatusKluster) UnmarshalBinary(b []byte) error {
+	var res ClusterStatusKluster
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
 // ClusterStatusNodePoolsItems0 cluster status node pools items0
 // swagger:model ClusterStatusNodePoolsItems0
 type ClusterStatusNodePoolsItems0 struct {
 
+	// healthy
+	Healthy int64 `json:"healthy,omitempty"`
+
 	// name
 	Name string `json:"name,omitempty"`
 
-	// ready
-	Ready int64 `json:"ready,omitempty"`
+	// running
+	Running int64 `json:"running,omitempty"`
+
+	// schedulable
+	Schedulable int64 `json:"schedulable,omitempty"`
 
 	// size
 	Size int64 `json:"size,omitempty"`

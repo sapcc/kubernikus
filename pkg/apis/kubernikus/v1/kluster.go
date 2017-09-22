@@ -52,8 +52,21 @@ const (
 )
 
 type KlusterStatus struct {
+	Kluster   KlusterInfo    `json:"kluster"`
+	NodePools []NodePoolInfo `json:"nodePools,omitempty"`
+}
+
+type KlusterInfo struct {
 	State   KlusterState `json:"state,omitempty"`
 	Message string       `json:"message,omitempty"`
+}
+
+type NodePoolInfo struct {
+	Name        string `json:"name"`
+	Size        int    `json:size`
+	Running     int    `json:running`
+	Healthy     int    `json:healthy`
+	Schedulable int    `json:schedulable`
 }
 
 // +genclient
