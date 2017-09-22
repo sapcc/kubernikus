@@ -30,14 +30,24 @@ func (d *createCluster) Handle(params operations.CreateClusterParams, principal 
 	}
 
 	var nodePools []v1.NodePool
+	var nodePoolInfos []v1.NodePoolInfo
 	if params.Body.Spec != nil && params.Body.Spec.NodePools != nil {
 		nodePools = []v1.NodePool{}
+		nodePoolInfos = []v1.NodePoolInfo{}
 		for _, pPool := range params.Body.Spec.NodePools {
 			nodePools = append(nodePools, v1.NodePool{
 				Name:   *pPool.Name,
 				Size:   int(*pPool.Size),
 				Flavor: *pPool.Flavor,
 				Image:  pPool.Image,
+			})
+
+			nodePoolInfos = append(nodePoolInfos, v1.NodePoolInfo{
+				Name:        *pPool.Name,
+				Size:        int(*pPool.Size),
+				Running:     0,
+				Healthy:     0,
+				Schedulable: 0,
 			})
 		}
 	}
