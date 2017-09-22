@@ -22,7 +22,7 @@ func (d *updateCluster) Handle(params operations.UpdateClusterParams, principal 
 
 	kluster, err := editCluster(d.Kubernikus.Kubernikus().Klusters(d.Namespace), principal, params.Name, func(kluster *v1.Kluster) {
 		// Update Sizes
-		for _, pPool := range params.Body.Spec.NodePools {
+		for j, pPool := range params.Body.Spec.NodePools {
 			isNewPool := true
 
 			for i, kPool := range kluster.Spec.NodePools {
@@ -34,10 +34,10 @@ func (d *updateCluster) Handle(params operations.UpdateClusterParams, principal 
 
 			if isNewPool {
 				kluster.Spec.NodePools = append(kluster.Spec.NodePools, v1.NodePool{
-					Name:   *pPool.Name,
-					Size:   int(*pPool.Size),
-					Flavor: *pPool.Flavor,
-					Image:  pPool.Image,
+					Name:   *params.Body.Spec.NodePools[j].Name,
+					Size:   int(*params.Body.Spec.NodePools[j].Size),
+					Flavor: *params.Body.Spec.NodePools[j].Flavor,
+					Image:  "coreos-stable-amd64",
 				})
 			}
 		}
