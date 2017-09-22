@@ -39,7 +39,7 @@ func (d *createCluster) Handle(params operations.CreateClusterParams, principal 
 				Name:   *pPool.Name,
 				Size:   int(*pPool.Size),
 				Flavor: *pPool.Flavor,
-				Image:  pPool.Image,
+				Image:  "coreos-stable-amd64",
 			})
 
 			nodePoolInfos = append(nodePoolInfos, v1.NodePoolInfo{
