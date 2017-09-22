@@ -22,12 +22,12 @@ func (d *updateCluster) Handle(params operations.UpdateClusterParams, principal 
 
 	kluster, err := editCluster(d.Kubernikus.Kubernikus().Klusters(d.Namespace), principal, params.Name, func(kluster *v1.Kluster) {
 		// Update Sizes
-		for j, pPool := range params.Body.Spec.NodePools {
+		for j, _ := range params.Body.Spec.NodePools {
 			isNewPool := true
 
-			for i, kPool := range kluster.Spec.NodePools {
-				if *pPool.Name == kPool.Name {
-					kluster.Spec.NodePools[i].Size = int(*pPool.Size)
+			for i, _ := range kluster.Spec.NodePools {
+				if *params.Body.Spec.NodePools[j].Name == kluster.Spec.NodePools[i].Name {
+					kluster.Spec.NodePools[i].Size = int(*params.Body.Spec.NodePools[j].Size)
 					isNewPool = false
 				}
 			}
@@ -42,10 +42,10 @@ func (d *updateCluster) Handle(params operations.UpdateClusterParams, principal 
 			}
 		}
 
-		for i, kPool := range kluster.Spec.NodePools {
+		for i, _ := range kluster.Spec.NodePools {
 			isDeleted := true
-			for _, pPool := range params.Body.Spec.NodePools {
-				if *pPool.Name == kPool.Name {
+			for j, _ := range params.Body.Spec.NodePools {
+				if *params.Body.Spec.NodePools[j].Name == kluster.Spec.NodePools[i].Name {
 					isDeleted = false
 					break
 				}
