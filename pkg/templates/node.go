@@ -122,6 +122,8 @@ systemd:
           --dns=host \
           --volume etc-kubernetes,kind=host,source=/etc/kubernetes,readOnly=true \
           --mount volume=etc-kubernetes,target=/etc/kubernetes \
+          --volume lib-modules,kind=host,source=/lib/modules,readOnly=true \
+          --mount volume=lib-modules,target=/lib/modules \
           --stage1-from-dir=stage1-fly.aci \
           quay.io/coreos/hyperkube:v1.7.5_coreos.0 \
           --exec=hyperkube \
