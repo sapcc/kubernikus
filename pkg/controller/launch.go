@@ -222,15 +222,15 @@ func (launchctl *LaunchControl) terminateNode(kluster *v1.Kluster, id string) er
 	return nil
 }
 
-func (launchctl *LaunchControl) updateNodePoolStatus(kluster *v1.Kluster, newInfo v1.NodePoolInfo) error {
+func (launchctl *LaunchControl) updateNodePoolStatus(tpr *v1.Kluster, newInfo v1.NodePoolInfo) error {
 	copy, err := launchctl.Clients.Kubernikus.Kubernikus().Klusters(kluster.Namespace).Get(kluster.Name, metav1.GetOptions{})
 	if err != nil {
 		return err
 	}
 
-	for _, curInfo := range copy.Status.NodePools {
+	for i, curInfo := range copy.Status.NodePools {
 		if curInfo.Name == newInfo.Name {
-			curInfo = newInfo
+			copy.Status.NodePools[i] = newInfo
 			_, err = launchctl.Clients.Kubernikus.Kubernikus().Klusters(copy.Namespace).Update(copy)
 			return err
 		}
