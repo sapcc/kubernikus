@@ -149,27 +149,11 @@ func (launchctl *LaunchControl) syncPool(kluster *v1.Kluster, pool *v1.NodePool)
 		return fmt.Errorf("[%v] Couldn't list nodes for pool %v: %v", kluster.Name, pool.Name, err)
 	}
 
-	running := running(nodes)
-	starting := starting(nodes)
-	ready := running + starting
-
-	info := v1.NodePoolInfo{
-		Name:        pool.Name,
-		Size:        pool.Size,
-		Running:     running + starting, // Should be running only
-		Healthy:     running,
-		Schedulable: running,
-	}
-
-	if err = launchctl.updateNodePoolStatus(kluster, info); err != nil {
-		return err
-	}
-
 	if kluster.Status.Kluster.State == v1.KlusterTerminating {
 		if toBeTerminated(nodes) > 0 {
 			glog.V(3).Infof("[%v] Kluster is terminating. Terminating Nodes for Pool %v.", kluster.Name, pool.Name)
 			for _, node := range nodes {
-				err := launchctl.terminateNode(kluster, node.ID)
+				err := launchctl.terminateNode(kluster, pool, node.ID)
 				if err != nil {
 					return err
 				}
@@ -179,13 +163,17 @@ func (launchctl *LaunchControl) syncPool(kluster *v1.Kluster, pool *v1.NodePool)
 		return nil
 	}
 
+	running := running(nodes)
+	starting := starting(nodes)
+	ready := running + starting
+
 	switch {
 	case ready < pool.Size:
 		glog.V(3).Infof("[%v] Pool %v: Starting/Running/Total: %v/%v/%v. Too few nodes. Need to spawn more.", kluster.Name, pool.Name, starting, running, pool.Size)
 		return launchctl.createNode(kluster, pool)
 	case ready > pool.Size:
 		glog.V(3).Infof("[%v] Pool %v: Starting/Running/Total: %v/%v/%v. Too many nodes. Need to delete some.", kluster.Name, pool.Name, starting, running, pool.Size)
-		return launchctl.terminateNode(kluster, nodes[0].ID)
+		return launchctl.terminateNode(kluster, pool, nodes[0].ID)
 	case ready == pool.Size:
 		glog.V(3).Infof("[%v] Pool %v: Starting/Running/Total: %v/%v/%v. All good. Doing nothing.", kluster.Name, pool.Name, starting, running, pool.Size)
 	}
@@ -207,22 +195,44 @@ func (launchctl *LaunchControl) createNode(kluster *v1.Kluster, pool *v1.NodePoo
 	}
 
 	glog.V(2).Infof("[%v] Pool %v: Created node %v.", kluster.Name, pool.Name, id)
+	if err = launchctl.updateNodePoolStatus(kluster, pool); err != nil {
+		return err
+	}
 
-	launchctl.requeue(kluster)
 	return nil
 }
 
-func (launchctl *LaunchControl) terminateNode(kluster *v1.Kluster, id string) error {
+func (launchctl *LaunchControl) terminateNode(kluster *v1.Kluster, pool *v1.NodePool, id string) error {
 	err := launchctl.Clients.Openstack.DeleteNode(kluster, id)
 	if err != nil {
 		return err
 	}
 
-	launchctl.requeue(kluster)
+	glog.V(2).Infof("[%v] Pool %v: Deleted node %v.", kluster.Name, pool.Name, id)
+	if err = launchctl.updateNodePoolStatus(kluster, pool); err != nil {
+		return err
+	}
+
 	return nil
 }
 
-func (launchctl *LaunchControl) updateNodePoolStatus(kluster *v1.Kluster, newInfo v1.NodePoolInfo) error {
+func (launchctl *LaunchControl) updateNodePoolStatus(kluster *v1.Kluster, pool *v1.NodePool) error {
+	nodes, err := launchctl.Clients.Openstack.GetNodes(kluster, pool)
+	if err != nil {
+		return fmt.Errorf("[%v] Couldn't list nodes for pool %v: %v", kluster.Name, pool.Name, err)
+	}
+
+	running := running(nodes)
+	starting := starting(nodes)
+
+	newInfo := v1.NodePoolInfo{
+		Name:        pool.Name,
+		Size:        pool.Size,
+		Running:     running + starting, // Should be running only
+		Healthy:     running,
+		Schedulable: running,
+	}
+
 	copy, err := launchctl.Clients.Kubernikus.Kubernikus().Klusters(kluster.Namespace).Get(kluster.Name, metav1.GetOptions{})
 	if err != nil {
 		return err
