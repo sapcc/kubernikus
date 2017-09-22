@@ -66,6 +66,7 @@ func (d *createCluster) Handle(params operations.CreateClusterParams, principal 
 			Kluster: v1.KlusterInfo{
 				State: v1.KlusterPending,
 			},
+			NodePools: nodePoolInfos,
 		},
 	}
 
