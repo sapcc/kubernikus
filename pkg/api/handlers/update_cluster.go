@@ -39,6 +39,14 @@ func (d *updateCluster) Handle(params operations.UpdateClusterParams, principal 
 					Flavor: *params.Body.Spec.NodePools[j].Flavor,
 					Image:  "coreos-stable-amd64",
 				})
+
+				kluster.Status.NodePools = append(kluster.Status.NodePools, v1.NodePoolInfo{
+					Name:        *params.Body.Spec.NodePools[j].Name,
+					Size:        int(*params.Body.Spec.NodePools[j].Size),
+					Running:     0,
+					Healthy:     0,
+					Schedulable: 0,
+				})
 			}
 		}
 
