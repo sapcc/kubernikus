@@ -203,6 +203,7 @@ func (launchctl *LaunchControl) createNode(kluster *v1.Kluster, pool *v1.NodePoo
 		return err
 	}
 
+	launchctl.requeue(kluster)
 	return nil
 }
 
@@ -217,6 +218,7 @@ func (launchctl *LaunchControl) terminateNode(kluster *v1.Kluster, pool *v1.Node
 		return err
 	}
 
+	launchctl.requeue(kluster)
 	return nil
 }
 
