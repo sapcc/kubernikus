@@ -284,6 +284,13 @@ func init() {
             "nodePools": {
               "type": "array",
               "items": {
+                "required": [
+                  "name",
+                  "size",
+                  "running",
+                  "healthy",
+                  "schedulable"
+                ],
                 "properties": {
                   "healthy": {
                     "type": "integer"

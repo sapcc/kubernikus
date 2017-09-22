@@ -437,28 +437,103 @@ func (m *ClusterStatusKluster) UnmarshalBinary(b []byte) error {
 type ClusterStatusNodePoolsItems0 struct {
 
 	// healthy
-	Healthy int64 `json:"healthy,omitempty"`
+	// Required: true
+	Healthy *int64 `json:"healthy"`
 
 	// name
-	Name string `json:"name,omitempty"`
+	// Required: true
+	Name *string `json:"name"`
 
 	// running
-	Running int64 `json:"running,omitempty"`
+	// Required: true
+	Running *int64 `json:"running"`
 
 	// schedulable
-	Schedulable int64 `json:"schedulable,omitempty"`
+	// Required: true
+	Schedulable *int64 `json:"schedulable"`
 
 	// size
-	Size int64 `json:"size,omitempty"`
+	// Required: true
+	Size *int64 `json:"size"`
 }
 
 // Validate validates this cluster status node pools items0
 func (m *ClusterStatusNodePoolsItems0) Validate(formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.validateHealthy(formats); err != nil {
+		// prop
+		res = append(res, err)
+	}
+
+	if err := m.validateName(formats); err != nil {
+		// prop
+		res = append(res, err)
+	}
+
+	if err := m.validateRunning(formats); err != nil {
+		// prop
+		res = append(res, err)
+	}
+
+	if err := m.validateSchedulable(formats); err != nil {
+		// prop
+		res = append(res, err)
+	}
+
+	if err := m.validateSize(formats); err != nil {
+		// prop
+		res = append(res, err)
+	}
+
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *ClusterStatusNodePoolsItems0) validateHealthy(formats strfmt.Registry) error {
+
+	if err := validate.Required("healthy", "body", m.Healthy); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *ClusterStatusNodePoolsItems0) validateName(formats strfmt.Registry) error {
+
+	if err := validate.Required("name", "body", m.Name); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *ClusterStatusNodePoolsItems0) validateRunning(formats strfmt.Registry) error {
+
+	if err := validate.Required("running", "body", m.Running); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *ClusterStatusNodePoolsItems0) validateSchedulable(formats strfmt.Registry) error {
+
+	if err := validate.Required("schedulable", "body", m.Schedulable); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *ClusterStatusNodePoolsItems0) validateSize(formats strfmt.Registry) error {
+
+	if err := validate.Required("size", "body", m.Size); err != nil {
+		return err
+	}
+
 	return nil
 }
 

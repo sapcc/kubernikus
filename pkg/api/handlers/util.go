@@ -57,11 +57,11 @@ func clusterStatusNodePoolItemsFromTPR(k *v1.Kluster) []*models.ClusterStatusNod
 	items := make([]*models.ClusterStatusNodePoolsItems0, int64(len(k.Status.NodePools)))
 	for i, nodePool := range k.Status.NodePools {
 		items[i] = &models.ClusterStatusNodePoolsItems0{
-			Name:        nodePool.Name,
-			Size:        int64(nodePool.Size),
-			Running:     int64(nodePool.Running),
-			Healthy:     int64(nodePool.Healthy),
-			Schedulable: int64(nodePool.Schedulable),
+			Name:        &nodePool.Name,
+			Size:        &[]int64{int64(nodePool.Size)}[0],
+			Running:     &[]int64{int64(nodePool.Running)}[0],
+			Healthy:     &[]int64{int64(nodePool.Healthy)}[0],
+			Schedulable: &[]int64{int64(nodePool.Schedulable)}[0],
 		}
 	}
 	return items

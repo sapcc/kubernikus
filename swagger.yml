@@ -183,6 +183,12 @@ definitions:
           nodePools:
             type: array
             items:
+              required:
+                - name
+                - size
+                - running
+                - healthy
+                - schedulable
               properties:
                 name:
                   type: string
