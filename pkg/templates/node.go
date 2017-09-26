@@ -65,6 +65,7 @@ systemd:
           --allow-privileged \
           --cluster_domain=cluster.local \
           --client-ca-file=/etc/kubernetes/certs/kubelet-clients-ca.pem \
+          --non-masquerade-cidr={{ .ClusterCIDR }} \
           --anonymous-auth=false
         ExecStop=-/usr/bin/rkt stop --uuid-file=/var/run/kubelet-pod.uuid
         Restart=always
