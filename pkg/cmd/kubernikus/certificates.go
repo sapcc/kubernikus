@@ -1,4 +1,4 @@
-package kubernikus 
+package kubernikus
 
 import (
 	"github.com/sapcc/kubernikus/pkg/cmd/kubernikus/certificates"
