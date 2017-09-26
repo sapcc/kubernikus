@@ -45,11 +45,14 @@ systemd:
         [Service]
         Environment="RKT_RUN_ARGS=--uuid-file-save=/var/run/kubelet-pod.uuid \
           --net=host \
+          --volume var-lib-cni,kind=host,source=/var/lib/cni \
           --volume var-log,kind=host,source=/var/log \
+          --mount volume=var-lib-cni,target=/var/lib/cni \
           --mount volume=var-log,target=/var/log"
         Environment="KUBELET_IMAGE_TAG=v1.7.5_coreos.0"
         Environment="KUBELET_IMAGE_URL=quay.io/coreos/hyperkube"
         ExecStartPre=/bin/mkdir -p /etc/kubernetes/manifests
+        ExecStartPre=/bin/mkdir -p /var/lib/cni
         ExecStartPre=-/usr/bin/rkt rm --uuid-file=/var/run/kubelet-pod.uuid
         ExecStart=/usr/lib/coreos/kubelet-wrapper \
           --cloud-config=/etc/kubernetes/openstack/openstack.config \
