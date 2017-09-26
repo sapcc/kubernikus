@@ -51,9 +51,6 @@ type Client interface {
 	GetRegion() (string, error)
 	GetRouters(project_id string) ([]Router, error)
 	DeleteUser(username, domainID string) error
-
-	CreateWormhole(*kubernikus_v1.Kluster, string, string) (string, error)
-	GetWormhole(*kubernikus_v1.Kluster) (*Node, error)
 }
 
 type Project struct {
@@ -429,38 +426,6 @@ func (c *client) GetNodes(kluster *kubernikus_v1.Kluster, pool *kubernikus_v1.No
 	return nodes, nil
 }
 
-func (c *client) GetWormhole(kluster *kubernikus_v1.Kluster) (*Node, error) {
-	provider, err := c.klusterClientFor(kluster)
-	if err != nil {
-		return nil, err
-	}
-
-	client, err := openstack.NewComputeV2(provider, gophercloud.EndpointOpts{})
-	if err != nil {
-		return nil, err
-	}
-
-	prefix := fmt.Sprintf("wormhole-%v", kluster.Name)
-	opts := servers.ListOpts{Name: prefix}
-
-	var node *Node
-	servers.List(client, opts).EachPage(func(page pagination.Page) (bool, error) {
-		serverList, err := ExtractServers(page)
-		if err != nil {
-			glog.V(5).Infof("Couldn't extract server %v", err)
-			return false, err
-		}
-
-		if len(serverList) > 0 {
-			node = &serverList[0]
-		}
-
-		return true, nil
-	})
-
-	return node, nil
-}
-
 func (c *client) CreateNode(kluster *kubernikus_v1.Kluster, pool *kubernikus_v1.NodePool, userData []byte) (string, error) {
 	provider, err := c.klusterClientFor(kluster)
 	if err != nil {
@@ -487,54 +452,6 @@ func (c *client) CreateNode(kluster *kubernikus_v1.Kluster, pool *kubernikus_v1.
 	if err != nil {
 		glog.V(5).Infof("Couldn't create node %v: %v", name, err)
 		return "", err
-	}
-
-	return server.ID, nil
-}
-
-func (c *client) CreateWormhole(kluster *kubernikus_v1.Kluster, projectID, networkID string) (string, error) {
-	provider, err := c.controlPlaneClient()
-	if err != nil {
-		return "", fmt.Errorf("Couldn't get provider for %v: %v", projectID, err)
-	}
-
-	client, err := openstack.NewComputeV2(provider, gophercloud.EndpointOpts{})
-	if err != nil {
-		return "", fmt.Errorf("Couldn't get Compute client: %v", err)
-	}
-
-	name := fmt.Sprintf("wormhole-%v", kluster.Name)
-	glog.V(5).Infof("Creating %v", name)
-
-	localPort, err := c.FindOrCreateWormholeLocalPort(kluster, projectID, networkID)
-	if err != nil {
-		return "", fmt.Errorf("Couldn't find/create local wormhole: %v", err)
-	}
-
-	foreignPort, err := c.FindOrCreateWormholeForeignPort(kluster, networkID)
-	if err != nil {
-		return "", fmt.Errorf("Couldn't find/create local wormhol: %v", err)
-	}
-
-	glog.Infof("%#v", servers.CreateOpts{
-		Name:          name,
-		FlavorName:    "m1.small",
-		ImageName:     "ubuntu-16.04-amd64-vmware",
-		Networks:      []servers.Network{servers.Network{Port: foreignPort}, servers.Network{Port: localPort}},
-		ServiceClient: client,
-	})
-
-	server, err := servers.Create(client, servers.CreateOpts{
-		Name:          name,
-		FlavorName:    "m1.small",
-		ImageName:     "ubuntu-16.04-amd64-vmware",
-		Networks:      []servers.Network{servers.Network{Port: foreignPort}, servers.Network{Port: localPort}},
-		ServiceClient: client,
-	}).Extract()
-
-	if err != nil {
-		glog.V(5).Infof("Couldn't create %v: %v", name, err)
-		return "", fmt.Errorf("Couldn't create wormhole: %v", err)
 	}
 
 	return server.ID, nil
@@ -618,128 +535,6 @@ func (c *client) GetRegion() (string, error) {
 	}
 
 	return region, nil
-}
-
-func (c *client) GetWormholeForeignPort(kluster *kubernikus_v1.Kluster) (string, error) {
-	provider, err := c.klusterClientFor(kluster)
-	if err != nil {
-		return "", fmt.Errorf("Couldn't create foreign wormhole port: %v", err)
-	}
-
-	client, err := openstack.NewNetworkV2(provider, gophercloud.EndpointOpts{})
-	if err != nil {
-		return "", fmt.Errorf("Couldn't create foreign wormhole port: %v", err)
-	}
-
-	name := fmt.Sprintf("kubernikus:wormhole-foreign-%v", kluster.Name)
-	id, err := ports.IDFromName(client, name)
-	if err != nil {
-		return "", err
-	}
-
-	port, err := ports.Get(client, id).Extract()
-	if err != nil {
-		return "", err
-	}
-
-	return port.ID, nil
-}
-
-func (c *client) GetWormholeLocalPort(kluster *kubernikus_v1.Kluster) (string, error) {
-	provider, err := c.controlPlaneClient()
-	if err != nil {
-		return "", fmt.Errorf("Couldn't create local wormhole port: %v", err)
-	}
-
-	client, err := openstack.NewNetworkV2(provider, gophercloud.EndpointOpts{})
-	if err != nil {
-		return "", fmt.Errorf("Couldn't create local wormhole port: %v", err)
-	}
-
-	name := fmt.Sprintf("kubernikus:wormhole-local-%v", kluster.Name)
-	id, err := ports.IDFromName(client, name)
-	if err != nil {
-		return "", err
-	}
-
-	port, err := ports.Get(client, id).Extract()
-	if err != nil {
-		return "", err
-	}
-
-	return port.ID, nil
-}
-
-func (c *client) CreateWormholeLocalPort(kluster *kubernikus_v1.Kluster, projectID, networkID string) (string, error) {
-	provider, err := c.controlPlaneClient()
-	if err != nil {
-		return "", fmt.Errorf("Couldn't create local wormhole port: %v", err)
-	}
-
-	client, err := openstack.NewNetworkV2(provider, gophercloud.EndpointOpts{})
-	if err != nil {
-		return "", fmt.Errorf("Couldn't create local wormhole port: %v", err)
-	}
-
-	name := fmt.Sprintf("kubernikus:wormhole-local-%v", kluster.Name)
-	port, err := ports.Create(client, ports.CreateOpts{
-		Name:      name,
-		NetworkID: networkID,
-	}).Extract()
-
-	if err != nil {
-		return "", fmt.Errorf("Couldn't create local wormhole port: %v", err)
-	}
-
-	return port.ID, nil
-}
-
-func (c *client) CreateWormholeForeignPort(kluster *kubernikus_v1.Kluster) (string, error) {
-	provider, err := c.klusterClientFor(kluster)
-	if err != nil {
-		return "", fmt.Errorf("Couldn't create foreign wormhole port: %v", err)
-	}
-
-	client, err := openstack.NewNetworkV2(provider, gophercloud.EndpointOpts{})
-	if err != nil {
-		return "", fmt.Errorf("Couldn't create foreign wormhole port: %v", err)
-	}
-
-	name := fmt.Sprintf("kubernikus:wormhole-foreign-%v", kluster.Name)
-	port, err := ports.Create(client, ports.CreateOpts{
-		Name:      name,
-		NetworkID: kluster.Spec.OpenstackInfo.NetworkID,
-	}).Extract()
-
-	if err != nil {
-		return "", fmt.Errorf("Couldn't create foreign wormhole port: %v", err)
-	}
-
-	return port.ID, nil
-}
-
-func (c *client) FindOrCreateWormholeForeignPort(kluster *kubernikus_v1.Kluster, networkID string) (string, error) {
-	id, err := c.GetWormholeForeignPort(kluster)
-	if err != nil {
-		if _, ok := err.(gophercloud.ErrResourceNotFound); ok {
-			return c.CreateWormholeForeignPort(kluster)
-		} else {
-			return "", fmt.Errorf("Couldn't find or create foreign wormhole port: %v", err)
-		}
-	}
-	return id, nil
-}
-
-func (c *client) FindOrCreateWormholeLocalPort(kluster *kubernikus_v1.Kluster, projectID, networkID string) (string, error) {
-	id, err := c.GetWormholeLocalPort(kluster)
-	if err != nil {
-		if _, ok := err.(gophercloud.ErrResourceNotFound); ok {
-			return c.CreateWormholeLocalPort(kluster, projectID, networkID)
-		} else {
-			return "", fmt.Errorf("Couldn't find or create local wormhole port: %v", err)
-		}
-	}
-	return id, nil
 }
 
 func ExtractServers(r pagination.Page) ([]Node, error) {

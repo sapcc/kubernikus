@@ -156,8 +156,6 @@ func NewKubernikusOperator(options *KubernikusOperatorOptions) *KubernikusOperat
 			o.Config.Kubernikus.Controllers["groundctl"] = NewGroundController(o.Factories, o.Clients, o.Config)
 		case "launchctl":
 			o.Config.Kubernikus.Controllers["launchctl"] = NewLaunchController(o.Factories, o.Clients)
-		case "wormholegenerator":
-			o.Config.Kubernikus.Controllers["wormholegenerator"] = NewWormholeGenerator(o.Factories, o.Clients, o.Config)
 		}
 	}
 
