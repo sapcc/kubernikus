@@ -51,7 +51,6 @@ systemd:
         Environment="KUBELET_IMAGE_TAG=v1.7.5_coreos.0"
         Environment="KUBELET_IMAGE_URL=quay.io/coreos/hyperkube"
         ExecStartPre=/bin/mkdir -p /etc/kubernetes/manifests
-        ExecStartPre=/bin/mkdir -p /srv/kubernetes/manifests
         ExecStartPre=-/usr/bin/rkt rm --uuid-file=/var/run/kubelet-pod.uuid
         ExecStart=/usr/lib/coreos/kubelet-wrapper \
           --cloud-config=/etc/kubernetes/openstack/openstack.config \
