@@ -44,8 +44,7 @@ systemd:
 
         [Service]
         Environment="RKT_RUN_ARGS=--uuid-file-save=/var/run/kubelet-pod.uuid \
-          --volume=resolv,kind=host,source=/etc/resolv.conf \
-          --mount volume=resolv,target=/etc/resolv.conf \
+          --net=host \
           --volume var-log,kind=host,source=/var/log \
           --mount volume=var-log,target=/var/log"
         Environment="KUBELET_IMAGE_TAG=v1.7.5_coreos.0"
