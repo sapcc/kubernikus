@@ -40,6 +40,8 @@ type client struct {
 	authProjectDomain string
 
 	secrets typedv1.SecretInterface
+
+	domainNameToID sync.Map
 }
 
 type Client interface {
@@ -353,13 +355,17 @@ func (c *client) GetRouters(project_id string) ([]Router, error) {
 
 }
 
-func (c *client) DeleteUser(username, domainID string) error {
+func (c *client) DeleteUser(username, domainName string) error {
 	provider, err := c.adminClient()
 	if err != nil {
 		return err
 	}
 
 	identity, err := openstack.NewIdentityV3(provider, gophercloud.EndpointOpts{})
+	if err != nil {
+		return err
+	}
+	domainID, err := c.getDomainID(identity, domainName)
 	if err != nil {
 		return err
 	}
@@ -377,6 +383,34 @@ func (c *client) DeleteUser(username, domainID string) error {
 			return false, errors.New("Multiple users found")
 		}
 	})
+}
+
+func (c *client) getDomainID(client *gophercloud.ServiceClient, domainName string) (string, error) {
+	if id, ok := c.domainNameToID.Load(domainName); ok {
+		return id.(string), nil
+	}
+	identity, err := openstack.NewIdentityV3(c.adminProviderClient, gophercloud.EndpointOpts{})
+	if err != nil {
+		return "", err
+	}
+	err = domains.List(identity, &domains.ListOpts{Name: domainName}).EachPage(func(page pagination.Page) (bool, error) {
+		domains, err := domains.ExtractDomains(page)
+		if err != nil {
+			return false, err
+		}
+		switch len(domains) {
+		case 0:
+			return false, fmt.Errorf("Domain %s not found", domainName)
+		case 1:
+			c.domainNameToID.Store(domainName, domains[0].ID)
+			return false, nil
+		default:
+			return false, errors.New("More then one domain found")
+		}
+	})
+
+	id, _ := c.domainNameToID.Load(domainName)
+	return id.(string), nil
 }
 
 func getRouterNetworks(client *gophercloud.ServiceClient, routerID string) ([]string, error) {
