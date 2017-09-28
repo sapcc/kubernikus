@@ -271,7 +271,7 @@ func (op *GroundControl) createKluster(tpr *v1.Kluster) error {
 		return err
 	}
 	glog.Infof("Creating service user %s", cluster.OpenStack.Username)
-	err := op.Openstack.CreateKlusterServiceUser(
+	err = op.Clients.Openstack.CreateKlusterServiceUser(
 		cluster.OpenStack.Username,
 		cluster.OpenStack.Password,
 		cluster.OpenStack.DomainName,
