@@ -270,6 +270,16 @@ func (op *GroundControl) createKluster(tpr *v1.Kluster) error {
 	if err != nil {
 		return err
 	}
+	glog.Infof("Creating service user %s", cluster.OpenStack.Username)
+	err := op.Openstack.CreateKlusterServiceUser(
+		cluster.OpenStack.Username,
+		cluster.OpenStack.Password,
+		cluster.OpenStack.DomainName,
+		cluster.OpenStack.ProjectID,
+	)
+	if err != nil {
+		return err
+	}
 
 	//Generate helm values from cluster struct
 	rawValues, err := yaml.Marshal(cluster)

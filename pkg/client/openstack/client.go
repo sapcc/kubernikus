@@ -26,7 +26,10 @@ import (
 
 	kubernikus_v1 "github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
 	"github.com/sapcc/kubernikus/pkg/client/openstack/domains"
+	"github.com/sapcc/kubernikus/pkg/client/openstack/roles"
 )
+
+var serviceUserRoles = []string{"network_admin", "member"}
 
 type client struct {
 	klusterClients      sync.Map
@@ -42,6 +45,7 @@ type client struct {
 	secrets typedv1.SecretInterface
 
 	domainNameToID sync.Map
+	roleNameToID   sync.Map
 }
 
 type Client interface {
@@ -53,6 +57,7 @@ type Client interface {
 	GetRegion() (string, error)
 	GetRouters(project_id string) ([]Router, error)
 	DeleteUser(username, domainID string) error
+	CreateKlusterServiceUser(username, password, domain, defaultProjectID string) error
 }
 
 type Project struct {
@@ -355,6 +360,107 @@ func (c *client) GetRouters(project_id string) ([]Router, error) {
 
 }
 
+func (c *client) getRoleID(client *gophercloud.ServiceClient, roleName string) (string, error) {
+	if id, ok := c.roleNameToID.Load(roleName); ok {
+		return id.(string), nil
+	}
+	err := roles.List(client, nil).EachPage(func(page pagination.Page) (bool, error) {
+		roles, err := roles.ExtractRoles(page)
+		if err != nil {
+			return false, err
+		}
+		for _, role := range roles {
+			c.roleNameToID.Store(role.Name, role.ID)
+		}
+		return true, nil
+	})
+	if err != nil {
+		return "", err
+	}
+	if id, ok := c.roleNameToID.Load(roleName); ok {
+		return id.(string), nil
+	}
+
+	return "", fmt.Errorf("Role %s not found", roleName)
+
+}
+
+func (c *client) getUserByName(client *gophercloud.ServiceClient, username, domainID string) (*users.User, error) {
+	var user *users.User
+	err := users.List(client, users.ListOpts{DomainID: domainID, Name: username}).EachPage(func(page pagination.Page) (bool, error) {
+		users, err := users.ExtractUsers(page)
+		if err != nil {
+			return false, err
+		}
+		switch len(users) {
+		case 0:
+			return false, nil
+		case 1:
+			user = &users[0]
+			return false, nil
+		default:
+			return false, errors.New("More then one user found")
+		}
+
+		return true, nil
+	})
+	if err != nil {
+		return nil, err
+	}
+	return user, nil
+}
+
+func (c *client) CreateKlusterServiceUser(username, password, domain, projectID string) error {
+	provider, err := c.adminClient()
+	if err != nil {
+		return err
+	}
+
+	identity, err := openstack.NewIdentityV3(provider, gophercloud.EndpointOpts{})
+	if err != nil {
+		return err
+	}
+	domainID, err := c.getDomainID(identity, domain)
+	if err != nil {
+		return err
+	}
+
+	user, err := c.getUserByName(identity, username, domainID)
+	if err != nil {
+		return err
+	}
+	//Do we need to update or create?
+	if user != nil {
+		user, err = users.Update(identity, user.ID, users.UpdateOpts{
+			Password:         password,
+			DefaultProjectID: projectID,
+			Description:      "Kubernikus kluster service user",
+		}).Extract()
+	} else {
+		user, err = users.Create(identity, users.CreateOpts{
+			Name:             username,
+			DomainID:         domainID,
+			Password:         password,
+			DefaultProjectID: projectID,
+			Description:      "Kubernikus kluster service user",
+		}).Extract()
+	}
+	if err != nil {
+		return err
+	}
+	for _, roleName := range serviceUserRoles {
+		roleID, err := c.getRoleID(identity, roleName)
+		if err != nil {
+			return err
+		}
+		err = roles.AssignToUserInProject(identity, projectID, user.ID, roleID)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func (c *client) DeleteUser(username, domainName string) error {
 	provider, err := c.adminClient()
 	if err != nil {
@@ -408,7 +514,6 @@ func (c *client) getDomainID(client *gophercloud.ServiceClient, domainName strin
 			return false, errors.New("More then one domain found")
 		}
 	})
-
 	id, _ := c.domainNameToID.Load(domainName)
 	return id.(string), nil
 }
@@ -487,7 +592,6 @@ func (c *client) CreateNode(kluster *kubernikus_v1.Kluster, pool *kubernikus_v1.
 		glog.V(5).Infof("Couldn't create node %v: %v", name, err)
 		return "", err
 	}
-
 	return server.ID, nil
 }
 
