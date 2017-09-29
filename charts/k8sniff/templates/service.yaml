@@ -11,4 +11,4 @@ spec:
   selector:
     role: k8sniff-ingress-lb
   externalIPs:
-    - {{ required "missing k8sniff.external_service_ip" .Values.k8sniff.external_service_ip }}
+    - {{ required "missing external_service_ip" .Values.external_service_ip }}

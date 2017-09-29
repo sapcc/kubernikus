@@ -6,7 +6,7 @@ metadata:
     role: k8sniff-ingress-lb
   annotations:
     prometheus.io/scrape: "true"
-    prometheus.io/port: {{ default "9091" .Values.k8sniff.metrics_port | quote }}
+    prometheus.io/port: {{ default "9091" .Values.metrics_port | quote }}
 
 spec:
   replicas: 1
@@ -19,14 +19,14 @@ spec:
         role: k8sniff-ingress-lb
     spec:
       containers:
-      - image: {{ default "kubermatic/k8sniff" .Values.k8sniff.image }}:{{ default "v1.0" .Values.k8sniff.tag }}
+      - image: {{ default "kubermatic/k8sniff" .Values.image }}:{{ default "v1.0" .Values.tag }}
         name: k8sniff-ingress-lb
         imagePullPolicy: IfNotPresent
         command:
           - /bin/sh
           - -c
           - -x
-          - "/pipeline/source/k8sniff -logtostderr --v={{ default 9 .Values.k8sniff.log_level }} --config /etc/config/k8sniff.json"
+          - "/pipeline/source/k8sniff -logtostderr --v={{ default 9 .Values.log_level }} --config /etc/config/k8sniff.json"
         ports:
         - name: https
           containerPort: 8443
