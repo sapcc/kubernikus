@@ -3,13 +3,15 @@ kind: Ingress
 
 metadata:
   name: kubernikus-api
-
+  annotations:
+    vice-president: "true"
+    
 spec:
   tls:
      - secretName: kubernikus-api
-       hosts: [kubernikus.{{.Values.openstack.region}}.cloud.sap]
+       hosts: [{{.Values.kubernikus.domain}}]
   rules:
-    - host: kubernikus.{{.Values.openstack.region}}.cloud.sap
+    - host: {{.Values.kubernikus.domain}}
       http:
         paths:
         - path: /
