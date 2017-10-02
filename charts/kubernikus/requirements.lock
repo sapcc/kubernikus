@@ -2,5 +2,5 @@ dependencies:
 - name: k8sniff
   repository: file://../k8sniff
   version: 0.1.0
-digest: sha256:447679c03b7598e24089180971ec59ec510f5fec4d7bae27bec971df87206de9
-generated: 2017-09-29T15:57:19.99321657+02:00
+digest: sha256:49a6c477d10bf9b7197ca5803911aaf41cecf3534df4c18d661bdbaacd351872
+generated: 2017-10-02T10:21:29.037591+02:00

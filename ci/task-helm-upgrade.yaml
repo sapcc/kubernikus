@@ -19,6 +19,7 @@ run:
     - |
       set -exo pipefail
       VERSION=$(cat kubernikus.version/version)
+      helm dep up --skip-refresh kubernikus.git/charts/kubernikus/
       helm upgrade kubernikus kubernikus.git/charts/kubernikus/ --values secrets.git/$REGION/values/kubernikus.yaml --set imageTag=$VERSION
       set +x
       kubectl get deployments --namespace=$NAMESPACE -o jsonpath='{.items[*].metadata.name}' | tr ' ' '\n' | grep kubernikus | while read DEPLOYMENT; do
