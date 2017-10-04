@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"crypto/x509"
-	"fmt"
 
 	"github.com/ghodss/yaml"
 	"github.com/go-openapi/runtime/middleware"
@@ -33,6 +32,15 @@ func (d *getClusterCredentials) Handle(params operations.GetClusterCredentialsPa
 		}
 		return NewErrorResponse(&operations.GetClusterCredentialsDefault{}, 500, err.Error())
 	}
+
+	kluster, err := d.Kubernikus.Kubernikus().Klusters(d.Namespace).Get(qualifiedName(params.Name, principal.Account), v1.GetOptions{})
+	if err != nil {
+		if apierrors.IsNotFound(err) {
+			return NewErrorResponse(&operations.GetClusterCredentialsDefault{}, 404, "Not found")
+		}
+		return NewErrorResponse(&operations.GetClusterCredentialsDefault{}, 500, err.Error())
+	}
+
 	clientCAKey, ok := secret.Data["apiserver-clients-ca-key.pem"]
 	if !ok {
 		return NewErrorResponse(&operations.GetClusterCredentialsDefault{}, 500, "Clients CA key not found")
@@ -59,7 +67,7 @@ func (d *getClusterCredentials) Handle(params operations.GetClusterCredentialsPa
 	config := kubernetes.NewClientConfigV1(
 		params.Name,
 		principal.Name,
-		fmt.Sprintf("https://%s.kluster.staging.cloud.sap", qualifiedName(params.Name, principal.Account)),
+		kluster.Spec.KubernikusInfo.ServerURL,
 		certutil.EncodePrivateKeyPEM(cert.PrivateKey),
 		certutil.EncodeCertPEM(cert.Certificate),
 		serverCACert,
