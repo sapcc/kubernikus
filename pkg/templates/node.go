@@ -36,13 +36,13 @@ systemd:
         
         [Install]
         WantedBy=multi-user.target
-		- name: docker.service
-			enable: true
-			dropins:
-				- name: 20-docker-opts.conf
-					contents: |
-						[Service]
-						Environment="DOCKER_OPTS=--log-opt max-size=5m --log-opt max-file=5 --ip-masq=false --iptables=false --bridge=none"
+    - name: docker.service
+      enable: true
+      dropins:
+        - name: 20-docker-opts.conf
+          contents: |
+            [Service]
+            Environment="DOCKER_OPTS=--log-opt max-size=5m --log-opt max-file=5 --ip-masq=false --iptables=false --bridge=none"
     - name: kubelet.service
       enable: true
       contents: |
