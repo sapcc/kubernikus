@@ -116,20 +116,13 @@ jobs:
         - get: kubernikus.version
           passed: [build]
         - get: secrets.git
-
       - task: deploy
-        file: kubernikus.git/ci/task-helm-upgrade.yaml
+        file: kubernikus.git/ci/task-helm-upgrade-v1.7.7.yaml
         params:
           REGION: admin
           RELEASE: kubernikus-staging
           NAMESPACE: kubernikus-staging
           GITHUB_TOKEN: ((github-access-token))
-      - task: prune replicasets
-        file: kubernikus.git/ci/prune-replicasets.yaml
-        params:
-          REGION: admin 
-          NAMESPACE: kubernikus-staging
-          GITHUB_TOKEN: {{github-access-token}}
     on_failure:
       <<: *post_failure_to_slack
 
