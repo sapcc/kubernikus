@@ -71,8 +71,8 @@ jobs:
           cache: true
           cache_tag: latest
           build_args:
-            http_proxy: http://proxy.wdf.sap.corp:8080
-            https_proxy: http://proxy.wdf.sap.corp:8080
+            http_proxy: http://proxy.phl.sap.corp:8080
+            https_proxy: http://proxy.phl.sap.corp:8080
             no_proxy: sap.corp,cloud.sap,127.0.0.1,localhost
         get_params:
           skip_download: true
@@ -95,12 +95,13 @@ jobs:
         params:
           REGION: staging
           RELEASE: kubernikus
-          NAMESPACE: kubernikus
+          NAMESPACE: kube-system 
           GITHUB_TOKEN: ((github-access-token))
       - task: prune replicasets
         file: kubernikus.git/ci/prune-replicasets.yaml
         params:
           REGION: staging
+          NAMESPACE: kube-system
           GITHUB_TOKEN: {{github-access-token}}
     on_failure:
       <<: *post_failure_to_slack
@@ -127,6 +128,7 @@ jobs:
         file: kubernikus.git/ci/prune-replicasets.yaml
         params:
           REGION: admin 
+          NAMESPACE: kubernikus-staging
           GITHUB_TOKEN: {{github-access-token}}
     on_failure:
       <<: *post_failure_to_slack
@@ -147,12 +149,13 @@ jobs:
         params:
           REGION: eu-nl-1
           RELEASE: kubernikus
-          NAMESPACE: kubernikus
+          NAMESPACE: kube-system
           GITHUB_TOKEN: ((github-access-token))
       - task: prune replicasets
         file: kubernikus.git/ci/prune-replicasets.yaml
         params:
           REGION: eu-nl-1
+          NAMESPACE: kube-system 
           GITHUB_TOKEN: {{github-access-token}}
     on_failure:
       <<: *post_failure_to_slack

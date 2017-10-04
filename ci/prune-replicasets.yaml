@@ -26,6 +26,6 @@ run:
 
 params:
   KEEP: 3
-  NAMESPACE: kube-system
+  NAMESPACE: 
   REGION:
   GITHUB_TOKEN:
