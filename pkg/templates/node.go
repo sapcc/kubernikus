@@ -51,6 +51,8 @@ systemd:
 
         [Service]
         Environment="RKT_RUN_ARGS=--uuid-file-save=/var/run/kubelet-pod.uuid \
+          --inherit-env \
+				  --dns=host \
           --net=host \
           --volume var-lib-cni,kind=host,source=/var/lib/cni \
           --volume var-log,kind=host,source=/var/log \
