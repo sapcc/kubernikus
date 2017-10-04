@@ -94,6 +94,8 @@ jobs:
         file: kubernikus.git/ci/task-helm-upgrade.yaml
         params:
           REGION: staging
+          RELEASE: kubernikus
+          NAMESPACE: kubernikus
           GITHUB_TOKEN: ((github-access-token))
       - task: prune replicasets
         file: kubernikus.git/ci/prune-replicasets.yaml
@@ -119,7 +121,6 @@ jobs:
         params:
           REGION: admin
           RELEASE: kubernikus-staging
-          VALUES: kubernikus-staging.yaml
           NAMESPACE: kubernikus-staging
           GITHUB_TOKEN: ((github-access-token))
       - task: prune replicasets
@@ -145,6 +146,8 @@ jobs:
         file: kubernikus.git/ci/task-helm-upgrade.yaml
         params:
           REGION: eu-nl-1
+          RELEASE: kubernikus
+          NAMESPACE: kubernikus
           GITHUB_TOKEN: ((github-access-token))
       - task: prune replicasets
         file: kubernikus.git/ci/prune-replicasets.yaml
