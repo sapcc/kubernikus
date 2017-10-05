@@ -86,6 +86,7 @@ func setupGlobalMiddleware(handler http.Handler) http.Handler {
 	c := cors.New(cors.Options{
 		AllowedHeaders: []string{"X-Auth-Token", "Content-Type", "Accept"},
 		AllowedMethods: []string{"GET", "HEAD", "POST", "DELETE", "PUT"},
+		MaxAge: 600,
 	})
 	return gmiddleware.LoggingHandler(os.Stdout, handlers.RootHandler(c.Handler(handler)))
 }
