@@ -27,4 +27,6 @@ import:
   version: 9e661e9308f078838e266cca1c673922088c0ea4
 - package: github.com/coreos/container-linux-config-transpiler
   version: v0.4.2
+- package: github.com/pkg/errors
+  version: 0.8.0
 

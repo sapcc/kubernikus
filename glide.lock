@@ -1,5 +1,5 @@
-hash: a674742870c05cd33263a3b086ed5b1886fdd978d3a02bde044f095a3385f06e
-updated: 2017-09-19T15:41:34.704476926+02:00
+hash: 9fc2e6d19dccc68bd0515f007ed08b7c62db6d97b3afa023a682d2cdb0f5894a
+updated: 2017-10-05T20:49:23.056605826+02:00
 imports:
 - name: github.com/ajeddeloh/yaml
   version: 1072abfea31191db507785e2e0c1b8d1440d35a5
@@ -80,6 +80,7 @@ imports:
 - name: github.com/go-openapi/runtime
   version: 73a94727f26953a79ffd70902d0f24977b6297d1
   subpackages:
+  - client
   - flagext
   - middleware
   - middleware/denco
@@ -180,6 +181,8 @@ imports:
   version: 9526be0327b26ad31aa70296a7b10704883976d5
 - name: github.com/mitchellh/mapstructure
   version: d0303fe809921458f417bcf828397a65db30a7e4
+- name: github.com/pkg/errors
+  version: 645ef00459ed84a119197bfb8d8205042c6df63d
 - name: github.com/pmylund/go-cache
   version: 93d85800f2fa6bd0a739e7bd612bfa3bc008b72d
 - name: github.com/PuerkitoBio/purell
@@ -465,4 +468,6 @@ imports:
   - pkg/version
 - name: k8s.io/utils
   version: 4fe312863be2155a7b68acd2aff1c9221b24e68c
+  subpackages:
+  - exec
 testImports: []
