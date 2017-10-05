@@ -198,24 +198,39 @@ func (m *ClusterSpec) UnmarshalBinary(b []byte) error {
 type ClusterSpecNodePoolsItems0 struct {
 
 	// flavor
-	Flavor string `json:"flavor,omitempty"`
+	// Required: true
+	Flavor *string `json:"flavor"`
 
 	// image
 	Image string `json:"image,omitempty"`
 
 	// name
+	// Required: true
 	// Pattern: ^[a-z]([a-z0-9]*)?$
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name"`
 
 	// size
-	Size int64 `json:"size,omitempty"`
+	// Required: true
+	// Maximum: 127
+	// Minimum: 0
+	Size *int64 `json:"size"`
 }
 
 // Validate validates this cluster spec node pools items0
 func (m *ClusterSpecNodePoolsItems0) Validate(formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.validateFlavor(formats); err != nil {
+		// prop
+		res = append(res, err)
+	}
+
 	if err := m.validateName(formats); err != nil {
+		// prop
+		res = append(res, err)
+	}
+
+	if err := m.validateSize(formats); err != nil {
 		// prop
 		res = append(res, err)
 	}
@@ -226,13 +241,39 @@ func (m *ClusterSpecNodePoolsItems0) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *ClusterSpecNodePoolsItems0) validateName(formats strfmt.Registry) error {
+func (m *ClusterSpecNodePoolsItems0) validateFlavor(formats strfmt.Registry) error {
 
-	if swag.IsZero(m.Name) { // not required
-		return nil
+	if err := validate.Required("flavor", "body", m.Flavor); err != nil {
+		return err
 	}
 
-	if err := validate.Pattern("name", "body", string(m.Name), `^[a-z]([a-z0-9]*)?$`); err != nil {
+	return nil
+}
+
+func (m *ClusterSpecNodePoolsItems0) validateName(formats strfmt.Registry) error {
+
+	if err := validate.Required("name", "body", m.Name); err != nil {
+		return err
+	}
+
+	if err := validate.Pattern("name", "body", string(*m.Name), `^[a-z]([a-z0-9]*)?$`); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *ClusterSpecNodePoolsItems0) validateSize(formats strfmt.Registry) error {
+
+	if err := validate.Required("size", "body", m.Size); err != nil {
+		return err
+	}
+
+	if err := validate.MinimumInt("size", "body", int64(*m.Size), 0, false); err != nil {
+		return err
+	}
+
+	if err := validate.MaximumInt("size", "body", int64(*m.Size), 127, false); err != nil {
 		return err
 	}
 
@@ -261,8 +302,8 @@ func (m *ClusterSpecNodePoolsItems0) UnmarshalBinary(b []byte) error {
 // swagger:model ClusterStatus
 type ClusterStatus struct {
 
-	// status of the cluster
-	Kluster string `json:"kluster,omitempty"`
+	// kluster
+	Kluster *ClusterStatusKluster `json:"kluster,omitempty"`
 
 	// node pools
 	NodePools []*ClusterStatusNodePoolsItems0 `json:"nodePools"`
@@ -272,6 +313,11 @@ type ClusterStatus struct {
 func (m *ClusterStatus) Validate(formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.validateKluster(formats); err != nil {
+		// prop
+		res = append(res, err)
+	}
+
 	if err := m.validateNodePools(formats); err != nil {
 		// prop
 		res = append(res, err)
@@ -280,6 +326,25 @@ func (m *ClusterStatus) Validate(formats strfmt.Registry) error {
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *ClusterStatus) validateKluster(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.Kluster) { // not required
+		return nil
+	}
+
+	if m.Kluster != nil {
+
+		if err := m.Kluster.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("status" + "." + "kluster")
+			}
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -328,27 +393,147 @@ func (m *ClusterStatus) UnmarshalBinary(b []byte) error {
 	return nil
 }
 
+// ClusterStatusKluster cluster status kluster
+// swagger:model ClusterStatusKluster
+type ClusterStatusKluster struct {
+
+	// message
+	Message string `json:"message,omitempty"`
+
+	// status of the cluster
+	State string `json:"state,omitempty"`
+}
+
+// Validate validates this cluster status kluster
+func (m *ClusterStatusKluster) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *ClusterStatusKluster) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *ClusterStatusKluster) UnmarshalBinary(b []byte) error {
+	var res ClusterStatusKluster
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
 // ClusterStatusNodePoolsItems0 cluster status node pools items0
 // swagger:model ClusterStatusNodePoolsItems0
 type ClusterStatusNodePoolsItems0 struct {
 
-	// name
-	Name string `json:"name,omitempty"`
+	// healthy
+	// Required: true
+	Healthy *int64 `json:"healthy"`
 
-	// ready
-	Ready int64 `json:"ready,omitempty"`
+	// name
+	// Required: true
+	Name *string `json:"name"`
+
+	// running
+	// Required: true
+	Running *int64 `json:"running"`
+
+	// schedulable
+	// Required: true
+	Schedulable *int64 `json:"schedulable"`
 
 	// size
-	Size int64 `json:"size,omitempty"`
+	// Required: true
+	Size *int64 `json:"size"`
 }
 
 // Validate validates this cluster status node pools items0
 func (m *ClusterStatusNodePoolsItems0) Validate(formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.validateHealthy(formats); err != nil {
+		// prop
+		res = append(res, err)
+	}
+
+	if err := m.validateName(formats); err != nil {
+		// prop
+		res = append(res, err)
+	}
+
+	if err := m.validateRunning(formats); err != nil {
+		// prop
+		res = append(res, err)
+	}
+
+	if err := m.validateSchedulable(formats); err != nil {
+		// prop
+		res = append(res, err)
+	}
+
+	if err := m.validateSize(formats); err != nil {
+		// prop
+		res = append(res, err)
+	}
+
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *ClusterStatusNodePoolsItems0) validateHealthy(formats strfmt.Registry) error {
+
+	if err := validate.Required("healthy", "body", m.Healthy); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *ClusterStatusNodePoolsItems0) validateName(formats strfmt.Registry) error {
+
+	if err := validate.Required("name", "body", m.Name); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *ClusterStatusNodePoolsItems0) validateRunning(formats strfmt.Registry) error {
+
+	if err := validate.Required("running", "body", m.Running); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *ClusterStatusNodePoolsItems0) validateSchedulable(formats strfmt.Registry) error {
+
+	if err := validate.Required("schedulable", "body", m.Schedulable); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *ClusterStatusNodePoolsItems0) validateSize(formats strfmt.Registry) error {
+
+	if err := validate.Required("size", "body", m.Size); err != nil {
+		return err
+	}
+
 	return nil
 }
 
