@@ -45,6 +45,11 @@ endif
 swagger-generate:
 	make -B pkg/api/rest/operations/kubernikus_api.go
 
+# --existing-models github.com/sapcc/kubernikus/pkg/api/models seems not to work in our case
+swagger-generate-client:
+	swagger generate client --name kubernikus --target pkg/client --client-package kubernikus_generated \
+	      --principal models.Principal
+
 clean:
 	rm -rf bin/*
 
