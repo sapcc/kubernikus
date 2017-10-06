@@ -37,6 +37,13 @@ resources:
       username:   ((docker-hub-username))
       password:   ((docker-hub-password))
 
+  - name: kubernikusctl.image
+    type: docker-image
+    source:
+      repository: sapcc/kubernikusctl
+      username:   ((docker-hub-username))
+      password:   ((docker-hub-password))
+
   - name: slack-alert
     type: slack-notification
     source:
@@ -62,9 +69,10 @@ jobs:
           trigger: true
         - get: kubernikus.version
 
-      - put: kubernikus.image
+      - put: binaries.image
         params:
           build: kubernikus.git/
+          dockerfile: Dockerfile.binaries
           tag: kubernikus.version/version
           build_args_file: kubernikus.version/properties.json
           tag_as_latest: true
@@ -76,7 +84,39 @@ jobs:
             no_proxy: sap.corp,cloud.sap,127.0.0.1,localhost
         get_params:
           skip_download: true
-    on_failure:
+
+      - aggregate:
+        - put: kubernikus.image
+          params:
+            build: kubernikus.git/
+            dockerfile: Dockerfile.kubernikus
+            tag: kubernikus.version/version
+            build_args_file: kubernikus.version/properties.json
+            tag_as_latest: true
+            cache: true
+            cache_tag: latest
+            build_args:
+              http_proxy: http://proxy.phl.sap.corp:8080
+              https_proxy: http://proxy.phl.sap.corp:8080
+              no_proxy: sap.corp,cloud.sap,127.0.0.1,localhost
+          get_params:
+            skip_download: true
+        - put: kubernikusctl.image
+          params:
+            build: kubernikus.git/
+            dockerfile: Dockerfile.kubernikusctl
+            tag: kubernikus.version/version
+            build_args_file: kubernikus.version/properties.json
+            tag_as_latest: true
+            cache: true
+            cache_tag: latest
+            build_args:
+              http_proxy: http://proxy.phl.sap.corp:8080
+              https_proxy: http://proxy.phl.sap.corp:8080
+              no_proxy: sap.corp,cloud.sap,127.0.0.1,localhost
+          get_params:
+            skip_download: true
+      on_failure:
       <<: *post_failure_to_slack
 
   - name: staging
@@ -122,6 +162,26 @@ jobs:
           REGION: admin
           RELEASE: kubernikus-staging
           NAMESPACE: kubernikus-staging
+          GITHUB_TOKEN: ((github-access-token))
+    on_failure:
+      <<: *post_failure_to_slack
+
+  - name: k-staging
+    serial: true
+    plan:
+      - aggregate:
+        - get: kubernikus.git
+          trigger: true
+          passed: [build]
+        - get: kubernikus.version
+          passed: [build]
+        - get: secrets.git
+      - task: deploy
+        file: kubernikus.git/ci/task-helm-upgrade-v1.7.7.yaml
+        params:
+          REGION: k-staging 
+          RELEASE: kubernikus
+          NAMESPACE: kubernikus
           GITHUB_TOKEN: ((github-access-token))
     on_failure:
       <<: *post_failure_to_slack
