@@ -29,4 +29,5 @@ import:
   version: v0.4.2
 - package: github.com/pkg/errors
   version: 0.8.0
-
+- package: github.com/imdario/mergo
+  version: 0.2.2

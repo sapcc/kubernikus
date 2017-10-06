@@ -1,5 +1,5 @@
-hash: 9fc2e6d19dccc68bd0515f007ed08b7c62db6d97b3afa023a682d2cdb0f5894a
-updated: 2017-10-05T20:49:23.056605826+02:00
+hash: d327734e6344b5208776ce68d5a1a41d4a2b90bd78ff69896d8294b0a2c578f6
+updated: 2017-10-06T14:43:04.735885533+02:00
 imports:
 - name: github.com/ajeddeloh/yaml
   version: 1072abfea31191db507785e2e0c1b8d1440d35a5
@@ -154,7 +154,7 @@ imports:
 - name: github.com/huandu/xstrings
   version: d6590c0c31d16526217fa60fbd2067f7afcd78c5
 - name: github.com/imdario/mergo
-  version: 6633656539c1639d9d78127b7d47c622b5d7b6dc
+  version: 3e95a51e0639b4cf372f2ccf74c86749d747fbdc
 - name: github.com/inconshreveable/mousetrap
   version: 76626ae9c91c4f2a10f34cad8ce83ea42c93bb75
 - name: github.com/juju/ratelimit
