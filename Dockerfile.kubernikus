@@ -1,9 +1,5 @@
-FROM golang:1.9.0-alpine3.6 as builder
-WORKDIR /go/src/github.com/sapcc/kubernikus/
-RUN apk add --no-cache make
-COPY . .
-ARG VERSION
-RUN make all
+ARG VERSION=latest
+FROM sapcc/binaries:$VERSION as binaries
 
 FROM alpine:3.6
 MAINTAINER "Fabian Ruff <fabian.ruff@sap.com>"
@@ -12,6 +8,6 @@ RUN curl -Lo /bin/dumb-init https://github.com/Yelp/dumb-init/releases/download/
 	&& chmod +x /bin/dumb-init \
 	&& dumb-init -V
 COPY charts/ /etc/kubernikus/charts
-COPY --from=builder /go/src/github.com/sapcc/kubernikus/bin/linux/ /usr/local/bin/
+COPY --from=binaries /apiserver /kubernikus /wormhole /usr/local/bin/
 ENTRYPOINT ["dumb-init", "--"]
 CMD ["apiserver"]

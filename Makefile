@@ -1,8 +1,7 @@
-
-DATE     = $(shell date +%Y%m%d%H%M)
-IMAGE    ?= sapcc/kubernikus
-VERSION  ?= latest
+DATE     := $(shell date +%Y%m%d%H%M%S)
+VERSION  ?= v$(DATE)
 GOOS     ?= $(shell go env | grep GOOS | cut -d'"' -f2)
+IMAGES   := $(shell find . -name Dockerfile\* -type f -maxdepth 1 | cut -f3 -d".")
 BINARIES := apiserver kubernikus kubernikusctl wormhole
 
 LDFLAGS := -X github.com/sapcc/kubernikus/pkg/version.VERSION=$(VERSION)
@@ -29,11 +28,14 @@ all: $(BINARIES:%=bin/$(GOOS)/%)
 bin/%: $(GOFILES) Makefile
 	GOOS=$(*D) GOARCH=amd64 go build $(GOFLAGS) -v -i -o $(@D)/$(@F) ./cmd/$(@F)
 
-build: $(BINARIES:bin/linux/%)
-	docker build $(BUILD_ARGS) -t $(IMAGE):$(VERSION) .
+build: $(IMAGES:%=build/%) 
+push: $(IMAGES:%=push/%) 
 
-push:
-	docker push $(IMAGE):$(VERSION)
+build/%: $(BINARIES:bin/linux/%) 
+	docker build $(BUILD_ARGS) -t sapcc/$(@F):$(VERSION) -f Dockerfile.$(@F) .
+
+push/%: $(IMAGES:%=build/%)
+	docker push sapcc/$(@F):$(VERSION)   
 
 pkg/api/rest/operations/kubernikus_api.go: swagger.yml
 ifndef HAS_SWAGGER
