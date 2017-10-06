@@ -1,2 +1,4 @@
 bin/
-Dockerfile
+_output
+_scratch
+.git
