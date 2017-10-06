@@ -2,6 +2,7 @@ package kubernikusctl
 
 import (
 	"fmt"
+	"net/url"
 	"os"
 
 	"github.com/go-openapi/runtime"
@@ -39,7 +40,7 @@ func NewCredentialsCommand() *cobra.Command {
 }
 
 type CredentialsOptions struct {
-	host string
+	url  string
 	name string
 
 	kubernikus *kubernikus.Kubernikus
@@ -77,7 +78,7 @@ func (o *CredentialsOptions) BindFlags(flags *pflag.FlagSet) {
 	flags.StringVar(&o.auth.DomainName, "user-domain-name", o.auth.DomainName, "User domain [OS_USER_DOMAIN_NAME]")
 	flags.StringVar(&o.auth.Scope.ProjectName, "project-name", o.auth.Scope.ProjectName, "Scope to this project [OS_PROJECT_NAME]")
 	flags.StringVar(&o.auth.Scope.DomainName, "project-domain-name", o.auth.Scope.DomainName, "Domain of the project [OS_PROJECT_DOMAIN_NAME]")
-	flags.StringVar(&o.host, "host", o.host, "Kubernikus API host name")
+	flags.StringVar(&o.url, "url", o.url, "URL for Kubernikus API")
 }
 
 func (o *CredentialsOptions) Validate(c *cobra.Command, args []string) error {
@@ -122,15 +123,24 @@ func (o *CredentialsOptions) Complete(args []string) error {
 		return errors.Errorf("Authentication failed")
 	}
 
-	if o.host == "" {
+	if o.url == "" {
 		fmt.Println("Auto-Detectng Kubernikus Host...")
-		if o.host, err = o.autoDetectKubernikusHost(); err != nil {
+		if o.url, err = o.autoDetectKubernikusHost(); err != nil {
 			glog.V(2).Infof("%+v", err)
-			return errors.Errorf("You need to provide --host. Auto-Detection failed")
+			return errors.Errorf("You need to provide --url. Auto-Detection failed")
 		}
 	}
 
-	transport := kubernikus.DefaultTransportConfig().WithSchemes([]string{"https"}).WithHost(o.host)
+	url, err := url.Parse(o.url)
+	if err != nil {
+		glog.V(2).Infof("%#v", err)
+		return errors.Errorf("The URL for the Kubernikus API is not parsable")
+	}
+
+	transport := kubernikus.DefaultTransportConfig().
+		WithSchemes([]string{url.Scheme}).
+		WithHost(url.Hostname()).
+		WithBasePath(url.EscapedPath())
 	o.kubernikus = kubernikus.NewHTTPClientWithConfig(nil, transport)
 
 	if len(args) == 1 {
@@ -149,7 +159,7 @@ func (o *CredentialsOptions) Complete(args []string) error {
 }
 
 func (o *CredentialsOptions) Run(c *cobra.Command) error {
-	fmt.Printf("Fetching credentials for %v/%v/%v from %v\n", o.auth.Scope.DomainName, o.auth.Scope.ProjectName, o.name, o.host)
+	fmt.Printf("Fetching credentials for %v/%v/%v from %v\n", o.auth.Scope.DomainName, o.auth.Scope.ProjectName, o.name, o.url)
 	kubeconfig, err := o.fetchCredentials()
 	if err != nil {
 		glog.V(2).Infof("%+v", err)
@@ -195,7 +205,17 @@ func (o *CredentialsOptions) autoDetectKubernikusHost() (string, error) {
 		return "", errors.Wrap(err, "Couldn't fetch service catalog")
 	}
 
-	return fmt.Sprintf("kubernikus.%v.cloud.sap", catalog.Entries[0].Endpoints[0].Region), nil
+	for _, service := range catalog.Entries {
+		if service.Type == "kubernikus" {
+			for _, endpoint := range service.Endpoints {
+				if endpoint.Interface == "public" {
+					return endpoint.URL, nil
+				}
+			}
+		}
+	}
+
+	return "", errors.Errorf("No public Kubernikus service found in the service catalog")
 }
 
 func (o *CredentialsOptions) fetchCredentials() (string, error) {
