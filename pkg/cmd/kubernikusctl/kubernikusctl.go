@@ -1,6 +1,8 @@
 package kubernikusctl
 
 import (
+	"flag"
+
 	"github.com/spf13/cobra"
 )
 
@@ -14,6 +16,7 @@ func NewCommand(name string) *cobra.Command {
 	c.AddCommand(
 		NewCredentialsCommand(),
 	)
+	c.PersistentFlags().AddGoFlagSet(flag.CommandLine)
 
 	return c
 }
