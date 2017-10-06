@@ -113,20 +113,20 @@ func (o *CredentialsOptions) Complete(args []string) error {
 
 	if err := o.setupOpenstackClients(); err != nil {
 		glog.V(2).Infof("%+v", err)
-		return errors.Errorf("Openstack clients couldn't be created.")
+		return errors.Errorf("Openstack clients couldn't be created")
 	}
 
 	fmt.Printf("Authenticating %v/%v at %v/%v\n", o.auth.DomainName, o.auth.Username, o.auth.Scope.DomainName, o.auth.Scope.ProjectName)
 	if err := o.authenticate(); err != nil {
 		glog.V(2).Infof("%+v", err)
-		return errors.Errorf("Authentication failed.")
+		return errors.Errorf("Authentication failed")
 	}
 
 	if o.host == "" {
 		fmt.Println("Auto-Detectng Kubernikus Host...")
 		if o.host, err = o.autoDetectKubernikusHost(); err != nil {
 			glog.V(2).Infof("%+v", err)
-			return errors.Errorf("You need to provide --host. Auto-Detection failed.")
+			return errors.Errorf("You need to provide --host. Auto-Detection failed")
 		}
 	}
 
@@ -141,7 +141,7 @@ func (o *CredentialsOptions) Complete(args []string) error {
 		fmt.Println("Auto-Detecting Kubernikus Cluster...")
 		if o.name, err = o.autoDetectClusterName(); err != nil {
 			glog.V(2).Infof("%+v", err)
-			return errors.Errorf("You need to provide --host. Auto-Detection failed.")
+			return errors.Errorf("You need to provide --host. Auto-Detection failed")
 		}
 	}
 
@@ -153,13 +153,13 @@ func (o *CredentialsOptions) Run(c *cobra.Command) error {
 	kubeconfig, err := o.fetchCredentials()
 	if err != nil {
 		glog.V(2).Infof("%+v", err)
-		return errors.Errorf("Couldn't fetch credentials from Kubernikus API.")
+		return errors.Wrap(err, "Couldn't fetch credentials from Kubernikus API")
 	}
 
 	err = o.mergeAndPersist(kubeconfig)
 	if err != nil {
 		glog.V(2).Infof("%+v", err)
-		return errors.Errorf("Couldn't merge existing kubeconfig with fetched credentials.")
+		return errors.Errorf("Couldn't merge existing kubeconfig with fetched credentials")
 	}
 
 	fmt.Printf("Wrote merged kubeconfig to %v\n", clientcmd.NewDefaultPathOptions().GetDefaultFilename())
@@ -171,11 +171,11 @@ func (o *CredentialsOptions) setupOpenstackClients() error {
 	var err error
 
 	if o.provider, err = openstack.NewClient(o.auth.IdentityEndpoint); err != nil {
-		return errors.Wrap(err, "Creating Gophercloud ProviderClient failed.")
+		return errors.Wrap(err, "Creating Gophercloud ProviderClient failed")
 	}
 
 	if o.identity, err = openstack.NewIdentityV3(o.provider, gophercloud.EndpointOpts{}); err != nil {
-		return errors.Wrap(err, "Creating Identity ServiceClient failed.")
+		return errors.Wrap(err, "Creating Identity ServiceClient failed")
 	}
 
 	return nil
@@ -207,8 +207,15 @@ func (o *CredentialsOptions) fetchCredentials() (string, error) {
 				return nil
 			}))
 
-	if err != nil {
-		return "", errors.Wrap(err, "Couldn't fetch credentials from Kubernikus API")
+	switch err.(type) {
+	case *operations.GetClusterCredentialsDefault:
+		result := err.(*operations.GetClusterCredentialsDefault)
+		if result.Code() == 404 {
+			return "", errors.Errorf("Cluster %v not found", o.name)
+		}
+		return "", errors.Errorf(*result.Payload.Message)
+	case error:
+		return "", errors.Wrapf(err, "A generic error occured")
 	}
 
 	return ok.Payload.Kubeconfig, nil
@@ -222,6 +229,14 @@ func (o *CredentialsOptions) autoDetectClusterName() (string, error) {
 				req.SetHeaderParam("X-AUTH-TOKEN", o.provider.TokenID)
 				return nil
 			}))
+
+	switch err.(type) {
+	case *operations.ListClustersDefault:
+		result := err.(*operations.ListClustersDefault)
+		return "", errors.Errorf(*result.Payload.Message)
+	case error:
+		return "", errors.Wrapf(err, "Listing clusters failed")
+	}
 
 	if err != nil {
 		return "", errors.Wrap(err, "Couldn't fetch kluster list from Kubernikus API")
