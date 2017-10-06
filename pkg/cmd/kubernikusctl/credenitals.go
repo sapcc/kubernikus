@@ -265,7 +265,7 @@ func (o *CredentialsOptions) mergeAndPersist(rawConfig string) error {
 		return errors.Wrapf(err, "Couldn't load kubernikus kubeconfig: %v", rawConfig)
 	}
 
-	if err := mergo.Merge(startingConfig, config); err != nil {
+	if err := mergo.MergeWithOverwrite(startingConfig, config); err != nil {
 		return errors.Wrap(err, "Couldn't merge kubeconfigs")
 	}
 
