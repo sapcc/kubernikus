@@ -3,9 +3,6 @@ package kubernikus
 import (
 	"flag"
 
-	"github.com/sapcc/kubernikus/pkg/cmd/certificates"
-	"github.com/sapcc/kubernikus/pkg/cmd/helm"
-	"github.com/sapcc/kubernikus/pkg/cmd/operator"
 	"github.com/spf13/cobra"
 )
 
@@ -17,9 +14,9 @@ func NewCommand(name string) *cobra.Command {
 	}
 
 	c.AddCommand(
-		certificates.NewCommand(),
-		helm.NewCommand(),
-		operator.NewCommand(),
+		NewCertificatesCommand(),
+		NewHelmCommand(),
+		NewOperatorCommand(),
 	)
 	c.PersistentFlags().AddGoFlagSet(flag.CommandLine)
 

@@ -1,4 +1,4 @@
-package operator
+package kubernikus
 
 import (
 	"errors"
@@ -15,7 +15,7 @@ import (
 	"github.com/spf13/pflag"
 )
 
-func NewCommand() *cobra.Command {
+func NewOperatorCommand() *cobra.Command {
 	o := NewOperatorOptions()
 
 	if f := goflag.Lookup("logtostderr"); f != nil {

@@ -1,4 +1,4 @@
-package helm
+package kubernikus 
 
 import (
 	"errors"
@@ -15,7 +15,7 @@ import (
 	yaml "gopkg.in/yaml.v2"
 )
 
-func NewCommand() *cobra.Command {
+func NewHelmCommand() *cobra.Command {
 	o := NewHelmOptions()
 
 	c := &cobra.Command{
