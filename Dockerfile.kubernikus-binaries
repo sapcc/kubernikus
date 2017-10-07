@@ -5,5 +5,5 @@ COPY . .
 ARG VERSION
 RUN make all
 
-FROM scratch
+FROM scratch as kubernikus-binaries
 COPY --from=builder /go/src/github.com/sapcc/kubernikus/bin/linux/* /
