@@ -1,5 +1,5 @@
 ARG VERSION=latest
-FROM sapcc/binaries:$VERSION as binaries
+FROM sapcc/kubernikus-binaries:$VERSION as binaries
 
 FROM alpine:3.6
 MAINTAINER "Fabian Ruff <fabian.ruff@sap.com>"
