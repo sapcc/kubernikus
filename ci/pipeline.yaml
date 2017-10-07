@@ -93,7 +93,7 @@ jobs:
           tag: kubernikus.version/version
           build_args_file: kubernikus.version/properties.json
           tag_as_latest: true
-          cache: false 
+          cache: true 
           cache_tag: latest
           build_args:
             http_proxy: http://proxy.phl.sap.corp:8080
@@ -110,7 +110,7 @@ jobs:
             tag: kubernikus.version/version
             build_args_file: kubernikus.version/properties.json
             tag_as_latest: true
-            cache: false 
+            cache: true 
             cache_tag: latest
             build_args:
               http_proxy: http://proxy.phl.sap.corp:8080
@@ -125,7 +125,7 @@ jobs:
             tag: kubernikus.version/version
             build_args_file: kubernikus.version/properties.json
             tag_as_latest: true
-            cache: false 
+            cache: true 
             cache_tag: latest
             build_args:
               http_proxy: http://proxy.phl.sap.corp:8080
@@ -139,7 +139,7 @@ jobs:
             tag: kubernikus.version/version
             build_args_file: kubernikus.version/properties.json
             tag_as_latest: true
-            cache: false 
+            cache: true 
             cache_tag: latest
             build_args:
               http_proxy: http://proxy.phl.sap.corp:8080
