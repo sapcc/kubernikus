@@ -1,4 +1,3 @@
-FROM scratch as kubernikus-binaries
 ARG VERSION=latest
 FROM sapcc/kubernikus-binaries:$VERSION as kubernikus-binaries
 
