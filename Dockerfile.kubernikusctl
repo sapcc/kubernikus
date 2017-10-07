@@ -2,8 +2,6 @@ FROM scratch as kubernikus-binaries
 ARG VERSION=latest
 FROM sapcc/kubernikus-binaries:$VERSION as kubernikus-binaries
 
-builder /go/src/github.com/sapcc/kubernikus/bin/linux/* /
-
 FROM alpine:3.6 as kubernikusctl
 COPY --from=kubernikus-binaries /kubernikusctl /usr/local/bin/
 CMD ["kubernikusctl"]
