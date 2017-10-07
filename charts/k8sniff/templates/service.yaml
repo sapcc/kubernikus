@@ -3,12 +3,18 @@ kind: Service
 metadata:
   name: k8sniff-ingress-lb
 spec:
+{{- if .Values.external_service_ip }}
   type: ClusterIP
+{{- else }}
+  type: LoadBalancer
+{{- end }}
   ports:
     - port: 443
       targetPort: 8443
       protocol: TCP
   selector:
     role: k8sniff-ingress-lb
+{{- if .Values.external_service_ip }}
   externalIPs:
-    - {{ required "missing external_service_ip" .Values.external_service_ip }}
+    - {{ .Values.external_service_ip }}
+{{- end }}
