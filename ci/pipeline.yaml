@@ -197,9 +197,9 @@ jobs:
       - aggregate:
         - get: kubernikus.git
           trigger: true
-          passed: [staging]
+          passed: [k-staging]
         - get: kubernikus.version
-          passed: [staging]
+          passed: [k-staging]
         - get: secrets.git
 
       - task: deploy
