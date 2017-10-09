@@ -73,7 +73,7 @@ spec:
             - --controllers=*,bootstrapsigner,tokencleaner
             - --kubeconfig=/etc/kubernetes/config/kubeconfig
             - --leader-elect=false
-            - --root-ca-file=/etc/kubernetes/certs/apiserver-clients-ca.pem
+            - --root-ca-file=/etc/kubernetes/certs/tls-ca.pem
             - --service-account-private-key-file=/etc/kubernetes/certs/apiserver-clients-ca-key.pem
             - --service-cluster-ip-range={{ .Values.serviceCIDR }}
             - --use-service-account-credentials
