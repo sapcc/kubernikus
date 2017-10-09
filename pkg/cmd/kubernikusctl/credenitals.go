@@ -79,6 +79,7 @@ func (o *CredentialsOptions) BindFlags(flags *pflag.FlagSet) {
 	flags.StringVar(&o.auth.Scope.ProjectName, "project-name", o.auth.Scope.ProjectName, "Scope to this project [OS_PROJECT_NAME]")
 	flags.StringVar(&o.auth.Scope.DomainName, "project-domain-name", o.auth.Scope.DomainName, "Domain of the project [OS_PROJECT_DOMAIN_NAME]")
 	flags.StringVar(&o.url, "url", o.url, "URL for Kubernikus API")
+	flags.StringVar(&o.name, "name", o.name, "Cluster Name")
 }
 
 func (o *CredentialsOptions) Validate(c *cobra.Command, args []string) error {
