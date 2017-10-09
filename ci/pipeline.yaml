@@ -145,33 +145,6 @@ jobs:
           get_params:
             skip_download: true
 
-  - name: staging
-    serial: true
-    plan:
-      - aggregate:
-        - get: kubernikus.git
-          trigger: true
-          passed: [build]
-        - get: kubernikus.version
-          passed: [build]
-        - get: secrets.git
-
-      - task: deploy
-        file: kubernikus.git/ci/task-helm-upgrade.yaml
-        params:
-          REGION: staging
-          RELEASE: kubernikus
-          NAMESPACE: kube-system 
-          GITHUB_TOKEN: ((github-access-token))
-      - task: prune replicasets
-        file: kubernikus.git/ci/prune-replicasets.yaml
-        params:
-          REGION: staging
-          NAMESPACE: kube-system
-          GITHUB_TOKEN: {{github-access-token}}
-    on_failure:
-      <<: *post_failure_to_slack
-
   - name: admin-staging
     serial: true
     plan:
@@ -183,7 +156,7 @@ jobs:
           passed: [build]
         - get: secrets.git
       - task: deploy
-        file: kubernikus.git/ci/task-helm-upgrade-v1.7.7.yaml
+        file: kubernikus.git/ci/task-helm-upgrade-admin.yaml
         params:
           REGION: admin
           RELEASE: kubernikus-staging
