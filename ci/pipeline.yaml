@@ -58,7 +58,6 @@ resources:
       username:   ((docker-hub-username))
       password:   ((docker-hub-password))
 
-
   - name: slack-alert
     type: slack-notification
     source:
@@ -145,27 +144,7 @@ jobs:
           get_params:
             skip_download: true
 
-  - name: a-staging
-    serial: true
-    plan:
-      - aggregate:
-        - get: kubernikus.git
-          trigger: true
-          passed: [build]
-        - get: kubernikus.version
-          passed: [build]
-        - get: secrets.git
-      - task: deploy
-        file: kubernikus.git/ci/task-helm-upgrade-admin.yaml
-        params:
-          REGION: admin
-          RELEASE: kubernikus-staging
-          NAMESPACE: kubernikus-staging
-          GITHUB_TOKEN: ((github-access-token))
-    on_failure:
-      <<: *post_failure_to_slack
-
-  - name: k-staging
+  - name: staging
     serial: true
     plan:
       - aggregate:
@@ -178,9 +157,6 @@ jobs:
       - task: deploy
         file: kubernikus.git/ci/task-helm-upgrade-kubernikus.yaml
         params:
-          REGION: k-staging
-          NAMESPACE: kubernikus-system
-          RELEASE: kubernikus
           OS_AUTH_URL: https://identity-3.staging.cloud.sap/v3
           OS_USERNAME: {{kubernikus-staging-username}}
           OS_PASSWORD: {{kubernikus-staging-password}}
@@ -198,9 +174,9 @@ jobs:
       - aggregate:
         - get: kubernikus.git
           trigger: true
-          passed: [k-staging]
+          passed: [staging]
         - get: kubernikus.version
-          passed: [k-staging]
+          passed: [staging]
         - get: secrets.git
 
       - task: deploy
