@@ -26,6 +26,7 @@ run:
       kubectl rollout status deployment/kubernikus-operator --namespace=$NAMESPACE
 
 params:
+  REGION:
   NAMESPACE: 
   RELEASE: 
   OS_AUTH_URL:

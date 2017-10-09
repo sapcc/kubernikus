@@ -178,12 +178,13 @@ jobs:
       - task: deploy
         file: kubernikus.git/ci/task-helm-upgrade-kubernikus.yaml
         params:
+          REGION: k-staging
           NAMESPACE: kubernikus-system
           RELEASE: kubernikus
           OS_AUTH_URL: https://identity-3.staging.cloud.sap/v3
           OS_USERNAME: {{kubernikus-staging-username}}
           OS_PASSWORD: {{kubernikus-staging-password}}
-          OS_USER_DOMAIN_NAME: monsoon3
+          OS_USER_DOMAIN_NAME: ccadmin 
           OS_PROJECT_NAME: kubernikus
           OS_PROJECT_DOMAIN_NAME: ccadmin
           KUBERNIKUS_NAME: k-staging
