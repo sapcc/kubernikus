@@ -27,8 +27,8 @@ kubernikus: {}
 # Use these keys to specify the certs as helm values
 certs: {}
 
-clusterCIDR: 10.180.128.0/17
-serviceCIDR: 10.180.1.0/24
+clusterCIDR: 198.19.0.0/16
+serviceCIDR: 198.18.128.0/17
 
 api:
   replicaCount: 1
