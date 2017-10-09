@@ -68,6 +68,9 @@ func NewCredentialsOptions() *CredentialsOptions {
 		},
 	}
 
+	o.name = os.Getenv("KUBERNIKUS_NAME")
+	o.url = os.Getenv("KUBERNIKUS_URL")
+
 	return o
 }
 
