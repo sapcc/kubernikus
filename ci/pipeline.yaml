@@ -145,7 +145,7 @@ jobs:
           get_params:
             skip_download: true
 
-  - name: admin-staging
+  - name: a-staging
     serial: true
     plan:
       - aggregate:
