@@ -1,0 +1,38 @@
+---
+platform: 'linux'
+
+image_resource:
+  type: docker-image
+  source:
+    repository: sapcc/kubernikus-kubectl
+    tag: 'latest'
+
+inputs:
+  - name: kubernikus.git
+  - name: kubernikus.version
+  - name: secrets.git
+
+run:
+  path: /bin/sh
+  args:
+    - -c
+    - |
+      set -exo pipefail
+      VERSION=$(cat kubernikus.version/version)
+      kubernikusctl credentials
+      helm dep up --skip-refresh kubernikus.git/charts/kubernikus/
+      helm upgrade $RELEASE kubernikus.git/charts/kubernikus/ --values secrets.git/$REGION/values/$RELEASE.yaml --set imageTag=$VERSION
+      kubectl rollout status deployment/kubernikus-api --namespace=$NAMESPACE
+      kubectl rollout status deployment/kubernikus-operator --namespace=$NAMESPACE
+
+params:
+  NAMESPACE: 
+  RELEASE: 
+  OS_AUTH_URL:
+  OS_USERNAME:
+  OS_PASSWORD:
+  OS_USER_DOMAIN_NAME:
+  OS_PROJECT_NAME:
+  OS_PROJECT_DOMAIN_NAME:
+  KUBERNIKUS_NAME:
+  KUBERNIKUS_URL:
