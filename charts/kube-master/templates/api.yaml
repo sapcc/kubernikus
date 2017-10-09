@@ -101,6 +101,7 @@ spec:
             - apiserver
             - --etcd-servers=http://{{ include "etcd.fullname" . }}:2379
             - --secure-port=6443
+            - --advertise-address={{ .Values.advertiseAddresss }}
             - --admission-control=NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,ResourceQuota
             - --allow-privileged=true
             - --authorization-mode=Node,RBAC
