@@ -102,20 +102,20 @@ groups:
   - name: kubernikus
     jobs:
       - build
-      - helm_staging
+      - staging
       - e2e
       - rollout
-      - helm_eu-nl-1
+      - eu-nl-1
   - name: admin
     jobs:
-      - helm-admin_staging
+      - admin_staging
       - rollout_admin
-      - helm-admin_eu-nl-1
+      - admin_eu-nl-1
   - name: kubernikus-system
     jobs:
-      - helm_staging_kubernikus-system
+      - staging_kubernikus-system
       - rollout_kubernikus-system
-      - helm_eu-nl-1_kubernikus-system
+      - eu-nl-1_kubernikus-system
 
 jobs:
 
@@ -190,7 +190,7 @@ jobs:
           get_params:
             skip_download: true
 
-  - name: helm_staging
+  - name: staging
     serial: true
     plan:
       - aggregate:
@@ -218,11 +218,11 @@ jobs:
     plan:
       - aggregate:
         - get: kubernikus.git
-          passed: [helm_staging]
+          passed: [staging]
           params:
             depth: 0
         - get: kubernikus.version
-          passed: [helm_staging]
+          passed: [staging]
           trigger: true
 
   - name: rollout
@@ -236,7 +236,7 @@ jobs:
         - get: kubernikus.version
           passed: [e2e]
 
-  - name: helm_eu-nl-1
+  - name: eu-nl-1
     serial: true
     plan:
       - aggregate:
@@ -262,7 +262,7 @@ jobs:
 #
 ####################################################################################
 #
-  - name: helm-admin_staging
+  - name: admin_staging
     serial: true
     plan:
       - aggregate:
@@ -285,13 +285,13 @@ jobs:
     plan:
       - aggregate:
         - get: kubernikus.git
-          passed: [helm-admin_staging]
+          passed: [admin_staging]
           params:
             depth: 0
         - get: kubernikus.version
-          passed: [helm-admin_staging]
+          passed: [admin_staging]
 
-  - name: helm-admin_eu-nl-1
+  - name: admin_eu-nl-1
     serial: true
     plan:
       - aggregate:
@@ -317,7 +317,7 @@ jobs:
 #
 ####################################################################################
 
-  - name: helm_staging_kubernikus-system
+  - name: staging_kubernikus-system
     serial: true
     plan:
       - aggregate:
@@ -341,11 +341,11 @@ jobs:
     plan:
       - aggregate:
         - get: charts.git
-          passed: [helm_staging_kubernikus-system]
+          passed: [staging_kubernikus-system]
           params:
             depth: 0
 
-  - name: helm_eu-nl-1_kubernikus-system
+  - name: eu-nl-1_kubernikus-system
     serial: true
     plan:
       - aggregate:
