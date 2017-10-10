@@ -1,0 +1,32 @@
+---
+platform: 'linux'
+
+image_resource:
+  type: docker-image
+  source:
+    repository: sapcc/kubernikus-kubectl
+    tag: 'latest'
+
+inputs:
+  - name: charts.git
+  - name: secrets.git
+
+run:
+  path: /bin/sh
+  args:
+    - -c
+    - |
+      set -exo pipefail
+      kubernikusctl credentials
+      helm dep up --skip-refresh charts.git/charts/kubernikus-system/
+      helm upgrade kubernikus charts.git/charts/kubernikus-system/ --values secrets.git/$KUBERNIKUS_NAME/values/kubernikus-system.yaml --install
+
+params:
+  OS_AUTH_URL:
+  OS_USERNAME:
+  OS_PASSWORD:
+  OS_USER_DOMAIN_NAME:
+  OS_PROJECT_NAME:
+  OS_PROJECT_DOMAIN_NAME:
+  KUBERNIKUS_NAME:
+  KUBERNIKUS_URL:
