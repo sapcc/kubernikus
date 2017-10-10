@@ -290,6 +290,7 @@ jobs:
             depth: 0
         - get: kubernikus.version
           passed: [admin_staging]
+          trigger: true # remove for manual gate
 
   - name: admin_eu-nl-1
     serial: true
