@@ -277,7 +277,7 @@ jobs:
         file: pipeline.git/ci/task_helm-admin_kubernikus.yaml
         params:
           REGION: admin
-          KUBERNIKUS_NAME: kubernikus-staging # should be k-staging if you copy this for other regions
+          KUBERNIKUS_NAME: kubernikus-staging
           GITHUB_TOKEN: ((github-access-token))
 
   - name: rollout_admin
@@ -306,7 +306,7 @@ jobs:
         file: pipeline.git/ci/task_helm-admin_kubernikus.yaml
         params:
           REGION: admin
-          KUBERNIKUS_NAME: k-eu-nl-1
+          KUBERNIKUS_NAME: kubernikus-eu-nl-1
           GITHUB_TOKEN: ((github-access-token))
     on_failure:
       <<: *post_failure_to_slack
