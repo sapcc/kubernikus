@@ -10,8 +10,7 @@ openstack:
   auth_project: "master"
   auth_project_domain: "Default"
 
-kubernikus:
-  domain: "kubernikus.replaceme.cloud.sap"
+domain: "kubernikus.replaceme.cloud.sap"
 
 api:
   port: 1234
