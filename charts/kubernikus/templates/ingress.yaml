@@ -9,9 +9,9 @@ metadata:
 spec:
   tls:
      - secretName: kubernikus-api
-       hosts: [{{.Values.kubernikus.domain}}]
+       hosts: [{{.Values.domain}}]
   rules:
-    - host: {{.Values.kubernikus.domain}}
+    - host: {{.Values.domain}}
       http:
         paths:
         - path: /
