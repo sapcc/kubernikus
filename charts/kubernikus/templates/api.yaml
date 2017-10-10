@@ -25,6 +25,7 @@ spec:
             {{- /* This is a bit convoluted but making sure that the url ends with /v3 */}}
             - --auth-url={{ trimSuffix "/" .Values.openstack.auth_url | trimSuffix "/v3" }}/v3
             - --v={{ default 1 .Values.api.log_level }}
+            - --namespace={{ default kubernikus .Values.namespace }}
           ports:
             - name: http
               containerPort: {{ .Values.api.port }}

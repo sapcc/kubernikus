@@ -30,4 +30,5 @@ spec:
             - --auth-project={{ .Values.openstack.auth_project }}
             - --auth-project-domain={{ .Values.openstack.auth_project_domain }}
             - --kubernikus-domain={{ .Values.kubernikus.domain }}
+            - --namespace={{ default kubernikus .Values.namespace }}
             - --v={{ default 1 .Values.groundctl.log_level }}
