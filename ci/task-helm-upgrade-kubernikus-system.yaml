@@ -8,7 +8,7 @@ image_resource:
     tag: 'latest'
 
 inputs:
-  - name: charts.git
+  - name: kubernikus.git
   - name: secrets.git
 
 run:
@@ -18,8 +18,8 @@ run:
     - |
       set -exo pipefail
       kubernikusctl credentials
-      helm dep up --skip-refresh charts.git/charts/kubernikus-system/
-      helm upgrade kubernikus charts.git/charts/kubernikus-system/ --values secrets.git/$KUBERNIKUS_NAME/values/kubernikus-system.yaml --install
+      helm dep up --skip-refresh kubernikus.git/charts/kubernikus-system/
+      helm upgrade kubernikus kubernikus.git/charts/kubernikus-system/ --values secrets.git/$KUBERNIKUS_NAME/values/kubernikus-system.yaml --install
 
 params:
   OS_AUTH_URL:
