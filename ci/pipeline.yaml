@@ -27,7 +27,18 @@ resources:
       branch: master
       depth: 1
       params:
-        paths: ["charts/*"]
+        paths: ["charts/**"]
+
+  - name: pipeline.git
+    type: git
+    source:
+      username: sapcc-bot
+      password: ((github-com-access-token))
+      uri:    https://github.com/sapcc/kubernikus.git
+      branch: master
+      depth: 1
+      params:
+        paths: ["ci/*"]
 
   - name: secrets.git
     type: git
@@ -157,6 +168,7 @@ jobs:
     serial: true
     plan:
       - aggregate:
+        - get: pipeline.git
         - get: kubernikus.git
           passed: [build]
         - get: kubernikus.version
@@ -164,7 +176,18 @@ jobs:
           trigger: true
         - get: secrets.git
       - task: deploy
-        file: kubernikus.git/ci/task-helm-upgrade-kubernikus.yaml
+        file: pipeline.git/ci/task-helm-upgrade-kubernikus.yaml
+        params:
+          OS_AUTH_URL: https://identity-3.staging.cloud.sap/v3
+          OS_USERNAME: {{kubernikus-staging-username}}
+          OS_PASSWORD: {{kubernikus-staging-password}}
+          OS_USER_DOMAIN_NAME: ccadmin 
+          OS_PROJECT_NAME: kubernikus
+          OS_PROJECT_DOMAIN_NAME: ccadmin
+          KUBERNIKUS_NAME: k-staging
+          KUBERNIKUS_URL: https://kubernikus-staging.admin.cloud.sap
+      - task: kubernikus-system 
+        file: pipeline.git/ci/task-helm-upgrade-kubernikus-system.yaml
         params:
           OS_AUTH_URL: https://identity-3.staging.cloud.sap/v3
           OS_USERNAME: {{kubernikus-staging-username}}
@@ -181,6 +204,7 @@ jobs:
     serial: true
     plan:
       - aggregate:
+        - get: pipeline.git
         - get: kubernikus.git
           passed: [rollout]
         - get: kubernikus.version
@@ -188,14 +212,14 @@ jobs:
           trigger: true
         - get: secrets.git
       - task: deploy
-        file: kubernikus.git/ci/task-helm-upgrade.yaml
+        file: pipeline.git/ci/task-helm-upgrade.yaml
         params:
           REGION: eu-nl-1
           RELEASE: kubernikus
           NAMESPACE: kube-system
           GITHUB_TOKEN: ((github-access-token))
       - task: prune replicasets
-        file: kubernikus.git/ci/prune-replicasets.yaml
+        file: pipeline.git/ci/prune-replicasets.yaml
         params:
           REGION: eu-nl-1
           NAMESPACE: kube-system 
@@ -207,6 +231,7 @@ jobs:
     serial: true
     plan:
       - aggregate:
+        - get: pipeline.git
         - get: charts.git
           trigger: true
         - get: kubernikus.git
@@ -218,7 +243,7 @@ jobs:
           trigger: true
         - get: secrets.git
       - task: deploy
-        file: kubernikus.git/ci/task-helm-upgrade-kubernikus-admin.yaml
+        file: pipeline.git/ci/task-helm-upgrade-kubernikus-admin.yaml
         params:
           REGION: admin
           KUBERNIKUS_NAME: kubernikus-staging # should be k-staging if you copy this for other regions
@@ -230,6 +255,7 @@ jobs:
     serial: true
     plan:
       - aggregate:
+        - get: pipeline.git
         - get: charts.git
           passed: [rollout]
           trigger: true
@@ -242,7 +268,7 @@ jobs:
           trigger: true
         - get: secrets.git
       - task: deploy
-        file: kubernikus.git/ci/task-helm-upgrade-kubernikus-admin.yaml
+        file: pipeline.git/ci/task-helm-upgrade-kubernikus-admin.yaml
         params:
           REGION: admin
           KUBERNIKUS_NAME: kubernikus-staging # should be k-staging if you copy this for other regions
@@ -260,6 +286,7 @@ jobs:
             depth: 0
         - get: kubernikus.version
           passed: [k-staging]
+          trigger: true
 
   - name: rollout
     serial: true
