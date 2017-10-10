@@ -8,7 +8,7 @@ image_resource:
     tag: 'v1.7.7'
 
 inputs:
-  - name: charts.git
+  - name: kubernikus.git
   - name: kubernikus.version
   - name: secrets.git
 
@@ -19,8 +19,8 @@ run:
     - |
       set -exo pipefail
       VERSION=$(cat kubernikus.version/version)
-      helm dep up --skip-refresh charts.git/charts/kubernikus/
-      helm upgrade $KUBERNIKUS_NAME charts.git/charts/kubernikus/ --values secrets.git/admin/values/$KUBERNIKUS_NAME.yaml --set imageTag=$VERSION --install
+      helm dep up --skip-refresh kubernikus.git/charts/kubernikus/
+      helm upgrade $KUBERNIKUS_NAME kubernikus.git/charts/kubernikus/ --values kubernikus.git/admin/values/$KUBERNIKUS_NAME.yaml --set imageTag=$VERSION --install
       kubectl rollout status deployment/kubernikus-api --namespace=$KUBERNIKUS_NAME
       kubectl rollout status deployment/kubernikus-operator --namespace=$KUBERNIKUS_NAME
 
