@@ -16,6 +16,18 @@ resources:
       password: ((github-com-access-token))
       uri:    https://github.com/sapcc/kubernikus.git
       branch: master
+      depth: 1
+
+  - name: charts.git
+    type: git
+    source:
+      username: sapcc-bot
+      password: ((github-com-access-token))
+      uri:    https://github.com/sapcc/kubernikus.git
+      branch: master
+      depth: 1
+      params:
+        paths: ["charts/*"]
 
   - name: secrets.git
     type: git
@@ -23,6 +35,7 @@ resources:
       uri:         git@github.wdf.sap.corp:cc/secrets.git
       private_key: ((secrets-ssh-key))
       branch:      master
+      depth: 1
 
   - name: kubernikus.version
     type: time-version-resource
@@ -92,7 +105,6 @@ jobs:
           tag: kubernikus.version/version
           build_args_file: kubernikus.version/properties.json
           tag_as_latest: true
-          cache: false 
           build_args:
             http_proxy: http://proxy.phl.sap.corp:8080
             https_proxy: http://proxy.phl.sap.corp:8080
@@ -107,9 +119,6 @@ jobs:
             dockerfile: kubernikus.git/Dockerfile.kubernikus
             tag: kubernikus.version/version
             build_args_file: kubernikus.version/properties.json
-            tag_as_latest: true
-            cache: true 
-            cache_tag: latest
             build_args:
               http_proxy: http://proxy.phl.sap.corp:8080
               https_proxy: http://proxy.phl.sap.corp:8080
@@ -144,15 +153,15 @@ jobs:
           get_params:
             skip_download: true
 
-  - name: staging
+  - name: k-staging
     serial: true
     plan:
       - aggregate:
         - get: kubernikus.git
-          trigger: true
           passed: [build]
         - get: kubernikus.version
           passed: [build]
+          trigger: true
         - get: secrets.git
       - task: deploy
         file: kubernikus.git/ci/task-helm-upgrade-kubernikus.yaml
@@ -168,17 +177,16 @@ jobs:
     on_failure:
       <<: *post_failure_to_slack
 
-  - name: eu-nl-1
+  - name: k-eu-nl-1
     serial: true
     plan:
       - aggregate:
         - get: kubernikus.git
-          trigger: true
-          passed: [staging]
+          passed: [rollout]
         - get: kubernikus.version
-          passed: [staging]
+          passed: [rollout]
+          trigger: true
         - get: secrets.git
-
       - task: deploy
         file: kubernikus.git/ci/task-helm-upgrade.yaml
         params:
@@ -194,6 +202,79 @@ jobs:
           GITHUB_TOKEN: {{github-access-token}}
     on_failure:
       <<: *post_failure_to_slack
+
+  - name: a-staging
+    serial: true
+    plan:
+      - aggregate:
+        - get: charts.git
+          trigger: true
+        - get: kubernikus.git
+          passed: [build]
+          params:
+            depth: 0
+        - get: kubernikus.version
+          passed: [build]
+          trigger: true
+        - get: secrets.git
+      - task: deploy
+        file: kubernikus.git/ci/task-helm-upgrade-kubernikus-admin.yaml
+        params:
+          REGION: admin
+          KUBERNIKUS_NAME: kubernikus-staging # should be k-staging if you copy this for other regions
+          GITHUB_TOKEN: ((github-access-token))
+    on_failure:
+      <<: *post_failure_to_slack
+
+  - name: a-eu-nl-1
+    serial: true
+    plan:
+      - aggregate:
+        - get: charts.git
+          passed: [rollout]
+          trigger: true
+        - get: kubernikus.git
+          passed: [rollout]
+          params:
+            depth: 0
+        - get: kubernikus.version
+          passed: [rollout]
+          trigger: true
+        - get: secrets.git
+      - task: deploy
+        file: kubernikus.git/ci/task-helm-upgrade-kubernikus-admin.yaml
+        params:
+          REGION: admin
+          KUBERNIKUS_NAME: kubernikus-staging # should be k-staging if you copy this for other regions
+          GITHUB_TOKEN: ((github-access-token))
+    on_failure:
+      <<: *post_failure_to_slack
+
+  - name: e2e
+    serial: true
+    plan:
+      - aggregate:
+        - get: kubernikus.git
+          passed: [k-staging]
+          params:
+            depth: 0
+        - get: kubernikus.version
+          passed: [k-staging]
+
+  - name: rollout
+    serial: true
+    plan:
+      - aggregate:
+        - get: charts.git
+          passed: [a-staging]
+          params:
+            depth: 0
+        - get: kubernikus.git
+          passed: [e2e]
+          params:
+            depth: 0
+        - get: kubernikus.version
+          passed: [e2e]
 
   # Add new regions above this line, but note that you need to do a
   # manual `helm install` first. This pipeline can only `helm upgrade`.
