@@ -16,8 +16,30 @@ func SeedKluster(client clientset.Interface) error {
 	if err := SeedAutoApproveNodeBootstrapTokens(client); err != nil {
 		return err
 	}
+	if err := SeedKubernikusAdmin(client); err != nil {
+		return err
+	}
 	return nil
 
+}
+
+func SeedKubernikusAdmin(client clientset.Interface) error {
+	return CreateOrUpdateClusterRoleBinding(client, &rbac.ClusterRoleBinding{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "kubernikus:admin",
+		},
+		RoleRef: rbac.RoleRef{
+			APIGroup: rbac.GroupName,
+			Kind:     "ClusterRole",
+			Name:     "cluster-admin",
+		},
+		Subjects: []rbac.Subject{
+			{
+				Kind: rbac.GroupKind,
+				Name: "os:kubernetes_admin",
+			},
+		},
+	})
 }
 
 func SeedAllowBootstrapTokensToPostCSRs(client clientset.Interface) error {

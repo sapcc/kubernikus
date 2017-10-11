@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"crypto/x509"
+	"time"
 
 	"github.com/ghodss/yaml"
 	"github.com/go-openapi/runtime/middleware"
@@ -59,10 +60,16 @@ func (d *getClusterCredentials) Handle(params operations.GetClusterCredentialsPa
 		return NewErrorResponse(&operations.GetClusterCredentialsDefault{}, 500, "Failed to parse CA certificate: %s", err)
 	}
 
+	var organizations []string
+	for _, role := range principal.Roles {
+		organizations = append(organizations, "os:"+role)
+	}
+
 	cert := bundle.Sign(ground.Config{
 		Sign:         principal.Name,
-		Organization: []string{"system:masters"},
+		Organization: organizations,
 		Usages:       []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth},
+		ValidFor:     24 * time.Hour,
 	})
 	config := kubernetes.NewClientConfigV1(
 		params.Name,

@@ -20,7 +20,10 @@ import (
 )
 
 const (
-	duration365d = time.Hour * 24 * 365
+	//by default we generate certs with 2 year validity
+	defaultCertValidity = 2 * time.Hour * 24 * 365
+	//out CAs are valid for 10 years
+	caValidity = 10 * time.Hour * 24 * 365
 )
 
 type Certificates struct {
@@ -129,6 +132,7 @@ type Config struct {
 	OrganizationalUnit []string
 	AltNames           AltNames
 	Usages             []x509.ExtKeyUsage
+	ValidFor           time.Duration
 }
 
 type AltNames struct {
@@ -249,7 +253,7 @@ func createCA(satellite, name string, bundle *Bundle) {
 			OrganizationalUnit: []string{"SAP Converged Cloud", "Kubernikus", satellite},
 		},
 		NotBefore:             now.UTC(),
-		NotAfter:              now.Add(duration365d * 10).UTC(),
+		NotAfter:              now.Add(caValidity).UTC(),
 		KeyUsage:              x509.KeyUsageKeyEncipherment | x509.KeyUsageDigitalSignature | x509.KeyUsageCertSign,
 		BasicConstraintsValid: true,
 		IsCA: true,
@@ -262,6 +266,10 @@ func createCA(satellite, name string, bundle *Bundle) {
 func (ca Bundle) Sign(config Config) Bundle {
 	if !ca.Certificate.IsCA {
 		panic("You can't use this certificate for signing. It's not a CA...")
+	}
+
+	if config.ValidFor == 0 {
+		config.ValidFor = defaultCertValidity
 	}
 
 	key, _ := certutil.NewPrivateKey()
@@ -277,7 +285,7 @@ func (ca Bundle) Sign(config Config) Bundle {
 		IPAddresses:  config.AltNames.IPs,
 		SerialNumber: serial,
 		NotBefore:    ca.Certificate.NotBefore,
-		NotAfter:     time.Now().Add(duration365d * 10).UTC(),
+		NotAfter:     time.Now().Add(config.ValidFor).UTC(),
 		KeyUsage:     x509.KeyUsageKeyEncipherment | x509.KeyUsageDigitalSignature,
 		ExtKeyUsage:  config.Usages,
 	}
