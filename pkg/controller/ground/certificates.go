@@ -177,9 +177,9 @@ func (certs *Certificates) populateForSatellite(satellite string, config config.
 	certs.Kubelet.Clients.ApiServer = certs.signKubeletClient("apiserver")
 	certs.TLS.ApiServer = certs.signTLS("apiserver",
 		[]string{"kubernetes", "kubernetes.default", "apiserver", satellite, fmt.Sprintf("%v.%v", satellite, config.Kubernikus.Domain)},
-		[]net.IP{net.IPv4(127, 0, 0, 1)}, []net.IP{net.IPv4(127, 0, 0, 5)})
+		[]net.IP{net.IPv4(127, 0, 0, 1), net.IPv4(127, 0, 0, 5)})
 	certs.TLS.Wormhole = certs.signTLS("wormhole",
-		[]string{fmt.Sprintf("%v-wormhole.%v", satellite, config.Kubernikus.Domain)})
+		[]string{fmt.Sprintf("%v-wormhole.%v", satellite, config.Kubernikus.Domain)}, []net.IP{})
 
 	return nil
 }
