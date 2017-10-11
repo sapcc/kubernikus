@@ -152,6 +152,7 @@ spec:
             - --ca=/etc/kubernetes/certs/apiserver-nodes-ca.pem
             - --cert=/etc/kubernetes/certs/tls-wormhole.pem
             - --key=/etc/kubernetes/certs/tls-wormhole-key.pem
+            - --service-cidr={{ .Values.serviceCIDR }}
             - --v=5
           securityContext:
             capabilities:

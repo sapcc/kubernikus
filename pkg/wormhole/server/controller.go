@@ -4,12 +4,13 @@ import (
 	"bytes"
 	"fmt"
 	"net"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
 
+	"github.com/databus23/guttle"
 	"github.com/golang/glog"
-	"github.com/koding/tunnel"
 	"github.com/sapcc/kubernikus/pkg/util/iptables"
 	"k8s.io/apimachinery/pkg/util/wait"
 	informers "k8s.io/client-go/informers/core/v1"
@@ -24,20 +25,29 @@ const (
 )
 
 type Controller struct {
-	nodes    informers.NodeInformer
-	tunnel   *tunnel.Server
-	queue    workqueue.RateLimitingInterface
-	store    map[string]net.Listener
-	iptables iptables.Interface
+	nodes       informers.NodeInformer
+	tunnel      *guttle.Server
+	queue       workqueue.RateLimitingInterface
+	store       map[string][]route
+	iptables    iptables.Interface
+	hijackPort  int
+	serviceCIDR string
 }
 
-func NewController(informer informers.NodeInformer, tunnel *tunnel.Server) *Controller {
+type route struct {
+	cidr       string
+	identifier string
+}
+
+func NewController(informer informers.NodeInformer, serviceCIDR string, tunnel *guttle.Server) *Controller {
 	c := &Controller{
-		nodes:    informer,
-		tunnel:   tunnel,
-		queue:    workqueue.NewRateLimitingQueue(workqueue.NewItemExponentialFailureRateLimiter(5*time.Second, 300*time.Second)),
-		store:    make(map[string]net.Listener),
-		iptables: iptables.New(utilexec.New(), iptables.ProtocolIpv4),
+		nodes:       informer,
+		tunnel:      tunnel,
+		queue:       workqueue.NewRateLimitingQueue(workqueue.NewItemExponentialFailureRateLimiter(5*time.Second, 300*time.Second)),
+		store:       make(map[string][]route),
+		iptables:    iptables.New(utilexec.New(), iptables.ProtocolIpv4),
+		hijackPort:  9191,
+		serviceCIDR: serviceCIDR,
 	}
 
 	c.nodes.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
@@ -141,44 +151,43 @@ func (c *Controller) reconcile(key string) error {
 }
 
 func (c *Controller) addNode(key string, node *v1.Node) error {
-	if c.store[key] == nil {
 
-		listener, err := net.Listen("tcp", "127.0.0.1:")
-		if err != nil {
-			return err
-		}
+	identifier := fmt.Sprintf("system:node:%v", node.GetName())
+	glog.Infof("Adding tunnel routes for node %v", identifier)
 
-		identifier := fmt.Sprintf("system:node:%v", node.GetName())
-		glog.Infof("Listening to node %v on %v", identifier, listener.Addr())
+	podCIDR := node.Spec.PodCIDR
 
-		c.store[key] = listener
-		c.tunnel.AddAddr(listener, nil, identifier)
-		c.tunnel.AddHost(identifier, identifier)
-
-		if err := c.redoIPTablesSpratz(); err != nil {
-			return err
-		}
-	} else {
-		glog.V(5).Infof("Already listening on this node... Skipping %v", key)
+	ip, err := GetNodeHostIP(node)
+	if err != nil {
+		return err
 	}
-	return nil
+	nodeCIDR := ip.String() + "/32"
+
+	if err := c.tunnel.AddClientRoute(podCIDR, identifier); err != nil {
+		return err
+	}
+	c.store[key] = append(c.store[key], route{cidr: podCIDR, identifier: identifier})
+	if err := c.tunnel.AddRoute(podCIDR); err != nil {
+		return err
+	}
+	if err := c.tunnel.AddClientRoute(nodeCIDR, identifier); err != nil {
+		return err
+	}
+	c.store[key] = append(c.store[key], route{cidr: nodeCIDR, identifier: identifier})
+	if err := c.tunnel.AddRoute(nodeCIDR); err != nil {
+		return err
+	}
+
+	return c.redoIPTablesSpratz()
 }
 
 func (c *Controller) delNode(key string) error {
-	listener := c.store[key]
-	if listener != nil {
-		glog.Infof("Deleting node %v", key)
-		c.tunnel.DeleteAddr(listener, nil)
-		listener.Close()
-		c.store[key] = nil
-
-		if err := c.redoIPTablesSpratz(); err != nil {
-			return err
-		}
-	} else {
-		glog.V(5).Infof("Not listening on this node... Skipping %v", key)
+	routes := c.store[key]
+	for _, route := range routes {
+		c.tunnel.DeleteClientRoute(route.cidr, route.identifier)
+		c.tunnel.DeleteRoute(route.cidr)
 	}
-	return nil
+	return c.redoIPTablesSpratz()
 }
 
 func (c *Controller) redoIPTablesSpratz() error {
@@ -220,6 +229,15 @@ func (c *Controller) redoIPTablesSpratz() error {
 		}
 	}
 
+	writeLine(natRules,
+		"-A", string(KUBERNIKUS_TUNNELS),
+		"-m", "comment", "--comment", "cluster service CIDR tunnel redirect",
+		"--dst", c.serviceCIDR,
+		"-p", "tcp",
+		"-j", "REDIRECT",
+		"--to-ports", strconv.Itoa(c.hijackPort),
+	)
+
 	writeLine(natRules, "COMMIT")
 
 	lines := append(natChains.Bytes(), natRules.Bytes()...)
@@ -249,16 +267,24 @@ func (c *Controller) writeTunnelRedirect(key string, filterRules *bytes.Buffer) 
 		return err
 	}
 
-	port := c.store[key].Addr().(*net.TCPAddr).Port
+	port := strconv.Itoa(c.hijackPort)
 
 	writeLine(filterRules,
 		"-A", string(KUBERNIKUS_TUNNELS),
-		"-m", "comment", "--comment", key,
+		"-m", "comment", "--comment", fmt.Sprintf("node ip tunnel redirect for %s", key),
 		"--dst", ip.String(),
 		"-p", "tcp",
-		"--dport", "10250",
 		"-j", "REDIRECT",
-		"--to-ports", fmt.Sprintf("%v", port),
+		"--to-ports", port,
+	)
+
+	writeLine(filterRules,
+		"-A", string(KUBERNIKUS_TUNNELS),
+		"-m", "comment", "--comment", fmt.Sprint("pod cidr tunnel redirect for %s", key),
+		"--dst", node.Spec.PodCIDR,
+		"-p", "tcp",
+		"-j", "REDIRECT",
+		"--to-ports", port,
 	)
 
 	return nil

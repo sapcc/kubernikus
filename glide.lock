@@ -1,5 +1,5 @@
-hash: d327734e6344b5208776ce68d5a1a41d4a2b90bd78ff69896d8294b0a2c578f6
-updated: 2017-10-06T14:43:04.735885533+02:00
+hash: 1efc53ff8634afec6d97b4820451c91b91e0b6a171599335cfaa03303a88a317
+updated: 2017-10-11T14:15:50.575974299+02:00
 imports:
 - name: github.com/ajeddeloh/yaml
   version: 1072abfea31191db507785e2e0c1b8d1440d35a5
@@ -38,6 +38,10 @@ imports:
   - config/v2_0/types
   - config/validate
   - config/validate/report
+- name: github.com/databus23/guttle
+  version: 70a96ab7b0459251492c52d4f1f3027070572d7f
+  subpackages:
+  - group
 - name: github.com/databus23/keystone
   version: 12c566d59fdb198f5a6d7ad7dfbf99f2a7e09929
   subpackages:
@@ -161,12 +165,6 @@ imports:
   version: 5b9ff866471762aa2ab2dced63c9fb6f53921342
 - name: github.com/kennygrant/sanitize
   version: 6a0bfdde8629a3a3a7418a7eae45c54154692514
-- name: github.com/koding/logging
-  version: 8b5a689ed69b1c7cd1e3595276fc2a352d7818e0
-- name: github.com/koding/tunnel
-  version: 35a8b95662bf50c5a3c47774762f7ddd1633885a
-  subpackages:
-  - proto
 - name: github.com/mailru/easyjson
   version: 44c0351a5bc860bcb2608d54aa03ea686c4e7b25
   subpackages:

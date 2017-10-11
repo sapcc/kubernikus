@@ -9,13 +9,11 @@ import (
 	"os"
 	"os/signal"
 	"strings"
-	"sync"
 	"syscall"
 
+	"github.com/databus23/guttle"
 	"github.com/golang/glog"
-	"github.com/koding/tunnel"
 	"github.com/sapcc/kubernikus/pkg/cmd"
-	"github.com/sapcc/kubernikus/pkg/log"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"k8s.io/client-go/tools/clientcmd"
@@ -67,7 +65,6 @@ func (o *ClientOptions) Complete(args []string) error {
 func (o *ClientOptions) Run(c *cobra.Command) error {
 	sigs := make(chan os.Signal, 1)
 	signal.Notify(sigs, os.Interrupt, syscall.SIGTERM) // Push signals into channel
-	wg := &sync.WaitGroup{}
 
 	config, err := clientcmd.LoadFromFile(o.KubeConfig)
 	if err != nil {
@@ -116,11 +113,6 @@ func (o *ClientOptions) Run(c *cobra.Command) error {
 		return fmt.Errorf("Failed to load certificate/key: %s", err)
 	}
 
-	x509cert, err := x509.ParseCertificate(certificate.Certificate[0])
-	if err != nil {
-		return fmt.Errorf("Failed to extract common name from client cert: %s", err)
-	}
-
 	serverAddr := o.Server
 	if serverAddr == "" {
 		url, err := url.Parse(cluster.Server)
@@ -133,13 +125,9 @@ func (o *ClientOptions) Run(c *cobra.Command) error {
 		serverAddr = fmt.Sprintf("%s:%s", strings.Join(c, "."), "443")
 	}
 
-	tcpProxy := tunnel.TCPProxy{LocalAddr: "127.0.0.1:10250"}
-	cfg := &tunnel.ClientConfig{
-		Log:        new(log.KodingToGlogAdapter),
-		Debug:      true,
-		Identifier: x509cert.Subject.CommonName,
+	opts := guttle.ClientOptions{
 		ServerAddr: serverAddr,
-		Proxy:      tcpProxy.Proxy,
+		ListenAddr: "127.0.0.5:6443",
 		Dial: func(network, address string) (net.Conn, error) {
 			conn, err := tls.Dial(network, address, &tls.Config{
 				RootCAs:      rootCAs,
@@ -152,22 +140,14 @@ func (o *ClientOptions) Run(c *cobra.Command) error {
 		},
 	}
 
-	client, err := tunnel.NewClient(cfg)
-	if err != nil {
-		return err
-	}
-	glog.Infof("Connecting to %s with id %s", cfg.ServerAddr, cfg.Identifier)
+	client := guttle.NewClient(&opts)
 
-	wg.Add(1)
 	go func() {
-		defer wg.Done()
-		client.Start()
+		<-sigs
+		glog.Info("Shutting down...")
+		client.Stop()
 	}()
-
-	<-sigs
-	glog.Info("Shutting down...")
-	client.Close()
-	wg.Wait()
+	return client.Start()
 
 	return nil
 }

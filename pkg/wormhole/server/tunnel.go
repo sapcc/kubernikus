@@ -5,19 +5,14 @@ import (
 	"crypto/x509"
 	"fmt"
 	"io/ioutil"
-	"net"
-	"net/http"
-	"net/url"
 	"sync"
-	"time"
 
+	"github.com/databus23/guttle"
 	"github.com/golang/glog"
-	"github.com/koding/tunnel"
-	"github.com/koding/tunnel/proto"
 )
 
 type Tunnel struct {
-	Server  *tunnel.Server
+	Server  *guttle.Server
 	options *TunnelOptions
 }
 
@@ -28,72 +23,72 @@ type TunnelOptions struct {
 }
 
 func NewTunnel(options *TunnelOptions) *Tunnel {
-	server, err := tunnel.NewServer(&tunnel.ServerConfig{})
-	if err != nil {
-		glog.Fatalf("Failed to create tunnel server: %s", err)
-	}
-
-	return &Tunnel{Server: server, options: options}
+	return &Tunnel{options: options}
 }
 
 func (t *Tunnel) Run(stopCh <-chan struct{}, wg *sync.WaitGroup) {
 	defer wg.Done()
 	wg.Add(1)
 
-	caData, err := ioutil.ReadFile(t.options.ClientCA)
+	caPool, err := loadCAFile(t.options.ClientCA)
 	if err != nil {
-		glog.Error("Failed to start tunnel server: Can't read CA file %#v for tunnel server: %s", t.options.ClientCA, err)
+		glog.Info(err)
 		return
 	}
 
-	clientCA := x509.NewCertPool()
-	if !clientCA.AppendCertsFromPEM(caData) {
-		glog.Error("Failed to start tunnel server: No certificates found in ca file.")
+	tlsConfig, err := newTLSConfig(t.options.Certificate, t.options.PrivateKey)
+	if err != nil {
+		glog.Info(err)
 		return
 	}
 
-	server := http.Server{
-		Addr:    ":6553",
-		Handler: t,
-		TLSConfig: &tls.Config{
-			ClientAuth: tls.RequireAndVerifyClientCert,
-			ClientCAs:  clientCA,
-		},
+	tlsConfig.ClientAuth = tls.RequireAndVerifyClientCert
+	tlsConfig.RootCAs = caPool
+
+	listener, err := tls.Listen("tcp", "0.0.0.0:443", tlsConfig)
+	if err != nil {
+		glog.Error(err)
+		return
 	}
 
-	glog.Infof("Starting tunnel server. Listening on %s", server.Addr)
+	opts := guttle.ServerOptions{
+		Listener:   listener,
+		HijackAddr: "127.0.0.1:9191",
+		ProxyFunc:  guttle.StaticProxy("127.0.0.1:6443"),
+	}
+
+	t.Server = guttle.NewServer(&opts)
+
 	go func() {
-		err := server.ListenAndServeTLS(t.options.Certificate, t.options.PrivateKey)
-		if err != http.ErrServerClosed {
-			glog.Errorf("Failed to start tunnel server: %s", err)
-		} else {
-			glog.Info("Tunnel server stopped")
-		}
+		<-stopCh
+		t.Server.Close()
 	}()
 
-	<-stopCh
-	server.Close()
-}
-
-func (t *Tunnel) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
-	logLine(req, *req.URL, time.Now())
-	cn := req.TLS.PeerCertificates[0].Subject.CommonName
-	//for ClientIdentifier to be the subjects common name
-	req.Header.Set(proto.ClientIdentifierHeader, cn)
-	t.Server.ServeHTTP(rw, req)
+	err = t.Server.Start()
+	if err != nil {
+		glog.Error(err)
+	}
 
 }
 
-func logLine(req *http.Request, url url.URL, ts time.Time) {
-	host, _, _ := net.SplitHostPort(req.RemoteAddr)
-	uri := url.RequestURI()
-	fmt.Printf("%s - %s [%s] \"%s %s %s\"\n",
-		host,
-		req.TLS.PeerCertificates[0].Subject.CommonName,
-		ts.Format("02/Jan/2006:15:04:05 -0700"),
-		req.Method,
-		uri,
-		req.Proto,
-	)
+func loadCAFile(cafile string) (*x509.CertPool, error) {
+	pool := x509.NewCertPool()
+	cas, err := ioutil.ReadFile(cafile)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to read file %s: %s", cafile)
+	}
+	if !pool.AppendCertsFromPEM(cas) {
+		return nil, fmt.Errorf("No certs found in file %s", cafile)
+	}
+	return pool, nil
+}
 
+func newTLSConfig(cert, key string) (*tls.Config, error) {
+	certificate, err := tls.LoadX509KeyPair(cert, key)
+	if err != nil {
+		return nil, err
+	}
+	return &tls.Config{
+		Certificates: []tls.Certificate{certificate},
+	}, nil
 }

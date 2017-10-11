@@ -1,6 +1,7 @@
 package wormhole
 
 import (
+	"errors"
 	"os"
 	"os/signal"
 	"sync"
@@ -44,9 +45,13 @@ func (o *ServerOptions) BindFlags(flags *pflag.FlagSet) {
 	flags.StringVar(&o.ClientCA, "ca", o.ClientCA, "CA to use for validating tunnel clients")
 	flags.StringVar(&o.Certificate, "cert", o.Certificate, "Certificate for the tunnel server")
 	flags.StringVar(&o.PrivateKey, "key", o.PrivateKey, "Key for the tunnel server")
+	flags.StringVar(&o.ServiceCIDR, "service-cidr", "", "Cluster service IP range")
 }
 
 func (o *ServerOptions) Validate(c *cobra.Command, args []string) error {
+	if o.ServiceCIDR == "" {
+		return errors.New("You must specify service-cidr")
+	}
 	return nil
 }
 
