@@ -11,6 +11,18 @@ passwd:
 locksmith:
   reboot_strategy: "reboot"
 
+netowrkd:
+  units:
+	  - name: 00-ens32.network
+		  contents: |
+        [Match]
+				Name=ens32
+				[Network]
+				DHCP=true
+				[DHCP]
+				UseMTU=true
+				CriticalConnection=true
+
 systemd:
   units:
     - name: ccloud-metadata.service
