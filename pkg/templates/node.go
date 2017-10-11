@@ -13,15 +13,15 @@ locksmith:
 
 networkd:
   units:
-	  - name: 00-ens32.network
-		  contents: |
+    - name: 00-ens32.network
+      contents: |
         [Match]
-				Name=ens32
-				[Network]
-				DHCP=true
-				[DHCP]
-				UseMTU=true
-				CriticalConnection=true
+        Name=ens32
+        [Network]
+        DHCP=true
+        [DHCP]
+        UseMTU=true
+        CriticalConnection=true
 
 systemd:
   units:
