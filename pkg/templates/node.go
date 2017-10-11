@@ -11,7 +11,7 @@ passwd:
 locksmith:
   reboot_strategy: "reboot"
 
-netowrkd:
+networkd:
   units:
 	  - name: 00-ens32.network
 		  contents: |
