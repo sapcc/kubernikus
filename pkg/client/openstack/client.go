@@ -576,7 +576,7 @@ func (c *client) CreateNode(kluster *kubernikus_v1.Kluster, pool *kubernikus_v1.
 		return "", err
 	}
 
-	name := v1.SimpleNameGenerator.GenerateName(fmt.Sprintf("kubernikus-%v-%v-", kluster.Spec.Name, pool.Name))
+	name := v1.SimpleNameGenerator.GenerateName(fmt.Sprintf("%v-%v-", kluster.Spec.Name, pool.Name))
 	glog.V(5).Infof("Creating node %v", name)
 
 	server, err := servers.Create(client, servers.CreateOpts{
