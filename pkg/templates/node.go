@@ -13,10 +13,10 @@ locksmith:
 
 networkd:
   units:
-    - name: 00-ens32.network
+    - name: 00-ens.network
       contents: |
         [Match]
-        Name=ens32
+        Name=ens*
         [Network]
         DHCP=true
         [DHCP]
