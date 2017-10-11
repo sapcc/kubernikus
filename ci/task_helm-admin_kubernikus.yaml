@@ -25,5 +25,6 @@ run:
       kubectl rollout status deployment/kubernikus-operator --namespace=$KUBERNIKUS_NAME
 
 params:
+  REGION:
   KUBERNIKUS_NAME:
   GITHUB_TOKEN:
