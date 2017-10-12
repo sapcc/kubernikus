@@ -39,7 +39,7 @@ imports:
   - config/validate
   - config/validate/report
 - name: github.com/databus23/guttle
-  version: 70a96ab7b0459251492c52d4f1f3027070572d7f
+  version: 44ef2cc4651d11da7f1f835147874eb5c587054e
   subpackages:
   - group
 - name: github.com/databus23/keystone

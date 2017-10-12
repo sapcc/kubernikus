@@ -46,7 +46,6 @@ func readHeader(reader io.Reader) (hdr Header, err error) {
 	if n != preambleLength {
 		return hdr, errors.New("Not enough bytes to read preamble")
 	}
-
 	err = binary.Read(bytes.NewReader(data), binary.BigEndian, &hdr)
 	return
 }

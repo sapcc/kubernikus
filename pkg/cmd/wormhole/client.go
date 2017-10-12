@@ -42,15 +42,19 @@ type ClientOptions struct {
 	KubeConfig string
 	Server     string
 	Context    string
+	ListenAddr string
 }
 
 func NewClientOptions() *ClientOptions {
-	return &ClientOptions{}
+	return &ClientOptions{
+		ListenAddr: "198.18.127.1:6443",
+	}
 }
 
 func (o *ClientOptions) BindFlags(flags *pflag.FlagSet) {
 	flags.StringVar(&o.KubeConfig, "kubeconfig", o.KubeConfig, "Path to the kubeconfig file to use to talk to the Tunnel Server. If unset, try the environment variable KUBECONFIG, as well as in-cluster configuration")
 	flags.StringVar(&o.Server, "server", o.Server, "Tunnel Server endpoint (host:port)")
+	flags.StringVar(&o.ListenAddr, "listen", o.ListenAddr, "Listen address for accepting tunnel requests")
 	flags.StringVar(&o.Context, "context", o.Context, "Kubeconfig context to use. (default: current-context)")
 }
 
@@ -127,7 +131,7 @@ func (o *ClientOptions) Run(c *cobra.Command) error {
 
 	opts := guttle.ClientOptions{
 		ServerAddr: serverAddr,
-		ListenAddr: "127.0.0.5:6443",
+		ListenAddr: o.ListenAddr,
 		Dial: func(network, address string) (net.Conn, error) {
 			conn, err := tls.Dial(network, address, &tls.Config{
 				RootCAs:      rootCAs,
