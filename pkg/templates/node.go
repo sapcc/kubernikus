@@ -89,7 +89,6 @@ systemd:
         Description=Kubernikus Wormhole
         Requires=network-online.target
         After=network-online.target
-
         [Service]
         Slice=machine.slice
         ExecStartPre=/usr/bin/rkt fetch --insecure-options=image --pull-policy=new docker://{{ .KubernikusImage }}:{{ .KubernikusImageTag }}
@@ -119,7 +118,7 @@ systemd:
     - name: kube-proxy.service
       enable: true
       contents: |
-        [Unit]}}
+        [Unit]
         Description=Kube-Proxy
         Requires=network-online.target
         After=network-online.target
