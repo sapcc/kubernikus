@@ -11,6 +11,7 @@ import (
 	"github.com/coreos/container-linux-config-transpiler/config/platform"
 	"github.com/golang/glog"
 	"github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
+	"github.com/sapcc/kubernikus/pkg/version"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 )
@@ -46,12 +47,14 @@ func (i *ignition) GenerateNode(kluster *v1.Kluster, client kubernetes.Interface
 		OpenstackRegion                    string
 		OpenstackLBSubnetID                string
 		OpenstackRouterID                  string
+		KubernikusImage                    string
+		KubernikusImageTag                 string
 	}{
 		TLSCA:                              string(secret.Data["tls-ca.pem"]),
 		KubeletClientsCA:                   string(secret.Data["kubelet-clients-ca.pem"]),
 		ApiserverClientsSystemKubeProxy:    string(secret.Data["apiserver-clients-system-kube-proxy.pem"]),
 		ApiserverClientsSystemKubeProxyKey: string(secret.Data["apiserver-clients-system-kube-proxy-key.pem"]),
-		ClusterCIDR:                        "10.180.128.0/17",
+		ClusterCIDR:                        "198.19.0.0/16",
 		ApiserverURL:                       kluster.Spec.KubernikusInfo.ServerURL,
 		BootstrapToken:                     kluster.Spec.KubernikusInfo.BootstrapToken,
 		OpenstackAuthURL:                   kluster.Spec.OpenstackInfo.AuthURL,
@@ -61,6 +64,8 @@ func (i *ignition) GenerateNode(kluster *v1.Kluster, client kubernetes.Interface
 		OpenstackRegion:                    kluster.Spec.OpenstackInfo.Region,
 		OpenstackLBSubnetID:                kluster.Spec.OpenstackInfo.LBSubnetID,
 		OpenstackRouterID:                  kluster.Spec.OpenstackInfo.RouterID,
+		KubernikusImage:                    "sapcc/kubernikus",
+		KubernikusImageTag:                 version.VERSION,
 	}
 
 	var buffer bytes.Buffer

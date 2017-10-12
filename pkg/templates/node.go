@@ -92,7 +92,7 @@ systemd:
 
         [Service]
         Slice=machine.slice
-        ExecStartPre=/usr/bin/rkt fetch --insecure-options=image --pull-policy=new docker://sapcc/kubernikus:latest
+        ExecStartPre=/usr/bin/rkt fetch --insecure-options=image --pull-policy=new docker://{{ .KubernikusImage }}:{{ .KubernikusImageTag }}
         ExecStart=/usr/bin/rkt run \
           --inherit-env \
           --net=host \
@@ -103,7 +103,7 @@ systemd:
           --mount volume=var-run-kubernetes,target=/var/run/kubernetes \
           --volume etc-kubernetes-certs,kind=host,source=/etc/kubernetes/certs,readOnly=true \
           --mount volume=etc-kubernetes-certs,target=/etc/kubernetes/certs \
-          docker://sapcc/kubernikus:latest \
+          docker://{{ .KubernikusImage }}:{{ .KubernikusImageTag }} \
           --exec wormhole -- client --kubeconfig=/var/lib/kubelet/kubeconfig
         ExecStopPost=/usr/bin/rkt gc --mark-only
         KillMode=mixed
@@ -119,7 +119,7 @@ systemd:
     - name: kube-proxy.service
       enable: true
       contents: |
-        [Unit]
+        [Unit]}}
         Description=Kube-Proxy
         Requires=network-online.target
         After=network-online.target
