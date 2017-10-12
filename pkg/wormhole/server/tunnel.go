@@ -34,7 +34,7 @@ func NewTunnel(options *TunnelOptions) (*Tunnel, error) {
 			return nil, fmt.Errorf("Faile to load ca file %s: %s", options.ClientCA, err)
 		}
 		tlsConfig.ClientAuth = tls.RequireAndVerifyClientCert
-		tlsConfig.RootCAs = caPool
+		tlsConfig.ClientCAs = caPool
 		listener, err = tls.Listen("tcp", "0.0.0.0:6553", tlsConfig)
 		if err != nil {
 			return nil, fmt.Errorf("Failed to listen to 0.0.0.0:6553: %s", err)
