@@ -31,6 +31,7 @@ import (
 
 type KubernikusOperatorOptions struct {
 	KubeConfig string
+	Context    string
 
 	ChartDirectory string
 
@@ -105,17 +106,18 @@ func NewKubernikusOperator(options *KubernikusOperatorOptions) *KubernikusOperat
 		},
 	}
 
-	o.Clients.Kubernetes, err = kube.NewClient(options.KubeConfig)
+	o.Clients.Kubernetes, err = kube.NewClient(options.KubeConfig, options.Context)
+
 	if err != nil {
 		glog.Fatalf("Failed to create kubernetes clients: %s", err)
 	}
 
-	o.Clients.Kubernikus, err = kubernikus.NewClient(options.KubeConfig)
+	o.Clients.Kubernikus, err = kubernikus.NewClient(options.KubeConfig, options.Context)
 	if err != nil {
 		glog.Fatalf("Failed to create kubernikus clients: %s", err)
 	}
 
-	config, err := kube.NewConfig(options.KubeConfig)
+	config, err := kube.NewConfig(options.KubeConfig, options.Context)
 	if err != nil {
 		glog.Fatalf("Failed to create kubernetes config: %s", err)
 	}

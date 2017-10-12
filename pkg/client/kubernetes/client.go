@@ -89,9 +89,9 @@ func (f *SharedClientFactory) ClientFor(k *kubernikus_v1.Kluster) (kubernetes.In
 
 }
 
-func NewConfig(kubeconfig string) (*rest.Config, error) {
+func NewConfig(kubeconfig, context string) (*rest.Config, error) {
 	rules := clientcmd.NewDefaultClientConfigLoadingRules()
-	overrides := &clientcmd.ConfigOverrides{}
+	overrides := &clientcmd.ConfigOverrides{CurrentContext: context}
 
 	if len(kubeconfig) > 0 {
 		rules.ExplicitPath = kubeconfig
@@ -105,8 +105,8 @@ func NewConfig(kubeconfig string) (*rest.Config, error) {
 	return config, nil
 }
 
-func NewClient(kubeconfig string) (kubernetes.Interface, error) {
-	config, err := NewConfig(kubeconfig)
+func NewClient(kubeconfig, context string) (kubernetes.Interface, error) {
+	config, err := NewConfig(kubeconfig, context)
 	if err != nil {
 		return nil, err
 	}

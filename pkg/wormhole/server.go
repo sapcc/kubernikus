@@ -20,6 +20,7 @@ const (
 
 type ServerOptions struct {
 	KubeConfig  string
+	Context     string
 	ServiceCIDR string
 	server.TunnelOptions
 }
@@ -34,7 +35,7 @@ type Server struct {
 func NewServer(options *ServerOptions) *Server {
 	s := &Server{}
 
-	client, err := kube.NewClient(options.KubeConfig)
+	client, err := kube.NewClient(options.KubeConfig, options.Context)
 	if err != nil {
 		glog.Fatalf("Failed to create kubernetes clients: %s", err)
 	}

@@ -80,7 +80,7 @@ func (o *SignOptions) Complete(args []string) error {
 }
 
 func (o *SignOptions) Run(c *cobra.Command) error {
-	client, err := kubernetes.NewClient(o.KubeConfig)
+	client, err := kubernetes.NewClient(o.KubeConfig, "")
 	if err != nil {
 		return err
 	}

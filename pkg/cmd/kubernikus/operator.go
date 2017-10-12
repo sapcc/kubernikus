@@ -39,6 +39,7 @@ func NewOperatorCommand() *cobra.Command {
 
 type Options struct {
 	KubeConfig string
+	Context    string
 
 	ChartDirectory string
 
@@ -71,6 +72,7 @@ func NewOperatorOptions() *Options {
 
 func (o *Options) BindFlags(flags *pflag.FlagSet) {
 	flags.StringVar(&o.KubeConfig, "kubeconfig", o.KubeConfig, "Path to the kubeconfig file to use to talk to the Kubernetes apiserver. If unset, try the environment variable KUBECONFIG, as well as in-cluster configuration")
+	flags.StringVar(&o.Context, "context", "", "Override context")
 	flags.StringVar(&o.ChartDirectory, "chart-directory", o.ChartDirectory, "Directory containing the kubernikus related charts")
 	flags.StringVar(&o.AuthURL, "auth-url", o.AuthURL, "Openstack keystone url")
 	flags.StringVar(&o.AuthUsername, "auth-username", o.AuthUsername, "Service user for kubernikus")
@@ -106,6 +108,7 @@ func (o *Options) Run(c *cobra.Command) error {
 
 	opts := &controller.KubernikusOperatorOptions{
 		KubeConfig:          o.KubeConfig,
+		Context:             o.Context,
 		ChartDirectory:      o.ChartDirectory,
 		AuthURL:             o.AuthURL,
 		AuthUsername:        o.AuthUsername,

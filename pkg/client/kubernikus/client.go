@@ -6,8 +6,8 @@ import (
 	"github.com/sapcc/kubernikus/pkg/generated/clientset"
 )
 
-func NewClient(kubeconfig string) (clientset.Interface, error) {
-	config, err := kube.NewConfig(kubeconfig)
+func NewClient(kubeconfig, context string) (clientset.Interface, error) {
+	config, err := kube.NewConfig(kubeconfig, context)
 	if err != nil {
 		return nil, err
 	}

@@ -12,20 +12,22 @@ import (
 
 var kubeconfig string
 var namespace string
+var context string
 
 func init() {
 	pflag.StringVar(&kubeconfig, "kubeconfig", "", "Path to kubeconfig file with authorization information")
+	pflag.StringVar(&context, "context", "", "Override context")
 	pflag.StringVar(&namespace, "namespace", "kubernikus", "Namespace the apiserver should work in")
 }
 
 func NewKubeClients() (kubernikus_clientset.Interface, kubernetes_clientset.Interface) {
-	client, err := kubernikus.NewClient(kubeconfig)
+	client, err := kubernikus.NewClient(kubeconfig, context)
 
 	if err != nil {
 		glog.Fatal("Failed to create kubernikus clients: %s", err)
 	}
 
-	kubernetesClient, err := kubernetes.NewClient(kubeconfig)
+	kubernetesClient, err := kubernetes.NewClient(kubeconfig, context)
 	if err != nil {
 		glog.Fatal("Failed to create kubernetes clients: %s", err)
 	}
