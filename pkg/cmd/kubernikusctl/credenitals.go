@@ -19,6 +19,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"k8s.io/client-go/tools/clientcmd"
+	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
 )
 
 func NewCredentialsCommand() *cobra.Command {
@@ -47,6 +48,7 @@ type CredentialsOptions struct {
 	auth       *tokens.AuthOptions
 	provider   *gophercloud.ProviderClient
 	identity   *gophercloud.ServiceClient
+	kubeconfig *clientcmdapi.Config
 }
 
 func NewCredentialsOptions() *CredentialsOptions {
@@ -55,7 +57,10 @@ func NewCredentialsOptions() *CredentialsOptions {
 		username = os.Getenv("USER")
 	}
 
-	o := &CredentialsOptions{}
+	o := &CredentialsOptions{
+		name: os.Getenv("KUBERNIKUS_NAME"),
+		url:  os.Getenv("KUBERNIKUS_URL"),
+	}
 	o.auth = &tokens.AuthOptions{
 		IdentityEndpoint: os.Getenv("OS_AUTH_URL"),
 		Username:         username,
@@ -67,9 +72,6 @@ func NewCredentialsOptions() *CredentialsOptions {
 			DomainName:  os.Getenv("OS_PROJECT_DOMAIN_NAME"),
 		},
 	}
-
-	o.name = os.Getenv("KUBERNIKUS_NAME")
-	o.url = os.Getenv("KUBERNIKUS_URL")
 
 	return o
 }
@@ -116,6 +118,11 @@ func (o *CredentialsOptions) Validate(c *cobra.Command, args []string) error {
 func (o *CredentialsOptions) Complete(args []string) error {
 	var err error
 
+	if err := o.setupKubeconfig(); err != nil {
+		glog.V(2).Infof("%+v", err)
+		return errors.Errorf("No existing kubeconfig was found")
+	}
+
 	if err := o.setupOpenstackClients(); err != nil {
 		glog.V(2).Infof("%+v", err)
 		return errors.Errorf("Openstack clients couldn't be created")
@@ -123,7 +130,7 @@ func (o *CredentialsOptions) Complete(args []string) error {
 
 	fmt.Printf("Authenticating %v/%v at %v/%v\n", o.auth.DomainName, o.auth.Username, o.auth.Scope.DomainName, o.auth.Scope.ProjectName)
 	if err := o.authenticate(); err != nil {
-		glog.V(2).Infof("%+v", err)
+		glog.V(2).Infof("%#v", err)
 		return errors.Errorf("Authentication failed")
 	}
 
@@ -177,6 +184,16 @@ func (o *CredentialsOptions) Run(c *cobra.Command) error {
 	}
 
 	fmt.Printf("Wrote merged kubeconfig to %v\n", clientcmd.NewDefaultPathOptions().GetDefaultFilename())
+
+	return nil
+}
+
+func (o *CredentialsOptions) setupKubeconfig() error {
+	var err error
+
+	if o.kubeconfig, err = clientcmd.NewDefaultPathOptions().GetStartingConfig(); err != nil {
+		return errors.Wrap(err, "Getting starting config failed")
+	}
 
 	return nil
 }
@@ -278,22 +295,17 @@ func (o *CredentialsOptions) autoDetectClusterName() (string, error) {
 }
 
 func (o *CredentialsOptions) mergeAndPersist(rawConfig string) error {
-	defaultPathOptions := clientcmd.NewDefaultPathOptions()
-	startingConfig, err := defaultPathOptions.GetStartingConfig()
-	if err != nil {
-		return errors.Wrap(err, "Couldn't get existing kubeconfig")
-	}
-
 	config, err := clientcmd.Load([]byte(rawConfig))
 	if err != nil {
 		return errors.Wrapf(err, "Couldn't load kubernikus kubeconfig: %v", rawConfig)
 	}
 
-	if err := mergo.MergeWithOverwrite(startingConfig, config); err != nil {
+	if err := mergo.MergeWithOverwrite(o.kubeconfig, config); err != nil {
 		return errors.Wrap(err, "Couldn't merge kubeconfigs")
 	}
 
-	if err = clientcmd.ModifyConfig(defaultPathOptions, *startingConfig, false); err != nil {
+	defaultPathOptions := clientcmd.NewDefaultPathOptions()
+	if err = clientcmd.ModifyConfig(defaultPathOptions, *o.kubeconfig, false); err != nil {
 		return errors.Wrapf(err, "Couldn't merge Kubernikus config with kubeconfig at %v:", defaultPathOptions.GetDefaultFilename())
 	}
 
