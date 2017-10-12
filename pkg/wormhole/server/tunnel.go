@@ -35,9 +35,9 @@ func NewTunnel(options *TunnelOptions) (*Tunnel, error) {
 		}
 		tlsConfig.ClientAuth = tls.RequireAndVerifyClientCert
 		tlsConfig.RootCAs = caPool
-		listener, err = tls.Listen("tcp", "0.0.0.0:443", tlsConfig)
+		listener, err = tls.Listen("tcp", "0.0.0.0:6553", tlsConfig)
 		if err != nil {
-			return nil, fmt.Errorf("Failed to listen to 0.0.0.0:443: %s", err)
+			return nil, fmt.Errorf("Failed to listen to 0.0.0.0:6553: %s", err)
 		}
 	} else {
 		var err error
