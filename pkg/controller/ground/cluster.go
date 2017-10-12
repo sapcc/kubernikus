@@ -5,6 +5,7 @@ import (
 
 	"github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
 	"github.com/sapcc/kubernikus/pkg/controller/config"
+	"github.com/sapcc/kubernikus/pkg/version"
 )
 
 type Cluster struct {
@@ -33,6 +34,7 @@ type OpenStack struct {
 
 type Kubernikus struct {
 	BootstrapToken string `yaml:"bootstrapToken,omitempty"`
+	Version        string `yaml:"version,omitempty"`
 }
 
 func NewCluster(kluster *v1.Kluster, config config.Config) (*Cluster, error) {
@@ -53,6 +55,7 @@ func NewCluster(kluster *v1.Kluster, config config.Config) (*Cluster, error) {
 		},
 		Kubernikus: Kubernikus{
 			BootstrapToken: kluster.Spec.KubernikusInfo.BootstrapToken,
+			Version:        version.VERSION,
 		},
 	}
 

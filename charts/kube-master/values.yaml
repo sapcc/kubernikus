@@ -19,6 +19,7 @@ openstack: {}
 
 kubernikus: {}
   #bootstrapToken
+  #version:
 
 # specify a different certsSecretName if you want to use
 # an exiting secret
