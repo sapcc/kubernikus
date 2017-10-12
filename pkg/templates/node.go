@@ -123,7 +123,6 @@ systemd:
         Description=Kube-Proxy
         Requires=network-online.target
         After=network-online.target
-
         [Service]
         Slice=machine.slice
         ExecStart=/usr/bin/rkt run \
@@ -145,9 +144,24 @@ systemd:
         KillMode=mixed
         Restart=always
         RestartSec=10s
-
         [Install]
         WantedBy=multi-user.target
+
+networkd:
+  units:
+    - name: 50-kubernikus.netdev
+      contents: |
+        [NetDev]
+        Description=Kubernikus Dummy Interface
+        Name=kubernikus
+        Kind=dummy
+    - name: 51-kubernikus.network
+      contents: |
+        [Match]
+        Name=kubernikus
+        [Network]
+        DHCP=no
+        Address=198.18.127.1/32
 
 storage:
   files:
