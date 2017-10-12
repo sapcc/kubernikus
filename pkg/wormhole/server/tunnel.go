@@ -5,6 +5,7 @@ import (
 	"crypto/x509"
 	"fmt"
 	"io/ioutil"
+	"net"
 	"sync"
 
 	"github.com/databus23/guttle"
@@ -12,8 +13,7 @@ import (
 )
 
 type Tunnel struct {
-	Server  *guttle.Server
-	options *TunnelOptions
+	Server *guttle.Server
 }
 
 type TunnelOptions struct {
@@ -22,34 +22,31 @@ type TunnelOptions struct {
 	PrivateKey  string
 }
 
-func NewTunnel(options *TunnelOptions) *Tunnel {
-	return &Tunnel{options: options}
-}
-
-func (t *Tunnel) Run(stopCh <-chan struct{}, wg *sync.WaitGroup) {
-	defer wg.Done()
-	wg.Add(1)
-
-	caPool, err := loadCAFile(t.options.ClientCA)
-	if err != nil {
-		glog.Info(err)
-		return
+func NewTunnel(options *TunnelOptions) (*Tunnel, error) {
+	var listener net.Listener
+	if options.Certificate != "" {
+		tlsConfig, err := newTLSConfig(options.Certificate, options.PrivateKey)
+		if err != nil {
+			return nil, fmt.Errorf("Failed to load cert or key: %s", err)
+		}
+		caPool, err := loadCAFile(options.ClientCA)
+		if err != nil {
+			return nil, fmt.Errorf("Faile to load ca file %s: %s", options.ClientCA, err)
+		}
+		tlsConfig.ClientAuth = tls.RequireAndVerifyClientCert
+		tlsConfig.RootCAs = caPool
+		listener, err = tls.Listen("tcp", "0.0.0.0:443", tlsConfig)
+		if err != nil {
+			return nil, fmt.Errorf("Failed to listen to 0.0.0.0:443: %s", err)
+		}
+	} else {
+		var err error
+		listener, err = net.Listen("tcp", "127.0.0.1:8080")
+		if err != nil {
+			return nil, fmt.Errorf("Failed to listen to 127.0.0.1:8080: %s", err)
+		}
 	}
-
-	tlsConfig, err := newTLSConfig(t.options.Certificate, t.options.PrivateKey)
-	if err != nil {
-		glog.Info(err)
-		return
-	}
-
-	tlsConfig.ClientAuth = tls.RequireAndVerifyClientCert
-	tlsConfig.RootCAs = caPool
-
-	listener, err := tls.Listen("tcp", "0.0.0.0:443", tlsConfig)
-	if err != nil {
-		glog.Error(err)
-		return
-	}
+	glog.Infof("Listening for tunnel clients on %s", listener.Addr())
 
 	opts := guttle.ServerOptions{
 		Listener:   listener,
@@ -57,14 +54,19 @@ func (t *Tunnel) Run(stopCh <-chan struct{}, wg *sync.WaitGroup) {
 		ProxyFunc:  guttle.StaticProxy("127.0.0.1:6443"),
 	}
 
-	t.Server = guttle.NewServer(&opts)
+	return &Tunnel{Server: guttle.NewServer(&opts)}, nil
+}
+
+func (t *Tunnel) Run(stopCh <-chan struct{}, wg *sync.WaitGroup) {
+	defer wg.Done()
+	wg.Add(1)
 
 	go func() {
 		<-stopCh
 		t.Server.Close()
 	}()
 
-	err = t.Server.Start()
+	err := t.Server.Start()
 	if err != nil {
 		glog.Error(err)
 	}

@@ -2,6 +2,7 @@ package wormhole
 
 import (
 	"errors"
+	"fmt"
 	"os"
 	"os/signal"
 	"sync"
@@ -66,7 +67,12 @@ func (o *ServerOptions) Run(c *cobra.Command) error {
 	signal.Notify(sigs, os.Interrupt, syscall.SIGTERM) // Push signals into channel
 	wg := &sync.WaitGroup{}                            // Goroutines can add themselves to this to be waited on
 
-	go wormhole.NewServer(&o.ServerOptions).Run(stop, wg)
+	server, err := wormhole.NewServer(&o.ServerOptions)
+	if err != nil {
+		return fmt.Errorf("Failed to initialize server: %s", err)
+	}
+
+	go server.Run(stop, wg)
 
 	<-sigs // Wait for signals (this hangs until a signal arrives)
 	glog.Info("Shutting down...")

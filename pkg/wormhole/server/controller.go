@@ -231,7 +231,7 @@ func (c *Controller) redoIPTablesSpratz() error {
 
 	writeLine(natRules,
 		"-A", string(KUBERNIKUS_TUNNELS),
-		"-m", "comment", "--comment", "cluster service CIDR tunnel redirect",
+		"-m", "comment", "--comment", `"cluster service CIDR tunnel redirect"`,
 		"--dst", c.serviceCIDR,
 		"-p", "tcp",
 		"-j", "REDIRECT",
@@ -271,7 +271,7 @@ func (c *Controller) writeTunnelRedirect(key string, filterRules *bytes.Buffer) 
 
 	writeLine(filterRules,
 		"-A", string(KUBERNIKUS_TUNNELS),
-		"-m", "comment", "--comment", fmt.Sprintf("node ip tunnel redirect for %s", key),
+		"-m", "comment", "--comment", fmt.Sprintf(`"node ip tunnel redirect for %s"`, key),
 		"--dst", ip.String(),
 		"-p", "tcp",
 		"-j", "REDIRECT",
@@ -280,7 +280,7 @@ func (c *Controller) writeTunnelRedirect(key string, filterRules *bytes.Buffer) 
 
 	writeLine(filterRules,
 		"-A", string(KUBERNIKUS_TUNNELS),
-		"-m", "comment", "--comment", fmt.Sprint("pod cidr tunnel redirect for %s", key),
+		"-m", "comment", "--comment", fmt.Sprintf(`"pod cidr tunnel redirect for %s"`, key),
 		"--dst", node.Spec.PodCIDR,
 		"-p", "tcp",
 		"-j", "REDIRECT",

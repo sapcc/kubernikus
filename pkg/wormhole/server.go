@@ -32,20 +32,23 @@ type Server struct {
 	tunnel     *server.Tunnel
 }
 
-func NewServer(options *ServerOptions) *Server {
+func NewServer(options *ServerOptions) (*Server, error) {
 	s := &Server{}
 
 	client, err := kube.NewClient(options.KubeConfig, options.Context)
 	if err != nil {
-		glog.Fatalf("Failed to create kubernetes clients: %s", err)
+		return nil, err
 	}
 
 	s.client = client
 	s.factory = informers.NewSharedInformerFactory(s.client, DEFAULT_RECONCILIATION)
-	s.tunnel = server.NewTunnel(&options.TunnelOptions)
+	s.tunnel, err = server.NewTunnel(&options.TunnelOptions)
+	if err != nil {
+		return nil, err
+	}
 	s.controller = server.NewController(s.factory.Core().V1().Nodes(), options.ServiceCIDR, s.tunnel.Server)
 
-	return s
+	return s, nil
 }
 
 func (s *Server) Run(stopCh <-chan struct{}, wg *sync.WaitGroup) {
