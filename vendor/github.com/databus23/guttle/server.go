@@ -202,6 +202,15 @@ func (s *Server) handleClient(conn net.Conn) {
 		log.Printf("Closing connection for tunnel client %s", conn.RemoteAddr())
 		conn.Close()
 	}()
+	// Ensure the handshake and client verification is done.
+	// If we don't call this explicitly its done lazy on first read
+	// which is after a tunnel stream has been created.
+	if t, ok := conn.(*tls.Conn); ok {
+		if err := t.Handshake(); err != nil {
+			log.Print(err)
+			return
+		}
+	}
 	identifier, err := s.getIdentifier(conn)
 	if err != nil {
 		log.Printf("Failed to get identifier: %s", err)
@@ -292,7 +301,7 @@ func (s *Server) checkClientRoutes(ip net.IP) (session *yamux.Session) {
 				session = s.(*yamux.Session)
 				return false
 			}
-			log.Printf("Skipping matching route %s, no active session found", routeEntry)
+			log.Printf("Skipping matching route %#v, no active session found", routeEntry)
 		}
 		return true
 	})

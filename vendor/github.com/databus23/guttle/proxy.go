@@ -3,6 +3,7 @@ package guttle
 import (
 	"log"
 	"net"
+	"time"
 )
 
 // ProxyFunc is responsible for forwarding a tunneled connection to a local destination and writing the response back.
@@ -20,10 +21,10 @@ func NoProxy() ProxyFunc {
 // of the proxied request and forwards traffic to the given header information.
 func SourceRoutedProxy() ProxyFunc {
 	return func(src net.Conn, hdr Header) {
-		dest := net.TCPAddr{IP: hdr.DestinationIP(), Port: hdr.DestinationPort()}
-		conn, err := net.DialTCP("tcp", nil, &dest)
+		dest := hdr.Destination()
+		conn, err := net.DialTimeout("tcp", dest, 5*time.Second)
 		if err != nil {
-			log.Printf("Failed to connect to %s: %s", dest.String(), err)
+			log.Printf("Failed to connect to %s: %s", dest, err)
 			return
 		}
 		defer func() {
@@ -38,7 +39,7 @@ func SourceRoutedProxy() ProxyFunc {
 // StaticProxy ignores the request header and forwards traffic to a static destination
 func StaticProxy(destination string) ProxyFunc {
 	return func(src net.Conn, _ Header) {
-		conn, err := net.Dial("tcp", destination)
+		conn, err := net.DialTimeout("tcp", destination, 5*time.Second)
 		if err != nil {
 			log.Printf("Failed to connect to %s: %s", destination, err)
 			return

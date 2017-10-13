@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/binary"
 	"errors"
+	"fmt"
 	"io"
 	"net"
 )
@@ -35,6 +36,11 @@ func (p Header) DestinationIP() net.IP {
 //DestinationPort returns the destination port for a tunnle request.
 func (p Header) DestinationPort() int {
 	return int(p.DestPort)
+}
+
+//Destination returns the destination as ip:port
+func (p Header) Destination() string {
+	return fmt.Sprintf("%d.%d.%d.%d:%d", p.DestIP[0], p.DestIP[1], p.DestIP[2], p.DestIP[3], p.DestPort)
 }
 
 func readHeader(reader io.Reader) (hdr Header, err error) {
