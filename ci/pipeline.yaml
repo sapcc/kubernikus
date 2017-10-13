@@ -48,7 +48,7 @@ resources:
       branch:      master
       depth: 1
 
-  - name: kubernikus.version
+  - name: version
     type: time-version-resource
     source:
       prefix: v
@@ -92,7 +92,8 @@ resource_types:
   - name: time-version-resource
     type: docker-image
     source:
-      repository: hub.global.cloud.sap/d062392/time-version-resource
+      repository: hub.global.cloud.sap/concourse/time-version-resource
+      tag: v2
   - name: slack-notification
     type: docker-image
     source:
@@ -134,14 +135,14 @@ jobs:
       - aggregate:
         - get: kubernikus.git
           trigger: true
-        - get: kubernikus.version
+        - put: version
 
       - put: kubernikus-binaries.image
         params:
           build: kubernikus.git
           dockerfile: kubernikus.git/Dockerfile.kubernikus-binaries
-          tag: kubernikus.version/version
-          build_args_file: kubernikus.version/properties.json
+          tag: version/version
+          build_args_file: version/properties.json
           tag_as_latest: true
           build_args:
             http_proxy: http://proxy.phl.sap.corp:8080
@@ -155,8 +156,8 @@ jobs:
           params:
             build: kubernikus.git
             dockerfile: kubernikus.git/Dockerfile.kubernikus
-            tag: kubernikus.version/version
-            build_args_file: kubernikus.version/properties.json
+            tag: version/version
+            build_args_file: version/properties.json
             build_args:
               http_proxy: http://proxy.phl.sap.corp:8080
               https_proxy: http://proxy.phl.sap.corp:8080
@@ -167,8 +168,8 @@ jobs:
           params:
             build: kubernikus.git
             dockerfile: kubernikus.git/Dockerfile.kubernikusctl
-            tag: kubernikus.version/version
-            build_args_file: kubernikus.version/properties.json
+            tag: version/version
+            build_args_file: version/properties.json
             tag_as_latest: true
             build_args:
               http_proxy: http://proxy.phl.sap.corp:8080
@@ -179,8 +180,8 @@ jobs:
         - put: kubernikus-kubectl.image
           params:
             build: kubernikus.git/contrib/kubernikus-kubectl
-            tag: kubernikus.version/version
-            build_args_file: kubernikus.version/properties.json
+            tag: version/version
+            build_args_file: version/properties.json
             tag_as_latest: true
             cache: true 
             cache_tag: latest
@@ -197,7 +198,7 @@ jobs:
       - aggregate:
         - get: kubernikus.git
           passed: [build]
-        - get: kubernikus.version
+        - get: version
           passed: [build]
           trigger: true
         - get: secrets.git
@@ -222,7 +223,7 @@ jobs:
           passed: [staging]
           params:
             depth: 0
-        - get: kubernikus.version
+        - get: version
           passed: [staging]
           trigger: true
 
@@ -234,7 +235,7 @@ jobs:
           passed: [e2e]
           params:
             depth: 0
-        - get: kubernikus.version
+        - get: version
           passed: [e2e]
 
   - name: eu-nl-1
@@ -243,7 +244,7 @@ jobs:
       - aggregate:
         - get: kubernikus.git
           passed: [rollout]
-        - get: kubernikus.version
+        - get: version
           passed: [rollout]
           trigger: true
         - get: secrets.git
@@ -274,7 +275,7 @@ jobs:
       - aggregate:
         - get: kubernikus.git
           passed: [build]
-        - get: kubernikus.version
+        - get: version
           passed: [build]
           trigger: true
         - get: secrets.git
@@ -294,7 +295,7 @@ jobs:
           passed: [admin_staging]
           params:
             depth: 0
-        - get: kubernikus.version
+        - get: version
           passed: [admin_staging]
           trigger: true # remove for manual gate
 
@@ -304,7 +305,7 @@ jobs:
       - aggregate:
         - get: kubernikus.git
           passed: [rollout_admin]
-        - get: kubernikus.version
+        - get: version
           passed: [rollout_admin]
           trigger: true
         - get: secrets.git
