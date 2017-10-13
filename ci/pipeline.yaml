@@ -53,6 +53,7 @@ resources:
     source:
       prefix: v
       property_name: VERSION
+      check_every: 525600h
 
   - name: kubernikus-binaries.image
     type: docker-image
