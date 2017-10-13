@@ -1,0 +1,47 @@
+{{- if .Values.vice }}
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: {{ template "name" . }}
+  namespace: kube-system
+  labels:
+    app: {{ template "name" . }}
+
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: {{ template "name" . }}
+      annotations:
+        prometheus.io/scrape: 'true'
+        prometheus.io/port: {{ .Values.metrics_port | quote }}
+    spec:
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          args:
+            - vice-president
+            - --vice-president-config=/etc/vice-president/config/vice-president.conf
+            - --vice-cert=/etc/vice-president/secrets/vice.cert
+            - --vice-key=/etc/vice-president/secrets/vice.key
+            - --intermediate-cert=/etc/vice-president/secrets/intermediate.cert
+            - --metric-listen-address=:{{.Values.metrics_port}}
+            - --v={{ default 1 .Values.log_level }}
+          volumeMounts:
+            - name: config
+              mountPath: /etc/vice-president/config
+            - name: certs
+              mountPath: /etc/vice-president/secrets
+          ports:
+            - name: metrics
+              containerPort: {{ .Values.metrics_port }}
+      volumes:
+        - name: config
+          configMap:
+            name: {{ template "name" . }}
+        - name: certs
+          secret:
+            secretName: {{ template "name" . }}
+{{- end}}

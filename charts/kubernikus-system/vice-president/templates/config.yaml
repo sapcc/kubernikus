@@ -1,0 +1,19 @@
+{{- if .Values.vice }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "name" . }}
+
+data:
+  vice-president.conf: |
+    vice:
+      first_name: {{ .Values.vice.first_name | quote }}
+      last_name: {{ .Values.vice.last_name | quote }}
+      email: {{ .Values.vice.email | quote }}
+      country: {{ .Values.vice.country | quote }}
+      province: {{ .Values.vice.province | quote }}
+      locality: {{ .Values.vice.locality | quote }}
+      organization: {{ .Values.vice.organization | quote }}
+      organizational_unit: {{ .Values.vice.organizational_unit | quote }}
+      default_challenge: {{ .Values.vice.default_challenge | quote }}
+{{- end}}

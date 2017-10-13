@@ -1,0 +1,4 @@
+apiVersion: v1
+description: Kubernikus System Components
+name: kubernikus-system
+version: 0.1.0
