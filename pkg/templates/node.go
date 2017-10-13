@@ -64,6 +64,7 @@ systemd:
         ExecStartPre=/bin/mkdir -p /var/lib/cni
         ExecStartPre=-/usr/bin/rkt rm --uuid-file=/var/run/kubelet-pod.uuid
         ExecStart=/usr/lib/coreos/kubelet-wrapper \
+					--cert-dir=/var/lib/kubelet/pki \
           --cloud-config=/etc/kubernetes/openstack/openstack.config \
           --cloud-provider=openstack \
           --require-kubeconfig \
