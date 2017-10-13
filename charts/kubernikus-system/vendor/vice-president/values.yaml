@@ -1,6 +1,6 @@
 image:
   repository: sapcc/vice-president
-  tag: v201710111351
+  tag: v201710111420
   pullPolicy: IfNotPresent
 log_level: 1
 metrics_port: 9091
