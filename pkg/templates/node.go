@@ -99,8 +99,6 @@ systemd:
           --dns=host \
           --volume var-lib-kubelet,kind=host,source=/var/lib/kubelet,readOnly=true \
           --mount volume=var-lib-kubelet,target=/var/lib/kubelet \
-          --volume var-run-kubernetes,kind=host,source=/var/run/kubernetes,readOnly=true \
-          --mount volume=var-run-kubernetes,target=/var/run/kubernetes \
           --volume etc-kubernetes-certs,kind=host,source=/etc/kubernetes/certs,readOnly=true \
           --mount volume=etc-kubernetes-certs,target=/etc/kubernetes/certs \
           docker://{{ .KubernikusImage }}:{{ .KubernikusImageTag }} \
