@@ -251,9 +251,14 @@ jobs:
       - task: deploy
         file: pipeline.git/ci/task_helm_kubernikus.yaml
         params:
-          REGION: eu-nl-1
-          NAMESPACE: kube-system
-          GITHUB_TOKEN: ((github-access-token))
+          OS_AUTH_URL: https://identity-3.eu-nl-1.cloud.sap/v3
+          OS_USERNAME: {{kubernikus-eu-nl-1-username}}
+          OS_PASSWORD: {{kubernikus-eu-nl-1-password}}
+          OS_USER_DOMAIN_NAME: ccadmin 
+          OS_PROJECT_NAME: kubernikus
+          OS_PROJECT_DOMAIN_NAME: ccadmin
+          KUBERNIKUS_NAME: k-eu-nl-1
+          KUBERNIKUS_URL: https://kubernikus-eu-nl-1.admin.cloud.sap
     on_failure:
       <<: *post_failure_to_slack
 
