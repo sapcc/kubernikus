@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"crypto/x509"
+	"fmt"
 	"time"
 
 	"github.com/ghodss/yaml"
@@ -73,7 +74,7 @@ func (d *getClusterCredentials) Handle(params operations.GetClusterCredentialsPa
 	})
 	config := kubernetes.NewClientConfigV1(
 		params.Name,
-		principal.Name,
+		fmt.Sprintf("%v@%v", principal.Name, params.Name),
 		kluster.Spec.KubernikusInfo.ServerURL,
 		certutil.EncodePrivateKeyPEM(cert.PrivateKey),
 		certutil.EncodeCertPEM(cert.Certificate),
