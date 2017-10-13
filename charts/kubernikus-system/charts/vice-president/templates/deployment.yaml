@@ -3,7 +3,6 @@ apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
   name: {{ template "name" . }}
-  namespace: kube-system
   labels:
     app: {{ template "name" . }}
 
