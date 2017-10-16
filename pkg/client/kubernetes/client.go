@@ -91,7 +91,11 @@ func (f *SharedClientFactory) ClientFor(k *kubernikus_v1.Kluster) (kubernetes.In
 
 func NewConfig(kubeconfig, context string) (*rest.Config, error) {
 	rules := clientcmd.NewDefaultClientConfigLoadingRules()
-	overrides := &clientcmd.ConfigOverrides{CurrentContext: context}
+	overrides := &clientcmd.ConfigOverrides{}
+
+	if len(context) > 0 {
+		overrides.CurrentContext = context
+	}
 
 	if len(kubeconfig) > 0 {
 		rules.ExplicitPath = kubeconfig
