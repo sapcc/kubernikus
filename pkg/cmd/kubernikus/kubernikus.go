@@ -17,6 +17,7 @@ func NewCommand(name string) *cobra.Command {
 		NewCertificatesCommand(),
 		NewHelmCommand(),
 		NewOperatorCommand(),
+		NewSeedCommand(),
 	)
 	c.PersistentFlags().AddGoFlagSet(flag.CommandLine)
 
