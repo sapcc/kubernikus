@@ -37,6 +37,8 @@ func (i *ignition) GenerateNode(kluster *v1.Kluster, client kubernetes.Interface
 		KubeletClientsCA                   string
 		ApiserverClientsSystemKubeProxy    string
 		ApiserverClientsSystemKubeProxyKey string
+		ClusterDomain                      string
+		ClusterDNS                         string
 		ClusterCIDR                        string
 		ApiserverURL                       string
 		BootstrapToken                     string
@@ -55,6 +57,8 @@ func (i *ignition) GenerateNode(kluster *v1.Kluster, client kubernetes.Interface
 		ApiserverClientsSystemKubeProxy:    string(secret.Data["apiserver-clients-system-kube-proxy.pem"]),
 		ApiserverClientsSystemKubeProxyKey: string(secret.Data["apiserver-clients-system-kube-proxy-key.pem"]),
 		ClusterCIDR:                        "198.19.0.0/16",
+		ClusterDNS:                         "198.18.254.254",
+		ClusterDomain:                      "cluster.local",
 		ApiserverURL:                       kluster.Spec.KubernikusInfo.ServerURL,
 		BootstrapToken:                     kluster.Spec.KubernikusInfo.BootstrapToken,
 		OpenstackAuthURL:                   kluster.Spec.OpenstackInfo.AuthURL,
