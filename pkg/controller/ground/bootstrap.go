@@ -7,6 +7,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	clientset "k8s.io/client-go/kubernetes"
 	rbac "k8s.io/client-go/pkg/apis/rbac/v1beta1"
+	storage "k8s.io/client-go/pkg/apis/storage/v1"
 )
 
 func SeedKluster(client clientset.Interface) error {
@@ -18,6 +19,33 @@ func SeedKluster(client clientset.Interface) error {
 	}
 	if err := SeedKubernikusAdmin(client); err != nil {
 		return err
+	}
+	if err := SeedCinderStorageClass(client); err != nil {
+		return err
+	}
+	return nil
+
+}
+
+func SeedCinderStorageClass(client clientset.Interface) error {
+	storageClass := storage.StorageClass{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "cinder:default",
+			Annotations: map[string]string{
+				"storageclass.kubernetes.io/is-default-class": "true",
+			},
+		},
+		Provisioner: "kubernetes.io/cinder",
+	}
+
+	if _, err := client.StorageV1().StorageClasses().Create(&storageClass); err != nil {
+		if !apierrors.IsAlreadyExists(err) {
+			return fmt.Errorf("unable to create storage class: %v", err)
+		}
+
+		if _, err := client.StorageV1().StorageClasses().Update(&storageClass); err != nil {
+			return fmt.Errorf("unable to update storage class: %v", err)
+		}
 	}
 	return nil
 
