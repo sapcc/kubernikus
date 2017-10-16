@@ -3,6 +3,7 @@ package ground
 import (
 	"fmt"
 
+	"github.com/sapcc/kubernikus/pkg/controller/ground/bootstrap/dns"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	clientset "k8s.io/client-go/kubernetes"
@@ -21,6 +22,9 @@ func SeedKluster(client clientset.Interface) error {
 		return err
 	}
 	if err := SeedCinderStorageClass(client); err != nil {
+		return err
+	}
+	if err := dns.SeedKubeDNS(client, "", "", "", ""); err != nil {
 		return err
 	}
 	return nil
