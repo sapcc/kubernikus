@@ -16,6 +16,7 @@ import (
 
 const (
 	SERVICE_ACCOUNT    = "kube-dns"
+	CONFIGMAP          = "kube-dns"
 	DEFAULT_REPOSITORY = "gcr.io/google_containers"
 	DEFAULT_VERSION    = "1.14.5"
 	DEFAULT_DOMAIN     = "cluster.local"
@@ -53,6 +54,10 @@ func SeedKubeDNS(client clientset.Interface, repository, version, domain, cluste
 		return err
 	}
 
+	if err := createKubeDNSConfigMap(client); err != nil {
+		return err
+	}
+
 	if err := createKubeDNSDeployment(client, repository, version, domain); err != nil {
 		return err
 	}
@@ -69,6 +74,22 @@ func createKubeDNSServiceAccount(client clientset.Interface) error {
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      SERVICE_ACCOUNT,
 			Namespace: metav1.NamespaceSystem,
+			Labels: map[string]string{
+				"kubernetes.io/cluster-service":   "true",
+				"addonmanager.kubernetes.io/mode": "Reconcile",
+			},
+		},
+	})
+}
+
+func createKubeDNSConfigMap(client clientset.Interface) error {
+	return CreateOrUpdateConfigMap(client, &v1.ConfigMap{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      CONFIGMAP,
+			Namespace: metav1.NamespaceSystem,
+			Labels: map[string]string{
+				"addonmanager.kubernetes.io/mode": "EnsureExists",
+			},
 		},
 	})
 }
@@ -171,6 +192,19 @@ func CreateOrUpdateService(client clientset.Interface, service *v1.Service) erro
 
 		if _, err := client.CoreV1().Services(metav1.NamespaceSystem).Update(service); err != nil {
 			return fmt.Errorf("unable to create/update the kube-dns service: %v", err)
+		}
+	}
+	return nil
+}
+
+func CreateOrUpdateConfigMap(client clientset.Interface, configmap *v1.ConfigMap) error {
+	if _, err := client.CoreV1().ConfigMaps(configmap.ObjectMeta.Namespace).Create(configmap); err != nil {
+		if !apierrors.IsAlreadyExists(err) {
+			return fmt.Errorf("unable to create configmap: %v", err)
+		}
+
+		if _, err := client.CoreV1().ConfigMaps(configmap.ObjectMeta.Namespace).Update(configmap); err != nil {
+			return fmt.Errorf("unable to update configmap: %v", err)
 		}
 	}
 	return nil

@@ -162,27 +162,26 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
+  name: kube-dns
+  namespace: kube-system
   labels:
     k8s-app: kube-dns
     kubernetes.io/cluster-service: "true"
+    addonmanager.kubernetes.io/mode: Reconcile
     kubernetes.io/name: "KubeDNS"
-  name: kube-dns
-  namespace: kube-system
   # Without this resourceVersion value, an update of the Service between versions will yield:
   #   Service "kube-dns" is invalid: metadata.resourceVersion: Invalid value: "": must be specified for an update
   resourceVersion: "0"
 spec:
+  selector:
+    k8s-app: kube-dns
   clusterIP: {{ .ClusterIP }}
   ports:
   - name: dns
     port: 53
     protocol: UDP
-    targetPort: 53
   - name: dns-tcp
     port: 53
     protocol: TCP
-    targetPort: 53
-  selector:
-    k8s-app: kube-dns
 `
 )
