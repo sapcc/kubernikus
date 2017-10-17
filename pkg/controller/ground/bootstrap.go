@@ -34,7 +34,7 @@ func SeedKluster(client clientset.Interface) error {
 func SeedCinderStorageClass(client clientset.Interface) error {
 	storageClass := storage.StorageClass{
 		ObjectMeta: metav1.ObjectMeta{
-			Name: "cinder:default",
+			Name: "cinder-default",
 			Annotations: map[string]string{
 				"storageclass.kubernetes.io/is-default-class": "true",
 			},
