@@ -282,7 +282,7 @@ func (ca Bundle) Sign(config Config) Bundle {
 		Subject: pkix.Name{
 			CommonName:         config.Sign,
 			Organization:       config.Organization,
-			OrganizationalUnit: ca.Certificate.Subject.OrganizationalUnit,
+			OrganizationalUnit: config.OrganizationalUnit,
 		},
 		DNSNames:     config.AltNames.DNSNames,
 		IPAddresses:  config.AltNames.IPs,

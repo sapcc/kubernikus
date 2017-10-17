@@ -214,6 +214,9 @@ definitions:
       id:
         description: userid
         type: string
+      domain:
+        description: domainid
+        type: string
       account:
         description: account id
         type: string

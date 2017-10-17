@@ -329,6 +329,10 @@ func init() {
           "description": "account id",
           "type": "string"
         },
+        "domain": {
+          "description": "domainid",
+          "type": "string"
+        },
         "id": {
           "description": "userid",
           "type": "string"

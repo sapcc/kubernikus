@@ -67,7 +67,7 @@ func (d *getClusterCredentials) Handle(params operations.GetClusterCredentialsPa
 	}
 
 	cert := bundle.Sign(util.Config{
-		Sign:         principal.Name,
+		Sign:         fmt.Sprintf("%s@%s", principal.Name, principal.Domain),
 		Organization: organizations,
 		Usages:       []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth},
 		ValidFor:     24 * time.Hour,

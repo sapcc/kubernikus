@@ -19,6 +19,9 @@ type Principal struct {
 	// account id
 	Account string `json:"account,omitempty"`
 
+	// domainid
+	Domain string `json:"domain,omitempty"`
+
 	// userid
 	ID string `json:"id,omitempty"`
 
