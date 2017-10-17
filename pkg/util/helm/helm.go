@@ -24,6 +24,14 @@ type openstackValues struct {
 	RouterID   string `yaml:"routerID"`
 }
 
+type persistenceValues struct {
+	AccessMode string `yaml:"accessMode,omitempty"`
+}
+
+type etcdValues struct {
+	Persistence persistenceValues `yaml:"persistence,omitempty"`
+}
+
 type kubernikusHelmValues struct {
 	Openstack        openstackValues   `yaml:"openstack,omitempty"`
 	Certs            map[string]string `yaml:"certs,omitempty"`
@@ -31,9 +39,10 @@ type kubernikusHelmValues struct {
 	ServiceCIDR      string            `yaml:"serviceCIDR,omitempty"`
 	AdvertiseAddress string            `yaml:"advertiseAddress,omitempty"`
 	BoostrapToken    string            `yaml:"bootstrapToken,omitempty"`
+	Etcd             etcdValues        `yaml:"etcd,omitempty"`
 }
 
-func KlusterToHelmValues(kluster *v1.Kluster, openstack *OpenstackOptions, certificates map[string]string, bootstrapToken string) ([]byte, error) {
+func KlusterToHelmValues(kluster *v1.Kluster, openstack *OpenstackOptions, certificates map[string]string, bootstrapToken string, accessMode string) ([]byte, error) {
 	values := kubernikusHelmValues{
 		BoostrapToken:    bootstrapToken,
 		Certs:            certificates,
@@ -49,6 +58,11 @@ func KlusterToHelmValues(kluster *v1.Kluster, openstack *OpenstackOptions, certi
 			ProjectID:  kluster.Spec.Openstack.ProjectID,
 			LbSubnetID: kluster.Spec.Openstack.LBSubnetID,
 			RouterID:   kluster.Spec.Openstack.RouterID,
+		},
+		Etcd: etcdValues{
+			Persistence: persistenceValues{
+				AccessMode: accessMode,
+			},
 		},
 	}
 

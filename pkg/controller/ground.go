@@ -267,6 +267,11 @@ func (op *GroundControl) updateStatus(tpr *v1.Kluster, state v1.KlusterState, me
 }
 
 func (op *GroundControl) createKluster(tpr *v1.Kluster) error {
+
+	accessMode, err := kubernetes.PVAccessMode(op.Clients.Kubernetes)
+	if err != nil {
+		return fmt.Errorf("Couldn't determine access mode for pvc: %s", err)
+	}
 	certificates := util.CreateCertificates(tpr, op.Config.Kubernikus.Domain)
 	bootstrapToken := util.GenerateBootstrapToken()
 	username := fmt.Sprintf("kubernikus-%s", tpr.Name)
@@ -298,7 +303,7 @@ func (op *GroundControl) createKluster(tpr *v1.Kluster) error {
 		Region:     region,
 	}
 
-	rawValues, err := helm_util.KlusterToHelmValues(tpr, options, certificates, bootstrapToken)
+	rawValues, err := helm_util.KlusterToHelmValues(tpr, options, certificates, bootstrapToken, accessMode)
 	if err != nil {
 		return err
 	}

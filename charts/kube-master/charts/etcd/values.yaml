@@ -8,7 +8,7 @@ image:
 ## Persist data to a persitent volume
 persistence:
   enabled: true
-  accessMode: ReadWriteMany
+  accessMode: ReadWriteOnce
   size: 10Gi
   # Re-use existing (unmanged) PVC
   # existingClaim: claimName
