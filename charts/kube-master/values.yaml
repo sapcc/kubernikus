@@ -17,10 +17,6 @@ openstack: {}
   #lbSubnetID:
   #routerID:
 
-kubernikus: {}
-  #bootstrapToken
-  #version:
-
 # specify a different certsSecretName if you want to use
 # an exiting secret
 # certsSecretName:
@@ -31,6 +27,8 @@ certs: {}
 clusterCIDR: 198.19.0.0/16
 serviceCIDR: 198.18.128.0/17
 advertiseAddress: 198.18.127.1
+#bootstrapToken
+#version:
 
 api:
   replicaCount: 1

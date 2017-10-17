@@ -7,9 +7,6 @@ import (
 
 func KlusterToHelmValues(kluster *v1.Kluster, certificates map[string]string) ([]byte, error) {
 	type Values struct {
-		Kubernikus struct {
-			BoostrapToken string `yaml:"bootstrapToken,omitempty"`
-		}
 		Openstack struct {
 			AuthURL    string `yaml:"authURL"`
 			Username   string `yaml:"username"`
@@ -24,10 +21,11 @@ func KlusterToHelmValues(kluster *v1.Kluster, certificates map[string]string) ([
 		ClusterCIDR      string            `yaml:"clusterCIDR,omitempty"`
 		ServiceCIDR      string            `yaml:"serviceCIDR,omitempty"`
 		AdvertiseAddress string            `yaml:"advertiseAddress,omitempty"`
+		BoostrapToken    string            `yaml:"bootstrapToken,omitempty"`
 	}
 
 	values := Values{}
-	values.Kubernikus.BoostrapToken = kluster.Secret.BootstrapToken
+	values.BoostrapToken = kluster.Secret.BootstrapToken
 	values.Openstack.AuthURL = kluster.Spec.Openstack.AuthURL
 	values.Openstack.Username = kluster.Spec.Openstack.Username
 	values.Openstack.Password = kluster.Secret.Openstack.Password
