@@ -111,7 +111,7 @@ func (o *HelmOptions) Run(c *cobra.Command) error {
 	certificates := util.CreateCertificates(kluster, nameA[1])
 	token := util.GenerateBootstrapToken()
 
-	result, err := helm.KlusterToHelmValues(kluster, options, certificates, token)
+	result, err := helm.KlusterToHelmValues(kluster, options, certificates, token, "")
 	if err != nil {
 		return err
 	}
