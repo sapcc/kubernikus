@@ -71,7 +71,7 @@ func (f *SharedClientFactory) ClientFor(k *kubernikus_v1.Kluster) (kubernetes.In
 	}
 
 	c := rest.Config{
-		Host: k.Spec.KubernikusInfo.ServerURL,
+		Host: k.Status.Apiserver,
 		TLSClientConfig: rest.TLSClientConfig{
 			CertData: clientCert,
 			KeyData:  clientKey,

@@ -3,10 +3,10 @@ package certificates
 import (
 	"errors"
 
+	"github.com/sapcc/kubernikus/pkg/apis/kubernikus"
 	"github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
 
 	"github.com/sapcc/kubernikus/pkg/cmd"
-	"github.com/sapcc/kubernikus/pkg/controller/config"
 	"github.com/sapcc/kubernikus/pkg/controller/ground"
 	"github.com/spf13/cobra"
 )
@@ -49,23 +49,14 @@ func (o *PlainOptions) Complete(args []string) error {
 }
 
 func (o *PlainOptions) Run(c *cobra.Command) error {
-	cluster, err := ground.NewCluster(
-		&v1.Kluster{
-			Spec: v1.KlusterSpec{
-				Name: o.Name,
-			},
-		},
-		config.Config{
-			Kubernikus: config.KubernikusConfig{
-				Domain: "local",
-			},
-		})
+	kluster, err := kubernikus.NewKlusterFactory().KlusterFor(v1.KlusterSpec{Name: o.Name})
 	if err != nil {
 		return err
 	}
 
-	err = cluster.WriteConfig(ground.NewPlainPersister())
-	if err != nil {
+	ground.CreateCertificates(kluster, "kubernikus.cloud.sap")
+
+	if err := NewPlainPersister().WriteConfig(kluster); err != nil {
 		return err
 	}
 

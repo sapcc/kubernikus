@@ -270,7 +270,7 @@ func (c *client) klusterClientFor(kluster *kubernikus_v1.Kluster) (*gophercloud.
 		DomainName:       string(secret.Data["openstack-domain-name"]),
 		AllowReauth:      true,
 		Scope: tokens.Scope{
-			ProjectID: kluster.Spec.OpenstackInfo.ProjectID,
+			ProjectID: kluster.Spec.Openstack.ProjectID,
 		},
 	}
 
@@ -534,7 +534,7 @@ func getRouterNetworks(client *gophercloud.ServiceClient, routerID string) ([]st
 }
 
 func (c *client) GetNodes(kluster *kubernikus_v1.Kluster, pool *kubernikus_v1.NodePool) ([]Node, error) {
-	project_id := kluster.Spec.OpenstackInfo.RouterID
+	project_id := kluster.Spec.Openstack.RouterID
 	pool_id := pool.Name
 
 	provider, err := c.klusterClientFor(kluster)
@@ -583,7 +583,7 @@ func (c *client) CreateNode(kluster *kubernikus_v1.Kluster, pool *kubernikus_v1.
 		Name:           name,
 		FlavorName:     pool.Flavor,
 		ImageName:      pool.Image,
-		Networks:       []servers.Network{servers.Network{UUID: kluster.Spec.OpenstackInfo.NetworkID}},
+		Networks:       []servers.Network{servers.Network{UUID: kluster.Spec.Openstack.NetworkID}},
 		UserData:       userData,
 		SecurityGroups: []string{"default"},
 		ServiceClient:  client,

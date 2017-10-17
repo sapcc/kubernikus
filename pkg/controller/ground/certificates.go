@@ -14,7 +14,7 @@ import (
 	"time"
 
 	"github.com/kennygrant/sanitize"
-	"github.com/sapcc/kubernikus/pkg/controller/config"
+	"github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
 
 	certutil "k8s.io/client-go/util/cert"
 )
@@ -25,6 +25,11 @@ const (
 	//out CAs are valid for 10 years
 	caValidity = 10 * time.Hour * 24 * 365
 )
+
+type Bundle struct {
+	Certificate *x509.Certificate
+	PrivateKey  *rsa.PrivateKey
+}
 
 type Certificates struct {
 	Etcd struct {
@@ -67,19 +72,21 @@ type Certificates struct {
 	}
 }
 
-func (c *Certificates) MarshalYAML() (interface{}, error) {
+func (c *Certificates) toMap() map[string]string {
 	bundles := c.all()
 	result := make(map[string]string, len(bundles)*2)
 	for _, bundle := range bundles {
 		result[bundle.NameForCert()] = string(certutil.EncodeCertPEM(bundle.Certificate))
 		result[bundle.NameForKey()] = string(certutil.EncodePrivateKeyPEM(bundle.PrivateKey))
 	}
+	return result
+}
 
-	return result, nil
+func (c *Certificates) MarshalYAML() (interface{}, error) {
+	return c.toMap(), nil
 }
 
 func NewBundle(key, cert []byte) (Bundle, error) {
-
 	certificates, err := certutil.ParseCertsPEM(cert)
 	if err != nil {
 		return Bundle{}, err
@@ -97,11 +104,6 @@ func NewBundle(key, cert []byte) (Bundle, error) {
 	}
 
 	return Bundle{PrivateKey: rsaKey, Certificate: certificates[0]}, nil
-}
-
-type Bundle struct {
-	Certificate *x509.Certificate
-	PrivateKey  *rsa.PrivateKey
 }
 
 func (b *Bundle) basename() string {
@@ -162,13 +164,14 @@ func (c Certificates) all() []Bundle {
 	}
 }
 
-func (certs *Certificates) populateForSatellite(satellite string, config config.Config) error {
-	createCA(satellite, "Etcd Clients", &certs.Etcd.Clients.CA)
-	createCA(satellite, "Etcd Peers", &certs.Etcd.Peers.CA)
-	createCA(satellite, "ApiServer Clients", &certs.ApiServer.Clients.CA)
-	createCA(satellite, "ApiServer Nodes", &certs.ApiServer.Nodes.CA)
-	createCA(satellite, "Kubelet Clients", &certs.Kubelet.Clients.CA)
-	createCA(satellite, "TLS", &certs.TLS.CA)
+func CreateCertificates(kluster *v1.Kluster, domain string) {
+	certs := &Certificates{}
+	createCA(kluster.Name, "Etcd Clients", &certs.Etcd.Clients.CA)
+	createCA(kluster.Name, "Etcd Peers", &certs.Etcd.Peers.CA)
+	createCA(kluster.Name, "ApiServer Clients", &certs.ApiServer.Clients.CA)
+	createCA(kluster.Name, "ApiServer Nodes", &certs.ApiServer.Nodes.CA)
+	createCA(kluster.Name, "Kubelet Clients", &certs.Kubelet.Clients.CA)
+	createCA(kluster.Name, "TLS", &certs.TLS.CA)
 
 	certs.Etcd.Clients.ApiServer = certs.signEtcdClient("apiserver")
 	certs.Etcd.Peers.Universal = certs.signEtcdPeer("universal")
@@ -180,12 +183,12 @@ func (certs *Certificates) populateForSatellite(satellite string, config config.
 	certs.ApiServer.Nodes.Universal = certs.signApiServerNode("universal")
 	certs.Kubelet.Clients.ApiServer = certs.signKubeletClient("apiserver")
 	certs.TLS.ApiServer = certs.signTLS("apiserver",
-		[]string{"kubernetes", "kubernetes.default", "apiserver", satellite, fmt.Sprintf("%v.%v", satellite, config.Kubernikus.Domain)},
-		[]net.IP{net.IPv4(127, 0, 0, 1), net.IPv4(198, 18, 128, 1)})
+		[]string{"kubernetes", "kubernetes.default", "apiserver", kluster.Name, fmt.Sprintf("%v.%v", kluster.Name, domain)},
+		[]net.IP{net.IPv4(127, 0, 0, 1), net.IPv4(198, 18, 128, 1)}) // TODO: Make ServiceCidr Configurable
 	certs.TLS.Wormhole = certs.signTLS("wormhole",
-		[]string{fmt.Sprintf("%v-wormhole.%v", satellite, config.Kubernikus.Domain)}, []net.IP{})
+		[]string{fmt.Sprintf("%v-wormhole.%v", kluster.Name, domain)}, []net.IP{})
 
-	return nil
+	kluster.Secret.Certificates = certs.toMap()
 }
 
 func (c Certificates) signEtcdClient(name string) Bundle {

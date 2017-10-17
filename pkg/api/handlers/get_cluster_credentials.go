@@ -75,7 +75,7 @@ func (d *getClusterCredentials) Handle(params operations.GetClusterCredentialsPa
 	config := kubernetes.NewClientConfigV1(
 		params.Name,
 		fmt.Sprintf("%v@%v", principal.Name, params.Name),
-		kluster.Spec.KubernikusInfo.ServerURL,
+		kluster.Status.Apiserver,
 		certutil.EncodePrivateKeyPEM(cert.PrivateKey),
 		certutil.EncodeCertPEM(cert.Certificate),
 		serverCACert,

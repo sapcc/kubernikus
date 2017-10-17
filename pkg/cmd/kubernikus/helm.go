@@ -1,4 +1,4 @@
-package kubernikus 
+package kubernikus
 
 import (
 	"errors"
@@ -6,13 +6,12 @@ import (
 	"os"
 	"strings"
 
+	"github.com/sapcc/kubernikus/pkg/apis/kubernikus"
 	"github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
 	"github.com/sapcc/kubernikus/pkg/cmd"
-	"github.com/sapcc/kubernikus/pkg/controller/config"
 	"github.com/sapcc/kubernikus/pkg/controller/ground"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
-	yaml "gopkg.in/yaml.v2"
 )
 
 func NewHelmCommand() *cobra.Command {
@@ -91,24 +90,18 @@ func (o *HelmOptions) Complete(args []string) error {
 
 func (o *HelmOptions) Run(c *cobra.Command) error {
 	nameA := strings.SplitN(o.Name, ".", 2)
-	cluster, err := ground.NewCluster(
-		&v1.Kluster{
-			Spec: v1.KlusterSpec{
-				Name: nameA[0],
-			},
-		}, config.Config{
-			Kubernikus: config.KubernikusConfig{
-				Domain: nameA[1],
-			},
-		})
+	kluster, err := kubernikus.NewKlusterFactory().KlusterFor(v1.KlusterSpec{Name: nameA[0]})
 	if err != nil {
 		return err
 	}
+
 	if o.AuthURL != "" {
-		cluster.OpenStack.AuthURL = o.AuthURL
+		kluster.Spec.Openstack.AuthURL = o.AuthURL
 	}
 
-	result, err := yaml.Marshal(cluster)
+	ground.CreateCertificates(kluster, nameA[1])
+
+	result, err := kluster.ToHelmValues()
 	if err != nil {
 		return err
 	}

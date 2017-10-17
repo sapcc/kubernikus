@@ -9,6 +9,7 @@ import (
 	"github.com/sapcc/kubernikus/pkg/api"
 	"github.com/sapcc/kubernikus/pkg/api/models"
 	"github.com/sapcc/kubernikus/pkg/api/rest/operations"
+	"github.com/sapcc/kubernikus/pkg/apis/kubernikus"
 	"github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -30,10 +31,8 @@ func (d *createCluster) Handle(params operations.CreateClusterParams, principal 
 	}
 
 	var nodePools []v1.NodePool
-	var nodePoolInfos []v1.NodePoolInfo
 	if params.Body.Spec != nil && params.Body.Spec.NodePools != nil {
 		nodePools = []v1.NodePool{}
-		nodePoolInfos = []v1.NodePoolInfo{}
 		for i, _ := range params.Body.Spec.NodePools {
 			nodePools = append(nodePools, v1.NodePool{
 				Name:   *params.Body.Spec.NodePools[i].Name,
@@ -41,36 +40,21 @@ func (d *createCluster) Handle(params operations.CreateClusterParams, principal 
 				Flavor: *params.Body.Spec.NodePools[i].Flavor,
 				Image:  "coreos-stable-amd64",
 			})
-
-			nodePoolInfos = append(nodePoolInfos, v1.NodePoolInfo{
-				Name:        *params.Body.Spec.NodePools[i].Name,
-				Size:        int(*params.Body.Spec.NodePools[i].Size),
-				Running:     0,
-				Healthy:     0,
-				Schedulable: 0,
-			})
 		}
 	}
 
-	kluster := &v1.Kluster{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:        fmt.Sprintf("%s-%s", name, principal.Account),
-			Labels:      map[string]string{"account": principal.Account},
-			Annotations: map[string]string{"creator": principal.Name},
-		},
-		Spec: v1.KlusterSpec{
-			Name:      name,
-			NodePools: nodePools,
-		},
-		Status: v1.KlusterStatus{
-			Kluster: v1.KlusterInfo{
-				State: v1.KlusterPending,
-			},
-			NodePools: nodePoolInfos,
-		},
+	kluster, err := kubernikus.NewKlusterFactory().KlusterFor(v1.KlusterSpec{
+		Name:      name,
+		NodePools: nodePools,
+	})
+
+	kluster.ObjectMeta = metav1.ObjectMeta{
+		Name:        fmt.Sprintf("%s-%s", name, principal.Account),
+		Labels:      map[string]string{"account": principal.Account},
+		Annotations: map[string]string{"creator": principal.Name},
 	}
 
-	kluster, err := d.Kubernikus.Kubernikus().Klusters(d.Namespace).Create(kluster)
+	kluster, err = d.Kubernikus.Kubernikus().Klusters(d.Namespace).Create(kluster)
 	if err != nil {
 		glog.Errorf("Failed to create cluster: %s", err)
 		if apierrors.IsAlreadyExists(err) {
