@@ -91,19 +91,27 @@ func (o *HelmOptions) Complete(args []string) error {
 
 func (o *HelmOptions) Run(c *cobra.Command) error {
 	nameA := strings.SplitN(o.Name, ".", 2)
-	kluster, err := kubernikus.NewKlusterFactory().KlusterFor(v1.KlusterSpec{Name: nameA[0]})
+	kluster, err := kubernikus.NewKlusterFactory().KlusterFor(v1.KlusterSpec{
+		Name: nameA[0],
+		Openstack: v1.OpenstackSpec{
+			ProjectID: o.ProjectID,
+		},
+	})
 	if err != nil {
 		return err
 	}
 
-	if o.AuthURL != "" {
-		kluster.Spec.Openstack.AuthURL = o.AuthURL
+	options := &helm.OpenstackOptions{
+		AuthURL:    o.AuthURL,
+		Username:   o.AuthUsername,
+		Password:   o.AuthPassword,
+		DomainName: o.AuthDomain,
 	}
 
 	certificates := util.CreateCertificates(kluster, nameA[1])
 	token := util.GenerateBootstrapToken()
 
-	result, err := helm.KlusterToHelmValues(kluster, certificates, token)
+	result, err := helm.KlusterToHelmValues(kluster, options, certificates, token)
 	if err != nil {
 		return err
 	}

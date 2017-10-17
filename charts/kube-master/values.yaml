@@ -16,6 +16,7 @@ openstack: {}
   #region:
   #lbSubnetID:
   #routerID:
+  #region
 
 # specify a different certsSecretName if you want to use
 # an exiting secret

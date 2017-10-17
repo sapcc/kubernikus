@@ -18,14 +18,10 @@ type NodePool struct {
 }
 
 type OpenstackSpec struct {
-	AuthURL    string `json:"authURL"`
 	ProjectID  string `json:"projectID"`
 	RouterID   string `json:"routerID"`
 	NetworkID  string `json:"networkID"`
 	LBSubnetID string `json:"lbSubnetID"`
-	Domain     string `json:"domain"`
-	Region     string `json:"region"`
-	Username   string `json:"username"`
 }
 
 type KlusterSpec struct {
@@ -63,14 +59,6 @@ type KlusterInfo struct {
 	Message string       `json:"message,omitempty"`
 }
 
-type OpenstackSecret struct {
-	Password string `json:"password"`
-}
-
-type KlusterSecret struct {
-	Openstack      OpenstackSecret `json:"openstack,omitempty"`
-}
-
 type NodePoolInfo struct {
 	Name        string `json:"name"`
 	Size        int    `json:size`
@@ -86,7 +74,6 @@ type Kluster struct {
 	metav1.ObjectMeta `json:"metadata"`
 	Spec              KlusterSpec   `json:"spec"`
 	Status            KlusterStatus `json:"status,omitempty"`
-	Secret            KlusterSecret `json:"secret"`
 }
 
 type KlusterList struct {

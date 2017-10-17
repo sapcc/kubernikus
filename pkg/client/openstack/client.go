@@ -232,7 +232,7 @@ func (c *client) controlPlaneClient() (*gophercloud.ProviderClient, error) {
 		DomainName:       c.authDomain,
 		AllowReauth:      true,
 		Scope: tokens.Scope{
-			ProjectID: "06a832fedd4b422bbf2d6d52be59a93d",
+			ProjectID: "06a832fedd4b422bbf2d6d52be59a93d", // TODO: wtf
 		},
 	}
 
@@ -270,7 +270,7 @@ func (c *client) klusterClientFor(kluster *kubernikus_v1.Kluster) (*gophercloud.
 		DomainName:       string(secret.Data["openstack-domain-name"]),
 		AllowReauth:      true,
 		Scope: tokens.Scope{
-			ProjectID: kluster.Spec.Openstack.ProjectID,
+			ProjectID: string(secret.Data["openstack-project-id"]),
 		},
 	}
 
@@ -534,7 +534,6 @@ func getRouterNetworks(client *gophercloud.ServiceClient, routerID string) ([]st
 }
 
 func (c *client) GetNodes(kluster *kubernikus_v1.Kluster, pool *kubernikus_v1.NodePool) ([]Node, error) {
-	project_id := kluster.Spec.Openstack.RouterID
 	pool_id := pool.Name
 
 	provider, err := c.klusterClientFor(kluster)
@@ -547,7 +546,6 @@ func (c *client) GetNodes(kluster *kubernikus_v1.Kluster, pool *kubernikus_v1.No
 	if err != nil {
 		return nodes, err
 	}
-	glog.V(5).Infof("Listing nodes for %v/%v", project_id, pool_id)
 
 	prefix := fmt.Sprintf("%v-%v", kluster.Spec.Name, pool_id)
 	opts := servers.ListOpts{Name: prefix}
