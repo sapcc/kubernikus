@@ -32,6 +32,10 @@ type etcdValues struct {
 	Persistence persistenceValues `yaml:"persistence,omitempty"`
 }
 
+type apiValues struct {
+	IngressHost string `yaml:"ingressHost,omitempty"`
+}
+
 type kubernikusHelmValues struct {
 	Openstack        openstackValues   `yaml:"openstack,omitempty"`
 	Certs            map[string]string `yaml:"certs,omitempty"`
@@ -41,6 +45,7 @@ type kubernikusHelmValues struct {
 	BoostrapToken    string            `yaml:"bootstrapToken,omitempty"`
 	Version          string            `yaml:"version,omitempty"`
 	Etcd             etcdValues        `yaml:"etcd,omitempty"`
+	Api              apiValues         `yaml:"api,omitempty"`
 }
 
 func KlusterToHelmValues(kluster *v1.Kluster, openstack *OpenstackOptions, certificates map[string]string, bootstrapToken string, accessMode string) ([]byte, error) {
@@ -65,6 +70,9 @@ func KlusterToHelmValues(kluster *v1.Kluster, openstack *OpenstackOptions, certi
 			Persistence: persistenceValues{
 				AccessMode: accessMode,
 			},
+		},
+		Api: apiValues{
+			IngressHost: kluster.Status.Apiserver,
 		},
 	}
 
