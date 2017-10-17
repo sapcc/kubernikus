@@ -10,6 +10,7 @@ import (
 	"github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
 	"github.com/sapcc/kubernikus/pkg/cmd"
 	"github.com/sapcc/kubernikus/pkg/controller/ground"
+	"github.com/sapcc/kubernikus/pkg/util/helm"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 )
@@ -101,7 +102,7 @@ func (o *HelmOptions) Run(c *cobra.Command) error {
 
 	ground.CreateCertificates(kluster, nameA[1])
 
-	result, err := kluster.ToHelmValues()
+	result, err := helm.KlusterToHelmValues(kluster)
 	if err != nil {
 		return err
 	}

@@ -11,7 +11,6 @@ import (
 	"github.com/Masterminds/goutils"
 	"github.com/golang/glog"
 	"google.golang.org/grpc"
-	yaml "gopkg.in/yaml.v2"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
 	api_v1 "k8s.io/client-go/pkg/api/v1"
@@ -23,6 +22,7 @@ import (
 	"github.com/sapcc/kubernikus/pkg/client/kubernetes"
 	"github.com/sapcc/kubernikus/pkg/controller/config"
 	"github.com/sapcc/kubernikus/pkg/controller/ground"
+	helm_util "github.com/sapcc/kubernikus/pkg/util/helm"
 )
 
 const (
@@ -279,7 +279,7 @@ func (op *GroundControl) createKluster(tpr *v1.Kluster) error {
 	}
 
 	//Generate helm values from cluster struct
-	rawValues, err := yaml.Marshal(tpr)
+	rawValues, err := helm_util.KlusterToHelmValues(tpr)
 	if err != nil {
 		return err
 	}
