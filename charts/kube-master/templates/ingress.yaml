@@ -1,5 +1,5 @@
 {{/* vim: set filetype=gotexttmpl: */ -}}
-{{- if .Values.api.ingressHost }}
+{{- if .Values.api.apiserverHost }}
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
@@ -13,14 +13,14 @@ metadata:
 
 spec:
   rules:
-    - host: {{ .Values.api.ingressHost }}
+    - host: {{ required "missing .api.apiserverHost" .Values.api.apiserverHost }}
       http:
         paths:
         - path: /
           backend:
             serviceName: {{ include "master.fullname" . }}
             servicePort: 6443
-    - host: {{ .Values.api.wormholeHost }}
+    - host: {{ required "missing .api.wormholeHost" .Values.api.wormholeHost }}
       http:
         paths:
         - path: /

@@ -36,7 +36,8 @@ type etcdValues struct {
 }
 
 type apiValues struct {
-	IngressHost string `yaml:"ingressHost,omitempty"`
+	ApiserverHost string `yaml:"apiserverHost,omitempty"`
+	WormholeHost  string `yaml:"wormholeHost,omitempty"`
 }
 
 type kubernikusHelmValues struct {
@@ -52,7 +53,12 @@ type kubernikusHelmValues struct {
 }
 
 func KlusterToHelmValues(kluster *v1.Kluster, openstack *OpenstackOptions, certificates map[string]string, bootstrapToken string, accessMode string) ([]byte, error) {
-	ingressURL, err := url.Parse(kluster.Status.Apiserver)
+	apiserverURL, err := url.Parse(kluster.Status.Apiserver)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	wormholeURL, err := url.Parse(kluster.Status.Wormhole)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -80,7 +86,8 @@ func KlusterToHelmValues(kluster *v1.Kluster, openstack *OpenstackOptions, certi
 			},
 		},
 		Api: apiValues{
-			IngressHost: ingressURL.Hostname(),
+			ApiserverHost: apiserverURL.Hostname(),
+			WormholeHost:  wormholeURL.Hostname(),
 		},
 	}
 

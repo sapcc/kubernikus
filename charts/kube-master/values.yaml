@@ -33,7 +33,8 @@ advertiseAddress: 198.18.127.1
 
 api:
   replicaCount: 1
-  # ingressHost:
+  # apiserverHost:
+  # wormholeHost:
   resources:
     requests:
       cpu: 250m
