@@ -19,7 +19,7 @@ type Principal struct {
 	// account id
 	Account string `json:"account,omitempty"`
 
-	// domainid
+	// user's domain name
 	Domain string `json:"domain,omitempty"`
 
 	// userid

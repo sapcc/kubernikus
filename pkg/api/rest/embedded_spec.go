@@ -330,7 +330,7 @@ func init() {
           "type": "string"
         },
         "domain": {
-          "description": "domainid",
+          "description": "user's domain name",
           "type": "string"
         },
         "id": {
