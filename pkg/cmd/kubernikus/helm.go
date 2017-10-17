@@ -9,7 +9,7 @@ import (
 	"github.com/sapcc/kubernikus/pkg/apis/kubernikus"
 	"github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
 	"github.com/sapcc/kubernikus/pkg/cmd"
-	"github.com/sapcc/kubernikus/pkg/controller/ground"
+	"github.com/sapcc/kubernikus/pkg/util"
 	"github.com/sapcc/kubernikus/pkg/util/helm"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
@@ -100,9 +100,9 @@ func (o *HelmOptions) Run(c *cobra.Command) error {
 		kluster.Spec.Openstack.AuthURL = o.AuthURL
 	}
 
-	ground.CreateCertificates(kluster, nameA[1])
+	certificates := util.CreateCertificates(kluster, nameA[1])
 
-	result, err := helm.KlusterToHelmValues(kluster)
+	result, err := helm.KlusterToHelmValues(kluster, certificates)
 	if err != nil {
 		return err
 	}

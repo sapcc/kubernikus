@@ -9,7 +9,7 @@ import (
 	"github.com/ghodss/yaml"
 	"github.com/sapcc/kubernikus/pkg/client/kubernetes"
 	"github.com/sapcc/kubernikus/pkg/cmd"
-	"github.com/sapcc/kubernikus/pkg/controller/ground"
+	"github.com/sapcc/kubernikus/pkg/util"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -103,11 +103,11 @@ func (o *SignOptions) Run(c *cobra.Command) error {
 		return fmt.Errorf("Server CA certificate not found")
 	}
 
-	bundle, err := ground.NewBundle(clientCAKey, clientCACert)
+	bundle, err := util.NewBundle(clientCAKey, clientCACert)
 	if err != nil {
 		return err
 	}
-	cert := bundle.Sign(ground.Config{
+	cert := bundle.Sign(util.Config{
 		Sign:         o.CN,
 		Organization: []string{o.Organization},
 		Usages:       []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth},

@@ -1,4 +1,4 @@
-package ground
+package util
 
 import (
 	"crypto/rand"
@@ -164,7 +164,7 @@ func (c Certificates) all() []Bundle {
 	}
 }
 
-func CreateCertificates(kluster *v1.Kluster, domain string) {
+func CreateCertificates(kluster *v1.Kluster, domain string) map[string]string {
 	certs := &Certificates{}
 	createCA(kluster.Name, "Etcd Clients", &certs.Etcd.Clients.CA)
 	createCA(kluster.Name, "Etcd Peers", &certs.Etcd.Peers.CA)
@@ -188,7 +188,7 @@ func CreateCertificates(kluster *v1.Kluster, domain string) {
 	certs.TLS.Wormhole = certs.signTLS("wormhole",
 		[]string{fmt.Sprintf("%v-wormhole.%v", kluster.Name, domain)}, []net.IP{})
 
-	kluster.Secret.Certificates = certs.toMap()
+	return certs.toMap()
 }
 
 func (c Certificates) signEtcdClient(name string) Bundle {

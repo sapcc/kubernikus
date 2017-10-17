@@ -6,12 +6,10 @@ import (
 	"os"
 	"path"
 	"path/filepath"
-
-	"github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
 )
 
 type ConfigPersister interface {
-	WriteConfig(*v1.Kluster) error
+	WriteConfig(map[string]string) error
 }
 
 type FilePersister struct {
@@ -24,8 +22,8 @@ func NewFilePersister(basedir string) *FilePersister {
 	return p
 }
 
-func (fp FilePersister) WriteConfig(kluster *v1.Kluster) error {
-	for filename, contents := range kluster.Secret.Certificates {
+func (fp FilePersister) WriteConfig(certificates map[string]string) error {
+	for filename, contents := range certificates {
 		if err := write(path.Join(fp.BaseDir, filename), []byte(contents)); err != nil {
 			return err
 		}
@@ -50,8 +48,8 @@ func NewPlainPersister() *PlainPersister {
 	return &PlainPersister{}
 }
 
-func (fp PlainPersister) WriteConfig(kluster *v1.Kluster) error {
-	for filename, contents := range kluster.Secret.Certificates {
+func (fp PlainPersister) WriteConfig(certificates map[string]string) error {
+	for filename, contents := range certificates {
 		fmt.Println(filename)
 		fmt.Println(contents)
 	}

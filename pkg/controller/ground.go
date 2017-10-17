@@ -22,6 +22,7 @@ import (
 	"github.com/sapcc/kubernikus/pkg/client/kubernetes"
 	"github.com/sapcc/kubernikus/pkg/controller/config"
 	"github.com/sapcc/kubernikus/pkg/controller/ground"
+	"github.com/sapcc/kubernikus/pkg/util"
 	helm_util "github.com/sapcc/kubernikus/pkg/util/helm"
 )
 
@@ -266,8 +267,6 @@ func (op *GroundControl) updateStatus(tpr *v1.Kluster, state v1.KlusterState, me
 }
 
 func (op *GroundControl) createKluster(tpr *v1.Kluster) error {
-	ground.CreateCertificates(tpr, op.Config.Kubernikus.Domain)
-
 	glog.Infof("Creating service user %s", tpr.Spec.Openstack.Username)
 	if err := op.Clients.Openstack.CreateKlusterServiceUser(
 		tpr.Spec.Openstack.Username,
@@ -279,7 +278,8 @@ func (op *GroundControl) createKluster(tpr *v1.Kluster) error {
 	}
 
 	//Generate helm values from cluster struct
-	rawValues, err := helm_util.KlusterToHelmValues(tpr)
+	certificates := util.CreateCertificates(tpr, op.Config.Kubernikus.Domain)
+	rawValues, err := helm_util.KlusterToHelmValues(tpr, certificates)
 	if err != nil {
 		return err
 	}

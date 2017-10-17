@@ -11,7 +11,7 @@ import (
 	"github.com/sapcc/kubernikus/pkg/api/models"
 	"github.com/sapcc/kubernikus/pkg/api/rest/operations"
 	"github.com/sapcc/kubernikus/pkg/client/kubernetes"
-	"github.com/sapcc/kubernikus/pkg/controller/ground"
+	"github.com/sapcc/kubernikus/pkg/util"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/apis/meta/v1"
 	certutil "k8s.io/client-go/util/cert"
@@ -56,7 +56,7 @@ func (d *getClusterCredentials) Handle(params operations.GetClusterCredentialsPa
 		return NewErrorResponse(&operations.GetClusterCredentialsDefault{}, 500, "Server CA certificate not found")
 	}
 
-	bundle, err := ground.NewBundle(clientCAKey, clientCACert)
+	bundle, err := util.NewBundle(clientCAKey, clientCACert)
 	if err != nil {
 		return NewErrorResponse(&operations.GetClusterCredentialsDefault{}, 500, "Failed to parse CA certificate: %s", err)
 	}
@@ -66,7 +66,7 @@ func (d *getClusterCredentials) Handle(params operations.GetClusterCredentialsPa
 		organizations = append(organizations, "os:"+role)
 	}
 
-	cert := bundle.Sign(ground.Config{
+	cert := bundle.Sign(util.Config{
 		Sign:         principal.Name,
 		Organization: organizations,
 		Usages:       []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth},

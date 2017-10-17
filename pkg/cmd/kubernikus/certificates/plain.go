@@ -5,9 +5,9 @@ import (
 
 	"github.com/sapcc/kubernikus/pkg/apis/kubernikus"
 	"github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
+	"github.com/sapcc/kubernikus/pkg/util"
 
 	"github.com/sapcc/kubernikus/pkg/cmd"
-	"github.com/sapcc/kubernikus/pkg/controller/ground"
 	"github.com/spf13/cobra"
 )
 
@@ -54,9 +54,9 @@ func (o *PlainOptions) Run(c *cobra.Command) error {
 		return err
 	}
 
-	ground.CreateCertificates(kluster, "kubernikus.cloud.sap")
+	certificates := util.CreateCertificates(kluster, "kubernikus.cloud.sap")
 
-	if err := NewPlainPersister().WriteConfig(kluster); err != nil {
+	if err := NewPlainPersister().WriteConfig(certificates); err != nil {
 		return err
 	}
 

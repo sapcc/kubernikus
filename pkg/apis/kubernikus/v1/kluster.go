@@ -68,9 +68,8 @@ type OpenstackSecret struct {
 }
 
 type KlusterSecret struct {
-	BootstrapToken string            `json:"bootstrapToken"`
-	Certificates   map[string]string `json:"certificates"`
-	Openstack      OpenstackSecret   `json:"openstack,omitempty"`
+	BootstrapToken string          `json:"bootstrapToken"`
+	Openstack      OpenstackSecret `json:"openstack,omitempty"`
 }
 
 type NodePoolInfo struct {
