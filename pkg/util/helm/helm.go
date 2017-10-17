@@ -19,7 +19,7 @@ type openstackValues struct {
 	Password   string `yaml:"password"`
 	DomainName string `yaml:"domainName"`
 	ProjectID  string `yaml:"projectID"`
-	Region     string `yaml:"Region"`
+	Region     string `yaml:"region"`
 	LbSubnetID string `yaml:"lbSubnetID"`
 	RouterID   string `yaml:"routerID"`
 }
