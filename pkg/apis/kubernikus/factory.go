@@ -60,6 +60,10 @@ func (klusterFactory) KlusterFor(spec v1.KlusterSpec) (*v1.Kluster, error) {
 		k.Spec.ClusterDNSDomain = DEFAULT_CLUSTER_DNS_DOMAIN
 	}
 
+	if k.ObjectMeta.Name == "" {
+		k.ObjectMeta.Name = spec.Name
+	}
+
 	for _, nodePool := range k.Spec.NodePools {
 		k.Status.NodePools = append(k.Status.NodePools, v1.NodePoolInfo{
 			Name:        nodePool.Name,

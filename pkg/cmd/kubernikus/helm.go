@@ -108,7 +108,7 @@ func (o *HelmOptions) Run(c *cobra.Command) error {
 		DomainName: o.AuthDomain,
 	}
 
-	certificates := util.CreateCertificates(kluster, nameA[1])
+	certificates := util.CreateCertificates(kluster, o.AuthURL, nameA[1])
 	token := util.GenerateBootstrapToken()
 
 	result, err := helm.KlusterToHelmValues(kluster, options, certificates, token, "")

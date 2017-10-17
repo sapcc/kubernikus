@@ -267,12 +267,11 @@ func (op *GroundControl) updateStatus(tpr *v1.Kluster, state v1.KlusterState, me
 }
 
 func (op *GroundControl) createKluster(tpr *v1.Kluster) error {
-
 	accessMode, err := kubernetes.PVAccessMode(op.Clients.Kubernetes)
 	if err != nil {
 		return fmt.Errorf("Couldn't determine access mode for pvc: %s", err)
 	}
-	certificates := util.CreateCertificates(tpr, op.Config.Kubernikus.Domain)
+	certificates := util.CreateCertificates(tpr, op.Config.Openstack.AuthURL, op.Config.Kubernikus.Domain)
 	bootstrapToken := util.GenerateBootstrapToken()
 	username := fmt.Sprintf("kubernikus-%s", tpr.Name)
 	password, err := goutils.Random(20, 32, 127, true, true)
