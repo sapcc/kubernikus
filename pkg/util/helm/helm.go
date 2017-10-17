@@ -39,6 +39,7 @@ type kubernikusHelmValues struct {
 	ServiceCIDR      string            `yaml:"serviceCIDR,omitempty"`
 	AdvertiseAddress string            `yaml:"advertiseAddress,omitempty"`
 	BoostrapToken    string            `yaml:"bootstrapToken,omitempty"`
+	Version          string            `yaml:"version,omitempty"`
 	Etcd             etcdValues        `yaml:"etcd,omitempty"`
 }
 
@@ -49,6 +50,7 @@ func KlusterToHelmValues(kluster *v1.Kluster, openstack *OpenstackOptions, certi
 		ClusterCIDR:      kluster.Spec.ClusterCIDR,
 		ServiceCIDR:      kluster.Spec.ServiceCIDR,
 		AdvertiseAddress: kluster.Spec.AdvertiseAddress,
+		Version:          kluster.Spec.Version,
 		Openstack: openstackValues{
 			AuthURL:    openstack.AuthURL,
 			Username:   openstack.Username,

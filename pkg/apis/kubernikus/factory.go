@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
+	"github.com/sapcc/kubernikus/pkg/version"
 )
 
 const (
@@ -62,6 +63,10 @@ func (klusterFactory) KlusterFor(spec v1.KlusterSpec) (*v1.Kluster, error) {
 
 	if k.ObjectMeta.Name == "" {
 		k.ObjectMeta.Name = spec.Name
+	}
+
+	if k.Spec.Version == "" {
+		k.Spec.Version = version.VERSION
 	}
 
 	for _, nodePool := range k.Spec.NodePools {

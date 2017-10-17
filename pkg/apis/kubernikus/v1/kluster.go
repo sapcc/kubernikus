@@ -32,6 +32,7 @@ type KlusterSpec struct {
 	ClusterDNSDomain string        `json:"clusterDNSDomain"`
 	ServiceCIDR      string        `json:"serviceCIDR"`
 	AdvertiseAddress string        `json:"advertiseAddress"`
+	Version          string        `json:"version"`
 	NodePools        []NodePool    `json:"nodePools,omitempty"`
 	Openstack        OpenstackSpec `json:"openstack,omitempty"`
 }
