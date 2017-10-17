@@ -213,7 +213,7 @@ jobs:
           OS_PROJECT_NAME: kubernikus
           OS_PROJECT_DOMAIN_NAME: ccadmin
           KUBERNIKUS_NAME: k-staging
-          KUBERNIKUS_URL: https://kubernikus-staging.admin.cloud.sap
+          KUBERNIKUS_URL: https://k-staging.admin.cloud.sap
 
   - name: e2e
     serial: true
@@ -259,7 +259,7 @@ jobs:
           OS_PROJECT_NAME: kubernikus
           OS_PROJECT_DOMAIN_NAME: ccadmin
           KUBERNIKUS_NAME: k-eu-nl-1
-          KUBERNIKUS_URL: https://kubernikus-eu-nl-1.admin.cloud.sap
+          KUBERNIKUS_URL: https://k-eu-nl-1.admin.cloud.sap
     on_failure:
       <<: *post_failure_to_slack
 
@@ -342,7 +342,7 @@ jobs:
           OS_PROJECT_NAME: kubernikus
           OS_PROJECT_DOMAIN_NAME: ccadmin
           KUBERNIKUS_NAME: k-staging
-          KUBERNIKUS_URL: https://kubernikus-staging.admin.cloud.sap
+          KUBERNIKUS_URL: https://k-staging.admin.cloud.sap
 
   - name: rollout_kubernikus-system
     serial: true
@@ -372,4 +372,4 @@ jobs:
           OS_PROJECT_NAME: kubernikus
           OS_PROJECT_DOMAIN_NAME: ccadmin
           KUBERNIKUS_NAME: k-eu-nl-1
-          KUBERNIKUS_URL: https://kubernikus-eu-nl-1.admin.cloud.sap
+          KUBERNIKUS_URL: https://k-eu-nl-1.admin.cloud.sap
