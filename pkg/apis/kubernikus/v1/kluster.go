@@ -68,7 +68,6 @@ type OpenstackSecret struct {
 }
 
 type KlusterSecret struct {
-	BootstrapToken string          `json:"bootstrapToken"`
 	Openstack      OpenstackSecret `json:"openstack,omitempty"`
 }
 

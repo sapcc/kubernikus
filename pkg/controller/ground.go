@@ -279,7 +279,8 @@ func (op *GroundControl) createKluster(tpr *v1.Kluster) error {
 
 	//Generate helm values from cluster struct
 	certificates := util.CreateCertificates(tpr, op.Config.Kubernikus.Domain)
-	rawValues, err := helm_util.KlusterToHelmValues(tpr, certificates)
+	bootstrapToken := util.GenerateBootstrapToken()
+	rawValues, err := helm_util.KlusterToHelmValues(tpr, certificates, bootstrapToken)
 	if err != nil {
 		return err
 	}
@@ -326,7 +327,6 @@ func (op *GroundControl) requiresOpenstackInfo(kluster *v1.Kluster) bool {
 func (op *GroundControl) requiresKubernikusInfo(kluster *v1.Kluster) bool {
 	return kluster.Status.Apiserver == "" ||
 		kluster.Status.Wormhole == "" ||
-		kluster.Secret.BootstrapToken == "" ||
 		kluster.Spec.Domain == ""
 }
 
@@ -346,15 +346,6 @@ func (op *GroundControl) discoverKubernikusInfo(kluster *v1.Kluster) error {
 	if copy.Status.Wormhole == "" {
 		copy.Status.Wormhole = fmt.Sprintf("https://%s-wormhole.%s", kluster.GetName(), op.Config.Kubernikus.Domain)
 		glog.V(5).Infof("[%v] Setting WormholeURL to %v", kluster.Name, copy.Status.Wormhole)
-	}
-
-	if copy.Secret.BootstrapToken == "" {
-		token, err := goutils.Random(16, 32, 127, true, true)
-		if err != nil {
-			return fmt.Errorf("Failed to generate bootstrap token: %s", err)
-		}
-		copy.Secret.BootstrapToken = strings.ToLower(token)
-		glog.V(5).Infof("[%v] Setting bootstrap token to %v", kluster.Name, copy.Secret.BootstrapToken)
 	}
 
 	_, err = op.Clients.Kubernikus.Kubernikus().Klusters(kluster.Namespace).Update(copy)

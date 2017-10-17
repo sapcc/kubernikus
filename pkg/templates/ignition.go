@@ -56,6 +56,7 @@ func (i *ignition) GenerateNode(kluster *v1.Kluster, client kubernetes.Interface
 		KubeletClientsCA:                   string(secret.Data["kubelet-clients-ca.pem"]),
 		ApiserverClientsSystemKubeProxy:    string(secret.Data["apiserver-clients-system-kube-proxy.pem"]),
 		ApiserverClientsSystemKubeProxyKey: string(secret.Data["apiserver-clients-system-kube-proxy-key.pem"]),
+		BootstrapToken:                     string(secret.Data["bootstrapToken"]),
 		ClusterCIDR:                        kluster.Spec.ClusterCIDR,
 		ClusterDNS:                         kluster.Spec.ClusterDNS,
 		ClusterDomain:                      kluster.Spec.ClusterDNSDomain,
@@ -67,7 +68,6 @@ func (i *ignition) GenerateNode(kluster *v1.Kluster, client kubernetes.Interface
 		OpenstackRegion:                    kluster.Spec.Openstack.Region,
 		OpenstackLBSubnetID:                kluster.Spec.Openstack.LBSubnetID,
 		OpenstackRouterID:                  kluster.Spec.Openstack.RouterID,
-		BootstrapToken:                     kluster.Secret.BootstrapToken,
 		KubernikusImage:                    "sapcc/kubernikus",
 		KubernikusImageTag:                 version.VERSION,
 	}
