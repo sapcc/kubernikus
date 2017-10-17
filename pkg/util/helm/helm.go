@@ -1,6 +1,9 @@
 package helm
 
 import (
+	"log"
+	"net/url"
+
 	"github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
 	yaml "gopkg.in/yaml.v2"
 )
@@ -49,6 +52,11 @@ type kubernikusHelmValues struct {
 }
 
 func KlusterToHelmValues(kluster *v1.Kluster, openstack *OpenstackOptions, certificates map[string]string, bootstrapToken string, accessMode string) ([]byte, error) {
+	ingressURL, err := url.Parse(kluster.Status.Apiserver)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	values := kubernikusHelmValues{
 		BoostrapToken:    bootstrapToken,
 		Certs:            certificates,
@@ -72,7 +80,7 @@ func KlusterToHelmValues(kluster *v1.Kluster, openstack *OpenstackOptions, certi
 			},
 		},
 		Api: apiValues{
-			IngressHost: kluster.Status.Apiserver,
+			IngressHost: ingressURL.Hostname(),
 		},
 	}
 
