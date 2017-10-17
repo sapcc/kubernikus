@@ -27,7 +27,7 @@ certs: {}
 
 clusterCIDR: 198.19.0.0/16
 serviceCIDR: 198.18.128.0/17
-advertiseAddress: 198.18.127.1
+advertiseAddress: 198.18.128.1
 #bootstrapToken
 #version:
 
