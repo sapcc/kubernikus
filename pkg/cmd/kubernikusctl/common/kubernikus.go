@@ -56,6 +56,38 @@ func (k *KubernikusClient) GetCredentials(name string) (string, error) {
 	return ok.Payload.Kubeconfig, nil
 }
 
+func (k *KubernikusClient) ShowCluster(name string) (*models.Cluster, error) {
+	params := operations.NewShowClusterParams()
+	params.Name = name
+	ok, err := k.client.Operations.ShowCluster(params, k.authFunc())
+	switch err.(type) {
+	case *operations.ShowClusterDefault:
+		result := err.(*operations.ShowClusterDefault)
+		return nil, errors.Errorf(*result.Payload.Message)
+	case error:
+		return nil, errors.Wrap(err, "Getting cluster failed")
+	}
+	return ok.Payload, nil
+}
+
+func (k *KubernikusClient) ListAllClusters() ([]*models.Cluster, error) {
+	ok, err := k.client.Operations.ListClusters(operations.NewListClustersParams(), k.authFunc())
+	switch err.(type) {
+	case *operations.ListClustersDefault:
+		result := err.(*operations.ListClustersDefault)
+		return nil, errors.Errorf(*result.Payload.Message)
+	case error:
+		return nil, errors.Wrapf(err, "Listing clusters failed")
+	}
+	if err != nil {
+		return nil, errors.Wrap(err, "Couldn't fetch cluster list from Kubernikus API")
+	}
+	if len(ok.Payload) == 0 {
+		return nil, errors.Errorf("There's no cluster in this project")
+	}
+	return ok.Payload, nil
+}
+
 func (k *KubernikusClient) GetDefaultCluster() (*models.Cluster, error) {
 	ok, err := k.client.Operations.ListClusters(operations.NewListClustersParams(), k.authFunc())
 
