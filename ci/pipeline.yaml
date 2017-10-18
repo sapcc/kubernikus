@@ -206,11 +206,11 @@ jobs:
       - task: deploy
         file: pipeline.git/ci/task_helm_kubernikus.yaml
         params:
-          OS_AUTH_URL: https://identity-3.staging.cloud.sap/v3
-          OS_USERNAME: {{kubernikus-staging-username}}
-          OS_PASSWORD: {{kubernikus-staging-password}}
+          OS_AUTH_URL: https://identity-3.eu-nl-1.cloud.sap/v3
+          OS_USERNAME: {{kubernikus-eu-nl-1-username}}
+          OS_PASSWORD: {{kubernikus-eu-nl-1-password}}
           OS_USER_DOMAIN_NAME: ccadmin 
-          OS_PROJECT_NAME: kubernikus
+          OS_PROJECT_NAME: kubernikus-staging
           OS_PROJECT_DOMAIN_NAME: ccadmin
           KUBERNIKUS_NAME: k-staging
           KUBERNIKUS_URL: https://k-staging.admin.cloud.sap
@@ -335,11 +335,11 @@ jobs:
       - task: deploy
         file: pipeline.git/ci/task_helm_kubernikus-system.yaml
         params:
-          OS_AUTH_URL: https://identity-3.staging.cloud.sap/v3
-          OS_USERNAME: {{kubernikus-staging-username}}
-          OS_PASSWORD: {{kubernikus-staging-password}}
+          OS_AUTH_URL: https://identity-3.eu-nl-1.cloud.sap/v3
+          OS_USERNAME: {{kubernikus-eu-nl-1-username}}
+          OS_PASSWORD: {{kubernikus-eu-nl-1-password}}
           OS_USER_DOMAIN_NAME: ccadmin 
-          OS_PROJECT_NAME: kubernikus
+          OS_PROJECT_NAME: kubernikus-staging
           OS_PROJECT_DOMAIN_NAME: ccadmin
           KUBERNIKUS_NAME: k-staging
           KUBERNIKUS_URL: https://k-staging.admin.cloud.sap
