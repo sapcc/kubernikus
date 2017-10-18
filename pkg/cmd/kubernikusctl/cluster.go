@@ -67,7 +67,9 @@ func NewClusterCommand() *cobra.Command {
 	o.auth.BindFlags(c.PersistentFlags())
 
 	list := NewClusterListCommand(o)
+	show := NewClusterShowCommand(o)
 	c.AddCommand(list)
+	c.AddCommand(show)
 	return c
 }
 
@@ -82,6 +84,21 @@ func NewClusterListCommand(o ClusterOptions) *cobra.Command {
 	return c
 }
 
+func NewClusterShowCommand(o Clusteroptions) *cobra.Command {
+	c := &cobra.Command{
+		Use:   "show [name]",
+		Short: "Displays information on a specific cluster",
+		Args:  cobra.ExactArgs(1),
+		Run: func(c *cobra.Command, args []string) {
+			o.Show(args[0])
+		},
+	}
+}
+
+func (o *ClusterOptions) Show(name string) error {
+	return nil
+}
+
 func (o *ClusterOptions) List() error {
 	fmt.Println("List")
 	ok, err := o.auth.kubernikus.Operations.ListClusters(
@@ -94,7 +111,7 @@ func (o *ClusterOptions) List() error {
 		))
 	cmd.CheckError(err)
 	for _, cluster := range ok.Payload {
-		fmt.Println(cluster.Name)
+		fmt.Printf("%v", *cluster.Name)
 	}
 	return nil
 }
