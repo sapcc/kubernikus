@@ -64,11 +64,15 @@ func NewCredentialsOptions() *CredentialsOptions {
 	o.auth = &tokens.AuthOptions{
 		IdentityEndpoint: os.Getenv("OS_AUTH_URL"),
 		Username:         username,
+		UserID:           os.Getenv("OS_USER_ID"),
 		Password:         os.Getenv("OS_PASSWORD"),
+		DomainID:         os.Getenv("OS_USER_DOMAIN_ID"),
 		DomainName:       os.Getenv("OS_USER_DOMAIN_NAME"),
 		AllowReauth:      true,
 		Scope: tokens.Scope{
+			ProjectID:   os.Getenv("OS_PROJECT_ID"),
 			ProjectName: os.Getenv("OS_PROJECT_NAME"),
+			DomainID:    os.Getenv("OS_PROJECT_DOMAIN_ID"),
 			DomainName:  os.Getenv("OS_PROJECT_DOMAIN_NAME"),
 		},
 	}
@@ -78,10 +82,14 @@ func NewCredentialsOptions() *CredentialsOptions {
 
 func (o *CredentialsOptions) BindFlags(flags *pflag.FlagSet) {
 	flags.StringVar(&o.auth.IdentityEndpoint, "auth-url", o.auth.IdentityEndpoint, "Openstack keystone url [OS_AUTH_URL]")
-	flags.StringVar(&o.auth.Username, "username", o.auth.Username, "User name [OS_USERNAME]")
+	flags.StringVar(&o.auth.UserID, "user-id", o.auth.UserID, "User ID [OS_USER_ID]")
+	flags.StringVar(&o.auth.Username, "username", o.auth.Username, "User name. Also requires --user-domain-name/--user-domain-id [OS_USERNAME]")
 	flags.StringVar(&o.auth.Password, "password", o.auth.Password, "User password [OS_PASSWORD]")
+	flags.StringVar(&o.auth.DomainID, "user-domain-id", o.auth.DomainID, "User domain [OS_USER_DOMAIN_ID]")
 	flags.StringVar(&o.auth.DomainName, "user-domain-name", o.auth.DomainName, "User domain [OS_USER_DOMAIN_NAME]")
-	flags.StringVar(&o.auth.Scope.ProjectName, "project-name", o.auth.Scope.ProjectName, "Scope to this project [OS_PROJECT_NAME]")
+	flags.StringVar(&o.auth.Scope.ProjectID, "project-id", o.auth.Scope.ProjectID, "Scope to this project [OS_PROJECT_ID]")
+	flags.StringVar(&o.auth.Scope.ProjectName, "project-name", o.auth.Scope.ProjectName, "Scope to this project. Also requires --project-domain-name/--project-domain-id [OS_PROJECT_NAME]")
+	flags.StringVar(&o.auth.Scope.DomainID, "project-domain-id", o.auth.Scope.DomainID, "Domain of the project [OS_PROJECT_DOMAIN_ID]")
 	flags.StringVar(&o.auth.Scope.DomainName, "project-domain-name", o.auth.Scope.DomainName, "Domain of the project [OS_PROJECT_DOMAIN_NAME]")
 	flags.StringVar(&o.url, "url", o.url, "URL for Kubernikus API")
 	flags.StringVar(&o.name, "name", o.name, "Cluster Name")
@@ -92,24 +100,24 @@ func (o *CredentialsOptions) Validate(c *cobra.Command, args []string) error {
 		return errors.Errorf("You need to provide --auth-url or OS_AUTH_URL")
 	}
 
-	if o.auth.Username == "" {
-		return errors.Errorf("You need to provide --username or OS_USERNAME")
+	if o.auth.Username == "" && o.auth.UserID  == "" {
+		return errors.Errorf("You need to provide --username/--user-id or OS_USERNAME/OS_USER_ID")
 	}
 
 	if o.auth.Password == "" {
 		return errors.Errorf("You need to provide --password or OS_PASSWORD")
 	}
 
-	if o.auth.DomainName == "" {
-		return errors.Errorf("You need to provide --user-domain-name or OS_USER_DOMAIN_NAME")
+	if o.auth.Username != "" && o.auth.UserID == "" && o.auth.DomainName == "" && o.auth.DomainID == "" {
+		return errors.Errorf("You need to provide --user-domain-name/--user-domain-id or OS_USER_DOMAIN_NAME/OS_USER_DOMAIN_ID")
 	}
 
-	if o.auth.Scope.ProjectName == "" {
-		return errors.Errorf("You need to provide --project-name or OS_PROJECT_NAME")
+	if o.auth.Scope.ProjectName == "" && o.auth.Scope.ProjectID == "" {
+		return errors.Errorf("You need to provide --project-name/--project-id or OS_PROJECT_NAME/OS_PROJECT_ID")
 	}
 
-	if o.auth.Scope.DomainName == "" {
-		return errors.Errorf("You need to provide --project-name or OS_PROJECT_DOMAIN_NAME")
+	if o.auth.Scope.ProjectName != "" && o.auth.Scope.ProjectID == "" && o.auth.Scope.DomainName == "" && o.auth.DomainID == "" {
+		return errors.Errorf("You need to provide --project-domain-name/--project-domain-id or OS_PROJECT_DOMAIN_NAME/OS_PROJECT_DOMAIN_ID")
 	}
 
 	return nil
