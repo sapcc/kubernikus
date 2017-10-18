@@ -44,11 +44,11 @@ spec:
                   fieldPath: status.podIP
           command: [ etcd ]
           args:
-            - --name=cke
+            - --name=kubernikus
             - --data-dir=/var/lib/etcd
             - --advertise-client-urls=http://$(ETCD_IP):2379
             - --initial-advertise-peer-urls=http://$(ETCD_IP):2380
-            - --initial-cluster=cke=http://$(ETCD_IP):2380
+            - --initial-cluster=kubernikus=http://$(ETCD_IP):2380
             - --listen-client-urls=http://0.0.0.0:2379
             - --listen-peer-urls=http://$(ETCD_IP):2380
             {{- if false }}
