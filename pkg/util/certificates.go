@@ -275,7 +275,7 @@ func createEnrichedCA(kluster *v1.Kluster, authURL, common_name string, bundle *
 		SerialNumber: new(big.Int).SetInt64(0),
 		Subject: pkix.Name{
 			CommonName:         common_name,
-			OrganizationalUnit: []string{"SAP Converged Cloud", "Kubernikus", kluster.Name},
+			OrganizationalUnit: []string{CA_ISSUER_KUBERNIKUS_IDENTIFIER_0, CA_ISSUER_KUBERNIKUS_IDENTIFIER_1, kluster.Name},
 			Province:           []string{authURL, kluster.Spec.Openstack.ProjectID},
 			Locality:           []string{kluster.Status.Apiserver},
 		},
