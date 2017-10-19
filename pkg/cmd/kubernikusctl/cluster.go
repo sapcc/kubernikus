@@ -9,6 +9,7 @@ import (
 	kubernikus "github.com/sapcc/kubernikus/pkg/client/kubernikus_generated"
 	"github.com/sapcc/kubernikus/pkg/client/kubernikus_generated/operations"
 	"github.com/sapcc/kubernikus/pkg/cmd"
+	"github.com/sapcc/kubernikus/pkg/cmd/printers"
 	"github.com/spf13/cobra"
 	"net/url"
 	//	"github.com/spf13/pflag"
@@ -84,23 +85,45 @@ func NewClusterListCommand(o ClusterOptions) *cobra.Command {
 	return c
 }
 
-func NewClusterShowCommand(o Clusteroptions) *cobra.Command {
+func NewClusterShowCommand(o ClusterOptions) *cobra.Command {
 	c := &cobra.Command{
 		Use:   "show [name]",
 		Short: "Displays information on a specific cluster",
-		Args:  cobra.ExactArgs(1),
+		PreRun: func(c *cobra.Command, args []string) {
+			cmd.CheckError(o.ValidateShowArgs(c, args))
+		},
 		Run: func(c *cobra.Command, args []string) {
 			o.Show(args[0])
 		},
 	}
+	return c
+}
+
+func (o *ClusterOptions) ValidateShowArgs(c *cobra.Command, args []string) error {
+	if len(args) < 1 {
+		return errors.Errorf("You need to provide a clustername to show")
+	}
+	if len(args) > 1 {
+		return errors.Errorf("Surplus arguments to show %v", args)
+	}
+	return nil
 }
 
 func (o *ClusterOptions) Show(name string) error {
+	ok, err := o.auth.kubernikus.Operations.ShowCluster(
+		operations.NewShowClusterParams(),
+		runtime.ClientAuthInfoWriterFunc(
+			func(req runtime.ClientRequest, reg strfmt.Registry) error {
+				req.SetHeaderParam("X-AUTH-TOKEN", o.auth.provider.TokenID)
+				return nil
+			},
+		))
+	cmd.CheckError(err)
+	ok.Payload.Print("text", printers.PrintOptions{})
 	return nil
 }
 
 func (o *ClusterOptions) List() error {
-	fmt.Println("List")
 	ok, err := o.auth.kubernikus.Operations.ListClusters(
 		operations.NewListClustersParams(),
 		runtime.ClientAuthInfoWriterFunc(
@@ -110,8 +133,11 @@ func (o *ClusterOptions) List() error {
 			},
 		))
 	cmd.CheckError(err)
-	for _, cluster := range ok.Payload {
-		fmt.Printf("%v", *cluster.Name)
+	printme := make([]printers.Printable, len(ok.Payload))
+	for i, cluster := range ok.Payload {
+		tmp := cluster
+		printme[i] = tmp
 	}
+	cmd.CheckError(printers.PrintTable(printme))
 	return nil
 }
