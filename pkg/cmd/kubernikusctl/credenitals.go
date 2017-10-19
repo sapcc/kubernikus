@@ -126,10 +126,6 @@ func (o *CredentialsOptions) Run(c *cobra.Command) error {
 	//  fetch credentials
 	//  update kubeconfigs
 
-	if o.kubeconfigPath == "" {
-		o.kubeconfigPath = clientcmd.NewDefaultPathOptions().GetDefaultFilename()
-	}
-
 	if o.kubeconfigPath != "" {
 		if err := o.loadKubeconfig(); err != nil {
 			glog.V(3).Infof("%v", err)
@@ -137,12 +133,13 @@ func (o *CredentialsOptions) Run(c *cobra.Command) error {
 		}
 		glog.V(2).Infof("Loaded kubeconfig from %v", o.kubeconfigPath)
 	} else {
+		o.kubeconfigPath = clientcmd.NewDefaultPathOptions().GetDefaultFilename()
 		o.kubeconfig, err = clientcmd.NewDefaultPathOptions().GetStartingConfig()
 		if err != nil {
 			glog.V(3).Infof("%v", err)
 			return errors.Errorf("Loading the default kubeconfig failed")
 		}
-		glog.V(2).Infof("Loaded kubeconfig from %v", clientcmd.NewDefaultPathOptions().GetDefaultFilename())
+		glog.V(2).Infof("Using kubeconfig at %v", o.kubeconfigPath)
 	}
 
 	if o.context == "" && o.kubeconfig.CurrentContext != "" {
