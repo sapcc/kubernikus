@@ -110,8 +110,10 @@ func (o *ClusterOptions) ValidateShowArgs(c *cobra.Command, args []string) error
 }
 
 func (o *ClusterOptions) Show(name string) error {
+	params := operations.NewShowClusterParams()
+	params.Name = name
 	ok, err := o.auth.kubernikus.Operations.ShowCluster(
-		operations.NewShowClusterParams(),
+		params,
 		runtime.ClientAuthInfoWriterFunc(
 			func(req runtime.ClientRequest, reg strfmt.Registry) error {
 				req.SetHeaderParam("X-AUTH-TOKEN", o.auth.provider.TokenID)
@@ -119,7 +121,7 @@ func (o *ClusterOptions) Show(name string) error {
 			},
 		))
 	cmd.CheckError(err)
-	ok.Payload.Print("text", printers.PrintOptions{})
+	ok.Payload.Print("human", printers.PrintOptions{})
 	return nil
 }
 
