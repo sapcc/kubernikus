@@ -164,7 +164,7 @@ func (c Certificates) all() []Bundle {
 	}
 }
 
-func CreateCertificates(kluster *v1.Kluster, authURL, domain string) map[string]string {
+func CreateCertificates(kluster *v1.Kluster, apiURL, authURL, domain string) map[string]string {
 	certs := &Certificates{}
 	createCA(kluster.Name, "Etcd Clients", &certs.Etcd.Clients.CA)
 	createCA(kluster.Name, "Etcd Peers", &certs.Etcd.Peers.CA)
@@ -172,7 +172,7 @@ func CreateCertificates(kluster *v1.Kluster, authURL, domain string) map[string]
 	createCA(kluster.Name, "ApiServer Nodes", &certs.ApiServer.Nodes.CA)
 	createCA(kluster.Name, "Kubelet Clients", &certs.Kubelet.Clients.CA)
 	createCA(kluster.Name, "TLS", &certs.TLS.CA)
-	createEnrichedCA(kluster, authURL, "TLS", &certs.TLS.CA)
+	createEnrichedCA(kluster, apiURL, authURL, "TLS", &certs.TLS.CA)
 
 	certs.Etcd.Clients.ApiServer = certs.signEtcdClient("apiserver")
 	certs.Etcd.Peers.Universal = certs.signEtcdPeer("universal")
@@ -267,7 +267,7 @@ func createCA(satellite, name string, bundle *Bundle) {
 	bundle.Certificate, _ = x509.ParseCertificate(certDERBytes)
 }
 
-func createEnrichedCA(kluster *v1.Kluster, authURL, common_name string, bundle *Bundle) {
+func createEnrichedCA(kluster *v1.Kluster, kubernikusAPIURL, authURL, common_name string, bundle *Bundle) {
 	bundle.PrivateKey, _ = certutil.NewPrivateKey()
 
 	now := time.Now()

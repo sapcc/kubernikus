@@ -58,6 +58,7 @@ type Client interface {
 	GetRouters(project_id string) ([]Router, error)
 	DeleteUser(username, domainID string) error
 	CreateKlusterServiceUser(username, password, domain, defaultProjectID string) error
+	GetKubernikusCatalogEntry() (string, error)
 }
 
 type Project struct {
@@ -678,4 +679,33 @@ func ExtractServers(r pagination.Page) ([]Node, error) {
 	var s []Node
 	err := servers.ExtractServersInto(r, &s)
 	return s, err
+}
+
+func (c *client) GetKubernikusCatalogEntry() (string, error) {
+	provider, err := c.adminClient()
+	if err != nil {
+		return "", err
+	}
+
+	identity, err := openstack.NewIdentityV3(provider, gophercloud.EndpointOpts{})
+	if err != nil {
+		return "", err
+	}
+
+	catalog, err := tokens.Get(identity, provider.TokenID).ExtractServiceCatalog()
+	if err != nil {
+		return "", err
+	}
+
+	for _, service := range catalog.Entries {
+		if service.Type == "kubernikus" {
+			for _, endpoint := range service.Endpoints {
+				if endpoint.Interface == "public" {
+					return endpoint.URL, nil
+				}
+			}
+		}
+	}
+
+	return "", err
 }
