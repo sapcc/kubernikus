@@ -42,6 +42,7 @@ type HelmOptions struct {
 	AuthProject       string
 	AuthProjectDomain string
 	ProjectID         string
+	KubernikusAPI     string
 }
 
 func NewHelmOptions() *HelmOptions {
@@ -60,6 +61,7 @@ func (o *HelmOptions) BindFlags(flags *pflag.FlagSet) {
 	flags.StringVar(&o.AuthProject, "auth-project", o.AuthProject, "Scope service user to this project")
 	flags.StringVar(&o.AuthProjectDomain, "auth-project-domain", o.AuthProjectDomain, "Domain of the project")
 	flags.StringVar(&o.ProjectID, "project-id", o.ProjectID, "Project ID where the kublets will be running")
+	flags.StringVar(&o.KubernikusAPI, "api", o.KubernikusAPI, "Kubernikus API URL. e.g. https://kubernikus.eu-nl-1.cloud.sap")
 }
 
 func (o *HelmOptions) Validate(c *cobra.Command, args []string) error {
@@ -79,6 +81,10 @@ func (o *HelmOptions) Validate(c *cobra.Command, args []string) error {
 				return errors.New("password is required")
 			}
 		}
+	}
+
+	if o.KubernikusAPI == "" {
+		return errors.New("--api is required")
 	}
 
 	return nil
@@ -108,7 +114,7 @@ func (o *HelmOptions) Run(c *cobra.Command) error {
 		DomainName: o.AuthDomain,
 	}
 
-	certificates := util.CreateCertificates(kluster, o.AuthURL, nameA[1])
+	certificates := util.CreateCertificates(kluster, o.KubernikusAPI, o.AuthURL, nameA[1])
 	token := util.GenerateBootstrapToken()
 
 	result, err := helm.KlusterToHelmValues(kluster, options, certificates, token, "")

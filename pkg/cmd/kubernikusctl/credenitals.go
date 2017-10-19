@@ -169,7 +169,7 @@ func (o *CredentialsOptions) Run(c *cobra.Command) error {
 				}
 			}
 
-			if o.auth.Scope.ProjectName == "" || o.auth.Scope.ProjectID == "" {
+			if o.auth.Scope.ProjectName == "" && o.auth.Scope.ProjectID == "" {
 				if projectID, err := o.autoDetectProjectID(); err != nil {
 					glog.V(3).Infof("%v", err)
 					glog.V(2).Infof("Auto-Detection of project scope caused an error")

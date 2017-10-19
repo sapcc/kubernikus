@@ -54,7 +54,7 @@ func (o *PlainOptions) Run(c *cobra.Command) error {
 		return err
 	}
 
-	certificates := util.CreateCertificates(kluster, "https://auth.openstack.com", "kubernikus.cloud.sap")
+	certificates := util.CreateCertificates(kluster, "https://api.kubernikus.cloud.sap", "https://auth.openstack.com", "kubernikus.cloud.sap")
 
 	if err := NewPlainPersister().WriteConfig(certificates); err != nil {
 		return err

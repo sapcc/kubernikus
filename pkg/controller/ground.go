@@ -271,7 +271,13 @@ func (op *GroundControl) createKluster(tpr *v1.Kluster) error {
 	if err != nil {
 		return fmt.Errorf("Couldn't determine access mode for pvc: %s", err)
 	}
-	certificates := util.CreateCertificates(tpr, op.Config.Openstack.AuthURL, op.Config.Kubernikus.Domain)
+
+	apiURL, err := op.Clients.Openstack.GetKubernikusCatalogEntry()
+	if err != nil {
+		return fmt.Errorf("Couldn't determine kubernikus api from service catalog: %s", err)
+	}
+
+	certificates := util.CreateCertificates(tpr, apiURL, op.Config.Openstack.AuthURL, op.Config.Kubernikus.Domain)
 	bootstrapToken := util.GenerateBootstrapToken()
 	username := fmt.Sprintf("kubernikus-%s", tpr.Name)
 	password, err := goutils.Random(20, 32, 127, true, true)
