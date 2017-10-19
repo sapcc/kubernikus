@@ -133,9 +133,16 @@ func (o *CredentialsOptions) Run(c *cobra.Command) error {
 	if o.kubeconfigPath != "" {
 		if err := o.loadKubeconfig(); err != nil {
 			glog.V(3).Infof("%v", err)
-			return errors.Errorf("Loading of the specified kubeconfig failed")
+			return errors.Errorf("Loading the specified kubeconfig failed")
 		}
 		glog.V(2).Infof("Loaded kubeconfig from %v", o.kubeconfigPath)
+	} else {
+		o.kubeconfig, err = clientcmd.NewDefaultPathOptions().GetStartingConfig()
+		if err != nil {
+			glog.V(3).Infof("%v", err)
+			return errors.Errorf("Loading the default kubeconfig failed")
+		}
+		glog.V(2).Infof("Loaded kubeconfig from %v", clientcmd.NewDefaultPathOptions().GetDefaultFilename())
 	}
 
 	if o.context == "" && o.kubeconfig.CurrentContext != "" {
