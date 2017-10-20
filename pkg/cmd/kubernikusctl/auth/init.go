@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/golang/glog"
+	"github.com/howeyc/gopass"
 	"github.com/imdario/mergo"
 	"github.com/pkg/errors"
 	"github.com/sapcc/kubernikus/pkg/cmd/kubernikusctl/common"
@@ -81,6 +82,15 @@ func (o *InitOptions) Complete(args []string) (err error) {
 		o.kubeconfig, err = clientcmd.NewDefaultPathOptions().GetStartingConfig()
 		if err != nil {
 			return errors.Wrapf(err, "Loading the default kubeconfig failed")
+		}
+	}
+
+	if o.openstack.Password == "" {
+		fmt.Printf("Password: ")
+		if password, err := gopass.GetPasswdMasked(); err != nil {
+			return err
+		} else {
+			o.openstack.Password = string(password)
 		}
 	}
 

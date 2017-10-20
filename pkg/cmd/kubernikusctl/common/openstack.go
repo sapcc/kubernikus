@@ -74,10 +74,6 @@ func (o *OpenstackClient) Validate(c *cobra.Command, args []string) error {
 		}
 	}
 
-	if o.Password == "" {
-		return errors.Errorf("You need to provide --password or OS_PASSWORD")
-	}
-
 	if o.Scope.ProjectName == "" {
 		if o.Scope.ProjectID == "" {
 			return errors.Errorf("You need to provide --project-name/--project-id or OS_PROJECT_NAME/OS_PROJECT_ID")
