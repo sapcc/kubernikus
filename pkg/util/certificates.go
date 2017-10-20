@@ -277,7 +277,7 @@ func createEnrichedCA(kluster *v1.Kluster, kubernikusAPIURL, authURL, common_nam
 			CommonName:         common_name,
 			OrganizationalUnit: []string{CA_ISSUER_KUBERNIKUS_IDENTIFIER_0, CA_ISSUER_KUBERNIKUS_IDENTIFIER_1, kluster.Name},
 			Province:           []string{authURL, kluster.Spec.Openstack.ProjectID},
-			Locality:           []string{kluster.Status.Apiserver},
+			Locality:           []string{kubernikusAPIURL},
 		},
 		NotBefore:             now.UTC(),
 		NotAfter:              now.Add(caValidity).UTC(),
