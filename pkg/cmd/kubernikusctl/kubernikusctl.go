@@ -15,6 +15,7 @@ func NewCommand(name string) *cobra.Command {
 
 	c.AddCommand(
 		NewCredentialsCommand(),
+		NewClusterCommand(),
 	)
 	c.PersistentFlags().AddGoFlagSet(flag.CommandLine)
 
