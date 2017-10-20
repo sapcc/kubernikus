@@ -6,19 +6,19 @@ import (
 	"github.com/sapcc/kubernikus/pkg/cmd/printers"
 )
 
-func (c *Cluster) GetFormats() map[string]struct{} {
-	ret := map[string]struct{}{
-		"table": struct{}{},
-		"human": struct{}{},
+func (c *Cluster) GetFormats() map[printers.PrintFormat]struct{} {
+	ret := map[printers.PrintFormat]struct{}{
+		printers.Table: struct{}{},
+		printers.Human: struct{}{},
 	}
 	return ret
 }
 
-func (c *Cluster) Print(format string, options printers.PrintOptions) error {
+func (c *Cluster) Print(format printers.PrintFormat, options printers.PrintOptions) error {
 	switch format {
-	case "table":
+	case printers.Table:
 		c.printTable(options)
-	case "human":
+	case printers.Human:
 		c.printHuman(options)
 	default:
 		return errors.Errorf("Unknown printformat models.Cluster is unable to print in format: %v", format)

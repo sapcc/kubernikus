@@ -119,7 +119,7 @@ func (o *ClusterOptions) Show(name string) error {
 			},
 		))
 	cmd.CheckError(err)
-	ok.Payload.Print("human", printers.PrintOptions{})
+	ok.Payload.Print(printers.Human, printers.PrintOptions{})
 	return nil
 }
 
