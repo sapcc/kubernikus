@@ -87,10 +87,12 @@ func (o *RefreshOptions) Complete(args []string) (err error) {
 
 	glog.V(2).Infof("Using context %v", o.context)
 	if isKubernikusContext, err := o.isKubernikusContext(); err != nil {
-		return errors.Wrap(err, "Detection of Kubernikus issued certificates failed")
+		glog.V(2).Infof("Not a valid Kubernikus context: %v", err)
+		return nil
 	} else {
 		if !isKubernikusContext {
-			return errors.Errorf("Context %v is not a Kubernikus cluster...")
+			glog.V(2).Infof("Not a valid Kubernikus context")
+			return nil
 		}
 	}
 
@@ -146,6 +148,14 @@ func (o *RefreshOptions) Complete(args []string) (err error) {
 }
 
 func (o *RefreshOptions) Run(c *cobra.Command) error {
+	if isKubernikusContext, err := o.isKubernikusContext(); err != nil {
+		return nil
+	} else {
+		if !isKubernikusContext {
+			return nil
+		}
+	}
+
 	if ok, err := o.isCertificateValid(); err != nil {
 		return errors.Wrap(err, "Verification of certifcates failed.")
 	} else {
