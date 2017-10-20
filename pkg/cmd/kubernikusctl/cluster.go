@@ -12,8 +12,6 @@ import (
 	"github.com/sapcc/kubernikus/pkg/cmd/printers"
 	"github.com/spf13/cobra"
 	"net/url"
-	//	"github.com/spf13/pflag"
-	// "github.com/gophercloud/gophercloud/openstack/identity/v3/tokens"
 )
 
 type ClusterOptions struct {
