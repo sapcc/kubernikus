@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/url"
 	"strings"
+	"time"
 
 	"github.com/golang/glog"
 	"github.com/howeyc/gopass"
@@ -93,15 +94,6 @@ func (o *RefreshOptions) Complete(args []string) (err error) {
 		}
 	}
 
-	if ok, err := o.isCertificateValid(); err != nil {
-		return errors.Wrap(err, "Verification of certifcates failed.")
-	} else {
-		if ok {
-			glog.V(2).Infof("Certificates are good. Doing nothing.")
-			return nil
-		}
-	}
-
 	if identityEndpoint, err := o.autoDetectAuthURL(); err != nil {
 		errors.Wrap(err, "Auto-Detection of auth-url caused an error")
 	} else {
@@ -150,15 +142,20 @@ func (o *RefreshOptions) Complete(args []string) (err error) {
 		}
 	}
 
-	if err := o.openstack.Setup(); err != nil {
-		return err
-	}
-
 	return nil
 }
 
 func (o *RefreshOptions) Run(c *cobra.Command) error {
-	if err := o.setup(); err != nil {
+	if ok, err := o.isCertificateValid(); err != nil {
+		return errors.Wrap(err, "Verification of certifcates failed.")
+	} else {
+		if ok {
+			glog.V(2).Infof("Certificates are good. Doing nothing.")
+			return nil
+		}
+	}
+
+	if err := o.setupClients(); err != nil {
 		return err
 	}
 
@@ -178,7 +175,11 @@ func (o *RefreshOptions) Run(c *cobra.Command) error {
 	return nil
 }
 
-func (o *RefreshOptions) setup() error {
+func (o *RefreshOptions) setupClients() error {
+	if err := o.openstack.Setup(); err != nil {
+		return err
+	}
+
 	glog.V(2).Infof(o.openstack.PrintDebugAuthInfo())
 	fmt.Println(o.openstack.PrintAuthInfo())
 
@@ -344,25 +345,12 @@ func (o *RefreshOptions) getClientCertificate() (*x509.Certificate, error) {
 }
 
 func (o *RefreshOptions) isCertificateValid() (bool, error) {
-	caData, err := o.getRawCACertificate()
-	if err != nil {
-		return false, err
-	}
-
 	cert, err := o.getClientCertificate()
 	if err != nil {
 		return false, err
 	}
 
-	caCertPool := x509.NewCertPool()
-	caCertPool.AppendCertsFromPEM(caData)
-
-	opts := x509.VerifyOptions{
-		Roots:     caCertPool,
-		KeyUsages: []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth},
-	}
-
-	if _, err := cert.Verify(opts); err != nil {
+	if time.Now().After(cert.NotAfter) || time.Now().Before(cert.NotBefore) {
 		return false, nil
 	}
 
