@@ -77,7 +77,7 @@ func NewClusterListCommand(o ClusterOptions) *cobra.Command {
 		Use:   "list",
 		Short: "Lists available clusters via CLI",
 		Run: func(c *cobra.Command, args []string) {
-			o.List()
+			cmd.CheckError(o.List())
 		},
 	}
 	return c
@@ -91,7 +91,7 @@ func NewClusterShowCommand(o ClusterOptions) *cobra.Command {
 			cmd.CheckError(o.ValidateShowArgs(c, args))
 		},
 		Run: func(c *cobra.Command, args []string) {
-			o.Show(args[0])
+			cmd.CheckError(o.Show(args[0]))
 		},
 	}
 	return c
@@ -118,7 +118,9 @@ func (o *ClusterOptions) Show(name string) error {
 				return nil
 			},
 		))
-	cmd.CheckError(err)
+	if err != nil {
+		return err
+	}
 	ok.Payload.Print(printers.Human, printers.PrintOptions{})
 	return nil
 }
@@ -132,12 +134,17 @@ func (o *ClusterOptions) List() error {
 				return nil
 			},
 		))
-	cmd.CheckError(err)
+	if err != nil {
+		return err
+	}
 	printme := make([]printers.Printable, len(ok.Payload))
 	for i, cluster := range ok.Payload {
 		tmp := cluster
 		printme[i] = tmp
 	}
-	cmd.CheckError(printers.PrintTable(printme))
+	err = printers.PrintTable(printme)
+	if err != nil {
+		return err
+	}
 	return nil
 }
