@@ -85,6 +85,10 @@ func (o *RefreshOptions) Complete(args []string) (err error) {
 		return errors.Errorf("The context you provided does not exist")
 	}
 
+	return nil
+}
+
+func (o *RefreshOptions) Run(c *cobra.Command) error {
 	glog.V(2).Infof("Using context %v", o.context)
 	if isKubernikusContext, err := o.isKubernikusContext(); err != nil {
 		glog.V(2).Infof("Not a valid Kubernikus context: %v", err)
@@ -92,6 +96,15 @@ func (o *RefreshOptions) Complete(args []string) (err error) {
 	} else {
 		if !isKubernikusContext {
 			glog.V(2).Infof("Not a valid Kubernikus context")
+			return nil
+		}
+	}
+
+	if ok, err := o.isCertificateValid(); err != nil {
+		return errors.Wrap(err, "Verification of certifcates failed.")
+	} else {
+		if ok {
+			glog.V(2).Infof("Certificates are good. Doing nothing.")
 			return nil
 		}
 	}
@@ -141,27 +154,6 @@ func (o *RefreshOptions) Complete(args []string) (err error) {
 			return err
 		} else {
 			o.openstack.Password = string(password)
-		}
-	}
-
-	return nil
-}
-
-func (o *RefreshOptions) Run(c *cobra.Command) error {
-	if isKubernikusContext, err := o.isKubernikusContext(); err != nil {
-		return nil
-	} else {
-		if !isKubernikusContext {
-			return nil
-		}
-	}
-
-	if ok, err := o.isCertificateValid(); err != nil {
-		return errors.Wrap(err, "Verification of certifcates failed.")
-	} else {
-		if ok {
-			glog.V(2).Infof("Certificates are good. Doing nothing.")
-			return nil
 		}
 	}
 
