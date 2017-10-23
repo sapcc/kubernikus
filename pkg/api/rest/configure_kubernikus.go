@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"strings"
 
 	errors "github.com/go-openapi/errors"
 	runtime "github.com/go-openapi/runtime"
@@ -88,5 +89,16 @@ func setupGlobalMiddleware(handler http.Handler) http.Handler {
 		AllowedMethods: []string{"GET", "HEAD", "POST", "DELETE", "PUT"},
 		MaxAge:         600,
 	})
-	return gmiddleware.LoggingHandler(os.Stdout, handlers.RootHandler(c.Handler(handler)))
+
+	return gmiddleware.LoggingHandler(os.Stdout, handlers.RootHandler(c.Handler(StaticFiles(handler))))
+}
+
+func StaticFiles(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
+		if strings.HasPrefix(r.URL.Path, "/static") {
+			http.StripPrefix("/static", http.FileServer(http.Dir("static"))).ServeHTTP(rw, r)
+			return
+		}
+		next.ServeHTTP(rw, r)
+	})
 }
