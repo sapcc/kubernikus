@@ -30,7 +30,7 @@ func (d *info) Handle(params operations.InfoParams) middleware.Responder {
 					},
 					{
 						Platform: "linux",
-						Arch:     "x86",
+						Arch:     "amd64",
 						Link:     "static/binaries/linux/x86/kubernikusctl",
 					},
 				},
