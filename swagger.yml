@@ -146,6 +146,24 @@ definitions:
     properties:
       version:
         type: string
+      binaries:
+        type: array
+        items:
+          type: object
+          properties:
+            name:
+              type: string
+            links:
+              type: array
+              items:
+                type: object
+                properties:
+                  platform:
+                    type: string
+                  arch: 
+                    type: string
+                  link:
+                    type: string
   ApiVersions:
     required:
       - versions
@@ -155,6 +173,7 @@ definitions:
         type: array
         items:
           type: string
+
   Cluster:
     type: object
     required:

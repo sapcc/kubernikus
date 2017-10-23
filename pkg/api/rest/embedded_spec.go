@@ -338,6 +338,34 @@ func init() {
     },
     "Info": {
       "properties": {
+        "binaries": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "links": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "arch": {
+                      "type": "string"
+                    },
+                    "link": {
+                      "type": "string"
+                    },
+                    "platform": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              "name": {
+                "type": "string"
+              }
+            }
+          }
+        },
         "version": {
           "type": "string"
         }

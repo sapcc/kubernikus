@@ -6,6 +6,8 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"strconv"
+
 	strfmt "github.com/go-openapi/strfmt"
 
 	"github.com/go-openapi/errors"
@@ -16,6 +18,9 @@ import (
 // swagger:model Info
 type Info struct {
 
+	// binaries
+	Binaries []*InfoBinariesItems0 `json:"binaries"`
+
 	// version
 	Version string `json:"version,omitempty"`
 }
@@ -24,9 +29,41 @@ type Info struct {
 func (m *Info) Validate(formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.validateBinaries(formats); err != nil {
+		// prop
+		res = append(res, err)
+	}
+
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *Info) validateBinaries(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.Binaries) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.Binaries); i++ {
+
+		if swag.IsZero(m.Binaries[i]) { // not required
+			continue
+		}
+
+		if m.Binaries[i] != nil {
+
+			if err := m.Binaries[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("binaries" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
 	return nil
 }
 
@@ -41,6 +78,119 @@ func (m *Info) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *Info) UnmarshalBinary(b []byte) error {
 	var res Info
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// InfoBinariesItems0 info binaries items0
+// swagger:model InfoBinariesItems0
+type InfoBinariesItems0 struct {
+
+	// links
+	Links []*InfoBinariesItems0LinksItems0 `json:"links"`
+
+	// name
+	Name string `json:"name,omitempty"`
+}
+
+// Validate validates this info binaries items0
+func (m *InfoBinariesItems0) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateLinks(formats); err != nil {
+		// prop
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *InfoBinariesItems0) validateLinks(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.Links) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.Links); i++ {
+
+		if swag.IsZero(m.Links[i]) { // not required
+			continue
+		}
+
+		if m.Links[i] != nil {
+
+			if err := m.Links[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("links" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *InfoBinariesItems0) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *InfoBinariesItems0) UnmarshalBinary(b []byte) error {
+	var res InfoBinariesItems0
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// InfoBinariesItems0LinksItems0 info binaries items0 links items0
+// swagger:model InfoBinariesItems0LinksItems0
+type InfoBinariesItems0LinksItems0 struct {
+
+	// arch
+	Arch string `json:"arch,omitempty"`
+
+	// link
+	Link string `json:"link,omitempty"`
+
+	// platform
+	Platform string `json:"platform,omitempty"`
+}
+
+// Validate validates this info binaries items0 links items0
+func (m *InfoBinariesItems0LinksItems0) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *InfoBinariesItems0LinksItems0) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *InfoBinariesItems0LinksItems0) UnmarshalBinary(b []byte) error {
+	var res InfoBinariesItems0LinksItems0
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

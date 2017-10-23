@@ -19,6 +19,23 @@ type info struct {
 func (d *info) Handle(params operations.InfoParams) middleware.Responder {
 
 	info := &models.Info{
+		Binaries: []*models.InfoBinariesItems0{
+			{
+				Name: "kubernikusctl",
+				Links: []*models.InfoBinariesItems0LinksItems0{
+					{
+						Platform: "darwin",
+						Arch:     "amd64",
+						Link:     "static/binaries/darwin/amd64/kubernikusctl",
+					},
+					{
+						Platform: "linux",
+						Arch:     "x86",
+						Link:     "static/binaries/linux/x86/kubernikusctl",
+					},
+				},
+			},
+		},
 		Version: version.VERSION,
 	}
 
