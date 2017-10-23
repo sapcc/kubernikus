@@ -209,6 +209,20 @@ func init() {
           "required": true
         }
       ]
+    },
+    "/info": {
+      "get": {
+        "summary": "Get info about Kubernikus",
+        "operationId": "Info",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/Info"
+            }
+          }
+        }
+      }
     }
   },
   "definitions": {
@@ -318,6 +332,13 @@ func init() {
       "type": "object",
       "properties": {
         "kubeconfig": {
+          "type": "string"
+        }
+      }
+    },
+    "Info": {
+      "properties": {
+        "version": {
           "type": "string"
         }
       }

@@ -40,7 +40,6 @@ func configureAPI(api *operations.KubernikusAPI) http.Handler {
 	}
 
 	api.JSONConsumer = runtime.JSONConsumer()
-
 	api.JSONProducer = runtime.JSONProducer()
 
 	// Applies when the "x-auth-token" header is set
@@ -49,6 +48,7 @@ func configureAPI(api *operations.KubernikusAPI) http.Handler {
 	rt := &apipkg.Runtime{Namespace: namespace}
 	rt.Kubernikus, rt.Kubernetes = NewKubeClients()
 
+	api.InfoHandler = handlers.NewInfo(rt)
 	api.ListAPIVersionsHandler = handlers.NewListAPIVersions(rt)
 	api.ListClustersHandler = handlers.NewListClusters(rt)
 	api.CreateClusterHandler = handlers.NewCreateCluster(rt)
@@ -86,7 +86,7 @@ func setupGlobalMiddleware(handler http.Handler) http.Handler {
 	c := cors.New(cors.Options{
 		AllowedHeaders: []string{"X-Auth-Token", "Content-Type", "Accept"},
 		AllowedMethods: []string{"GET", "HEAD", "POST", "DELETE", "PUT"},
-		MaxAge: 600,
+		MaxAge:         600,
 	})
 	return gmiddleware.LoggingHandler(os.Stdout, handlers.RootHandler(c.Handler(handler)))
 }

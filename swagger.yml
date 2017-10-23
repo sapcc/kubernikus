@@ -19,6 +19,16 @@ responses:
     schema:
       $ref: '#/definitions/error'
 paths:
+  /info:
+    get:
+      operationId: Info
+      summary: Get info about Kubernikus
+      responses:
+        '200': 
+          description: OK
+          schema:
+            $ref: '#/definitions/Info'
+      security: []
   /api/:
     get:
       operationId: ListAPIVersions
@@ -132,6 +142,10 @@ paths:
       security:
         - keystone: []
 definitions:
+  Info:
+    properties:
+      version:
+        type: string
   ApiVersions:
     required:
       - versions
