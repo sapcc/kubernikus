@@ -6,7 +6,9 @@ var RootContent = `{
   "paths": [
     "/api",
     "/api/v1",
-    "/docs"
+    "/docs",
+    "/info",
+    "/static"
   ]
 }`
 
