@@ -19,9 +19,9 @@ responses:
     schema:
       $ref: '#/definitions/error'
 paths:
-  /version:
+  /info:
     get:
-      operationId: Info
+      operationId: Info 
       summary: Get info about Kubernikus
       responses:
         '200': 

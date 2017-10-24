@@ -35,7 +35,7 @@ func (o *InfoURL) SetBasePath(bp string) {
 func (o *InfoURL) Build() (*url.URL, error) {
 	var result url.URL
 
-	var _path = "/version"
+	var _path = "/info"
 
 	_basePath := o._basePath
 	result.Path = golangswaggerpaths.Join(_basePath, _path)

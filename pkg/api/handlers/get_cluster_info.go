@@ -42,7 +42,7 @@ func (d *getClusterInfo) Handle(params operations.GetClusterInfoParams, principa
 func createSetupCommand(principal *models.Principal) string {
 	userName := principal.Name
 	userDomainName := principal.Domain
-	projectId := principal.ID
+	projectId := principal.Account
 	authUrl := principal.AuthURL
 
 	return fmt.Sprintf("kubernikusctl auth init --username %v --user-domain-name %v --project-id %v --auth-url %v", userName, userDomainName, projectId, authUrl)

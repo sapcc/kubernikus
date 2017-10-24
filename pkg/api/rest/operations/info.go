@@ -29,7 +29,7 @@ func NewInfo(ctx *middleware.Context, handler InfoHandler) *Info {
 	return &Info{Context: ctx, Handler: handler}
 }
 
-/*Info swagger:route GET /version info
+/*Info swagger:route GET /info info
 
 Get info about Kubernikus
 

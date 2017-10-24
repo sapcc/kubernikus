@@ -336,7 +336,7 @@ func (o *KubernikusAPI) initHandlerCache() {
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
-	o.handlers["GET"]["/version"] = NewInfo(o.context, o.InfoHandler)
+	o.handlers["GET"]["/info"] = NewInfo(o.context, o.InfoHandler)
 
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)

@@ -241,7 +241,7 @@ func init() {
         }
       ]
     },
-    "/version": {
+    "/info": {
       "get": {
         "summary": "Get info about Kubernikus",
         "operationId": "Info",
