@@ -57,6 +57,7 @@ func configureAPI(api *operations.KubernikusAPI) http.Handler {
 	api.TerminateClusterHandler = handlers.NewTerminateCluster(rt)
 	api.UpdateClusterHandler = handlers.NewUpdateCluster(rt)
 	api.GetClusterCredentialsHandler = handlers.NewGetClusterCredentials(rt)
+	api.GetClusterInfoHandler = handlers.NewGetClusterInfo(rt)
 
 	api.ServerShutdown = func() {}
 

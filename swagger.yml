@@ -19,7 +19,7 @@ responses:
     schema:
       $ref: '#/definitions/error'
 paths:
-  /info:
+  /version:
     get:
       operationId: Info
       summary: Get info about Kubernikus
@@ -28,7 +28,6 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/Info'
-      security: []
   /api/:
     get:
       operationId: ListAPIVersions
@@ -141,10 +140,33 @@ paths:
           $ref: '#/responses/errorResponse'
       security:
         - keystone: []
+  '/api/v1/clusters/{name}/info':
+    parameters:
+      - uniqueItems: true
+        type: string
+        name: name
+        required: true
+        in: path
+    get:
+      operationId: GetClusterInfo
+      summary: Get user specific info about the cluster
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/ClusterInfo'
+        default:
+          $ref: '#/responses/errorResponse'
+      security:
+        - keystone: []
 definitions:
   Info:
     properties:
       version:
+        type: string
+  ClusterInfo:
+    properties:
+      setupCommand:
         type: string
       binaries:
         type: array
@@ -159,8 +181,6 @@ definitions:
                 type: object
                 properties:
                   platform:
-                    type: string
-                  arch: 
                     type: string
                   link:
                     type: string
@@ -241,6 +261,9 @@ definitions:
   Principal:
     type: object
     properties:
+      authUrl:
+        description: Identity Endpoint
+        type: string
       name:
         description: username
         type: string

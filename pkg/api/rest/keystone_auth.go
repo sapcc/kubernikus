@@ -40,6 +40,6 @@ func keystoneAuth() func(token string) (*models.Principal, error) {
 		for _, role := range t.Roles {
 			roles = append(roles, role.Name)
 		}
-		return &models.Principal{ID: t.User.ID, Name: t.User.Name, Domain: t.User.Domain.Name, Account: t.Project.ID, Roles: roles}, nil
+		return &models.Principal{AuthURL: authURL, ID: t.User.ID, Name: t.User.Name, Domain: t.User.Domain.Name, Account: t.Project.ID, Roles: roles}, nil
 	}
 }

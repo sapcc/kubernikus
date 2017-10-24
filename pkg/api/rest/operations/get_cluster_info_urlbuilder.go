@@ -9,17 +9,22 @@ import (
 	"errors"
 	"net/url"
 	golangswaggerpaths "path"
+	"strings"
 )
 
-// InfoURL generates an URL for the info operation
-type InfoURL struct {
+// GetClusterInfoURL generates an URL for the get cluster info operation
+type GetClusterInfoURL struct {
+	Name string
+
 	_basePath string
+	// avoid unkeyed usage
+	_ struct{}
 }
 
 // WithBasePath sets the base path for this url builder, only required when it's different from the
 // base path specified in the swagger spec.
 // When the value of the base path is an empty string
-func (o *InfoURL) WithBasePath(bp string) *InfoURL {
+func (o *GetClusterInfoURL) WithBasePath(bp string) *GetClusterInfoURL {
 	o.SetBasePath(bp)
 	return o
 }
@@ -27,16 +32,22 @@ func (o *InfoURL) WithBasePath(bp string) *InfoURL {
 // SetBasePath sets the base path for this url builder, only required when it's different from the
 // base path specified in the swagger spec.
 // When the value of the base path is an empty string
-func (o *InfoURL) SetBasePath(bp string) {
+func (o *GetClusterInfoURL) SetBasePath(bp string) {
 	o._basePath = bp
 }
 
 // Build a url path and query string
-func (o *InfoURL) Build() (*url.URL, error) {
+func (o *GetClusterInfoURL) Build() (*url.URL, error) {
 	var result url.URL
 
-	var _path = "/version"
+	var _path = "/api/v1/clusters/{name}/info"
 
+	name := o.Name
+	if name != "" {
+		_path = strings.Replace(_path, "{name}", name, -1)
+	} else {
+		return nil, errors.New("Name is required on GetClusterInfoURL")
+	}
 	_basePath := o._basePath
 	result.Path = golangswaggerpaths.Join(_basePath, _path)
 
@@ -44,7 +55,7 @@ func (o *InfoURL) Build() (*url.URL, error) {
 }
 
 // Must is a helper function to panic when the url builder returns an error
-func (o *InfoURL) Must(u *url.URL, err error) *url.URL {
+func (o *GetClusterInfoURL) Must(u *url.URL, err error) *url.URL {
 	if err != nil {
 		panic(err)
 	}
@@ -55,17 +66,17 @@ func (o *InfoURL) Must(u *url.URL, err error) *url.URL {
 }
 
 // String returns the string representation of the path with query string
-func (o *InfoURL) String() string {
+func (o *GetClusterInfoURL) String() string {
 	return o.Must(o.Build()).String()
 }
 
 // BuildFull builds a full url with scheme, host, path and query string
-func (o *InfoURL) BuildFull(scheme, host string) (*url.URL, error) {
+func (o *GetClusterInfoURL) BuildFull(scheme, host string) (*url.URL, error) {
 	if scheme == "" {
-		return nil, errors.New("scheme is required for a full url on InfoURL")
+		return nil, errors.New("scheme is required for a full url on GetClusterInfoURL")
 	}
 	if host == "" {
-		return nil, errors.New("host is required for a full url on InfoURL")
+		return nil, errors.New("host is required for a full url on GetClusterInfoURL")
 	}
 
 	base, err := o.Build()
@@ -79,6 +90,6 @@ func (o *InfoURL) BuildFull(scheme, host string) (*url.URL, error) {
 }
 
 // StringFull returns the string representation of a complete url
-func (o *InfoURL) StringFull(scheme, host string) string {
+func (o *GetClusterInfoURL) StringFull(scheme, host string) string {
 	return o.Must(o.BuildFull(scheme, host)).String()
 }

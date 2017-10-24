@@ -43,6 +43,9 @@ func NewKubernikusAPI(spec *loads.Document) *KubernikusAPI {
 		GetClusterCredentialsHandler: GetClusterCredentialsHandlerFunc(func(params GetClusterCredentialsParams, principal *models.Principal) middleware.Responder {
 			return middleware.NotImplemented("operation GetClusterCredentials has not yet been implemented")
 		}),
+		GetClusterInfoHandler: GetClusterInfoHandlerFunc(func(params GetClusterInfoParams, principal *models.Principal) middleware.Responder {
+			return middleware.NotImplemented("operation GetClusterInfo has not yet been implemented")
+		}),
 		InfoHandler: InfoHandlerFunc(func(params InfoParams) middleware.Responder {
 			return middleware.NotImplemented("operation Info has not yet been implemented")
 		}),
@@ -103,6 +106,8 @@ type KubernikusAPI struct {
 	CreateClusterHandler CreateClusterHandler
 	// GetClusterCredentialsHandler sets the operation handler for the get cluster credentials operation
 	GetClusterCredentialsHandler GetClusterCredentialsHandler
+	// GetClusterInfoHandler sets the operation handler for the get cluster info operation
+	GetClusterInfoHandler GetClusterInfoHandler
 	// InfoHandler sets the operation handler for the info operation
 	InfoHandler InfoHandler
 	// ListAPIVersionsHandler sets the operation handler for the list API versions operation
@@ -188,6 +193,10 @@ func (o *KubernikusAPI) Validate() error {
 
 	if o.GetClusterCredentialsHandler == nil {
 		unregistered = append(unregistered, "GetClusterCredentialsHandler")
+	}
+
+	if o.GetClusterInfoHandler == nil {
+		unregistered = append(unregistered, "GetClusterInfoHandler")
 	}
 
 	if o.InfoHandler == nil {
@@ -322,7 +331,12 @@ func (o *KubernikusAPI) initHandlerCache() {
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
-	o.handlers["GET"]["/info"] = NewInfo(o.context, o.InfoHandler)
+	o.handlers["GET"]["/api/v1/clusters/{name}/info"] = NewGetClusterInfo(o.context, o.GetClusterInfoHandler)
+
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/version"] = NewInfo(o.context, o.InfoHandler)
 
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)

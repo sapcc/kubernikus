@@ -210,7 +210,38 @@ func init() {
         }
       ]
     },
-    "/info": {
+    "/api/v1/clusters/{name}/info": {
+      "get": {
+        "summary": "Get user specific info about the cluster",
+        "operationId": "GetClusterInfo",
+        "security": [
+          {
+            "keystone": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/ClusterInfo"
+            }
+          },
+          "default": {
+            "$ref": "#/responses/errorResponse"
+          }
+        }
+      },
+      "parameters": [
+        {
+          "uniqueItems": true,
+          "type": "string",
+          "name": "name",
+          "in": "path",
+          "required": true
+        }
+      ]
+    },
+    "/version": {
       "get": {
         "summary": "Get info about Kubernikus",
         "operationId": "Info",
@@ -328,15 +359,7 @@ func init() {
         }
       }
     },
-    "Credentials": {
-      "type": "object",
-      "properties": {
-        "kubeconfig": {
-          "type": "string"
-        }
-      }
-    },
-    "Info": {
+    "ClusterInfo": {
       "properties": {
         "binaries": {
           "type": "array",
@@ -348,9 +371,6 @@ func init() {
                 "items": {
                   "type": "object",
                   "properties": {
-                    "arch": {
-                      "type": "string"
-                    },
                     "link": {
                       "type": "string"
                     },
@@ -366,6 +386,21 @@ func init() {
             }
           }
         },
+        "setupCommand": {
+          "type": "string"
+        }
+      }
+    },
+    "Credentials": {
+      "type": "object",
+      "properties": {
+        "kubeconfig": {
+          "type": "string"
+        }
+      }
+    },
+    "Info": {
+      "properties": {
         "version": {
           "type": "string"
         }
@@ -376,6 +411,10 @@ func init() {
       "properties": {
         "account": {
           "description": "account id",
+          "type": "string"
+        },
+        "authUrl": {
+          "description": "Identity Endpoint",
           "type": "string"
         },
         "domain": {
