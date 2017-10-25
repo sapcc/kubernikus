@@ -217,6 +217,7 @@ jobs:
         file: kubernetes.git/ci/task_image_properties.yaml
         input_mapping: 
           image0: kubernikus-binaries.image 
+          image1: kubernikus-binaries.image 
         output_mapping:
           image.properties: kubernikus-binaries.properties
         params:
@@ -260,6 +261,7 @@ jobs:
         file: kubernetes.git/ci/task_image_properties.yaml
         input_mapping: 
           image0: kubernikus-docs-builder.image 
+          image1: kubernikus-docs-builder.image 
         output_mapping:
           image.properties: kubernikus-docs-builder.properties
         params:
@@ -328,7 +330,7 @@ jobs:
 
       - aggregate:
         - task: image.properties
-          file: kubernetes.git/ci/task_image_properties.yaml
+          file: kubernikus.git/ci/task_image_properties.yaml
           input_mapping: 
             image0: kubernikus-docs.image 
             image1: kubernikus-binaries.image 

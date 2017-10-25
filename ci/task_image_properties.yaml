@@ -10,7 +10,6 @@ image_resource:
 inputs:
   - name: image0
   - name: image1
-  - name: image2
 
 outputs:
   - name: properties
@@ -18,7 +17,6 @@ outputs:
 params:
   image0: IMAGE0
   image1: IMAGE1
-  image2: IMAGE2
 
 run:
   path: /bin/sh
@@ -30,12 +28,9 @@ run:
       {
           "${image0}_REPOSITORY": "$(cat image0/repository 2>/dev/null|| true)",
           "${image1}_REPOSITORY": "$(cat image1/repository 2>/dev/null|| true)",
-          "${image2}_REPOSITORY": "$(cat image2/repository 2>/dev/null|| true)",
           "${image0}_TAG": "$(cat image0/tag 2>/dev/null|| true)",
           "${image1}_TAG": "$(cat image1/tag 2>/dev/null|| true)",
-          "${image2}_TAG": "$(cat image2/tag 2>/dev/null|| true)",
           "${image0}_DIGEST": "$(cat image0/digest 2>/dev/null|| true)",
           "${image1}_DIGEST": "$(cat image1/digest 2>/dev/null|| true)",
-          "${image2}_DIGEST": "$(cat image2/digest 2>/dev/null|| true)"
       }
       EOF
