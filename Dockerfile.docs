@@ -1,0 +1,1 @@
+FROM sapcc/kubernikus-docs-builder

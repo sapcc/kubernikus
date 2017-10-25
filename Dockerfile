@@ -12,6 +12,8 @@ FROM alpine:3.6 as kubernikusctl
 COPY --from=kubernikus-binaries /kubernikusctl /usr/local/bin/
 CMD ["kubernikusctl"]
 
+FROM sapcc/kubernikus-docs-builder as kubernikus-docs
+
 FROM alpine:3.6 as kubernikus
 MAINTAINER "Fabian Ruff <fabian.ruff@sap.com>"
 RUN apk add --no-cache curl iptables
@@ -20,5 +22,6 @@ RUN curl -Lo /bin/dumb-init https://github.com/Yelp/dumb-init/releases/download/
 	&& dumb-init -V
 COPY charts/ /etc/kubernikus/charts
 COPY --from=kubernikus-binaries /apiserver /kubernikus /wormhole /usr/local/bin/
+COPY --from=kubernikus-docs /public /static/docs
 ENTRYPOINT ["dumb-init", "--"]
 CMD ["apiserver"]

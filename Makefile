@@ -29,6 +29,7 @@ bin/%: $(GOFILES) Makefile
 
 build: 
 	docker build $(BUILD_ARGS) -t sapcc/kubernikus-binaries:$(VERSION) -t sapcc/kubernikus-binaries:latest --target kubernikus-binaries .
+	docker build $(BUILD_ARGS) -t sapcc/kubernikus-docs:$(VERSION)     -t sapcc/kubernikus-docs:latest     --target kubernikus-docs .
 	docker build $(BUILD_ARGS) -t sapcc/kubernikus:$(VERSION)          -t sapcc/kubernikus:latest          --target kubernikus .
 	docker build $(BUILD_ARGS) -t sapcc/kubernikusctl:$(VERSION)       -t sapcc/kubernikusctl:latest       --target kubernikusctl .
 
