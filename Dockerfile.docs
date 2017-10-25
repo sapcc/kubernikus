@@ -1,2 +1,3 @@
-ARG VERSION=latest
+ARG DIGEST=latest
+ARG VERSION=${DIGEST}
 FROM sapcc/kubernikus-docs-builder:${VERSION}
