@@ -1,0 +1,28 @@
+---
+platform: 'linux'
+
+image_resource:
+  type: docker-image
+  source:
+    repository: sapcc/kubernikus-kubectl
+    tag: 'latest'
+
+inputs:
+  - name: image
+
+run:
+  path: /bin/sh
+  args:
+    - -c
+    - |
+      set -exo pipefail
+      DIGEST=$(cat image/digest)
+      REPOSITORY=$(cat image/repository)
+      TAG=$(cat image/tag)
+      cat >"properties.json" <<EOF
+      {
+        "DIGEST": "$DIGEST",
+        "REPOSITORY": "$REPOSITORY",
+        "TAG": "$TAG"
+      }
+      EOF
