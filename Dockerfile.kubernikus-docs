@@ -1,14 +1,2 @@
-ARG DIGEST                                
-# default to latest
-ARG VERSION=latest   
-
-# Prefix wuth @ if set
-ARG PDIGEST=${DIGEST:+@}$DIGEST           
-
-# Prefix wuth : if set
-ARG PVERSION=${VERSION:+:}$VERSION        
-
-# Use digest if set. Version otherwise.
-ARG COMBINED=${PDIGEST:-$PVERSION}             
-
-FROM sapcc/kubernikus-docs-builder${COMBINED}
+ARG KUBERNIKUS_DOCS_BUILDER_VERSION=:latest
+FROM sapcc/kubernikus-docs-builder${KUBERNIKUS_DOCS_BUILDER_VERSION}

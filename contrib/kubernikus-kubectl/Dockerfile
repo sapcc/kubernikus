@@ -1,5 +1,5 @@
-ARG VERSION=latest
-FROM sapcc/kubernikus-binaries:$VERSION as kubernikus-binaries
+ARG KUBERNIKUS_BINARIES_VERSION=:latest
+FROM sapcc/kubernikus-binaries$KUBERNIKUS_BINARIES_VERSION as kubernikus-binaries
 
 FROM alpine:3.6
 
