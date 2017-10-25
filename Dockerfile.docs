@@ -1,7 +1,14 @@
 ARG DIGEST                                
-ARG VERSION=latest                        # default to latest
-ARG PDIGEST=${DIGEST:+@}$DIGEST           # Prefix wuth @ if set
-ARG PVERSION=${VERSION:+:}$VERSION        # Prefix wuth : if set
-ARG TAG=${PDIGEST:-$PVERSION}             # Use digest if set. Version otherwise.
+# default to latest
+ARG VERSION=latest   
+
+# Prefix wuth @ if set
+ARG PDIGEST=${DIGEST:+@}$DIGEST           
+
+# Prefix wuth : if set
+ARG PVERSION=${VERSION:+:}$VERSION        
+
+# Use digest if set. Version otherwise.
+ARG TAG=${PDIGEST:-$PVERSION}             
 
 FROM sapcc/kubernikus-docs-builder${TAG}
