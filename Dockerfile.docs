@@ -9,6 +9,6 @@ ARG PDIGEST=${DIGEST:+@}$DIGEST
 ARG PVERSION=${VERSION:+:}$VERSION        
 
 # Use digest if set. Version otherwise.
-ARG TAG=${PDIGEST:-$PVERSION}             
+ARG COMBINED=${PDIGEST:-$PVERSION}             
 
-FROM sapcc/kubernikus-docs-builder${TAG}
+FROM sapcc/kubernikus-docs-builder${COMBINED}
