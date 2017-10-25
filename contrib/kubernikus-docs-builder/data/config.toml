@@ -36,32 +36,20 @@ googleAnalytics = ""
 [social]
 	github  = "sapcc/kubernikus"
 
-
 [[menu.main]]
-	name   = "Material"
-	url    = "/"
-	weight = 0
-
-[[menu.main]]
-	name   = "Getting started"
-	url    = "getting-started/"
+	name   = "Getting Started"
+	url    = "user/"
 	weight = 10
 
 [[menu.main]]
-	name   = "Adding content"
-	url    = "adding-content/"
+	name   = "Development"
+	url    = "dev/"
 	weight = 20
 
 [[menu.main]]
-	name   = "Roadmap"
-	url    = "roadmap/"
+	name   = "Operations"
+	url    = "ops/"
 	weight = 30
-
-[[menu.main]]
-	name   = "License"
-	url    = "license/"
-	weight = 40
-
 
 [blackfriday]
 	smartypants	= true
