@@ -31,6 +31,6 @@ run:
           "${image0}_TAG": "$(cat image0/tag 2>/dev/null|| true)",
           "${image1}_TAG": "$(cat image1/tag 2>/dev/null|| true)",
           "${image0}_DIGEST": "$(cat image0/digest 2>/dev/null|| true)",
-          "${image1}_DIGEST": "$(cat image1/digest 2>/dev/null|| true)",
+          "${image1}_DIGEST": "$(cat image1/digest 2>/dev/null|| true)"
       }
       EOF
