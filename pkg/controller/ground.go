@@ -321,9 +321,7 @@ func (op *GroundControl) createKluster(tpr *v1.Kluster) error {
 }
 
 func (op *GroundControl) terminateKluster(tpr *v1.Kluster) error {
-	secret, err := op.Clients.Kubernetes.CoreV1().Secrets(tpr.Namespace).Get(tpr.GetName(), metav1.GetOptions{})
-
-	if !apierrors.IsNotFound(err) {
+	if secret, err := op.Clients.Kubernetes.CoreV1().Secrets(tpr.Namespace).Get(tpr.GetName(), metav1.GetOptions{}); !apierrors.IsNotFound(err) {
 		if err != nil {
 			return err
 		}
@@ -337,7 +335,7 @@ func (op *GroundControl) terminateKluster(tpr *v1.Kluster) error {
 	}
 
 	glog.Infof("Deleting helm release %s", tpr.GetName())
-	_, err = op.Clients.Helm.DeleteRelease(tpr.GetName(), helm.DeletePurge(true))
+	_, err := op.Clients.Helm.DeleteRelease(tpr.GetName(), helm.DeletePurge(true))
 	if err != nil && !strings.Contains(grpc.ErrorDesc(err), fmt.Sprintf(`release: "%s" not found`, tpr.GetName())) {
 		return err
 	}
