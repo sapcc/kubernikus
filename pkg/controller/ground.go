@@ -11,6 +11,7 @@ import (
 	"github.com/Masterminds/goutils"
 	"github.com/golang/glog"
 	"google.golang.org/grpc"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
 	api_v1 "k8s.io/client-go/pkg/api/v1"
@@ -321,21 +322,23 @@ func (op *GroundControl) createKluster(tpr *v1.Kluster) error {
 
 func (op *GroundControl) terminateKluster(tpr *v1.Kluster) error {
 	secret, err := op.Clients.Kubernetes.CoreV1().Secrets(tpr.Namespace).Get(tpr.GetName(), metav1.GetOptions{})
-	if err != nil {
-		return err
-	}
 
-	username := string(secret.Data["openstack-username"])
-	domain := string(secret.Data["openstack-domain-name"])
+	if !apierrors.IsNotFound(err) {
+		if err != nil {
+			return err
+		}
+		username := string(secret.Data["openstack-username"])
+		domain := string(secret.Data["openstack-domain-name"])
+
+		glog.Infof("Deleting openstack user %s@%s", username, domain)
+		if err := op.Clients.Openstack.DeleteUser(username, domain); err != nil {
+			return err
+		}
+	}
 
 	glog.Infof("Deleting helm release %s", tpr.GetName())
 	_, err = op.Clients.Helm.DeleteRelease(tpr.GetName(), helm.DeletePurge(true))
 	if err != nil && !strings.Contains(grpc.ErrorDesc(err), fmt.Sprintf(`release: "%s" not found`, tpr.GetName())) {
-		return err
-	}
-
-	glog.Infof("Deleting openstack user %s@%s", username, domain)
-	if err := op.Clients.Openstack.DeleteUser(username, domain); err != nil {
 		return err
 	}
 
