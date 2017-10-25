@@ -4,11 +4,14 @@ platform: 'linux'
 image_resource:
   type: docker-image
   source:
-    repository: sapcc/kubernikus-kubectl
-    tag: 'latest'
+    repository: alpine 
+    tag: '3.6'
 
 inputs:
   - name: image
+
+outputs:
+  - name: image.properties
 
 run:
   path: /bin/sh
@@ -19,7 +22,7 @@ run:
       DIGEST=$(cat image/digest)
       REPOSITORY=$(cat image/repository)
       TAG=$(cat image/tag)
-      cat >"properties.json" <<EOF
+      cat >"image.properties/properties.json" <<EOF
       {
         "DIGEST": "$DIGEST",
         "REPOSITORY": "$REPOSITORY",
