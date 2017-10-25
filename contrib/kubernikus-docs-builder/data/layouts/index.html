@@ -5,25 +5,25 @@
   <div class="sapbanner"></div>
   <div class="saplogo"></div>
   <div class="saplinks">
-    <div><a href="/docs">/user</a></div>
+    <div><a href="/user">docs</a></div>
     {{ with .Site.Social.github }}
     <div class="button button-github" role="button" aria-label="GitHub">
       <a href="https://github.com/{{ . }}" title="@{{ . }} on GitHub" target="_blank" class="toggle-button icon icon-github"></a>
     </div>
     {{ end }}
   </div>
-	<article class="article">
-    <div class="promobanner">
-      <div id='stars'></div>
-      <div id='stars2'></div>
-      <div id='stars3'></div>
-      <div id='title'>
-        <span class="bigger">Kubernikus</span>
-        <br />
-        <span>Managed Kubernetes Clusters</span>
-      </div>
+  <div class="promobanner">
+    <div id='stars'></div>
+    <div id='stars2'></div>
+    <div id='stars3'></div>
+    <div id='title'>
+      <span class="bigger">Kubernikus</span>
+      <br />
+      <span>Managed Kubernetes Clusters</span>
     </div>
-    <img src="images/logo.png" class="promologo" />
+  </div>
+  <img src="images/logo.png" class="promologo" />
+	<article class="article">
 		<div class="wrapper">
 			{{ .Content }}
 		</div>

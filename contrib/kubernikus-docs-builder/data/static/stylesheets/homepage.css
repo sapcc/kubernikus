@@ -49,9 +49,9 @@
 
 .promologo {
     position: relative;
-    top: 120px;
+    top: 70px;
     width: 365px;
-    left: 155px;
+    left: 413px;
 }
 
 #stars {
@@ -107,7 +107,7 @@
 
 #title {
   position: relative;
-  top: 57px;
+  top: 20px;
   left: 0;
   right: 0;
   color: #FFF;
