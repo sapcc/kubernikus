@@ -1,2 +1,2 @@
-ARG KUBERNIKUS_DOCS_BUILDER_VERSION=:latest
-FROM sapcc/kubernikus-docs-builder${KUBERNIKUS_DOCS_BUILDER_VERSION}
+ARG VERSION=latest
+FROM sapcc/kubernikus-docs-builder:$VERSION

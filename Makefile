@@ -27,12 +27,15 @@ all: $(BINARIES:%=bin/$(GOOS)/%)
 bin/%: $(GOFILES) Makefile
 	GOOS=$(*D) GOARCH=amd64 go build $(GOFLAGS) -v -i -o $(@D)/$(@F) ./cmd/$(@F)
 
-
 build: 
-	docker build $(BUILD_ARGS) -t sapcc/kubernikus-binaries:$(VERSION) -t sapcc/kubernikus-binaries:latest --cache-from my/image:latest --target kubernikus-binaries .
-	docker build $(BUILD_ARGS) -t sapcc/kubernikus-docs:$(VERSION)     -t sapcc/kubernikus-docs:latest     --target kubernikus-docs .
-	docker build $(BUILD_ARGS) -t sapcc/kubernikus:$(VERSION)          -t sapcc/kubernikus:latest          --target kubernikus .
-	docker build $(BUILD_ARGS) -t sapcc/kubernikusctl:$(VERSION)       -t sapcc/kubernikusctl:latest       --target kubernikusctl .
+	docker build $(BUILD_ARGS) -t sapcc/kubernikus-docs-builder:$(VERSION) -t sapcc/kubernikus-docs-builder:latest --cache-from=sapcc/kubernikus-docs-builder:latest ./contrib/kubernikus-docs-builder
+	docker build $(BUILD_ARGS) -t sapcc/kubernikus-binaries:$(VERSION)     -f Dockerfile.kubernikus-binaries .
+	docker build $(BUILD_ARGS) -t sapcc/kubernikus-docs:$(VERSION)         -f Dockerfile.kubernikus-docs .
+	docker build $(BUILD_ARGS) -t sapcc/kubernikusctl:$(VERSION)           -f Dockerfile.kubernikusctl .
+	docker build $(BUILD_ARGS) -t sapcc/kubernikus:$(VERSION)              -f Dockerfile .
+
+pull:
+	docker pull sapcc/kubernikus-docs-builder:latest
 
 push:
 	echo docker push sapcc/kubernikus:$(VERSION)   
