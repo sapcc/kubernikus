@@ -15,6 +15,9 @@ spec:
         app: kubernikus
         type: api
     spec:
+      strategy:
+        rollingUpdate:
+          maxSurge: 1
       containers:
         - name: api
           image: "{{ .Values.image }}:{{ .Values.imageTag }}"
