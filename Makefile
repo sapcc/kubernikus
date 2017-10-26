@@ -1,5 +1,4 @@
-DATE     := $(shell date +%Y%m%d%H%M%S)
-VERSION  ?= v$(DATE)
+VERSION  ?= $(shell git rev-parse --verify HEAD)
 GOOS     ?= $(shell go env | grep GOOS | cut -d'"' -f2)
 BINARIES := apiserver kubernikus kubernikusctl wormhole
 
@@ -28,7 +27,7 @@ bin/%: $(GOFILES) Makefile
 	GOOS=$(*D) GOARCH=amd64 go build $(GOFLAGS) -v -i -o $(@D)/$(@F) ./cmd/$(@F)
 
 build: 
-	docker build $(BUILD_ARGS) -t sapcc/kubernikus-docs-builder:$(VERSION) -t sapcc/kubernikus-docs-builder:latest --cache-from=sapcc/kubernikus-docs-builder:latest ./contrib/kubernikus-docs-builder
+	docker build $(BUILD_ARGS) -t sapcc/kubernikus-docs-builder:$(VERSION) --cache-from=sapcc/kubernikus-docs-builder:latest ./contrib/kubernikus-docs-builder
 	docker build $(BUILD_ARGS) -t sapcc/kubernikus-binaries:$(VERSION)     -f Dockerfile.kubernikus-binaries .
 	docker build $(BUILD_ARGS) -t sapcc/kubernikus-docs:$(VERSION)         -f Dockerfile.kubernikus-docs .
 	docker build $(BUILD_ARGS) -t sapcc/kubernikusctl:$(VERSION)           -f Dockerfile.kubernikusctl .
@@ -36,6 +35,10 @@ build:
 
 pull:
 	docker pull sapcc/kubernikus-docs-builder:latest
+
+tag:
+	docker tag sapcc/kubernikus:$(VERSION)    sapcc/kubernikus:latest
+	docker tag sapcc/kubernikusctl:$(VERSION) sapcc/kubernikusctl:latest
 
 push:
 	echo docker push sapcc/kubernikus:$(VERSION)   
