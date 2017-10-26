@@ -19,6 +19,7 @@ resources:
       access_token: ((github-com-access-token))
       branch: master
       depth: 1
+      ignore_paths: ["charts", "ci"]
 
   - name: charts.git
     type: git
@@ -28,8 +29,7 @@ resources:
       uri:    https://github.com/sapcc/kubernikus.git
       branch: master
       depth: 1
-      params:
-        paths: ["charts"]
+      paths: ["charts"]
 
   - name: pipeline.git
     type: git
@@ -39,8 +39,7 @@ resources:
       uri:    https://github.com/sapcc/kubernikus.git
       branch: master
       depth: 1
-      params:
-        paths: ["ci"]
+      paths: ["ci"]
 
   - name: secrets.git
     type: git
@@ -103,6 +102,7 @@ jobs:
         - get: secrets.git
         - get: pipeline.git
         - get: kubernikus.builds
+          trigger: true
       - task: deploy
         file: pipeline.git/ci/task_helm_kubernikus.yaml
         params:
