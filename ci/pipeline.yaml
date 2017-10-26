@@ -18,7 +18,7 @@ resources:
       branch: master
       depth: 1
       params:
-        ignore_paths: ["contrib/**", "docs/**", "ci/**"]
+        ignore_paths: ["contrib", "docs", "ci"]
 
   - name: charts.git
     type: git
@@ -29,8 +29,7 @@ resources:
       branch: master
       depth: 1
       params:
-        paths: ["charts/**"]
-        ignore_paths: ["*"]
+        paths: ["charts"]
 
   - name: contrib.git
     type: git
@@ -41,8 +40,7 @@ resources:
       branch: master
       depth: 1
       params:
-        paths: ["contrib/**"]
-        ignore_paths: ["*"]
+        paths: ["contrib"]
 
   - name: docs.git
     type: git
@@ -53,8 +51,7 @@ resources:
       branch: master
       depth: 1
       params:
-        paths: ["docs/**"]
-        ignore_paths: ["*"]
+        paths: ["docs"]
 
   - name: pipeline.git
     type: git
@@ -65,7 +62,7 @@ resources:
       branch: master
       depth: 1
       params:
-        paths: ["ci/*"]
+        paths: ["ci"]
 
   - name: secrets.git
     type: git
@@ -185,14 +182,14 @@ jobs:
       <<: *post_failure_to_slack
     plan:
       - aggregate:
-        - get: kubernetes.git
+        - get: kubernikus.git
           resource: contrib.git
           trigger: true
 
       - put: kubernikus-docs-builder.image
         params:
-          build: kubernetes.git/contrib/kubernikus-docs-builder
-          tag: kubernetes.git/.git/HEAD
+          build: kubernikus.git/contrib/kubernikus-docs-builder
+          tag: kubernikus.git/.git/HEAD
           tag_as_latest: true
           build_args:
             http_proxy: http://proxy.phl.sap.corp:8080
@@ -206,7 +203,7 @@ jobs:
       <<: *post_failure_to_slack
     plan:
       - aggregate:
-        - get: kubernetes.git
+        - get: kubernikus.git
           resource: contrib.git
           trigger: true
         - get: kubernikus-binaries.image
@@ -214,19 +211,19 @@ jobs:
           trigger: true
   
       - task: kubernikus-binaries.properties
-        file: kubernetes.git/ci/task_image_properties.yaml
+        file: kubernikus.git/ci/task_image_properties.yaml
         input_mapping: 
           image0: kubernikus-binaries.image 
           image1: kubernikus-binaries.image 
         output_mapping:
-          image.properties: kubernikus-binaries.properties
+          properties: kubernikus-binaries.properties
         params:
           image0: KUBERNIKUS_BINARIES
 
       - put: kubernikus-docs-builder.image
         params:
-          build: kubernetes.git/contrib/kubernikus-kubectl
-          tag: kubernetes.git/.git/HEAD
+          build: kubernikus.git/contrib/kubernikus-kubectl
+          tag: kubernikus.git/.git/HEAD
           tag_as_latest: true
           build_args_file: kubernikus-binaries.properties/properties.json
           build_args:
@@ -248,7 +245,7 @@ jobs:
       <<: *post_failure_to_slack
     plan:
       - aggregate:
-        - get: kubernetes.git
+        - get: kubernikus.git
           resource: docs.git
           trigger: true
         - get: kubernikus-docs-builder.image
@@ -258,20 +255,20 @@ jobs:
             skip_download: true
 
       - task: kubernikus-docs-builder.properties
-        file: kubernetes.git/ci/task_image_properties.yaml
+        file: kubernikus.git/ci/task_image_properties.yaml
         input_mapping: 
           image0: kubernikus-docs-builder.image 
           image1: kubernikus-docs-builder.image 
         output_mapping:
-          image.properties: kubernikus-docs-builder.properties
+          properties: kubernikus-docs-builder.properties
         params:
           image0: KUBERNIKUS_DOCS
         
       - put: kubernikus-docs.image
         params:
-          build: kubernetes.git
-          dockerfile: kubernetes.git/Dockerfile.kubernikus-docs
-          tag: kubernetes.git/.git/HEAD
+          build: kubernikus.git
+          dockerfile: kubernikus.git/Dockerfile.kubernikus-docs
+          tag: kubernikus.git/.git/HEAD
           tag_as_latest: true
           build_args_file: kubernikus-docs-builder.properties/properties.json
           build_args:
@@ -300,7 +297,7 @@ jobs:
         params:
           build: kubernikus.git
           dockerfile: kubernikus.git/Dockerfile.kubernikus-binaries
-          tag: kubernetes.git/.git/HEAD
+          tag: kubernikus.git/.git/HEAD
           tag_as_latest: true
           build_args:
             http_proxy: http://proxy.phl.sap.corp:8080
@@ -309,13 +306,11 @@ jobs:
         get_params:
           skip_download: true
 
-
   - name: package
     serial: true
     plan:
       - aggregate:
         - get: kubernikus.git
-          passed: [binaries]
         - get: kubernikus-binaries.image
           trigger: true
           passed: [binaries]
@@ -329,13 +324,13 @@ jobs:
         - put: version
 
       - aggregate:
-        - task: image.properties
+        - task: images.properties
           file: kubernikus.git/ci/task_image_properties.yaml
           input_mapping: 
             image0: kubernikus-docs.image 
             image1: kubernikus-binaries.image 
           output_mapping:
-            image.properties: kubernikus-docs.properties
+            properties: images.properties
           params:
             image0: KUBERNIKUS_DOCS
             image1: KUBERNIKUS_BINARIES
@@ -380,6 +375,8 @@ jobs:
               no_proxy: sap.corp,cloud.sap,127.0.0.1,localhost
           get_params:
             skip_download: true
+    on_failure:
+      <<: *post_failure_to_slack
 
   - name: staging
     serial: true
@@ -401,43 +398,33 @@ jobs:
           OS_PROJECT_DOMAIN_NAME: ccadmin
           KUBERNIKUS_NAME: k-staging
           KUBERNIKUS_URL: https://k-staging.admin.cloud.sap
+    on_failure:
+      <<: *post_failure_to_slack
 
   - name: e2e
     serial: true
     plan:
-      - aggregate:
-        - get: kubernikus.git
-          passed: [staging]
-          params:
-            depth: 0
-        - get: version
-          passed: [staging]
-          trigger: true
+      - get: version
+        passed: [staging]
+        trigger: true
 
   - name: rollout
     serial: true
     plan:
-      - aggregate:
-        - get: kubernikus.git
-          passed: [e2e]
-          params:
-            depth: 0
-        - get: version
-          passed: [e2e]
+      - get: version
+        passed: [e2e]
 
   - name: eu-nl-1
     serial: true
     plan:
       - aggregate:
         - get: kubernikus.git
-          passed: [rollout]
         - get: version
           passed: [rollout]
           trigger: true
         - get: secrets.git
-        - get: pipeline.git
       - task: deploy
-        file: pipeline.git/ci/task_helm_kubernikus.yaml
+        file: kubernikus.git/ci/task_helm_kubernikus.yaml
         params:
           OS_AUTH_URL: https://identity-3.eu-nl-1.cloud.sap/v3
           OS_USERNAME: {{kubernikus-eu-nl-1-username}}
