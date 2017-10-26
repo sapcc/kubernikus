@@ -8,7 +8,8 @@ var RootContent = `{
     "/api/v1",
     "/docs",
     "/info",
-    "/static"
+    "/static",
+		"/swagger"
   ]
 }`
 
