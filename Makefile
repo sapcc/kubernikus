@@ -27,24 +27,29 @@ bin/%: $(GOFILES) Makefile
 	GOOS=$(*D) GOARCH=amd64 go build $(GOFLAGS) -v -i -o $(@D)/$(@F) ./cmd/$(@F)
 
 build: 
-	docker build $(BUILD_ARGS) -t sapcc/kubernikus-docs-builder:$(VERSION) --cache-from=sapcc/kubernikus-docs-builder:latest ./contrib/kubernikus-docs-builder
 	docker build $(BUILD_ARGS) -t sapcc/kubernikus-binaries:$(VERSION)     -f Dockerfile.kubernikus-binaries .
+	docker build $(BUILD_ARGS) -t sapcc/kubernikus-docs-builder:$(VERSION) --cache-from=sapcc/kubernikus-docs-builder:latest ./contrib/kubernikus-docs-builder
+	docker build $(BUILD_ARGS) -t sapcc/kubernikus-kubectl$(VERSION)       --cache-from=sapcc/kubernikus-kubectl:latest      ./contrib/kubernikus-kubectl
+	docker build $(BUILD_ARGS) -t sapcc/kubernikusctl:$(VERSION)           ./contrib/kubernikusctl
 	docker build $(BUILD_ARGS) -t sapcc/kubernikus-docs:$(VERSION)         -f Dockerfile.kubernikus-docs .
-	docker build $(BUILD_ARGS) -t sapcc/kubernikusctl:$(VERSION)           -f Dockerfile.kubernikusctl .
 	docker build $(BUILD_ARGS) -t sapcc/kubernikus:$(VERSION)              -f Dockerfile .
-
+	
 pull:
 	docker pull sapcc/kubernikus-docs-builder:latest
+	docker pull sapcc/kubernikus-kubectl:latest
 
 tag:
-	docker tag sapcc/kubernikus:$(VERSION)    sapcc/kubernikus:latest
-	docker tag sapcc/kubernikusctl:$(VERSION) sapcc/kubernikusctl:latest
+	docker tag sapcc/kubernikus:$(VERSION)         sapcc/kubernikus:latest
+	docker tag sapcc/kubernikusctl:$(VERSION)      sapcc/kubernikusctl:latest
+	docker tag sapcc/kubernikus-kubectl:$(VERSION) sapcc/kubernikus-kubectl:latest
 
 push:
 	echo docker push sapcc/kubernikus:$(VERSION)   
 	echo docker push sapcc/kubernikus:latest
 	echo docker push sapcc/kubernikusctl:$(VERSION)   
 	echo docker push sapcc/kubernikusctl:latest
+	echo docker push sapcc/kubernikus-kubectl:$(VERSION)   
+	echo docker push sapcc/kubernikus-kubectl:latest
 
 pkg/api/rest/operations/kubernikus_api.go: swagger.yml
 ifndef HAS_SWAGGER
