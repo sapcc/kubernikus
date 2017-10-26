@@ -1,6 +1,10 @@
 dist: trusty
 sudo: required
 
+branches:
+  only:
+    - master
+
 env:
   - VERSION=$TRAVIS_COMMIT
 
