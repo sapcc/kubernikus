@@ -5,7 +5,7 @@
   <div class="sapbanner"></div>
   <div class="saplogo"></div>
   <div class="saplinks">
-    <div><a href="/user">docs</a></div>
+    <div><a href="{{ "user" | relURL }}">Docs</a></div>
     {{ with .Site.Social.github }}
     <div class="button button-github" role="button" aria-label="GitHub">
       <a href="https://github.com/{{ . }}" title="@{{ . }} on GitHub" target="_blank" class="toggle-button icon icon-github"></a>
