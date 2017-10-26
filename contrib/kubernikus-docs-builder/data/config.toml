@@ -1,11 +1,10 @@
-baseurl = "/docs"
+baseURL = "docs"
 languageCode = "en-us"
 title = "Kubernikus"
 theme = "hugo-material-docs"
 metadataformat = "yaml"
-canonifyurls = true
+canonifyurls = false
 googleAnalytics = ""
-
 
 [params]
 	# Repository

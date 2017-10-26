@@ -30,7 +30,7 @@ build:
 	docker build $(BUILD_ARGS) -t sapcc/kubernikus-binaries:$(VERSION)     -f Dockerfile.kubernikus-binaries .
 	docker build $(BUILD_ARGS) -t sapcc/kubernikus-docs-builder:$(VERSION) --cache-from=sapcc/kubernikus-docs-builder:latest ./contrib/kubernikus-docs-builder
 	docker build $(BUILD_ARGS) -t sapcc/kubernikus-kubectl:$(VERSION)      --cache-from=sapcc/kubernikus-kubectl:latest      ./contrib/kubernikus-kubectl
-	docker build $(BUILD_ARGS) -t sapcc/kubernikusctl:$(VERSION)           ./contrib/kubernikusctl
+	docker build $(BUILD_ARGS) -t sapcc/kubernikusctl:$(VERSION)                                                             ./contrib/kubernikusctl
 	docker build $(BUILD_ARGS) -t sapcc/kubernikus-docs:$(VERSION)         -f Dockerfile.kubernikus-docs .
 	docker build $(BUILD_ARGS) -t sapcc/kubernikus:$(VERSION)              -f Dockerfile .
 	
