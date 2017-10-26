@@ -130,6 +130,7 @@ jobs:
       - get: kubernikus.builds
         passed: [staging]
         passed: [e2e]
+        trigger: true
 
   - name: eu-nl-1
     serial: true
