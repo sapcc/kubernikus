@@ -1,4 +1,4 @@
-baseurl = "/"
+baseurl = "/docs"
 languageCode = "en-us"
 title = "Kubernikus"
 theme = "hugo-material-docs"
