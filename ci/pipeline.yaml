@@ -9,16 +9,16 @@ post_failure_to_slack: &post_failure_to_slack
       :boom: <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|$BUILD_PIPELINE_NAME $BUILD_JOB_NAME job #$BUILD_NAME failed>
 
 resources:
-  - name: kubernikus.git
-    type: git
+  - name: kubernikus.builds
+    type: gh-status
     source:
       username: sapcc-bot
       password: ((github-com-access-token))
-      uri:    https://github.com/sapcc/kubernikus.git
+      owner:    sapcc
+      repo:     kubernikus
+      access_token: ((github-com-access-token))
       branch: master
       depth: 1
-      params:
-        ignore_paths: ["contrib", "docs", "ci"]
 
   - name: charts.git
     type: git
@@ -66,7 +66,11 @@ resource_types:
     source:
       repository: cfcommunity/slack-notification-resource
       tag: latest
-
+  - name: gh-status
+    type: docker-image
+    source:
+      repository: hub.global.cloud.sap/concourse/ghstatus-resource
+      tag: latest
 groups:
   - name: kubernikus
     jobs:
@@ -97,8 +101,8 @@ jobs:
     plan:
       - aggregate:
         - get: secrets.git
-        - get: pipeline.git        
-        - get: kubernikus.git
+        - get: pipeline.git
+        - get: kubernikus.builds
       - task: deploy
         file: pipeline.git/ci/task_helm_kubernikus.yaml
         params:
@@ -116,14 +120,14 @@ jobs:
   - name: e2e
     serial: true
     plan:
-      - get: kubernikus.git
+      - get: kubernikus.builds
         passed: [staging]
         trigger: true
 
   - name: rollout
     serial: true
     plan:
-      - get: kubernikus.git
+      - get: kubernikus.builds
         passed: [staging]
         passed: [e2e]
 
@@ -133,7 +137,7 @@ jobs:
       - aggregate:
         - get: secrets.git
         - get: pipeline.git        
-        - get: kubernikus.git
+        - get: kubernikus.builds
           passed: [rollout]
           trigger: true
       - task: deploy
@@ -162,10 +166,10 @@ jobs:
       - aggregate:
         - get: secrets.git
         - get: pipeline.git        
-        - get: kubernikus.git
+        - get: kubernikus.builds
           trigger: true
       - task: deploy
-        file: kubernikus.git/ci/task_helm-admin_kubernikus.yaml
+        file: kubernikus.builds/ci/task_helm-admin_kubernikus.yaml
         params:
           REGION: admin
           KUBERNIKUS_NAME: k-staging
@@ -174,7 +178,7 @@ jobs:
   - name: rollout_admin
     serial: true
     plan:
-      - get: kubernikus.git
+      - get: kubernikus.builds
         passed: [admin_staging]
         trigger: true
 
@@ -184,11 +188,11 @@ jobs:
       - aggregate:
         - get: secrets.git
         - get: pipeline.git
-        - get: kubernikus.git
+        - get: kubernikus.builds
           passed: [rollout_admin]
           trigger: true
       - task: deploy
-        file: kubernikus.git/ci/task_helm-admin_kubernikus.yaml
+        file: kubernikus.builds/ci/task_helm-admin_kubernikus.yaml
         params:
           REGION: admin
           KUBERNIKUS_NAME: k-eu-nl-1
