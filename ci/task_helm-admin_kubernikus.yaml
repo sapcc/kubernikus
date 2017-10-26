@@ -9,7 +9,6 @@ image_resource:
 
 inputs:
   - name: kubernikus.git
-  - name: version
   - name: secrets.git
 
 run:
@@ -18,7 +17,7 @@ run:
     - -c
     - |
       set -exo pipefail
-      VERSION=$(cat version/version)
+      VERSION=$(cat kubernikus.git/ref)
       helm dep up --skip-refresh kubernikus.git/charts/kubernikus/
       helm upgrade $KUBERNIKUS_NAME kubernikus.git/charts/kubernikus/ --namespace=$KUBERNIKUS_NAME --values secrets.git/admin/values/$KUBERNIKUS_NAME.yaml --set imageTag=$VERSION --install
       kubectl rollout status deployment/kubernikus-api --namespace=$KUBERNIKUS_NAME
