@@ -51,6 +51,11 @@ push:
 	docker push sapcc/kubernikus-kubectl:$(VERSION)   
 	docker push sapcc/kubernikus-kubectl:latest
 
+gh-pages:
+	docker run --name gh-pages sapcc/kubernikus-docs:$(VERSION) /bin/true
+	docker cp gh-pages:/public gh-pages
+	docker rm gh-pages
+
 pkg/api/rest/operations/kubernikus_api.go: swagger.yml
 ifndef HAS_SWAGGER
 	$(error You need to have go-swagger installed. Run make bootstrap to fix.)

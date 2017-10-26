@@ -13,7 +13,7 @@ before_script:
   - sudo apt-get -y -o Dpkg::Options::="--force-confnew" install docker-ce
 
 script:
-  - make pull build 
+  - make pull build docs 
 
 after_success:
   - if [ "$TRAVIS_BRANCH" == "master" ]; then
@@ -25,3 +25,11 @@ notifications:
   slack: 
     rooms:
       secure: $SLACK_KUBERNIKUS 
+
+deploy:
+  provider: pages
+  skip_cleanup: true
+  github_token: $GITHUB_TOKEN 
+  local_dir: gh-pages 
+  on:
+    branch: master
