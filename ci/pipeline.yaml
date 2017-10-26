@@ -175,6 +175,8 @@ jobs:
           REGION: admin
           KUBERNIKUS_NAME: k-staging
           GITHUB_TOKEN: ((github-access-token))
+    on_failure:
+      <<: *post_failure_to_slack
 
   - name: rollout_admin
     serial: true
@@ -225,6 +227,8 @@ jobs:
           OS_PROJECT_DOMAIN_NAME: ccadmin
           KUBERNIKUS_NAME: k-staging
           KUBERNIKUS_URL: https://k-staging.admin.cloud.sap
+    on_failure:
+      <<: *post_failure_to_slack
 
   - name: rollout_kubernikus-system
     serial: true
@@ -252,3 +256,5 @@ jobs:
           OS_PROJECT_DOMAIN_NAME: ccadmin
           KUBERNIKUS_NAME: k-eu-nl-1
           KUBERNIKUS_URL: https://k-eu-nl-1.admin.cloud.sap
+    on_failure:
+      <<: *post_failure_to_slack
