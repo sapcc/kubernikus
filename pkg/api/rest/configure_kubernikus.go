@@ -97,7 +97,7 @@ func setupGlobalMiddleware(handler http.Handler) http.Handler {
 func StaticFiles(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
 		if strings.HasPrefix(r.URL.Path, "/docs") {
-			http.StripPrefix("/static", http.FileServer(http.Dir("static/docs"))).ServeHTTP(rw, r)
+			http.StripPrefix("/docs", http.FileServer(http.Dir("static/docs"))).ServeHTTP(rw, r)
 			return
 		}
 		if strings.HasPrefix(r.URL.Path, "/static") {
