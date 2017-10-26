@@ -13,7 +13,7 @@ before_script:
   - sudo apt-get -y -o Dpkg::Options::="--force-confnew" install docker-ce
 
 script:
-  - make pull build docs 
+  - make pull build gh-pages 
 
 after_success:
   - if [ "$TRAVIS_BRANCH" == "master" ]; then
