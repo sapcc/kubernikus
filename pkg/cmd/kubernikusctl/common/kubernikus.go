@@ -56,6 +56,19 @@ func (k *KubernikusClient) GetCredentials(name string) (string, error) {
 	return ok.Payload.Kubeconfig, nil
 }
 
+func (k *KubernikusClient) CreateCluster(cluster *models.Cluster) error {
+	params := operations.NewCreateClusterParams().WithBody(cluster)
+	_, err := k.client.Operations.CreateCluster(params, k.authFunc())
+	switch err.(type) {
+	case *operations.CreateClusterDefault:
+		result := err.(*operations.CreateClusterDefault)
+		return errors.Errorf(*result.Payload.Message)
+	case error:
+		return errors.Wrap(err, "Error creating cluster")
+	}
+	return nil
+}
+
 func (k *KubernikusClient) ShowCluster(name string) (*models.Cluster, error) {
 	params := operations.NewShowClusterParams()
 	params.Name = name
