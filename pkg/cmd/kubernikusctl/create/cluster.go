@@ -1,6 +1,7 @@
 package create
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
 
@@ -14,7 +15,7 @@ import (
 
 func NewClusterCommand(o CreateOptions) *cobra.Command {
 	c := &cobra.Command{
-		Use:     "cluster [name]",
+		Use:     "cluster",
 		Short:   "Creates a cluster defined in a spec expected at stdin",
 		Aliases: []string{"clusters"},
 		PreRun:  o.clusterPreRun,
@@ -51,6 +52,7 @@ func (o *CreateOptions) clusterRun(c *cobra.Command, args []string) {
 	cmd.CheckError(cluster.UnmarshalBinary(raw))
 	glog.V(2).Infof("cluster: %v", cluster)
 	cmd.CheckError(o.Kubernikus.CreateCluster(&cluster))
+	fmt.Printf("Cluster %v created.", *cluster.Name)
 }
 
 func validateClusterCommandArgs(args []string) error {

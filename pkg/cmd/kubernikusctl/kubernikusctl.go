@@ -17,6 +17,7 @@ func NewCommand(name string) *cobra.Command {
 		NewAuthCommand(),
 		NewGetCommand(),
 		NewCreateCommand(),
+		NewDeleteCommand(),
 	)
 	c.PersistentFlags().AddGoFlagSet(flag.CommandLine)
 

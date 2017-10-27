@@ -69,6 +69,19 @@ func (k *KubernikusClient) CreateCluster(cluster *models.Cluster) error {
 	return nil
 }
 
+func (k *KubernikusClient) DeleteCluster(name string) error {
+	params := operations.NewTerminateClusterParams().WithName(name)
+	_, err := k.client.Operations.TerminateCluster(params, k.authFunc())
+	switch err.(type) {
+	case *operations.TerminateClusterDefault:
+		result := err.(*operations.TerminateClusterDefault)
+		return errors.Errorf(*result.Payload.Message)
+	case error:
+		return errors.Wrap(err, "Error deleting cluster")
+	}
+	return nil
+}
+
 func (k *KubernikusClient) ShowCluster(name string) (*models.Cluster, error) {
 	params := operations.NewShowClusterParams()
 	params.Name = name
