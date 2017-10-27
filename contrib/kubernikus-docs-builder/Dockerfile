@@ -8,5 +8,6 @@ RUN tar xvf hugo.tar.gz hugo -C /usr/local/bin
 COPY data /
 
 ONBUILD COPY docs /content
-ONBUILD RUN hugo --debug
+ONBUILD RUN hugo --baseURL "/docs"       --destination /public/docs
+ONBUILD RUN hugo --baseURL "/kubernikus" --destination /public/kubernikus
 

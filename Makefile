@@ -53,7 +53,7 @@ push:
 
 gh-pages:
 	docker run --name gh-pages sapcc/kubernikus-docs:$(VERSION) /bin/true
-	docker cp gh-pages:/public gh-pages
+	docker cp gh-pages:/public/kubernikus gh-pages
 	docker rm gh-pages
 
 pkg/api/rest/operations/kubernikus_api.go: swagger.yml

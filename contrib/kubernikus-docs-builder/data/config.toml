@@ -5,7 +5,6 @@ theme = "hugo-material-docs"
 metadataformat = "yaml"
 canonifyurls = false
 googleAnalytics = ""
-relativeurls = true
 
 [params]
 	# Repository
