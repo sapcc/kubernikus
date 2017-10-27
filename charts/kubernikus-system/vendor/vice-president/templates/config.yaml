@@ -16,4 +16,7 @@ data:
       organization: {{ .Values.vice.organization | quote }}
       organizational_unit: {{ .Values.vice.organizational_unit | quote }}
       default_challenge: {{ .Values.vice.default_challenge | quote }}
+    president:
+      resync_period_minutes: {{ default 4 .Values.president.resync_period_minutes }}
+      certificate_check_interval_minutes: {{ default 10 .Values.president.certificate_check_interval_minutes }}
 {{- end}}
