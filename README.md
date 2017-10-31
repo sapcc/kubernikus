@@ -58,6 +58,11 @@ EOF
 
 ## Authenticating at the Control Planes
 
+Install kubernikusctl with:
+```
+go get github.com/sapcc/kubernikus/cmd/kubernikusctl
+```
+
 Initial kubeconfig setup:
 ```
 kubernikusctl auth init --url https://k-staging.admin.cloud.sap --name k-staging --user-domain-name ccadmin --project-name kubernikus-staging --project-domain-name ccadmin --auth-url https://identity-3.eu-nl-1.cloud.sap --username <USER> 
