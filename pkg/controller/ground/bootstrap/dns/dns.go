@@ -2,6 +2,7 @@ package dns
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"html/template"
 
@@ -47,7 +48,7 @@ func SeedKubeDNS(client clientset.Interface, repository, version, domain, cluste
 	}
 
 	if clusterIP == "" {
-		clusterIP = DEFAULT_CLUSTER_IP
+		return errors.New("Cluster IP for kube-dns service missing.")
 	}
 
 	if err := createKubeDNSServiceAccount(client); err != nil {

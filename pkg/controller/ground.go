@@ -185,7 +185,7 @@ func (op *GroundControl) handler(key string) error {
 				if err != nil {
 					return err
 				}
-				if err := ground.SeedKluster(clientset); err != nil {
+				if err := ground.SeedKluster(clientset, tpr); err != nil {
 					return err
 				}
 				if err := op.updateStatus(tpr, v1.KlusterReady, ""); err != nil {
