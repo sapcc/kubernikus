@@ -186,7 +186,7 @@ func CreateOrUpdateDeployment(client clientset.Interface, deploy *apps.Deploymen
 
 func CreateOrUpdateService(client clientset.Interface, service *v1.Service) error {
 	if _, err := client.CoreV1().Services(metav1.NamespaceSystem).Create(service); err != nil {
-		if !apierrors.IsAlreadyExists(err) && !apierrors.IsInvalid(err) {
+		if !apierrors.IsAlreadyExists(err) {
 			return fmt.Errorf("unable to create a new kube-dns service: %v", err)
 		}
 
