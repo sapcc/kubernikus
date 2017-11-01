@@ -103,7 +103,7 @@ systemd:
           --volume etc-kubernetes-certs,kind=host,source=/etc/kubernetes/certs,readOnly=true \
           --mount volume=etc-kubernetes-certs,target=/etc/kubernetes/certs \
           docker://{{ .KubernikusImage }}:{{ .KubernikusImageTag }} \
-          --exec wormhole -- client --kubeconfig=/var/lib/kubelet/kubeconfig
+          --exec wormhole -- client --listen {{ .ApiserverIP }}:6443 --kubeconfig=/var/lib/kubelet/kubeconfig
         ExecStopPost=/usr/bin/rkt gc --mark-only
         KillMode=mixed
         Restart=always
