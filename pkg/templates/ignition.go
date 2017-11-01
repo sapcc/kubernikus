@@ -41,6 +41,7 @@ func (i *ignition) GenerateNode(kluster *v1.Kluster, client kubernetes.Interface
 		ClusterDNS                         string
 		ClusterCIDR                        string
 		ApiserverURL                       string
+		ApiserverIP                        string
 		BootstrapToken                     string
 		OpenstackAuthURL                   string
 		OpenstackUsername                  string
@@ -61,6 +62,7 @@ func (i *ignition) GenerateNode(kluster *v1.Kluster, client kubernetes.Interface
 		ClusterDNS:                         kluster.Spec.ClusterDNS,
 		ClusterDomain:                      kluster.Spec.ClusterDNSDomain,
 		ApiserverURL:                       kluster.Status.Apiserver,
+		ApiserverIP:                        kluster.Spec.AdvertiseAddress,
 		OpenstackAuthURL:                   string(secret.Data["openstack-auth-url"]),
 		OpenstackUsername:                  string(secret.Data["openstack-username"]),
 		OpenstackPassword:                  string(secret.Data["openstack-password"]),

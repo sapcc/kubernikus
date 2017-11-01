@@ -160,7 +160,7 @@ networkd:
         Name=kubernikus
         [Network]
         DHCP=no
-        Address=198.18.128.1/32
+        Address={{ .ApiserverIP }}/32
 
 storage:
   files:
