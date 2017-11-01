@@ -278,7 +278,10 @@ func (op *GroundControl) createKluster(tpr *v1.Kluster) error {
 		return fmt.Errorf("Couldn't determine kubernikus api from service catalog: %s", err)
 	}
 
-	certificates := util.CreateCertificates(tpr, apiURL, op.Config.Openstack.AuthURL, op.Config.Kubernikus.Domain)
+	certificates, err := util.CreateCertificates(tpr, apiURL, op.Config.Openstack.AuthURL, op.Config.Kubernikus.Domain)
+	if err != nil {
+		return fmt.Errorf("Failed to generate certificates: %s", err)
+	}
 	bootstrapToken := util.GenerateBootstrapToken()
 	username := fmt.Sprintf("kubernikus-%s", tpr.Name)
 	password, err := goutils.Random(20, 32, 127, true, true)

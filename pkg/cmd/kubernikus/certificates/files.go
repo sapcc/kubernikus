@@ -60,7 +60,10 @@ func (o *FilesOptions) Run(c *cobra.Command) error {
 		return err
 	}
 
-	certificates := util.CreateCertificates(kluster, "https://api.kubernikus.cloud.sap", "https://identity.openstack.com", "kubernikus.cloud.sap")
+	certificates, err := util.CreateCertificates(kluster, "https://api.kubernikus.cloud.sap", "https://identity.openstack.com", "kubernikus.cloud.sap")
+	if err != nil {
+		return err
+	}
 
 	if err := NewFilePersister(".").WriteConfig(certificates); err != nil {
 		return err
