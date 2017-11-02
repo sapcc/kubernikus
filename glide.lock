@@ -1,5 +1,5 @@
-hash: 1efc53ff8634afec6d97b4820451c91b91e0b6a171599335cfaa03303a88a317
-updated: 2017-10-27T17:21:47.30123948+02:00
+hash: 61d9f95dee81440023236ef21eab3ba800241b0704cd2a4fa33cd2205d6126d2
+updated: 2017-10-30T15:45:22.065702967+01:00
 imports:
 - name: github.com/ajeddeloh/yaml
   version: 1072abfea31191db507785e2e0c1b8d1440d35a5
@@ -266,6 +266,8 @@ imports:
   - internal/json
 - name: gopkg.in/yaml.v2
   version: 53feefa2559fb8dfa8d81baad31be332c97d6c77
+- name: k8s.io/apiextensions-apiserver
+  version: fcd622fe88a4a6efcb5aea9e94ee87324ac1b036
 - name: k8s.io/apimachinery
   version: 917740426ad66ff818da4809990480bcc0786a77
   subpackages:
