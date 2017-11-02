@@ -83,6 +83,63 @@ func (a *Client) GetClusterCredentials(params *GetClusterCredentialsParams, auth
 }
 
 /*
+GetClusterInfo gets user specific info about the cluster
+*/
+func (a *Client) GetClusterInfo(params *GetClusterInfoParams, authInfo runtime.ClientAuthInfoWriter) (*GetClusterInfoOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewGetClusterInfoParams()
+	}
+
+	result, err := a.transport.Submit(&runtime.ClientOperation{
+		ID:                 "GetClusterInfo",
+		Method:             "GET",
+		PathPattern:        "/api/v1/clusters/{name}/info",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &GetClusterInfoReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return result.(*GetClusterInfoOK), nil
+
+}
+
+/*
+Info gets info about kubernikus
+*/
+func (a *Client) Info(params *InfoParams) (*InfoOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewInfoParams()
+	}
+
+	result, err := a.transport.Submit(&runtime.ClientOperation{
+		ID:                 "Info",
+		Method:             "GET",
+		PathPattern:        "/info",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &InfoReader{formats: a.formats},
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return result.(*InfoOK), nil
+
+}
+
+/*
 ListAPIVersions lists available api versions
 */
 func (a *Client) ListAPIVersions(params *ListAPIVersionsParams) (*ListAPIVersionsOK, error) {

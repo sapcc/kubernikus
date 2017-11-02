@@ -313,7 +313,8 @@ func init() {
                 }
               }
             }
-          }
+          },
+          "x-nullable": false
         },
         "status": {
           "type": "object",

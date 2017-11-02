@@ -25,7 +25,7 @@ type Cluster struct {
 	Name *string `json:"name"`
 
 	// spec
-	Spec *ClusterSpec `json:"spec,omitempty"`
+	Spec ClusterSpec `json:"spec,omitempty"`
 
 	// status
 	Status *ClusterStatus `json:"status,omitempty"`
@@ -75,14 +75,11 @@ func (m *Cluster) validateSpec(formats strfmt.Registry) error {
 		return nil
 	}
 
-	if m.Spec != nil {
-
-		if err := m.Spec.Validate(formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("spec")
-			}
-			return err
+	if err := m.Spec.Validate(formats); err != nil {
+		if ve, ok := err.(*errors.Validation); ok {
+			return ve.ValidateName("spec")
 		}
+		return err
 	}
 
 	return nil
