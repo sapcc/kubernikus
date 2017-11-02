@@ -47,7 +47,6 @@ func NewHTTPClientWithConfig(formats strfmt.Registry, cfg *TransportConfig) *Kub
 
 	// create transport and client
 	transport := httptransport.New(cfg.Host, cfg.BasePath, cfg.Schemes)
-	transport.Debug = true
 	return New(transport, formats)
 }
 

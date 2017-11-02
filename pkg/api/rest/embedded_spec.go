@@ -283,10 +283,12 @@ func init() {
           "pattern": "^[a-z]([-a-z0-9]*[a-z0-9])?$"
         },
         "spec": {
+          "type": "object",
           "properties": {
             "nodePools": {
               "type": "array",
               "items": {
+                "type": "object",
                 "required": [
                   "name",
                   "size",
@@ -311,9 +313,11 @@ func init() {
                 }
               }
             }
-          }
+          },
+          "x-nullable": false
         },
         "status": {
+          "type": "object",
           "properties": {
             "kluster": {
               "properties": {
@@ -355,7 +359,8 @@ func init() {
                 }
               }
             }
-          }
+          },
+          "readOnly": true
         }
       }
     },

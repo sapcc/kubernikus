@@ -185,7 +185,7 @@ func (op *GroundControl) handler(key string) error {
 				if err != nil {
 					return err
 				}
-				if err := ground.SeedKluster(clientset); err != nil {
+				if err := ground.SeedKluster(clientset, tpr); err != nil {
 					return err
 				}
 				if err := op.updateStatus(tpr, v1.KlusterReady, ""); err != nil {
@@ -278,7 +278,10 @@ func (op *GroundControl) createKluster(tpr *v1.Kluster) error {
 		return fmt.Errorf("Couldn't determine kubernikus api from service catalog: %s", err)
 	}
 
-	certificates := util.CreateCertificates(tpr, apiURL, op.Config.Openstack.AuthURL, op.Config.Kubernikus.Domain)
+	certificates, err := util.CreateCertificates(tpr, apiURL, op.Config.Openstack.AuthURL, op.Config.Kubernikus.Domain)
+	if err != nil {
+		return fmt.Errorf("Failed to generate certificates: %s", err)
+	}
 	bootstrapToken := util.GenerateBootstrapToken()
 	username := fmt.Sprintf("kubernikus-%s", tpr.Name)
 	password, err := goutils.Random(20, 32, 127, true, true)

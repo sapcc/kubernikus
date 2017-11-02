@@ -2,6 +2,7 @@ package models
 
 import (
 	"fmt"
+
 	"github.com/pkg/errors"
 	"github.com/sapcc/kubernikus/pkg/cmd/printers"
 )
@@ -29,11 +30,9 @@ func (c *Cluster) Print(format printers.PrintFormat, options printers.PrintOptio
 func (c *Cluster) printHuman(options printers.PrintOptions) {
 	fmt.Println("Cluster name: ", *c.Name)
 	fmt.Println("Cluster state: ", (*c).Status.Kluster.State)
-	if (*c).Spec != nil {
-		fmt.Println("Cluster node pools: ", len((*c).Spec.NodePools))
-		for _, pool := range (*c).Spec.NodePools {
-			pool.print()
-		}
+	fmt.Println("Cluster node pools: ", len((*c).Spec.NodePools))
+	for _, pool := range (*c).Spec.NodePools {
+		pool.print()
 	}
 }
 

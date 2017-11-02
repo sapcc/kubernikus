@@ -31,7 +31,7 @@ func (d *createCluster) Handle(params operations.CreateClusterParams, principal 
 	}
 
 	var nodePools []v1.NodePool
-	if params.Body.Spec != nil && params.Body.Spec.NodePools != nil {
+	if params.Body.Spec.NodePools != nil {
 		nodePools = []v1.NodePool{}
 		for i, _ := range params.Body.Spec.NodePools {
 			nodePools = append(nodePools, v1.NodePool{

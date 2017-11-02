@@ -1,5 +1,5 @@
 hash: 1efc53ff8634afec6d97b4820451c91b91e0b6a171599335cfaa03303a88a317
-updated: 2017-10-11T14:15:50.575974299+02:00
+updated: 2017-10-27T17:21:47.30123948+02:00
 imports:
 - name: github.com/ajeddeloh/yaml
   version: 1072abfea31191db507785e2e0c1b8d1440d35a5
@@ -39,7 +39,7 @@ imports:
   - config/validate
   - config/validate/report
 - name: github.com/databus23/guttle
-  version: 5ca1a11cdc48b026a723b2e9bd114f0f3da1cc9c 
+  version: 5ca1a11cdc48b026a723b2e9bd114f0f3da1cc9c
   subpackages:
   - group
 - name: github.com/databus23/keystone
@@ -163,6 +163,8 @@ imports:
   version: 76626ae9c91c4f2a10f34cad8ce83ea42c93bb75
 - name: github.com/juju/ratelimit
   version: 5b9ff866471762aa2ab2dced63c9fb6f53921342
+- name: github.com/justinas/alice
+  version: 82db91fe6d1db4c070fed544cb5d0b5cc08fe276
 - name: github.com/kennygrant/sanitize
   version: 6a0bfdde8629a3a3a7418a7eae45c54154692514
 - name: github.com/mailru/easyjson

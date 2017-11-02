@@ -4,15 +4,14 @@ import (
 	"fmt"
 
 	"github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
+	"github.com/sapcc/kubernikus/pkg/controller/ground/bootstrap/dns"
 	"github.com/sapcc/kubernikus/pkg/version"
 )
 
 const (
-	DEFAULT_CLUSTER_CIDR       = "198.19.0.0/16"
-	DEFAULT_SERVICE_CIDR       = "198.18.128.0/17"
-	DEFAULT_ADVERTISE_ADDRESS  = "198.18.128.1"
-	DEFAULT_CLUSTER_DNS        = "198.18.254.254"
-	DEFAULT_CLUSTER_DNS_DOMAIN = "cluster.local"
+	DEFAULT_CLUSTER_CIDR      = "198.19.0.0/16"
+	DEFAULT_SERVICE_CIDR      = "198.18.128.0/17"
+	DEFAULT_ADVERTISE_ADDRESS = "198.18.128.1"
 )
 
 type KlusterFactory interface {
@@ -54,11 +53,11 @@ func (klusterFactory) KlusterFor(spec v1.KlusterSpec) (*v1.Kluster, error) {
 	}
 
 	if k.Spec.ClusterDNS == "" {
-		k.Spec.ClusterDNS = DEFAULT_CLUSTER_DNS
+		k.Spec.ClusterDNS = dns.DEFAULT_CLUSTER_IP
 	}
 
 	if k.Spec.ClusterDNSDomain == "" {
-		k.Spec.ClusterDNSDomain = DEFAULT_CLUSTER_DNS_DOMAIN
+		k.Spec.ClusterDNSDomain = dns.DEFAULT_DOMAIN
 	}
 
 	if k.ObjectMeta.Name == "" {

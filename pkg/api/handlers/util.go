@@ -70,7 +70,7 @@ func clusterStatusNodePoolItemsFromTPR(k *v1.Kluster) []*models.ClusterStatusNod
 func clusterModelFromTPR(k *v1.Kluster) *models.Cluster {
 	return &models.Cluster{
 		Name: swag.String(k.Spec.Name),
-		Spec: &models.ClusterSpec{
+		Spec: models.ClusterSpec{
 			NodePools: clusterSpecNodePoolItemsFromTPR(k),
 		},
 		Status: &models.ClusterStatus{
