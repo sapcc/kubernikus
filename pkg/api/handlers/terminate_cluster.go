@@ -38,11 +38,7 @@ func (d *terminateCluster) Handle(params operations.TerminateClusterParams, prin
 		kluster.Status.Kluster.Message = "Cluster terminating"
 	})
 	if err != nil {
-		if apierrors.IsNotFound(err) {
-			return NewErrorResponse(&operations.TerminateClusterDefault{}, 404, "Not found")
-		}
 		return NewErrorResponse(&operations.TerminateClusterDefault{}, 500, err.Error())
-
 	}
 	return operations.NewTerminateClusterAccepted()
 }
