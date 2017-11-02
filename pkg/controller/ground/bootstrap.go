@@ -9,9 +9,11 @@ import (
 	clientset "k8s.io/client-go/kubernetes"
 	rbac "k8s.io/client-go/pkg/apis/rbac/v1beta1"
 	storage "k8s.io/client-go/pkg/apis/storage/v1"
+
+	"github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
 )
 
-func SeedKluster(client clientset.Interface) error {
+func SeedKluster(client clientset.Interface, kluster *v1.Kluster) error {
 	if err := SeedAllowBootstrapTokensToPostCSRs(client); err != nil {
 		return err
 	}
@@ -24,7 +26,7 @@ func SeedKluster(client clientset.Interface) error {
 	if err := SeedCinderStorageClass(client); err != nil {
 		return err
 	}
-	if err := dns.SeedKubeDNS(client, "", "", "", ""); err != nil {
+	if err := dns.SeedKubeDNS(client, "", "", kluster.Spec.ClusterDNSDomain, kluster.Spec.ClusterDNS); err != nil {
 		return err
 	}
 	return nil
