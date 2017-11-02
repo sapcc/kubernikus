@@ -21,7 +21,8 @@ type terminateCluster struct {
 
 func (d *terminateCluster) Handle(params operations.TerminateClusterParams, principal *models.Principal) middleware.Responder {
 
-	k, err := d.Kubernikus.Kubernikus().Klusters(d.Namespace).Get(qualifiedName(params.Name, principal.Account), metav1.GetOptions{})
+	kluster := d.Kubernikus.Kubernikus().Klusters(d.Namespace)
+	k, err := kluster.Get(qualifiedName(params.Name, principal.Account), metav1.GetOptions{})
 	if err != nil {
 		if apierrors.IsNotFound(err) {
 			return NewErrorResponse(&operations.TerminateClusterDefault{}, 404, "Not found")
@@ -32,7 +33,7 @@ func (d *terminateCluster) Handle(params operations.TerminateClusterParams, prin
 		return NewErrorResponse(&operations.TerminateClusterDefault{}, 409, "Cluster still has NodePools")
 	}
 
-	_, err = editCluster(d.Kubernikus.Kubernikus().Klusters(d.Namespace), principal, params.Name, func(kluster *v1.Kluster) {
+	_, err = editCluster(kluster, principal, params.Name, func(kluster *v1.Kluster) {
 		kluster.Status.Kluster.State = v1.KlusterTerminating
 		kluster.Status.Kluster.Message = "Cluster terminating"
 	})
