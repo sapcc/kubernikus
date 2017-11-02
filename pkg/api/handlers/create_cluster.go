@@ -63,5 +63,5 @@ func (d *createCluster) Handle(params operations.CreateClusterParams, principal 
 		return NewErrorResponse(&operations.CreateClusterDefault{}, 500, err.Error())
 	}
 
-	return operations.NewCreateClusterCreated().WithPayload(clusterModelFromTPR(kluster))
+	return operations.NewCreateClusterCreated().WithPayload(clusterModelFromCRD(kluster))
 }

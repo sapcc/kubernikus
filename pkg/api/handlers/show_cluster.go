@@ -19,7 +19,7 @@ type showCluster struct {
 
 func (d *showCluster) Handle(params operations.ShowClusterParams, principal *models.Principal) middleware.Responder {
 	name := qualifiedName(params.Name, principal.Account)
-	tprCluster, err := d.Kubernikus.Kubernikus().Klusters(d.Namespace).Get(name, metav1.GetOptions{})
+	kluster, err := d.Kubernikus.Kubernikus().Klusters(d.Namespace).Get(name, metav1.GetOptions{})
 
 	if err != nil {
 		if apierrors.IsNotFound(err) {
@@ -28,5 +28,5 @@ func (d *showCluster) Handle(params operations.ShowClusterParams, principal *mod
 		return NewErrorResponse(&operations.ShowClusterDefault{}, 500, err.Error())
 	}
 
-	return operations.NewShowClusterOK().WithPayload(clusterModelFromTPR(tprCluster))
+	return operations.NewShowClusterOK().WithPayload(clusterModelFromCRD(kluster))
 }

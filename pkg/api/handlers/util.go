@@ -40,7 +40,7 @@ func editCluster(client kubernikusv1.KlusterInterface, principal *models.Princip
 
 }
 
-func clusterSpecNodePoolItemsFromTPR(k *v1.Kluster) []*models.ClusterSpecNodePoolsItems0 {
+func clusterSpecNodePoolItemsFromCRD(k *v1.Kluster) []*models.ClusterSpecNodePoolsItems0 {
 	items := make([]*models.ClusterSpecNodePoolsItems0, int64(len(k.Spec.NodePools)))
 	for i, _ := range k.Spec.NodePools {
 		items[i] = &models.ClusterSpecNodePoolsItems0{
@@ -53,7 +53,7 @@ func clusterSpecNodePoolItemsFromTPR(k *v1.Kluster) []*models.ClusterSpecNodePoo
 	return items
 }
 
-func clusterStatusNodePoolItemsFromTPR(k *v1.Kluster) []*models.ClusterStatusNodePoolsItems0 {
+func clusterStatusNodePoolItemsFromCRD(k *v1.Kluster) []*models.ClusterStatusNodePoolsItems0 {
 	items := make([]*models.ClusterStatusNodePoolsItems0, int64(len(k.Status.NodePools)))
 	for i, _ := range k.Status.NodePools {
 		items[i] = &models.ClusterStatusNodePoolsItems0{
@@ -67,18 +67,18 @@ func clusterStatusNodePoolItemsFromTPR(k *v1.Kluster) []*models.ClusterStatusNod
 	return items
 }
 
-func clusterModelFromTPR(k *v1.Kluster) *models.Cluster {
+func clusterModelFromCRD(k *v1.Kluster) *models.Cluster {
 	return &models.Cluster{
 		Name: swag.String(k.Spec.Name),
 		Spec: models.ClusterSpec{
-			NodePools: clusterSpecNodePoolItemsFromTPR(k),
+			NodePools: clusterSpecNodePoolItemsFromCRD(k),
 		},
 		Status: &models.ClusterStatus{
 			Kluster: &models.ClusterStatusKluster{
 				State:   string(k.Status.Kluster.State),
 				Message: k.Status.Kluster.Message,
 			},
-			NodePools: clusterStatusNodePoolItemsFromTPR(k),
+			NodePools: clusterStatusNodePoolItemsFromCRD(k),
 		},
 	}
 }
