@@ -126,15 +126,33 @@ func (m *Cluster) UnmarshalBinary(b []byte) error {
 // swagger:model ClusterSpec
 type ClusterSpec struct {
 
+	// CIDR Range for Pods in the cluster. Can not be updated.
+	// Pattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$
+	ClusterCIDR string `json:"clusterCIDR,omitempty"`
+
 	// node pools
 	NodePools []*ClusterSpecNodePoolsItems0 `json:"nodePools"`
+
+	// CIDR Range for Services in the cluster. Can not be updated.
+	// Pattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$
+	ServiceCIDR string `json:"serviceCIDR,omitempty"`
 }
 
 // Validate validates this cluster spec
 func (m *ClusterSpec) Validate(formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.validateClusterCIDR(formats); err != nil {
+		// prop
+		res = append(res, err)
+	}
+
 	if err := m.validateNodePools(formats); err != nil {
+		// prop
+		res = append(res, err)
+	}
+
+	if err := m.validateServiceCIDR(formats); err != nil {
 		// prop
 		res = append(res, err)
 	}
@@ -142,6 +160,19 @@ func (m *ClusterSpec) Validate(formats strfmt.Registry) error {
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *ClusterSpec) validateClusterCIDR(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.ClusterCIDR) { // not required
+		return nil
+	}
+
+	if err := validate.Pattern("spec"+"."+"clusterCIDR", "body", string(m.ClusterCIDR), `^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$`); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -167,6 +198,19 @@ func (m *ClusterSpec) validateNodePools(formats strfmt.Registry) error {
 			}
 		}
 
+	}
+
+	return nil
+}
+
+func (m *ClusterSpec) validateServiceCIDR(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.ServiceCIDR) { // not required
+		return nil
+	}
+
+	if err := validate.Pattern("spec"+"."+"serviceCIDR", "body", string(m.ServiceCIDR), `^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$`); err != nil {
+		return err
 	}
 
 	return nil

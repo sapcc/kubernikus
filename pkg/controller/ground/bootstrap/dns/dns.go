@@ -21,7 +21,6 @@ const (
 	DEFAULT_REPOSITORY = "gcr.io/google_containers"
 	DEFAULT_VERSION    = "1.14.5"
 	DEFAULT_DOMAIN     = "cluster.local"
-	DEFAULT_CLUSTER_IP = "198.18.254.254"
 )
 
 type DeploymentOptions struct {

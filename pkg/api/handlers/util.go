@@ -71,7 +71,9 @@ func clusterModelFromCRD(k *v1.Kluster) *models.Cluster {
 	return &models.Cluster{
 		Name: swag.String(k.Spec.Name),
 		Spec: models.ClusterSpec{
-			NodePools: clusterSpecNodePoolItemsFromCRD(k),
+			ServiceCIDR: k.Spec.ServiceCIDR,
+			ClusterCIDR: k.Spec.ClusterCIDR,
+			NodePools:   clusterSpecNodePoolItemsFromCRD(k),
 		},
 		Status: &models.ClusterStatus{
 			Kluster: &models.ClusterStatusKluster{

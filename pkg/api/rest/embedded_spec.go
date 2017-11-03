@@ -285,6 +285,13 @@ func init() {
         "spec": {
           "type": "object",
           "properties": {
+            "clusterCIDR": {
+              "description": "CIDR Range for Pods in the cluster. Can not be updated.",
+              "type": "string",
+              "default": "198.19.0.0/16",
+              "pattern": "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\\/([0-9]|[1-2][0-9]|3[0-2]))$",
+              "x-nullable": false
+            },
             "nodePools": {
               "type": "array",
               "items": {
@@ -312,6 +319,13 @@ func init() {
                   }
                 }
               }
+            },
+            "serviceCIDR": {
+              "description": "CIDR Range for Services in the cluster. Can not be updated.",
+              "type": "string",
+              "default": "198.18.128.0/17",
+              "pattern": "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\\/([0-9]|[1-2][0-9]|3[0-2]))$",
+              "x-nullable": false
             }
           },
           "x-nullable": false

@@ -44,8 +44,10 @@ func (d *createCluster) Handle(params operations.CreateClusterParams, principal 
 	}
 
 	kluster, err := kubernikus.NewKlusterFactory().KlusterFor(v1.KlusterSpec{
-		Name:      name,
-		NodePools: nodePools,
+		Name:        name,
+		ServiceCIDR: params.Body.Spec.ServiceCIDR,
+		ClusterCIDR: params.Body.Spec.ClusterCIDR,
+		NodePools:   nodePools,
 	})
 
 	kluster.ObjectMeta = metav1.ObjectMeta{
