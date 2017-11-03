@@ -2,16 +2,19 @@ package kubernikus
 
 import (
 	"fmt"
+	"net"
 
 	"github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
 	"github.com/sapcc/kubernikus/pkg/controller/ground/bootstrap/dns"
+	"github.com/sapcc/kubernikus/pkg/util/ip"
 	"github.com/sapcc/kubernikus/pkg/version"
 )
 
 const (
+	//Keep this in sync with the default in swagger.yaml
 	DEFAULT_CLUSTER_CIDR      = "198.19.0.0/16"
 	DEFAULT_SERVICE_CIDR      = "198.18.128.0/17"
-	DEFAULT_ADVERTISE_ADDRESS = "198.18.128.1"
+	DEFAULT_ADVERTISE_ADDRESS = "1.1.1.1"
 )
 
 type KlusterFactory interface {
@@ -51,9 +54,17 @@ func (klusterFactory) KlusterFor(spec v1.KlusterSpec) (*v1.Kluster, error) {
 	if k.Spec.AdvertiseAddress == "" {
 		k.Spec.AdvertiseAddress = DEFAULT_ADVERTISE_ADDRESS
 	}
+	_, serviceCIDR, err := net.ParseCIDR(k.Spec.ServiceCIDR)
+	if err != nil {
+		return nil, err
+	}
+	dnsip, err := ip.GetIndexedIP(serviceCIDR, 2)
+	if err != nil {
+		return nil, err
+	}
 
 	if k.Spec.ClusterDNS == "" {
-		k.Spec.ClusterDNS = dns.DEFAULT_CLUSTER_IP
+		k.Spec.ClusterDNS = dnsip.String()
 	}
 
 	if k.Spec.ClusterDNSDomain == "" {
