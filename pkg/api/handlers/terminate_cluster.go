@@ -31,7 +31,7 @@ func (d *terminateCluster) Handle(params operations.TerminateClusterParams, prin
 	}
 	if k.Status.NodePools != nil && len(k.Status.NodePools) > 0 {
 		for _, nodepoolinfo := range k.Status.NodePools {
-			if nodepoolinfo.Size > 0 {
+			if nodepoolinfo.Running > 0 {
 				return NewErrorResponse(&operations.TerminateClusterDefault{}, 409, "Cluster still has Nodes in a Pool")
 			}
 		}
