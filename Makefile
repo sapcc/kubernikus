@@ -62,23 +62,25 @@ gh-pages:
 	docker rm gh-pages
 
 pkg/api/rest/operations/kubernikus_api.go: swagger.yml
-ifeq (,$(wildcard $(SWAGGER_BIN)))
-	$(error $(SWAGGER_BIN) missing. Run `make bootstrap` to fix.)
-endif
-
+ifneq (,$(wildcard $(SWAGGER_BIN)))
 	$(SWAGGER_BIN) generate server --name kubernikus --target pkg/api --model-package models \
 		--server-package rest --flag-strategy pflag --principal models.Principal --exclude-main
+else
+	$(warning WARNING: $(SWAGGER_BIN) missing. Run `make bootstrap` to fix.)
+endif
+
 
 swagger-generate:
 	make -B pkg/api/rest/operations/kubernikus_api.go
 
 # --existing-models github.com/sapcc/kubernikus/pkg/api/models seems not to work in our case
 pkg/client/kubernikus_generated/kubernikus_client.go: swagger.yml
-ifeq (,$(wildcard $(SWAGGER_BIN)))
-	$(error $(SWAGGER_BIN) missing. Run `make bootstrap` to fix.)
-endif
+ifneq (,$(wildcard $(SWAGGER_BIN)))
 	$(SWAGGER_BIN) generate client --name kubernikus --target pkg/client --client-package kubernikus_generated \
 	      --principal models.Principal
+else
+	$(warning WARNING: $(SWAGGER_BIN) missing. Run `make bootstrap` to fix.)
+endif
 
 swagger-generate-client:
 	make -B pkg/client/kubernikus_generated/kubernikus_client.go
