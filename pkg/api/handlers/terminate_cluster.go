@@ -30,7 +30,11 @@ func (d *terminateCluster) Handle(params operations.TerminateClusterParams, prin
 		return NewErrorResponse(&operations.TerminateClusterDefault{}, 500, err.Error())
 	}
 	if k.Status.NodePools != nil && len(k.Status.NodePools) > 0 {
-		return NewErrorResponse(&operations.TerminateClusterDefault{}, 409, "Cluster still has NodePools")
+		for _, nodepoolinfo := range k.Status.NodePools {
+			if nodepoolinfo.Size > 0 {
+				return NewErrorResponse(&operations.TerminateClusterDefault{}, 409, "Cluster still has Nodes in a Pool")
+			}
+		}
 	}
 
 	_, err = editCluster(kluster, principal, params.Name, func(kluster *v1.Kluster) {
