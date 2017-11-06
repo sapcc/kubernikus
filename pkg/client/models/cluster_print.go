@@ -30,6 +30,8 @@ func (c *Cluster) Print(format printers.PrintFormat, options printers.PrintOptio
 func (c *Cluster) printHuman(options printers.PrintOptions) {
 	fmt.Println("Cluster name: ", *c.Name)
 	fmt.Println("Cluster state: ", (*c).Status.Kluster.State)
+	fmt.Println("Cluster CIDR: ", (*c).Spec.ClusterCIDR)
+	fmt.Println("Service CIDR: ", (*c).Spec.ServiceCIDR)
 	fmt.Println("Cluster node pools: ", len((*c).Spec.NodePools))
 	for _, pool := range (*c).Spec.NodePools {
 		pool.print()
