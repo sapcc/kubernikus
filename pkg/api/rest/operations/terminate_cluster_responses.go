@@ -21,11 +21,6 @@ const TerminateClusterAcceptedCode int = 202
 swagger:response terminateClusterAccepted
 */
 type TerminateClusterAccepted struct {
-
-	/*
-	  In: Body
-	*/
-	Payload TerminateClusterAcceptedBody `json:"body,omitempty"`
 }
 
 // NewTerminateClusterAccepted creates TerminateClusterAccepted with default headers values
@@ -33,26 +28,12 @@ func NewTerminateClusterAccepted() *TerminateClusterAccepted {
 	return &TerminateClusterAccepted{}
 }
 
-// WithPayload adds the payload to the terminate cluster accepted response
-func (o *TerminateClusterAccepted) WithPayload(payload TerminateClusterAcceptedBody) *TerminateClusterAccepted {
-	o.Payload = payload
-	return o
-}
-
-// SetPayload sets the payload to the terminate cluster accepted response
-func (o *TerminateClusterAccepted) SetPayload(payload TerminateClusterAcceptedBody) {
-	o.Payload = payload
-}
-
 // WriteResponse to the client
 func (o *TerminateClusterAccepted) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
-	rw.WriteHeader(202)
-	payload := o.Payload
-	if err := producer.Produce(rw, payload); err != nil {
-		panic(err) // let the recovery middleware deal with this
-	}
+	rw.Header().Del(runtime.HeaderContentType)
 
+	rw.WriteHeader(202)
 }
 
 /*TerminateClusterDefault Error

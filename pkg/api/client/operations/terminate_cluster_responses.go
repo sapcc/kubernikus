@@ -54,19 +54,13 @@ func NewTerminateClusterAccepted() *TerminateClusterAccepted {
 OK
 */
 type TerminateClusterAccepted struct {
-	Payload TerminateClusterAcceptedBody
 }
 
 func (o *TerminateClusterAccepted) Error() string {
-	return fmt.Sprintf("[DELETE /api/v1/clusters/{name}][%d] terminateClusterAccepted  %+v", 202, o.Payload)
+	return fmt.Sprintf("[DELETE /api/v1/clusters/{name}][%d] terminateClusterAccepted ", 202)
 }
 
 func (o *TerminateClusterAccepted) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
-
-	// response payload
-	if err := consumer.Consume(response.Body(), &o.Payload); err != nil && err != io.EOF {
-		return err
-	}
 
 	return nil
 }
@@ -108,9 +102,3 @@ func (o *TerminateClusterDefault) readResponse(response runtime.ClientResponse, 
 
 	return nil
 }
-
-/*TerminateClusterAcceptedBody terminate cluster accepted body
-swagger:model TerminateClusterAcceptedBody
-*/
-
-type TerminateClusterAcceptedBody interface{}
