@@ -10,7 +10,7 @@
 
 Kubernikus is "Kubernetes as a Service" for Openstack.
 
-It allows to easily manage Kubernetes clusters that are natively integrated with Openstack. The architecture is designed to be facilitate the operation as a managed service.
+It allows to easily manage Kubernetes clusters that are natively integrated with Openstack. The architecture is designed to facilitate the operation as a managed service.
 
 ----
 
