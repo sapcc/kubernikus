@@ -1,3 +1,5 @@
+/* vim: set filetype=yaml : */
+
 package templates
 
 var Node = `
