@@ -1,6 +1,8 @@
 package seed
 
 import (
+	"errors"
+
 	"github.com/sapcc/kubernikus/pkg/client/kubernetes"
 	"github.com/sapcc/kubernikus/pkg/cmd"
 	"github.com/sapcc/kubernikus/pkg/controller/ground/bootstrap/dns"
@@ -40,7 +42,6 @@ func NewKubeDNSOptions() *KubeDNSOptions {
 		repository: dns.DEFAULT_REPOSITORY,
 		version:    dns.DEFAULT_VERSION,
 		domain:     dns.DEFAULT_DOMAIN,
-		clusterIP:  dns.DEFAULT_CLUSTER_IP,
 	}
 }
 
@@ -54,6 +55,9 @@ func (o *KubeDNSOptions) BindFlags(flags *pflag.FlagSet) {
 }
 
 func (o *KubeDNSOptions) Validate(c *cobra.Command, args []string) error {
+	if o.clusterIP == "" {
+		return errors.New("--cluster-ip is required")
+	}
 	return nil
 }
 

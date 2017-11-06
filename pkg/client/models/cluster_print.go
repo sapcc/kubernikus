@@ -2,6 +2,7 @@ package models
 
 import (
 	"fmt"
+
 	"github.com/pkg/errors"
 	"github.com/sapcc/kubernikus/pkg/cmd/printers"
 )
@@ -29,12 +30,29 @@ func (c *Cluster) Print(format printers.PrintFormat, options printers.PrintOptio
 func (c *Cluster) printHuman(options printers.PrintOptions) {
 	fmt.Println("Cluster name: ", *c.Name)
 	fmt.Println("Cluster state: ", (*c).Status.Kluster.State)
-	if (*c).Spec != nil {
-		fmt.Println("Cluster node pools: ", len((*c).Spec.NodePools))
-		for _, pool := range (*c).Spec.NodePools {
-			pool.print()
-		}
+	fmt.Println("Cluster CIDR: ", (*c).Spec.ClusterCIDR)
+	fmt.Println("Service CIDR: ", (*c).Spec.ServiceCIDR)
+	fmt.Println("Cluster node pools: ", len((*c).Spec.NodePools))
+	for _, pool := range (*c).Spec.NodePools {
+		pool.print()
 	}
+	fmt.Println("Cluster node pool status: ")
+	for _, pool := range (*c).Status.NodePools {
+		pool.print()
+	}
+}
+
+func (p *ClusterStatusNodePoolsItems0) print() {
+	fmt.Print("Name: ")
+	fmt.Println(*p.Name)
+	fmt.Print("   Size: \t")
+	fmt.Println(*p.Size)
+	fmt.Print("   Running: \t")
+	fmt.Println(*p.Running)
+	fmt.Print("   Schedulable: \t")
+	fmt.Println(*p.Schedulable)
+	fmt.Print("   Healthy: \t")
+	fmt.Println(*p.Healthy)
 }
 
 func (p *ClusterSpecNodePoolsItems0) print() {

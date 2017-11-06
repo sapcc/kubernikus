@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/golang/glog"
+	apiextensionsclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -126,12 +127,13 @@ func NewKubernikusOperator(options *KubernikusOperatorOptions) *KubernikusOperat
 		glog.Fatalf("Failed to create helm client: %s", err)
 	}
 
-	if err := kube.EnsureTPR(o.Clients.Kubernetes); err != nil {
-		glog.Fatalf("Couldn't create TPRs: %s", err)
+	apiextensionsclientset, err := apiextensionsclient.NewForConfig(config)
+	if err != nil {
+		glog.Fatal("Failed to create apiextenstionsclient: %s", err)
 	}
 
-	if err := kube.WaitForTPR(o.Clients.Kubernetes); err != nil {
-		glog.Fatalf("Couldn't find TPRs: %s", err)
+	if err := kube.EnsureCRD(apiextensionsclientset); err != nil {
+		glog.Fatalf("Couldn't create CRD: %s", err)
 	}
 
 	o.Factories.Kubernikus = kubernikus_informers.NewSharedInformerFactory(o.Clients.Kubernikus, DEFAULT_RECONCILIATION)

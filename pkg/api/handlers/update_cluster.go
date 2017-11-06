@@ -72,5 +72,5 @@ func (d *updateCluster) Handle(params operations.UpdateClusterParams, principal 
 		}
 		return NewErrorResponse(&operations.UpdateClusterDefault{}, 500, err.Error())
 	}
-	return operations.NewUpdateClusterOK().WithPayload(clusterModelFromTPR(kluster))
+	return operations.NewUpdateClusterOK().WithPayload(clusterModelFromCRD(kluster))
 }

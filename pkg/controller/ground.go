@@ -36,22 +36,22 @@ type GroundControl struct {
 	Factories
 	config.Config
 
-	queue       workqueue.RateLimitingInterface
-	tprInformer cache.SharedIndexInformer
-	podInformer cache.SharedIndexInformer
+	queue           workqueue.RateLimitingInterface
+	klusterInformer cache.SharedIndexInformer
+	podInformer     cache.SharedIndexInformer
 }
 
 func NewGroundController(factories Factories, clients Clients, config config.Config) *GroundControl {
 	operator := &GroundControl{
-		Clients:     clients,
-		Factories:   factories,
-		Config:      config,
-		queue:       workqueue.NewRateLimitingQueue(workqueue.NewItemExponentialFailureRateLimiter(5*time.Second, 300*time.Second)),
-		tprInformer: factories.Kubernikus.Kubernikus().V1().Klusters().Informer(),
-		podInformer: factories.Kubernetes.Core().V1().Pods().Informer(),
+		Clients:         clients,
+		Factories:       factories,
+		Config:          config,
+		queue:           workqueue.NewRateLimitingQueue(workqueue.NewItemExponentialFailureRateLimiter(5*time.Second, 300*time.Second)),
+		klusterInformer: factories.Kubernikus.Kubernikus().V1().Klusters().Informer(),
+		podInformer:     factories.Kubernetes.Core().V1().Pods().Informer(),
 	}
 
-	operator.tprInformer.AddEventHandler(cache.ResourceEventHandlerFuncs{
+	operator.klusterInformer.AddEventHandler(cache.ResourceEventHandlerFuncs{
 		AddFunc:    operator.klusterAdd,
 		UpdateFunc: operator.klusterUpdate,
 		DeleteFunc: operator.klusterTerminate,
@@ -118,58 +118,58 @@ func (op *GroundControl) processNextWorkItem() bool {
 }
 
 func (op *GroundControl) handler(key string) error {
-	obj, exists, err := op.tprInformer.GetIndexer().GetByKey(key)
+	obj, exists, err := op.klusterInformer.GetIndexer().GetByKey(key)
 	if err != nil {
 		return fmt.Errorf("Failed to fetch key %s from cache: %s", key, err)
 	}
 	if !exists {
-		glog.Infof("TPR of kluster %s deleted", key)
+		glog.Infof("kluster resource %s deleted", key)
 	} else {
-		tpr := obj.(*v1.Kluster)
-		glog.V(5).Infof("Handling kluster %v in state %q", tpr.Name, tpr.Status.Kluster.State)
+		kluster := obj.(*v1.Kluster)
+		glog.V(5).Infof("Handling kluster %v in state %q", kluster.Name, kluster.Status.Kluster.State)
 
-		switch state := tpr.Status.Kluster.State; state {
+		switch state := kluster.Status.Kluster.State; state {
 		case v1.KlusterPending:
 			{
-				if op.requiresOpenstackInfo(tpr) {
-					if err := op.discoverOpenstackInfo(tpr); err != nil {
-						glog.Errorf("[%v] Discovery of openstack parameters failed: %s", tpr.GetName(), err)
-						if err := op.updateStatus(tpr, v1.KlusterError, err.Error()); err != nil {
-							glog.Errorf("Failed to update status of kluster %s:%s", tpr.GetName(), err)
+				if op.requiresOpenstackInfo(kluster) {
+					if err := op.discoverOpenstackInfo(kluster); err != nil {
+						glog.Errorf("[%v] Discovery of openstack parameters failed: %s", kluster.GetName(), err)
+						if err := op.updateStatus(kluster, v1.KlusterError, err.Error()); err != nil {
+							glog.Errorf("Failed to update status of kluster %s:%s", kluster.GetName(), err)
 						}
 						return err
 					}
 					return nil
 				}
 
-				if op.requiresKubernikusInfo(tpr) {
-					if err := op.discoverKubernikusInfo(tpr); err != nil {
-						glog.Errorf("[%v] Discovery of kubernikus parameters failed: %s", tpr.GetName(), err)
-						if err := op.updateStatus(tpr, v1.KlusterError, err.Error()); err != nil {
-							glog.Errorf("Failed to update status of kluster %s:%s", tpr.GetName(), err)
+				if op.requiresKubernikusInfo(kluster) {
+					if err := op.discoverKubernikusInfo(kluster); err != nil {
+						glog.Errorf("[%v] Discovery of kubernikus parameters failed: %s", kluster.GetName(), err)
+						if err := op.updateStatus(kluster, v1.KlusterError, err.Error()); err != nil {
+							glog.Errorf("Failed to update status of kluster %s:%s", kluster.GetName(), err)
 						}
 						return err
 					}
 					return nil
 				}
 
-				glog.Infof("Creating Kluster %s", tpr.GetName())
-				if err := op.updateStatus(tpr, v1.KlusterCreating, "Creating Cluster"); err != nil {
-					glog.Errorf("Failed to update status of kluster %s:%s", tpr.GetName(), err)
+				glog.Infof("Creating Kluster %s", kluster.GetName())
+				if err := op.updateStatus(kluster, v1.KlusterCreating, "Creating Cluster"); err != nil {
+					glog.Errorf("Failed to update status of kluster %s:%s", kluster.GetName(), err)
 				}
 
-				if err := op.createKluster(tpr); err != nil {
-					glog.Errorf("Creating kluster %s failed: %s", tpr.GetName(), err)
-					if err := op.updateStatus(tpr, v1.KlusterError, err.Error()); err != nil {
-						glog.Errorf("Failed to update status of kluster %s:%s", tpr.GetName(), err)
+				if err := op.createKluster(kluster); err != nil {
+					glog.Errorf("Creating kluster %s failed: %s", kluster.GetName(), err)
+					if err := op.updateStatus(kluster, v1.KlusterError, err.Error()); err != nil {
+						glog.Errorf("Failed to update status of kluster %s:%s", kluster.GetName(), err)
 					}
 					//We are making this a permanent error for now to avoid stomping the parent kluster
 					return nil
 				}
-				glog.Infof("Kluster %s created", tpr.GetName())
+				glog.Infof("Kluster %s created", kluster.GetName())
 			}
 		case v1.KlusterCreating:
-			pods, err := op.podInformer.GetIndexer().ByIndex("kluster", tpr.GetName())
+			pods, err := op.podInformer.GetIndexer().ByIndex("kluster", kluster.GetName())
 			if err != nil {
 				return err
 			}
@@ -181,26 +181,26 @@ func (op *GroundControl) handler(key string) error {
 			}
 			glog.V(5).Infof("%d of %d pods ready for kluster %s", podsReady, len(pods), key)
 			if podsReady == 4 {
-				clientset, err := op.Clients.Satellites.ClientFor(tpr)
+				clientset, err := op.Clients.Satellites.ClientFor(kluster)
 				if err != nil {
 					return err
 				}
-				if err := ground.SeedKluster(clientset); err != nil {
+				if err := ground.SeedKluster(clientset, kluster); err != nil {
 					return err
 				}
-				if err := op.updateStatus(tpr, v1.KlusterReady, ""); err != nil {
-					glog.Errorf("Failed to update status of kluster %s:%s", tpr.GetName(), err)
+				if err := op.updateStatus(kluster, v1.KlusterReady, ""); err != nil {
+					glog.Errorf("Failed to update status of kluster %s:%s", kluster.GetName(), err)
 				}
-				glog.Infof("Kluster %s is ready!", tpr.GetName())
+				glog.Infof("Kluster %s is ready!", kluster.GetName())
 			}
 		case v1.KlusterTerminating:
 			{
-				glog.Infof("Terminating Kluster %s", tpr.GetName())
-				if err := op.terminateKluster(tpr); err != nil {
-					glog.Errorf("Failed to terminate kluster %s: %s", tpr.Name, err)
+				glog.Infof("Terminating Kluster %s", kluster.GetName())
+				if err := op.terminateKluster(kluster); err != nil {
+					glog.Errorf("Failed to terminate kluster %s: %s", kluster.Name, err)
 					return err
 				}
-				glog.Infof("Terminated kluster %s", tpr.GetName())
+				glog.Infof("Terminated kluster %s", kluster.GetName())
 				return nil
 			}
 		}
@@ -214,7 +214,7 @@ func (op *GroundControl) klusterAdd(obj interface{}) {
 	if err != nil {
 		return
 	}
-	glog.Infof("Added kluster TPR %s", key)
+	glog.Infof("Added kluster resource %s", key)
 	op.queue.Add(key)
 }
 
@@ -224,7 +224,7 @@ func (op *GroundControl) klusterTerminate(obj interface{}) {
 	if err != nil {
 		return
 	}
-	glog.Infof("Deleted kluster TPR %s", key)
+	glog.Infof("Deleted kluster resource %s", key)
 	op.queue.Add(key)
 }
 
@@ -236,38 +236,26 @@ func (op *GroundControl) klusterUpdate(cur, old interface{}) {
 		if err != nil {
 			return
 		}
-		glog.Infof("Updated kluster TPR %s", key)
+		glog.Infof("Updated kluster resource %s", key)
 		op.queue.Add(key)
 	}
 }
 
-func (op *GroundControl) updateStatus(tpr *v1.Kluster, state v1.KlusterState, message string) error {
-	//Get a fresh copy from the cache
-	op.Factories.Kubernikus.Kubernikus().V1().Klusters().Informer().GetStore()
-
-	obj, exists, err := op.tprInformer.GetStore().Get(tpr)
-	if err != nil {
-		return err
-	}
-	if !exists {
-		return fmt.Errorf("Not found cache: %#v", tpr)
-	}
-
-	kluster := obj.(*v1.Kluster)
+func (op *GroundControl) updateStatus(kluster *v1.Kluster, state v1.KlusterState, message string) error {
 
 	//Never modify the cache, at leasts thats what I've been told
-	tpr, err = op.Clients.Kubernikus.Kubernikus().Klusters(kluster.Namespace).Get(kluster.Name, metav1.GetOptions{})
+	kluster, err := op.Clients.Kubernikus.Kubernikus().Klusters(kluster.Namespace).Get(kluster.Name, metav1.GetOptions{})
 	if err != nil {
 		return err
 	}
-	tpr.Status.Kluster.Message = message
-	tpr.Status.Kluster.State = state
+	kluster.Status.Kluster.Message = message
+	kluster.Status.Kluster.State = state
 
-	_, err = op.Clients.Kubernikus.Kubernikus().Klusters(tpr.Namespace).Update(tpr)
+	_, err = op.Clients.Kubernikus.Kubernikus().Klusters(kluster.Namespace).Update(kluster)
 	return err
 }
 
-func (op *GroundControl) createKluster(tpr *v1.Kluster) error {
+func (op *GroundControl) createKluster(kluster *v1.Kluster) error {
 	accessMode, err := kubernetes.PVAccessMode(op.Clients.Kubernetes)
 	if err != nil {
 		return fmt.Errorf("Couldn't determine access mode for pvc: %s", err)
@@ -278,9 +266,12 @@ func (op *GroundControl) createKluster(tpr *v1.Kluster) error {
 		return fmt.Errorf("Couldn't determine kubernikus api from service catalog: %s", err)
 	}
 
-	certificates := util.CreateCertificates(tpr, apiURL, op.Config.Openstack.AuthURL, op.Config.Kubernikus.Domain)
+	certificates, err := util.CreateCertificates(kluster, apiURL, op.Config.Openstack.AuthURL, op.Config.Kubernikus.Domain)
+	if err != nil {
+		return fmt.Errorf("Failed to generate certificates: %s", err)
+	}
 	bootstrapToken := util.GenerateBootstrapToken()
-	username := fmt.Sprintf("kubernikus-%s", tpr.Name)
+	username := fmt.Sprintf("kubernikus-%s", kluster.Name)
 	password, err := goutils.Random(20, 32, 127, true, true)
 	if err != nil {
 		return fmt.Errorf("Failed to generate password: %s", err)
@@ -296,7 +287,7 @@ func (op *GroundControl) createKluster(tpr *v1.Kluster) error {
 		username,
 		password,
 		domain,
-		tpr.Spec.Openstack.ProjectID,
+		kluster.Spec.Openstack.ProjectID,
 	); err != nil {
 		return err
 	}
@@ -309,19 +300,19 @@ func (op *GroundControl) createKluster(tpr *v1.Kluster) error {
 		Region:     region,
 	}
 
-	rawValues, err := helm_util.KlusterToHelmValues(tpr, options, certificates, bootstrapToken, accessMode)
+	rawValues, err := helm_util.KlusterToHelmValues(kluster, options, certificates, bootstrapToken, accessMode)
 	if err != nil {
 		return err
 	}
-	glog.Infof("Installing helm release %s", tpr.GetName())
+	glog.Infof("Installing helm release %s", kluster.GetName())
 	glog.V(3).Infof("Chart values:\n%s", string(rawValues))
 
-	_, err = op.Clients.Helm.InstallRelease(path.Join(op.Config.Helm.ChartDirectory, "kube-master"), tpr.Namespace, helm.ValueOverrides(rawValues), helm.ReleaseName(tpr.GetName()))
+	_, err = op.Clients.Helm.InstallRelease(path.Join(op.Config.Helm.ChartDirectory, "kube-master"), kluster.Namespace, helm.ValueOverrides(rawValues), helm.ReleaseName(kluster.GetName()))
 	return err
 }
 
-func (op *GroundControl) terminateKluster(tpr *v1.Kluster) error {
-	if secret, err := op.Clients.Kubernetes.CoreV1().Secrets(tpr.Namespace).Get(tpr.GetName(), metav1.GetOptions{}); !apierrors.IsNotFound(err) {
+func (op *GroundControl) terminateKluster(kluster *v1.Kluster) error {
+	if secret, err := op.Clients.Kubernetes.CoreV1().Secrets(kluster.Namespace).Get(kluster.GetName(), metav1.GetOptions{}); !apierrors.IsNotFound(err) {
 		if err != nil {
 			return err
 		}
@@ -334,16 +325,16 @@ func (op *GroundControl) terminateKluster(tpr *v1.Kluster) error {
 		}
 	}
 
-	glog.Infof("Deleting helm release %s", tpr.GetName())
-	_, err := op.Clients.Helm.DeleteRelease(tpr.GetName(), helm.DeletePurge(true))
-	if err != nil && !strings.Contains(grpc.ErrorDesc(err), fmt.Sprintf(`release: "%s" not found`, tpr.GetName())) {
+	glog.Infof("Deleting helm release %s", kluster.GetName())
+	_, err := op.Clients.Helm.DeleteRelease(kluster.GetName(), helm.DeletePurge(true))
+	if err != nil && !strings.Contains(grpc.ErrorDesc(err), fmt.Sprintf(`release: "%s" not found`, kluster.GetName())) {
 		return err
 	}
 
 	return op.Clients.Kubernikus.Discovery().RESTClient().Delete().AbsPath("apis/kubernikus.sap.cc/v1").
-		Namespace(tpr.Namespace).
+		Namespace(kluster.Namespace).
 		Resource("klusters").
-		Name(tpr.Name).
+		Name(kluster.Name).
 		Do().
 		Error()
 }

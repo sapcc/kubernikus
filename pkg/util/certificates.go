@@ -164,8 +164,12 @@ func (c Certificates) all() []Bundle {
 	}
 }
 
-func CreateCertificates(kluster *v1.Kluster, apiURL, authURL, domain string) map[string]string {
+func CreateCertificates(kluster *v1.Kluster, apiURL, authURL, domain string) (map[string]string, error) {
 	certs := &Certificates{}
+	apiIP, err := kluster.ApiServiceIP()
+	if err != nil {
+		return nil, err
+	}
 	createCA(kluster.Name, "Etcd Clients", &certs.Etcd.Clients.CA)
 	createCA(kluster.Name, "Etcd Peers", &certs.Etcd.Peers.CA)
 	createCA(kluster.Name, "ApiServer Clients", &certs.ApiServer.Clients.CA)
@@ -185,11 +189,11 @@ func CreateCertificates(kluster *v1.Kluster, apiURL, authURL, domain string) map
 	certs.Kubelet.Clients.ApiServer = certs.signKubeletClient("apiserver")
 	certs.TLS.ApiServer = certs.signTLS("apiserver",
 		[]string{"kubernetes", "kubernetes.default", "apiserver", kluster.Name, fmt.Sprintf("%v.%v", kluster.Name, domain)},
-		[]net.IP{net.IPv4(127, 0, 0, 1), net.IPv4(198, 18, 128, 1)}) // TODO: Make ServiceCidr Configurable
+		[]net.IP{net.IPv4(127, 0, 0, 1), apiIP})
 	certs.TLS.Wormhole = certs.signTLS("wormhole",
 		[]string{fmt.Sprintf("%v-wormhole.%v", kluster.Name, domain)}, []net.IP{})
 
-	return certs.toMap()
+	return certs.toMap(), nil
 }
 
 func (c Certificates) signEtcdClient(name string) Bundle {

@@ -31,7 +31,7 @@ func (d *createCluster) Handle(params operations.CreateClusterParams, principal 
 	}
 
 	var nodePools []v1.NodePool
-	if params.Body.Spec != nil && params.Body.Spec.NodePools != nil {
+	if params.Body.Spec.NodePools != nil {
 		nodePools = []v1.NodePool{}
 		for i, _ := range params.Body.Spec.NodePools {
 			nodePools = append(nodePools, v1.NodePool{
@@ -44,8 +44,10 @@ func (d *createCluster) Handle(params operations.CreateClusterParams, principal 
 	}
 
 	kluster, err := kubernikus.NewKlusterFactory().KlusterFor(v1.KlusterSpec{
-		Name:      name,
-		NodePools: nodePools,
+		Name:        name,
+		ServiceCIDR: params.Body.Spec.ServiceCIDR,
+		ClusterCIDR: params.Body.Spec.ClusterCIDR,
+		NodePools:   nodePools,
 	})
 
 	kluster.ObjectMeta = metav1.ObjectMeta{
@@ -63,5 +65,5 @@ func (d *createCluster) Handle(params operations.CreateClusterParams, principal 
 		return NewErrorResponse(&operations.CreateClusterDefault{}, 500, err.Error())
 	}
 
-	return operations.NewCreateClusterCreated().WithPayload(clusterModelFromTPR(kluster))
+	return operations.NewCreateClusterCreated().WithPayload(clusterModelFromCRD(kluster))
 }

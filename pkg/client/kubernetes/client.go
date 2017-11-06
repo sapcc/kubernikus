@@ -4,17 +4,19 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"reflect"
 	"sync"
 	"time"
 
 	"github.com/golang/glog"
+	apiextensionsv1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
+	apiextensionsclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	apiutilerrors "k8s.io/apimachinery/pkg/util/errors"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/kubernetes"
 	typedv1 "k8s.io/client-go/kubernetes/typed/core/v1"
-	"k8s.io/client-go/pkg/api/v1"
-	"k8s.io/client-go/pkg/apis/extensions/v1beta1"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/clientcmd"
@@ -160,35 +162,55 @@ func NewClientConfigV1(name, user, url string, key, cert, ca []byte) clientcmdap
 	}
 }
 
-func EnsureTPR(clientset kubernetes.Interface) error {
-	tpr := &v1beta1.ThirdPartyResource{
+func EnsureCRD(clientset apiextensionsclient.Interface) error {
+	klusterCRDName := kubernikus_v1.KlusterResourcePlural + "." + kubernikus_v1.GroupName
+	crd := &apiextensionsv1beta1.CustomResourceDefinition{
 		ObjectMeta: metav1.ObjectMeta{
-			Name: "kluster." + kubernikus_v1.GroupName,
+			Name: klusterCRDName,
 		},
-		Versions: []v1beta1.APIVersion{
-			{Name: v1.SchemeGroupVersion.Version},
+		Spec: apiextensionsv1beta1.CustomResourceDefinitionSpec{
+			Group:   kubernikus_v1.GroupName,
+			Version: kubernikus_v1.SchemeGroupVersion.Version,
+			Scope:   apiextensionsv1beta1.NamespaceScoped,
+			Names: apiextensionsv1beta1.CustomResourceDefinitionNames{
+				Plural: kubernikus_v1.KlusterResourcePlural,
+				Kind:   reflect.TypeOf(kubernikus_v1.Kluster{}).Name(),
+			},
 		},
-		Description: "Managed kubernetes cluster",
 	}
-
-	_, err := clientset.ExtensionsV1beta1().ThirdPartyResources().Create(tpr)
+	_, err := clientset.ApiextensionsV1beta1().CustomResourceDefinitions().Create(crd)
+	//TODO: Should this error if it already exit?
 	if err != nil && !apierrors.IsAlreadyExists(err) {
 		return err
 	}
-	return nil
-}
-
-func WaitForTPR(clientset kubernetes.Interface) error {
-	return wait.Poll(100*time.Millisecond, 30*time.Second, func() (bool, error) {
-		_, err := clientset.ExtensionsV1beta1().ThirdPartyResources().Get("kluster."+kubernikus_v1.GroupName, metav1.GetOptions{})
-		if err == nil {
-			return true, nil
+	// wait for CRD being established
+	err = wait.Poll(500*time.Millisecond, 60*time.Second, func() (bool, error) {
+		crd, err = clientset.ApiextensionsV1beta1().CustomResourceDefinitions().Get(klusterCRDName, metav1.GetOptions{})
+		if err != nil {
+			return false, err
 		}
-		if apierrors.IsNotFound(err) {
-			return false, nil
+		for _, cond := range crd.Status.Conditions {
+			switch cond.Type {
+			case apiextensionsv1beta1.Established:
+				if cond.Status == apiextensionsv1beta1.ConditionTrue {
+					return true, err
+				}
+			case apiextensionsv1beta1.NamesAccepted:
+				if cond.Status == apiextensionsv1beta1.ConditionFalse {
+					glog.Errorf("Name conflict: %v\n", cond.Reason)
+				}
+			}
 		}
 		return false, err
 	})
+	if err != nil {
+		deleteErr := clientset.ApiextensionsV1beta1().CustomResourceDefinitions().Delete(klusterCRDName, nil)
+		if deleteErr != nil {
+			return apiutilerrors.NewAggregate([]error{err, deleteErr})
+		}
+		return err
+	}
+	return nil
 }
 
 func WaitForServer(client kubernetes.Interface, stopCh <-chan struct{}) error {

@@ -1,6 +1,9 @@
 package v1
 
 import (
+	"net"
+
+	"github.com/sapcc/kubernikus/pkg/util/ip"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -90,4 +93,17 @@ func (spec KlusterSpec) Validate() error {
 
 func (spec Kluster) Account() string {
 	return spec.ObjectMeta.Labels["account"]
+}
+
+func (spec Kluster) ApiServiceIP() (net.IP, error) {
+	_, ipnet, err := net.ParseCIDR(spec.Spec.ServiceCIDR)
+	if err != nil {
+		return nil, err
+	}
+	ip, err := ip.GetIndexedIP(ipnet, 1)
+	if err != nil {
+		return nil, err
+	}
+	return ip, nil
+
 }

@@ -17,23 +17,28 @@ BUILD_ARGS+= --build-arg http_proxy=$(http_proxy) --build-arg https_proxy=$(http
 endif
 
 HAS_GLIDE := $(shell command -v glide;)
-HAS_SWAGGER := $(shell command -v swagger;)
+GO_SWAGGER_VERSION := 0.11.0
+SWAGGER_BIN        := bin/$(GOOS)/swagger-$(GO_SWAGGER_VERSION)
 
 .PHONY: all clean code-gen client-gen informer-gen lister-gen
 
 all: $(BINARIES:%=bin/$(GOOS)/%)
 
+bin/$(GOOS)/swagger-%:
+	curl -f -z $@ -o $@ -L'#' https://github.com/go-swagger/go-swagger/releases/download/$*/swagger_$(GOOS)_amd64
+	chmod +x $@
+
 bin/%: $(GOFILES) Makefile
 	GOOS=$(*D) GOARCH=amd64 go build $(GOFLAGS) -v -i -o $(@D)/$(@F) ./cmd/$(@F)
 
-build: 
+build:
 	docker build $(BUILD_ARGS) -t sapcc/kubernikus-binaries:$(VERSION)     -f Dockerfile.kubernikus-binaries .
 	docker build $(BUILD_ARGS) -t sapcc/kubernikus-docs-builder:$(VERSION) --cache-from=sapcc/kubernikus-docs-builder:latest ./contrib/kubernikus-docs-builder
 	docker build $(BUILD_ARGS) -t sapcc/kubernikus-kubectl:$(VERSION)      --cache-from=sapcc/kubernikus-kubectl:latest      ./contrib/kubernikus-kubectl
 	docker build $(BUILD_ARGS) -t sapcc/kubernikusctl:$(VERSION)                                                             ./contrib/kubernikusctl
 	docker build $(BUILD_ARGS) -t sapcc/kubernikus-docs:$(VERSION)         -f Dockerfile.kubernikus-docs .
 	docker build $(BUILD_ARGS) -t sapcc/kubernikus:$(VERSION)              -f Dockerfile .
-	
+
 pull:
 	docker pull sapcc/kubernikus-docs-builder:latest
 	docker pull sapcc/kubernikus-kubectl:latest
@@ -44,11 +49,11 @@ tag:
 	docker tag sapcc/kubernikus-kubectl:$(VERSION) sapcc/kubernikus-kubectl:latest
 
 push:
-	docker push sapcc/kubernikus:$(VERSION)   
+	docker push sapcc/kubernikus:$(VERSION)
 	docker push sapcc/kubernikus:latest
-	docker push sapcc/kubernikusctl:$(VERSION)   
+	docker push sapcc/kubernikusctl:$(VERSION)
 	docker push sapcc/kubernikusctl:latest
-	docker push sapcc/kubernikus-kubectl:$(VERSION)   
+	docker push sapcc/kubernikus-kubectl:$(VERSION)
 	docker push sapcc/kubernikus-kubectl:latest
 
 gh-pages:
@@ -57,19 +62,28 @@ gh-pages:
 	docker rm gh-pages
 
 pkg/api/rest/operations/kubernikus_api.go: swagger.yml
-ifndef HAS_SWAGGER
-	$(error You need to have go-swagger installed. Run make bootstrap to fix.)
-endif
-	swagger generate server --name kubernikus --target pkg/api --model-package models \
+ifneq (,$(wildcard $(SWAGGER_BIN)))
+	$(SWAGGER_BIN) generate server --name kubernikus --target pkg/api --model-package models \
 		--server-package rest --flag-strategy pflag --principal models.Principal --exclude-main
+else
+	$(warning WARNING: $(SWAGGER_BIN) missing. Run `make bootstrap` to fix.)
+endif
+
 
 swagger-generate:
 	make -B pkg/api/rest/operations/kubernikus_api.go
 
 # --existing-models github.com/sapcc/kubernikus/pkg/api/models seems not to work in our case
-swagger-generate-client:
-	swagger generate client --name kubernikus --target pkg/client --client-package kubernikus_generated \
+pkg/client/kubernikus_generated/kubernikus_client.go: swagger.yml
+ifneq (,$(wildcard $(SWAGGER_BIN)))
+	$(SWAGGER_BIN) generate client --name kubernikus --target pkg/client --client-package kubernikus_generated \
 	      --principal models.Principal
+else
+	$(warning WARNING: $(SWAGGER_BIN) missing. Run `make bootstrap` to fix.)
+endif
+
+swagger-generate-client:
+	make -B pkg/client/kubernikus_generated/kubernikus_client.go
 
 clean:
 	rm -rf bin/*
@@ -77,11 +91,7 @@ clean:
 include code-generate.mk
 code-gen: client-gen informer-gen lister-gen
 
-bootstrap:
+bootstrap: $(SWAGGER_BIN)
 ifndef HAS_GLIDE
 	brew install glide
-endif
-ifndef HAS_SWAGGER
-	brew tap go-swagger/go-swagger
-	brew install go-swagger
 endif

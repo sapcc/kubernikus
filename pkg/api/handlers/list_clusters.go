@@ -18,15 +18,15 @@ type listClusters struct {
 
 func (d *listClusters) Handle(params operations.ListClustersParams, principal *models.Principal) middleware.Responder {
 	listOpts := metav1.ListOptions{LabelSelector: accountSelector(principal).String()}
-	clusterList, err := d.Kubernikus.Kubernikus().Klusters(d.Namespace).List(listOpts)
+	klusterList, err := d.Kubernikus.Kubernikus().Klusters(d.Namespace).List(listOpts)
 
 	if err != nil {
 		return NewErrorResponse(&operations.ListClustersDefault{}, 500, err.Error())
 	}
 
-	clusters := make([]*models.Cluster, 0, len(clusterList.Items))
-	for _, c := range clusterList.Items {
-		clusters = append(clusters, clusterModelFromTPR(&c))
+	clusters := make([]*models.Cluster, 0, len(klusterList.Items))
+	for _, kluster := range klusterList.Items {
+		clusters = append(clusters, clusterModelFromCRD(&kluster))
 	}
 	return operations.NewListClustersOK().WithPayload(clusters)
 }
