@@ -17,6 +17,7 @@ import (
 
 // Cluster cluster
 // swagger:model Cluster
+
 type Cluster struct {
 
 	// name of the cluster
@@ -30,6 +31,12 @@ type Cluster struct {
 	// status
 	Status *ClusterStatus `json:"status,omitempty"`
 }
+
+/* polymorph Cluster name false */
+
+/* polymorph Cluster spec false */
+
+/* polymorph Cluster status false */
 
 // Validate validates this cluster
 func (m *Cluster) Validate(formats strfmt.Registry) error {
@@ -124,6 +131,7 @@ func (m *Cluster) UnmarshalBinary(b []byte) error {
 
 // ClusterSpec cluster spec
 // swagger:model ClusterSpec
+
 type ClusterSpec struct {
 
 	// CIDR Range for Pods in the cluster. Can not be updated.
@@ -137,6 +145,8 @@ type ClusterSpec struct {
 	// Pattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$
 	ServiceCIDR string `json:"serviceCIDR,omitempty"`
 }
+
+/* polymorph ClusterSpec nodePools false */
 
 // Validate validates this cluster spec
 func (m *ClusterSpec) Validate(formats strfmt.Registry) error {
@@ -236,6 +246,7 @@ func (m *ClusterSpec) UnmarshalBinary(b []byte) error {
 
 // ClusterSpecNodePoolsItems0 cluster spec node pools items0
 // swagger:model ClusterSpecNodePoolsItems0
+
 type ClusterSpecNodePoolsItems0 struct {
 
 	// flavor
@@ -256,6 +267,14 @@ type ClusterSpecNodePoolsItems0 struct {
 	// Minimum: 0
 	Size *int64 `json:"size"`
 }
+
+/* polymorph ClusterSpecNodePoolsItems0 flavor false */
+
+/* polymorph ClusterSpecNodePoolsItems0 image false */
+
+/* polymorph ClusterSpecNodePoolsItems0 name false */
+
+/* polymorph ClusterSpecNodePoolsItems0 size false */
 
 // Validate validates this cluster spec node pools items0
 func (m *ClusterSpecNodePoolsItems0) Validate(formats strfmt.Registry) error {
@@ -341,6 +360,7 @@ func (m *ClusterSpecNodePoolsItems0) UnmarshalBinary(b []byte) error {
 
 // ClusterStatus cluster status
 // swagger:model ClusterStatus
+
 type ClusterStatus struct {
 
 	// kluster
@@ -349,6 +369,10 @@ type ClusterStatus struct {
 	// node pools
 	NodePools []*ClusterStatusNodePoolsItems0 `json:"nodePools"`
 }
+
+/* polymorph ClusterStatus kluster false */
+
+/* polymorph ClusterStatus nodePools false */
 
 // Validate validates this cluster status
 func (m *ClusterStatus) Validate(formats strfmt.Registry) error {
@@ -436,6 +460,7 @@ func (m *ClusterStatus) UnmarshalBinary(b []byte) error {
 
 // ClusterStatusKluster cluster status kluster
 // swagger:model ClusterStatusKluster
+
 type ClusterStatusKluster struct {
 
 	// message
@@ -444,6 +469,10 @@ type ClusterStatusKluster struct {
 	// status of the cluster
 	State string `json:"state,omitempty"`
 }
+
+/* polymorph ClusterStatusKluster message false */
+
+/* polymorph ClusterStatusKluster state false */
 
 // Validate validates this cluster status kluster
 func (m *ClusterStatusKluster) Validate(formats strfmt.Registry) error {
@@ -475,6 +504,7 @@ func (m *ClusterStatusKluster) UnmarshalBinary(b []byte) error {
 
 // ClusterStatusNodePoolsItems0 cluster status node pools items0
 // swagger:model ClusterStatusNodePoolsItems0
+
 type ClusterStatusNodePoolsItems0 struct {
 
 	// healthy
@@ -497,6 +527,16 @@ type ClusterStatusNodePoolsItems0 struct {
 	// Required: true
 	Size *int64 `json:"size"`
 }
+
+/* polymorph ClusterStatusNodePoolsItems0 healthy false */
+
+/* polymorph ClusterStatusNodePoolsItems0 name false */
+
+/* polymorph ClusterStatusNodePoolsItems0 running false */
+
+/* polymorph ClusterStatusNodePoolsItems0 schedulable false */
+
+/* polymorph ClusterStatusNodePoolsItems0 size false */
 
 // Validate validates this cluster status node pools items0
 func (m *ClusterStatusNodePoolsItems0) Validate(formats strfmt.Registry) error {

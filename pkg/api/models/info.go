@@ -14,11 +14,14 @@ import (
 
 // Info info
 // swagger:model Info
+
 type Info struct {
 
 	// version
 	Version string `json:"version,omitempty"`
 }
+
+/* polymorph Info version false */
 
 // Validate validates this info
 func (m *Info) Validate(formats strfmt.Registry) error {

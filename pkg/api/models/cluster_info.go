@@ -16,6 +16,7 @@ import (
 
 // ClusterInfo cluster info
 // swagger:model ClusterInfo
+
 type ClusterInfo struct {
 
 	// binaries
@@ -24,6 +25,10 @@ type ClusterInfo struct {
 	// setup command
 	SetupCommand string `json:"setupCommand,omitempty"`
 }
+
+/* polymorph ClusterInfo binaries false */
+
+/* polymorph ClusterInfo setupCommand false */
 
 // Validate validates this cluster info
 func (m *ClusterInfo) Validate(formats strfmt.Registry) error {
@@ -87,6 +92,7 @@ func (m *ClusterInfo) UnmarshalBinary(b []byte) error {
 
 // ClusterInfoBinariesItems0 cluster info binaries items0
 // swagger:model ClusterInfoBinariesItems0
+
 type ClusterInfoBinariesItems0 struct {
 
 	// links
@@ -95,6 +101,10 @@ type ClusterInfoBinariesItems0 struct {
 	// name
 	Name string `json:"name,omitempty"`
 }
+
+/* polymorph ClusterInfoBinariesItems0 links false */
+
+/* polymorph ClusterInfoBinariesItems0 name false */
 
 // Validate validates this cluster info binaries items0
 func (m *ClusterInfoBinariesItems0) Validate(formats strfmt.Registry) error {
@@ -158,6 +168,7 @@ func (m *ClusterInfoBinariesItems0) UnmarshalBinary(b []byte) error {
 
 // ClusterInfoBinariesItems0LinksItems0 cluster info binaries items0 links items0
 // swagger:model ClusterInfoBinariesItems0LinksItems0
+
 type ClusterInfoBinariesItems0LinksItems0 struct {
 
 	// link
@@ -166,6 +177,10 @@ type ClusterInfoBinariesItems0LinksItems0 struct {
 	// platform
 	Platform string `json:"platform,omitempty"`
 }
+
+/* polymorph ClusterInfoBinariesItems0LinksItems0 link false */
+
+/* polymorph ClusterInfoBinariesItems0LinksItems0 platform false */
 
 // Validate validates this cluster info binaries items0 links items0
 func (m *ClusterInfoBinariesItems0LinksItems0) Validate(formats strfmt.Registry) error {

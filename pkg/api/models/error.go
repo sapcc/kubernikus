@@ -16,6 +16,7 @@ import (
 // Error the error model is a model for all the error responses coming from Kubernikus
 //
 // swagger:model error
+
 type Error struct {
 
 	// The error code
@@ -29,6 +30,12 @@ type Error struct {
 	// Required: true
 	Message *string `json:"message"`
 }
+
+/* polymorph error code false */
+
+/* polymorph error helpUrl false */
+
+/* polymorph error message false */
 
 // Validate validates this error
 func (m *Error) Validate(formats strfmt.Registry) error {

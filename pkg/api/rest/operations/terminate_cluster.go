@@ -74,4 +74,5 @@ func (o *TerminateCluster) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 
 // TerminateClusterAcceptedBody terminate cluster accepted body
 // swagger:model TerminateClusterAcceptedBody
+
 type TerminateClusterAcceptedBody interface{}
