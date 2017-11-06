@@ -1,6 +1,6 @@
 # Kubernikus
 
-[![Kubernikus](blob/assets/kubernikus.svg)](https://github.com/sapcc/kubernikus)
+[![Kubernikus](/assets/kubernikus.svg)](https://github.com/sapcc/kubernikus)
 
 [![Build Status](https://travis-ci.org/sapcc/kubernikus.svg?branch=master)](https://travis-ci.org/sapcc/kubernikus)
 [![Contributions](https://img.shields.io/badge/contributions-welcome-brightgreen.svg)](https://travis-ci.org/sapcc/kubernikus.svg?branch=master)
