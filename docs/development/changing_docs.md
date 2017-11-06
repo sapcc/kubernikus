@@ -15,11 +15,14 @@ A live preview for development can be started with:
 
 ```
 docker run --rm -ti -p 1313:1313 \
-  -v $PWD/contrib/kubernikus-docs-builder/data:/data \
-  -v $PWD/docs/:/data/content 
-  sapcc/kubernikus-docs:latest hugo server --bind 0.0.0.0
+  -v $PWD/contrib/kubernikus-docs-builder/data:/live \
+  -v $PWD/docs/:/live/content \
+  --workdir /live \
+  sapcc/kubernikus-docs:latest \
+    hugo server \
+      --bind 0.0.0.0 \
+      --baseURL "http://localhost:1313/docs" \
+      --debug
 ```
 
 The docs are then accessible locally on http://localhost:1313
-
-lkfl
