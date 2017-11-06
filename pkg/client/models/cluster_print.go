@@ -34,6 +34,23 @@ func (c *Cluster) printHuman(options printers.PrintOptions) {
 	for _, pool := range (*c).Spec.NodePools {
 		pool.print()
 	}
+	fmt.Println("Cluster node pool status: ")
+	for _, pool := range (*c).Status.NodePools {
+		pool.print()
+	}
+}
+
+func (p *ClusterStatusNodePoolsItems0) print() {
+	fmt.Print("Name: ")
+	fmt.Println(*p.Name)
+	fmt.Print("   Size: \t")
+	fmt.Println(*p.Size)
+	fmt.Print("   Running: \t")
+	fmt.Println(*p.Running)
+	fmt.Print("   Schedulable: \t")
+	fmt.Println(*p.Schedulable)
+	fmt.Print("   Healthy: \t")
+	fmt.Println(*p.Healthy)
 }
 
 func (p *ClusterSpecNodePoolsItems0) print() {
