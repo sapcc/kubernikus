@@ -40,7 +40,7 @@
 }
 
 .saplogo {
-  background: url("docs/images/sapcc.png") no-repeat;
+  background: url("images/sapcc.png") no-repeat;
   height: 50px;
   width: 100%;
   position: relative;
@@ -63,7 +63,7 @@
   text-align: center;
   font-family: "lato", sans-serif;
   font-weight: 300;
-  font-size: 20px;
+  font-size: 500px;
 }
 
 #title span {

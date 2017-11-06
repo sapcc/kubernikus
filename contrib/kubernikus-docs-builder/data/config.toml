@@ -5,6 +5,7 @@ theme = "hugo-material-docs"
 metadataformat = "yaml"
 canonifyurls = false
 googleAnalytics = ""
+sectionPagesMenu = "main"
 
 [params]
 	# Repository
@@ -31,24 +32,8 @@ googleAnalytics = ""
     	text = "Ubuntu"
     	code = "Ubuntu Mono"
 
-
 [social]
 	github  = "sapcc/kubernikus"
-
-[[menu.main]]
-	name   = "Getting Started"
-	url    = "user/"
-	weight = 10
-
-[[menu.main]]
-	name   = "Development"
-	url    = "dev/"
-	weight = 20
-
-[[menu.main]]
-	name   = "Operations"
-	url    = "ops/"
-	weight = 30
 
 [blackfriday]
 	smartypants	= true

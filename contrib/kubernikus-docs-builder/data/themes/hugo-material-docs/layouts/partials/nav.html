@@ -1,19 +1,18 @@
-{{ $currentNode := . }}
+{{ $section := .Section }}
+{{ $url := .URL }}
 
-{{ range .Site.Menus.main.ByWeight }}
+<ul>
+  {{ range .Site.Sections }}
+  <li>
+    <a  href="{{ range first 1 .Pages }}{{ .URL }}{{ end }}">{{ .Title }}</a>
 
-{{ $.Scratch.Set "currentMenuEntry" . }}
-<li>
-  {{ if .HasChildren }}
-    <span class="section">{{ .Name | title }}</span>
-    <ul>
-      {{ range .Children }}
-        {{ $.Scratch.Set "currentMenuEntry" . }}
-        {{ partial "nav_link" $currentNode }}
+    {{ if eq $section .Section }}
+    <ul class="anchor">
+      {{ range .Pages.ByWeight }}
+      <li class="anchor"><a {{ if eq $url .URL }}class="current"{{ end }} href="{{ .URL  }}">{{ .Title }}</a></li>
       {{ end }}
     </ul>
-  {{ else }}
-    {{ partial "nav_link" $currentNode }}
+    {{ end }}
+  </li>
   {{ end }}
-</li>
-{{ end }}
+</ul>
