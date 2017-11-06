@@ -55,24 +55,3 @@ func (o *ListAPIVersionsOK) WriteResponse(rw http.ResponseWriter, producer runti
 		}
 	}
 }
-
-// ListAPIVersionsUnauthorizedCode is the HTTP code returned for type ListAPIVersionsUnauthorized
-const ListAPIVersionsUnauthorizedCode int = 401
-
-/*ListAPIVersionsUnauthorized Unauthorized
-
-swagger:response listApiVersionsUnauthorized
-*/
-type ListAPIVersionsUnauthorized struct {
-}
-
-// NewListAPIVersionsUnauthorized creates ListAPIVersionsUnauthorized with default headers values
-func NewListAPIVersionsUnauthorized() *ListAPIVersionsUnauthorized {
-	return &ListAPIVersionsUnauthorized{}
-}
-
-// WriteResponse to the client
-func (o *ListAPIVersionsUnauthorized) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
-
-	rw.WriteHeader(401)
-}

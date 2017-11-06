@@ -146,7 +146,11 @@ type ClusterSpec struct {
 	ServiceCIDR string `json:"serviceCIDR,omitempty"`
 }
 
+/* polymorph ClusterSpec clusterCIDR false */
+
 /* polymorph ClusterSpec nodePools false */
+
+/* polymorph ClusterSpec serviceCIDR false */
 
 // Validate validates this cluster spec
 func (m *ClusterSpec) Validate(formats strfmt.Registry) error {

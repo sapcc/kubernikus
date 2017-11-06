@@ -36,9 +36,6 @@ func init() {
             "schema": {
               "$ref": "#/definitions/ApiVersions"
             }
-          },
-          "401": {
-            "description": "Unauthorized"
           }
         }
       }

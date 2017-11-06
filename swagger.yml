@@ -37,8 +37,6 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/ApiVersions'
-        '401':
-          description: Unauthorized
   /api/v1/clusters/:
     get:
       operationId: ListClusters

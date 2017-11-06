@@ -32,13 +32,6 @@ func (o *ListAPIVersionsReader) ReadResponse(response runtime.ClientResponse, co
 		}
 		return result, nil
 
-	case 401:
-		result := NewListAPIVersionsUnauthorized()
-		if err := result.readResponse(response, consumer, o.formats); err != nil {
-			return nil, err
-		}
-		return nil, result
-
 	default:
 		return nil, runtime.NewAPIError("unknown error", response, response.Code())
 	}
@@ -69,27 +62,6 @@ func (o *ListAPIVersionsOK) readResponse(response runtime.ClientResponse, consum
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
 		return err
 	}
-
-	return nil
-}
-
-// NewListAPIVersionsUnauthorized creates a ListAPIVersionsUnauthorized with default headers values
-func NewListAPIVersionsUnauthorized() *ListAPIVersionsUnauthorized {
-	return &ListAPIVersionsUnauthorized{}
-}
-
-/*ListAPIVersionsUnauthorized handles this case with default header values.
-
-Unauthorized
-*/
-type ListAPIVersionsUnauthorized struct {
-}
-
-func (o *ListAPIVersionsUnauthorized) Error() string {
-	return fmt.Sprintf("[GET /api/][%d] listApiVersionsUnauthorized ", 401)
-}
-
-func (o *ListAPIVersionsUnauthorized) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
 	return nil
 }
