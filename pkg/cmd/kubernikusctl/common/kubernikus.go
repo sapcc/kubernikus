@@ -7,9 +7,9 @@ import (
 	"github.com/go-openapi/strfmt"
 	"github.com/pkg/errors"
 
-	kubernikus "github.com/sapcc/kubernikus/pkg/client/kubernikus_generated"
-	"github.com/sapcc/kubernikus/pkg/client/kubernikus_generated/operations"
-	"github.com/sapcc/kubernikus/pkg/client/models"
+	kubernikus "github.com/sapcc/kubernikus/pkg/api/client"
+	"github.com/sapcc/kubernikus/pkg/api/client/operations"
+	"github.com/sapcc/kubernikus/pkg/api/models"
 )
 
 type KubernikusClient struct {

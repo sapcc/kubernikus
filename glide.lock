@@ -1,5 +1,5 @@
-hash: 61d9f95dee81440023236ef21eab3ba800241b0704cd2a4fa33cd2205d6126d2
-updated: 2017-10-30T15:45:22.065702967+01:00
+hash: 3f87d7fdca10a5a46ba2b729844a4cffb0b39935f567887ee45cdfbd432dd1a5
+updated: 2017-11-06T11:36:49.796462571+01:00
 imports:
 - name: github.com/ajeddeloh/yaml
   version: 1072abfea31191db507785e2e0c1b8d1440d35a5
@@ -8,7 +8,7 @@ imports:
 - name: github.com/aokoli/goutils
   version: 3391d3790d23d03408670993e957e8f408993c34
 - name: github.com/asaskevich/govalidator
-  version: 7664702784775e51966f0885f5cd27435916517b
+  version: 73945b6115bfbbcc57d89b7316e28109364124e1
 - name: github.com/BurntSushi/toml
   version: b26d9c308763d68093482582cea63d69be07a0f0
 - name: github.com/cenkalti/backoff
@@ -72,7 +72,7 @@ imports:
 - name: github.com/ghodss/yaml
   version: 73d445a93680fa1a78ae23a5839bad48f32ba1ee
 - name: github.com/go-openapi/analysis
-  version: 7222828b8ce19afee3c595aef6643b9e42150120
+  version: 8ed83f2ea9f00f945516462951a288eaa68bf0d6
 - name: github.com/go-openapi/errors
   version: 03cfca65330da08a5a440053faf994a3c682b5bf
 - name: github.com/go-openapi/jsonpointer
@@ -82,7 +82,7 @@ imports:
 - name: github.com/go-openapi/loads
   version: a80dea3052f00e5f032e860dd7355cd0cc67e24d
 - name: github.com/go-openapi/runtime
-  version: 73a94727f26953a79ffd70902d0f24977b6297d1
+  version: bf2ff8f7150788b1c7256abb0805ba0410cbbabb
   subpackages:
   - client
   - flagext
@@ -92,13 +92,13 @@ imports:
   - middleware/untyped
   - security
 - name: github.com/go-openapi/spec
-  version: e51c28f07047ad90caff03f6450908720d337e0c
+  version: 3faa0055dbbf2110abc1f3b4e3adbb22721e96e7
 - name: github.com/go-openapi/strfmt
-  version: 93a31ef21ac23f317792fff78f9539219dd74619
+  version: 610b6cacdcde6852f4de68998bd20ce1dac85b22
 - name: github.com/go-openapi/swag
-  version: e43299b4afa7bc7f22e5e82e3d48607230e4c177
+  version: f3f9494671f93fcff853e3c6e9e948b3eb71e590
 - name: github.com/go-openapi/validate
-  version: 035dcd74f1f61e83debe1c22950dc53556e7e4b2
+  version: 8a82927c942c94794a5cd8b8b50ce2f48a955c0c
 - name: github.com/gobwas/glob
   version: bea32b9cd2d6f55753d94a28e959b13f0244797a
   subpackages:
@@ -168,7 +168,7 @@ imports:
 - name: github.com/kennygrant/sanitize
   version: 6a0bfdde8629a3a3a7418a7eae45c54154692514
 - name: github.com/mailru/easyjson
-  version: 44c0351a5bc860bcb2608d54aa03ea686c4e7b25
+  version: 2a92e673c9a6302dd05c3a691ae1f24aef46457d
   subpackages:
   - buffer
   - jlexer
@@ -186,9 +186,9 @@ imports:
 - name: github.com/pmylund/go-cache
   version: 93d85800f2fa6bd0a739e7bd612bfa3bc008b72d
 - name: github.com/PuerkitoBio/purell
-  version: 8a290539e2e8629dbc4e6bad948158f790ec31f4
+  version: 0bcb03f4b4d0a9428594752bd2a3b9aa0a9d4bd4
 - name: github.com/PuerkitoBio/urlesc
-  version: 5bd2802263f21d8788851d5305584c82a5c75d7e
+  version: de5bf2ad457846296e2031421a34e2568e304e35
 - name: github.com/rs/cors
   version: eabcc6af4bbe5ad3a949d36450326a2b0b9894b8
 - name: github.com/satori/go.uuid
@@ -265,9 +265,15 @@ imports:
   - bson
   - internal/json
 - name: gopkg.in/yaml.v2
-  version: 53feefa2559fb8dfa8d81baad31be332c97d6c77
+  version: eb3733d160e74a9c7e442f435eb3bea458e1d19f
 - name: k8s.io/apiextensions-apiserver
   version: fcd622fe88a4a6efcb5aea9e94ee87324ac1b036
+  subpackages:
+  - pkg/apis/apiextensions
+  - pkg/apis/apiextensions/v1beta1
+  - pkg/client/clientset/clientset
+  - pkg/client/clientset/clientset/scheme
+  - pkg/client/clientset/clientset/typed/apiextensions/v1beta1
 - name: k8s.io/apimachinery
   version: 917740426ad66ff818da4809990480bcc0786a77
   subpackages:

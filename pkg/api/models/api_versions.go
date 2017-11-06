@@ -15,12 +15,15 @@ import (
 
 // APIVersions Api versions
 // swagger:model ApiVersions
+
 type APIVersions struct {
 
 	// versions are the api versions that are available.
 	// Required: true
 	Versions []string `json:"versions"`
 }
+
+/* polymorph ApiVersions versions false */
 
 // Validate validates this Api versions
 func (m *APIVersions) Validate(formats strfmt.Registry) error {

@@ -69,6 +69,9 @@ func NewKubernikusAPI(spec *loads.Document) *KubernikusAPI {
 		KeystoneAuth: func(token string) (*models.Principal, error) {
 			return nil, errors.NotImplemented("api key auth (keystone) x-auth-token from header param [x-auth-token] has not yet been implemented")
 		},
+
+		// default authorizer is authorized meaning no requests are blocked
+		APIAuthorizer: security.Authorized(),
 	}
 }
 
@@ -101,6 +104,9 @@ type KubernikusAPI struct {
 	// KeystoneAuth registers a function that takes a token and returns a principal
 	// it performs authentication based on an api key x-auth-token provided in the header
 	KeystoneAuth func(string) (*models.Principal, error)
+
+	// APIAuthorizer provides access control (ACL/RBAC/ABAC) by providing access to the request and authenticated principal
+	APIAuthorizer runtime.Authorizer
 
 	// CreateClusterHandler sets the operation handler for the create cluster operation
 	CreateClusterHandler CreateClusterHandler
@@ -251,6 +257,13 @@ func (o *KubernikusAPI) AuthenticatorsFor(schemes map[string]spec.SecurityScheme
 		}
 	}
 	return result
+
+}
+
+// Authorizer returns the registered authorizer
+func (o *KubernikusAPI) Authorizer() runtime.Authorizer {
+
+	return o.APIAuthorizer
 
 }
 

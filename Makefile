@@ -17,7 +17,7 @@ BUILD_ARGS+= --build-arg http_proxy=$(http_proxy) --build-arg https_proxy=$(http
 endif
 
 HAS_GLIDE := $(shell command -v glide;)
-GO_SWAGGER_VERSION := 0.11.0
+GO_SWAGGER_VERSION := 0.12.0
 SWAGGER_BIN        := bin/$(GOOS)/swagger-$(GO_SWAGGER_VERSION)
 
 .PHONY: all clean code-gen client-gen informer-gen lister-gen
@@ -76,8 +76,9 @@ swagger-generate:
 # --existing-models github.com/sapcc/kubernikus/pkg/api/models seems not to work in our case
 pkg/client/kubernikus_generated/kubernikus_client.go: swagger.yml
 ifneq (,$(wildcard $(SWAGGER_BIN)))
-	$(SWAGGER_BIN) generate client --name kubernikus --target pkg/client --client-package kubernikus_generated \
-	      --principal models.Principal
+	$(SWAGGER_BIN) generate client --name kubernikus --target pkg/api --client-package client \
+		--existing-models github.com/sapcc/kubernikus/pkg/api/models \
+		--principal models.Principal
 else
 	$(warning WARNING: $(SWAGGER_BIN) missing. Run `make bootstrap` to fix.)
 endif
