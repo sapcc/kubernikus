@@ -56,24 +56,24 @@
 
 #title {
   position: relative;
-  top: 20px;
-  left: 0;
-  right: 0;
+  top: 25px;
   color: #FFF;
   text-align: center;
-  font-family: "lato", sans-serif;
+  font-family: "Source Sans Pro";
   font-weight: 300;
-  font-size: 500px;
 }
 
 #title span {
-  background: -webkit-linear-gradient(white, #38495a);
+  background: -webkit-linear-gradient(white, lightblue);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+  font-size: 35px;
+  line-height: 0.9em
 }
 
 #title span.bigger {
-  font-size: 60px;
+  font-size: 73px;
+  font-weight: 700;
 }
 
 @keyframes animStar {
