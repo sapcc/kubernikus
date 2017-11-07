@@ -3,8 +3,8 @@ package certificates
 import (
 	"errors"
 
+	"github.com/sapcc/kubernikus/pkg/api/models"
 	"github.com/sapcc/kubernikus/pkg/apis/kubernikus"
-	"github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
 	"github.com/sapcc/kubernikus/pkg/util"
 
 	"github.com/sapcc/kubernikus/pkg/cmd"
@@ -49,7 +49,7 @@ func (o *PlainOptions) Complete(args []string) error {
 }
 
 func (o *PlainOptions) Run(c *cobra.Command) error {
-	kluster, err := kubernikus.NewKlusterFactory().KlusterFor(v1.KlusterSpec{Name: o.Name})
+	kluster, err := kubernikus.NewKlusterFactory().KlusterFor(models.KlusterSpec{Name: o.Name})
 	if err != nil {
 		return err
 	}

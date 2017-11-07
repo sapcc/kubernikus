@@ -56,7 +56,7 @@ func (k *KubernikusClient) GetCredentials(name string) (string, error) {
 	return ok.Payload.Kubeconfig, nil
 }
 
-func (k *KubernikusClient) CreateCluster(cluster *models.Cluster) error {
+func (k *KubernikusClient) CreateCluster(cluster *models.Kluster) error {
 	params := operations.NewCreateClusterParams().WithBody(cluster)
 	_, err := k.client.Operations.CreateCluster(params, k.authFunc())
 	switch err.(type) {
@@ -82,7 +82,7 @@ func (k *KubernikusClient) DeleteCluster(name string) error {
 	return nil
 }
 
-func (k *KubernikusClient) ShowCluster(name string) (*models.Cluster, error) {
+func (k *KubernikusClient) ShowCluster(name string) (*models.Kluster, error) {
 	params := operations.NewShowClusterParams()
 	params.Name = name
 	ok, err := k.client.Operations.ShowCluster(params, k.authFunc())
@@ -96,7 +96,7 @@ func (k *KubernikusClient) ShowCluster(name string) (*models.Cluster, error) {
 	return ok.Payload, nil
 }
 
-func (k *KubernikusClient) ListAllClusters() ([]*models.Cluster, error) {
+func (k *KubernikusClient) ListAllClusters() ([]*models.Kluster, error) {
 	ok, err := k.client.Operations.ListClusters(operations.NewListClustersParams(), k.authFunc())
 	switch err.(type) {
 	case *operations.ListClustersDefault:
@@ -114,7 +114,7 @@ func (k *KubernikusClient) ListAllClusters() ([]*models.Cluster, error) {
 	return ok.Payload, nil
 }
 
-func (k *KubernikusClient) ListNodePools(clusterName string) ([]*models.ClusterSpecNodePoolsItems0, error) {
+func (k *KubernikusClient) ListNodePools(clusterName string) ([]models.NodePool, error) {
 	ok, err := k.ShowCluster(clusterName)
 	if err != nil {
 		return nil, err
@@ -122,20 +122,20 @@ func (k *KubernikusClient) ListNodePools(clusterName string) ([]*models.ClusterS
 	return ok.Spec.NodePools, nil
 }
 
-func (k *KubernikusClient) ShowNodePool(clusterName string, nodePoolName string) (*models.ClusterSpecNodePoolsItems0, error) {
+func (k *KubernikusClient) ShowNodePool(clusterName string, nodePoolName string) (*models.NodePool, error) {
 	ok, err := k.ShowCluster(clusterName)
 	if err != nil {
 		return nil, err
 	}
 	for _, nodePool := range ok.Spec.NodePools {
-		if *nodePool.Name == nodePoolName {
-			return nodePool, nil
+		if nodePool.Name == nodePoolName {
+			return &nodePool, nil
 		}
 	}
 	return nil, nil
 }
 
-func (k *KubernikusClient) GetDefaultCluster() (*models.Cluster, error) {
+func (k *KubernikusClient) GetDefaultCluster() (*models.Kluster, error) {
 	ok, err := k.client.Operations.ListClusters(operations.NewListClustersParams(), k.authFunc())
 
 	switch err.(type) {

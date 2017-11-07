@@ -1,8 +1,8 @@
 package handlers
 
 import (
-	"github.com/go-openapi/swag"
 	"github.com/sapcc/kubernikus/pkg/api/models"
+	"github.com/sapcc/kubernikus/pkg/api/spec"
 	"github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
 	kubernikusv1 "github.com/sapcc/kubernikus/pkg/generated/clientset/typed/kubernikus/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -10,6 +10,10 @@ import (
 
 	"fmt"
 	"strings"
+)
+
+var (
+	DEFAULT_IMAGE = spec.MustDefaultString("NodePool", "image")
 )
 
 func accountSelector(principal *models.Principal) labels.Selector {
@@ -40,47 +44,10 @@ func editCluster(client kubernikusv1.KlusterInterface, principal *models.Princip
 
 }
 
-func clusterSpecNodePoolItemsFromCRD(k *v1.Kluster) []*models.ClusterSpecNodePoolsItems0 {
-	items := make([]*models.ClusterSpecNodePoolsItems0, int64(len(k.Spec.NodePools)))
-	for i, _ := range k.Spec.NodePools {
-		items[i] = &models.ClusterSpecNodePoolsItems0{
-			Name:   &k.Spec.NodePools[i].Name,
-			Image:  k.Spec.NodePools[i].Image,
-			Flavor: &k.Spec.NodePools[i].Flavor,
-			Size:   &[]int64{int64(k.Spec.NodePools[i].Size)}[0],
-		}
-	}
-	return items
-}
-
-func clusterStatusNodePoolItemsFromCRD(k *v1.Kluster) []*models.ClusterStatusNodePoolsItems0 {
-	items := make([]*models.ClusterStatusNodePoolsItems0, int64(len(k.Status.NodePools)))
-	for i, _ := range k.Status.NodePools {
-		items[i] = &models.ClusterStatusNodePoolsItems0{
-			Name:        &k.Status.NodePools[i].Name,
-			Size:        &[]int64{int64(k.Status.NodePools[i].Size)}[0],
-			Running:     &[]int64{int64(k.Status.NodePools[i].Running)}[0],
-			Healthy:     &[]int64{int64(k.Status.NodePools[i].Healthy)}[0],
-			Schedulable: &[]int64{int64(k.Status.NodePools[i].Schedulable)}[0],
-		}
-	}
-	return items
-}
-
-func clusterModelFromCRD(k *v1.Kluster) *models.Cluster {
-	return &models.Cluster{
-		Name: swag.String(k.Spec.Name),
-		Spec: models.ClusterSpec{
-			ServiceCIDR: k.Spec.ServiceCIDR,
-			ClusterCIDR: k.Spec.ClusterCIDR,
-			NodePools:   clusterSpecNodePoolItemsFromCRD(k),
-		},
-		Status: &models.ClusterStatus{
-			Kluster: &models.ClusterStatusKluster{
-				State:   string(k.Status.Kluster.State),
-				Message: k.Status.Kluster.Message,
-			},
-			NodePools: clusterStatusNodePoolItemsFromCRD(k),
-		},
+func klusterFromCRD(k *v1.Kluster) *models.Kluster {
+	return &models.Kluster{
+		Name:   k.Spec.Name,
+		Spec:   k.Spec,
+		Status: k.Status,
 	}
 }

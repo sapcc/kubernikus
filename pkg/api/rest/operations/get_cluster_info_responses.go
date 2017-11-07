@@ -25,7 +25,7 @@ type GetClusterInfoOK struct {
 	/*
 	  In: Body
 	*/
-	Payload *models.ClusterInfo `json:"body,omitempty"`
+	Payload *models.KlusterInfo `json:"body,omitempty"`
 }
 
 // NewGetClusterInfoOK creates GetClusterInfoOK with default headers values
@@ -34,13 +34,13 @@ func NewGetClusterInfoOK() *GetClusterInfoOK {
 }
 
 // WithPayload adds the payload to the get cluster info o k response
-func (o *GetClusterInfoOK) WithPayload(payload *models.ClusterInfo) *GetClusterInfoOK {
+func (o *GetClusterInfoOK) WithPayload(payload *models.KlusterInfo) *GetClusterInfoOK {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the get cluster info o k response
-func (o *GetClusterInfoOK) SetPayload(payload *models.ClusterInfo) {
+func (o *GetClusterInfoOK) SetPayload(payload *models.KlusterInfo) {
 	o.Payload = payload
 }
 

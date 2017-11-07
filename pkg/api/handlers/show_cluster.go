@@ -28,5 +28,5 @@ func (d *showCluster) Handle(params operations.ShowClusterParams, principal *mod
 		return NewErrorResponse(&operations.ShowClusterDefault{}, 500, err.Error())
 	}
 
-	return operations.NewShowClusterOK().WithPayload(clusterModelFromCRD(kluster))
+	return operations.NewShowClusterOK().WithPayload(klusterFromCRD(kluster))
 }

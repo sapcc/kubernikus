@@ -54,7 +54,7 @@ func NewListClustersOK() *ListClustersOK {
 OK
 */
 type ListClustersOK struct {
-	Payload []*models.Cluster
+	Payload []*models.Kluster
 }
 
 func (o *ListClustersOK) Error() string {

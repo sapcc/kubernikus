@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/golang/glog"
+	"github.com/sapcc/kubernikus/pkg/api/models"
 	"github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
 	"github.com/sapcc/kubernikus/pkg/client/openstack"
 	"github.com/sapcc/kubernikus/pkg/templates"
@@ -129,7 +130,7 @@ func (launchctl *LaunchControl) reconcile(key string) error {
 	kluster := obj.(*v1.Kluster)
 	glog.V(5).Infof("[%v] Reconciling", kluster.Name)
 
-	if !(kluster.Status.Kluster.State == v1.KlusterReady || kluster.Status.Kluster.State == v1.KlusterTerminating) {
+	if !(kluster.Status.Phase == models.KlusterPhaseRunning || kluster.Status.Phase == models.KlusterPhaseTerminating) {
 		return fmt.Errorf("[%v] Kluster is not yet ready. Requeuing.", kluster.Name)
 	}
 
@@ -143,13 +144,13 @@ func (launchctl *LaunchControl) reconcile(key string) error {
 	return nil
 }
 
-func (launchctl *LaunchControl) syncPool(kluster *v1.Kluster, pool *v1.NodePool) error {
+func (launchctl *LaunchControl) syncPool(kluster *v1.Kluster, pool *models.NodePool) error {
 	nodes, err := launchctl.Clients.Openstack.GetNodes(kluster, pool)
 	if err != nil {
 		return fmt.Errorf("[%v] Couldn't list nodes for pool %v: %v", kluster.Name, pool.Name, err)
 	}
 
-	if kluster.Status.Kluster.State == v1.KlusterTerminating {
+	if kluster.Status.Phase == models.KlusterPhaseTerminating {
 		if toBeTerminated(nodes) > 0 {
 			glog.V(3).Infof("[%v] Kluster is terminating. Terminating Nodes for Pool %v.", kluster.Name, pool.Name)
 			for _, node := range nodes {
@@ -185,7 +186,7 @@ func (launchctl *LaunchControl) syncPool(kluster *v1.Kluster, pool *v1.NodePool)
 	return nil
 }
 
-func (launchctl *LaunchControl) createNode(kluster *v1.Kluster, pool *v1.NodePool) error {
+func (launchctl *LaunchControl) createNode(kluster *v1.Kluster, pool *models.NodePool) error {
 	glog.V(2).Infof("[%v] Pool %v: Creating new node", kluster.Name, pool.Name)
 
 	userdata, err := templates.Ignition.GenerateNode(kluster, launchctl.Clients.Kubernetes)
@@ -207,7 +208,7 @@ func (launchctl *LaunchControl) createNode(kluster *v1.Kluster, pool *v1.NodePoo
 	return nil
 }
 
-func (launchctl *LaunchControl) terminateNode(kluster *v1.Kluster, pool *v1.NodePool, id string) error {
+func (launchctl *LaunchControl) terminateNode(kluster *v1.Kluster, pool *models.NodePool, id string) error {
 	err := launchctl.Clients.Openstack.DeleteNode(kluster, id)
 	if err != nil {
 		return err
@@ -222,7 +223,7 @@ func (launchctl *LaunchControl) terminateNode(kluster *v1.Kluster, pool *v1.Node
 	return nil
 }
 
-func (launchctl *LaunchControl) updateNodePoolStatus(kluster *v1.Kluster, pool *v1.NodePool) error {
+func (launchctl *LaunchControl) updateNodePoolStatus(kluster *v1.Kluster, pool *models.NodePool) error {
 	nodes, err := launchctl.Clients.Openstack.GetNodes(kluster, pool)
 	if err != nil {
 		return fmt.Errorf("[%v] Couldn't list nodes for pool %v: %v", kluster.Name, pool.Name, err)
@@ -231,7 +232,7 @@ func (launchctl *LaunchControl) updateNodePoolStatus(kluster *v1.Kluster, pool *
 	running := running(nodes)
 	starting := starting(nodes)
 
-	newInfo := v1.NodePoolInfo{
+	newInfo := models.NodePoolInfo{
 		Name:        pool.Name,
 		Size:        pool.Size,
 		Running:     running + starting, // Should be running only
@@ -285,8 +286,8 @@ func (launchctl *LaunchControl) handleErr(err error, key interface{}) {
 	glog.V(5).Infof("[%v] Dropping out of the queue. Too many retries...", key)
 }
 
-func starting(nodes []openstack.Node) int {
-	count := 0
+func starting(nodes []openstack.Node) int64 {
+	var count int64 = 0
 	for _, n := range nodes {
 		if n.Starting() {
 			count = count + 1
@@ -296,8 +297,8 @@ func starting(nodes []openstack.Node) int {
 	return count
 }
 
-func running(nodes []openstack.Node) int {
-	count := 0
+func running(nodes []openstack.Node) int64 {
+	var count int64 = 0
 	for _, n := range nodes {
 		if n.Running() {
 			count = count + 1
@@ -307,8 +308,9 @@ func running(nodes []openstack.Node) int {
 	return count
 }
 
-func toBeTerminated(nodes []openstack.Node) int {
-	toBeTerminated := 0
+func toBeTerminated(nodes []openstack.Node) int64 {
+	var toBeTerminated int64 = 0
+
 	for _, n := range nodes {
 		if n.Stopping() {
 			continue

@@ -13,6 +13,8 @@ import (
 	"k8s.io/client-go/pkg/api"
 	"k8s.io/client-go/pkg/api/v1"
 	apps "k8s.io/client-go/pkg/apis/apps/v1beta1"
+
+	"github.com/sapcc/kubernikus/pkg/api/spec"
 )
 
 const (
@@ -20,7 +22,10 @@ const (
 	CONFIGMAP          = "kube-dns"
 	DEFAULT_REPOSITORY = "gcr.io/google_containers"
 	DEFAULT_VERSION    = "1.14.5"
-	DEFAULT_DOMAIN     = "cluster.local"
+)
+
+var (
+	DEFAULT_DOMAIN = spec.MustDefaultString("KlusterSpec", "clusterDNSDomain")
 )
 
 type DeploymentOptions struct {

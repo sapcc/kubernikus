@@ -25,7 +25,7 @@ type ListClustersOK struct {
 	/*
 	  In: Body
 	*/
-	Payload []*models.Cluster `json:"body,omitempty"`
+	Payload []*models.Kluster `json:"body,omitempty"`
 }
 
 // NewListClustersOK creates ListClustersOK with default headers values
@@ -34,13 +34,13 @@ func NewListClustersOK() *ListClustersOK {
 }
 
 // WithPayload adds the payload to the list clusters o k response
-func (o *ListClustersOK) WithPayload(payload []*models.Cluster) *ListClustersOK {
+func (o *ListClustersOK) WithPayload(payload []*models.Kluster) *ListClustersOK {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the list clusters o k response
-func (o *ListClustersOK) SetPayload(payload []*models.Cluster) {
+func (o *ListClustersOK) SetPayload(payload []*models.Kluster) {
 	o.Payload = payload
 }
 
@@ -50,7 +50,7 @@ func (o *ListClustersOK) WriteResponse(rw http.ResponseWriter, producer runtime.
 	rw.WriteHeader(200)
 	payload := o.Payload
 	if payload == nil {
-		payload = make([]*models.Cluster, 0, 50)
+		payload = make([]*models.Kluster, 0, 50)
 	}
 
 	if err := producer.Produce(rw, payload); err != nil {

@@ -25,7 +25,7 @@ type UpdateClusterOK struct {
 	/*
 	  In: Body
 	*/
-	Payload *models.Cluster `json:"body,omitempty"`
+	Payload *models.Kluster `json:"body,omitempty"`
 }
 
 // NewUpdateClusterOK creates UpdateClusterOK with default headers values
@@ -34,13 +34,13 @@ func NewUpdateClusterOK() *UpdateClusterOK {
 }
 
 // WithPayload adds the payload to the update cluster o k response
-func (o *UpdateClusterOK) WithPayload(payload *models.Cluster) *UpdateClusterOK {
+func (o *UpdateClusterOK) WithPayload(payload *models.Kluster) *UpdateClusterOK {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the update cluster o k response
-func (o *UpdateClusterOK) SetPayload(payload *models.Cluster) {
+func (o *UpdateClusterOK) SetPayload(payload *models.Kluster) {
 	o.Payload = payload
 }
 

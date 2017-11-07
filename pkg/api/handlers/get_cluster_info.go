@@ -18,12 +18,12 @@ type getClusterInfo struct {
 }
 
 func (d *getClusterInfo) Handle(params operations.GetClusterInfoParams, principal *models.Principal) middleware.Responder {
-	info := &models.ClusterInfo{
+	info := &models.KlusterInfo{
 		SetupCommand: createSetupCommand(principal),
-		Binaries: []*models.ClusterInfoBinariesItems0{
+		Binaries: []models.Binaries{
 			{
 				Name: "kubernikusctl",
-				Links: []*models.ClusterInfoBinariesItems0LinksItems0{
+				Links: []models.Link{
 					{
 						Platform: "darwin",
 						Link:     "static/binaries/darwin/amd64/kubernikusctl",

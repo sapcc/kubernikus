@@ -4,21 +4,23 @@ import (
 	"fmt"
 	"net"
 
+	"github.com/sapcc/kubernikus/pkg/api/models"
+	"github.com/sapcc/kubernikus/pkg/api/spec"
 	"github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
 	"github.com/sapcc/kubernikus/pkg/controller/ground/bootstrap/dns"
 	"github.com/sapcc/kubernikus/pkg/util/ip"
 	"github.com/sapcc/kubernikus/pkg/version"
 )
 
-const (
+var (
 	//Keep this in sync with the default in swagger.yaml
-	DEFAULT_CLUSTER_CIDR      = "198.19.0.0/16"
-	DEFAULT_SERVICE_CIDR      = "198.18.128.0/17"
-	DEFAULT_ADVERTISE_ADDRESS = "1.1.1.1"
+	DEFAULT_CLUSTER_CIDR      = spec.MustDefaultString("KlusterSpec", "clusterCIDR")
+	DEFAULT_SERVICE_CIDR      = spec.MustDefaultString("KlusterSpec", "serviceCIDR")
+	DEFAULT_ADVERTISE_ADDRESS = spec.MustDefaultString("KlusterSpec", "advertiseAddress")
 )
 
 type KlusterFactory interface {
-	KlusterFor(v1.KlusterSpec) (*v1.Kluster, error)
+	KlusterFor(models.KlusterSpec) (*v1.Kluster, error)
 }
 
 type klusterFactory struct {
@@ -28,18 +30,19 @@ func NewKlusterFactory() KlusterFactory {
 	return &klusterFactory{}
 }
 
-func (klusterFactory) KlusterFor(spec v1.KlusterSpec) (*v1.Kluster, error) {
+func (klusterFactory) KlusterFor(spec models.KlusterSpec) (*v1.Kluster, error) {
 	if spec.Name == "" {
 		return nil, fmt.Errorf("unabled to create cluster. missing name")
+	}
+	if spec.NodePools == nil {
+		spec.NodePools = []models.NodePool{}
 	}
 
 	k := &v1.Kluster{
 		Spec: spec,
-		Status: v1.KlusterStatus{
-			Kluster: v1.KlusterInfo{
-				State: v1.KlusterPending,
-			},
-			NodePools: []v1.NodePoolInfo{},
+		Status: models.KlusterStatus{
+			Phase:     models.KlusterPhasePending,
+			NodePools: []models.NodePoolInfo{},
 		},
 	}
 
@@ -75,12 +78,12 @@ func (klusterFactory) KlusterFor(spec v1.KlusterSpec) (*v1.Kluster, error) {
 		k.ObjectMeta.Name = spec.Name
 	}
 
-	if k.Spec.Version == "" {
-		k.Spec.Version = version.VERSION
+	if k.Status.Version == "" {
+		k.Status.Version = version.VERSION
 	}
 
 	for _, nodePool := range k.Spec.NodePools {
-		k.Status.NodePools = append(k.Status.NodePools, v1.NodePoolInfo{
+		k.Status.NodePools = append(k.Status.NodePools, models.NodePoolInfo{
 			Name:        nodePool.Name,
 			Size:        nodePool.Size,
 			Running:     0,

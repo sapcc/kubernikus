@@ -48,11 +48,11 @@ func (o *CreateOptions) clusterRun(c *cobra.Command, args []string) {
 		}
 	}
 	glog.V(2).Infof("Raw read: \n%v", string(raw))
-	var cluster models.Cluster
+	var cluster models.Kluster
 	cmd.CheckError(cluster.UnmarshalBinary(raw))
 	glog.V(2).Infof("cluster: %v", cluster)
 	cmd.CheckError(o.Kubernikus.CreateCluster(&cluster))
-	fmt.Printf("Cluster %v created.", *cluster.Name)
+	fmt.Printf("Cluster %v created.", cluster.Name)
 }
 
 func validateClusterCommandArgs(args []string) error {
