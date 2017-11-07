@@ -19,7 +19,7 @@ pluralizelisttitles = false
 	permalink = "#"
 
 	# Custom assets
-	custom_css = ["stylesheets/homepage.css"]
+	custom_css = ["stylesheets/hacks.css"]
 	custom_js  = []
 
 	# Syntax highlighting theme

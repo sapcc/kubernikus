@@ -68,6 +68,9 @@
     {{ range .Site.Params.custom_css }}
     <link rel="stylesheet" href="{{ . | absURL }}">
     {{ end }}
+    {{ with  .OutputFormats.Get "css" }}
+    <link rel="{{ .Rel }}" type="{{ .MediaType.Type }}" href="{{ .Permalink |  safeURL }}">
+    {{ end }}
     <script src="{{ "javascripts/modernizr.js" | absURL }}"></script>
 
     {{ with .RSSLink }}

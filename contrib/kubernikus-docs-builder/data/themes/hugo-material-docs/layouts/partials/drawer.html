@@ -3,7 +3,7 @@
     <div class="banner">
       {{ with .Site.Params.logo }}
         <div class="logo">
-          <img src="{{ $.Site.BaseURL }}{{ . }}">
+          <img src="{{ . | relURL }}">
         </div>
       {{ end }}
       <div class="name">

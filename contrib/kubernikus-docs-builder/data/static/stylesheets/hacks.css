@@ -1,0 +1,8 @@
+.project .logo img {
+  background: none;
+  border-radius: none;
+}
+
+.project:focus .logo img, .project:hover .logo img {
+  box-shadow: none;
+}

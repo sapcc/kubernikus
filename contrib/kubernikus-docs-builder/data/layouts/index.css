@@ -40,7 +40,7 @@
 }
 
 .saplogo {
-  background: url("images/sapcc.png") no-repeat;
+  background: url({{ "images/sapcc.png" | relURL }}) no-repeat;
   height: 50px;
   width: 100%;
   position: relative;
