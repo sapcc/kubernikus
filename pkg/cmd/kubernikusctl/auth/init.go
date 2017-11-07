@@ -122,7 +122,7 @@ func (o *InitOptions) Run(c *cobra.Command) (err error) {
 		return errors.Wrapf(err, "Couldn't merge existing kubeconfig with fetched credentials")
 	}
 
-	fmt.Printf("Wrote merged kubeconfig to %v\n", clientcmd.NewDefaultPathOptions().GetDefaultFilename())
+	fmt.Println("Wrote merged kubeconfig")
 
 	return nil
 }
@@ -166,8 +166,13 @@ func (o *InitOptions) mergeAndPersist(rawConfig string) error {
 	}
 
 	defaultPathOptions := clientcmd.NewDefaultPathOptions()
+	if o.kubeconfigPath != "" {
+		defaultPathOptions.LoadingRules.ExplicitPath = o.kubeconfigPath
+		defaultPathOptions.LoadingRules.Precedence = []string{o.kubeconfigPath}
+	}
+	glog.V(2).Infof("DefaultPathOptions: %v", defaultPathOptions)
 	if err = clientcmd.ModifyConfig(defaultPathOptions, *o.kubeconfig, false); err != nil {
-		return errors.Wrapf(err, "Couldn't merge Kubernikus config with kubeconfig at %v:", defaultPathOptions.GetDefaultFilename())
+		return errors.Wrapf(err, "Couldn't merge Kubernikus config with kubeconfig")
 	}
 
 	return nil
