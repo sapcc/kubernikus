@@ -6,6 +6,7 @@ metadataformat = "yaml"
 canonifyurls = false
 googleAnalytics = ""
 sectionPagesMenu = "main"
+pluralizelisttitles = false
 
 [params]
 	# Repository
