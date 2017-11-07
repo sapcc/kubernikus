@@ -24,9 +24,9 @@ func (d *listClusters) Handle(params operations.ListClustersParams, principal *m
 		return NewErrorResponse(&operations.ListClustersDefault{}, 500, err.Error())
 	}
 
-	clusters := make([]*models.Cluster, 0, len(klusterList.Items))
+	clusters := make([]*models.Kluster, 0, len(klusterList.Items))
 	for _, kluster := range klusterList.Items {
-		clusters = append(clusters, clusterModelFromCRD(&kluster))
+		clusters = append(clusters, klusterFromCRD(&kluster))
 	}
 	return operations.NewListClustersOK().WithPayload(clusters)
 }

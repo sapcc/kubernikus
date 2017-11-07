@@ -7,7 +7,7 @@ import (
 	"github.com/sapcc/kubernikus/pkg/cmd/printers"
 )
 
-func (c *Cluster) GetFormats() map[printers.PrintFormat]struct{} {
+func (k Kluster) GetFormats() map[printers.PrintFormat]struct{} {
 	ret := map[printers.PrintFormat]struct{}{
 		printers.Table: struct{}{},
 		printers.Human: struct{}{},
@@ -15,34 +15,34 @@ func (c *Cluster) GetFormats() map[printers.PrintFormat]struct{} {
 	return ret
 }
 
-func (c *Cluster) Print(format printers.PrintFormat, options printers.PrintOptions) error {
+func (k Kluster) Print(format printers.PrintFormat, options printers.PrintOptions) error {
 	switch format {
 	case printers.Table:
-		c.printTable(options)
+		k.printTable(options)
 	case printers.Human:
-		c.printHuman(options)
+		k.printHuman(options)
 	default:
 		return errors.Errorf("Unknown printformat models.Cluster is unable to print in format: %v", format)
 	}
 	return nil
 }
 
-func (c *Cluster) printHuman(options printers.PrintOptions) {
-	fmt.Println("Cluster name: ", *c.Name)
-	fmt.Println("Cluster state: ", (*c).Status.Kluster.State)
-	fmt.Println("Cluster CIDR: ", (*c).Spec.ClusterCIDR)
-	fmt.Println("Service CIDR: ", (*c).Spec.ServiceCIDR)
-	fmt.Println("Cluster node pools: ", len((*c).Spec.NodePools))
-	for _, pool := range (*c).Spec.NodePools {
+func (k Kluster) printHuman(options printers.PrintOptions) {
+	fmt.Println("Cluster name: ", k.Name)
+	fmt.Println("Cluster state: ", k.Status.Phase)
+	fmt.Println("Cluster CIDR: ", k.Spec.ClusterCIDR)
+	fmt.Println("Service CIDR: ", k.Spec.ServiceCIDR)
+	fmt.Println("Cluster node pools: ", len(k.Spec.NodePools))
+	for _, pool := range k.Spec.NodePools {
 		pool.printHuman(options)
 	}
 	fmt.Println("Cluster node pool status: ")
-	for _, pool := range (*c).Status.NodePools {
+	for _, pool := range k.Status.NodePools {
 		pool.printHuman(options)
 	}
 }
 
-func (c *Cluster) printTable(options printers.PrintOptions) {
+func (k *Kluster) printTable(options printers.PrintOptions) {
 	if options.WithHeaders {
 		fmt.Print("NAME")
 		fmt.Print("\t")
@@ -50,14 +50,14 @@ func (c *Cluster) printTable(options printers.PrintOptions) {
 		fmt.Print("\t")
 		fmt.Println("MESSAGE")
 	}
-	fmt.Print(*c.Name)
+	fmt.Print(k.Name)
 	fmt.Print("\t")
-	fmt.Print((*c).Status.Kluster.State)
+	fmt.Print(k.Status.Phase)
 	fmt.Print("\t")
-	fmt.Println((*c).Status.Kluster.Message)
+	fmt.Println(k.Status.Message)
 }
 
-func (p *ClusterSpecNodePoolsItems0) GetFormats() map[printers.PrintFormat]struct{} {
+func (p NodePool) GetFormats() map[printers.PrintFormat]struct{} {
 	ret := map[printers.PrintFormat]struct{}{
 		printers.Table: struct{}{},
 		printers.Human: struct{}{},
@@ -65,7 +65,7 @@ func (p *ClusterSpecNodePoolsItems0) GetFormats() map[printers.PrintFormat]struc
 	return ret
 }
 
-func (p *ClusterSpecNodePoolsItems0) Print(format printers.PrintFormat, options printers.PrintOptions) error {
+func (p NodePool) Print(format printers.PrintFormat, options printers.PrintOptions) error {
 	switch format {
 	case printers.Human:
 		p.printHuman(options)
@@ -77,18 +77,18 @@ func (p *ClusterSpecNodePoolsItems0) Print(format printers.PrintFormat, options 
 	return nil
 }
 
-func (p *ClusterSpecNodePoolsItems0) printHuman(options printers.PrintOptions) {
+func (p NodePool) printHuman(options printers.PrintOptions) {
 	fmt.Print("Name: ")
-	fmt.Println(*p.Name)
+	fmt.Println(p.Name)
 	fmt.Print("   Flavor: \t")
-	fmt.Println(*p.Flavor)
+	fmt.Println(p.Flavor)
 	fmt.Print("   Image:  \t")
 	fmt.Println(p.Image)
 	fmt.Print("   Size:   \t")
-	fmt.Println(*p.Size)
+	fmt.Println(p.Size)
 }
 
-func (p *ClusterSpecNodePoolsItems0) printTable(options printers.PrintOptions) {
+func (p NodePool) printTable(options printers.PrintOptions) {
 	if options.WithHeaders {
 		fmt.Print("NAME")
 		fmt.Print("\t")
@@ -98,24 +98,24 @@ func (p *ClusterSpecNodePoolsItems0) printTable(options printers.PrintOptions) {
 		fmt.Print("\t")
 		fmt.Println("SIZE")
 	}
-	fmt.Print(*p.Name)
+	fmt.Print(p.Name)
 	fmt.Print("\t")
-	fmt.Print(*p.Flavor)
+	fmt.Print(p.Flavor)
 	fmt.Print("\t")
 	fmt.Print(p.Image)
 	fmt.Print("\t")
-	fmt.Println(*p.Size)
+	fmt.Println(p.Size)
 }
 
-func (p *ClusterStatusNodePoolsItems0) printHuman(options printers.PrintOptions) {
+func (p NodePoolInfo) printHuman(options printers.PrintOptions) {
 	fmt.Print("Name: ")
-	fmt.Println(*p.Name)
+	fmt.Println(p.Name)
 	fmt.Print("   Size: \t")
-	fmt.Println(*p.Size)
+	fmt.Println(p.Size)
 	fmt.Print("   Running: \t")
-	fmt.Println(*p.Running)
+	fmt.Println(p.Running)
 	fmt.Print("   Schedulable: \t")
-	fmt.Println(*p.Schedulable)
+	fmt.Println(p.Schedulable)
 	fmt.Print("   Healthy: \t")
-	fmt.Println(*p.Healthy)
+	fmt.Println(p.Healthy)
 }

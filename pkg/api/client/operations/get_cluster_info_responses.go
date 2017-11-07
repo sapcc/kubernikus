@@ -54,7 +54,7 @@ func NewGetClusterInfoOK() *GetClusterInfoOK {
 OK
 */
 type GetClusterInfoOK struct {
-	Payload *models.ClusterInfo
+	Payload *models.KlusterInfo
 }
 
 func (o *GetClusterInfoOK) Error() string {
@@ -63,7 +63,7 @@ func (o *GetClusterInfoOK) Error() string {
 
 func (o *GetClusterInfoOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	o.Payload = new(models.ClusterInfo)
+	o.Payload = new(models.KlusterInfo)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {

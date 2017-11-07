@@ -65,6 +65,8 @@ pkg/api/rest/operations/kubernikus_api.go: swagger.yml
 ifneq (,$(wildcard $(SWAGGER_BIN)))
 	$(SWAGGER_BIN) generate server --name kubernikus --target pkg/api --model-package models \
 		--server-package rest --flag-strategy pflag --principal models.Principal --exclude-main
+	sed -e's/^package.*/package spec/' pkg/api/rest/embedded_spec.go > pkg/api/spec/embedded_spec.go
+	rm pkg/api/rest/embedded_spec.go
 else
 	$(warning WARNING: $(SWAGGER_BIN) missing. Run `make bootstrap` to fix.)
 endif
@@ -73,8 +75,7 @@ endif
 swagger-generate:
 	make -B pkg/api/rest/operations/kubernikus_api.go
 
-# --existing-models github.com/sapcc/kubernikus/pkg/api/models seems not to work in our case
-pkg/client/kubernikus_generated/kubernikus_client.go: swagger.yml
+pkg/api/client/kubernikus_client.go: swagger.yml
 ifneq (,$(wildcard $(SWAGGER_BIN)))
 	$(SWAGGER_BIN) generate client --name kubernikus --target pkg/api --client-package client \
 		--existing-models github.com/sapcc/kubernikus/pkg/api/models \

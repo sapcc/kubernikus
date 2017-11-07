@@ -6,8 +6,8 @@ import (
 	"os"
 	"strings"
 
+	"github.com/sapcc/kubernikus/pkg/api/models"
 	"github.com/sapcc/kubernikus/pkg/apis/kubernikus"
-	"github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
 	"github.com/sapcc/kubernikus/pkg/cmd"
 	"github.com/sapcc/kubernikus/pkg/util"
 	"github.com/sapcc/kubernikus/pkg/util/helm"
@@ -97,9 +97,9 @@ func (o *HelmOptions) Complete(args []string) error {
 
 func (o *HelmOptions) Run(c *cobra.Command) error {
 	nameA := strings.SplitN(o.Name, ".", 2)
-	kluster, err := kubernikus.NewKlusterFactory().KlusterFor(v1.KlusterSpec{
+	kluster, err := kubernikus.NewKlusterFactory().KlusterFor(models.KlusterSpec{
 		Name: nameA[0],
-		Openstack: v1.OpenstackSpec{
+		Openstack: models.OpenstackSpec{
 			ProjectID: o.ProjectID,
 		},
 	})

@@ -106,7 +106,7 @@ func (o *InitOptions) Run(c *cobra.Command) (err error) {
 		if cluster, err := o.kubernikus.GetDefaultCluster(); err != nil {
 			return errors.Wrapf(err, "You need to provide --name. Cluster Auto-Detection failed")
 		} else {
-			o.name = *cluster.Name
+			o.name = cluster.Name
 			glog.V(2).Infof("Detected cluster name: %v", o.name)
 		}
 	}

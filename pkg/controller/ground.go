@@ -19,6 +19,7 @@ import (
 	"k8s.io/client-go/util/workqueue"
 	"k8s.io/helm/pkg/helm"
 
+	"github.com/sapcc/kubernikus/pkg/api/models"
 	"github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
 	"github.com/sapcc/kubernikus/pkg/client/kubernetes"
 	"github.com/sapcc/kubernikus/pkg/controller/config"
@@ -126,15 +127,15 @@ func (op *GroundControl) handler(key string) error {
 		glog.Infof("kluster resource %s deleted", key)
 	} else {
 		kluster := obj.(*v1.Kluster)
-		glog.V(5).Infof("Handling kluster %v in state %q", kluster.Name, kluster.Status.Kluster.State)
+		glog.V(5).Infof("Handling kluster %v in state %q", kluster.Name, kluster.Status.Phase)
 
-		switch state := kluster.Status.Kluster.State; state {
-		case v1.KlusterPending:
+		switch state := kluster.Status.Phase; state {
+		case models.KlusterPhasePending:
 			{
 				if op.requiresOpenstackInfo(kluster) {
 					if err := op.discoverOpenstackInfo(kluster); err != nil {
 						glog.Errorf("[%v] Discovery of openstack parameters failed: %s", kluster.GetName(), err)
-						if err := op.updateStatus(kluster, v1.KlusterError, err.Error()); err != nil {
+						if err := op.updateStatus(kluster, models.KlusterPhaseError, err.Error()); err != nil {
 							glog.Errorf("Failed to update status of kluster %s:%s", kluster.GetName(), err)
 						}
 						return err
@@ -145,7 +146,7 @@ func (op *GroundControl) handler(key string) error {
 				if op.requiresKubernikusInfo(kluster) {
 					if err := op.discoverKubernikusInfo(kluster); err != nil {
 						glog.Errorf("[%v] Discovery of kubernikus parameters failed: %s", kluster.GetName(), err)
-						if err := op.updateStatus(kluster, v1.KlusterError, err.Error()); err != nil {
+						if err := op.updateStatus(kluster, models.KlusterPhaseError, err.Error()); err != nil {
 							glog.Errorf("Failed to update status of kluster %s:%s", kluster.GetName(), err)
 						}
 						return err
@@ -154,13 +155,13 @@ func (op *GroundControl) handler(key string) error {
 				}
 
 				glog.Infof("Creating Kluster %s", kluster.GetName())
-				if err := op.updateStatus(kluster, v1.KlusterCreating, "Creating Cluster"); err != nil {
+				if err := op.updateStatus(kluster, models.KlusterPhaseCreating, "Creating Cluster"); err != nil {
 					glog.Errorf("Failed to update status of kluster %s:%s", kluster.GetName(), err)
 				}
 
 				if err := op.createKluster(kluster); err != nil {
 					glog.Errorf("Creating kluster %s failed: %s", kluster.GetName(), err)
-					if err := op.updateStatus(kluster, v1.KlusterError, err.Error()); err != nil {
+					if err := op.updateStatus(kluster, models.KlusterPhaseError, err.Error()); err != nil {
 						glog.Errorf("Failed to update status of kluster %s:%s", kluster.GetName(), err)
 					}
 					//We are making this a permanent error for now to avoid stomping the parent kluster
@@ -168,7 +169,7 @@ func (op *GroundControl) handler(key string) error {
 				}
 				glog.Infof("Kluster %s created", kluster.GetName())
 			}
-		case v1.KlusterCreating:
+		case models.KlusterPhaseCreating:
 			pods, err := op.podInformer.GetIndexer().ByIndex("kluster", kluster.GetName())
 			if err != nil {
 				return err
@@ -188,12 +189,12 @@ func (op *GroundControl) handler(key string) error {
 				if err := ground.SeedKluster(clientset, kluster); err != nil {
 					return err
 				}
-				if err := op.updateStatus(kluster, v1.KlusterReady, ""); err != nil {
+				if err := op.updateStatus(kluster, models.KlusterPhaseRunning, ""); err != nil {
 					glog.Errorf("Failed to update status of kluster %s:%s", kluster.GetName(), err)
 				}
 				glog.Infof("Kluster %s is ready!", kluster.GetName())
 			}
-		case v1.KlusterTerminating:
+		case models.KlusterPhaseTerminating:
 			{
 				glog.Infof("Terminating Kluster %s", kluster.GetName())
 				if err := op.terminateKluster(kluster); err != nil {
@@ -241,15 +242,15 @@ func (op *GroundControl) klusterUpdate(cur, old interface{}) {
 	}
 }
 
-func (op *GroundControl) updateStatus(kluster *v1.Kluster, state v1.KlusterState, message string) error {
+func (op *GroundControl) updateStatus(kluster *v1.Kluster, state models.KlusterPhase, message string) error {
 
 	//Never modify the cache, at leasts thats what I've been told
 	kluster, err := op.Clients.Kubernikus.Kubernikus().Klusters(kluster.Namespace).Get(kluster.Name, metav1.GetOptions{})
 	if err != nil {
 		return err
 	}
-	kluster.Status.Kluster.Message = message
-	kluster.Status.Kluster.State = state
+	kluster.Status.Message = message
+	kluster.Status.Phase = state
 
 	_, err = op.Clients.Kubernikus.Kubernikus().Klusters(kluster.Namespace).Update(kluster)
 	return err

@@ -24,6 +24,7 @@ import (
 	"k8s.io/client-go/pkg/api/v1"
 	"k8s.io/client-go/tools/cache"
 
+	"github.com/sapcc/kubernikus/pkg/api/models"
 	kubernikus_v1 "github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
 	"github.com/sapcc/kubernikus/pkg/client/openstack/domains"
 	"github.com/sapcc/kubernikus/pkg/client/openstack/roles"
@@ -49,9 +50,9 @@ type client struct {
 }
 
 type Client interface {
-	CreateNode(*kubernikus_v1.Kluster, *kubernikus_v1.NodePool, []byte) (string, error)
+	CreateNode(*kubernikus_v1.Kluster, *models.NodePool, []byte) (string, error)
 	DeleteNode(*kubernikus_v1.Kluster, string) error
-	GetNodes(*kubernikus_v1.Kluster, *kubernikus_v1.NodePool) ([]Node, error)
+	GetNodes(*kubernikus_v1.Kluster, *models.NodePool) ([]Node, error)
 
 	GetProject(id string) (*Project, error)
 	GetRegion() (string, error)
@@ -534,7 +535,7 @@ func getRouterNetworks(client *gophercloud.ServiceClient, routerID string) ([]st
 	return networks, err
 }
 
-func (c *client) GetNodes(kluster *kubernikus_v1.Kluster, pool *kubernikus_v1.NodePool) ([]Node, error) {
+func (c *client) GetNodes(kluster *kubernikus_v1.Kluster, pool *models.NodePool) ([]Node, error) {
 	pool_id := pool.Name
 
 	provider, err := c.klusterClientFor(kluster)
@@ -564,7 +565,7 @@ func (c *client) GetNodes(kluster *kubernikus_v1.Kluster, pool *kubernikus_v1.No
 	return nodes, nil
 }
 
-func (c *client) CreateNode(kluster *kubernikus_v1.Kluster, pool *kubernikus_v1.NodePool, userData []byte) (string, error) {
+func (c *client) CreateNode(kluster *kubernikus_v1.Kluster, pool *models.NodePool, userData []byte) (string, error) {
 	provider, err := c.klusterClientFor(kluster)
 	if err != nil {
 		return "", err

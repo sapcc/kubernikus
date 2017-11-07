@@ -65,7 +65,7 @@ for the update cluster operation typically these are written to a http.Request
 type UpdateClusterParams struct {
 
 	/*Body*/
-	Body *models.Cluster
+	Body *models.Kluster
 	/*Name*/
 	Name string
 
@@ -108,13 +108,13 @@ func (o *UpdateClusterParams) SetHTTPClient(client *http.Client) {
 }
 
 // WithBody adds the body to the update cluster params
-func (o *UpdateClusterParams) WithBody(body *models.Cluster) *UpdateClusterParams {
+func (o *UpdateClusterParams) WithBody(body *models.Kluster) *UpdateClusterParams {
 	o.SetBody(body)
 	return o
 }
 
 // SetBody adds the body to the update cluster params
-func (o *UpdateClusterParams) SetBody(body *models.Cluster) {
+func (o *UpdateClusterParams) SetBody(body *models.Kluster) {
 	o.Body = body
 }
 
@@ -138,7 +138,7 @@ func (o *UpdateClusterParams) WriteToRequest(r runtime.ClientRequest, reg strfmt
 	var res []error
 
 	if o.Body == nil {
-		o.Body = new(models.Cluster)
+		o.Body = new(models.Kluster)
 	}
 
 	if err := r.SetBodyParam(o.Body); err != nil {

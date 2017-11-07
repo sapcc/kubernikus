@@ -38,8 +38,8 @@ func (d *terminateCluster) Handle(params operations.TerminateClusterParams, prin
 	}
 
 	_, err = editCluster(kluster, principal, params.Name, func(kluster *v1.Kluster) {
-		kluster.Status.Kluster.State = v1.KlusterTerminating
-		kluster.Status.Kluster.Message = "Cluster terminating"
+		kluster.Status.Phase = models.KlusterPhaseTerminating
+		kluster.Status.Message = "Cluster terminating"
 	})
 	if err != nil {
 		return NewErrorResponse(&operations.TerminateClusterDefault{}, 500, err.Error())

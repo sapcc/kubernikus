@@ -36,7 +36,7 @@ type CreateClusterParams struct {
 	  Required: true
 	  In: body
 	*/
-	Body *models.Cluster
+	Body *models.Kluster
 }
 
 // BindRequest both binds and validates a request, it assumes that complex things implement a Validatable(strfmt.Registry) error interface
@@ -47,7 +47,7 @@ func (o *CreateClusterParams) BindRequest(r *http.Request, route *middleware.Mat
 
 	if runtime.HasBody(r) {
 		defer r.Body.Close()
-		var body models.Cluster
+		var body models.Kluster
 		if err := route.Consumer.Consume(r.Body, &body); err != nil {
 			if err == io.EOF {
 				res = append(res, errors.Required("body", "body"))

@@ -25,7 +25,7 @@ type ShowClusterOK struct {
 	/*
 	  In: Body
 	*/
-	Payload *models.Cluster `json:"body,omitempty"`
+	Payload *models.Kluster `json:"body,omitempty"`
 }
 
 // NewShowClusterOK creates ShowClusterOK with default headers values
@@ -34,13 +34,13 @@ func NewShowClusterOK() *ShowClusterOK {
 }
 
 // WithPayload adds the payload to the show cluster o k response
-func (o *ShowClusterOK) WithPayload(payload *models.Cluster) *ShowClusterOK {
+func (o *ShowClusterOK) WithPayload(payload *models.Kluster) *ShowClusterOK {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the show cluster o k response
-func (o *ShowClusterOK) SetPayload(payload *models.Cluster) {
+func (o *ShowClusterOK) SetPayload(payload *models.Kluster) {
 	o.Payload = payload
 }
 

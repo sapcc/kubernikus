@@ -1,8 +1,6 @@
 package handlers
 
 import (
-	"fmt"
-
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/validate"
 	"github.com/golang/glog"
@@ -10,7 +8,6 @@ import (
 	"github.com/sapcc/kubernikus/pkg/api/models"
 	"github.com/sapcc/kubernikus/pkg/api/rest/operations"
 	"github.com/sapcc/kubernikus/pkg/apis/kubernikus"
-	"github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -24,34 +21,24 @@ type createCluster struct {
 }
 
 func (d *createCluster) Handle(params operations.CreateClusterParams, principal *models.Principal) middleware.Responder {
-	name := *params.Body.Name
+	name := params.Body.Name
+	spec := params.Body.Spec
 
 	if err := validate.UniqueItems("name", "body", params.Body.Spec.NodePools); err != nil {
 		return NewErrorResponse(&operations.CreateClusterDefault{}, int(err.Code()), err.Error())
 	}
 
-	var nodePools []v1.NodePool
-	if params.Body.Spec.NodePools != nil {
-		nodePools = []v1.NodePool{}
-		for i, _ := range params.Body.Spec.NodePools {
-			nodePools = append(nodePools, v1.NodePool{
-				Name:   *params.Body.Spec.NodePools[i].Name,
-				Size:   int(*params.Body.Spec.NodePools[i].Size),
-				Flavor: *params.Body.Spec.NodePools[i].Flavor,
-				Image:  "coreos-stable-amd64",
-			})
+	spec.Name = name
+	for i, pool := range spec.NodePools {
+		//Set default image
+		if pool.Image == "" {
+			spec.NodePools[i].Image = DEFAULT_IMAGE
 		}
 	}
-
-	kluster, err := kubernikus.NewKlusterFactory().KlusterFor(v1.KlusterSpec{
-		Name:        name,
-		ServiceCIDR: params.Body.Spec.ServiceCIDR,
-		ClusterCIDR: params.Body.Spec.ClusterCIDR,
-		NodePools:   nodePools,
-	})
+	kluster, err := kubernikus.NewKlusterFactory().KlusterFor(spec)
 
 	kluster.ObjectMeta = metav1.ObjectMeta{
-		Name:        fmt.Sprintf("%s-%s", name, principal.Account),
+		Name:        qualifiedName(name, principal.Account),
 		Labels:      map[string]string{"account": principal.Account},
 		Annotations: map[string]string{"creator": principal.Name},
 	}
@@ -65,5 +52,5 @@ func (d *createCluster) Handle(params operations.CreateClusterParams, principal 
 		return NewErrorResponse(&operations.CreateClusterDefault{}, 500, err.Error())
 	}
 
-	return operations.NewCreateClusterCreated().WithPayload(clusterModelFromCRD(kluster))
+	return operations.NewCreateClusterCreated().WithPayload(klusterFromCRD(kluster))
 }

@@ -47,7 +47,7 @@ paths:
           schema:
             type: array
             items:
-              $ref: '#/definitions/Cluster'
+              $ref: '#/definitions/Kluster'
         default:
           $ref: '#/responses/errorResponse'
       security:
@@ -59,7 +59,7 @@ paths:
         '201':
           description: OK
           schema:
-            $ref: '#/definitions/Cluster'
+            $ref: '#/definitions/Kluster'
         default:
           $ref: '#/responses/errorResponse'
       parameters:
@@ -67,7 +67,7 @@ paths:
           in: body
           required: true
           schema:
-            $ref: '#/definitions/Cluster'
+            $ref: '#/definitions/Kluster'
       security:
         - keystone: []
   '/api/v1/clusters/{name}':
@@ -84,7 +84,7 @@ paths:
         '200':
           description: OK
           schema:
-            $ref: '#/definitions/Cluster'
+            $ref: '#/definitions/Kluster'
         default:
           $ref: '#/responses/errorResponse'
       security:
@@ -108,7 +108,7 @@ paths:
         '200':
           description: OK
           schema:
-            $ref: '#/definitions/Cluster'
+            $ref: '#/definitions/Kluster'
         default:
           $ref: '#/responses/errorResponse'
       security:
@@ -118,7 +118,7 @@ paths:
           in: body
           required: true
           schema:
-            $ref: '#/definitions/Cluster'
+            $ref: '#/definitions/Kluster'
   '/api/v1/clusters/{name}/credentials':
     parameters:
       - uniqueItems: true
@@ -152,17 +152,20 @@ paths:
         '200':
           description: OK
           schema:
-            $ref: '#/definitions/ClusterInfo'
+            $ref: '#/definitions/KlusterInfo'
         default:
           $ref: '#/responses/errorResponse'
       security:
         - keystone: []
 definitions:
+  KlusterPhase:
+    type: string
+    enum: [Pending, Creating, Running, Terminating, Error]
   Info:
     properties:
       version:
         type: string
-  ClusterInfo:
+  KlusterInfo:
     properties:
       setupCommand:
         type: string
@@ -170,12 +173,16 @@ definitions:
         type: array
         items:
           type: object
+          x-go-name: Binaries
+          x-nullable: false
           properties:
             name:
               type: string
             links:
               type: array
               items:
+                x-go-name: Link
+                x-nullable: false
                 type: object
                 properties:
                   platform:
@@ -192,82 +199,140 @@ definitions:
         items:
           type: string
 
-  Cluster:
+  Kluster:
     type: object
     required:
       - name
     properties:
       name:
+        x-nullable: false
         description: name of the cluster
         type: string
         pattern: '^[a-z]([-a-z0-9]*[a-z0-9])?$'
       spec:
-        type: object
-        x-nullable: false
-        properties:
-          serviceCIDR:
-            x-nullable: false
-            description: CIDR Range for Services in the cluster. Can not be updated.
-            default: 198.18.128.0/17
-            type: string
-            pattern: '^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$'
-          clusterCIDR:
-            x-nullable: false
-            description: CIDR Range for Pods in the cluster. Can not be updated.
-            default: 198.19.0.0/16
-            type: string
-            pattern: '^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$'
-          nodePools:
-            type: array
-            items:
-              type: object
-              required:
-                - name
-                - size
-                - flavor
-              properties:
-                name:
-                  type: string
-                  pattern: '^[a-z]([a-z0-9]*)?$'
-                size:
-                  type: integer
-                  maximum: 127
-                  minimum: 0
-                flavor:
-                  type: string
-                image:
-                  type: string
+        $ref: '#/definitions/KlusterSpec'
       status:
+        $ref: '#/definitions/KlusterStatus'
+  KlusterSpec:
+    type: object
+    x-nullable: false
+    properties:
+      openstack:
+        $ref: '#/definitions/OpenstackSpec'
+      serviceCIDR:
+        description: CIDR Range for Services in the cluster. Can not be updated.
+        default: 198.18.128.0/17
+        x-nullable: false
+        type: string
+        pattern: '^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$'
+      clusterCIDR:
+        description: CIDR Range for Pods in the cluster. Can not be updated.
+        default: 198.19.0.0/16
+        type: string
+        x-nullable: false
+        pattern: '^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$'
+      nodePools:
+        type: array
+        x-omitempty: true #should work with go-swagger > 0.12.0
+        items:
+          $ref: '#/definitions/NodePool'
+      advertiseAddress:
+        x-nullable: false
+        default: 1.1.1.1
+        type: string
+      clusterDNS:
+        type: string
+      clusterDNSDomain:
+        x-nullable: false
+        type: string
+        default: cluster.local
+      domain:
+        type: string
+      name:
+        type: string
         readOnly: true
-        type: object
-        properties:
-          kluster:
-            properties:
-              state:
-                description: status of the cluster
-                type: string
-              message:
-                type: string
-          nodePools:
-            type: array
-            items:
-              required:
-                - name
-                - size
-                - running
-                - healthy
-                - schedulable
-              properties:
-                name:
-                  type: string
-                size:
-                  type: integer
-                running:
-                  type: integer
-                healthy:
-                  type: integer
-                schedulable:
-                  type: integer
+  OpenstackSpec:
+    type: object
+    x-nullable: false
+    properties:
+      projectID:
+        type: string
+      routerID:
+        type: string
+      networkID:
+        type: string
+      lbSubnetID:
+        x-go-name: LBSubnetID
+        type: string
+
+  NodePool:
+    x-nullable: false
+    type: object
+    required:
+      - name
+      - size
+      - flavor
+    properties:
+      name:
+        x-nullable: false
+        type: string
+        pattern: '^[a-z]([a-z0-9]*)?$'
+      size:
+        x-nullable: false
+        type: integer
+        maximum: 127
+        minimum: 0
+      flavor:
+        type: string
+        x-nullable: false
+      image:
+        x-nullable: false
+        type: string
+        default: coreos-stable-amd64
+      config:
+        $ref: '#/definitions/NodePoolConfig'
+  NodePoolConfig:
+    type: object
+    x-nullable: false
+    properties:
+      upgrade:
+        type: boolean
+      repair:
+        type: boolean
+
+  KlusterStatus:
+    readOnly: true
+    x-nullable: false
+    type: object
+    properties:
+      phase:
+        $ref: '#/definitions/KlusterPhase'
+      message:
+        type: string
+      nodePools:
+        type: array
+        items:
+          $ref: '#/definitions/NodePoolInfo'
+      apiserver:
+        type: string
+      wormhole:
+        type: string
+      version:
+        type: string
+  NodePoolInfo:
+    x-nullable: false
+    type: object
+    properties:
+      name:
+        type: string
+      size:
+        type: integer
+      running:
+        type: integer
+      healthy:
+        type: integer
+      schedulable:
+        type: integer
   Credentials:
     type: object
     properties:

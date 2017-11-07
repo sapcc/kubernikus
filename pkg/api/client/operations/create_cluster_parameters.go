@@ -65,7 +65,7 @@ for the create cluster operation typically these are written to a http.Request
 type CreateClusterParams struct {
 
 	/*Body*/
-	Body *models.Cluster
+	Body *models.Kluster
 
 	timeout    time.Duration
 	Context    context.Context
@@ -106,13 +106,13 @@ func (o *CreateClusterParams) SetHTTPClient(client *http.Client) {
 }
 
 // WithBody adds the body to the create cluster params
-func (o *CreateClusterParams) WithBody(body *models.Cluster) *CreateClusterParams {
+func (o *CreateClusterParams) WithBody(body *models.Kluster) *CreateClusterParams {
 	o.SetBody(body)
 	return o
 }
 
 // SetBody adds the body to the create cluster params
-func (o *CreateClusterParams) SetBody(body *models.Cluster) {
+func (o *CreateClusterParams) SetBody(body *models.Kluster) {
 	o.Body = body
 }
 
@@ -125,7 +125,7 @@ func (o *CreateClusterParams) WriteToRequest(r runtime.ClientRequest, reg strfmt
 	var res []error
 
 	if o.Body == nil {
-		o.Body = new(models.Cluster)
+		o.Body = new(models.Kluster)
 	}
 
 	if err := r.SetBodyParam(o.Body); err != nil {

@@ -54,7 +54,7 @@ func NewCreateClusterCreated() *CreateClusterCreated {
 OK
 */
 type CreateClusterCreated struct {
-	Payload *models.Cluster
+	Payload *models.Kluster
 }
 
 func (o *CreateClusterCreated) Error() string {
@@ -63,7 +63,7 @@ func (o *CreateClusterCreated) Error() string {
 
 func (o *CreateClusterCreated) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	o.Payload = new(models.Cluster)
+	o.Payload = new(models.Kluster)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {

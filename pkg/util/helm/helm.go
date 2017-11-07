@@ -69,7 +69,7 @@ func KlusterToHelmValues(kluster *v1.Kluster, openstack *OpenstackOptions, certi
 		ClusterCIDR:      kluster.Spec.ClusterCIDR,
 		ServiceCIDR:      kluster.Spec.ServiceCIDR,
 		AdvertiseAddress: kluster.Spec.AdvertiseAddress,
-		Version:          kluster.Spec.Version,
+		Version:          kluster.Status.Version,
 		Openstack: openstackValues{
 			AuthURL:    openstack.AuthURL,
 			Username:   openstack.Username,

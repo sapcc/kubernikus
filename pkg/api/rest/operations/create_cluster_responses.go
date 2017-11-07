@@ -25,7 +25,7 @@ type CreateClusterCreated struct {
 	/*
 	  In: Body
 	*/
-	Payload *models.Cluster `json:"body,omitempty"`
+	Payload *models.Kluster `json:"body,omitempty"`
 }
 
 // NewCreateClusterCreated creates CreateClusterCreated with default headers values
@@ -34,13 +34,13 @@ func NewCreateClusterCreated() *CreateClusterCreated {
 }
 
 // WithPayload adds the payload to the create cluster created response
-func (o *CreateClusterCreated) WithPayload(payload *models.Cluster) *CreateClusterCreated {
+func (o *CreateClusterCreated) WithPayload(payload *models.Kluster) *CreateClusterCreated {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the create cluster created response
-func (o *CreateClusterCreated) SetPayload(payload *models.Cluster) {
+func (o *CreateClusterCreated) SetPayload(payload *models.Kluster) {
 	o.Payload = payload
 }
 
