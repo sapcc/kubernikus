@@ -23,9 +23,15 @@
     </div>
   </div>
   <img src="{{ "images/kubernikus.svg" | relURL }}" class="promologo" />
-	<article class="article">
-		<div class="wrapper">
-			{{ .Content }}
-		</div>
-	</article>
+
+  {{ range where .Data.Pages "Type" "index" }}
+  <div class="{{ .File.TranslationBaseName }}">
+    <div class="wrap">
+      {{ .Content }}
+    </div>
+  </div>
+  {{ end }}
+
 </main>
+
+

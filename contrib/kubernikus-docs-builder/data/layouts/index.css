@@ -52,6 +52,7 @@
     top: 106px;
     width: 281px;
     left: 470px;
+    z-index: 100;
 }
 
 #title {

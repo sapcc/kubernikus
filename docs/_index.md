@@ -7,5 +7,3 @@ outputs:
 - html
 - css
 ---
-
-## Kubernikus 
