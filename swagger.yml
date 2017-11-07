@@ -21,10 +21,10 @@ responses:
 paths:
   /info:
     get:
-      operationId: Info 
+      operationId: Info
       summary: Get info about Kubernikus
       responses:
-        '200': 
+        '200':
           description: OK
           schema:
             $ref: '#/definitions/Info'
@@ -299,7 +299,7 @@ definitions:
   error:
     description: >
       the error model is a model for all the error responses coming from
-      Kubernikus 
+      Kubernikus
     type: object
     required:
       - message
