@@ -114,6 +114,27 @@ func (k *KubernikusClient) ListAllClusters() ([]*models.Cluster, error) {
 	return ok.Payload, nil
 }
 
+func (k *KubernikusClient) ListNodePools(clusterName string) ([]*models.ClusterSpecNodePoolsItems0, error) {
+	ok, err := k.ShowCluster(clusterName)
+	if err != nil {
+		return nil, err
+	}
+	return ok.Spec.NodePools, nil
+}
+
+func (k *KubernikusClient) ShowNodePool(clusterName string, nodePoolName string) (*models.ClusterSpecNodePoolsItems0, error) {
+	ok, err := k.ShowCluster(clusterName)
+	if err != nil {
+		return nil, err
+	}
+	for _, nodePool := range ok.Spec.NodePools {
+		if *nodePool.Name == nodePoolName {
+			return nodePool, nil
+		}
+	}
+	return nil, nil
+}
+
 func (k *KubernikusClient) GetDefaultCluster() (*models.Cluster, error) {
 	ok, err := k.client.Operations.ListClusters(operations.NewListClustersParams(), k.authFunc())
 

@@ -25,5 +25,7 @@ func NewGetCommand() *cobra.Command {
 	o.Openstack.BindFlags(c.PersistentFlags())
 	cluster := get.NewClusterCommand(o)
 	c.AddCommand(cluster)
+	nodePool := get.NewNodePoolCommand(o)
+	c.AddCommand(nodePool)
 	return c
 }
