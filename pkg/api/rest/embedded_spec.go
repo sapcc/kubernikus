@@ -156,10 +156,7 @@ func init() {
         ],
         "responses": {
           "202": {
-            "description": "OK",
-            "schema": {
-              "type": "object"
-            }
+            "description": "OK"
           },
           "default": {
             "$ref": "#/responses/errorResponse"

@@ -64,7 +64,8 @@ gh-pages:
 pkg/api/rest/operations/kubernikus_api.go: swagger.yml
 ifneq (,$(wildcard $(SWAGGER_BIN)))
 	$(SWAGGER_BIN) generate server --name kubernikus --target pkg/api --model-package models \
-		--server-package rest --flag-strategy pflag --principal models.Principal --exclude-main
+		--server-package rest --flag-strategy pflag --principal models.Principal --exclude-main \
+		--template-dir pkg/api/templates
 else
 	$(warning WARNING: $(SWAGGER_BIN) missing. Run `make bootstrap` to fix.)
 endif

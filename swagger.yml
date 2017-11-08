@@ -95,8 +95,6 @@ paths:
       responses:
         '202':
           description: OK
-          schema:
-            type: object
         default:
           $ref: '#/responses/errorResponse'
       security:
