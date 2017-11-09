@@ -4,6 +4,21 @@ title: ControlPlane
 
 ## Setting up a new Region
 
+  * Create a new Openstack project, e.g. `ccadmin/kubernikus`
+  * Create service user: `openstack user create kubernikus --domain Default t--password abc123`
+  * Create a new network: `openstack network create kubernikus`
+  * Create a subnet: `openstack subnet create --network kubernikus --subnet-range 198.18.0.0/24 kubernikus`
+  * Create Router
+  * Assign administrative roles: `openstack role add --user kubernikus --user-domain Default --domain ccadmin admin`
+
+```
+openstack role add --user kubernikus --user-domain Default --project cloud_admin --project-domain ccadmin admin
+openstack role add --user kubernikus --user-domain Default --project cloud_admin --project-domain ccadmin cloud_network_admin
+openstack role add --user kubernikus --user-domain Default --project cloud_admin --project-domain ccadmin cloud_compute_admin
+openstack role add --user kubernikus --user-domain Default --project cloud_admin --project-domain ccadmin cloud_dns_admin
+```
+
+
 ### Prepare Tiller with RBAC
 ```
 kubectl -n kube-system create sa tiller
