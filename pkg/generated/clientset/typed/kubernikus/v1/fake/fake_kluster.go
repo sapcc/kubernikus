@@ -16,9 +16,9 @@ type FakeKlusters struct {
 	ns   string
 }
 
-var klustersResource = schema.GroupVersionResource{Group: "kubernikus", Version: "v1", Resource: "klusters"}
+var klustersResource = schema.GroupVersionResource{Group: "kubernikus.sap.cc", Version: "v1", Resource: "klusters"}
 
-var klustersKind = schema.GroupVersionKind{Group: "kubernikus", Version: "v1", Kind: "Kluster"}
+var klustersKind = schema.GroupVersionKind{Group: "kubernikus.sap.cc", Version: "v1", Kind: "Kluster"}
 
 // Get takes name of the kluster, and returns the corresponding kluster object, and an error if there is any.
 func (c *FakeKlusters) Get(name string, options v1.GetOptions) (result *kubernikus_v1.Kluster, err error) {

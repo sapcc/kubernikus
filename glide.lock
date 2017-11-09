@@ -1,5 +1,5 @@
-hash: 3f87d7fdca10a5a46ba2b729844a4cffb0b39935f567887ee45cdfbd432dd1a5
-updated: 2017-11-06T11:36:49.796462571+01:00
+hash: 7c50d1898bb69cae579c5295d51652dbb140ec6a9c52bb89e794b8625c9e119b
+updated: 2017-11-10T09:42:27.40025+01:00
 imports:
 - name: github.com/ajeddeloh/yaml
   version: 1072abfea31191db507785e2e0c1b8d1440d35a5
@@ -478,4 +478,12 @@ imports:
   version: 4fe312863be2155a7b68acd2aff1c9221b24e68c
   subpackages:
   - exec
-testImports: []
+testImports:
+- name: github.com/pmezard/go-difflib
+  version: d8ed2627bdf02c080bf22230dbb337003b7aba2d
+  subpackages:
+  - difflib
+- name: github.com/stretchr/testify
+  version: 69483b4bd14f5845b5a1e55bca19e954e827f1d0
+  subpackages:
+  - assert

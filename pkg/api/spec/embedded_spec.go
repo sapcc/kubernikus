@@ -44,11 +44,6 @@ func init() {
       "get": {
         "summary": "List available clusters",
         "operationId": "ListClusters",
-        "security": [
-          {
-            "keystone": []
-          }
-        ],
         "responses": {
           "200": {
             "description": "OK",
@@ -67,11 +62,6 @@ func init() {
       "post": {
         "summary": "Create a cluster",
         "operationId": "CreateCluster",
-        "security": [
-          {
-            "keystone": []
-          }
-        ],
         "parameters": [
           {
             "name": "body",
@@ -99,11 +89,6 @@ func init() {
       "get": {
         "summary": "Show the specified cluser",
         "operationId": "ShowCluster",
-        "security": [
-          {
-            "keystone": []
-          }
-        ],
         "responses": {
           "200": {
             "description": "OK",
@@ -119,11 +104,6 @@ func init() {
       "put": {
         "summary": "Update the specified cluser",
         "operationId": "UpdateCluster",
-        "security": [
-          {
-            "keystone": []
-          }
-        ],
         "parameters": [
           {
             "name": "body",
@@ -149,11 +129,6 @@ func init() {
       "delete": {
         "summary": "Terminate the specified cluster",
         "operationId": "TerminateCluster",
-        "security": [
-          {
-            "keystone": []
-          }
-        ],
         "responses": {
           "202": {
             "description": "OK",
@@ -180,11 +155,6 @@ func init() {
       "get": {
         "summary": "Get user specific credentials to access the cluster",
         "operationId": "GetClusterCredentials",
-        "security": [
-          {
-            "keystone": []
-          }
-        ],
         "responses": {
           "200": {
             "description": "OK",
@@ -211,11 +181,6 @@ func init() {
       "get": {
         "summary": "Get user specific info about the cluster",
         "operationId": "GetClusterInfo",
-        "security": [
-          {
-            "keystone": []
-          }
-        ],
         "responses": {
           "200": {
             "description": "OK",
@@ -584,6 +549,11 @@ func init() {
       "name": "x-auth-token",
       "in": "header"
     }
-  }
+  },
+  "security": [
+    {
+      "keystone": []
+    }
+  ]
 }`))
 }

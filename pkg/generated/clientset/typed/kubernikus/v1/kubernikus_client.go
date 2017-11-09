@@ -12,7 +12,7 @@ type KubernikusV1Interface interface {
 	KlustersGetter
 }
 
-// KubernikusV1Client is used to interact with features provided by the kubernikus group.
+// KubernikusV1Client is used to interact with features provided by the kubernikus.sap.cc group.
 type KubernikusV1Client struct {
 	restClient rest.Interface
 }
