@@ -12,7 +12,8 @@ securityDefinitions:
     type: apiKey
     in: header
     name: x-auth-token
-security: []
+security:
+  - keystone: []
 responses:
   errorResponse:
     description: Error
@@ -21,6 +22,7 @@ responses:
 paths:
   /info:
     get:
+      security: []
       operationId: Info
       summary: Get info about Kubernikus
       responses:
@@ -30,6 +32,7 @@ paths:
             $ref: '#/definitions/Info'
   /api/:
     get:
+      security: []
       operationId: ListAPIVersions
       summary: List available api versions
       responses:
@@ -50,8 +53,6 @@ paths:
               $ref: '#/definitions/Kluster'
         default:
           $ref: '#/responses/errorResponse'
-      security:
-        - keystone: []
     post:
       operationId: CreateCluster
       summary: Create a cluster
@@ -68,8 +69,6 @@ paths:
           required: true
           schema:
             $ref: '#/definitions/Kluster'
-      security:
-        - keystone: []
   '/api/v1/clusters/{name}':
     parameters:
       - uniqueItems: true
@@ -87,8 +86,6 @@ paths:
             $ref: '#/definitions/Kluster'
         default:
           $ref: '#/responses/errorResponse'
-      security:
-        - keystone: []
     delete:
       operationId: TerminateCluster
       summary: Terminate the specified cluster
@@ -99,8 +96,6 @@ paths:
             type: object
         default:
           $ref: '#/responses/errorResponse'
-      security:
-        - keystone: []
     put:
       operationId: UpdateCluster
       summary: Update the specified cluser
@@ -111,8 +106,6 @@ paths:
             $ref: '#/definitions/Kluster'
         default:
           $ref: '#/responses/errorResponse'
-      security:
-        - keystone: []
       parameters:
         - name: body
           in: body
@@ -136,8 +129,6 @@ paths:
             $ref: '#/definitions/Credentials'
         default:
           $ref: '#/responses/errorResponse'
-      security:
-        - keystone: []
   '/api/v1/clusters/{name}/info':
     parameters:
       - uniqueItems: true
@@ -155,8 +146,6 @@ paths:
             $ref: '#/definitions/KlusterInfo'
         default:
           $ref: '#/responses/errorResponse'
-      security:
-        - keystone: []
 definitions:
   KlusterPhase:
     type: string

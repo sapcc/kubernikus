@@ -2,21 +2,16 @@ package rest
 
 import (
 	"crypto/tls"
-	"fmt"
 	"net/http"
 	"os"
 	"strings"
 
-	errors "github.com/go-openapi/errors"
-	runtime "github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
-	"github.com/golang/glog"
 	gmiddleware "github.com/gorilla/handlers"
 	"github.com/justinas/alice"
 	"github.com/rs/cors"
 	graceful "github.com/tylerb/graceful"
 
-	apipkg "github.com/sapcc/kubernikus/pkg/api"
 	"github.com/sapcc/kubernikus/pkg/api/handlers"
 	"github.com/sapcc/kubernikus/pkg/api/rest/operations"
 )
@@ -30,40 +25,6 @@ func configureFlags(api *operations.KubernikusAPI) {
 }
 
 func configureAPI(api *operations.KubernikusAPI) http.Handler {
-	// configure the api here
-	api.ServeError = errors.ServeError
-
-	// Set your custom logger if needed. Default one is log.Printf
-	// Expected interface func(string, ...interface{})
-	//
-	// Example:
-	api.Logger = func(msg string, args ...interface{}) {
-		glog.InfoDepth(2, fmt.Sprintf(msg, args...))
-	}
-
-	api.JSONConsumer = runtime.JSONConsumer()
-	api.JSONProducer = runtime.JSONProducer()
-
-	// Applies when the "x-auth-token" header is set
-	api.KeystoneAuth = keystoneAuth()
-
-	// Set your custom authorizer if needed. Default one is security.Authorized()
-	// api.APIAuthorizer = security.Authorized()
-
-	rt := &apipkg.Runtime{Namespace: namespace}
-	rt.Kubernikus, rt.Kubernetes = NewKubeClients()
-
-	api.InfoHandler = handlers.NewInfo(rt)
-	api.ListAPIVersionsHandler = handlers.NewListAPIVersions(rt)
-	api.ListClustersHandler = handlers.NewListClusters(rt)
-	api.CreateClusterHandler = handlers.NewCreateCluster(rt)
-	api.ShowClusterHandler = handlers.NewShowCluster(rt)
-	api.TerminateClusterHandler = handlers.NewTerminateCluster(rt)
-	api.UpdateClusterHandler = handlers.NewUpdateCluster(rt)
-	api.GetClusterCredentialsHandler = handlers.NewGetClusterCredentials(rt)
-	api.GetClusterInfoHandler = handlers.NewGetClusterInfo(rt)
-
-	api.ServerShutdown = func() {}
 
 	return setupGlobalMiddleware(api.Serve(setupMiddlewares))
 }
