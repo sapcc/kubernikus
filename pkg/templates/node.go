@@ -171,7 +171,7 @@ storage:
       mode: 0644
       contents:
         inline: |-
-	  net.ipv4.conf.all.accept_redirects=1
+          net.ipv4.conf.all.accept_redirects=1
     - path: /etc/kubernetes/certs/kubelet-clients-ca.pem
       filesystem: root
       mode: 0644
