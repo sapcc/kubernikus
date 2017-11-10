@@ -4,7 +4,7 @@ RUN apk add --no-cache make
 COPY . .
 ARG VERSION
 RUN make all
-RUN go test -v ./... | grep -v 'no test files'
+RUN make test
 
 FROM scratch as kubernikus-binaries
 COPY --from=builder /go/src/github.com/sapcc/kubernikus/bin/linux/* /
