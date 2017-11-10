@@ -137,8 +137,8 @@ func TestClusterUpdate(t *testing.T) {
 		Spec: models.KlusterSpec{
 			AdvertiseAddress: "0.0.0.0",
 			ClusterCIDR:      "1.1.1.1/24",
-			ClusterDNS:       "2.2.2.254",
-			ClusterDNSDomain: "cluster.local",
+			DNSAddress:       "2.2.2.254",
+			DNSDomain:        "cluster.local",
 			Domain:           "kluster.somewhere",
 			Name:             "nase",
 			ServiceCIDR:      "2.2.2.2/24",
@@ -168,9 +168,8 @@ func TestClusterUpdate(t *testing.T) {
 		Spec: models.KlusterSpec{
 			AdvertiseAddress: "7.7.7.7",
 			ClusterCIDR:      "8.8.8.8/24",
-			ClusterDNS:       "9.9.9.9.254",
-			ClusterDNSDomain: "changed",
-			Domain:           "changed",
+			DNSAddress:       "9.9.9.9.254",
+			DNSDomain:        "changed",
 			Name:             "mund",
 			ServiceCIDR:      "9.9.9.9/24",
 			Openstack: models.OpenstackSpec{
@@ -205,9 +204,8 @@ func TestClusterUpdate(t *testing.T) {
 	assert.Equal(t, "nase", apiResponse.Name)
 	assert.Equal(t, "0.0.0.0", apiResponse.Spec.AdvertiseAddress)
 	assert.Equal(t, "1.1.1.1/24", apiResponse.Spec.ClusterCIDR)
-	assert.Equal(t, "2.2.2.254", apiResponse.Spec.ClusterDNS)
-	assert.Equal(t, "cluster.local", apiResponse.Spec.ClusterDNSDomain)
-	assert.Equal(t, "kluster.somewhere", apiResponse.Spec.Domain)
+	assert.Equal(t, "2.2.2.254", apiResponse.Spec.DNSAddress)
+	assert.Equal(t, "cluster.local", apiResponse.Spec.DNSDomain)
 	assert.Equal(t, "nase", apiResponse.Spec.Name)
 	assert.Equal(t, "2.2.2.2/24", apiResponse.Spec.ServiceCIDR)
 	assert.Equal(t, "lbid", apiResponse.Spec.Openstack.LBSubnetID)

@@ -229,14 +229,14 @@ definitions:
         x-nullable: false
         default: 1.1.1.1
         type: string
-      clusterDNS:
+      dnsAddress:
         type: string
-      clusterDNSDomain:
+      dnsDomain:
         x-nullable: false
         type: string
         default: cluster.local
-      domain:
-        type: string
+      #domain:
+      #  type: string
       name:
         type: string
         readOnly: true
