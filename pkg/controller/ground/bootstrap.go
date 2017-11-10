@@ -26,7 +26,7 @@ func SeedKluster(client clientset.Interface, kluster *v1.Kluster) error {
 	if err := SeedCinderStorageClass(client); err != nil {
 		return err
 	}
-	if err := dns.SeedKubeDNS(client, "", "", kluster.Spec.ClusterDNSDomain, kluster.Spec.ClusterDNS); err != nil {
+	if err := dns.SeedKubeDNS(client, "", "", kluster.Spec.DNSDomain, kluster.Spec.DNSAddress); err != nil {
 		return err
 	}
 	return nil

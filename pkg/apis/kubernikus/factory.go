@@ -66,12 +66,12 @@ func (klusterFactory) KlusterFor(spec models.KlusterSpec) (*v1.Kluster, error) {
 		return nil, err
 	}
 
-	if k.Spec.ClusterDNS == "" {
-		k.Spec.ClusterDNS = dnsip.String()
+	if k.Spec.DNSAddress == "" {
+		k.Spec.DNSAddress = dnsip.String()
 	}
 
-	if k.Spec.ClusterDNSDomain == "" {
-		k.Spec.ClusterDNSDomain = dns.DEFAULT_DOMAIN
+	if k.Spec.DNSDomain == "" {
+		k.Spec.DNSDomain = dns.DEFAULT_DOMAIN
 	}
 
 	if k.ObjectMeta.Name == "" {

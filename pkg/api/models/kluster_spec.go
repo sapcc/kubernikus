@@ -25,14 +25,11 @@ type KlusterSpec struct {
 	// Pattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$
 	ClusterCIDR string `json:"clusterCIDR,omitempty"`
 
-	// cluster DNS
-	ClusterDNS string `json:"clusterDNS,omitempty"`
+	// dns address
+	DNSAddress string `json:"dnsAddress,omitempty"`
 
-	// cluster DNS domain
-	ClusterDNSDomain string `json:"clusterDNSDomain,omitempty"`
-
-	// domain
-	Domain string `json:"domain,omitempty"`
+	// dns domain
+	DNSDomain string `json:"dnsDomain,omitempty"`
 
 	// name
 	// Read Only: true
@@ -53,11 +50,9 @@ type KlusterSpec struct {
 
 /* polymorph KlusterSpec clusterCIDR false */
 
-/* polymorph KlusterSpec clusterDNS false */
+/* polymorph KlusterSpec dnsAddress false */
 
-/* polymorph KlusterSpec clusterDNSDomain false */
-
-/* polymorph KlusterSpec domain false */
+/* polymorph KlusterSpec dnsDomain false */
 
 /* polymorph KlusterSpec name false */
 

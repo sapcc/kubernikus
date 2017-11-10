@@ -76,7 +76,7 @@ systemd:
           --exit-on-lock-contention \
           --pod-manifest-path=/etc/kubernetes/manifests \
           --allow-privileged \
-          --cluster-dns={{ .ClusterDNS }} \
+          --cluster-dns={{ .ClusterDNSAddress }} \
           --cluster-domain={{ .ClusterDomain }} \
           --client-ca-file=/etc/kubernetes/certs/kubelet-clients-ca.pem \
           --non-masquerade-cidr={{ .ClusterCIDR }} \

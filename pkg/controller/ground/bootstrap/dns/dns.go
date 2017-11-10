@@ -25,7 +25,7 @@ const (
 )
 
 var (
-	DEFAULT_DOMAIN = spec.MustDefaultString("KlusterSpec", "clusterDNSDomain")
+	DEFAULT_DOMAIN = spec.MustDefaultString("KlusterSpec", "dnsDomain")
 )
 
 type DeploymentOptions struct {
