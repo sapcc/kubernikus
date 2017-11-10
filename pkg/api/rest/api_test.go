@@ -139,7 +139,6 @@ func TestClusterUpdate(t *testing.T) {
 			ClusterCIDR:      "1.1.1.1/24",
 			DNSAddress:       "2.2.2.254",
 			DNSDomain:        "cluster.local",
-			Domain:           "kluster.somewhere",
 			Name:             "nase",
 			ServiceCIDR:      "2.2.2.2/24",
 			Openstack: models.OpenstackSpec{
