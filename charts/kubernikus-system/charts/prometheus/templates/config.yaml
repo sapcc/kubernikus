@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kubernikus-prometheus
+
+data:
+  prometheus.yaml: |
+{{ include "kubernikus-system/charts/prometheus/templates/_prometheus.yaml.tpl" . | indent 4 }}

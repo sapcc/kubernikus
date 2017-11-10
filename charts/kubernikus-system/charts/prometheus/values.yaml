@@ -1,0 +1,13 @@
+# automate certificate management using the VICE president (kubernetes operator)
+vice_president: true
+
+prometheus:
+  image: prom/prometheus
+  tag: v2.0.0
+
+retention: 7d
+
+persistence:
+  name: kubernikus-prometheus-data
+  accessMode: ReadWriteOnce
+  size: 300Gi
