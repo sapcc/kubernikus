@@ -8,6 +8,7 @@ title: ControlPlane
   * Create service user: `openstack user create kubernikus --domain Default t--password abc123`
   * Create a new network: `openstack network create kubernikus`
   * Create a subnet: `openstack subnet create --network kubernikus --subnet-range 198.18.0.0/24 kubernikus`
+  * Create a role: `openstack role create kubernetes_admin`
   * Create Router
   * Assign administrative roles: `openstack role add --user kubernikus --user-domain Default --domain ccadmin admin`
 
@@ -18,6 +19,8 @@ openstack role add --user kubernikus --user-domain Default --project cloud_admin
 openstack role add --user kubernikus --user-domain Default --project cloud_admin --project-domain ccadmin cloud_dns_admin
 ```
 
+  * Create Openstack Service:  `openstack service create --name kubernikus --description "Kubernikus Service" kubernikus`
+  * Create Endpoint: `openstack endpoint create --region na-us-1 kubernikus public https://kubernikus.na-us-1.cloud.sap`
 
 ### Prepare Tiller with RBAC
 ```
@@ -32,6 +35,7 @@ Initial kubeconfig setup:
 ```
 kubernikusctl auth init --url https://k-staging.admin.cloud.sap --name k-staging --user-domain-name ccadmin --project-name kubernikus-staging --project-domain-name ccadmin --auth-url https://identity-3.eu-nl-1.cloud.sap --username <USER> 
 kubernikusctl auth init --url https://k-eu-nl-1.admin.cloud.sap --name k-eu-nl-1 --user-domain-name ccadmin --project-name kubernikus --project-domain-name ccadmin --auth-url https://identity-3.eu-nl-1.cloud.sap --username <USER> 
+kubernikusctl auth init --url https://k-na-us-1.admin.cloud.sap --name k-na-us-1 --user-domain-name ccadmin --project-name kubernikus --project-domain-name ccadmin --auth-url https://identity-3.na-us-1.cloud.sap --username <USER> 
 ```
 
 Refresh certificates with:
