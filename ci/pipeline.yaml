@@ -258,6 +258,7 @@ jobs:
     plan:
       - aggregate:
         - get: charts.git
+          trigger: true
         - get: secrets.git
         - get: pipeline.git
       - task: deploy
