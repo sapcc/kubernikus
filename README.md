@@ -43,7 +43,6 @@ It allows to easily manage Kubernetes clusters that are natively integrated with
 More documentation can be found at:
 
   * [blob/master/docs/](blob/master/docs/)
-  * [https://sapcc.github.io/kubernikus](https://sapcc.github.io/kubernikus)
   
 ## Contact
 
