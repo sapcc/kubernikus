@@ -9,6 +9,7 @@ import (
 	"github.com/sapcc/kubernikus/pkg/cmd"
 	"github.com/sapcc/kubernikus/pkg/cmd/kubernikusctl/common"
 	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
 )
 
 type GetOptions struct {
@@ -16,6 +17,11 @@ type GetOptions struct {
 	url        *url.URL
 	Openstack  *common.OpenstackClient
 	Kubernikus *common.KubernikusClient
+}
+
+func (o *GetOptions) BindFlags(flags *pflag.FlagSet) {
+	o.Openstack.BindFlags(flags)
+	flags.StringVar(&o._url, "url", o._url, "URL for Kubernikus API")
 }
 
 func (o *GetOptions) PersistentPreRun(c *cobra.Command, args []string) {
