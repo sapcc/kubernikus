@@ -280,6 +280,7 @@ jobs:
     plan:
       - get: charts.git
         passed: [staging_kubernikus-system]
+        trigger: true
 
   - name: eu-nl-1_kubernikus-system
     serial: true
