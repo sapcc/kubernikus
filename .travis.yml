@@ -23,8 +23,10 @@ after_success:
 
 notifications:
   slack: 
+    on_success: change 
+    on_failure: always
     rooms:
-      secure: $SLACK_KUBERNIKUS 
+      - secure: $SLACK_KUBERNIKUS 
 
 deploy:
   provider: pages
