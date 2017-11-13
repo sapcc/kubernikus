@@ -51,6 +51,7 @@ type KubernikusOperatorOptions struct {
 	KubernikusNetworkID string
 	Namespace           string
 	Controllers         []string
+	MetricPort          int
 }
 
 type Clients struct {

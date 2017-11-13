@@ -170,6 +170,9 @@ func (launchctl *LaunchControl) syncPool(kluster *v1.Kluster, pool *models.NodeP
 	starting := starting(nodes)
 	ready := running + starting
 
+	setMetricNodePoolSize(kluster.GetName(), pool.Name, pool.Image, pool.Flavor, pool.Size)
+	setMetricNodePoolStatus(kluster.GetName(), pool.Name, map[string]int64{"running": running, "starting": starting, "ready": ready})
+
 	switch {
 	case ready < pool.Size:
 		glog.V(3).Infof("[%v] Pool %v: Starting/Running/Total: %v/%v/%v. Too few nodes. Need to spawn more.", kluster.Name, pool.Name, starting, running, pool.Size)
