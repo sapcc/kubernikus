@@ -9,7 +9,7 @@ import (
 	"github.com/sapcc/kubernikus/pkg/cmd"
 )
 
-func NewClusterCommand(o DeleteOptions) *cobra.Command {
+func (o *DeleteOptions) NewClusterCommand() *cobra.Command {
 	c := &cobra.Command{
 		Use:     "cluster [name]",
 		Short:   "Deletes the cluster with the given name",

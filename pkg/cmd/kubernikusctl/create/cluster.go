@@ -13,7 +13,7 @@ import (
 	"github.com/sapcc/kubernikus/pkg/cmd"
 )
 
-func NewClusterCommand(o CreateOptions) *cobra.Command {
+func (o *CreateOptions) NewClusterCommand() *cobra.Command {
 	c := &cobra.Command{
 		Use:     "cluster",
 		Short:   "Creates a cluster defined in a spec expected at stdin",

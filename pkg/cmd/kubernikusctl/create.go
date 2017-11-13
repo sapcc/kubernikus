@@ -22,7 +22,6 @@ func NewCreateCommand() *cobra.Command {
 		Run:              createRun,
 	}
 	o.BindFlags(c.PersistentFlags())
-	cluster := create.NewClusterCommand(o)
-	c.AddCommand(cluster)
+	c.AddCommand(o.NewClusterCommand())
 	return c
 }

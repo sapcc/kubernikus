@@ -8,7 +8,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func NewClusterCommand(o GetOptions) *cobra.Command {
+func (o *GetOptions) NewClusterCommand() *cobra.Command {
 	c := &cobra.Command{
 		Use:     "cluster [name]",
 		Short:   "Gets info about clusters",
@@ -21,6 +21,7 @@ func NewClusterCommand(o GetOptions) *cobra.Command {
 }
 
 func (o *GetOptions) clusterPreRun(c *cobra.Command, args []string) {
+	glog.V(2).Infof("Get Cluster PR: %v", o)
 	cmd.CheckError(validateClusterCommandArgs(args))
 	cmd.CheckError(o.SetupKubernikusClient())
 }

@@ -11,7 +11,7 @@ func getRun(c *cobra.Command, args []string) {
 }
 
 func NewGetCommand() *cobra.Command {
-	o := get.GetOptions{
+	o := &get.GetOptions{
 		Openstack: common.NewOpenstackClient(),
 	}
 
@@ -23,9 +23,7 @@ func NewGetCommand() *cobra.Command {
 	}
 
 	o.BindFlags(c.PersistentFlags())
-	cluster := get.NewClusterCommand(o)
-	c.AddCommand(cluster)
-	nodePool := get.NewNodePoolCommand(o)
-	c.AddCommand(nodePool)
+	c.AddCommand(o.NewClusterCommand())
+	c.AddCommand(o.NewNodePoolCommand())
 	return c
 }

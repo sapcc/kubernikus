@@ -23,7 +23,6 @@ func NewDeleteCommand() *cobra.Command {
 		Run:              deleteRun,
 	}
 	o.BindFlags(c.PersistentFlags())
-	cluster := delete.NewClusterCommand(o)
-	c.AddCommand(cluster)
+	c.AddCommand(o.NewClusterCommand())
 	return c
 }

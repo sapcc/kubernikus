@@ -9,7 +9,7 @@ import (
 	"github.com/sapcc/kubernikus/pkg/cmd/printers"
 )
 
-func NewNodePoolCommand(o GetOptions) *cobra.Command {
+func (o *GetOptions) NewNodePoolCommand() *cobra.Command {
 	c := &cobra.Command{
 		Use:     "nodepool [cluster] [name]",
 		Short:   "Gets info about nodepools of a cluster",
