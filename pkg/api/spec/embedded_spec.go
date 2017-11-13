@@ -439,19 +439,23 @@ func init() {
       "type": "object",
       "properties": {
         "healthy": {
-          "type": "integer"
+          "type": "integer",
+          "default": 0
         },
         "name": {
           "type": "string"
         },
         "running": {
-          "type": "integer"
+          "type": "integer",
+          "default": 0
         },
         "schedulable": {
-          "type": "integer"
+          "type": "integer",
+          "default": 0
         },
         "size": {
-          "type": "integer"
+          "type": "integer",
+          "default": 0
         }
       },
       "x-nullable": false

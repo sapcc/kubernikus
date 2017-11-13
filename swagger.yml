@@ -316,12 +316,16 @@ definitions:
         type: string
       size:
         type: integer
+        default: 0 
       running:
         type: integer
+        default: 0 
       healthy:
         type: integer
+        default: 0 
       schedulable:
         type: integer
+        default: 0 
   Credentials:
     type: object
     properties:
