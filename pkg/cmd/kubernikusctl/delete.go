@@ -22,7 +22,7 @@ func NewDeleteCommand() *cobra.Command {
 		PersistentPreRun: o.PersistentPreRun,
 		Run:              deleteRun,
 	}
-	o.Openstack.BindFlags(c.PersistentFlags())
+	o.BindFlags(c.PersistentFlags())
 	cluster := delete.NewClusterCommand(o)
 	c.AddCommand(cluster)
 	return c

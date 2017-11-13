@@ -21,7 +21,7 @@ func NewCreateCommand() *cobra.Command {
 		PersistentPreRun: o.PersistentPreRun,
 		Run:              createRun,
 	}
-	o.Openstack.BindFlags(c.PersistentFlags())
+	o.BindFlags(c.PersistentFlags())
 	cluster := create.NewClusterCommand(o)
 	c.AddCommand(cluster)
 	return c

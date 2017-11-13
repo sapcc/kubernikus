@@ -7,6 +7,7 @@ import (
 	"github.com/golang/glog"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
 
 	"github.com/sapcc/kubernikus/pkg/cmd"
 	"github.com/sapcc/kubernikus/pkg/cmd/kubernikusctl/common"
@@ -23,6 +24,12 @@ func (o *DeleteOptions) PersistentPreRun(c *cobra.Command, args []string) {
 	cmd.CheckError(o.Openstack.Validate(c, args))
 	cmd.CheckError(o.Openstack.Setup())
 	cmd.CheckError(o.Openstack.Authenticate())
+}
+
+func (o *DeleteOptions) BindFlags(flags *pflag.FlagSet) {
+	o.Openstack.BindFlags(flags)
+
+	flags.StringVar(&o._url, "url", o._url, "URL for Kubernikus API")
 }
 
 func (o *DeleteOptions) SetupKubernikusClient() error {
