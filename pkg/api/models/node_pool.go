@@ -34,7 +34,6 @@ type NodePool struct {
 	Name string `json:"name"`
 
 	// size
-	// Required: true
 	// Maximum: 127
 	// Minimum: 0
 	Size int64 `json:"size"`
@@ -120,8 +119,8 @@ func (m *NodePool) validateName(formats strfmt.Registry) error {
 
 func (m *NodePool) validateSize(formats strfmt.Registry) error {
 
-	if err := validate.Required("size", "body", int64(m.Size)); err != nil {
-		return err
+	if swag.IsZero(m.Size) { // not required
+		return nil
 	}
 
 	if err := validate.MinimumInt("size", "body", int64(m.Size), 0, false); err != nil {

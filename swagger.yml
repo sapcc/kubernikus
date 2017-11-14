@@ -259,7 +259,6 @@ definitions:
     type: object
     required:
       - name
-      - size
       - flavor
     properties:
       name:
@@ -271,6 +270,7 @@ definitions:
         type: integer
         maximum: 127
         minimum: 0
+        default: 0 
       flavor:
         type: string
         x-nullable: false
@@ -316,16 +316,12 @@ definitions:
         type: string
       size:
         type: integer
-        default: 0 
       running:
         type: integer
-        default: 0 
       healthy:
         type: integer
-        default: 0 
       schedulable:
         type: integer
-        default: 0 
   Credentials:
     type: object
     properties:

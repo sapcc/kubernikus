@@ -393,7 +393,6 @@ func init() {
       "type": "object",
       "required": [
         "name",
-        "size",
         "flavor"
       ],
       "properties": {
@@ -416,6 +415,7 @@ func init() {
         },
         "size": {
           "type": "integer",
+          "default": 0,
           "maximum": 127,
           "minimum": 0,
           "x-nullable": false
@@ -439,23 +439,19 @@ func init() {
       "type": "object",
       "properties": {
         "healthy": {
-          "type": "integer",
-          "default": 0
+          "type": "integer"
         },
         "name": {
           "type": "string"
         },
         "running": {
-          "type": "integer",
-          "default": 0
+          "type": "integer"
         },
         "schedulable": {
-          "type": "integer",
-          "default": 0
+          "type": "integer"
         },
         "size": {
-          "type": "integer",
-          "default": 0
+          "type": "integer"
         }
       },
       "x-nullable": false

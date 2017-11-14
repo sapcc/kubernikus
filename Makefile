@@ -68,6 +68,7 @@ pkg/api/rest/operations/kubernikus_api.go: swagger.yml
 ifneq (,$(wildcard $(SWAGGER_BIN)))
 	$(SWAGGER_BIN) generate server --name kubernikus --target pkg/api --model-package models \
 		--server-package rest --flag-strategy pflag --principal models.Principal --exclude-main
+	sed -i '' -e 's/int64 `json:"\([^,]*\),omitempty"`/int64 `json:"\1"`/' pkg/api/models/*.go
 	sed -e's/^package.*/package spec/' pkg/api/rest/embedded_spec.go > pkg/api/spec/embedded_spec.go
 	rm pkg/api/rest/embedded_spec.go
 else
