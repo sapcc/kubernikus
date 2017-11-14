@@ -580,13 +580,12 @@ func (c *client) CreateNode(kluster *kubernikus_v1.Kluster, pool *models.NodePoo
 	glog.V(5).Infof("Creating node %v", name)
 
 	server, err := servers.Create(client, servers.CreateOpts{
-		Name:           name,
-		FlavorName:     pool.Flavor,
-		ImageName:      pool.Image,
-		Networks:       []servers.Network{servers.Network{UUID: kluster.Spec.Openstack.NetworkID}},
-		UserData:       userData,
-		SecurityGroups: []string{"default"},
-		ServiceClient:  client,
+		Name:          name,
+		FlavorName:    pool.Flavor,
+		ImageName:     pool.Image,
+		Networks:      []servers.Network{servers.Network{UUID: kluster.Spec.Openstack.NetworkID}},
+		UserData:      userData,
+		ServiceClient: client,
 	}).Extract()
 
 	if err != nil {
