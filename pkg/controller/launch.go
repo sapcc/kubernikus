@@ -188,8 +188,12 @@ func (launchctl *LaunchControl) syncPool(kluster *v1.Kluster, pool *models.NodeP
 
 func (launchctl *LaunchControl) createNode(kluster *v1.Kluster, pool *models.NodePool) error {
 	glog.V(2).Infof("[%v] Pool %v: Creating new node", kluster.Name, pool.Name)
+	secret, err := launchctl.Clients.Kubernetes.CoreV1().Secrets(kluster.Namespace).Get(kluster.GetName(), metav1.GetOptions{})
+	if err != nil {
+		return err
+	}
 
-	userdata, err := templates.Ignition.GenerateNode(kluster, launchctl.Clients.Kubernetes)
+	userdata, err := templates.Ignition.GenerateNode(kluster, secret)
 	if err != nil {
 		glog.Errorf("Ignition userdata couldn't be generated: %v", err)
 	}

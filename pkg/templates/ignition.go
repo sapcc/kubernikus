@@ -10,21 +10,37 @@ import (
 	"github.com/coreos/container-linux-config-transpiler/config"
 	"github.com/coreos/container-linux-config-transpiler/config/platform"
 	"github.com/golang/glog"
-	"github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
+	"k8s.io/client-go/pkg/api/v1"
+
+	kubernikusv1 "github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
 	"github.com/sapcc/kubernikus/pkg/version"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/kubernetes"
 )
 
 type ignition struct {
+	requiredNodeSecrets []string
 }
 
-var Ignition = &ignition{}
+var Ignition = &ignition{
+	requiredNodeSecrets: []string{
+		"tls-ca.pem",
+		"kubelet-clients-ca.pem",
+		"apiserver-clients-system-kube-proxy.pem",
+		"apiserver-clients-system-kube-proxy-key.pem",
+		"bootstrapToken",
+		"openstack-auth-url",
+		"openstack-username",
+		"openstack-password",
+		"openstack-domain-name",
+		"openstack-region",
+	},
+}
 
-func (i *ignition) GenerateNode(kluster *v1.Kluster, client kubernetes.Interface) ([]byte, error) {
-	secret, err := client.CoreV1().Secrets(kluster.Namespace).Get(kluster.GetName(), metav1.GetOptions{})
-	if err != nil {
-		return nil, err
+func (i *ignition) GenerateNode(kluster *kubernikusv1.Kluster, secret *v1.Secret) ([]byte, error) {
+
+	for _, field := range i.requiredNodeSecrets {
+		if _, ok := secret.Data[field]; !ok {
+			return nil, fmt.Errorf("Field %s missing in secret", field)
+		}
 	}
 
 	tmpl, err := template.New("node").Funcs(sprig.TxtFuncMap()).Parse(Node)
