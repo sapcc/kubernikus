@@ -549,7 +549,7 @@ func (c *client) GetNodes(kluster *kubernikus_v1.Kluster, pool *models.NodePool)
 		return nodes, err
 	}
 
-	prefix := fmt.Sprintf("%v-%v", kluster.Spec.Name, pool_id)
+	prefix := fmt.Sprintf("%v-%v-", kluster.Spec.Name, pool_id)
 	opts := servers.ListOpts{Name: prefix}
 
 	servers.List(client, opts).EachPage(func(page pagination.Page) (bool, error) {
