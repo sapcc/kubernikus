@@ -15,17 +15,16 @@ run:
       export BINARIES=$(pwd -P)/binaries
       export GOPATH=$PWD/gopath
 
-      cd gopath/src/github.wdf.sap.corp/monsoon/monsoonctl
+      cd gopath/src/github.com/sapcc/kubernikus
 
       make bin/darwin/kubernikusctl
       make bin/linux/kubernikusctl
       make bin/windows/kubernikusctl.exe
       upx bin/*/*
-      git rev-parse HEAD > commitish
+      git rev-parse HEAD > $BINARIES/commitish
 
       cp bin/darwin/kubernikusctl $BINARIES/kubernikusctl_darwin_amd64
       cp bin/linux/kubernikusctl $BINARIES/kubernikusctl_linux_amd64
       cp bin/windows/kubernikusctl.exe $BINARIES/kubernikusctl_windows_amd64.exe
-      cp bin/version commitish $BINARIES/
 
 params:
