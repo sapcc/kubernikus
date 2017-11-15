@@ -73,6 +73,7 @@ resource_types:
 groups:
   - name: kubernikus
     jobs:
+      - cli
       - staging
       - e2e
       - rollout
@@ -97,6 +98,15 @@ jobs:
 # kubernikus
 #
 ####################################################################################
+
+  - name: cli
+    plan:
+      - aggregate:
+        - get: kubernikus.builds
+          trigger: true
+        - get: pipeline.git
+      - task: build
+        file: pipeline.git/ci/task_cli.yaml
 
   - name: staging
     serial: true

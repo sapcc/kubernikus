@@ -1,0 +1,32 @@
+---
+platform: 'darwin'
+
+inputs:
+  - name: kubernikus.builds
+    path: gopath/src/github.com/sapcc/kubernikus
+  - name: secrets.git
+outputs:
+  - name: binaries
+
+run:
+  path: /bin/sh
+  args:
+    - -exc
+    - |
+      export BINARIES=$(pwd -P)/binaries
+      export GOPATH=$PWD/gopath
+
+      cd gopath/src/github.wdf.sap.corp/monsoon/monsoonctl
+
+      make bin/darwin/kubernikusctl
+      make bin/linux/kubernikusctl
+      make bin/windows/kubernikusctl.exe
+      upx bin/*/*
+      git rev-parse HEAD > commitish
+
+      cp bin/darwin/kubernikusctl $BINARIES/kubernikusctl_darwin_amd64
+      cp bin/linux/kubernikusctl $BINARIES/kubernikusctl_linux_amd64
+      cp bin/windows/kubernikusctl.exe $BINARIES/kubernikusctl_windows_amd64.exe
+      cp bin/version commitish $BINARIES/
+
+params:
