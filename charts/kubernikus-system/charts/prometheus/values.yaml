@@ -6,6 +6,7 @@ prometheus:
   tag: v2.0.0
 
 retention: 7d
+use_alertmanager: true
 
 persistence:
   name: kubernikus-prometheus-data

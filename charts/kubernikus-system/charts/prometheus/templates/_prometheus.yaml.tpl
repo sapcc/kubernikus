@@ -1,8 +1,12 @@
 rule_files:
   - ./*.rules
+  - ./*.alerts
 
 global:
   scrape_timeout: 55s
+
+  external_labels:
+    region: {{ .Values.global.region }}
 
 scrape_configs:
 - job_name: 'endpoints'
@@ -183,3 +187,13 @@ scrape_configs:
   metrics_path: /prometheus/metrics
   static_configs:
     - targets: ['localhost:9090']
+
+{{- if .Values.use_alertmanager }}
+alerting:
+  alertmanagers:
+  - scheme: https
+    static_configs:
+    - targets:
+      - "alertmanager.eu-de-1.cloud.sap"
+      - "alertmanager.eu-nl-1.cloud.sap"
+{{- end}}
