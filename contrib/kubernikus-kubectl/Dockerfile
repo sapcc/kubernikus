@@ -4,7 +4,7 @@ FROM sapcc/kubernikus-binaries:$VERSION as kubernikus-binaries
 FROM alpine:3.6
 
 ARG KUBERNETES_VERSION=v1.7.7
-ARG HELM_VERSION=v2.6.1
+ARG HELM_VERSION=v2.7.0
 
 RUN apk add --no-cache --virtual=build-dependencies bash jq curl ca-certificates 
 
