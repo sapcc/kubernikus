@@ -40,6 +40,17 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/ApiVersions'
+  /api/v1/openstack/metadata:
+    get:
+      operationId: GetOpenstackMetadata
+      summary: Grab bag of openstack metadata
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/OpenstackMetadata'
+        default:
+          $ref: '#/responses/errorResponse'
   /api/v1/clusters/:
     get:
       operationId: ListClusters
@@ -147,9 +158,76 @@ paths:
         default:
           $ref: '#/responses/errorResponse'
 definitions:
+  OpenstackMetadata:
+    properties:
+      flavors:
+        type: array
+        items:
+          type: object
+          x-go-name: Flavor 
+          properties:
+            name:
+              type: string
+            id:
+              type: string
+      securityGroups:
+        type: array
+        items:
+          type: object
+          x-go-name: SecurityGroup 
+          properties:
+            name:
+              type: string
+            id:
+              type: string
+      keyPairs:
+        type: array
+        items:
+          type: object
+          x-go-name: KeyPair
+          properties:
+            name:
+              type: string
+      routers:
+        type: array
+        items:
+          type: object
+          x-go-name: Router
+          properties:
+            name:
+              type: string
+            id:
+              type: string
+            networks:
+              type: array
+              items:
+                type: object
+                x-go-name: Network 
+                properties:
+                  name:
+                    type: string
+                  id:
+                    type: string
+                  subnets:
+                    type: array
+                    items:
+                      type: object
+                      x-go-name: Subnet 
+                      properties:
+                        name:
+                          type: string
+                        id:
+                          type: string
+                        CIDR:
+                          type: string
   KlusterPhase:
     type: string
-    enum: [Pending, Creating, Running, Terminating, Error]
+    enum:
+      - Pending
+      - Creating
+      - Running
+      - Terminating
+      - Error
   Info:
     properties:
       version:
@@ -187,7 +265,6 @@ definitions:
         type: array
         items:
           type: string
-
   Kluster:
     type: object
     required:
@@ -213,16 +290,18 @@ definitions:
         default: 198.18.128.0/17
         x-nullable: false
         type: string
-        pattern: '^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$'
+        pattern: >-
+          ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$
       clusterCIDR:
         description: CIDR Range for Pods in the cluster. Can not be updated.
         default: 198.19.0.0/16
         type: string
         x-nullable: false
-        pattern: '^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$'
+        pattern: >-
+          ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$
       nodePools:
         type: array
-        x-omitempty: true #should work with go-swagger > 0.12.0
+        x-omitempty: true
         items:
           $ref: '#/definitions/NodePool'
       advertiseAddress:
@@ -235,8 +314,6 @@ definitions:
         x-nullable: false
         type: string
         default: cluster.local
-      #domain:
-      #  type: string
       name:
         type: string
         readOnly: true
@@ -253,7 +330,6 @@ definitions:
       lbSubnetID:
         x-go-name: LBSubnetID
         type: string
-
   NodePool:
     x-nullable: false
     type: object
@@ -270,7 +346,7 @@ definitions:
         type: integer
         maximum: 127
         minimum: 0
-        default: 0 
+        default: 0
       flavor:
         type: string
         x-nullable: false
@@ -288,7 +364,6 @@ definitions:
         type: boolean
       repair:
         type: boolean
-
   KlusterStatus:
     readOnly: true
     x-nullable: false
@@ -369,3 +444,4 @@ definitions:
         description: link to help page explaining the error in more detail
         type: string
         format: uri
+

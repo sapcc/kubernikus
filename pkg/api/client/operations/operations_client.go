@@ -112,6 +112,35 @@ func (a *Client) GetClusterInfo(params *GetClusterInfoParams, authInfo runtime.C
 }
 
 /*
+GetOpenstackMetadata grabs bag of openstack metadata
+*/
+func (a *Client) GetOpenstackMetadata(params *GetOpenstackMetadataParams, authInfo runtime.ClientAuthInfoWriter) (*GetOpenstackMetadataOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewGetOpenstackMetadataParams()
+	}
+
+	result, err := a.transport.Submit(&runtime.ClientOperation{
+		ID:                 "GetOpenstackMetadata",
+		Method:             "GET",
+		PathPattern:        "/api/v1/openstack/metadata",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &GetOpenstackMetadataReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return result.(*GetOpenstackMetadataOK), nil
+
+}
+
+/*
 Info gets info about kubernikus
 */
 func (a *Client) Info(params *InfoParams) (*InfoOK, error) {

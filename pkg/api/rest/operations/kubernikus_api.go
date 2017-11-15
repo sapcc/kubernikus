@@ -46,6 +46,9 @@ func NewKubernikusAPI(spec *loads.Document) *KubernikusAPI {
 		GetClusterInfoHandler: GetClusterInfoHandlerFunc(func(params GetClusterInfoParams, principal *models.Principal) middleware.Responder {
 			return middleware.NotImplemented("operation GetClusterInfo has not yet been implemented")
 		}),
+		GetOpenstackMetadataHandler: GetOpenstackMetadataHandlerFunc(func(params GetOpenstackMetadataParams, principal *models.Principal) middleware.Responder {
+			return middleware.NotImplemented("operation GetOpenstackMetadata has not yet been implemented")
+		}),
 		InfoHandler: InfoHandlerFunc(func(params InfoParams) middleware.Responder {
 			return middleware.NotImplemented("operation Info has not yet been implemented")
 		}),
@@ -114,6 +117,8 @@ type KubernikusAPI struct {
 	GetClusterCredentialsHandler GetClusterCredentialsHandler
 	// GetClusterInfoHandler sets the operation handler for the get cluster info operation
 	GetClusterInfoHandler GetClusterInfoHandler
+	// GetOpenstackMetadataHandler sets the operation handler for the get openstack metadata operation
+	GetOpenstackMetadataHandler GetOpenstackMetadataHandler
 	// InfoHandler sets the operation handler for the info operation
 	InfoHandler InfoHandler
 	// ListAPIVersionsHandler sets the operation handler for the list API versions operation
@@ -203,6 +208,10 @@ func (o *KubernikusAPI) Validate() error {
 
 	if o.GetClusterInfoHandler == nil {
 		unregistered = append(unregistered, "GetClusterInfoHandler")
+	}
+
+	if o.GetOpenstackMetadataHandler == nil {
+		unregistered = append(unregistered, "GetOpenstackMetadataHandler")
 	}
 
 	if o.InfoHandler == nil {
@@ -345,6 +354,11 @@ func (o *KubernikusAPI) initHandlerCache() {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/api/v1/clusters/{name}/info"] = NewGetClusterInfo(o.context, o.GetClusterInfoHandler)
+
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/api/v1/openstack/metadata"] = NewGetOpenstackMetadata(o.context, o.GetOpenstackMetadataHandler)
 
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)

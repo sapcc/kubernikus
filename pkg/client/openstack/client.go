@@ -49,6 +49,7 @@ type client struct {
 	roleNameToID   sync.Map
 }
 
+
 type Client interface {
 	CreateNode(*kubernikus_v1.Kluster, *models.NodePool, []byte) (string, error)
 	DeleteNode(*kubernikus_v1.Kluster, string) error

@@ -42,6 +42,7 @@ func Configure(api *operations.KubernikusAPI, rt *apipkg.Runtime) {
 	api.UpdateClusterHandler = handlers.NewUpdateCluster(rt)
 	api.GetClusterCredentialsHandler = handlers.NewGetClusterCredentials(rt)
 	api.GetClusterInfoHandler = handlers.NewGetClusterInfo(rt)
+	api.GetOpenstackMetadataHandler = handlers.NewGetOpenstackMetadata(rt)
 
 	api.ServerShutdown = func() {}
 

@@ -203,6 +203,23 @@ func init() {
         }
       ]
     },
+    "/api/v1/openstack/metadata": {
+      "get": {
+        "summary": "Grab bag of openstack metadata",
+        "operationId": "GetOpenstackMetadata",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/OpenstackMetadata"
+            }
+          },
+          "default": {
+            "$ref": "#/responses/errorResponse"
+          }
+        }
+      }
+    },
     "/info": {
       "get": {
         "summary": "Get info about Kubernikus",
@@ -455,6 +472,100 @@ func init() {
         }
       },
       "x-nullable": false
+    },
+    "OpenstackMetadata": {
+      "properties": {
+        "flavors": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              }
+            },
+            "x-go-name": "Flavor"
+          }
+        },
+        "keyPairs": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              }
+            },
+            "x-go-name": "KeyPair"
+          }
+        },
+        "routers": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "networks": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "subnets": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "CIDR": {
+                            "type": "string"
+                          },
+                          "id": {
+                            "type": "string"
+                          },
+                          "name": {
+                            "type": "string"
+                          }
+                        },
+                        "x-go-name": "Subnet"
+                      }
+                    }
+                  },
+                  "x-go-name": "Network"
+                }
+              }
+            },
+            "x-go-name": "Router"
+          }
+        },
+        "securityGroups": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              }
+            },
+            "x-go-name": "SecurityGroup"
+          }
+        }
+      }
     },
     "OpenstackSpec": {
       "type": "object",
