@@ -9,6 +9,17 @@ post_failure_to_slack: &post_failure_to_slack
       :boom: <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|$BUILD_PIPELINE_NAME $BUILD_JOB_NAME job #$BUILD_NAME failed>
 
 resources:
+  #- name: kubernikusctl.version
+  #  type: time-version
+  #  check_every: 525600h
+
+  - name: kubernikusctl.release
+    type: github-release
+    source:
+      owner: sapcc
+      repository: kubernikus
+      access_token: ((github-com-access-token))
+
   - name: kubernikus.builds
     type: gh-status
     source:
@@ -55,7 +66,7 @@ resources:
       url: {{slack-webhook-url}}
 
 resource_types:
-  - name: time-version-resource
+  - name: time-version
     type: docker-image
     source:
       repository: hub.global.cloud.sap/concourse/time-version-resource
@@ -104,9 +115,16 @@ jobs:
       - aggregate:
         - get: kubernikus.builds
           trigger: true
-        - get: pipeline.git
       - task: build
-        file: pipeline.git/ci/task_cli.yaml
+        file: kubernikus.builds/ci/task_cli.yaml
+      - put: kubernikusctl.release
+        params:
+          name: binaries/tag
+          tag: binaries/tag
+          tag_prefix: v
+          commitish: binaries/commitish
+          globs:
+            - binaries/kubernikusctl*
 
   - name: staging
     serial: true
@@ -122,7 +140,7 @@ jobs:
           OS_AUTH_URL: https://identity-3.eu-nl-1.cloud.sap/v3
           OS_USERNAME: {{kubernikus-eu-nl-1-username}}
           OS_PASSWORD: {{kubernikus-eu-nl-1-password}}
-          OS_USER_DOMAIN_NAME: ccadmin 
+          OS_USER_DOMAIN_NAME: ccadmin
           OS_PROJECT_NAME: kubernikus-staging
           OS_PROJECT_DOMAIN_NAME: ccadmin
           KUBERNIKUS_NAME: k-staging
@@ -150,7 +168,7 @@ jobs:
     plan:
       - aggregate:
         - get: secrets.git
-        - get: pipeline.git        
+        - get: pipeline.git
         - get: kubernikus.builds
           passed: [rollout]
           trigger: true
@@ -160,7 +178,7 @@ jobs:
           OS_AUTH_URL: https://identity-3.eu-nl-1.cloud.sap/v3
           OS_USERNAME: {{kubernikus-eu-nl-1-username}}
           OS_PASSWORD: {{kubernikus-eu-nl-1-password}}
-          OS_USER_DOMAIN_NAME: ccadmin 
+          OS_USER_DOMAIN_NAME: ccadmin
           OS_PROJECT_NAME: kubernikus
           OS_PROJECT_DOMAIN_NAME: ccadmin
           KUBERNIKUS_NAME: k-eu-nl-1
@@ -168,12 +186,12 @@ jobs:
     on_failure:
       <<: *post_failure_to_slack
 
-  - name: na-us-1 
+  - name: na-us-1
     serial: true
     plan:
       - aggregate:
         - get: secrets.git
-        - get: pipeline.git        
+        - get: pipeline.git
         - get: kubernikus.builds
           passed: [rollout]
           trigger: true
@@ -183,7 +201,7 @@ jobs:
           OS_AUTH_URL: https://identity-3.na-us-1.cloud.sap/v3
           OS_USERNAME: {{kubernikus-na-us-1-username}}
           OS_PASSWORD: {{kubernikus-na-us-1-password}}
-          OS_USER_DOMAIN_NAME: ccadmin 
+          OS_USER_DOMAIN_NAME: ccadmin
           OS_PROJECT_NAME: kubernikus
           OS_PROJECT_DOMAIN_NAME: ccadmin
           KUBERNIKUS_NAME: k-na-us-1
@@ -193,7 +211,7 @@ jobs:
 
 ####################################################################################
 #
-# admin 
+# admin
 #
 ####################################################################################
 #
@@ -202,7 +220,7 @@ jobs:
     plan:
       - aggregate:
         - get: secrets.git
-        - get: pipeline.git        
+        - get: pipeline.git
         - get: kubernikus.builds
           trigger: true
       - task: deploy
@@ -277,7 +295,7 @@ jobs:
           OS_AUTH_URL: https://identity-3.eu-nl-1.cloud.sap/v3
           OS_USERNAME: {{kubernikus-eu-nl-1-username}}
           OS_PASSWORD: {{kubernikus-eu-nl-1-password}}
-          OS_USER_DOMAIN_NAME: ccadmin 
+          OS_USER_DOMAIN_NAME: ccadmin
           OS_PROJECT_NAME: kubernikus-staging
           OS_PROJECT_DOMAIN_NAME: ccadmin
           KUBERNIKUS_NAME: k-staging
@@ -307,7 +325,7 @@ jobs:
           OS_AUTH_URL: https://identity-3.eu-nl-1.cloud.sap/v3
           OS_USERNAME: {{kubernikus-eu-nl-1-username}}
           OS_PASSWORD: {{kubernikus-eu-nl-1-password}}
-          OS_USER_DOMAIN_NAME: ccadmin 
+          OS_USER_DOMAIN_NAME: ccadmin
           OS_PROJECT_NAME: kubernikus
           OS_PROJECT_DOMAIN_NAME: ccadmin
           KUBERNIKUS_NAME: k-eu-nl-1
@@ -330,7 +348,7 @@ jobs:
           OS_AUTH_URL: https://identity-3.na-us-1.cloud.sap/v3
           OS_USERNAME: {{kubernikus-na-us-1-username}}
           OS_PASSWORD: {{kubernikus-na-us-1-password}}
-          OS_USER_DOMAIN_NAME: ccadmin 
+          OS_USER_DOMAIN_NAME: ccadmin
           OS_PROJECT_NAME: kubernikus
           OS_PROJECT_DOMAIN_NAME: ccadmin
           KUBERNIKUS_NAME: k-na-us-1

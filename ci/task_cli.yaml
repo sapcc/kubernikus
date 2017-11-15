@@ -22,6 +22,7 @@ run:
       make bin/windows/kubernikusctl.exe
       upx bin/*/*
       git rev-parse HEAD > $BINARIES/commitish
+      echo "1.0.0+"$(git rev-parse --short HEAD) > $BINARIES/tag
 
       cp bin/darwin/kubernikusctl $BINARIES/kubernikusctl_darwin_amd64
       cp bin/linux/kubernikusctl $BINARIES/kubernikusctl_linux_amd64
