@@ -17,10 +17,11 @@ BUILD_ARGS+= --build-arg http_proxy=$(http_proxy) --build-arg https_proxy=$(http
 endif
 
 HAS_GLIDE := $(shell command -v glide;)
+HAS_GLIDE_VC := $(shell command -v glide-vc;)
 GO_SWAGGER_VERSION := 0.12.0
 SWAGGER_BIN        := bin/$(GOOS)/swagger-$(GO_SWAGGER_VERSION)
 
-.PHONY: all clean code-gen client-gen informer-gen lister-gen
+.PHONY: all clean code-gen client-gen informer-gen lister-gen vendor
 
 all: $(BINARIES:%=bin/$(GOOS)/%)
 
@@ -97,7 +98,17 @@ clean:
 include code-generate.mk
 code-gen: client-gen informer-gen lister-gen
 
+vendor:
+ifndef HAS_GLIDE_VC
+	$(error glide-vc (vendor cleaner) not found. Run `make bootstrap to fix.`)
+endif
+	glide install -v
+	glide-vc --only-code --no-tests
+
 bootstrap: $(SWAGGER_BIN)
 ifndef HAS_GLIDE
 	brew install glide
+endif
+ifndef HAS_GLIDE_VC
+	go get -u github.com/sgotti/glide-vc
 endif
