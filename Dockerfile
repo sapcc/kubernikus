@@ -11,7 +11,7 @@ RUN curl -Lo /bin/dumb-init https://github.com/Yelp/dumb-init/releases/download/
 	&& dumb-init -V
 COPY charts/ /etc/kubernikus/charts
 COPY --from=kubernikus-binaries /apiserver /kubernikus /wormhole /usr/local/bin/
-COPY --from=kubernikus-binaries /kubernikusctl /static/binaries/linux/amd64/kubernikusctl
+#COPY --from=kubernikus-binaries /kubernikusctl /static/binaries/linux/amd64/kubernikusctl
 COPY --from=kubernikus-docs /public/docs /static/docs
 ENTRYPOINT ["dumb-init", "--"]
 CMD ["apiserver"]
