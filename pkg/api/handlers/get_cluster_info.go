@@ -53,7 +53,7 @@ func (d *getClusterInfo) getLinks() ([]models.Link, error) {
 
 	release := "latest"
 	if version.GitCommit != "HEAD" {
-		release = fmt.Sprintf("v%s-%s", version.VERSION, version.GitCommit)
+		release = fmt.Sprintf("v%s+%s", version.VERSION, version.GitCommit)
 	}
 	resp, err := http.Get(fmt.Sprintf("%s/repos/sapcc/kubernikus/releases/tags/%s", d.githubApiURL, release))
 	if err != nil {
