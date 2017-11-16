@@ -1,5 +1,5 @@
-hash: 7c50d1898bb69cae579c5295d51652dbb140ec6a9c52bb89e794b8625c9e119b
-updated: 2017-11-10T09:42:27.40025+01:00
+hash: 26808f3467ac919f9cb479eb435c10163b98f73a2825b254870723070efc75fa
+updated: 2017-11-16T15:55:56.862057+01:00
 imports:
 - name: github.com/ajeddeloh/yaml
   version: 1072abfea31191db507785e2e0c1b8d1440d35a5
@@ -27,9 +27,10 @@ imports:
   subpackages:
   - semver
 - name: github.com/coreos/go-systemd
-  version: 7c9533367ef925dc1078d75e5b7141e10da2c4e8
+  version: 48702e0da86bd25e76cfef347e2adeb434a0d0a6
   subpackages:
-  - dbus
+  - daemon
+  - journal
   - unit
 - name: github.com/coreos/ignition
   version: 11813c57bc05f30644bbae7891ae30a4a62e0b33
@@ -47,7 +48,7 @@ imports:
   subpackages:
   - cache/memory
 - name: github.com/davecgh/go-spew
-  version: 5215b55f46b2b919f50a1df0eaa5886afe4e3b3d
+  version: 6d212800a42e8ab5c146b8ace3490ee17e5225f9
   subpackages:
   - spew
 - name: github.com/docker/distribution
@@ -67,8 +68,6 @@ imports:
   - log
 - name: github.com/emicklei/go-restful-swagger12
   version: dcef7f55730566d41eae5db10e7d6981829720f6
-- name: github.com/facebookgo/symwalk
-  version: 42004b9f322246749dd73ad71008b1f3160c0052
 - name: github.com/ghodss/yaml
   version: 73d445a93680fa1a78ae23a5839bad48f32ba1ee
 - name: github.com/go-openapi/analysis
@@ -129,6 +128,8 @@ imports:
   subpackages:
   - internal
   - openstack
+  - openstack/compute/v2/extensions/keypairs
+  - openstack/compute/v2/extensions/secgroups
   - openstack/compute/v2/flavors
   - openstack/compute/v2/images
   - openstack/compute/v2/servers
@@ -176,13 +177,17 @@ imports:
 - name: github.com/Masterminds/goutils
   version: 3391d3790d23d03408670993e957e8f408993c34
 - name: github.com/Masterminds/semver
-  version: 3f0ab6d4ab4bed1c61caf056b63a6e62190c7801
+  version: 517734cc7d6470c0d07130e40fd40bdeb9bcd3fd
 - name: github.com/Masterminds/sprig
   version: 9526be0327b26ad31aa70296a7b10704883976d5
 - name: github.com/mitchellh/mapstructure
   version: d0303fe809921458f417bcf828397a65db30a7e4
 - name: github.com/pkg/errors
   version: 645ef00459ed84a119197bfb8d8205042c6df63d
+- name: github.com/pmezard/go-difflib
+  version: d8ed2627bdf02c080bf22230dbb337003b7aba2d
+  subpackages:
+  - difflib
 - name: github.com/pmylund/go-cache
   version: 93d85800f2fa6bd0a739e7bd612bfa3bc008b72d
 - name: github.com/PuerkitoBio/purell
@@ -199,6 +204,10 @@ imports:
   - cobra
 - name: github.com/spf13/pflag
   version: 9ff6c6923cfffbcd502984b8e0c80539a94968b7
+- name: github.com/stretchr/testify
+  version: 69483b4bd14f5845b5a1e55bca19e954e827f1d0
+  subpackages:
+  - assert
 - name: github.com/tylerb/graceful
   version: d72b0151351a13d0421b763b88f791469c4f5dc7
 - name: github.com/ugorji/go
@@ -244,18 +253,15 @@ imports:
   - unicode/norm
   - width
 - name: google.golang.org/grpc
-  version: 8050b9cbc271307e5a716a9d782803d09b0d6f2d
+  version: 777daa17ff9b5daef1cfdf915088a2ada3332bf0
   subpackages:
   - codes
   - credentials
   - grpclog
   - internal
-  - keepalive
   - metadata
   - naming
   - peer
-  - stats
-  - tap
   - transport
 - name: gopkg.in/inf.v0
   version: 3887ee99ecf07df5b447e9b00d9c0b2adaa9f3e4
@@ -464,7 +470,7 @@ imports:
 - name: k8s.io/gengo
   version: 9e661e9308f078838e266cca1c673922088c0ea4
 - name: k8s.io/helm
-  version: 012cb0ac1a1b2f888144ef5a67b8dab6c2d45be6
+  version: 8478fb4fc723885b155c924d1c8c410b7a9444e6
   subpackages:
   - pkg/chartutil
   - pkg/helm
@@ -478,12 +484,4 @@ imports:
   version: 4fe312863be2155a7b68acd2aff1c9221b24e68c
   subpackages:
   - exec
-testImports:
-- name: github.com/pmezard/go-difflib
-  version: d8ed2627bdf02c080bf22230dbb337003b7aba2d
-  subpackages:
-  - difflib
-- name: github.com/stretchr/testify
-  version: 69483b4bd14f5845b5a1e55bca19e954e827f1d0
-  subpackages:
-  - assert
+testImports: []

@@ -23,6 +23,7 @@ import (
 
 	"github.com/ghodss/yaml"
 	"k8s.io/helm/pkg/proto/hapi/chart"
+	"k8s.io/helm/pkg/version"
 )
 
 const (
@@ -57,16 +58,16 @@ type Dependency struct {
 	// used to fetch the repository index.
 	Repository string `json:"repository"`
 	// A yaml path that resolves to a boolean, used for enabling/disabling charts (e.g. subchart1.enabled )
-	Condition string `json:"condition"`
+	Condition string `json:"condition,omitempty"`
 	// Tags can be used to group charts for enabling/disabling together
-	Tags []string `json:"tags"`
+	Tags []string `json:"tags,omitempty"`
 	// Enabled bool determines if chart should be loaded
-	Enabled bool `json:"enabled"`
+	Enabled bool `json:"enabled,omitempty"`
 	// ImportValues holds the mapping of source values to parent key to be imported. Each item can be a
 	// string or pair of child/parent sublist items.
-	ImportValues []interface{} `json:"import-values"`
+	ImportValues []interface{} `json:"import-values,omitempty"`
 	// Alias usable alias to be used for the chart
-	Alias string `json:"alias"`
+	Alias string `json:"alias,omitempty"`
 }
 
 // ErrNoRequirementsFile to detect error condition
@@ -230,7 +231,7 @@ func getAliasDependency(charts []*chart.Chart, aliasChart *Dependency) *chart.Ch
 		if existingChart.Metadata.Name != aliasChart.Name {
 			continue
 		}
-		if existingChart.Metadata.Version != aliasChart.Version {
+		if !version.IsCompatibleRange(aliasChart.Version, existingChart.Metadata.Version) {
 			continue
 		}
 		chartFound = *existingChart
@@ -258,6 +259,24 @@ func ProcessRequirementsEnabled(c *chart.Chart, v *chart.Config) error {
 	}
 
 	var chartDependencies []*chart.Chart
+	// If any dependency is not a part of requirements.yaml
+	// then this should be added to chartDependencies.
+	// However, if the dependency is already specified in requirements.yaml
+	// we should not add it, as it would be anyways processed from requirements.yaml
+
+	for _, existingDependency := range c.Dependencies {
+		var dependencyFound bool
+		for _, req := range reqs.Dependencies {
+			if existingDependency.Metadata.Name == req.Name && version.IsCompatibleRange(req.Version, existingDependency.Metadata.Version) {
+				dependencyFound = true
+				break
+			}
+		}
+		if !dependencyFound {
+			chartDependencies = append(chartDependencies, existingDependency)
+		}
+	}
+
 	for _, req := range reqs.Dependencies {
 		if chartDependency := getAliasDependency(c.Dependencies, req); chartDependency != nil {
 			chartDependencies = append(chartDependencies, chartDependency)
