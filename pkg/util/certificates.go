@@ -132,6 +132,8 @@ type Config struct {
 	Sign               string
 	Organization       []string
 	OrganizationalUnit []string
+	Province           []string
+	Locality           []string
 	AltNames           AltNames
 	Usages             []x509.ExtKeyUsage
 	ValidFor           time.Duration
@@ -176,7 +178,6 @@ func CreateCertificates(kluster *v1.Kluster, apiURL, authURL, domain string) (ma
 	createCA(kluster.Name, "ApiServer Nodes", &certs.ApiServer.Nodes.CA)
 	createCA(kluster.Name, "Kubelet Clients", &certs.Kubelet.Clients.CA)
 	createCA(kluster.Name, "TLS", &certs.TLS.CA)
-	createEnrichedCA(kluster, apiURL, authURL, "TLS", &certs.TLS.CA)
 
 	certs.Etcd.Clients.ApiServer = certs.signEtcdClient("apiserver")
 	certs.Etcd.Peers.Universal = certs.signEtcdPeer("universal")
@@ -250,7 +251,7 @@ func (c Certificates) signTLS(name string, dnsNames []string, ips []net.IP) Bund
 	return c.TLS.CA.Sign(config)
 }
 
-func createCA(satellite, name string, bundle *Bundle) {
+func createCA(klusterName, name string, bundle *Bundle) {
 	bundle.PrivateKey, _ = certutil.NewPrivateKey()
 
 	now := time.Now()
@@ -258,30 +259,7 @@ func createCA(satellite, name string, bundle *Bundle) {
 		SerialNumber: new(big.Int).SetInt64(0),
 		Subject: pkix.Name{
 			CommonName:         name,
-			OrganizationalUnit: []string{"SAP Converged Cloud", "Kubernikus", satellite},
-		},
-		NotBefore:             now.UTC(),
-		NotAfter:              now.Add(caValidity).UTC(),
-		KeyUsage:              x509.KeyUsageKeyEncipherment | x509.KeyUsageDigitalSignature | x509.KeyUsageCertSign,
-		BasicConstraintsValid: true,
-		IsCA: true,
-	}
-
-	certDERBytes, _ := x509.CreateCertificate(rand.Reader, &tmpl, &tmpl, bundle.PrivateKey.Public(), bundle.PrivateKey)
-	bundle.Certificate, _ = x509.ParseCertificate(certDERBytes)
-}
-
-func createEnrichedCA(kluster *v1.Kluster, kubernikusAPIURL, authURL, common_name string, bundle *Bundle) {
-	bundle.PrivateKey, _ = certutil.NewPrivateKey()
-
-	now := time.Now()
-	tmpl := x509.Certificate{
-		SerialNumber: new(big.Int).SetInt64(0),
-		Subject: pkix.Name{
-			CommonName:         common_name,
-			OrganizationalUnit: []string{CA_ISSUER_KUBERNIKUS_IDENTIFIER_0, CA_ISSUER_KUBERNIKUS_IDENTIFIER_1, kluster.Name},
-			Province:           []string{authURL, kluster.Spec.Openstack.ProjectID},
-			Locality:           []string{kubernikusAPIURL},
+			OrganizationalUnit: []string{CA_ISSUER_KUBERNIKUS_IDENTIFIER_0, CA_ISSUER_KUBERNIKUS_IDENTIFIER_1, klusterName},
 		},
 		NotBefore:             now.UTC(),
 		NotAfter:              now.Add(caValidity).UTC(),
@@ -311,6 +289,8 @@ func (ca Bundle) Sign(config Config) Bundle {
 			CommonName:         config.Sign,
 			Organization:       config.Organization,
 			OrganizationalUnit: config.OrganizationalUnit,
+			Province:           config.Province,
+			Locality:           config.Locality,
 		},
 		DNSNames:     config.AltNames.DNSNames,
 		IPAddresses:  config.AltNames.IPs,
