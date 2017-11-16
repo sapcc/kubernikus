@@ -125,6 +125,8 @@ jobs:
           commitish: binaries/commitish
           globs:
             - binaries/kubernikusctl*
+        get_params:
+          globs: []
 
   - name: staging
     serial: true
