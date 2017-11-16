@@ -79,7 +79,7 @@ func (klusterFactory) KlusterFor(spec models.KlusterSpec) (*v1.Kluster, error) {
 	}
 
 	if k.Status.Version == "" {
-		k.Status.Version = version.VERSION
+		k.Status.Version = version.GitCommit
 	}
 
 	for _, nodePool := range k.Spec.NodePools {

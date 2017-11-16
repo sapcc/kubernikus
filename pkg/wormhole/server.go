@@ -52,7 +52,7 @@ func NewServer(options *ServerOptions) (*Server, error) {
 }
 
 func (s *Server) Run(stopCh <-chan struct{}, wg *sync.WaitGroup) {
-	fmt.Printf("Welcome to Wormhole %v\n", version.VERSION)
+	fmt.Printf("Welcome to Wormhole %v\n", version.GitCommit)
 
 	kube.WaitForServer(s.client, stopCh)
 

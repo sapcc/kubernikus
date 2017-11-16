@@ -2,7 +2,7 @@ VERSION  ?= $(shell git rev-parse --verify HEAD)
 GOOS     ?= $(shell go env | grep GOOS | cut -d'"' -f2)
 BINARIES := apiserver kubernikus kubernikusctl wormhole
 
-LDFLAGS := -X github.com/sapcc/kubernikus/pkg/version.VERSION=$(VERSION)
+LDFLAGS := -X github.com/sapcc/kubernikus/pkg/version.GitCommit=$(VERSION)
 GOFLAGS := -ldflags "$(LDFLAGS) -s -w"
 
 SRCDIRS  := pkg cmd

@@ -167,7 +167,7 @@ func NewKubernikusOperator(options *KubernikusOperatorOptions) *KubernikusOperat
 }
 
 func (o *KubernikusOperator) Run(stopCh <-chan struct{}, wg *sync.WaitGroup) {
-	fmt.Printf("Welcome to Kubernikus %v\n", version.VERSION)
+	fmt.Printf("Welcome to Kubernikus %v\n", version.GitCommit)
 
 	kube.WaitForServer(o.Clients.Kubernetes, stopCh)
 

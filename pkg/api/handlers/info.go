@@ -18,9 +18,7 @@ type info struct {
 
 func (d *info) Handle(params operations.InfoParams) middleware.Responder {
 	info := &models.Info{
-		Version: version.VERSION,
+		Version: version.GitCommit,
 	}
 	return operations.NewInfoOK().WithPayload(info)
 }
-
-

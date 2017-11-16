@@ -42,9 +42,6 @@ func TestGenerateNode(t *testing.T) {
 		ObjectMeta: kluster.ObjectMeta,
 		Data:       secretData,
 	}
-	bytes, err := Ignition.GenerateNode(&kluster, &secret)
+	_, err := Ignition.GenerateNode(&kluster, &secret)
 	assert.NoError(t, err)
-
-	fmt.Printf("bytes = %+v\n", string(bytes))
-
 }

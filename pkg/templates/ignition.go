@@ -87,7 +87,7 @@ func (i *ignition) GenerateNode(kluster *kubernikusv1.Kluster, secret *v1.Secret
 		OpenstackLBSubnetID:                kluster.Spec.Openstack.LBSubnetID,
 		OpenstackRouterID:                  kluster.Spec.Openstack.RouterID,
 		KubernikusImage:                    "sapcc/kubernikus",
-		KubernikusImageTag:                 version.VERSION,
+		KubernikusImageTag:                 version.GitCommit,
 	}
 
 	var buffer bytes.Buffer
