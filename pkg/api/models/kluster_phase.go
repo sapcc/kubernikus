@@ -28,8 +28,6 @@ const (
 	KlusterPhaseRunning KlusterPhase = "Running"
 	// KlusterPhaseTerminating captures enum value "Terminating"
 	KlusterPhaseTerminating KlusterPhase = "Terminating"
-	// KlusterPhaseError captures enum value "Error"
-	KlusterPhaseError KlusterPhase = "Error"
 )
 
 // for schema
@@ -37,7 +35,7 @@ var klusterPhaseEnum []interface{}
 
 func init() {
 	var res []KlusterPhase
-	if err := json.Unmarshal([]byte(`["Pending","Creating","Running","Terminating","Error"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["Pending","Creating","Running","Terminating"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {

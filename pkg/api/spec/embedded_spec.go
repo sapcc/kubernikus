@@ -327,8 +327,7 @@ func init() {
         "Pending",
         "Creating",
         "Running",
-        "Terminating",
-        "Error"
+        "Terminating"
       ]
     },
     "KlusterSpec": {
