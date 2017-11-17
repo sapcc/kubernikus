@@ -60,13 +60,13 @@ scrape_configs:
   - source_labels: [__meta_kubernetes_pod_name]
     target_label: kubernetes_pod_name
 
-- job_name: 'kube-system/etcd'
+- job_name: 'kubernikus-system/etcd'
   kubernetes_sd_configs:
   - role: pod
   relabel_configs:
   - action: keep
     source_labels: [__meta_kubernetes_namespace]
-    regex: kube-system
+    regex: kubernikus-system
   - action: keep
     source_labels: [__meta_kubernetes_pod_name]
     regex: (etcd-[^\.]+).+
@@ -80,7 +80,7 @@ scrape_configs:
     source_labels: [__meta_kubernetes_pod_node_name]
     target_label: instance
 
-- job_name: 'kube-system/apiserver'
+- job_name: 'kubernikus-system/apiserver'
   tls_config:
     ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
   bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
@@ -90,7 +90,7 @@ scrape_configs:
   relabel_configs:
   - action: keep
     source_labels: [__meta_kubernetes_namespace]
-    regex: kube-system
+    regex: kubernikus-system
   - action: keep
     source_labels: [__meta_kubernetes_pod_name]
     regex: (kubernetes-master[^\.]+).+
@@ -100,13 +100,13 @@ scrape_configs:
     source_labels: [__meta_kubernetes_pod_node_name]
     target_label: instance
 
-- job_name: 'kube-system/controller-manager'
+- job_name: 'kubernikus-system/controller-manager'
   kubernetes_sd_configs:
   - role: pod
   relabel_configs:
   - action: keep
     source_labels: [__meta_kubernetes_namespace]
-    regex: kube-system
+    regex: kubernikus-system
   - action: keep
     source_labels: [__meta_kubernetes_pod_name]
     regex: (kubernetes-master[^\.]+).+
@@ -121,13 +121,13 @@ scrape_configs:
     source_labels: [__meta_kubernetes_pod_node_name]
     target_label: instance
 
-- job_name: 'kube-system/scheduler'
+- job_name: 'kubernikus-system/scheduler'
   kubernetes_sd_configs:
   - role: pod
   relabel_configs:
   - action: keep
     source_labels: [__meta_kubernetes_namespace]
-    regex: kube-system
+    regex: kubernikus-system
   - action: keep
     source_labels: [__meta_kubernetes_pod_name]
     regex: (kubernetes-master[^\.]+).+
@@ -141,13 +141,13 @@ scrape_configs:
     source_labels: [__meta_kubernetes_pod_node_name]
     target_label: instance
 
-- job_name: 'kube-system/dnsmasq'
+- job_name: 'kubernikus-system/dnsmasq'
   kubernetes_sd_configs:
   - role: pod
   relabel_configs:
   - action: keep
     source_labels: [__meta_kubernetes_namespace]
-    regex: kube-system
+    regex: kubernikus-system
   - action: keep
     source_labels: [__meta_kubernetes_pod_name]
     regex: (kube-dns[^\.]+).+
@@ -161,13 +161,13 @@ scrape_configs:
     source_labels: [__meta_kubernetes_pod_node_name]
     target_label: instance
 
-- job_name: 'kube-system/dns'
+- job_name: 'kubernikus-system/dns'
   kubernetes_sd_configs:
   - role: pod
   relabel_configs:
   - action: keep
     source_labels: [__meta_kubernetes_namespace]
-    regex: kube-system
+    regex: kubernikus-system
   - action: keep
     source_labels: [__meta_kubernetes_pod_name]
     regex: (kube-dns[^\.]+).+
@@ -180,6 +180,27 @@ scrape_configs:
   - action: replace
     source_labels: [__meta_kubernetes_pod_node_name]
     target_label: instance
+
+- job_name: 'kubernikus-system/node'
+  kubernetes_sd_configs:
+  - role: node
+  relabel_configs:
+  - action: labelmap
+    regex: __meta_kubernetes_node_label_(.+)
+  - target_label: component
+    replacement: node
+  - action: replace
+    source_labels: [__meta_kubernetes_node_name]
+    target_label: instance
+  - source_labels: [__address__]
+    target_label: __address__
+    regex: ([^:]+)(:\d+)?
+    replacement: ${1}:9100
+  - source_labels: [mountpoint]
+    target_label: mountpoint
+    regex: '\/host(\/.*)'
+    action: replace
+    replacement: ${1}
 
 # Static Targets 
 #
