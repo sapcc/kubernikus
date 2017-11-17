@@ -1,5 +1,5 @@
-hash: 7a66fd00b2aa16ccdaf531b6d4058a2d31cd0cf9a11d7be6dd7c0086a90a402e
-updated: 2017-11-17T10:11:19.571610082-08:00
+hash: 0c51a39100f052ad594d09dded0f749e34f38a9dcc80edeb80803f9e17a021c0
+updated: 2017-11-17T21:00:18.066121+01:00
 imports:
 - name: github.com/ajeddeloh/yaml
   version: 1072abfea31191db507785e2e0c1b8d1440d35a5
@@ -113,8 +113,31 @@ imports:
 - name: github.com/gogo/protobuf
   version: c0656edd0d9eab7c66d1eb0c568f9039345796f7
   subpackages:
+  - gogoproto
+  - plugin/compare
+  - plugin/defaultcheck
+  - plugin/description
+  - plugin/embedcheck
+  - plugin/enumstringer
+  - plugin/equal
+  - plugin/face
+  - plugin/gostring
+  - plugin/marshalto
+  - plugin/oneofcheck
+  - plugin/populate
+  - plugin/size
+  - plugin/stringer
+  - plugin/testgen
+  - plugin/union
+  - plugin/unmarshal
   - proto
+  - protoc-gen-gogo/descriptor
+  - protoc-gen-gogo/generator
+  - protoc-gen-gogo/grpc
+  - protoc-gen-gogo/plugin
   - sortkeys
+  - vanity
+  - vanity/command
 - name: github.com/golang/glog
   version: 44145f04b68cf362d9c4df2182967c2275eaefed
 - name: github.com/golang/groupcache
@@ -125,7 +148,9 @@ imports:
   version: 4bd1920723d7b7c925de087aa32e2187708897f7
   subpackages:
   - proto
+  - ptypes
   - ptypes/any
+  - ptypes/duration
   - ptypes/timestamp
 - name: github.com/google/gofuzz
   version: 44d81051d367757e1c7c6a5a86423ece9afcf63c
@@ -206,8 +231,6 @@ imports:
   version: 879c5887cd475cd7864858769793b2ceb0d44feb
 - name: github.com/spf13/cobra
   version: f62e98d28ab7ad31d707ba837a966378465c7b57
-  subpackages:
-  - cobra
 - name: github.com/spf13/pflag
   version: 9ff6c6923cfffbcd502984b8e0c80539a94968b7
 - name: github.com/stretchr/testify
@@ -248,14 +271,7 @@ imports:
 - name: golang.org/x/text
   version: 2910a502d2bf9e43193af9d68ca516529614eed3
   subpackages:
-  - cases
-  - internal/tag
-  - language
-  - runes
-  - secure/bidirule
-  - secure/precis
   - transform
-  - unicode/bidi
   - unicode/norm
   - width
 - name: google.golang.org/grpc
@@ -287,13 +303,12 @@ imports:
   - pkg/client/clientset/clientset/scheme
   - pkg/client/clientset/clientset/typed/apiextensions/v1beta1
 - name: k8s.io/apimachinery
-  version: 917740426ad66ff818da4809990480bcc0786a77
+  version: 8ab5f3d8a330c2e9baaf84e39042db8d49034ae2
   subpackages:
   - pkg/api/equality
   - pkg/api/errors
   - pkg/api/meta
   - pkg/api/resource
-  - pkg/api/testing
   - pkg/apimachinery
   - pkg/apimachinery/announced
   - pkg/apimachinery/registered
@@ -474,8 +489,27 @@ imports:
   - util/workqueue
 - name: k8s.io/code-generator
   version: 7ab2c9f35b06d8d9f672ee64580e534d2ab5d27e
+  subpackages:
+  - cmd/client-gen
+  - cmd/client-gen/args
+  - cmd/client-gen/generators
+  - cmd/client-gen/generators/fake
+  - cmd/client-gen/generators/scheme
+  - cmd/client-gen/generators/util
+  - cmd/client-gen/path
+  - cmd/client-gen/types
+  - cmd/informer-gen
+  - cmd/informer-gen/generators
+  - cmd/lister-gen
+  - cmd/lister-gen/generators
 - name: k8s.io/gengo
   version: 9e661e9308f078838e266cca1c673922088c0ea4
+  subpackages:
+  - args
+  - generator
+  - namer
+  - parser
+  - types
 - name: k8s.io/helm
   version: 8478fb4fc723885b155c924d1c8c410b7a9444e6
   subpackages:
