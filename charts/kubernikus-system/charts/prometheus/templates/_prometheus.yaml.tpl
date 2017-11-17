@@ -141,13 +141,13 @@ scrape_configs:
     source_labels: [__meta_kubernetes_pod_node_name]
     target_label: instance
 
-- job_name: 'kubernikus-system/dnsmasq'
+- job_name: 'kube-system/dnsmasq'
   kubernetes_sd_configs:
   - role: pod
   relabel_configs:
   - action: keep
     source_labels: [__meta_kubernetes_namespace]
-    regex: kubernikus-system
+    regex: kube-system
   - action: keep
     source_labels: [__meta_kubernetes_pod_name]
     regex: (kube-dns[^\.]+).+
@@ -161,13 +161,13 @@ scrape_configs:
     source_labels: [__meta_kubernetes_pod_node_name]
     target_label: instance
 
-- job_name: 'kubernikus-system/dns'
+- job_name: 'kube-system/dns'
   kubernetes_sd_configs:
   - role: pod
   relabel_configs:
   - action: keep
     source_labels: [__meta_kubernetes_namespace]
-    regex: kubernikus-system
+    regex: kube-system
   - action: keep
     source_labels: [__meta_kubernetes_pod_name]
     regex: (kube-dns[^\.]+).+
