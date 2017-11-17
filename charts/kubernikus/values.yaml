@@ -22,3 +22,6 @@ revisionHistoryLimit: 3
 k8sniff:
   enabled: true
   #external_service_ip: ""
+
+operator:
+  metrics_port: 9091

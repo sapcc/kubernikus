@@ -14,6 +14,9 @@ spec:
       labels:
         app: kubernikus
         type: operator
+      annotations:
+        prometheus.io/scrape: 'true'
+        prometheus.io/port: {{ .Values.operator.metrics_port | quote }}
     spec:
       containers:
         - name: operator
@@ -31,4 +34,8 @@ spec:
             - --auth-project-domain={{ .Values.openstack.auth_project_domain }}
             - --kubernikus-domain={{ .Values.domain }}
             - --namespace={{ default "kubernikus" .Values.namespace }}
+            - --metric-port={{ default 9091 .Values.operator.metrics_port }}
             - --v={{ default 1 .Values.groundctl.log_level }}
+          ports:
+            - name: metrics
+              containerPort: {{ .Values.operator.metrics_port }}
