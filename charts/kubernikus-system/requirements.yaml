@@ -1,8 +1,11 @@
 dependencies:
-  - name: nginx-ingress 
+  - name: nginx-ingress
     repository: https://kubernetes-charts.storage.googleapis.com
     version: 0.8.7
     condition: nginx-ingress.enabled
   - name: vice-president 
     repository: file://vendor/vice-president
     version: 0.1.0
+  - name: vice-president
+    repository: file://vendor/kube-state-metrics
+    version: 1.1.0

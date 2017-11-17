@@ -227,7 +227,6 @@ definitions:
       - Creating
       - Running
       - Terminating
-      - Error
   Info:
     properties:
       version:

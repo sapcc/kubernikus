@@ -14,8 +14,11 @@ import (
 	"k8s.io/apimachinery/pkg/watch"
 	kubernetes_informers "k8s.io/client-go/informers"
 	kubernetes_clientset "k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/kubernetes/scheme"
+	typedcorev1 "k8s.io/client-go/kubernetes/typed/core/v1"
 	api_v1 "k8s.io/client-go/pkg/api/v1"
 	"k8s.io/client-go/tools/cache"
+	"k8s.io/client-go/tools/record"
 	"k8s.io/helm/pkg/helm"
 
 	"github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
@@ -154,10 +157,15 @@ func NewKubernikusOperator(options *KubernikusOperatorOptions) *KubernikusOperat
 
 	o.Clients.Satellites = kube.NewSharedClientFactory(secrets, klusters)
 
+	eventBroadcaster := record.NewBroadcaster()
+	eventBroadcaster.StartLogging(glog.Infof)
+	eventBroadcaster.StartRecordingToSink(&typedcorev1.EventSinkImpl{Interface: o.Clients.Kubernetes.CoreV1().Events(o.Config.Kubernikus.Namespace)})
+	recorder := eventBroadcaster.NewRecorder(scheme.Scheme, api_v1.EventSource{Component: "operator"})
+
 	for _, k := range options.Controllers {
 		switch k {
 		case "groundctl":
-			o.Config.Kubernikus.Controllers["groundctl"] = NewGroundController(o.Factories, o.Clients, o.Config)
+			o.Config.Kubernikus.Controllers["groundctl"] = NewGroundController(o.Factories, o.Clients, recorder, o.Config)
 		case "launchctl":
 			o.Config.Kubernikus.Controllers["launchctl"] = NewLaunchController(o.Factories, o.Clients)
 		}

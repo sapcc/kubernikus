@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kubernikus-prometheus
+
+data:
+  {{- $files := .Files }}
+  {{ range tuple "aggregation.rules" "dns.alerts" "kubernetes.alerts" }}
+  {{ . }}: |
+{{ $files.Get . | indent 4 }}
+  {{- end }}
+  prometheus.yaml: |
+{{ include "kubernikus-system/charts/prometheus/templates/_prometheus.yaml.tpl" . | indent 4 }}

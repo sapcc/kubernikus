@@ -16,6 +16,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/wait"
 	api_v1 "k8s.io/client-go/pkg/api/v1"
 	"k8s.io/client-go/tools/cache"
+	"k8s.io/client-go/tools/record"
 	"k8s.io/client-go/util/workqueue"
 	"k8s.io/helm/pkg/helm"
 
@@ -30,23 +31,29 @@ import (
 
 const (
 	KLUSTER_RECHECK_INTERVAL = 5 * time.Minute
+
+	//Reason constants for the event recorder
+	ConfigurationError = "ConfigurationError"
+	FailedCreate       = "FailedCreate"
 )
 
 type GroundControl struct {
 	Clients
 	Factories
 	config.Config
+	Recorder record.EventRecorder
 
 	queue           workqueue.RateLimitingInterface
 	klusterInformer cache.SharedIndexInformer
 	podInformer     cache.SharedIndexInformer
 }
 
-func NewGroundController(factories Factories, clients Clients, config config.Config) *GroundControl {
+func NewGroundController(factories Factories, clients Clients, recorder record.EventRecorder, config config.Config) *GroundControl {
 	operator := &GroundControl{
 		Clients:         clients,
 		Factories:       factories,
 		Config:          config,
+		Recorder:        recorder,
 		queue:           workqueue.NewRateLimitingQueue(workqueue.NewItemExponentialFailureRateLimiter(5*time.Second, 300*time.Second)),
 		klusterInformer: factories.Kubernikus.Kubernikus().V1().Klusters().Informer(),
 		podInformer:     factories.Kubernetes.Core().V1().Pods().Informer(),
@@ -127,17 +134,14 @@ func (op *GroundControl) handler(key string) error {
 		glog.Infof("kluster resource %s deleted", key)
 	} else {
 		kluster := obj.(*v1.Kluster)
-		glog.V(5).Infof("Handling kluster %v in state %q", kluster.Name, kluster.Status.Phase)
+		glog.V(5).Infof("Handling kluster %v in phase %q", kluster.Name, kluster.Status.Phase)
 
-		switch state := kluster.Status.Phase; state {
+		switch phase := kluster.Status.Phase; phase {
 		case models.KlusterPhasePending:
 			{
 				if op.requiresOpenstackInfo(kluster) {
 					if err := op.discoverOpenstackInfo(kluster); err != nil {
-						glog.Errorf("[%v] Discovery of openstack parameters failed: %s", kluster.GetName(), err)
-						if err := op.updateStatus(kluster, models.KlusterPhaseError, err.Error()); err != nil {
-							glog.Errorf("Failed to update status of kluster %s:%s", kluster.GetName(), err)
-						}
+						op.Recorder.Eventf(kluster, api_v1.EventTypeWarning, ConfigurationError, "Discovery of openstack parameters failed: %s", err)
 						return err
 					}
 					return nil
@@ -145,27 +149,19 @@ func (op *GroundControl) handler(key string) error {
 
 				if op.requiresKubernikusInfo(kluster) {
 					if err := op.discoverKubernikusInfo(kluster); err != nil {
-						glog.Errorf("[%v] Discovery of kubernikus parameters failed: %s", kluster.GetName(), err)
-						if err := op.updateStatus(kluster, models.KlusterPhaseError, err.Error()); err != nil {
-							glog.Errorf("Failed to update status of kluster %s:%s", kluster.GetName(), err)
-						}
+						op.Recorder.Eventf(kluster, api_v1.EventTypeWarning, ConfigurationError, "Discovery of kubernikus parameters failed: %s", err)
 						return err
 					}
 					return nil
 				}
 
 				glog.Infof("Creating Kluster %s", kluster.GetName())
-				if err := op.updateStatus(kluster, models.KlusterPhaseCreating, "Creating Cluster"); err != nil {
-					glog.Errorf("Failed to update status of kluster %s:%s", kluster.GetName(), err)
-				}
-
 				if err := op.createKluster(kluster); err != nil {
-					glog.Errorf("Creating kluster %s failed: %s", kluster.GetName(), err)
-					if err := op.updateStatus(kluster, models.KlusterPhaseError, err.Error()); err != nil {
-						glog.Errorf("Failed to update status of kluster %s:%s", kluster.GetName(), err)
-					}
-					//We are making this a permanent error for now to avoid stomping the parent kluster
-					return nil
+					op.Recorder.Eventf(kluster, api_v1.EventTypeWarning, FailedCreate, "Failed to create cluster: %s", err)
+					return err
+				}
+				if err := op.updatePhase(kluster, models.KlusterPhaseCreating, "Creating Cluster"); err != nil {
+					glog.Errorf("Failed to update status of kluster %s:%s", kluster.GetName(), err)
 				}
 				glog.Infof("Kluster %s created", kluster.GetName())
 			}
@@ -189,7 +185,7 @@ func (op *GroundControl) handler(key string) error {
 				if err := ground.SeedKluster(clientset, kluster); err != nil {
 					return err
 				}
-				if err := op.updateStatus(kluster, models.KlusterPhaseRunning, ""); err != nil {
+				if err := op.updatePhase(kluster, models.KlusterPhaseRunning, ""); err != nil {
 					glog.Errorf("Failed to update status of kluster %s:%s", kluster.GetName(), err)
 				}
 				glog.Infof("Kluster %s is ready!", kluster.GetName())
@@ -198,6 +194,7 @@ func (op *GroundControl) handler(key string) error {
 			{
 				glog.Infof("Terminating Kluster %s", kluster.GetName())
 				if err := op.terminateKluster(kluster); err != nil {
+					op.Recorder.Eventf(kluster, api_v1.EventTypeWarning, "", "Failed to terminate cluster: %s", err)
 					glog.Errorf("Failed to terminate kluster %s: %s", kluster.Name, err)
 					return err
 				}
@@ -242,15 +239,20 @@ func (op *GroundControl) klusterUpdate(cur, old interface{}) {
 	}
 }
 
-func (op *GroundControl) updateStatus(kluster *v1.Kluster, state models.KlusterPhase, message string) error {
+func (op *GroundControl) updatePhase(kluster *v1.Kluster, phase models.KlusterPhase, message string) error {
 
 	//Never modify the cache, at leasts thats what I've been told
 	kluster, err := op.Clients.Kubernikus.Kubernikus().Klusters(kluster.Namespace).Get(kluster.Name, metav1.GetOptions{})
 	if err != nil {
 		return err
 	}
+	//Do nothing is the phase is not changing
+	if kluster.Status.Phase == phase {
+		return nil
+	}
+	op.Recorder.Eventf(kluster, api_v1.EventTypeNormal, string(phase), "%s cluster", phase)
 	kluster.Status.Message = message
-	kluster.Status.Phase = state
+	kluster.Status.Phase = phase
 
 	_, err = op.Clients.Kubernikus.Kubernikus().Klusters(kluster.Namespace).Update(kluster)
 	return err
