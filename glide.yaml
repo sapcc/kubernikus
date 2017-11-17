@@ -26,6 +26,7 @@ import:
 - package: github.com/imdario/mergo
   version: 0.2.2
 # Dependencies extracted from go-swagger 0.12.0
+- package: github.com/databus23/guttle
 - package: github.com/go-openapi/jsonpointer
   version: 779f45308c19820f1a69e9a4cd965f496e0da10f
 - package: github.com/go-openapi/loads
@@ -60,3 +61,10 @@ import:
   version: 03cfca65330da08a5a440053faf994a3c682b5bf
 - package: github.com/go-openapi/jsonreference
   version: 36d33bfe519efae5632669801b180bf1a245da3b
+- package: github.com/prometheus/prometheus
+  version: ^2.0.0
+  subpackages:
+  - client_go
+  - client_model
+  - common
+  - procfs
