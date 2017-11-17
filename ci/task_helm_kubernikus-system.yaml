@@ -25,7 +25,7 @@ run:
       #helm dep up --skip-refresh charts.git/charts/kubernikus-system/
       #helm upgrade kubernikus-system charts.git/charts/kubernikus-system/ --namespace=kubernikus-system --values secrets.git/$KUBERNIKUS_NAME/values/kubernikus-system.yaml --install
       cp -a charts.git charts-copy.git
-      helm dep up helm dep up --skip-refresh charts-copy.git/charts/kubernikus-system/
+      helm dep up --skip-refresh charts-copy.git/charts/kubernikus-system/
       helm upgrade kubernikus-system charts-copy.git/charts/kubernikus-system/ --namespace=kubernikus-system --values secrets.git/$KUBERNIKUS_NAME/values/kubernikus-system.yaml --install
 
 params:
