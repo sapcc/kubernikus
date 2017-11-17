@@ -5,7 +5,7 @@ metadata:
   name: kubernikus-api
   annotations:
     vice-president: "true"
-    
+    ingress.kubernetes.io/rewrite-target: /
 spec:
   tls:
      - secretName: kubernikus-api
@@ -18,3 +18,7 @@ spec:
           backend:
             serviceName: kubernikus-api
             servicePort: {{ .Values.api.port }}
+        - path: /prometheus
+          backend:
+            serviceName: kubernikus-prometheus
+            servicePort: 9090

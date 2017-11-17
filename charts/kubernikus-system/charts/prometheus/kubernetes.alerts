@@ -1,0 +1,92 @@
+groups:
+- name: kubernetes.alerts
+  rules:
+  - alert: KubernetesNodeManyNotReady
+    expr: count(kube_node_status_condition{condition="Ready",status="true"} == 0) > 2
+    for: 1h
+    labels:
+      tier: kubernikus
+      service: k8s
+      severity: critical
+      context: node
+      meta: "{{ $labels.instance }}"
+    annotations:
+      description: Many Nodes are NotReady
+      summary: Many ({{$value}}) nodes are NotReady for more than an hour
+
+  - alert: KubernetesNodeNotReady
+    expr: kube_node_status_condition{condition="Ready",status="true"} == 0
+    for: 1h
+    labels:
+      tier: kubernikus
+      service: k8s
+      severity: critical
+      context: node
+      meta: "{{ $labels.instance }}"
+      playbook: docs/support/playbook/k8s_node_not_ready.html
+    annotations:
+      description: Node status is NotReady
+      summary: Node {{$labels.node}} is NotReady for more than an hour
+
+  - alert: KubernetesNodeNotReadyFlapping
+    expr: changes(kube_node_status_condition{condition="Ready",status="true"}[15m]) > 2
+    for: 1h
+    labels:
+      tier: kubernikus
+      service: k8s
+      severity: critical
+      context: node
+      meta: "{{ $labels.instance }}"
+    annotations:
+      description: Node readiness is flapping
+      summary: Node {{$labels.node}} is flapping between Ready and NotReady
+
+  - alert: KubernetesNodeScrapeMissing
+    expr: absent(up{job="endpoints",kubernetes_name="kube-state-metrics"})
+    for: 1h
+    labels:
+      tier: kubernikus
+      service: k8s
+      severity: critical
+      context: node
+    annotations:
+      description: Node status cannot be scraped
+      summary: Node status failed to be scraped
+
+  - alert: KubernetesPodRestartingTooMuch
+    expr: rate(kube_pod_container_status_restarts[15m]) > 0
+    for: 1h
+    labels:
+      tier: kubernikus
+      service: resources
+      severity: info
+      context: pod
+      meta: "{{$labels.namespace}}/{{$labels.pod}}"
+    annotations:
+      description: Pod is in a restart loop
+      summary: Pod {{ $labels.namespace }}/{{ $labels.pod }} is restarting constantly
+
+  - alert: KubernetesPodRestartingTooMuch
+    expr: rate(kube_pod_container_status_restarts[15m]) > 0
+    for: 1h
+    labels:
+      tier: kubernikus
+      service: resources
+      severity: info
+      context: pod
+      meta: "{{$labels.namespace}}/{{$labels.pod}}"
+    annotations:
+      description: Pod is in a restart loop
+      summary: Pod {{ $labels.namespace }}/{{ $labels.pod }} is restarting constantly
+
+  - alert: KubernetesPVCPendingOrLost
+    expr: kube_persistentvolumeclaim_status_phase{phase=~"Pending|Lost"} == 1
+    for: 10m
+    labels:
+      tier: kubernikus
+      service: k8s
+      severity: info
+      context: pvc
+    annotations:
+      description: "PVC {{ $labels.namespace }}/{{ $labels.persistentvolumeclaim }} stuck in phase {{ $labels.phase }}"
+      summary: "PVC stuck in phase {{ $labels.phase }}"
