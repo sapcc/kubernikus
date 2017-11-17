@@ -5,16 +5,18 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/databus23/requestutil"
 	"github.com/ghodss/yaml"
 	"github.com/go-openapi/runtime/middleware"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/apis/meta/v1"
+	certutil "k8s.io/client-go/util/cert"
+
 	"github.com/sapcc/kubernikus/pkg/api"
 	"github.com/sapcc/kubernikus/pkg/api/models"
 	"github.com/sapcc/kubernikus/pkg/api/rest/operations"
 	"github.com/sapcc/kubernikus/pkg/client/kubernetes"
 	"github.com/sapcc/kubernikus/pkg/util"
-	apierrors "k8s.io/apimachinery/pkg/api/errors"
-	"k8s.io/apimachinery/pkg/apis/meta/v1"
-	certutil "k8s.io/client-go/util/cert"
 )
 
 func NewGetClusterCredentials(rt *api.Runtime) operations.GetClusterCredentialsHandler {
@@ -69,6 +71,8 @@ func (d *getClusterCredentials) Handle(params operations.GetClusterCredentialsPa
 	cert := bundle.Sign(util.Config{
 		Sign:         fmt.Sprintf("%s@%s", principal.Name, principal.Domain),
 		Organization: organizations,
+		Province:     []string{principal.AuthURL, kluster.Spec.Openstack.ProjectID},
+		Locality:     []string{fmt.Sprintf("%s://%s", requestutil.Scheme(params.HTTPRequest), requestutil.HostWithPort(params.HTTPRequest))},
 		Usages:       []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth},
 		ValidFor:     24 * time.Hour,
 	})

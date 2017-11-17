@@ -1,1 +1,0 @@
-copied from https://github.com/oklog/oklog/tree/master/pkg/group

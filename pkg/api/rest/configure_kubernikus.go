@@ -72,10 +72,6 @@ func StaticFiles(next http.Handler) http.Handler {
 			http.StripPrefix("/docs", http.FileServer(http.Dir("static/docs"))).ServeHTTP(rw, r)
 			return
 		}
-		if strings.HasPrefix(r.URL.Path, "/static") {
-			http.StripPrefix("/static", http.FileServer(http.Dir("static"))).ServeHTTP(rw, r)
-			return
-		}
 		next.ServeHTTP(rw, r)
 	})
 }

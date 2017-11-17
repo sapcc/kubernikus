@@ -23,6 +23,7 @@ import (
 type RefreshOptions struct {
 	kubeconfigPath string
 	context        string
+	force          bool
 
 	url *url.URL
 
@@ -55,6 +56,7 @@ func (o *RefreshOptions) BindFlags(flags *pflag.FlagSet) {
 	flags.StringVar(&o.openstack.Password, "password", o.openstack.Password, "User password [OS_PASSWORD]")
 	flags.StringVar(&o.kubeconfigPath, "kubeconfig", o.kubeconfigPath, "Overwrites kubeconfig auto-detection with explicit path")
 	flags.StringVar(&o.context, "context", o.context, "Overwrites current-context in kubeconfig")
+	flags.BoolVar(&o.force, "force", o.force, "Force refresh")
 }
 
 func (o *RefreshOptions) Validate(c *cobra.Command, args []string) (err error) {
@@ -103,28 +105,23 @@ func (o *RefreshOptions) Run(c *cobra.Command) error {
 	if ok, err := o.isCertificateValid(); err != nil {
 		return errors.Wrap(err, "Verification of certifcates failed.")
 	} else {
-		if ok {
+		if ok && !o.force {
 			glog.V(2).Infof("Certificates are good. Doing nothing.")
 			return nil
 		}
 	}
 
-	if identityEndpoint, err := o.autoDetectAuthURL(); err != nil {
-		errors.Wrap(err, "Auto-Detection of auth-url caused an error")
+	if identityEndpoint, projectID, err := o.autoDetectKubernikusOpenstackMetadata(); err != nil {
+		return errors.Wrap(err, "Auto-Detection of Openstack auth endpoint failed.")
 	} else {
 		glog.V(2).Infof("Detected auth-url: %v", identityEndpoint)
 		o.openstack.IdentityEndpoint = identityEndpoint
-	}
-
-	if projectID, err := o.autoDetectProjectID(); err != nil {
-		errors.Wrap(err, "Auto-Detection of project scope caused an error")
-	} else {
 		glog.V(2).Infof("Detected authentication scope for project-id: %v", projectID)
 		o.openstack.Scope.ProjectID = projectID
 	}
 
 	if kurl, err := o.autoDetectKubernikusURL(); err != nil {
-		errors.Wrap(err, "Auto-Detection of Kubernikus URL caused an error")
+		return errors.Wrap(err, "Auto-Detection of Kubernikus URL caused an error")
 	} else {
 		glog.V(2).Infof("Detected Kubernikus URL: %v", kurl)
 		_url, err := url.Parse(kurl)
@@ -135,14 +132,14 @@ func (o *RefreshOptions) Run(c *cobra.Command) error {
 	}
 
 	if username, err := o.autoDetectUsername(); err != nil {
-		errors.Wrap(err, "Auto-Detection of Username failed")
+		return errors.Wrap(err, "Auto-Detection of Username failed")
 	} else {
 		glog.V(2).Infof("Detected username: %v", username)
 		o.openstack.Username = username
 	}
 
 	if domainName, err := o.autoDetectUserDomainName(); err != nil {
-		errors.Wrap(err, "Auto-Detection of user-domain-name failed")
+		return errors.Wrap(err, "Auto-Detection of user domain failed")
 	} else {
 		glog.V(2).Infof("Detected domain-name: %v", domainName)
 		o.openstack.DomainName = domainName
@@ -207,26 +204,23 @@ func (o *RefreshOptions) isKubernikusContext() (bool, error) {
 		return false, err
 	}
 
-	if len(caCert.Issuer.OrganizationalUnit) < 2 {
+	if len(caCert.Subject.OrganizationalUnit) < 2 {
 		return false, nil
 	}
 
-	return caCert.Issuer.OrganizationalUnit[0] == util.CA_ISSUER_KUBERNIKUS_IDENTIFIER_0 &&
-		caCert.Issuer.OrganizationalUnit[1] == util.CA_ISSUER_KUBERNIKUS_IDENTIFIER_1, nil
+	return caCert.Subject.OrganizationalUnit[0] == util.CA_ISSUER_KUBERNIKUS_IDENTIFIER_0 &&
+		caCert.Subject.OrganizationalUnit[1] == util.CA_ISSUER_KUBERNIKUS_IDENTIFIER_1, nil
 }
 
-func (o *RefreshOptions) autoDetectKubernikusCAMetadata(index int) (string, error) {
-	cert, err := o.getCACertifciate()
+func (o *RefreshOptions) autoDetectKubernikusOpenstackMetadata() (string, string, error) {
+	cert, err := o.getClientCertificate()
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
-	if len(cert.Issuer.Province) < 1 {
-		return "", errors.Errorf("CA certificate didn't contain Kubernikus metadata")
+	if len(cert.Subject.Province) < 2 {
+		return "", "", errors.Errorf("Client certificate didn't contain Kubernikus metadata")
 	}
-	if index > 1 {
-		return "", errors.Errorf("Invalid Metadata")
-	}
-	return cert.Issuer.Province[index], nil
+	return cert.Subject.Province[0], cert.Subject.Province[1], nil
 }
 
 func (o *RefreshOptions) autoDetectKubernikusClientMetadata() (string, string, error) {
@@ -246,24 +240,16 @@ func (o *RefreshOptions) autoDetectKubernikusClientMetadata() (string, string, e
 	return parts[0], parts[1], nil
 }
 
-func (o *RefreshOptions) autoDetectAuthURL() (string, error) {
-	return o.autoDetectKubernikusCAMetadata(0)
-}
-
-func (o *RefreshOptions) autoDetectProjectID() (string, error) {
-	return o.autoDetectKubernikusCAMetadata(1)
-}
-
 func (o *RefreshOptions) autoDetectKubernikusURL() (string, error) {
-	cert, err := o.getCACertifciate()
+	cert, err := o.getClientCertificate()
 	if err != nil {
 		return "", err
 	}
 
-	if len(cert.Issuer.Locality) == 0 {
+	if len(cert.Subject.Locality) == 0 {
 		return "", errors.Errorf("CA certificate didn't contain Kubernikus metadata")
 	}
-	return cert.Issuer.Locality[0], nil
+	return cert.Subject.Locality[0], nil
 }
 
 func (o *RefreshOptions) autoDetectUsername() (string, error) {
