@@ -177,6 +177,35 @@ func init() {
         }
       ]
     },
+    "/api/v1/clusters/{name}/events": {
+      "get": {
+        "summary": "Get recent events related to the named cluster",
+        "operationId": "GetClusterEvents",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Event"
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/responses/errorResponse"
+          }
+        }
+      },
+      "parameters": [
+        {
+          "uniqueItems": true,
+          "type": "string",
+          "name": "name",
+          "in": "path",
+          "required": true
+        }
+      ]
+    },
     "/api/v1/clusters/{name}/info": {
       "get": {
         "summary": "Get user specific info about the cluster",
@@ -254,6 +283,28 @@ func init() {
       "type": "object",
       "properties": {
         "kubeconfig": {
+          "type": "string"
+        }
+      }
+    },
+    "Event": {
+      "type": "object",
+      "properties": {
+        "count": {
+          "type": "integer"
+        },
+        "firstTimestamp": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "lastTimestamp": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "message": {
+          "type": "string"
+        },
+        "reason": {
           "type": "string"
         }
       }
@@ -473,6 +524,7 @@ func init() {
       "x-nullable": false
     },
     "OpenstackMetadata": {
+      "type": "object",
       "properties": {
         "flavors": {
           "type": "array",

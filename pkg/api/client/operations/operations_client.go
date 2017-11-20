@@ -83,6 +83,35 @@ func (a *Client) GetClusterCredentials(params *GetClusterCredentialsParams, auth
 }
 
 /*
+GetClusterEvents gets recent events related to the named cluster
+*/
+func (a *Client) GetClusterEvents(params *GetClusterEventsParams, authInfo runtime.ClientAuthInfoWriter) (*GetClusterEventsOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewGetClusterEventsParams()
+	}
+
+	result, err := a.transport.Submit(&runtime.ClientOperation{
+		ID:                 "GetClusterEvents",
+		Method:             "GET",
+		PathPattern:        "/api/v1/clusters/{name}/events",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &GetClusterEventsReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return result.(*GetClusterEventsOK), nil
+
+}
+
+/*
 GetClusterInfo gets user specific info about the cluster
 */
 func (a *Client) GetClusterInfo(params *GetClusterInfoParams, authInfo runtime.ClientAuthInfoWriter) (*GetClusterInfoOK, error) {

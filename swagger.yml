@@ -157,8 +157,43 @@ paths:
             $ref: '#/definitions/KlusterInfo'
         default:
           $ref: '#/responses/errorResponse'
+  '/api/v1/clusters/{name}/events':
+    parameters:
+      - uniqueItems: true
+        type: string
+        name: name
+        required: true
+        in: path
+    get:
+      operationId: GetClusterEvents
+      summary: Get recent events related to the named cluster 
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Event'
+        default:
+          $ref: '#/responses/errorResponse'
 definitions:
+  Event:
+    type: object
+    properties:
+      count: 
+        type: integer
+      lastTimestamp:
+        type: string
+        format: date-time
+      firstTimestamp:
+        type: string
+        format: date-time
+      reason:
+        type: string
+      message:
+        type: string
   OpenstackMetadata:
+    type: object
     properties:
       flavors:
         type: array
