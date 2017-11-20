@@ -51,8 +51,9 @@ type client struct {
 
 type Client interface {
 	CreateNode(*kubernikus_v1.Kluster, *models.NodePool, []byte) (string, error)
-	DeleteNode(*kubernikus_v1.Kluster, string) error
+	DeleteNode(*kubernikus_v1.Kluster, string, bool) error
 	GetNodes(*kubernikus_v1.Kluster, *models.NodePool) ([]Node, error)
+	ResetNodeState(*kubernikus_v1.Kluster, string) error
 
 	GetProject(id string) (*Project, error)
 	GetRegion() (string, error)
@@ -149,6 +150,13 @@ func (n *Node) Running() bool {
 		return true
 	}
 
+	return false
+}
+
+func (n *Node) Error() bool {
+	if n.VMState == "error" {
+		return true
+	}
 	return false
 }
 
@@ -595,7 +603,7 @@ func (c *client) CreateNode(kluster *kubernikus_v1.Kluster, pool *models.NodePoo
 	return server.ID, nil
 }
 
-func (c *client) DeleteNode(kluster *kubernikus_v1.Kluster, ID string) error {
+func (c *client) DeleteNode(kluster *kubernikus_v1.Kluster, ID string, forceDelete bool) error {
 	provider, err := c.klusterClientFor(kluster)
 	if err != nil {
 		return err
@@ -606,9 +614,53 @@ func (c *client) DeleteNode(kluster *kubernikus_v1.Kluster, ID string) error {
 		return err
 	}
 
-	err = servers.Delete(client, ID).ExtractErr()
+	if forceDelete {
+		if err := servers.ForceDelete(client, ID).ExtractErr(); err != nil {
+			glog.V(5).Infof("Couldn't force delete node %v: %v", kluster.Name, err)
+			return err
+		}
+	} else {
+		if err := servers.Delete(client, ID).ExtractErr(); err != nil {
+			glog.V(5).Infof("Couldn't delete node %v: %v", kluster.Name, err)
+			return err
+		}
+	}
+	return nil
+}
+
+func (c *client) ResetNodeState(kluster *kubernikus_v1.Kluster, ID string) error {
+	provider, err := c.klusterClientFor(kluster)
 	if err != nil {
-		glog.V(5).Infof("Couldn't delete node %v: %v", kluster.Name, err)
+		return err
+	}
+
+	client, err := openstack.NewComputeV2(provider, gophercloud.EndpointOpts{})
+	if err != nil {
+		return err
+	}
+
+	type osResetAction struct {
+		ResetState struct {
+			State string `json:"state"`
+		} `json:"os-resetState"`
+	}
+
+	resetAction := osResetAction{}
+	resetAction.ResetState.State = "active"
+
+	var response servers.ActionResult
+	_, err = client.Post(
+		client.ServiceURL(fmt.Sprintf("/servers/%s/action",ID)),
+		resetAction,
+		response,
+		&gophercloud.RequestOpts{
+			JSONBody: resetAction,
+		},
+	)
+	if err != nil {
+		return err
+	}
+	if err := response.ExtractErr(); err != nil {
 		return err
 	}
 

@@ -16,7 +16,8 @@ type PoolManager interface {
 	GetStatus() (*PoolStatus, error)
 	SetStatus(*PoolStatus) error
 	CreateNode() (string, error)
-	DeleteNode(string) error
+	DeleteNode(string, bool) error
+	ResetNodeState(string) error
 }
 
 type PoolStatus struct {
@@ -26,6 +27,7 @@ type PoolStatus struct {
 	Stopping int
 	Needed   int
 	UnNeeded int
+	Errored  int
 }
 
 type ConcretePoolManager struct {
@@ -70,6 +72,7 @@ func (cpm *ConcretePoolManager) GetStatus() (status *PoolStatus, err error) {
 		Stopping: cpm.stopping(nodes),
 		Needed:   cpm.needed(nodes),
 		UnNeeded: cpm.unNeeded(nodes),
+		Errored:  cpm.errored(nodes),
 	}, nil
 }
 
@@ -121,8 +124,15 @@ func (cpm *ConcretePoolManager) CreateNode() (id string, err error) {
 	return id, nil
 }
 
-func (cpm *ConcretePoolManager) DeleteNode(id string) (err error) {
-	if err = cpm.Clients.Openstack.DeleteNode(cpm.Kluster, id); err != nil {
+func (cpm *ConcretePoolManager) DeleteNode(id string, forceDelete bool) (err error) {
+	if err = cpm.Clients.Openstack.DeleteNode(cpm.Kluster, id, forceDelete); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (cpm *ConcretePoolManager) ResetNodeState(id string) (err error) {
+	if err = cpm.Clients.Openstack.ResetNodeState(cpm.Kluster, id); err != nil {
 		return err
 	}
 	return nil
@@ -174,10 +184,20 @@ func (cpm *ConcretePoolManager) needed(nodes []openstack.Node) int {
 	return needed
 }
 
-func (cpm ConcretePoolManager) unNeeded(nodes []openstack.Node) int {
+func (cpm *ConcretePoolManager) unNeeded(nodes []openstack.Node) int {
 	unneeded := cpm.running(nodes) + cpm.starting(nodes) - int(cpm.Pool.Size)
 	if unneeded < 0 {
 		return 0
 	}
 	return unneeded
+}
+
+func (cpm *ConcretePoolManager) errored(nodes []openstack.Node) int {
+	var count = 0
+	for _, n := range nodes {
+		if n.Error() {
+			count = count + 1
+		}
+	}
+	return count
 }

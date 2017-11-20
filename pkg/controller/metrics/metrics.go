@@ -105,6 +105,7 @@ kubernikus_node_pool_status{"kluster_id"="<id", "node_pool"="<name>", "status"="
 kubernikus_node_pool_status{"kluster_id"="<id", "node_pool"="<name>", "status"="ready"} 1
 kubernikus_node_pool_status{"kluster_id"="<id", "node_pool"="<name>", "status"="running"} 1
 kubernikus_node_pool_status{"kluster_id"="<id", "node_pool"="<name>", "status"="healthy"} 1
+kubernikus_node_pool_status{"kluster_id"="<id", "node_pool"="<name>", "status"="error"} 1
 */
 func setMetricNodePoolStatus(klusterID, nodePoolName string, status map[string]int64) {
 	if status != nil {

@@ -34,13 +34,25 @@ func (epm *EventingPoolManager) CreateNode() (id string, err error) {
 	return id, err
 }
 
-func (epm *EventingPoolManager) DeleteNode(id string) (err error) {
-	err = epm.PoolManager.DeleteNode(id)
+func (epm *EventingPoolManager) DeleteNode(id string, forceDelete bool) (err error) {
+	err = epm.PoolManager.DeleteNode(id, false)
 
 	if err == nil {
 		epm.Recorder.Eventf(epm.Kluster, api_v1.EventTypeNormal, events.SuccessfullDeleteNode, "Successfully deleted node %v", id)
 	} else {
 		epm.Recorder.Eventf(epm.Kluster, api_v1.EventTypeWarning, events.FailedDeleteNode, "Failed to delete node: %v", err)
+	}
+
+	return
+}
+
+func (epm *EventingPoolManager) ResetNodeState(id string) (err error) {
+	err = epm.PoolManager.ResetNodeState(id)
+
+	if err == nil {
+		epm.Recorder.Eventf(epm.Kluster, api_v1.EventTypeNormal, events.SuccessfullResetNodeState, "Successfully reset state of node %v", id)
+	} else {
+		epm.Recorder.Eventf(epm.Kluster, api_v1.EventTypeWarning, events.FailedResetNodeState, "Failed to reset state of node: %v", err)
 	}
 
 	return

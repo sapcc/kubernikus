@@ -67,7 +67,7 @@ func (lr *LaunchReconciler) reconcilePool(kluster *v1.Kluster, pool *models.Node
 	case kluster.Status.Phase == models.KlusterPhaseTerminating:
 		for _, node := range status.Nodes {
 			requeue = true
-			if err = pm.DeleteNode(node); err != nil {
+			if err = pm.DeleteNode(node, false); err != nil {
 				return
 			}
 		}
@@ -83,7 +83,7 @@ func (lr *LaunchReconciler) reconcilePool(kluster *v1.Kluster, pool *models.Node
 	case status.UnNeeded > 0:
 		for i := 0; i < int(status.UnNeeded); i++ {
 			requeue = true
-			if err = pm.DeleteNode(status.Nodes[i]); err != nil {
+			if err = pm.DeleteNode(status.Nodes[i], false); err != nil {
 				return
 			}
 		}
@@ -92,6 +92,18 @@ func (lr *LaunchReconciler) reconcilePool(kluster *v1.Kluster, pool *models.Node
 		requeue = true
 	case status.Stopping > 0:
 		requeue = true
+	case status.Errored > 0:
+		for i := 0; i < status.Errored; i++ {
+			requeue = true
+			errNode := status.Nodes[i]
+			if err = pm.ResetNodeState(errNode); err != nil {
+				return
+			}
+			if err = pm.DeleteNode(errNode, true); err != nil {
+				return
+			}
+		}
+		return
 	default:
 		return
 	}

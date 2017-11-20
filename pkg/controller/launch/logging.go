@@ -1,6 +1,7 @@
 package launch
 
 import (
+	"strconv"
 	"time"
 
 	"github.com/go-kit/kit/log"
@@ -55,14 +56,27 @@ func (npm *LoggingPoolManager) CreateNode() (id string, err error) {
 	return npm.PoolManager.CreateNode()
 }
 
-func (npm *LoggingPoolManager) DeleteNode(id string) (err error) {
+func (npm *LoggingPoolManager) DeleteNode(id string, forceDelete bool) (err error) {
 	defer func(begin time.Time) {
 		npm.Logger.Log(
 			"msg", "deleted node",
 			"node", id,
 			"took", time.Since(begin),
 			"err", err,
+			"force", strconv.FormatBool(forceDelete),
 		)
 	}(time.Now())
-	return npm.PoolManager.DeleteNode(id)
+	return npm.PoolManager.DeleteNode(id, false)
+}
+
+func (npm *LoggingPoolManager) ResetNodeState(id string) (err error) {
+	defer func(begin time.Time) {
+		npm.Logger.Log(
+			"msg", "reset node state",
+			"node", id,
+			"took", time.Since(begin),
+			"err", err,
+		)
+	}(time.Now())
+	return npm.PoolManager.ResetNodeState(id)
 }
