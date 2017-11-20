@@ -157,6 +157,9 @@ func NewKubernikusOperator(options *KubernikusOperatorOptions) *KubernikusOperat
 
 	o.Clients.Satellites = kube.NewSharedClientFactory(secrets, klusters)
 
+	// Add kubernikus types to the default Kubernetes Scheme so events can be
+	// logged for those types.
+	v1.AddToScheme(scheme.Scheme)
 	eventBroadcaster := record.NewBroadcaster()
 	eventBroadcaster.StartLogging(glog.Infof)
 	eventBroadcaster.StartRecordingToSink(&typedcorev1.EventSinkImpl{Interface: o.Clients.Kubernetes.CoreV1().Events(o.Config.Kubernikus.Namespace)})
