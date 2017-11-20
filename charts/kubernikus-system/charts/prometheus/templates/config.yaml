@@ -5,7 +5,7 @@ metadata:
 
 data:
   {{- $files := .Files }}
-  {{ range tuple "aggregation.rules" "dns.alerts" "kubernetes.alerts" }}
+  {{ range tuple "aggregation.rules" "dns.alerts" "kubernetes.alerts" "node.alerts" }}
   {{ . }}: |
 {{ $files.Get . | indent 4 }}
   {{- end }}
