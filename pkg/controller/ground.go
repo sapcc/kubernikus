@@ -27,6 +27,7 @@ import (
 	"github.com/sapcc/kubernikus/pkg/controller/ground"
 	"github.com/sapcc/kubernikus/pkg/util"
 	helm_util "github.com/sapcc/kubernikus/pkg/util/helm"
+	waitutil "github.com/sapcc/kubernikus/pkg/util/wait"
 )
 
 const (
@@ -255,6 +256,12 @@ func (op *GroundControl) updatePhase(kluster *v1.Kluster, phase models.KlusterPh
 	kluster.Status.Phase = phase
 
 	_, err = op.Clients.Kubernikus.Kubernikus().Klusters(kluster.Namespace).Update(kluster)
+	if err == nil {
+		//Wait for up to 5 seconds for the local cache to reflect the phase change
+		waitutil.WaitForKluster(kluster, op.klusterInformer.GetIndexer(), func(k *v1.Kluster) (bool, error) {
+			return k.Status.Phase == phase, nil
+		})
+	}
 	return err
 }
 
@@ -334,12 +341,17 @@ func (op *GroundControl) terminateKluster(kluster *v1.Kluster) error {
 		return err
 	}
 
-	return op.Clients.Kubernikus.Discovery().RESTClient().Delete().AbsPath("apis/kubernikus.sap.cc/v1").
+	err = op.Clients.Kubernikus.Discovery().RESTClient().Delete().AbsPath("apis/kubernikus.sap.cc/v1").
 		Namespace(kluster.Namespace).
 		Resource("klusters").
 		Name(kluster.Name).
 		Do().
 		Error()
+
+	if err == nil {
+		waitutil.WaitForKlusterDeletion(kluster, op.klusterInformer.GetIndexer())
+	}
+	return err
 }
 
 func (op *GroundControl) requiresOpenstackInfo(kluster *v1.Kluster) bool {
