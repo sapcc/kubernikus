@@ -131,7 +131,8 @@ func (launchctl *LaunchControl) reconcile(key string) error {
 	glog.V(5).Infof("[%v] Reconciling", kluster.Name)
 
 	if !(kluster.Status.Phase == models.KlusterPhaseRunning || kluster.Status.Phase == models.KlusterPhaseTerminating) {
-		return fmt.Errorf("[%v] Kluster is not yet ready. Requeuing.", kluster.Name)
+		//Kluster not ready yet, do nothing
+		return nil
 	}
 
 	for _, pool := range kluster.Spec.NodePools {
