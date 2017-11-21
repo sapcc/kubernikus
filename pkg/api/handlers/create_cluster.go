@@ -4,12 +4,15 @@ import (
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/validate"
 	"github.com/golang/glog"
+
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
 	"github.com/sapcc/kubernikus/pkg/api"
 	"github.com/sapcc/kubernikus/pkg/api/models"
 	"github.com/sapcc/kubernikus/pkg/api/rest/operations"
 	"github.com/sapcc/kubernikus/pkg/apis/kubernikus"
-	apierrors "k8s.io/apimachinery/pkg/api/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	k8sutil "github.com/sapcc/kubernikus/pkg/util/k8s"
 )
 
 func NewCreateCluster(rt *api.Runtime) operations.CreateClusterHandler {
@@ -43,6 +46,7 @@ func (d *createCluster) Handle(params operations.CreateClusterParams, principal 
 		Annotations: map[string]string{"creator": principal.Name},
 	}
 
+	k8sutil.EnsureNamespace(d.Kubernetes, d.Namespace)
 	kluster, err = d.Kubernikus.Kubernikus().Klusters(d.Namespace).Create(kluster)
 	if err != nil {
 		glog.Errorf("Failed to create cluster: %s", err)

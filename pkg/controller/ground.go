@@ -308,10 +308,6 @@ func (op *GroundControl) createKluster(kluster *v1.Kluster) error {
 		return err
 	}
 	glog.Infof("Installing helm release %s", kluster.GetName())
-
-	if err := op.CreateNamespaceIfNeeded(kluster.Namespace); err != nil {
-		return err
-	}
 	glog.V(6).Infof("Chart values:\n%s", string(rawValues))
 
 	_, err = op.Clients.Helm.InstallRelease(path.Join(op.Config.Helm.ChartDirectory, "kube-master"), kluster.Namespace, helm.ValueOverrides(rawValues), helm.ReleaseName(kluster.GetName()))
@@ -477,21 +473,4 @@ func (op *GroundControl) podUpdate(cur, old interface{}) {
 			op.queue.Add(klusterKey)
 		}
 	}
-}
-
-func (op *GroundControl) CreateNamespaceIfNeeded(ns string) error {
-	if _, err := op.Clients.Kubernetes.Core().Namespaces().Get(ns, metav1.GetOptions{}); err == nil {
-		return nil
-	}
-	newNs := &api_v1.Namespace{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      ns,
-			Namespace: "",
-		},
-	}
-	_, err := op.Clients.Kubernetes.Core().Namespaces().Create(newNs)
-	if err != nil && apierrors.IsAlreadyExists(err) {
-		err = nil
-	}
-	return err
 }
