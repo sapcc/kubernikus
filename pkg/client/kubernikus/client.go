@@ -1,7 +1,6 @@
 package kubernikus
 
 import (
-	"github.com/golang/glog"
 	kube "github.com/sapcc/kubernikus/pkg/client/kubernetes"
 	"github.com/sapcc/kubernikus/pkg/generated/clientset"
 )
@@ -16,8 +15,6 @@ func NewClient(kubeconfig, context string) (clientset.Interface, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	glog.V(3).Infof("Using Kubernetes Api at %s", config.Host)
 
 	return clientset, nil
 }

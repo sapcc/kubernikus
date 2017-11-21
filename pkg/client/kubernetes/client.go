@@ -40,7 +40,7 @@ func NewSharedClientFactory(secrets typedv1.SecretInterface, klusterEvents cache
 		klusterEvents.AddEventHandler(cache.ResourceEventHandlerFuncs{
 			DeleteFunc: func(obj interface{}) {
 				if kluster, ok := obj.(*kubernikus_v1.Kluster); ok {
-					glog.V(5).Info("Deleting shared kubernetes client for kluster %s", kluster.GetName())
+					glog.V(5).Infof("Deleting shared kubernetes client for kluster %s", kluster.GetName())
 					factory.clients.Delete(kluster.GetUID())
 				}
 			},

@@ -49,7 +49,6 @@ type client struct {
 	roleNameToID   sync.Map
 }
 
-
 type Client interface {
 	CreateNode(*kubernikus_v1.Kluster, *models.NodePool, []byte) (string, error)
 	DeleteNode(*kubernikus_v1.Kluster, string) error
@@ -178,7 +177,7 @@ func NewClient(secrets typedv1.SecretInterface, klusterEvents cache.SharedIndexI
 	klusterEvents.AddEventHandler(cache.ResourceEventHandlerFuncs{
 		DeleteFunc: func(obj interface{}) {
 			if kluster, ok := obj.(*kubernikus_v1.Kluster); ok {
-				glog.V(5).Info("Deleting shared openstack client for kluster %s", kluster.Name)
+				glog.V(5).Infof("Deleting shared openstack client for kluster %s", kluster.Name)
 				c.klusterClients.Delete(kluster.GetUID())
 			}
 		},

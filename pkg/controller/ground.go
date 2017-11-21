@@ -78,7 +78,7 @@ func (op *GroundControl) Run(threadiness int, stopCh <-chan struct{}, wg *sync.W
 	defer op.queue.ShutDown()
 	defer wg.Done()
 	wg.Add(1)
-	glog.Infof(`Starting GroundControl with %d \"threads\"`, threadiness)
+	glog.Infof(`Starting GroundControl with %d "threads"`, threadiness)
 
 	for i := 0; i < threadiness; i++ {
 		go wait.Until(op.runWorker, time.Second, stopCh)
@@ -308,11 +308,11 @@ func (op *GroundControl) createKluster(kluster *v1.Kluster) error {
 		return err
 	}
 	glog.Infof("Installing helm release %s", kluster.GetName())
-	glog.V(3).Infof("Chart values:\n%s", string(rawValues))
 
 	if err := op.CreateNamespaceIfNeeded(kluster.Namespace); err != nil {
 		return err
 	}
+	glog.V(6).Infof("Chart values:\n%s", string(rawValues))
 
 	_, err = op.Clients.Helm.InstallRelease(path.Join(op.Config.Helm.ChartDirectory, "kube-master"), kluster.Namespace, helm.ValueOverrides(rawValues), helm.ReleaseName(kluster.GetName()))
 	return err
