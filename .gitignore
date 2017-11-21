@@ -2,3 +2,4 @@ bin/
 _scratch
 _output
 *.swp
+.envrc
