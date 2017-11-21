@@ -46,7 +46,7 @@ func (o *OpenstackClient) BindFlags(flags *pflag.FlagSet) {
 	flags.StringVar(&o.IdentityEndpoint, "auth-url", o.IdentityEndpoint, "Openstack Keystone Endpoint URL [OS_AUTH_URL]")
 	flags.StringVar(&o.UserID, "user-id", o.UserID, "User ID [OS_USER_ID]")
 	flags.StringVar(&o.Username, "username", o.Username, "User name. Also requires --user-domain-name/--user-domain-id [OS_USERNAME]")
-	flags.StringVar(&o.Password, "password", o.Password, "User password [OS_PASSWORD]")
+	flags.StringVar(&o.Password, "password", "", "User password [OS_PASSWORD]")
 	flags.StringVar(&o.DomainID, "user-domain-id", o.DomainID, "User domain [OS_USER_DOMAIN_ID]")
 	flags.StringVar(&o.DomainName, "user-domain-name", o.DomainName, "User domain [OS_USER_DOMAIN_NAME]")
 	flags.StringVar(&o.Scope.ProjectID, "project-id", o.Scope.ProjectID, "Scope to this project [OS_PROJECT_ID]")
@@ -97,6 +97,10 @@ func (o *OpenstackClient) Complete(args []string) error {
 
 func (o *OpenstackClient) Setup() error {
 	var err error
+
+	if o.Password == "" {
+		o.Password = os.Getenv("OS_PASSWORD")
+	}
 
 	if o.Provider, err = openstack.NewClient(o.IdentityEndpoint); err != nil {
 		return errors.Wrap(err, "Creating Gophercloud ProviderClient failed")
