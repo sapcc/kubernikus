@@ -12,13 +12,14 @@ import (
 	errors "github.com/go-openapi/errors"
 	"github.com/stretchr/testify/assert"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/kubernetes/fake"
 
 	apipkg "github.com/sapcc/kubernikus/pkg/api"
 	"github.com/sapcc/kubernikus/pkg/api/models"
 	"github.com/sapcc/kubernikus/pkg/api/rest/operations"
 	"github.com/sapcc/kubernikus/pkg/api/spec"
 	kubernikusv1 "github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
-	"github.com/sapcc/kubernikus/pkg/generated/clientset/fake"
+	kubernikusfake "github.com/sapcc/kubernikus/pkg/generated/clientset/fake"
 )
 
 const (
@@ -49,7 +50,8 @@ func createTestHandler(t *testing.T) (http.Handler, *apipkg.Runtime) {
 	api := operations.NewKubernikusAPI(swaggerSpec)
 	rt := &apipkg.Runtime{
 		Namespace:  NAMESPACE,
-		Kubernikus: fake.NewSimpleClientset(),
+		Kubernikus: kubernikusfake.NewSimpleClientset(),
+		Kubernetes: fake.NewSimpleClientset(),
 	}
 	Configure(api, rt)
 	api.KeystoneAuth = mockAuth
@@ -110,7 +112,7 @@ func TestClusterShow(t *testing.T) {
 		Spec: models.KlusterSpec{Name: "nase"},
 	}
 
-	rt.Kubernikus = fake.NewSimpleClientset(&kluster)
+	rt.Kubernikus = kubernikusfake.NewSimpleClientset(&kluster)
 
 	//Test Success
 	req := createRequest("GET", "/api/v1/clusters/nase", "")
@@ -161,7 +163,7 @@ func TestClusterUpdate(t *testing.T) {
 			Version: "someversion",
 		},
 	}
-	rt.Kubernikus = fake.NewSimpleClientset(&kluster)
+	rt.Kubernikus = kubernikusfake.NewSimpleClientset(&kluster)
 	updateObject := models.Kluster{
 		Name: "mund",
 		Spec: models.KlusterSpec{
