@@ -2,6 +2,7 @@ package controller
 
 import (
 	"fmt"
+	"reflect"
 	"sync"
 	"time"
 
@@ -252,7 +253,7 @@ func (launchctl *LaunchControl) updateNodePoolStatus(kluster *v1.Kluster, pool *
 
 	for i, curInfo := range copy.Status.NodePools {
 		if curInfo.Name == newInfo.Name {
-			if curInfo == newInfo {
+			if reflect.DeepEqual(curInfo, newInfo) {
 				return nil
 			}
 
@@ -261,9 +262,10 @@ func (launchctl *LaunchControl) updateNodePoolStatus(kluster *v1.Kluster, pool *
 			return err
 		}
 	}
-
-	glog.Errorf("Couldn't update Nodepool %v. It's not part of kluster %v.", newInfo.Name, copy.Name)
-	return nil
+	//status for nodepool not there yet. add it.
+	copy.Status.NodePools = append(copy.Status.NodePools, newInfo)
+	_, err = launchctl.Clients.Kubernikus.Kubernikus().Klusters(copy.Namespace).Update(copy)
+	return err
 }
 
 func (launchctl *LaunchControl) handleErr(err error, key interface{}) {
