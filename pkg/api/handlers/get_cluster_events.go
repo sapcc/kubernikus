@@ -33,6 +33,7 @@ func (d *getClusterEvents) Handle(params operations.GetClusterEventsParams, prin
 			Message:        ev.Message,
 			Reason:         ev.Reason,
 			Count:          int64(ev.Count),
+			Type:           ev.Type,
 		})
 
 	}

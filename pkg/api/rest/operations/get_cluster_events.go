@@ -33,7 +33,7 @@ func NewGetClusterEvents(ctx *middleware.Context, handler GetClusterEventsHandle
 
 /*GetClusterEvents swagger:route GET /api/v1/clusters/{name}/events getClusterEvents
 
-Get recent events related to the named cluster
+Get recent events about the cluster
 
 */
 type GetClusterEvents struct {

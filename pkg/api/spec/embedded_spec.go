@@ -179,7 +179,7 @@ func init() {
     },
     "/api/v1/clusters/{name}/events": {
       "get": {
-        "summary": "Get recent events related to the named cluster",
+        "summary": "Get recent events about the cluster",
         "operationId": "GetClusterEvents",
         "responses": {
           "200": {
@@ -291,21 +291,34 @@ func init() {
       "type": "object",
       "properties": {
         "count": {
+          "description": "The number of times this event has occurred.",
           "type": "integer"
         },
         "firstTimestamp": {
+          "description": "The time at which the event was first recorded",
           "type": "string",
           "format": "date-time"
         },
         "lastTimestamp": {
+          "description": "The time at which the most recent occurrence of this event was recorded",
           "type": "string",
           "format": "date-time"
         },
         "message": {
+          "description": "A human-readable description of the event",
           "type": "string"
         },
         "reason": {
+          "description": "A short, machine understandable string that gives the reason",
           "type": "string"
+        },
+        "type": {
+          "description": "Type of this event",
+          "type": "string",
+          "enum": [
+            "Normal",
+            "Warning"
+          ]
         }
       }
     },

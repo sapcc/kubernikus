@@ -6,10 +6,13 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
+
 	strfmt "github.com/go-openapi/strfmt"
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 )
 
 // Event event
@@ -17,20 +20,23 @@ import (
 
 type Event struct {
 
-	// count
+	// The number of times this event has occurred.
 	Count int64 `json:"count"`
 
-	// first timestamp
+	// The time at which the event was first recorded
 	FirstTimestamp strfmt.DateTime `json:"firstTimestamp,omitempty"`
 
-	// last timestamp
+	// The time at which the most recent occurrence of this event was recorded
 	LastTimestamp strfmt.DateTime `json:"lastTimestamp,omitempty"`
 
-	// message
+	// A human-readable description of the event
 	Message string `json:"message,omitempty"`
 
-	// reason
+	// A short, machine understandable string that gives the reason
 	Reason string `json:"reason,omitempty"`
+
+	// Type of this event
+	Type string `json:"type,omitempty"`
 }
 
 /* polymorph Event count false */
@@ -43,13 +49,61 @@ type Event struct {
 
 /* polymorph Event reason false */
 
+/* polymorph Event type false */
+
 // Validate validates this event
 func (m *Event) Validate(formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.validateType(formats); err != nil {
+		// prop
+		res = append(res, err)
+	}
+
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+var eventTypeTypePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["Normal","Warning"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		eventTypeTypePropEnum = append(eventTypeTypePropEnum, v)
+	}
+}
+
+const (
+	// EventTypeNormal captures enum value "Normal"
+	EventTypeNormal string = "Normal"
+	// EventTypeWarning captures enum value "Warning"
+	EventTypeWarning string = "Warning"
+)
+
+// prop value enum
+func (m *Event) validateTypeEnum(path, location string, value string) error {
+	if err := validate.Enum(path, location, value, eventTypeTypePropEnum); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *Event) validateType(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.Type) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateTypeEnum("type", "body", m.Type); err != nil {
+		return err
+	}
+
 	return nil
 }
 

@@ -166,7 +166,7 @@ paths:
         in: path
     get:
       operationId: GetClusterEvents
-      summary: Get recent events related to the named cluster 
+      summary: Get recent events about the cluster
       responses:
         '200':
           description: OK
@@ -180,18 +180,27 @@ definitions:
   Event:
     type: object
     properties:
-      count: 
+      count:
+        description: The number of times this event has occurred.
         type: integer
       lastTimestamp:
+        description: The time at which the most recent occurrence of this event was recorded
         type: string
         format: date-time
       firstTimestamp:
+        description: The time at which the event was first recorded
         type: string
         format: date-time
       reason:
+        description: A short, machine understandable string that gives the reason for the event
         type: string
       message:
+        description: A human-readable description of the event
         type: string
+      type:
+        description: Type of this event
+        type: string
+        enum: [Normal, Warning]
   OpenstackMetadata:
     type: object
     properties:
@@ -199,7 +208,7 @@ definitions:
         type: array
         items:
           type: object
-          x-go-name: Flavor 
+          x-go-name: Flavor
           properties:
             name:
               type: string
@@ -209,7 +218,7 @@ definitions:
         type: array
         items:
           type: object
-          x-go-name: SecurityGroup 
+          x-go-name: SecurityGroup
           properties:
             name:
               type: string
@@ -237,7 +246,7 @@ definitions:
               type: array
               items:
                 type: object
-                x-go-name: Network 
+                x-go-name: Network
                 properties:
                   name:
                     type: string
@@ -247,7 +256,7 @@ definitions:
                     type: array
                     items:
                       type: object
-                      x-go-name: Subnet 
+                      x-go-name: Subnet
                       properties:
                         name:
                           type: string

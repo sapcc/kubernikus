@@ -83,7 +83,7 @@ func (a *Client) GetClusterCredentials(params *GetClusterCredentialsParams, auth
 }
 
 /*
-GetClusterEvents gets recent events related to the named cluster
+GetClusterEvents gets recent events about the cluster
 */
 func (a *Client) GetClusterEvents(params *GetClusterEventsParams, authInfo runtime.ClientAuthInfoWriter) (*GetClusterEventsOK, error) {
 	// TODO: Validate the params before sending
