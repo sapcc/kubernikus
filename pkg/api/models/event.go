@@ -32,7 +32,7 @@ type Event struct {
 	// A human-readable description of the event
 	Message string `json:"message,omitempty"`
 
-	// A short, machine understandable string that gives the reason
+	// A short, machine understandable string that gives the reason for the event
 	Reason string `json:"reason,omitempty"`
 
 	// Type of this event

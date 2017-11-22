@@ -309,7 +309,7 @@ func init() {
           "type": "string"
         },
         "reason": {
-          "description": "A short, machine understandable string that gives the reason",
+          "description": "A short, machine understandable string that gives the reason for the event",
           "type": "string"
         },
         "type": {
