@@ -8,6 +8,7 @@ import (
 	"sync"
 	"syscall"
 
+	"github.com/go-kit/kit/log"
 	"github.com/golang/glog"
 	"github.com/sapcc/kubernikus/pkg/cmd"
 	"github.com/sapcc/kubernikus/pkg/controller"
@@ -86,12 +87,16 @@ func (o *Options) Complete(args []string) error {
 }
 
 func (o *Options) Run(c *cobra.Command) error {
+	var logger log.Logger
+	logger = log.NewLogfmtLogger(log.NewSyncWriter(os.Stderr))
+	logger = log.With(logger, "ts", log.DefaultTimestampUTC, "caller", log.DefaultCaller)
+
 	sigs := make(chan os.Signal, 1)
 	stop := make(chan struct{})
 	signal.Notify(sigs, os.Interrupt, syscall.SIGTERM) // Push signals into channel
 	wg := &sync.WaitGroup{}                            // Goroutines can add themselves to this to be waited on
 
-	go controller.NewKubernikusOperator(&o.KubernikusOperatorOptions).Run(stop, wg)
+	go controller.NewKubernikusOperator(&o.KubernikusOperatorOptions, logger).Run(stop, wg)
 	go controller.ExposeMetrics(o.MetricPort, stop, wg)
 
 	<-sigs // Wait for signals (this hangs until a signal arrives)
