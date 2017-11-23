@@ -46,7 +46,7 @@ var _ generator.Generator = &genGroup{}
 
 // We only want to call GenerateType() once per group.
 func (g *genGroup) Filter(c *generator.Context, t *types.Type) bool {
-	return t == g.types[0]
+	return len(g.types) == 0 || t == g.types[0]
 }
 
 func (g *genGroup) Namers(c *generator.Context) namer.NameSystems {
@@ -80,7 +80,7 @@ func (g *genGroup) GenerateType(c *generator.Context, t *types.Type, w io.Writer
 	}
 	// allow user to define a group name that's different from the one parsed from the directory.
 	p := c.Universe.Package(path.Vendorless(g.inputPackage))
-	if override := types.ExtractCommentTags("+", p.DocComments)["groupName"]; override != nil {
+	if override := types.ExtractCommentTags("+", p.Comments)["groupName"]; override != nil {
 		groupName = override[0]
 	}
 
