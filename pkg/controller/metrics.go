@@ -57,7 +57,6 @@ kubernikus_kluster_status_phase{"kluster_id"="<id>","phase"="creating"} 		1
 kubernikus_kluster_status_phase{"kluster_id"="<id>","phase"="running"} 			0
 kubernikus_kluster_status_phase{"kluster_id"="<id>","phase"="pending"} 			0
 kubernikus_kluster_status_phase{"kluster_id"="<id>","phase"="terminating"} 	0
-kubernikus_kluster_status_phase{"kluster_id"="<id>","phase"="error"} 				0
 */
 func setMetricStatusPhaseForKluster(klusterName string, klusterPhase models.KlusterPhase) {
 	// Set current phase to 1, others to 0 if it is set.
@@ -70,13 +69,12 @@ func setMetricStatusPhaseForKluster(klusterName string, klusterPhase models.Klus
 		klusterStatusPhase.With(labels).Set(boolToFloat64(klusterPhase == models.KlusterPhaseRunning))
 		klusterStatusPhase.With(labels).Set(boolToFloat64(klusterPhase == models.KlusterPhasePending))
 		klusterStatusPhase.With(labels).Set(boolToFloat64(klusterPhase == models.KlusterPhaseTerminating))
-		klusterStatusPhase.With(labels).Set(boolToFloat64(klusterPhase == models.KlusterPhaseError))
 	}
 }
 
 /*
 kubernikus_node_pool_info{"kluster_id"="<id", "node_pool"="<name>", "image_name"="<name>", "flavor_name"="<name>"} <node_pool_size>
- */
+*/
 func setMetricNodePoolSize(klusterID, nodePoolName, imageName, flavorName string, nodePoolSize int64) {
 	nodePoolInfo.With(prometheus.Labels{
 		"kluster_id":  klusterID,
@@ -91,14 +89,14 @@ kubernikus_node_pool_status{"kluster_id"="<id", "node_pool"="<name>", "status"="
 kubernikus_node_pool_status{"kluster_id"="<id", "node_pool"="<name>", "status"="ready"} 1
 kubernikus_node_pool_status{"kluster_id"="<id", "node_pool"="<name>", "status"="running"} 1
 kubernikus_node_pool_status{"kluster_id"="<id", "node_pool"="<name>", "status"="healthy"} 1
- */
+*/
 func setMetricNodePoolStatus(klusterID, nodePoolName string, status map[string]int64) {
 	if status != nil {
 		for s, v := range status {
 			nodePoolStatus.With(prometheus.Labels{
 				"kluster_id": klusterID,
-				"node_pool": nodePoolName,
-				"status": s,
+				"node_pool":  nodePoolName,
+				"status":     s,
 			}).Set(float64(v))
 		}
 	}
