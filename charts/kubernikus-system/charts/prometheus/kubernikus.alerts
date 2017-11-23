@@ -1,0 +1,14 @@
+groups:
+- name: kubernikus.alerts
+  rules:
+  - alert: KubernikusKlusterStuck
+    expr: kubernikus_kluster_status_phase{phase!="Running"} == 1
+    for: 1h
+    labels:
+      tier: kubernikus
+      service: k8s
+      severity: critical
+      context: kluster
+    annotations:
+      description: Kluster {{ $labels.kluster_id }} is stuck in {{ $labels.phase }} for 1h
+      summary: Kluster stuck in phase {{ $labels.phase }}
