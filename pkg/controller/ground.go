@@ -136,7 +136,8 @@ func (op *GroundControl) handler(key string) error {
 	} else {
 		kluster := obj.(*v1.Kluster)
 		glog.V(5).Infof("Handling kluster %v in phase %q", kluster.Name, kluster.Status.Phase)
-		setMetricStatusPhaseForKluster(kluster.GetName(), kluster.Status.Phase)
+		setMetricKlusterInfo(kluster.GetNamespace(),kluster.GetName(),kluster.Status.Version,kluster.Spec.Openstack.ProjectID,kluster.GetAnnotations(),kluster.GetLabels())
+		setMetricKlusterStatusPhase(kluster.GetName(), kluster.Status.Phase)
 
 		switch phase := kluster.Status.Phase; phase {
 		case models.KlusterPhasePending:

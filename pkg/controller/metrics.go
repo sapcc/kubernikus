@@ -15,29 +15,36 @@ const (
 	metricNamespace = "kubernikus"
 )
 
-var klusterInstancesTotal = prometheus.NewGaugeVec(
+var klusterPhases = []models.KlusterPhase{
+	models.KlusterPhasePending,
+	models.KlusterPhaseCreating,
+	models.KlusterPhaseRunning,
+	models.KlusterPhaseTerminating,
+}
+
+var klusterInfo = prometheus.NewGaugeVec(
 	prometheus.GaugeOpts{
 		Namespace: metricNamespace,
-		Name:      "kluster_instances_total",
-		Help:      "total number of klusters",
+		Name:      "kluster_info",
+		Help:      "detailed information on a kluster",
 	},
-	[]string{"domain_id", "project_id"},
+	[]string{"kluster_namespace","kluster_name","kluster_version","creator","account","project_id"},
 )
 
 var klusterStatusPhase = prometheus.NewGaugeVec(
 	prometheus.GaugeOpts{
 		Namespace: metricNamespace,
 		Name:      "kluster_status_phase",
-		Help:      "The phase the kluster is currently in",
+		Help:      "the phase the kluster is currently in",
 	},
 	[]string{"kluster_id", "phase"},
 )
 
-var nodePoolInfo = prometheus.NewGaugeVec(
+var nodePoolSize = prometheus.NewGaugeVec(
 	prometheus.GaugeOpts{
 		Namespace: metricNamespace,
-		Name:      "node_pool_info",
-		Help:      "information for a node pool",
+		Name:      "node_pool_size",
+		Help:      "size of a node pool",
 	},
 	[]string{"kluster_id", "node_pool", "image_name", "flavor_name"},
 )
@@ -46,10 +53,22 @@ var nodePoolStatus = prometheus.NewGaugeVec(
 	prometheus.GaugeOpts{
 		Namespace: metricNamespace,
 		Name:      "node_pool_status",
-		Help:      "status of the node pool",
+		Help:      "status of the node pool and the number of nodes nodes in that status",
 	},
 	[]string{"kluster_id", "node_pool", "status"},
 )
+
+func setMetricKlusterInfo(namespace, name, version, projectID string, annotations, labels map[string]string) {
+	promLabels := prometheus.Labels{
+		"kluster_namespace": namespace,
+		"kluster_name": name,
+		"kluster_version": version,
+		"creator": getCreatorFromAnnotations(annotations),
+		"account": getAccountFromLabels(labels),
+		"project_id": projectID,
+	}
+	klusterInfo.With(promLabels).Set(1)
+}
 
 /*
 kubernikus_kluster_status_phase{"kluster_id"="<id>","phase"="<phase>"} 			< 1|0 >
@@ -58,30 +77,27 @@ kubernikus_kluster_status_phase{"kluster_id"="<id>","phase"="running"} 			0
 kubernikus_kluster_status_phase{"kluster_id"="<id>","phase"="pending"} 			0
 kubernikus_kluster_status_phase{"kluster_id"="<id>","phase"="terminating"} 	0
 */
-func setMetricStatusPhaseForKluster(klusterName string, klusterPhase models.KlusterPhase) {
-	// Set current phase to 1, others to 0 if it is set.
-	if klusterPhase != "" {
+func setMetricKlusterStatusPhase(klusterName string, klusterPhase models.KlusterPhase) {
+	// Set current phase to 1, others to 0
+	for _, phase := range klusterPhases {
 		labels := prometheus.Labels{
 			"kluster_id": klusterName,
-			"phase":      string(klusterPhase),
+			"phase":      string(phase),
 		}
-		klusterStatusPhase.With(labels).Set(boolToFloat64(klusterPhase == models.KlusterPhaseCreating))
-		klusterStatusPhase.With(labels).Set(boolToFloat64(klusterPhase == models.KlusterPhaseRunning))
-		klusterStatusPhase.With(labels).Set(boolToFloat64(klusterPhase == models.KlusterPhasePending))
-		klusterStatusPhase.With(labels).Set(boolToFloat64(klusterPhase == models.KlusterPhaseTerminating))
+		klusterStatusPhase.With(labels).Set(boolToFloat64(klusterPhase == phase))
 	}
 }
 
 /*
-kubernikus_node_pool_info{"kluster_id"="<id", "node_pool"="<name>", "image_name"="<name>", "flavor_name"="<name>"} <node_pool_size>
+kubernikus_node_pool_size{"kluster_id"="<id", "node_pool"="<name>", "image_name"="<name>", "flavor_name"="<name>"} <node_pool_size>
 */
-func setMetricNodePoolSize(klusterID, nodePoolName, imageName, flavorName string, nodePoolSize int64) {
-	nodePoolInfo.With(prometheus.Labels{
+func setMetricNodePoolSize(klusterID, nodePoolName, imageName, flavorName string, size int64) {
+	nodePoolSize.With(prometheus.Labels{
 		"kluster_id":  klusterID,
 		"node_pool":   nodePoolName,
 		"image_name":  imageName,
 		"flavor_name": flavorName,
-	}).Set(float64(nodePoolSize))
+	}).Set(float64(size))
 }
 
 /*
@@ -109,11 +125,27 @@ func boolToFloat64(b bool) float64 {
 	return 0
 }
 
+func getCreatorFromAnnotations(annotations map[string]string) string {
+	creator, ok := annotations["creator"]
+	if !ok {
+		return "NA"
+	}
+	return creator
+}
+
+func getAccountFromLabels(labels map[string]string) string {
+	account, ok := labels["account"]
+	if !ok {
+		return "NA"
+	}
+	return account
+}
+
 func init() {
 	prometheus.MustRegister(
-		klusterInstancesTotal,
+		klusterInfo,
 		klusterStatusPhase,
-		nodePoolInfo,
+		nodePoolSize,
 		nodePoolStatus,
 	)
 }
