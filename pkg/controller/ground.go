@@ -39,8 +39,8 @@ const (
 )
 
 type GroundControl struct {
-	Clients
-	Factories
+	config.Clients
+	config.Factories
 	config.Config
 	Recorder record.EventRecorder
 
@@ -49,7 +49,7 @@ type GroundControl struct {
 	podInformer     cache.SharedIndexInformer
 }
 
-func NewGroundController(factories Factories, clients Clients, recorder record.EventRecorder, config config.Config) *GroundControl {
+func NewGroundController(factories config.Factories, clients config.Clients, recorder record.EventRecorder, config config.Config) *GroundControl {
 	operator := &GroundControl{
 		Clients:         clients,
 		Factories:       factories,

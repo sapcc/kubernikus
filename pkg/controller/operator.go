@@ -6,6 +6,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/go-kit/kit/log"
 	"github.com/golang/glog"
 	apiextensionsclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	"k8s.io/apimachinery/pkg/api/meta"
@@ -19,7 +20,6 @@ import (
 	api_v1 "k8s.io/client-go/pkg/api/v1"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/record"
-	"k8s.io/helm/pkg/helm"
 
 	"github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
 	helmutil "github.com/sapcc/kubernikus/pkg/client/helm"
@@ -27,6 +27,7 @@ import (
 	"github.com/sapcc/kubernikus/pkg/client/kubernikus"
 	"github.com/sapcc/kubernikus/pkg/client/openstack"
 	"github.com/sapcc/kubernikus/pkg/controller/config"
+	"github.com/sapcc/kubernikus/pkg/controller/launch"
 	kubernikus_clientset "github.com/sapcc/kubernikus/pkg/generated/clientset"
 	kubernikus_informers "github.com/sapcc/kubernikus/pkg/generated/informers/externalversions"
 	kubernikus_informers_v1 "github.com/sapcc/kubernikus/pkg/generated/informers/externalversions/kubernikus/v1"
@@ -52,25 +53,15 @@ type KubernikusOperatorOptions struct {
 	Namespace           string
 	Controllers         []string
 	MetricPort          int
-}
 
-type Clients struct {
-	Kubernikus kubernikus_clientset.Interface
-	Kubernetes kubernetes_clientset.Interface
-	Satellites *kube.SharedClientFactory
-	Openstack  openstack.Client
-	Helm       *helm.Client
-}
-
-type Factories struct {
-	Kubernikus kubernikus_informers.SharedInformerFactory
-	Kubernetes kubernetes_informers.SharedInformerFactory
+	logger log.Logger
 }
 
 type KubernikusOperator struct {
-	Clients
 	config.Config
-	Factories
+	config.Factories
+	config.Clients
+	logger log.Logger
 }
 
 const (
@@ -86,7 +77,7 @@ var (
 	}
 )
 
-func NewKubernikusOperator(options *KubernikusOperatorOptions) *KubernikusOperator {
+func NewKubernikusOperator(options *KubernikusOperatorOptions, logger log.Logger) *KubernikusOperator {
 	var err error
 
 	o := &KubernikusOperator{
@@ -109,6 +100,7 @@ func NewKubernikusOperator(options *KubernikusOperatorOptions) *KubernikusOperat
 				Controllers: make(map[string]config.Controller),
 			},
 		},
+		logger: logger,
 	}
 
 	o.Clients.Kubernetes, err = kube.NewClient(options.KubeConfig, options.Context)
@@ -171,7 +163,7 @@ func NewKubernikusOperator(options *KubernikusOperatorOptions) *KubernikusOperat
 		case "groundctl":
 			o.Config.Kubernikus.Controllers["groundctl"] = NewGroundController(o.Factories, o.Clients, recorder, o.Config)
 		case "launchctl":
-			o.Config.Kubernikus.Controllers["launchctl"] = NewLaunchController(o.Factories, o.Clients)
+			o.Config.Kubernikus.Controllers["launchctl"] = launch.NewController(o.Factories, o.Clients, recorder, logger)
 		}
 	}
 
