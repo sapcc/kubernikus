@@ -48,7 +48,7 @@ var nodePoolStatus = prometheus.NewGaugeVec(
 		Name:      "node_pool_status",
 		Help:      "status of the node pool",
 	},
-	[]string{"kluster_id", "node_pool", "pool_size", "status"},
+	[]string{"kluster_id", "node_pool", "status"},
 )
 
 /*
