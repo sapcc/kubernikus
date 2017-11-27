@@ -69,26 +69,26 @@ func (lr *LaunchReconciler) reconcilePool(kluster *v1.Kluster, pool *models.Node
 		for _, node := range status.Nodes {
 			requeue = true
 			if err = pm.DeleteNode(node); err != nil {
-				return
+				break
 			}
 		}
-		return
+		break
 	case status.Needed > 0:
 		for i := 0; i < int(status.Needed); i++ {
 			requeue = true
 			if _, err = pm.CreateNode(); err != nil {
-				return
+				break
 			}
 		}
-		return
+		break
 	case status.UnNeeded > 0:
 		for i := 0; i < int(status.UnNeeded); i++ {
 			requeue = true
 			if err = pm.DeleteNode(status.Nodes[i]); err != nil {
-				return
+				break
 			}
 		}
-		return
+		break
 	case status.Starting > 0:
 		requeue = true
 	case status.Stopping > 0:
