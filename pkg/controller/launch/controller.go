@@ -138,6 +138,12 @@ func (lr *LaunchReconciler) newNodePoolManager(kluster *v1.Kluster, pool *models
 	pm = &ConcretePoolManager{lr.Clients, kluster, pool, logger}
 	pm = &EventingPoolManager{pm, kluster, lr.Recorder}
 	pm = &LoggingPoolManager{pm, logger}
+	pm = &InstrumentingPoolManager{pm,
+		metrics.LaunchOperationsLatency,
+		metrics.LaunchOperationsTotal,
+		metrics.LaunchSuccessfulOperationsTotal,
+		metrics.LaunchFailedOperationsTotal,
+	}
 
 	return pm
 }
