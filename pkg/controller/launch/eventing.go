@@ -40,7 +40,7 @@ func (epm *EventingPoolManager) DeleteNode(id string) (err error) {
 	if err == nil {
 		epm.Recorder.Eventf(epm.Kluster, api_v1.EventTypeNormal, events.SuccessfullDeleteNode, "Successfully deleted node %v", id)
 	} else {
-		epm.Recorder.Eventf(epm.Kluster, api_v1.EventTypeWarning, events.FailedCreateNode, "Failed to delete node: %v", err)
+		epm.Recorder.Eventf(epm.Kluster, api_v1.EventTypeWarning, events.FailedDeleteNode, "Failed to delete node: %v", err)
 	}
 
 	return
