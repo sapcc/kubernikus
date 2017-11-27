@@ -25,6 +25,7 @@ import (
 	"github.com/sapcc/kubernikus/pkg/client/kubernetes"
 	"github.com/sapcc/kubernikus/pkg/controller/config"
 	"github.com/sapcc/kubernikus/pkg/controller/ground"
+	"github.com/sapcc/kubernikus/pkg/controller/metrics"
 	"github.com/sapcc/kubernikus/pkg/util"
 	helm_util "github.com/sapcc/kubernikus/pkg/util/helm"
 	waitutil "github.com/sapcc/kubernikus/pkg/util/wait"
@@ -136,8 +137,8 @@ func (op *GroundControl) handler(key string) error {
 	} else {
 		kluster := obj.(*v1.Kluster)
 		glog.V(5).Infof("Handling kluster %v in phase %q", kluster.Name, kluster.Status.Phase)
-		setMetricKlusterInfo(kluster.GetNamespace(),kluster.GetName(),kluster.Status.Version,kluster.Spec.Openstack.ProjectID,kluster.GetAnnotations(),kluster.GetLabels())
-		setMetricKlusterStatusPhase(kluster.GetName(), kluster.Status.Phase)
+		metrics.SetMetricKlusterInfo(kluster.GetNamespace(), kluster.GetName(), kluster.Status.Version, kluster.Spec.Openstack.ProjectID, kluster.GetAnnotations(), kluster.GetLabels())
+		metrics.SetMetricKlusterStatusPhase(kluster.GetName(), kluster.Status.Phase)
 
 		switch phase := kluster.Status.Phase; phase {
 		case models.KlusterPhasePending:

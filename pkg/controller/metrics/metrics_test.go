@@ -1,4 +1,4 @@
-package controller
+package metrics
 
 import (
 	"bytes"
@@ -17,28 +17,24 @@ import (
 func TestMetrics(t *testing.T) {
 
 	expectedMetrics := map[prometheus.Collector]string{
-		nodePoolSize:
-		`
+		nodePoolSize: `
 # HELP kubernikus_node_pool_size size of a node pool
 # TYPE kubernikus_node_pool_size gauge
 kubernikus_node_pool_size{flavor_name="flavorName",image_name="imageName",kluster_id="klusterID",node_pool="nodePoolName"} 3
 		`,
-		nodePoolStatus:
-		`
+		nodePoolStatus: `
 # HELP kubernikus_node_pool_status status of the node pool and the number of nodes nodes in that status
 # TYPE kubernikus_node_pool_status gauge
 kubernikus_node_pool_status{kluster_id="klusterID",node_pool="nodePoolName",status="ready"} 2
 kubernikus_node_pool_status{kluster_id="klusterID",node_pool="nodePoolName",status="running"} 2
 kubernikus_node_pool_status{kluster_id="klusterID",node_pool="nodePoolName",status="starting"} 1
 		`,
-		klusterInfo:
-		`
+		klusterInfo: `
 # HELP kubernikus_kluster_info detailed information on a kluster
 # TYPE kubernikus_kluster_info gauge
 kubernikus_kluster_info{account="account",creator="D012345",kluster_name="klusterName",kluster_namespace="namespace",kluster_version="version",project_id="projectID"} 1
 		`,
-		klusterStatusPhase:
-		`
+		klusterStatusPhase: `
 # HELP kubernikus_kluster_status_phase the phase the kluster is currently in
 # TYPE kubernikus_kluster_status_phase gauge
 kubernikus_kluster_status_phase{kluster_id="klusterID",phase="Pending"} 0
@@ -51,9 +47,8 @@ kubernikus_kluster_status_phase{kluster_id="klusterID",phase="Terminating"} 0
 	// call functions that update the metrics here
 	setMetricNodePoolSize("klusterID", "nodePoolName", "imageName", "flavorName", 3)
 	setMetricNodePoolStatus("klusterID", "nodePoolName", map[string]int64{"running": 2, "starting": 1, "ready": 2})
-	setMetricKlusterInfo("namespace","klusterName","version","projectID",map[string]string{"creator":"D012345"},map[string]string{"account":"account"})
+	setMetricKlusterInfo("namespace", "klusterName", "version", "projectID", map[string]string{"creator": "D012345"}, map[string]string{"account": "account"})
 	setMetricKlusterStatusPhase("klusterID", models.KlusterPhaseRunning)
-
 
 	registry := prometheus.NewPedanticRegistry()
 	for collector, expectedMetricString := range expectedMetrics {

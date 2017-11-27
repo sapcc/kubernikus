@@ -12,6 +12,7 @@ import (
 	"github.com/golang/glog"
 	"github.com/sapcc/kubernikus/pkg/cmd"
 	"github.com/sapcc/kubernikus/pkg/controller"
+	"github.com/sapcc/kubernikus/pkg/controller/metrics"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 )
@@ -97,7 +98,7 @@ func (o *Options) Run(c *cobra.Command) error {
 	wg := &sync.WaitGroup{}                            // Goroutines can add themselves to this to be waited on
 
 	go controller.NewKubernikusOperator(&o.KubernikusOperatorOptions, logger).Run(stop, wg)
-	go controller.ExposeMetrics(o.MetricPort, stop, wg)
+	go metrics.ExposeMetrics(o.MetricPort, stop, wg)
 
 	<-sigs // Wait for signals (this hangs until a signal arrives)
 	glog.Info("Shutting down...")

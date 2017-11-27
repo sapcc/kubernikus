@@ -6,6 +6,7 @@ import (
 	"github.com/sapcc/kubernikus/pkg/client/openstack"
 	"github.com/sapcc/kubernikus/pkg/controller/base"
 	"github.com/sapcc/kubernikus/pkg/controller/config"
+	"github.com/sapcc/kubernikus/pkg/controller/metrics"
 	"github.com/sapcc/kubernikus/pkg/templates"
 
 	"github.com/go-kit/kit/log"
@@ -52,7 +53,11 @@ func NewController(factories config.Factories, clients config.Clients, recorder 
 	reconciler = &LaunchReconciler{clients, recorder, logger}
 	reconciler = &base.LoggingReconciler{reconciler, logger}
 	reconciler = &base.EventingReconciler{reconciler}
-	reconciler = &base.InstrumentedReconciler{reconciler}
+	reconciler = &base.InstrumentingReconciler{
+		reconciler,
+		metrics.KlusterReconcilicationCount,
+		metrics.KlusterReconciliationLatency,
+	}
 
 	return base.NewController(factories, clients, reconciler, logger)
 }

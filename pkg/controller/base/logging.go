@@ -19,18 +19,6 @@ type EventingReconciler struct {
 	Reconciler
 }
 
-type InstrumentedReconciler struct {
-	Reconciler
-}
-
-func (r *InstrumentedReconciler) Reconcile(kluster *v1.Kluster) (requeue bool, err error) {
-	defer func() {
-		RECONCILLIATION_COUNTER = RECONCILLIATION_COUNTER + 1
-		fmt.Printf("Metrics: Reconciled %v kluster\n", RECONCILLIATION_COUNTER)
-	}()
-	return r.Reconciler.Reconcile(kluster)
-}
-
 func (r *EventingReconciler) Reconcile(kluster *v1.Kluster) (requeue bool, err error) {
 	fmt.Printf("EVENT: Reconciled %v\n", kluster.Name)
 	return r.Reconciler.Reconcile(kluster)

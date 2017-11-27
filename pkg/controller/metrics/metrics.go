@@ -1,4 +1,4 @@
-package controller
+package metrics
 
 import (
 	"fmt"
@@ -28,7 +28,7 @@ var klusterInfo = prometheus.NewGaugeVec(
 		Name:      "kluster_info",
 		Help:      "detailed information on a kluster",
 	},
-	[]string{"kluster_namespace","kluster_name","kluster_version","creator","account","project_id"},
+	[]string{"kluster_namespace", "kluster_name", "kluster_version", "creator", "account", "project_id"},
 )
 
 var klusterStatusPhase = prometheus.NewGaugeVec(
@@ -58,14 +58,14 @@ var nodePoolStatus = prometheus.NewGaugeVec(
 	[]string{"kluster_id", "node_pool", "status"},
 )
 
-func setMetricKlusterInfo(namespace, name, version, projectID string, annotations, labels map[string]string) {
+func SetMetricKlusterInfo(namespace, name, version, projectID string, annotations, labels map[string]string) {
 	promLabels := prometheus.Labels{
 		"kluster_namespace": namespace,
-		"kluster_name": name,
-		"kluster_version": version,
-		"creator": getCreatorFromAnnotations(annotations),
-		"account": getAccountFromLabels(labels),
-		"project_id": projectID,
+		"kluster_name":      name,
+		"kluster_version":   version,
+		"creator":           getCreatorFromAnnotations(annotations),
+		"account":           getAccountFromLabels(labels),
+		"project_id":        projectID,
 	}
 	klusterInfo.With(promLabels).Set(1)
 }
@@ -77,7 +77,7 @@ kubernikus_kluster_status_phase{"kluster_id"="<id>","phase"="running"} 			0
 kubernikus_kluster_status_phase{"kluster_id"="<id>","phase"="pending"} 			0
 kubernikus_kluster_status_phase{"kluster_id"="<id>","phase"="terminating"} 	0
 */
-func setMetricKlusterStatusPhase(klusterName string, klusterPhase models.KlusterPhase) {
+func SetMetricKlusterStatusPhase(klusterName string, klusterPhase models.KlusterPhase) {
 	// Set current phase to 1, others to 0
 	for _, phase := range klusterPhases {
 		labels := prometheus.Labels{
@@ -147,6 +147,8 @@ func init() {
 		klusterStatusPhase,
 		nodePoolSize,
 		nodePoolStatus,
+		KlusterReconcilicationCount,
+		KlusterReconciliationLatency,
 	)
 }
 
