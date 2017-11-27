@@ -6,7 +6,7 @@ var LaunchOperationsLatency = prometheus.NewSummaryVec(
 	prometheus.SummaryOpts{
 		Namespace: "kubernikus",
 		Subsystem: "launch",
-		Name:      "operation_latency_microseconds",
+		Name:      "operation_latency_seconds",
 		Help:      "Total duration of reconciliation in microseconds.",
 	},
 	[]string{"method"})
