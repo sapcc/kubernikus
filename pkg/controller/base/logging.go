@@ -1,7 +1,6 @@
 package base
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/go-kit/kit/log"
@@ -13,15 +12,6 @@ var RECONCILLIATION_COUNTER = 0
 type LoggingReconciler struct {
 	Reconciler Reconciler
 	Logger     log.Logger
-}
-
-type EventingReconciler struct {
-	Reconciler
-}
-
-func (r *EventingReconciler) Reconcile(kluster *v1.Kluster) (requeue bool, err error) {
-	fmt.Printf("EVENT: Reconciled %v\n", kluster.Name)
-	return r.Reconciler.Reconcile(kluster)
 }
 
 func (r *LoggingReconciler) Reconcile(kluster *v1.Kluster) (requeue bool, err error) {

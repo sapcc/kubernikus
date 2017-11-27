@@ -25,7 +25,6 @@ func NewController(factories config.Factories, clients config.Clients, recorder 
 	var reconciler base.Reconciler
 	reconciler = &LaunchReconciler{clients, recorder, logger}
 	reconciler = &base.LoggingReconciler{reconciler, logger}
-	reconciler = &base.EventingReconciler{reconciler}
 	reconciler = &base.InstrumentingReconciler{
 		reconciler,
 		metrics.LaunchOperationsLatency,
