@@ -30,7 +30,7 @@ func (npm *LoggingPoolManager) GetStatus() (status *PoolStatus, err error) {
 func (npm *LoggingPoolManager) SetStatus(status *PoolStatus) (err error) {
 	defer func(begin time.Time) {
 		npm.Logger.Log(
-			"msg", "wrote node pool status",
+			"msg", "wrote status",
 			"running", status.Running,
 			"starting", status.Starting,
 			"stopping", status.Stopping,
