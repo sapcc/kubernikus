@@ -41,7 +41,7 @@ func (r *LoggingReconciler) Reconcile(kluster *v1.Kluster) (requeue bool, err er
 		r.Logger.Log(
 			"msg", "reconciled kluster",
 			"kluster", kluster.Name,
-			"reqeue", requeue,
+			"requeue", requeue,
 			"took", time.Since(begin),
 			"err", err)
 	}(time.Now())
