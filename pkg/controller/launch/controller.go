@@ -55,8 +55,10 @@ func NewController(factories config.Factories, clients config.Clients, recorder 
 	reconciler = &base.EventingReconciler{reconciler}
 	reconciler = &base.InstrumentingReconciler{
 		reconciler,
-		metrics.KlusterReconcilicationCount,
-		metrics.KlusterReconciliationLatency,
+		metrics.LaunchOperationsLatency,
+		metrics.LaunchOperationsTotal,
+		metrics.LaunchSuccessfulOperationsTotal,
+		metrics.LaunchFailedOperationsTotal,
 	}
 
 	return base.NewController(factories, clients, reconciler, logger)

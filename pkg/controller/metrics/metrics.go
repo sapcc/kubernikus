@@ -147,8 +147,10 @@ func init() {
 		klusterStatusPhase,
 		nodePoolSize,
 		nodePoolStatus,
-		KlusterReconcilicationCount,
-		KlusterReconciliationLatency,
+		LaunchOperationsLatency,
+		LaunchOperationsTotal,
+		LaunchSuccessfulOperationsTotal,
+		LaunchFailedOperationsTotal,
 	)
 }
 

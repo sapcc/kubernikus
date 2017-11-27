@@ -9,22 +9,36 @@ import (
 
 type InstrumentingReconciler struct {
 	Reconciler
-	ReconciliationCount   *prometheus.CounterVec
-	ReconciliationLatency *prometheus.SummaryVec
+
+	Latency    *prometheus.SummaryVec
+	Total      *prometheus.CounterVec
+	Successful *prometheus.CounterVec
+	Failed     *prometheus.CounterVec
 }
 
 func (ir *InstrumentingReconciler) Reconcile(kluster *v1.Kluster) (requeue bool, err error) {
 	defer func(begin time.Time) {
-		ir.ReconciliationCount.With(
+		ir.Latency.With(
 			prometheus.Labels{
-				"kluster": kluster.Spec.Name,
-				"project": kluster.Account(),
-			}).Add(1)
-		ir.ReconciliationLatency.With(
-			prometheus.Labels{
-				"kluster": kluster.Spec.Name,
-				"project": kluster.Account(),
+				"method": "Reconcile",
 			}).Observe(time.Since(begin).Seconds())
+
+		ir.Total.With(
+			prometheus.Labels{
+				"method": "Reconcile",
+			}).Add(1)
+
+		if err != nil {
+			ir.Failed.With(
+				prometheus.Labels{
+					"method": "Reconcile",
+				}).Add(1)
+		} else {
+			ir.Successful.With(
+				prometheus.Labels{
+					"method": "Reconcile",
+				}).Add(1)
+		}
 	}(time.Now())
 	return ir.Reconciler.Reconcile(kluster)
 }
