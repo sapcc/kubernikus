@@ -6,15 +6,15 @@ var KlusterReconcilicationCount = prometheus.NewCounterVec(
 	prometheus.CounterOpts{
 		Namespace: "kubernikus",
 		Subsystem: "launch",
-		Name:      "kluster_reconciliation_count",
+		Name:      "reconciliation_count",
 		Help:      "Number of reconcilitations."},
 	[]string{"kluster", "project"})
 
-var KlusterReconciliationLatency = prometheus.NewHistogramVec(
-	prometheus.HistogramOpts{
+var KlusterReconciliationLatency = prometheus.NewSummaryVec(
+	prometheus.SummaryOpts{
 		Namespace: "kubernikus",
 		Subsystem: "launch",
-		Name:      "kluster_reconciliation_latency_microseconds",
+		Name:      "reconciliation_latency_microseconds",
 		Help:      "Total duration of reconciliation in microseconds.",
 	},
 	[]string{"kluster", "project"})

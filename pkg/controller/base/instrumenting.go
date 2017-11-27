@@ -10,7 +10,7 @@ import (
 type InstrumentingReconciler struct {
 	Reconciler
 	ReconciliationCount   *prometheus.CounterVec
-	ReconciliationLatency *prometheus.HistogramVec
+	ReconciliationLatency *prometheus.SummaryVec
 }
 
 func (ir *InstrumentingReconciler) Reconcile(kluster *v1.Kluster) (requeue bool, err error) {
