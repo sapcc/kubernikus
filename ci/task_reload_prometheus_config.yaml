@@ -21,9 +21,9 @@ run:
       echo ">> Waiting ${DELAY_SECONDS} seconds before reloading prometheus configuration"
       sleep "${DELAY_SECONDS}"
 
-      k -n ${NAMESPACE} get pods -o jsonpath='{.items[*].metadata.name}'| tr ' ' '\n' | grep prometheus | while read POD; do
+      kubectl -n ${NAMESPACE} get pods -o jsonpath='{.items[*].metadata.name}'| tr ' ' '\n' | grep prometheus | while read POD; do
         echo ">> Reloading configuration for ${POD}..."
-        k exec "${POD}" -- kill -HUP 1
+        kubectl exec "${POD}" -- kill -HUP 1
       done
 
 params:
