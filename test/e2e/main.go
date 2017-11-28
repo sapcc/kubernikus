@@ -8,10 +8,11 @@ import (
 
 	"github.com/spf13/pflag"
 
-	"github.com/golang/glog"
 	"sync"
 	"syscall"
 	"testing"
+
+	"github.com/golang/glog"
 )
 
 var options E2ETestSuiteOptions
@@ -25,6 +26,7 @@ func init() {
 	pflag.BoolVar(&options.IsTestAll, "all", false, "The whole show. Test everything")
 	pflag.BoolVar(&options.IsTestAPI, "api", false, "Test API")
 	pflag.BoolVar(&options.IsTestSmoke, "smoke", false, "Run smoke test")
+	pflag.BoolVar(&options.IsNoTeardown, "noTeardown", false, "Do not tear down kluster on error")
 }
 
 func main() {

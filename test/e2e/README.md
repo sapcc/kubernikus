@@ -44,9 +44,9 @@ Invoke the integration tests via the Makefile in the root directory of the Kuber
 ```
 make test-e2e
 ``` 
-Triggering a specific phase ca be done as seen below:
+Triggering a single or multiple phases as shown below:
 ```
-make tests-e2e <phase>
+./test/e2e/test.sh --<phase>
 ```
 Available phases are:
 ```

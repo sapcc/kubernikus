@@ -114,15 +114,9 @@ swagger-generate-client:
 clean:
 	rm -rf bin/*
 
-# If the first argument is "test-e2e" the rest is used as an argument to specify which tests phases to execute sequentially
-# e.g. make test-e2e create delete
-ifeq (test-e2e,$(firstword $(MAKECMDGOALS)))
-  ARGS := $(wordlist 2,$(words $(MAKECMDGOALS)),$(addprefix --,$(MAKECMDGOALS)))
-endif
-
 .PHONY: test-e2e
 test-e2e:
-	go run test/e2e/*.go $(ARGS)
+	./test/e2e/test.sh $@
 
 include code-generate.mk
 code-gen: client-gen informer-gen lister-gen deepcopy-gen

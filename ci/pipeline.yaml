@@ -151,9 +151,21 @@ jobs:
   - name: e2e
     serial: true
     plan:
-      - get: kubernikus.builds
-        passed: [staging]
-        trigger: true
+      - aggregate:
+        - get: pipeline.git
+        - get: kubernikus.builds
+          passed: [staging]
+          trigger: true
+      - task: e2e_tests
+        file: pipeline.git/ci/task_e2e_tests.yaml
+        params:
+          OS_AUTH_URL: https://identity-3.eu-nl-1.cloud.sap/v3
+          OS_USERNAME: {{kubernikus-eu-nl-1-username}}
+          OS_PASSWORD: {{kubernikus-eu-nl-1-password}}
+          OS_USER_DOMAIN_NAME: ccadmin
+          OS_PROJECT_NAME: kubernikus-e2e
+          OS_PROJECT_DOMAIN_NAME: ccadmin
+          OS_REGION_NAME: eu-nl-1
 
   - name: rollout
     serial: true

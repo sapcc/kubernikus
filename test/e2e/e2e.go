@@ -8,9 +8,10 @@ import (
 
 	"github.com/golang/glog"
 	"k8s.io/api/core/v1"
-	"k8s.io/client-go/kubernetes"
 
 	kubernikusClient "github.com/sapcc/kubernikus/pkg/api/client"
+
+	"k8s.io/client-go/kubernetes"
 )
 
 type E2ETestSuite struct {
@@ -29,7 +30,8 @@ type E2ETestSuite struct {
 	readyServices []v1.Service
 	kubeConfig    string
 
-	stopCh *chan bool
+	stopCh chan bool
+	sigCh  chan os.Signal
 }
 
 func NewE2ETestSuite(t *testing.T, options E2ETestSuiteOptions) *E2ETestSuite {
@@ -48,7 +50,7 @@ func NewE2ETestSuite(t *testing.T, options E2ETestSuiteOptions) *E2ETestSuite {
 
 	token, err := getToken(options.OpenStackCredentials)
 	if err != nil {
-		glog.Fatalf("Authentication failed. Verify config file or environment")
+		glog.Fatal("Authentication failed. Verify config file or environment")
 	}
 
 	options.OpenStackCredentials.Token = token
@@ -74,7 +76,8 @@ func (s *E2ETestSuite) Run(wg *sync.WaitGroup, sigs chan os.Signal, stopCh chan 
 	defer wg.Done()
 	wg.Add(1)
 
-	s.stopCh = &stopCh
+	s.stopCh = stopCh
+	s.sigCh = sigs
 
 	log.Println("Running tests")
 
@@ -99,6 +102,8 @@ func (s *E2ETestSuite) Run(wg *sync.WaitGroup, sigs chan os.Signal, stopCh chan 
 	if s.IsTestDelete || s.IsTestAPI || s.IsTestAll {
 		s.TestTerminateCluster()
 	}
+
+	log.Println("[passed all tests]")
 
 	//stopCh <- true
 	s.exitGraceful(sigs)

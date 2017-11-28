@@ -15,6 +15,8 @@ type E2ETestSuiteOptions struct {
 	IsTestNetwork bool
 	IsTestVolume  bool
 	IsTestDelete  bool
+
+	IsNoTeardown bool
 }
 
 func (o *E2ETestSuiteOptions) OptionsFromConfigFile() error {
@@ -35,11 +37,11 @@ func (o *E2ETestSuiteOptions) OptionsFromConfigFile() error {
 }
 
 func (o *E2ETestSuiteOptions) checkTestPhases() {
+	o.IsTestAll = false
 	// if no phase is specified run the whole test suite
 	if !o.isAnyPhaseSpecified() {
 		o.IsTestAll = true
 	}
-
 }
 
 func (o *E2ETestSuiteOptions) isAnyPhaseSpecified() bool {

@@ -4,13 +4,14 @@ import (
 	"fmt"
 	"os"
 
+	"strings"
+
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/strfmt"
 	"github.com/golang/glog"
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack"
 	"github.com/gophercloud/gophercloud/openstack/identity/v3/tokens"
-	"strings"
 )
 
 type OpenStackCredentials struct {
@@ -33,26 +34,6 @@ func newOpenStackServiceClient(authURL, region string) (*gophercloud.ServiceClie
 		ProviderClient: provider,
 		Endpoint:       authURL,
 	}, nil
-}
-
-func newOpenStackNetworkingV2ServiceClient(c *OpenStackCredentials) (*gophercloud.ServiceClient, error) {
-	if c.Token == "" {
-		return nil, fmt.Errorf("Cannot create neutron client. Token is missing.")
-	}
-	provider, err := openstack.AuthenticatedClient(
-		gophercloud.AuthOptions{
-			IdentityEndpoint: c.AuthURL,
-			TokenID:          c.Token,
-		},
-	)
-
-	if err != nil {
-		return nil, fmt.Errorf("Couldn't create neutron client using auth URL %s and given token", c.AuthURL)
-	}
-
-	return openstack.NewNetworkV2(provider, gophercloud.EndpointOpts{
-		Region: c.RegionName,
-	})
 }
 
 func getOpenStackCredentialsFromENV() OpenStackCredentials {
@@ -125,7 +106,7 @@ func (c *OpenStackCredentials) Verify() error {
 	if c.AuthURL == "" {
 		return fmt.Errorf("missing auth url")
 	} else {
-		if !strings.HasSuffix(c.AuthURL,"/") {
+		if !strings.HasSuffix(c.AuthURL, "/") {
 			c.AuthURL += "/"
 		}
 	}
