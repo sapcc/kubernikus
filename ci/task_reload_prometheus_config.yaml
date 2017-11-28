@@ -18,14 +18,20 @@ run:
     - |
       set -exo pipefail
 
+      k() {
+        local OPERATION="$1"
+        shift
+        kubectl "${OPERATION}" --namespace="${NAMESPACE}" "$@"
+      }
+
       echo ">> Waiting ${DELAY_SECONDS} seconds before reloading prometheus configuration"
       sleep "${DELAY_SECONDS}"
 
       kubernikusctl auth init
 
-      kubectl -n ${NAMESPACE} get pods -o jsonpath='{.items[*].metadata.name}'| tr ' ' '\n' | grep prometheus | while read POD; do
-        echo ">> Reloading configuration for ${POD}..."
-        kubectl exec "${POD}" -- kill -HUP 1
+      k get pods -o jsonpath='{.items[*].metadata.name}'| tr ' ' '\n' | grep prometheus | while read POD ; do
+        echo "Reloading configuration for ${POD}..."
+        k exec "${POD}" -- kill -HUP 1
       done
 
 params:
