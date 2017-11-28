@@ -92,8 +92,6 @@ func (lr *LaunchReconciler) reconcilePool(kluster *v1.Kluster, pool *models.Node
 		requeue = true
 	case status.Stopping > 0:
 		requeue = true
-	default:
-		return
 	}
 
 	err = pm.SetStatus(status)
