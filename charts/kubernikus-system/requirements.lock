@@ -1,12 +1,9 @@
 dependencies:
-- name: nginx-ingress
-  repository: https://kubernetes-charts.storage.googleapis.com
-  version: 0.8.7
 - name: vice-president
   repository: file://vendor/vice-president
   version: 0.1.0
-- name: vice-president
+- name: kube-state-metrics
   repository: file://vendor/kube-state-metrics
-  version: v1.1.0
-digest: sha256:2d30a7ec6b565829bd90e18a07d4bf0304a7acdeb90fc3d3d2691077a632515c
-generated: 2017-11-15T07:39:35.640467826-08:00
+  version: 1.1.0
+digest: sha256:45d1e310d136361d9866df4b71f601b20637b11c9c83414d9c5c06a6a9c2d2d8
+generated: 2017-11-22T21:12:11.587623413-08:00
