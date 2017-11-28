@@ -552,7 +552,7 @@ func (c *client) GetNodes(kluster *kubernikus_v1.Kluster, pool *models.NodePool)
 	prefix := fmt.Sprintf("%v-%v-", kluster.Spec.Name, pool_id)
 	opts := servers.ListOpts{Name: prefix}
 
-	servers.List(client, opts).EachPage(func(page pagination.Page) (bool, error) {
+	err = servers.List(client, opts).EachPage(func(page pagination.Page) (bool, error) {
 		nodes, err = ExtractServers(page)
 		if err != nil {
 			glog.V(5).Infof("Couldn't extract server %v", err)
@@ -561,6 +561,9 @@ func (c *client) GetNodes(kluster *kubernikus_v1.Kluster, pool *models.NodePool)
 
 		return true, nil
 	})
+	if err != nil {
+		return nodes, err
+	}
 
 	return nodes, nil
 }

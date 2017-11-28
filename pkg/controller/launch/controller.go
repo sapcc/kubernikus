@@ -56,7 +56,6 @@ func (lr *LaunchReconciler) Reconcile(kluster *v1.Kluster) (requeueRequested boo
 }
 
 func (lr *LaunchReconciler) reconcilePool(kluster *v1.Kluster, pool *models.NodePool) (status *PoolStatus, requeue bool, err error) {
-
 	pm := lr.newPoolManager(kluster, pool)
 	status, err = pm.GetStatus()
 	if err != nil {
