@@ -8,8 +8,7 @@ image_resource:
     tag: 'latest'
 
 inputs:
-  - name: kubernikus.git
-  - name: version
+  - name: pipeline.git
 
 run:
   path: /bin/sh
@@ -17,7 +16,7 @@ run:
     - -c
     - |
       set -exo pipefail
-      make -C kubernikus.git test-e2e
+      make -C pipeline.git test-e2e
 
 params:
   OS_AUTH_URL:
