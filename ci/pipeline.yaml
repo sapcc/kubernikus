@@ -7,6 +7,7 @@ post_failure_to_slack: &post_failure_to_slack
     silent: 'true'
     text: |
       :boom: <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|$BUILD_PIPELINE_NAME $BUILD_JOB_NAME job #$BUILD_NAME failed>
+      To debug run \`fly hijack -j $BUILD_PIPELINE_NAME/$BUILD_JOB_NAME -b $BUILD_NAME\`
 
 resources:
   #- name: kubernikusctl.version
