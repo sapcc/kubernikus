@@ -8,9 +8,11 @@ import (
 	"sync"
 	"syscall"
 
+	"github.com/go-kit/kit/log"
 	"github.com/golang/glog"
 	"github.com/sapcc/kubernikus/pkg/cmd"
 	"github.com/sapcc/kubernikus/pkg/controller"
+	"github.com/sapcc/kubernikus/pkg/controller/metrics"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 )
@@ -38,36 +40,20 @@ func NewOperatorCommand() *cobra.Command {
 }
 
 type Options struct {
-	KubeConfig string
-	Context    string
-
-	ChartDirectory string
-
-	AuthURL           string
-	AuthUsername      string
-	AuthPassword      string
-	AuthDomain        string
-	AuthProject       string
-	AuthProjectDomain string
-
-	KubernikusDomain    string
-	KubernikusProjectID string
-	KubernikusNetworkID string
-
-	Namespace   string
-	Controllers []string
+	controller.KubernikusOperatorOptions
 }
 
 func NewOperatorOptions() *Options {
-	return &Options{
-		ChartDirectory:   "charts/",
-		AuthURL:          "http://keystone.monsoon3:5000/v3",
-		AuthUsername:     "kubernikus",
-		AuthDomain:       "Default",
-		KubernikusDomain: "kluster.staging.cloud.sap",
-		Namespace:        "kubernikus",
-		Controllers:      []string{"groundctl", "launchctl"},
-	}
+	options := &Options{}
+	options.ChartDirectory = "charts/"
+	options.AuthURL = "http://keystone.monsoon3:5000/v3"
+	options.AuthUsername = "kubernikus"
+	options.AuthDomain = "Default"
+	options.KubernikusDomain = "kluster.staging.cloud.sap"
+	options.Namespace = "kubernikus"
+	options.MetricPort = 9091
+	options.Controllers = []string{"groundctl", "launchctl"}
+	return options
 }
 
 func (o *Options) BindFlags(flags *pflag.FlagSet) {
@@ -85,6 +71,7 @@ func (o *Options) BindFlags(flags *pflag.FlagSet) {
 	flags.StringVar(&o.KubernikusProjectID, "kubernikus-projectid", o.KubernikusProjectID, "ID of the project the k*s control plane.")
 	flags.StringVar(&o.KubernikusNetworkID, "kubernikus-networkid", o.KubernikusNetworkID, "ID of the network the k*s control plane.")
 	flags.StringVar(&o.Namespace, "namespace", o.Namespace, "Restrict operator to resources in the given namespace")
+	flags.IntVar(&o.MetricPort, "metric-port", o.MetricPort, "Port on which metrics are exposed")
 	flags.StringSliceVar(&o.Controllers, "controllers", o.Controllers, "A list of controllers to enable.  Default is to enable all. controllers: groundctl, launchctl")
 }
 
@@ -101,29 +88,17 @@ func (o *Options) Complete(args []string) error {
 }
 
 func (o *Options) Run(c *cobra.Command) error {
+	var logger log.Logger
+	logger = log.NewLogfmtLogger(log.NewSyncWriter(os.Stderr))
+	logger = log.With(logger, "ts", log.DefaultTimestampUTC, "caller", log.DefaultCaller)
+
 	sigs := make(chan os.Signal, 1)
 	stop := make(chan struct{})
 	signal.Notify(sigs, os.Interrupt, syscall.SIGTERM) // Push signals into channel
 	wg := &sync.WaitGroup{}                            // Goroutines can add themselves to this to be waited on
 
-	opts := &controller.KubernikusOperatorOptions{
-		KubeConfig:          o.KubeConfig,
-		Context:             o.Context,
-		ChartDirectory:      o.ChartDirectory,
-		AuthURL:             o.AuthURL,
-		AuthUsername:        o.AuthUsername,
-		AuthPassword:        o.AuthPassword,
-		AuthDomain:          o.AuthDomain,
-		AuthProject:         o.AuthProject,
-		AuthProjectDomain:   o.AuthProjectDomain,
-		KubernikusDomain:    o.KubernikusDomain,
-		KubernikusProjectID: o.KubernikusProjectID,
-		KubernikusNetworkID: o.KubernikusNetworkID,
-		Namespace:           o.Namespace,
-		Controllers:         o.Controllers,
-	}
-
-	go controller.NewKubernikusOperator(opts).Run(stop, wg)
+	go controller.NewKubernikusOperator(&o.KubernikusOperatorOptions, logger).Run(stop, wg)
+	go metrics.ExposeMetrics(o.MetricPort, stop, wg)
 
 	<-sigs // Wait for signals (this hangs until a signal arrives)
 	glog.Info("Shutting down...")

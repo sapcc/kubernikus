@@ -6,12 +6,14 @@ import (
 	"log"
 	"os"
 
+	"github.com/golang/glog"
 	"github.com/spf13/pflag"
 
 	apipkg "github.com/sapcc/kubernikus/pkg/api"
 	"github.com/sapcc/kubernikus/pkg/api/rest"
 	"github.com/sapcc/kubernikus/pkg/api/rest/operations"
 	"github.com/sapcc/kubernikus/pkg/api/spec"
+	"github.com/sapcc/kubernikus/pkg/version"
 )
 
 var namespace string
@@ -54,6 +56,7 @@ func main() {
 	rt := &apipkg.Runtime{Namespace: namespace}
 	rt.Kubernikus, rt.Kubernetes = rest.NewKubeClients()
 	rest.Configure(api, rt)
+	glog.Infof("Starting kubernikus apiserver v%v. Using namespace %s", version.GitCommit, namespace)
 
 	// get server with flag values filled out
 	server = rest.NewServer(api)

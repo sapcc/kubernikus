@@ -43,6 +43,9 @@ func NewKubernikusAPI(spec *loads.Document) *KubernikusAPI {
 		GetClusterCredentialsHandler: GetClusterCredentialsHandlerFunc(func(params GetClusterCredentialsParams, principal *models.Principal) middleware.Responder {
 			return middleware.NotImplemented("operation GetClusterCredentials has not yet been implemented")
 		}),
+		GetClusterEventsHandler: GetClusterEventsHandlerFunc(func(params GetClusterEventsParams, principal *models.Principal) middleware.Responder {
+			return middleware.NotImplemented("operation GetClusterEvents has not yet been implemented")
+		}),
 		GetClusterInfoHandler: GetClusterInfoHandlerFunc(func(params GetClusterInfoParams, principal *models.Principal) middleware.Responder {
 			return middleware.NotImplemented("operation GetClusterInfo has not yet been implemented")
 		}),
@@ -115,6 +118,8 @@ type KubernikusAPI struct {
 	CreateClusterHandler CreateClusterHandler
 	// GetClusterCredentialsHandler sets the operation handler for the get cluster credentials operation
 	GetClusterCredentialsHandler GetClusterCredentialsHandler
+	// GetClusterEventsHandler sets the operation handler for the get cluster events operation
+	GetClusterEventsHandler GetClusterEventsHandler
 	// GetClusterInfoHandler sets the operation handler for the get cluster info operation
 	GetClusterInfoHandler GetClusterInfoHandler
 	// GetOpenstackMetadataHandler sets the operation handler for the get openstack metadata operation
@@ -204,6 +209,10 @@ func (o *KubernikusAPI) Validate() error {
 
 	if o.GetClusterCredentialsHandler == nil {
 		unregistered = append(unregistered, "GetClusterCredentialsHandler")
+	}
+
+	if o.GetClusterEventsHandler == nil {
+		unregistered = append(unregistered, "GetClusterEventsHandler")
 	}
 
 	if o.GetClusterInfoHandler == nil {
@@ -349,6 +358,11 @@ func (o *KubernikusAPI) initHandlerCache() {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/api/v1/clusters/{name}/credentials"] = NewGetClusterCredentials(o.context, o.GetClusterCredentialsHandler)
+
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/api/v1/clusters/{name}/events"] = NewGetClusterEvents(o.context, o.GetClusterEventsHandler)
 
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)

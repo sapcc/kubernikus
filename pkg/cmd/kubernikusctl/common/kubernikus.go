@@ -20,7 +20,7 @@ type KubernikusClient struct {
 func NewKubernikusClient(url *url.URL, token string) *KubernikusClient {
 	transport := kubernikus.DefaultTransportConfig().
 		WithSchemes([]string{url.Scheme}).
-		WithHost(url.Hostname()).
+		WithHost(url.Host).
 		WithBasePath(url.EscapedPath())
 
 	return &KubernikusClient{

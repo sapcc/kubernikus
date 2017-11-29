@@ -1,0 +1,12 @@
+kubernikus_api_server: "kubernikus.eu-nl-1.cloud.sap"
+kubernikus_api_version: "v1"
+kluster_kubeconfig: ""
+
+openstack:
+  project_name: ""
+  project_domain_name: ""
+  username: ""
+  password: ""
+  user_domain_name: ""
+  region_name: ""
+  auth_url: ""

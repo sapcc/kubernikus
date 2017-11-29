@@ -33,7 +33,7 @@ bin/%: $(GOFILES) Makefile
 	GOOS=$(*D) GOARCH=amd64 go build $(GOFLAGS) -v -i -o $(@D)/$(@F) ./cmd/$(basename $(@F))
 
 test:
-	set -o pipefail && go test -v ./... | grep -v 'no test files'
+	set -o pipefail && go test -v ./pkg/... ./cmd/... | grep -v 'no test files'
 
 build:
 	docker build $(BUILD_ARGS) -t sapcc/kubernikus-binaries:$(VERSION)     -f Dockerfile.kubernikus-binaries .
@@ -94,6 +94,16 @@ swagger-generate-client:
 
 clean:
 	rm -rf bin/*
+
+# If the first argument is "test-e2e" the rest is used as an argument to specify which tests phases to execute sequentially
+# e.g. make test-e2e create delete
+ifeq (test-e2e,$(firstword $(MAKECMDGOALS)))
+  ARGS := $(wordlist 2,$(words $(MAKECMDGOALS)),$(addprefix --,$(MAKECMDGOALS)))
+endif
+
+.PHONY: test-e2e
+test-e2e:
+	go run test/e2e/*.go $(ARGS)
 
 include code-generate.mk
 code-gen: client-gen informer-gen lister-gen

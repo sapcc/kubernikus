@@ -25,8 +25,10 @@ import (
 	"github.com/sapcc/kubernikus/pkg/client/kubernetes"
 	"github.com/sapcc/kubernikus/pkg/controller/config"
 	"github.com/sapcc/kubernikus/pkg/controller/ground"
+	"github.com/sapcc/kubernikus/pkg/controller/metrics"
 	"github.com/sapcc/kubernikus/pkg/util"
 	helm_util "github.com/sapcc/kubernikus/pkg/util/helm"
+	waitutil "github.com/sapcc/kubernikus/pkg/util/wait"
 )
 
 const (
@@ -38,8 +40,8 @@ const (
 )
 
 type GroundControl struct {
-	Clients
-	Factories
+	config.Clients
+	config.Factories
 	config.Config
 	Recorder record.EventRecorder
 
@@ -48,7 +50,7 @@ type GroundControl struct {
 	podInformer     cache.SharedIndexInformer
 }
 
-func NewGroundController(factories Factories, clients Clients, recorder record.EventRecorder, config config.Config) *GroundControl {
+func NewGroundController(factories config.Factories, clients config.Clients, recorder record.EventRecorder, config config.Config) *GroundControl {
 	operator := &GroundControl{
 		Clients:         clients,
 		Factories:       factories,
@@ -78,7 +80,7 @@ func (op *GroundControl) Run(threadiness int, stopCh <-chan struct{}, wg *sync.W
 	defer op.queue.ShutDown()
 	defer wg.Done()
 	wg.Add(1)
-	glog.Infof(`Starting GroundControl with %d \"threads\"`, threadiness)
+	glog.Infof(`Starting GroundControl with %d "threads"`, threadiness)
 
 	for i := 0; i < threadiness; i++ {
 		go wait.Until(op.runWorker, time.Second, stopCh)
@@ -135,6 +137,8 @@ func (op *GroundControl) handler(key string) error {
 	} else {
 		kluster := obj.(*v1.Kluster)
 		glog.V(5).Infof("Handling kluster %v in phase %q", kluster.Name, kluster.Status.Phase)
+		metrics.SetMetricKlusterInfo(kluster.GetNamespace(), kluster.GetName(), kluster.Status.Version, kluster.Spec.Openstack.ProjectID, kluster.GetAnnotations(), kluster.GetLabels())
+		metrics.SetMetricKlusterStatusPhase(kluster.GetName(), kluster.Status.Phase)
 
 		switch phase := kluster.Status.Phase; phase {
 		case models.KlusterPhasePending:
@@ -255,6 +259,12 @@ func (op *GroundControl) updatePhase(kluster *v1.Kluster, phase models.KlusterPh
 	kluster.Status.Phase = phase
 
 	_, err = op.Clients.Kubernikus.Kubernikus().Klusters(kluster.Namespace).Update(kluster)
+	if err == nil {
+		//Wait for up to 5 seconds for the local cache to reflect the phase change
+		waitutil.WaitForKluster(kluster, op.klusterInformer.GetIndexer(), func(k *v1.Kluster) (bool, error) {
+			return k.Status.Phase == phase, nil
+		})
+	}
 	return err
 }
 
@@ -308,11 +318,7 @@ func (op *GroundControl) createKluster(kluster *v1.Kluster) error {
 		return err
 	}
 	glog.Infof("Installing helm release %s", kluster.GetName())
-	glog.V(3).Infof("Chart values:\n%s", string(rawValues))
-
-	if err := op.CreateNamespaceIfNeeded(kluster.Namespace); err != nil {
-		return err
-	}
+	glog.V(6).Infof("Chart values:\n%s", string(rawValues))
 
 	_, err = op.Clients.Helm.InstallRelease(path.Join(op.Config.Helm.ChartDirectory, "kube-master"), kluster.Namespace, helm.ValueOverrides(rawValues), helm.ReleaseName(kluster.GetName()))
 	return err
@@ -338,12 +344,17 @@ func (op *GroundControl) terminateKluster(kluster *v1.Kluster) error {
 		return err
 	}
 
-	return op.Clients.Kubernikus.Discovery().RESTClient().Delete().AbsPath("apis/kubernikus.sap.cc/v1").
+	err = op.Clients.Kubernikus.Discovery().RESTClient().Delete().AbsPath("apis/kubernikus.sap.cc/v1").
 		Namespace(kluster.Namespace).
 		Resource("klusters").
 		Name(kluster.Name).
 		Do().
 		Error()
+
+	if err == nil {
+		waitutil.WaitForKlusterDeletion(kluster, op.klusterInformer.GetIndexer())
+	}
+	return err
 }
 
 func (op *GroundControl) requiresOpenstackInfo(kluster *v1.Kluster) bool {
@@ -477,21 +488,4 @@ func (op *GroundControl) podUpdate(cur, old interface{}) {
 			op.queue.Add(klusterKey)
 		}
 	}
-}
-
-func (op *GroundControl) CreateNamespaceIfNeeded(ns string) error {
-	if _, err := op.Clients.Kubernetes.Core().Namespaces().Get(ns, metav1.GetOptions{}); err == nil {
-		return nil
-	}
-	newNs := &api_v1.Namespace{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      ns,
-			Namespace: "",
-		},
-	}
-	_, err := op.Clients.Kubernetes.Core().Namespaces().Create(newNs)
-	if err != nil && apierrors.IsAlreadyExists(err) {
-		err = nil
-	}
-	return err
 }

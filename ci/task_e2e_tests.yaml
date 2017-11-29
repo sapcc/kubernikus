@@ -1,0 +1,28 @@
+---
+platform: 'linux'
+
+image_resource:
+  type: docker-image
+  source:
+    repository: sapcc/kubernikus-kubectl
+    tag: 'latest'
+
+inputs:
+  - name: pipeline.git
+
+run:
+  path: /bin/sh
+  args:
+    - -c
+    - |
+      set -exo pipefail
+      make -C pipeline.git test-e2e
+
+params:
+  OS_AUTH_URL:
+  OS_USERNAME:
+  OS_PASSWORD:
+  OS_USER_DOMAIN_NAME:
+  OS_PROJECT_NAME:
+  OS_PROJECT_DOMAIN_NAME:
+  OS_REGION_NAME:

@@ -177,6 +177,35 @@ func init() {
         }
       ]
     },
+    "/api/v1/clusters/{name}/events": {
+      "get": {
+        "summary": "Get recent events about the cluster",
+        "operationId": "GetClusterEvents",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Event"
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/responses/errorResponse"
+          }
+        }
+      },
+      "parameters": [
+        {
+          "uniqueItems": true,
+          "type": "string",
+          "name": "name",
+          "in": "path",
+          "required": true
+        }
+      ]
+    },
     "/api/v1/clusters/{name}/info": {
       "get": {
         "summary": "Get user specific info about the cluster",
@@ -255,6 +284,41 @@ func init() {
       "properties": {
         "kubeconfig": {
           "type": "string"
+        }
+      }
+    },
+    "Event": {
+      "type": "object",
+      "properties": {
+        "count": {
+          "description": "The number of times this event has occurred.",
+          "type": "integer"
+        },
+        "firstTimestamp": {
+          "description": "The time at which the event was first recorded",
+          "type": "string",
+          "format": "date-time"
+        },
+        "lastTimestamp": {
+          "description": "The time at which the most recent occurrence of this event was recorded",
+          "type": "string",
+          "format": "date-time"
+        },
+        "message": {
+          "description": "A human-readable description of the event",
+          "type": "string"
+        },
+        "reason": {
+          "description": "A short, machine understandable string that gives the reason for the event",
+          "type": "string"
+        },
+        "type": {
+          "description": "Type of this event",
+          "type": "string",
+          "enum": [
+            "Normal",
+            "Warning"
+          ]
         }
       }
     },
@@ -473,6 +537,7 @@ func init() {
       "x-nullable": false
     },
     "OpenstackMetadata": {
+      "type": "object",
       "properties": {
         "flavors": {
           "type": "array",
