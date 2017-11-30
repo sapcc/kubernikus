@@ -217,10 +217,4 @@ alerting:
     - targets:
       - "alertmanager.eu-de-1.cloud.sap"
       - "alertmanager.eu-nl-1.cloud.sap"
-    relabel_configs:
-      - source_labels: [region]
-        target_labels: generatorURL
-        regex: (.+)
-        replacement: kubernikus.$1.cloud.sap/prometheus
-        action: replace
 {{- end}}
