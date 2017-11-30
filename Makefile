@@ -21,7 +21,7 @@ HAS_GLIDE_VC := $(shell command -v glide-vc;)
 GO_SWAGGER_VERSION := 0.12.0
 SWAGGER_BIN        := bin/$(GOOS)/swagger-$(GO_SWAGGER_VERSION)
 
-.PHONY: all clean code-gen client-gen informer-gen lister-gen vendor
+.PHONY: all test clean code-gen client-gen informer-gen lister-gen vendor
 
 all: $(BINARIES:%=bin/$(GOOS)/%)
 
