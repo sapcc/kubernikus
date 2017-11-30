@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"sync"
+	"time"
 
 	"github.com/golang/glog"
 	"github.com/prometheus/client_golang/prometheus"
@@ -21,6 +22,15 @@ var klusterPhases = []models.KlusterPhase{
 	models.KlusterPhaseRunning,
 	models.KlusterPhaseTerminating,
 }
+
+var klusterBootDurationSummary = prometheus.NewSummaryVec(
+	prometheus.SummaryOpts{
+		Namespace: metricNamespace,
+		Name:      "kluster_boot_duration",
+		Help:      "Duration until kluster got from phase pending to running",
+	},
+	[]string{},
+)
 
 var klusterInfo = prometheus.NewGaugeVec(
 	prometheus.GaugeOpts{
@@ -128,6 +138,10 @@ func setMetricNodePoolStatus(klusterID, nodePoolName string, status map[string]i
 	}
 }
 
+func SetMetricBootDurationSummary(creationTimestamp, now time.Time) {
+	klusterBootDurationSummary.With(prometheus.Labels{}).Observe(now.Sub(creationTimestamp).Seconds())
+}
+
 func boolToFloat64(b bool) float64 {
 	if b {
 		return 1
@@ -155,6 +169,7 @@ func init() {
 	prometheus.MustRegister(
 		klusterInfo,
 		klusterStatusPhase,
+		klusterBootDurationSummary,
 		nodePoolSize,
 		nodePoolStatus,
 		LaunchOperationsLatency,

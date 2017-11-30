@@ -192,6 +192,7 @@ func (op *GroundControl) handler(key string) error {
 				if err := op.updatePhase(kluster, models.KlusterPhaseRunning, ""); err != nil {
 					glog.Errorf("Failed to update status of kluster %s:%s", kluster.GetName(), err)
 				}
+				metrics.SetMetricBootDurationSummary(kluster.GetCreationTimestamp().Time, time.Now())
 				glog.Infof("Kluster %s is ready!", kluster.GetName())
 			}
 		case models.KlusterPhaseTerminating:
