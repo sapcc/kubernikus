@@ -88,7 +88,7 @@ func SetMetricKlusterStatusPhase(klusterName string, klusterPhase models.Kluster
 	}
 }
 
-func SetKlusterTerminated(klusterName string) {
+func SetMetricKlusterTerminated(klusterName string) {
 	for _, phase := range klusterPhases {
 		labels := prometheus.Labels{
 			"kluster_id": klusterName,
