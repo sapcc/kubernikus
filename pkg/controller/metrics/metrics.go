@@ -88,6 +88,16 @@ func SetMetricKlusterStatusPhase(klusterName string, klusterPhase models.Kluster
 	}
 }
 
+func SetKlusterTerminated(klusterName string) {
+	for _, phase := range klusterPhases {
+		labels := prometheus.Labels{
+			"kluster_id": klusterName,
+			"phase":      string(phase),
+		}
+		klusterStatusPhase.With(labels).Set(0)
+	}
+}
+
 /*
 kubernikus_node_pool_size{"kluster_id"="<id", "node_pool"="<name>", "image_name"="<name>", "flavor_name"="<name>"} <node_pool_size>
 */

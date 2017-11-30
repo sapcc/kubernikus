@@ -202,6 +202,7 @@ func (op *GroundControl) handler(key string) error {
 					glog.Errorf("Failed to terminate kluster %s: %s", kluster.Name, err)
 					return err
 				}
+				metrics.SetKlusterTerminated(kluster.GetName())
 				glog.Infof("Terminated kluster %s", kluster.GetName())
 				return nil
 			}

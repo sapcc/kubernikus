@@ -47,8 +47,8 @@ kubernikus_kluster_status_phase{kluster_id="klusterID",phase="Terminating"} 0
 	// call functions that update the metrics here
 	setMetricNodePoolSize("klusterID", "nodePoolName", "imageName", "flavorName", 3)
 	setMetricNodePoolStatus("klusterID", "nodePoolName", map[string]int64{"running": 2, "starting": 1, "ready": 2})
-	setMetricKlusterInfo("namespace", "klusterName", "version", "projectID", map[string]string{"creator": "D012345"}, map[string]string{"account": "account"})
-	setMetricKlusterStatusPhase("klusterID", models.KlusterPhaseRunning)
+	SetMetricKlusterInfo("namespace", "klusterName", "version", "projectID", map[string]string{"creator": "D012345"}, map[string]string{"account": "account"})
+	SetMetricKlusterStatusPhase("klusterID", models.KlusterPhaseRunning)
 
 	registry := prometheus.NewPedanticRegistry()
 	for collector, expectedMetricString := range expectedMetrics {
