@@ -33,7 +33,7 @@ bin/%: $(GOFILES) Makefile
 	GOOS=$(*D) GOARCH=amd64 go build $(GOFLAGS) -v -i -o $(@D)/$(@F) ./cmd/$(basename $(@F))
 
 test:
-	set -o pipefail && go test -v ./pkg/... ./cmd/... | grep -v 'no test files'
+	/bin/bash -c "set -o pipefail && go test -v ./pkg/... ./cmd/... | grep -v 'no test files'"
 
 build:
 	docker build $(BUILD_ARGS) -t sapcc/kubernikus-binaries:$(VERSION)     -f Dockerfile.kubernikus-binaries .
