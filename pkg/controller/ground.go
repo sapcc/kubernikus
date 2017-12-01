@@ -481,21 +481,6 @@ func (op *GroundControl) discoverOpenstackInfo(kluster *v1.Kluster) error {
 	return err
 }
 
-func (op *GroundControl) seedClusterRoles(kluster *v1.Kluster) error {
-	glog.V(5).Infof("[%v] Seeding ClusterRoles and ClusterRoleBindings", kluster.Name)
-	//client := op.Clients.KubernetesFor(kluster)
-
-	//if err := ground.SeedAllowBootstrapTokensToPostCSRs(client); err != nil {
-	//  return err
-	//}
-
-	//if err := ground.SeedAutoApproveNodeBootstrapTokens(client); err != nil {
-	//  return err
-	//}
-
-	return nil
-}
-
 func (op *GroundControl) podAdd(obj interface{}) {
 	pod := obj.(*api_v1.Pod)
 

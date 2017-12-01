@@ -22,7 +22,6 @@ type InitOptions struct {
 	url            *url.URL
 	name           string
 	kubeconfigPath string
-	context        string
 
 	openstack  *common.OpenstackClient
 	kubernikus *common.KubernikusClient

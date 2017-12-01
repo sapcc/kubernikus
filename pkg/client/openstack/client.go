@@ -217,37 +217,6 @@ func (c *client) adminClient() (*gophercloud.ProviderClient, error) {
 	return c.adminProviderClient, nil
 }
 
-func (c *client) controlPlaneClient() (*gophercloud.ProviderClient, error) {
-	if c.adminProviderClient != nil {
-		return c.adminProviderClient, nil
-	}
-
-	provider, err := openstack.NewClient(c.authURL)
-	if err != nil {
-		return nil, err
-	}
-
-	authOptions := &tokens.AuthOptions{
-		IdentityEndpoint: c.authURL,
-		Username:         c.authUsername,
-		Password:         c.authPassword,
-		DomainName:       c.authDomain,
-		AllowReauth:      true,
-		Scope: tokens.Scope{
-			ProjectID: "06a832fedd4b422bbf2d6d52be59a93d", // TODO: wtf
-		},
-	}
-
-	err = openstack.AuthenticateV3(provider, authOptions, gophercloud.EndpointOpts{})
-	if err != nil {
-		return nil, err
-	}
-
-	c.adminProviderClient = provider
-
-	return c.adminProviderClient, nil
-}
-
 func (c *client) klusterClientFor(kluster *kubernikus_v1.Kluster) (*gophercloud.ProviderClient, error) {
 	secret_name := kluster.Name
 
