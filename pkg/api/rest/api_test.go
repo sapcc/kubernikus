@@ -15,6 +15,7 @@ import (
 	"k8s.io/client-go/kubernetes/fake"
 
 	apipkg "github.com/sapcc/kubernikus/pkg/api"
+	"github.com/sapcc/kubernikus/pkg/api/auth"
 	"github.com/sapcc/kubernikus/pkg/api/models"
 	"github.com/sapcc/kubernikus/pkg/api/rest/operations"
 	"github.com/sapcc/kubernikus/pkg/api/spec"
@@ -28,6 +29,10 @@ const (
 	ACCOUNT   = "testaccount"
 )
 
+func init() {
+	auth.DefaultPolicyFile = "../../../etc/policy.json"
+}
+
 func mockAuth(token string) (*models.Principal, error) {
 	if token != TOKEN {
 		return nil, errors.New(401, "auth failed")
@@ -38,7 +43,7 @@ func mockAuth(token string) (*models.Principal, error) {
 		Name:    "Test Mc Dougle",
 		Domain:  "TestDomain",
 		Account: ACCOUNT,
-		Roles:   []string{"member", "os:kubernikus_admin"},
+		Roles:   []string{"member", "kubernetes_admin"},
 	}, nil
 }
 
@@ -82,7 +87,10 @@ func result(handler http.Handler, req *http.Request) (int, http.Header, []byte) 
 func TestCreateCluster(t *testing.T) {
 	handler, rt := createTestHandler(t)
 	req := createRequest("POST", "/api/v1/clusters", `{"name": "nase"}`)
-	_, _, body := result(handler, req)
+	code, _, body := result(handler, req)
+	if !assert.Equal(t, 201, code) {
+		return
+	}
 
 	//Test create
 	crd, err := rt.Kubernikus.KubernikusV1().Klusters(rt.Namespace).Get(fmt.Sprintf("%s-%s", "nase", ACCOUNT), metav1.GetOptions{})
@@ -98,7 +106,7 @@ func TestCreateCluster(t *testing.T) {
 	//Ensure authentication is required
 	req = createRequest("POST", "/api/v1/clusters", `{"name": "nase2"}`)
 	req.Header.Del("X-Auth-Token")
-	code, _, _ := result(handler, req)
+	code, _, _ = result(handler, req)
 	assert.Equal(t, 401, code)
 
 }
@@ -119,15 +127,17 @@ func TestClusterShow(t *testing.T) {
 	//Test Success
 	req := createRequest("GET", "/api/v1/clusters/nase", "")
 	code, _, body := result(handler, req)
-	assert.Equal(t, code, 200)
+	if !assert.Equal(t, 200, code) {
+		return
+	}
 	var apiKluster models.Kluster
 	assert.NoError(t, apiKluster.UnmarshalBinary(body), "Failed to parse response")
-	assert.Equal(t, apiKluster.Name, "nase")
+	assert.Equal(t, "nase", apiKluster.Name)
 
 	//Test 404
 	req = createRequest("GET", "/api/v1/clusters/doesnotexit", "")
 	code, _, body = result(handler, req)
-	assert.Equal(t, code, 404)
+	assert.Equal(t, 404, code)
 }
 
 func TestClusterUpdate(t *testing.T) {
@@ -199,7 +209,9 @@ func TestClusterUpdate(t *testing.T) {
 	assert.NoError(t, err, "marsheling update payload failed")
 	req := createRequest("PUT", "/api/v1/clusters/nase", string(jsonPayload))
 	code, _, body := result(handler, req)
-	assert.Equal(t, 200, code)
+	if !assert.Equal(t, 200, code) {
+		return
+	}
 	var apiResponse models.Kluster
 	assert.NoError(t, apiResponse.UnmarshalBinary(body), "Failed to parse response")
 
