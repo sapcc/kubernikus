@@ -50,11 +50,11 @@ func setupMiddlewares(handler http.Handler) http.Handler {
 // The middleware configuration happens before anything, this middleware also applies to serving the swagger.json document.
 // So this is a good place to plug in a panic handling middleware, logging and metrics
 func setupGlobalMiddleware(handler http.Handler) http.Handler {
-	c := cors.New(cors.Options{
+	corsHandler := cors.New(cors.Options{
 		AllowedHeaders: []string{"X-Auth-Token", "Content-Type", "Accept"},
 		AllowedMethods: []string{"GET", "HEAD", "POST", "DELETE", "PUT"},
 		MaxAge:         600,
-	})
+	}).Handler
 
 	loggingHandler := func(next http.Handler) http.Handler {
 		return gmiddleware.LoggingHandler(os.Stdout, next)
@@ -63,7 +63,7 @@ func setupGlobalMiddleware(handler http.Handler) http.Handler {
 		return middleware.Redoc(middleware.RedocOpts{Path: "swagger"}, next)
 	}
 
-	return alice.New(loggingHandler, handlers.RootHandler, redocHandler, StaticFiles, c.Handler).Then(handler)
+	return alice.New(loggingHandler, handlers.RootHandler, redocHandler, StaticFiles, corsHandler).Then(handler)
 }
 
 func StaticFiles(next http.Handler) http.Handler {
