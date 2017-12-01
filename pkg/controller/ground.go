@@ -23,6 +23,7 @@ import (
 	"github.com/sapcc/kubernikus/pkg/api/models"
 	"github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
 	"github.com/sapcc/kubernikus/pkg/client/kubernetes"
+	"github.com/sapcc/kubernikus/pkg/client/openstack"
 	"github.com/sapcc/kubernikus/pkg/controller/config"
 	"github.com/sapcc/kubernikus/pkg/controller/ground"
 	"github.com/sapcc/kubernikus/pkg/controller/metrics"
@@ -380,12 +381,12 @@ func (op *GroundControl) discoverKubernikusInfo(kluster *v1.Kluster) error {
 
 	if copy.Status.Apiserver == "" {
 		copy.Status.Apiserver = fmt.Sprintf("https://%s.%s", kluster.GetName(), op.Config.Kubernikus.Domain)
-		glog.V(5).Infof("[%v] Setting ServerURL to %v", kluster.Name, copy.Status.Apiserver)
+		glog.Infof("[%v] Setting ServerURL to %v", kluster.Name, copy.Status.Apiserver)
 	}
 
 	if copy.Status.Wormhole == "" {
 		copy.Status.Wormhole = fmt.Sprintf("https://%s-wormhole.%s", kluster.GetName(), op.Config.Kubernikus.Domain)
-		glog.V(5).Infof("[%v] Setting WormholeURL to %v", kluster.Name, copy.Status.Wormhole)
+		glog.Infof("[%v] Setting WormholeURL to %v", kluster.Name, copy.Status.Wormhole)
 	}
 
 	_, err = op.Clients.Kubernikus.Kubernikus().Klusters(kluster.Namespace).Update(copy)
@@ -407,37 +408,72 @@ func (op *GroundControl) discoverOpenstackInfo(kluster *v1.Kluster) error {
 
 	if copy.Spec.Openstack.ProjectID == "" {
 		copy.Spec.Openstack.ProjectID = kluster.Account()
-		glog.V(5).Infof("[%v] Setting ProjectID to %v", kluster.Name, copy.Spec.Openstack.ProjectID)
+		glog.Infof("[%v] Setting ProjectID to %v", kluster.Name, copy.Spec.Openstack.ProjectID)
 	}
 
-	if copy.Spec.Openstack.RouterID == "" {
-		if len(routers) == 1 {
-			copy.Spec.Openstack.RouterID = routers[0].ID
-			glog.V(5).Infof("[%v] Setting RouterID to %v", kluster.Name, copy.Spec.Openstack.RouterID)
+	var selectedRouter *openstack.Router
+
+	if routerID := copy.Spec.Openstack.RouterID; routerID != "" {
+		for _, router := range routers {
+			if router.ID == routerID {
+				selectedRouter = &router
+				break
+			}
+		}
+		if selectedRouter == nil {
+			return fmt.Errorf("Specified router %s not found in project", routerID)
+		}
+	} else {
+		if numRouters := len(routers); numRouters == 1 {
+			selectedRouter = &routers[0]
+			glog.Infof("[%v] Setting RouterID to %v", kluster.Name, selectedRouter.ID)
+			copy.Spec.Openstack.RouterID = selectedRouter.ID
 		} else {
-			glog.V(5).Infof("[%v] There's more than 1 router. Autodiscovery not possible!")
+			return fmt.Errorf("Found %d routers in project. Autoconfiguration not possible.", numRouters)
 		}
 	}
 
-	if copy.Spec.Openstack.NetworkID == "" {
-		if len(routers) == 1 {
-			if len(routers[0].Networks) == 1 {
-				copy.Spec.Openstack.NetworkID = routers[0].Networks[0].ID
-				glog.V(5).Infof("[%v] Setting NetworkID to %v", kluster.Name, copy.Spec.Openstack.NetworkID)
-			} else {
-				glog.V(5).Infof("[%v] There's more than 1 network on the router. Autodiscovery not possible!")
+	//we have a router beyond this point
+	var selectedNetwork *openstack.Network
+
+	if networkID := copy.Spec.Openstack.NetworkID; networkID != "" {
+		for _, network := range selectedRouter.Networks {
+			if network.ID == networkID {
+				selectedNetwork = &network
+				break
 			}
+		}
+		if selectedNetwork == nil {
+			return fmt.Errorf("Selected network %s not found on router %s", networkID, selectedRouter.ID)
+		}
+	} else {
+		if numNetworks := len(selectedRouter.Networks); numNetworks == 1 {
+			selectedNetwork = &selectedRouter.Networks[0]
+			copy.Spec.Openstack.NetworkID = selectedNetwork.ID
+			glog.Infof("[%v] Setting NetworkID to %v", kluster.Name, selectedNetwork.ID)
+		} else {
+			return fmt.Errorf("Found %d networks on router %s. Auto-configuration not possible. Please choose one.", numNetworks, selectedRouter.ID)
+
 		}
 	}
 
-	if copy.Spec.Openstack.LBSubnetID == "" {
-		if len(routers) == 1 {
-			if len(routers[0].Subnets) == 1 {
-				copy.Spec.Openstack.LBSubnetID = routers[0].Subnets[0].ID
-				glog.V(5).Infof("[%v] Setting LBSubnetID to %v", kluster.Name, copy.Spec.Openstack.LBSubnetID)
-			} else {
-				glog.V(5).Infof("[%v] There's more than 1 subnet on the router. Autodiscovery not possible!")
+	if subnetID := copy.Spec.Openstack.LBSubnetID; subnetID != "" {
+		found := false
+		for _, subnet := range selectedNetwork.Subnets {
+			if subnet.ID == subnetID {
+				found = true
+				break
 			}
+		}
+		if !found {
+			return fmt.Errorf("Selected subnet %s not found in network %s", subnetID, selectedNetwork.ID)
+		}
+	} else {
+		if numSubnets := len(selectedNetwork.Subnets); numSubnets == 1 {
+			copy.Spec.Openstack.LBSubnetID = selectedNetwork.Subnets[0].ID
+			glog.V(5).Infof("[%v] Setting LBSubnetID to %v", kluster.Name, copy.Spec.Openstack.LBSubnetID)
+		} else {
+			return fmt.Errorf("Found %d subnets for network %s. Auto-configuration not possible. Please choose one.", numSubnets, selectedNetwork.ID)
 		}
 	}
 

@@ -72,11 +72,11 @@ type Project struct {
 type Router struct {
 	ID       string
 	Networks []Network
-	Subnets  []Subnet
 }
 
 type Network struct {
-	ID string
+	ID      string
+	Subnets []Subnet
 }
 
 type Subnet struct {
@@ -321,14 +321,14 @@ func (c *client) GetRouters(project_id string) ([]Router, error) {
 	if err != nil {
 		return nil, err
 	}
-	resultList := []Router{}
+	resultRouters := []Router{}
 	err = routers.List(networkClient, routers.ListOpts{TenantID: project_id}).EachPage(func(page pagination.Page) (bool, error) {
-		routerList, err := routers.ExtractRouters(page)
+		routers, err := routers.ExtractRouters(page)
 		if err != nil {
 			return false, err
 		}
-		for _, router := range routerList {
-			resultRouter := Router{ID: router.ID, Subnets: []Subnet{}}
+		for _, router := range routers {
+			resultRouter := Router{ID: router.ID}
 			networkIDs, err := getRouterNetworks(networkClient, router.ID)
 			if err != nil {
 				return false, err
@@ -338,19 +338,18 @@ func (c *client) GetRouters(project_id string) ([]Router, error) {
 				if err != nil {
 					return false, err
 				}
-				resultRouter.Networks = append(resultRouter.Networks, Network{ID: network.ID})
+				resultNetwork := Network{ID: network.ID, Subnets: make([]Subnet, 0, len(network.Subnets))}
 
 				for _, subnetID := range network.Subnets {
 					subnet, err := subnets.Get(networkClient, subnetID).Extract()
 					if err != nil {
 						return false, err
 					}
-					resultRouter.Subnets = append(resultRouter.Subnets, Subnet{ID: subnet.ID, CIDR: subnet.CIDR})
+					resultNetwork.Subnets = append(resultNetwork.Subnets, Subnet{ID: subnet.ID, CIDR: subnet.CIDR})
 				}
+				resultRouter.Networks = append(resultRouter.Networks, resultNetwork)
 			}
-			if len(resultRouter.Subnets) > 0 {
-				resultList = append(resultList, resultRouter)
-			}
+			resultRouters = append(resultRouters, resultRouter)
 		}
 		return true, nil
 	})
@@ -358,7 +357,7 @@ func (c *client) GetRouters(project_id string) ([]Router, error) {
 	if err != nil {
 		return nil, err
 	}
-	return resultList, nil
+	return resultRouters, nil
 
 }
 
