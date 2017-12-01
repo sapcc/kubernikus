@@ -1,0 +1,14 @@
+{
+  "kubernetes_admin": "role:kubernetes_admin",
+  "kubernetes_user": "role:kubernetes_member or role:kubernetes_admin",
+
+  "GetOpenstackMetadata": "rule:kubernetes_admin",
+  "ListClusters": "rule:kubernetes_user",
+  "CreateCluster": "rule:kubernetes_admin",
+  "ShowCluster": "rule:kubernetes_user",
+  "TerminateCluster": "rule:kubernetes_admin",
+  "UpdateCluster": "rule:kubernetes_admin",
+  "GetClusterCredentials": "rule:kubernetes_user",
+  "GetClusterEvents": "rule:kubernetes_user",
+  "GetClusterInfo": "rule:kubernetes_user"
+}

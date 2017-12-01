@@ -53,7 +53,9 @@ func createTestHandler(t *testing.T) (http.Handler, *apipkg.Runtime) {
 		Kubernikus: kubernikusfake.NewSimpleClientset(),
 		Kubernetes: fake.NewSimpleClientset(),
 	}
-	Configure(api, rt)
+	if err := Configure(api, rt); err != nil {
+		t.Fatal(err)
+	}
 	api.KeystoneAuth = mockAuth
 	return configureAPI(api), rt
 }

@@ -8,11 +8,13 @@ import (
 	"github.com/golang/glog"
 
 	apipkg "github.com/sapcc/kubernikus/pkg/api"
+	"github.com/sapcc/kubernikus/pkg/api/auth"
 	"github.com/sapcc/kubernikus/pkg/api/handlers"
 	"github.com/sapcc/kubernikus/pkg/api/rest/operations"
+	"github.com/sapcc/kubernikus/pkg/api/spec"
 )
 
-func Configure(api *operations.KubernikusAPI, rt *apipkg.Runtime) {
+func Configure(api *operations.KubernikusAPI, rt *apipkg.Runtime) error {
 	// configure the api here
 	api.ServeError = errors.ServeError
 
@@ -28,10 +30,22 @@ func Configure(api *operations.KubernikusAPI, rt *apipkg.Runtime) {
 	api.JSONProducer = runtime.JSONProducer()
 
 	// Applies when the "x-auth-token" header is set
-	api.KeystoneAuth = keystoneAuth()
+	api.KeystoneAuth = auth.Keystone()
 
 	// Set your custom authorizer if needed. Default one is security.Authorized()
-	// api.APIAuthorizer = security.Authorized()
+	rules, err := auth.LoadPolicy(auth.DefaultPolicyFile)
+	if err != nil {
+		return err
+	}
+	document, err := spec.Spec()
+	if err != nil {
+		return err
+	}
+	authorizer, err := auth.NewOsloPolicyAuthorizer(document, rules)
+	if err != nil {
+		return err
+	}
+	api.APIAuthorizer = authorizer
 
 	api.InfoHandler = handlers.NewInfo(rt)
 	api.ListAPIVersionsHandler = handlers.NewListAPIVersions(rt)
@@ -46,5 +60,5 @@ func Configure(api *operations.KubernikusAPI, rt *apipkg.Runtime) {
 	api.GetClusterEventsHandler = handlers.NewGetClusterEvents(rt)
 
 	api.ServerShutdown = func() {}
-
+	return nil
 }

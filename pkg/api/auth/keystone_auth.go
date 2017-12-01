@@ -1,4 +1,4 @@
-package rest
+package auth
 
 import (
 	"fmt"
@@ -19,7 +19,7 @@ func init() {
 	flag.StringVar(&authURL, "auth-url", "", "Openstack identity v3 auth url")
 }
 
-func keystoneAuth() func(token string) (*models.Principal, error) {
+func Keystone() func(token string) (*models.Principal, error) {
 
 	if !(strings.HasSuffix(authURL, "/v3") || strings.HasSuffix(authURL, "/v3/")) {
 		authURL = fmt.Sprintf("%s/%s", strings.TrimRight(authURL, "/"), "/v3")

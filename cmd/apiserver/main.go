@@ -55,7 +55,9 @@ func main() {
 
 	rt := &apipkg.Runtime{Namespace: namespace}
 	rt.Kubernikus, rt.Kubernetes = rest.NewKubeClients()
-	rest.Configure(api, rt)
+	if err := rest.Configure(api, rt); err != nil {
+		glog.Fatalf("Failed to configure apiserver :%s", err)
+	}
 	glog.Infof("Starting kubernikus apiserver v%v. Using namespace %s", version.GitCommit, namespace)
 
 	// get server with flag values filled out
