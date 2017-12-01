@@ -35,7 +35,7 @@ func (o *ListAPIVersionsURL) SetBasePath(bp string) {
 func (o *ListAPIVersionsURL) Build() (*url.URL, error) {
 	var result url.URL
 
-	var _path = "/api/"
+	var _path = "/api"
 
 	_basePath := o._basePath
 	result.Path = golangswaggerpaths.Join(_basePath, _path)

@@ -35,7 +35,7 @@ func (o *ListClustersURL) SetBasePath(bp string) {
 func (o *ListClustersURL) Build() (*url.URL, error) {
 	var result url.URL
 
-	var _path = "/api/v1/clusters/"
+	var _path = "/api/v1/clusters"
 
 	_basePath := o._basePath
 	result.Path = golangswaggerpaths.Join(_basePath, _path)

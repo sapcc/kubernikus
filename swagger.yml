@@ -30,7 +30,7 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/Info'
-  /api/:
+  /api:
     get:
       security: []
       operationId: ListAPIVersions
@@ -51,7 +51,7 @@ paths:
             $ref: '#/definitions/OpenstackMetadata'
         default:
           $ref: '#/responses/errorResponse'
-  /api/v1/clusters/:
+  /api/v1/clusters:
     get:
       operationId: ListClusters
       summary: List available clusters

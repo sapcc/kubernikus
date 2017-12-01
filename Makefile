@@ -84,13 +84,14 @@ pkg/api/client/kubernikus_client.go: swagger.yml
 ifneq (,$(wildcard $(SWAGGER_BIN)))
 	$(SWAGGER_BIN) generate client --name kubernikus --target pkg/api --client-package client \
 		--existing-models github.com/sapcc/kubernikus/pkg/api/models \
+		--default-scheme=https \
 		--principal models.Principal
 else
 	$(warning WARNING: $(SWAGGER_BIN) missing. Run `make bootstrap` to fix.)
 endif
 
 swagger-generate-client:
-	make -B pkg/client/kubernikus_generated/kubernikus_client.go
+	make -B pkg/api/client/kubernikus_client.go
 
 clean:
 	rm -rf bin/*

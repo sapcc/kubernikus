@@ -51,7 +51,7 @@ type ListAPIVersionsOK struct {
 }
 
 func (o *ListAPIVersionsOK) Error() string {
-	return fmt.Sprintf("[GET /api/][%d] listApiVersionsOK  %+v", 200, o.Payload)
+	return fmt.Sprintf("[GET /api][%d] listApiVersionsOK  %+v", 200, o.Payload)
 }
 
 func (o *ListAPIVersionsOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {

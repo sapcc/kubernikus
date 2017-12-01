@@ -29,7 +29,7 @@ func NewListAPIVersions(ctx *middleware.Context, handler ListAPIVersionsHandler)
 	return &ListAPIVersions{Context: ctx, Handler: handler}
 }
 
-/*ListAPIVersions swagger:route GET /api/ listApiVersions
+/*ListAPIVersions swagger:route GET /api listApiVersions
 
 List available api versions
 

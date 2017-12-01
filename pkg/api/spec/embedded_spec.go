@@ -26,7 +26,7 @@ func init() {
     "version": "1.0.0"
   },
   "paths": {
-    "/api/": {
+    "/api": {
       "get": {
         "summary": "List available api versions",
         "operationId": "ListAPIVersions",
@@ -40,7 +40,7 @@ func init() {
         }
       }
     },
-    "/api/v1/clusters/": {
+    "/api/v1/clusters": {
       "get": {
         "summary": "List available clusters",
         "operationId": "ListClusters",

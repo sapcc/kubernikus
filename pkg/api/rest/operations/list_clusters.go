@@ -31,7 +31,7 @@ func NewListClusters(ctx *middleware.Context, handler ListClustersHandler) *List
 	return &ListClusters{Context: ctx, Handler: handler}
 }
 
-/*ListClusters swagger:route GET /api/v1/clusters/ listClusters
+/*ListClusters swagger:route GET /api/v1/clusters listClusters
 
 List available clusters
 

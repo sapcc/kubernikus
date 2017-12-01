@@ -31,7 +31,7 @@ func NewCreateCluster(ctx *middleware.Context, handler CreateClusterHandler) *Cr
 	return &CreateCluster{Context: ctx, Handler: handler}
 }
 
-/*CreateCluster swagger:route POST /api/v1/clusters/ createCluster
+/*CreateCluster swagger:route POST /api/v1/clusters createCluster
 
 Create a cluster
 

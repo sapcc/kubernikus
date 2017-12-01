@@ -58,7 +58,7 @@ type ListClustersOK struct {
 }
 
 func (o *ListClustersOK) Error() string {
-	return fmt.Sprintf("[GET /api/v1/clusters/][%d] listClustersOK  %+v", 200, o.Payload)
+	return fmt.Sprintf("[GET /api/v1/clusters][%d] listClustersOK  %+v", 200, o.Payload)
 }
 
 func (o *ListClustersOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -94,7 +94,7 @@ func (o *ListClustersDefault) Code() int {
 }
 
 func (o *ListClustersDefault) Error() string {
-	return fmt.Sprintf("[GET /api/v1/clusters/][%d] ListClusters default  %+v", o._statusCode, o.Payload)
+	return fmt.Sprintf("[GET /api/v1/clusters][%d] ListClusters default  %+v", o._statusCode, o.Payload)
 }
 
 func (o *ListClustersDefault) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
