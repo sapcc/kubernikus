@@ -93,7 +93,7 @@ func (o *Options) Run(c *cobra.Command) error {
 	var logger log.Logger
 	logger = log.NewLogfmtLogger(log.NewSyncWriter(os.Stderr))
 	logger = logutil.NewTrailingNilFilter(logger)
-	logger = log.With(logger, "ts", log.DefaultTimestampUTC, "caller", log.DefaultCaller)
+	logger = log.With(logger, "ts", log.DefaultTimestampUTC, "caller", log.DefaultCaller, "v", 0)
 
 	sigs := make(chan os.Signal, 1)
 	stop := make(chan struct{})
