@@ -10,11 +10,13 @@ import (
 
 	"github.com/go-kit/kit/log"
 	"github.com/golang/glog"
+	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
+
 	"github.com/sapcc/kubernikus/pkg/cmd"
 	"github.com/sapcc/kubernikus/pkg/controller"
 	"github.com/sapcc/kubernikus/pkg/controller/metrics"
-	"github.com/spf13/cobra"
-	"github.com/spf13/pflag"
+	logutil "github.com/sapcc/kubernikus/pkg/util/log"
 )
 
 func NewOperatorCommand() *cobra.Command {
@@ -90,6 +92,7 @@ func (o *Options) Complete(args []string) error {
 func (o *Options) Run(c *cobra.Command) error {
 	var logger log.Logger
 	logger = log.NewLogfmtLogger(log.NewSyncWriter(os.Stderr))
+	logger = logutil.NewTrailingNilFilter(logger)
 	logger = log.With(logger, "ts", log.DefaultTimestampUTC, "caller", log.DefaultCaller)
 
 	sigs := make(chan os.Signal, 1)
