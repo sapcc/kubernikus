@@ -9,7 +9,6 @@ import (
 	"syscall"
 
 	"github.com/go-kit/kit/log"
-	"github.com/golang/glog"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 
@@ -104,7 +103,7 @@ func (o *Options) Run(c *cobra.Command) error {
 	go metrics.ExposeMetrics(o.MetricPort, stop, wg)
 
 	<-sigs // Wait for signals (this hangs until a signal arrives)
-	glog.Info("Shutting down...")
+	logger.Log("msg", "shutting down", "v", 1)
 	close(stop) // Tell goroutines to stop themselves
 	wg.Wait()   // Wait for all to be stopped
 
