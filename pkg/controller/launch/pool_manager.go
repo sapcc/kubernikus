@@ -60,7 +60,7 @@ func (cpm *ConcretePoolManager) GetStatus() (status *PoolStatus, err error) {
 	status = &PoolStatus{}
 	nodes, err := cpm.Clients.Openstack.GetNodes(cpm.Kluster, cpm.Pool)
 	if err != nil {
-		return nil, err
+		return status, err
 	}
 
 	return &PoolStatus{
