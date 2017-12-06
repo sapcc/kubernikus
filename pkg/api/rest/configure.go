@@ -2,16 +2,21 @@ package rest
 
 import (
 	"fmt"
+	"net/http"
+	"strings"
 
 	"github.com/go-openapi/errors"
 	runtime "github.com/go-openapi/runtime"
-	"github.com/golang/glog"
+	"github.com/go-openapi/runtime/middleware"
+	"github.com/justinas/alice"
+	"github.com/rs/cors"
 
 	apipkg "github.com/sapcc/kubernikus/pkg/api"
 	"github.com/sapcc/kubernikus/pkg/api/auth"
 	"github.com/sapcc/kubernikus/pkg/api/handlers"
 	"github.com/sapcc/kubernikus/pkg/api/rest/operations"
 	"github.com/sapcc/kubernikus/pkg/api/spec"
+	logutil "github.com/sapcc/kubernikus/pkg/util/log"
 )
 
 func Configure(api *operations.KubernikusAPI, rt *apipkg.Runtime) error {
@@ -23,7 +28,7 @@ func Configure(api *operations.KubernikusAPI, rt *apipkg.Runtime) error {
 	//
 	// Example:
 	api.Logger = func(msg string, args ...interface{}) {
-		glog.InfoDepth(2, fmt.Sprintf(msg, args...))
+		rt.Logger.Log("msg", fmt.Sprintf(msg, args...))
 	}
 
 	api.JSONConsumer = runtime.JSONConsumer()
@@ -60,5 +65,39 @@ func Configure(api *operations.KubernikusAPI, rt *apipkg.Runtime) error {
 	api.GetClusterEventsHandler = handlers.NewGetClusterEvents(rt)
 
 	api.ServerShutdown = func() {}
+
+	api.Middleware = func(builder middleware.Builder) http.Handler {
+		return setupGlobalMiddleware(api.Context().APIHandler(builder), rt)
+	}
 	return nil
+}
+
+// The middleware configuration happens before anything, this middleware also applies to serving the swagger.json document.
+// So this is a good place to plug in a panic handling middleware, logging and metrics
+func setupGlobalMiddleware(handler http.Handler, rt *apipkg.Runtime) http.Handler {
+	corsHandler := cors.New(cors.Options{
+		AllowedHeaders: []string{"X-Auth-Token", "Content-Type", "Accept"},
+		AllowedMethods: []string{"GET", "HEAD", "POST", "DELETE", "PUT"},
+		MaxAge:         600,
+	}).Handler
+
+	loggingHandler := func(next http.Handler) http.Handler {
+		return logutil.LoggingHandler(rt.Logger, next)
+	}
+
+	redocHandler := func(next http.Handler) http.Handler {
+		return middleware.Redoc(middleware.RedocOpts{Path: "swagger"}, next)
+	}
+
+	staticHandler := func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
+			if strings.HasPrefix(r.URL.Path, "/docs") {
+				http.StripPrefix("/docs", http.FileServer(http.Dir("static/docs"))).ServeHTTP(rw, r)
+				return
+			}
+			next.ServeHTTP(rw, r)
+		})
+	}
+
+	return alice.New(loggingHandler, handlers.RootHandler, redocHandler, staticHandler, corsHandler).Then(handler)
 }

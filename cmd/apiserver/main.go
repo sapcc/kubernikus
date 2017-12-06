@@ -3,16 +3,17 @@ package main
 import (
 	goflag "flag"
 	"fmt"
-	"log"
 	"os"
 
-	"github.com/golang/glog"
+	kitLog "github.com/go-kit/kit/log"
+	"github.com/go-stack/stack"
 	"github.com/spf13/pflag"
 
 	apipkg "github.com/sapcc/kubernikus/pkg/api"
 	"github.com/sapcc/kubernikus/pkg/api/rest"
 	"github.com/sapcc/kubernikus/pkg/api/rest/operations"
 	"github.com/sapcc/kubernikus/pkg/api/spec"
+	logutil "github.com/sapcc/kubernikus/pkg/util/log"
 	"github.com/sapcc/kubernikus/pkg/version"
 )
 
@@ -23,10 +24,17 @@ func init() {
 }
 
 func main() {
+	var logger kitLog.Logger
+	logger = kitLog.NewLogfmtLogger(kitLog.NewSyncWriter(os.Stderr))
+	logger = logutil.NewTrailingNilFilter(logger)
+	logger = kitLog.With(logger, "ts", kitLog.DefaultTimestampUTC, "caller", Caller(3))
 
 	swaggerSpec, err := spec.Spec()
 	if err != nil {
-		log.Fatalln(err)
+		logger.Log(
+			"msg", "failed to spec swagger spec",
+			"err", err)
+		os.Exit(1)
 	}
 
 	var server *rest.Server // make sure init is called
@@ -53,12 +61,21 @@ func main() {
 
 	api := operations.NewKubernikusAPI(swaggerSpec)
 
-	rt := &apipkg.Runtime{Namespace: namespace}
+	rt := &apipkg.Runtime{
+		Namespace: namespace,
+		Logger:    logger,
+	}
 	rt.Kubernikus, rt.Kubernetes = rest.NewKubeClients()
 	if err := rest.Configure(api, rt); err != nil {
-		glog.Fatalf("Failed to configure apiserver :%s", err)
+		logger.Log(
+			"msg", "failed to configure API server",
+			"err", err)
+		os.Exit(1)
 	}
-	glog.Infof("Starting kubernikus apiserver v%v. Using namespace %s", version.GitCommit, namespace)
+	logger.Log(
+		"msg", "starting Kubernikus API",
+		"namespace", namespace,
+		"version", version.GitCommit)
 
 	// get server with flag values filled out
 	server = rest.NewServer(api)
@@ -67,7 +84,14 @@ func main() {
 
 	server.ConfigureAPI()
 	if err := server.Serve(); err != nil {
-		log.Fatalln(err)
+		logger.Log(
+			"msg", "failed to start API server",
+			"err", err)
+		os.Exit(1)
 	}
 
+}
+
+func Caller(depth int) kitLog.Valuer {
+	return func() interface{} { return fmt.Sprintf("%+v", stack.Caller(depth)) }
 }

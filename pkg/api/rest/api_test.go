@@ -9,6 +9,7 @@ import (
 	"strings"
 	"testing"
 
+	kitlog "github.com/go-kit/kit/log"
 	errors "github.com/go-openapi/errors"
 	"github.com/stretchr/testify/assert"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -57,6 +58,7 @@ func createTestHandler(t *testing.T) (http.Handler, *apipkg.Runtime) {
 		Namespace:  NAMESPACE,
 		Kubernikus: kubernikusfake.NewSimpleClientset(),
 		Kubernetes: fake.NewSimpleClientset(),
+		Logger:     kitlog.NewNopLogger(),
 	}
 	if err := Configure(api, rt); err != nil {
 		t.Fatal(err)
