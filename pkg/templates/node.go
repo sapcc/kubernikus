@@ -15,6 +15,8 @@ locksmith:
 
 systemd:
   units:
+    - name: iptables-restore.service
+      enable: true
     - name: ccloud-metadata.service
       contents: |
         [Unit]
@@ -79,7 +81,7 @@ systemd:
           --cluster-dns={{ .ClusterDNSAddress }} \
           --cluster-domain={{ .ClusterDomain }} \
           --client-ca-file=/etc/kubernetes/certs/kubelet-clients-ca.pem \
-          --non-masquerade-cidr={{ .ClusterCIDR }} \
+          --non-masquerade-cidr=0.0.0.0/0 \
           --anonymous-auth=false
         ExecStop=-/usr/bin/rkt stop --uuid-file=/var/run/kubelet-pod.uuid
         Restart=always
@@ -166,6 +168,19 @@ networkd:
 
 storage:
   files:
+    - path: /var/lib/iptables/rules-save
+      filesystem: root
+      mode: 0644
+      contents:
+        inline: |-
+          *nat
+          :PREROUTING ACCEPT [0:0]
+          :INPUT ACCEPT [0:0]
+          :OUTPUT ACCEPT [0:0]
+          :POSTROUTING ACCEPT [0:0]
+          -A POSTROUTING -p tcp ! -d {{ .ClusterCIDR }} -m addrtype ! --dst-type LOCAL -j MASQUERADE --to-ports 32000-65000
+          -A POSTROUTING -p udp ! -d {{ .ClusterCIDR }} -m addrtype ! --dst-type LOCAL -j MASQUERADE --to-ports 32000-65000
+          COMMIT
     - path: /etc/sysctl.d/10-enable-icmp-redirects
       filesystem: root
       mode: 0644
