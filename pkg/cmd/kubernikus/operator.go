@@ -3,12 +3,14 @@ package kubernikus
 import (
 	"errors"
 	goflag "flag"
+	"fmt"
 	"os"
 	"os/signal"
 	"sync"
 	"syscall"
 
 	"github.com/go-kit/kit/log"
+	"github.com/go-stack/stack"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 
@@ -92,7 +94,7 @@ func (o *Options) Run(c *cobra.Command) error {
 	var logger log.Logger
 	logger = log.NewLogfmtLogger(log.NewSyncWriter(os.Stderr))
 	logger = logutil.NewTrailingNilFilter(logger)
-	logger = log.With(logger, "ts", log.DefaultTimestampUTC, "caller", log.DefaultCaller)
+	logger = log.With(logger, "ts", log.DefaultTimestampUTC, "caller", Caller(3))
 
 	sigs := make(chan os.Signal, 1)
 	stop := make(chan struct{})
@@ -108,4 +110,8 @@ func (o *Options) Run(c *cobra.Command) error {
 	wg.Wait()   // Wait for all to be stopped
 
 	return nil
+}
+
+func Caller(depth int) log.Valuer {
+	return func() interface{} { return fmt.Sprintf("%+v", stack.Caller(depth)) }
 }
