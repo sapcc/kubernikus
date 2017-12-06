@@ -181,6 +181,7 @@ storage:
           -A POSTROUTING -p tcp ! -d {{ .ClusterCIDR }} -m addrtype ! --dst-type LOCAL -j MASQUERADE --to-ports 32000-65000
           -A POSTROUTING -p udp ! -d {{ .ClusterCIDR }} -m addrtype ! --dst-type LOCAL -j MASQUERADE --to-ports 32000-65000
           COMMIT
+
     - path: /etc/sysctl.d/10-enable-icmp-redirects
       filesystem: root
       mode: 0644
