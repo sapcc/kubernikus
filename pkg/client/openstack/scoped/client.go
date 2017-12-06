@@ -1,6 +1,7 @@
-package openstack
+package scoped
 
 import (
+	"github.com/go-kit/kit/log"
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/keypairs"
@@ -13,73 +14,85 @@ import (
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/subnets"
 	"github.com/gophercloud/gophercloud/pagination"
 	"github.com/sapcc/kubernikus/pkg/api/models"
+	"github.com/sapcc/kubernikus/pkg/client/openstack/util"
+	utillog "github.com/sapcc/kubernikus/pkg/util/log"
 )
 
-type scopedClient struct {
-	providerClient *gophercloud.ProviderClient
-	networkClient  *gophercloud.ServiceClient
-	computeClient  *gophercloud.ServiceClient
-	identityClient *gophercloud.ServiceClient
+type client struct {
+	util.AuthenticatedClient
+	Logger log.Logger
 }
 
-type ScopedClient interface {
+type Client interface {
+	Authenticate(*tokens.AuthOptions) error
 	GetMetadata() (*models.OpenstackMetadata, error)
 }
 
-func NewScopedClient(authOptions *tokens.AuthOptions) (ScopedClient, error) {
-	var err error
-	client := &scopedClient{}
+func NewClient(authOptions *tokens.AuthOptions, logger log.Logger) (Client, error) {
+	logger = utillog.NewAuthLogger(logger, authOptions)
 
-	if client.providerClient, err = openstack.NewClient(authOptions.IdentityEndpoint); err != nil {
-		return nil, err
-	}
+	var c Client
+	c = &client{Logger: logger}
+	c = LoggingClient{c, logger}
 
-	if err := openstack.AuthenticateV3(client.providerClient, authOptions, gophercloud.EndpointOpts{}); err != nil {
-		return nil, err
-	}
-
-	if client.identityClient, err = openstack.NewIdentityV3(client.providerClient, gophercloud.EndpointOpts{}); err != nil {
-		return nil, err
-	}
-
-	if client.computeClient, err = openstack.NewComputeV2(client.providerClient, gophercloud.EndpointOpts{}); err != nil {
-		return nil, err
-	}
-
-	if client.networkClient, err = openstack.NewNetworkV2(client.providerClient, gophercloud.EndpointOpts{}); err != nil {
-		return nil, err
-	}
-
-	return client, nil
+	return c, c.Authenticate(authOptions)
 }
 
-func (c *scopedClient) GetMetadata() (*models.OpenstackMetadata, error) {
-	var err error
-	metadata := &models.OpenstackMetadata{}
+func (c *client) Authenticate(authOptions *tokens.AuthOptions) error {
+	providerClient, err := utillog.NewLoggingProviderClient(authOptions.IdentityEndpoint, c.Logger)
+	if err != nil {
+		return err
+	}
+
+	if err := openstack.AuthenticateV3(providerClient, authOptions, gophercloud.EndpointOpts{}); err != nil {
+		return err
+	}
+
+	if c.IdentityClient, err = openstack.NewIdentityV3(providerClient, gophercloud.EndpointOpts{}); err != nil {
+		return err
+	}
+
+	if c.ComputeClient, err = openstack.NewComputeV2(providerClient, gophercloud.EndpointOpts{}); err != nil {
+		return err
+	}
+
+	if c.NetworkClient, err = openstack.NewNetworkV2(providerClient, gophercloud.EndpointOpts{}); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (c *client) GetMetadata() (metadata *models.OpenstackMetadata, err error) {
+	metadata = &models.OpenstackMetadata{
+		Flavors:        make([]*models.Flavor, 0),
+		KeyPairs:       make([]*models.KeyPair, 0),
+		Routers:        make([]*models.Router, 0),
+		SecurityGroups: make([]*models.SecurityGroup, 0),
+	}
 
 	if metadata.Routers, err = c.getRouters(); err != nil {
-		return nil, err
+		return metadata, err
 	}
 
 	if metadata.KeyPairs, err = c.getKeyPairs(); err != nil {
-		return nil, err
+		return metadata, err
 	}
 
 	if metadata.SecurityGroups, err = c.getSecurityGroups(); err != nil {
-		return nil, err
+		return metadata, err
 	}
 
 	if metadata.Flavors, err = c.getFlavors(); err != nil {
-		return nil, err
+		return metadata, err
 	}
-
 	return metadata, nil
 }
 
-func (c *scopedClient) getRouters() ([]*models.Router, error) {
+func (c *client) getRouters() ([]*models.Router, error) {
 	result := []*models.Router{}
 
-	err := routers.List(c.networkClient, routers.ListOpts{}).EachPage(func(page pagination.Page) (bool, error) {
+	err := routers.List(c.NetworkClient, routers.ListOpts{}).EachPage(func(page pagination.Page) (bool, error) {
 		if routerList, err := routers.ExtractRouters(page); err != nil {
 			return false, err
 		} else {
@@ -91,30 +104,30 @@ func (c *scopedClient) getRouters() ([]*models.Router, error) {
 	})
 
 	if err != nil {
-		return nil, err
+		return result, err
 	}
 
 	for _, router := range result {
 		if router.Networks, err = c.getNetworks(router); err != nil {
-			return nil, err
+			return result, err
 		}
 	}
 
 	return result, nil
 }
 
-func (c *scopedClient) getNetworks(router *models.Router) ([]*models.Network, error) {
+func (c *client) getNetworks(router *models.Router) ([]*models.Network, error) {
 	result := []*models.Network{}
 
 	networkIDs, err := c.getRouterNetworkIDs(router)
 	if err != nil {
-		return nil, err
+		return result, err
 	}
 
 	for _, networkID := range networkIDs {
-		network, err := networks.Get(c.networkClient, networkID).Extract()
+		network, err := networks.Get(c.NetworkClient, networkID).Extract()
 		if err != nil {
-			return nil, err
+			return result, err
 		}
 		result = append(result, &models.Network{ID: network.ID, Name: network.Name})
 	}
@@ -128,10 +141,10 @@ func (c *scopedClient) getNetworks(router *models.Router) ([]*models.Network, er
 	return result, nil
 }
 
-func (c *scopedClient) getRouterNetworkIDs(router *models.Router) ([]string, error) {
+func (c *client) getRouterNetworkIDs(router *models.Router) ([]string, error) {
 	result := []string{}
 
-	err := ports.List(c.networkClient, ports.ListOpts{DeviceID: router.ID, DeviceOwner: "network:router_interface"}).EachPage(func(page pagination.Page) (bool, error) {
+	err := ports.List(c.NetworkClient, ports.ListOpts{DeviceID: router.ID, DeviceOwner: "network:router_interface"}).EachPage(func(page pagination.Page) (bool, error) {
 		portList, err := ports.ExtractPorts(page)
 		if err != nil {
 			return false, err
@@ -145,27 +158,27 @@ func (c *scopedClient) getRouterNetworkIDs(router *models.Router) ([]string, err
 	return result, err
 }
 
-func (c *scopedClient) getSubnetIDs(network *models.Network) ([]string, error) {
-	result, err := networks.Get(c.networkClient, network.ID).Extract()
+func (c *client) getSubnetIDs(network *models.Network) ([]string, error) {
+	result, err := networks.Get(c.NetworkClient, network.ID).Extract()
 	if err != nil {
-		return nil, err
+		return []string{}, err
 	}
 
 	return result.Subnets, nil
 }
 
-func (c *scopedClient) getSubnets(network *models.Network) ([]*models.Subnet, error) {
+func (c *client) getSubnets(network *models.Network) ([]*models.Subnet, error) {
 	result := []*models.Subnet{}
 
 	subnetIDs, err := c.getSubnetIDs(network)
 	if err != nil {
-		return nil, err
+		return result, err
 	}
 
 	for _, subnetID := range subnetIDs {
-		subnet, err := subnets.Get(c.networkClient, subnetID).Extract()
+		subnet, err := subnets.Get(c.NetworkClient, subnetID).Extract()
 		if err != nil {
-			return nil, err
+			return result, err
 		}
 		result = append(result, &models.Subnet{ID: subnet.ID, Name: subnet.Name, CIDR: subnet.CIDR})
 	}
@@ -173,17 +186,17 @@ func (c *scopedClient) getSubnets(network *models.Network) ([]*models.Subnet, er
 	return result, nil
 }
 
-func (c *scopedClient) getKeyPairs() ([]*models.KeyPair, error) {
+func (c *client) getKeyPairs() ([]*models.KeyPair, error) {
 	result := []*models.KeyPair{}
 
-	pager, err := keypairs.List(c.computeClient).AllPages()
+	pager, err := keypairs.List(c.ComputeClient).AllPages()
 	if err != nil {
-		return nil, err
+		return result, err
 	}
 
 	keyList, err := keypairs.ExtractKeyPairs(pager)
 	if err != nil {
-		return nil, err
+		return result, err
 	}
 
 	for _, key := range keyList {
@@ -193,10 +206,10 @@ func (c *scopedClient) getKeyPairs() ([]*models.KeyPair, error) {
 	return result, nil
 }
 
-func (c *scopedClient) getSecurityGroups() ([]*models.SecurityGroup, error) {
+func (c *client) getSecurityGroups() ([]*models.SecurityGroup, error) {
 	result := []*models.SecurityGroup{}
 
-	err := secgroups.List(c.computeClient).EachPage(func(page pagination.Page) (bool, error) {
+	err := secgroups.List(c.ComputeClient).EachPage(func(page pagination.Page) (bool, error) {
 		secGroupList, err := secgroups.ExtractSecurityGroups(page)
 		if err != nil {
 			return false, err
@@ -210,10 +223,10 @@ func (c *scopedClient) getSecurityGroups() ([]*models.SecurityGroup, error) {
 	return result, err
 }
 
-func (c *scopedClient) getFlavors() ([]*models.Flavor, error) {
+func (c *client) getFlavors() ([]*models.Flavor, error) {
 	result := []*models.Flavor{}
 
-	err := flavors.ListDetail(c.computeClient, &flavors.ListOpts{}).EachPage(func(page pagination.Page) (bool, error) {
+	err := flavors.ListDetail(c.ComputeClient, &flavors.ListOpts{}).EachPage(func(page pagination.Page) (bool, error) {
 		list, err := flavors.ExtractFlavors(page)
 		if err != nil {
 			return false, err

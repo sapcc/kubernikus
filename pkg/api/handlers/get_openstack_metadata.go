@@ -6,7 +6,7 @@ import (
 	"github.com/sapcc/kubernikus/pkg/api"
 	"github.com/sapcc/kubernikus/pkg/api/models"
 	"github.com/sapcc/kubernikus/pkg/api/rest/operations"
-	"github.com/sapcc/kubernikus/pkg/client/openstack"
+	"github.com/sapcc/kubernikus/pkg/client/openstack/scoped"
 )
 
 func NewGetOpenstackMetadata(rt *api.Runtime) operations.GetOpenstackMetadataHandler {
@@ -29,7 +29,7 @@ func (d *getOpenstackMetadata) Handle(params operations.GetOpenstackMetadataPara
 		},
 	}
 
-	client, err := openstack.NewScopedClient(authOptions)
+	client, err := scoped.NewClient(authOptions, d.Logger)
 	if err != nil {
 		return NewErrorResponse(&operations.GetOpenstackMetadataDefault{}, 500, err.Error())
 	}
