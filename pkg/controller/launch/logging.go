@@ -21,6 +21,7 @@ func (npm *LoggingPoolManager) GetStatus() (status *PoolStatus, err error) {
 			"needed", status.Needed,
 			"unneeded", status.UnNeeded,
 			"took", time.Since(begin),
+			"v", 1,
 			"err", err,
 		)
 	}(time.Now())
@@ -37,6 +38,7 @@ func (npm *LoggingPoolManager) SetStatus(status *PoolStatus) (err error) {
 			"needed", status.Needed,
 			"unneeded", status.UnNeeded,
 			"took", time.Since(begin),
+			"v", 1,
 			"err", err,
 		)
 	}(time.Now())

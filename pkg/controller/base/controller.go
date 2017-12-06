@@ -77,6 +77,7 @@ func (c *controller) Run(threadiness int, stopCh <-chan struct{}, wg *sync.WaitG
 	c.logger.Log(
 		"msg", "starting run loop",
 		"threadiness", threadiness,
+		"v", 2,
 	)
 
 	defer c.queue.ShutDown()
@@ -107,6 +108,7 @@ func (c *controller) requeueAllKlusters() (err error) {
 	defer func() {
 		c.logger.Log(
 			"msg", "requeued all",
+			"v", 1,
 			"err", err,
 		)
 	}()
@@ -128,6 +130,7 @@ func (c *controller) requeueKluster(kluster *v1.Kluster) {
 		"msg", "queuing",
 		"kluster", kluster.Spec.Name,
 		"project", kluster.Account(),
+		"v", 2,
 	)
 
 	key, err := cache.MetaNamespaceKeyFunc(kluster)
