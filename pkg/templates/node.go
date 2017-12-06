@@ -169,6 +169,7 @@ networkd:
 storage:
   files:
     - path: /var/lib/iptables/rules-save
+      filesystem: root
       mode: 0644
       contents:
         inline: |-
