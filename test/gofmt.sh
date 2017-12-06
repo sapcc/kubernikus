@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 if [ -n "$(gofmt -l $@)" ]; then
   echo "Go code is not formatted:"
