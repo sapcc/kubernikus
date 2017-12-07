@@ -1,7 +1,7 @@
 dependencies:
   - name: vice-president 
     repository: file://vendor/vice-president
-    version: 0.1.0
+    version: 0.1.1
   - name: kube-state-metrics
     repository: file://vendor/kube-state-metrics
     version: 1.1.0
