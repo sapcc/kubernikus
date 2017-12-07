@@ -1,5 +1,5 @@
-hash: b99d0556cb4aa1ebe686a625a99452cdc4f5200d2c375de52d32c936945ef00d
-updated: 2017-11-23T15:03:52.037497461+01:00
+hash: deb0bca036f39bd5d24022c51416f03e7b60ce63e87c6fa540fd8e5ca4b03f58
+updated: 2017-12-01T11:25:53.43538+01:00
 imports:
 - name: github.com/ajeddeloh/yaml
   version: 1072abfea31191db507785e2e0c1b8d1440d35a5
@@ -183,6 +183,8 @@ imports:
   version: 3e95a51e0639b4cf372f2ccf74c86749d747fbdc
 - name: github.com/inconshreveable/mousetrap
   version: 76626ae9c91c4f2a10f34cad8ce83ea42c93bb75
+- name: github.com/joeshaw/envdecode
+  version: 6326cbed175e32cd5183be1cc1027e0823c91edb
 - name: github.com/juju/ratelimit
   version: 5b9ff866471762aa2ab2dced63c9fb6f53921342
 - name: github.com/justinas/alice
@@ -238,6 +240,11 @@ imports:
   - xfs
 - name: github.com/prometheus/prometheus
   version: 0a74f98628a0463dddc90528220c94de5032d1a0
+  subpackages:
+  - client_go
+  - client_model
+  - common
+  - procfs
 - name: github.com/PuerkitoBio/purell
   version: 0bcb03f4b4d0a9428594752bd2a3b9aa0a9d4bd4
 - name: github.com/PuerkitoBio/urlesc
