@@ -91,7 +91,7 @@ func run(o *Options) error {
 	closeCh := make(chan struct{})
 	group.Add(
 		func() error {
-			return routeCleaner.Run(closeCh)
+			return routeCleaner.Run(logger, o.SyncPeriod, closeCh)
 		},
 		func(error) {
 			close(closeCh)

@@ -4,13 +4,14 @@ import (
 	"net"
 	"time"
 
-	"github.com/golang/glog"
+	"github.com/go-kit/kit/log"
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/servers"
 	"github.com/gophercloud/gophercloud/openstack/identity/v3/tokens"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/layer3/routers"
 	"github.com/gophercloud/gophercloud/pagination"
+	"github.com/sapcc/kubernikus/pkg/version"
 	"k8s.io/apimachinery/pkg/util/wait"
 )
 
@@ -20,6 +21,7 @@ type RouteGarbageCollector struct {
 	network     *gophercloud.ServiceClient
 	routerID    string
 	clusterCIDR *net.IPNet
+	logger      log.Logger
 }
 
 func New(authOpts tokens.AuthOptions, routerID string, clusterCIDR *net.IPNet) *RouteGarbageCollector {
@@ -31,8 +33,11 @@ func New(authOpts tokens.AuthOptions, routerID string, clusterCIDR *net.IPNet) *
 
 }
 
-func (r *RouteGarbageCollector) Run(stopCh <-chan struct{}) error {
-	defer glog.Info("Stopped")
+func (r *RouteGarbageCollector) Run(logger log.Logger, syncPeriod time.Duration, stopCh <-chan struct{}) error {
+	r.logger = log.With(logger, "controller", "routegc")
+	r.logger.Log("msg", "Starting", "version", version.GitCommit, "interval", syncPeriod)
+
+	defer r.logger.Log("msg", "Stopped")
 	client, err := openstack.NewClient(r.authOpts.IdentityEndpoint)
 	if err != nil {
 		return err
@@ -46,15 +51,17 @@ func (r *RouteGarbageCollector) Run(stopCh <-chan struct{}) error {
 	if r.network, err = openstack.NewNetworkV2(client, gophercloud.EndpointOpts{}); err != nil {
 		return err
 	}
-	wait.Until(r.Reconcile, 30*time.Second, stopCh)
+	wait.Until(r.Reconcile, syncPeriod, stopCh)
 	return nil
 }
 
 func (r *RouteGarbageCollector) Reconcile() {
-	glog.V(2).Info("Reconciling")
+	defer func(begin time.Time) {
+		r.logger.Log("msg", "Reconciling", "took", time.Since(begin), "v", 2)
+	}(time.Now())
 
 	validNexthops := map[string]string{}
-	foreachServer(r.compute, servers.ListOpts{}, func(srv *servers.Server) (bool, error) {
+	err := foreachServer(r.compute, servers.ListOpts{}, func(srv *servers.Server) (bool, error) {
 		for _, addrs := range srv.Addresses {
 			for _, nase := range addrs.([]interface{}) {
 				addresses, ok := nase.(map[string]interface{})
@@ -70,10 +77,16 @@ func (r *RouteGarbageCollector) Reconcile() {
 		}
 		return true, nil
 	})
+	if err != nil {
+		r.logger.Log("msg", "list servers", "err", err)
+		return
+	}
+
+	logger := log.With(r.logger, "router", r.routerID)
 
 	router, err := routers.Get(r.network, r.routerID).Extract()
 	if err != nil {
-		glog.Errorf("Couldn't show router %s: %s", r.routerID, err)
+		logger.Log("msg", "show router", "err", err)
 		return
 	}
 	newRoutes := make([]routers.Route, 0, len(router.Routes))
@@ -82,7 +95,7 @@ func (r *RouteGarbageCollector) Reconcile() {
 		if r.isResponsibleForRoute(route) {
 			if _, ok := validNexthops[route.NextHop]; !ok {
 				updated = true
-				glog.Infof("Route %s -> %s is orpahned, marking for removal", route.DestinationCIDR, route.NextHop)
+				logger.Log("msg", "route orphaned", "cidr", route.DestinationCIDR, "nexthop", route.NextHop)
 				continue //delete the route (by not adding to newRoutes)
 			}
 		}
@@ -94,10 +107,8 @@ func (r *RouteGarbageCollector) Reconcile() {
 		_, err := routers.Update(r.network, r.routerID, routers.UpdateOpts{
 			Routes: newRoutes,
 		}).Extract()
-		if err != nil {
-			glog.Error("Removing routes failed: %s", err)
-		}
-		glog.Info("Marked routes removed")
+
+		logger.Log("msg", "removed routes", "err", err)
 
 	}
 
@@ -107,7 +118,8 @@ func (r *RouteGarbageCollector) Reconcile() {
 func (r *RouteGarbageCollector) isResponsibleForRoute(route routers.Route) bool {
 	_, cidr, err := net.ParseCIDR(route.DestinationCIDR)
 	if err != nil {
-		glog.Errorf("Ignoring route %s -> %s, unparsable CIDR: %v", route.DestinationCIDR, route.NextHop, err)
+
+		r.logger.Log("msg", "unparsable CIDR", "cidr", route.DestinationCIDR, "err", err)
 		return false
 	}
 	// Not responsible if this route's CIDR is not within our clusterCIDR
