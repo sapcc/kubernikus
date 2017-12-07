@@ -1,0 +1,17 @@
+---
+platform: linux
+image_resource:
+  type: docker-image
+  source:
+    repository: alpine
+inputs:
+  - name: kubernikus.builds
+outputs:
+  - name: args
+run:
+  path: sh
+  args:
+    - -exc
+    - |
+      SHA=$(cat kubernikus.builds/.git/ref)
+      echo '{"VERSION":"'$SHA'"}' > args/build_args.json

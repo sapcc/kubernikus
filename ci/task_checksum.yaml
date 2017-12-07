@@ -8,7 +8,7 @@ image_resource:
     tag: 1.9.2-alpine3.6
 
 inputs:
-  - name: kubernikus.git
+  - name: kubernikus.builds
     path: gopath/src/github.com/sapcc/kubernikus
 outputs:
   - name: checksum
@@ -29,6 +29,6 @@ run:
       apk add --no-cache make
       make $TARGET VERSION=latest
       CHECKSUM=$(sha256sum $TARGET | cut -f1 -d ' ')
-      echo CHECKSUM=$CHECKSUM > $OUTPUT/properties
+      echo checksum=$CHECKSUM > $OUTPUT/properties
 params:
   TARGET:
