@@ -14,7 +14,7 @@ spec:
         app: {{ template "name" . }}
       annotations:
         prometheus.io/scrape: 'true'
-        prometheus.io/port: {{ .Values.metrics_port | quote }}
+        prometheus.io/port: {{ default 9091 .Values.president.metrics_port | quote }}
     spec:
       containers:
         - name: {{ .Chart.Name }}
@@ -26,8 +26,8 @@ spec:
             - --vice-cert=/etc/vice-president/secrets/vice.cert
             - --vice-key=/etc/vice-president/secrets/vice.key
             - --intermediate-cert=/etc/vice-president/secrets/intermediate.cert
-            - --metric-listen-address=:{{.Values.metrics_port}}
-            - --v={{ default 1 .Values.log_level }}
+            - --metric-port={{default 9091 .Values.president.metrics_port}}
+            - --v={{ default 1 .Values.president.log_level }}
           volumeMounts:
             - name: config
               mountPath: /etc/vice-president/config
@@ -35,7 +35,7 @@ spec:
               mountPath: /etc/vice-president/secrets
           ports:
             - name: metrics
-              containerPort: {{ .Values.metrics_port }}
+              containerPort: {{ default 9091 .Values.president.metrics_port }}
       volumes:
         - name: config
           configMap:

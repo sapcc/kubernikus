@@ -1,22 +1,22 @@
-{{- if .Values.vice }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: {{ template "name" . }}
+  labels:
+    app: {{ template "name" . }}
 
 data:
   vice-president.conf: |
     vice:
-      first_name: {{ .Values.vice.first_name | quote }}
-      last_name: {{ .Values.vice.last_name | quote }}
-      email: {{ .Values.vice.email | quote }}
-      country: {{ .Values.vice.country | quote }}
-      province: {{ .Values.vice.province | quote }}
-      locality: {{ .Values.vice.locality | quote }}
-      organization: {{ .Values.vice.organization | quote }}
-      organizational_unit: {{ .Values.vice.organizational_unit | quote }}
-      default_challenge: {{ .Values.vice.default_challenge | quote }}
+      first_name: {{ required "subscriber first name" .Values.vice.first_name | quote }}
+      last_name: {{ required "subscriber last name" .Values.vice.last_name | quote }}
+      email: {{ required "subscriber email address" .Values.vice.email | quote }}
+      country: {{ required "subscriber country" .Values.vice.country | quote }}
+      province: {{ required "subscriber province" .Values.vice.province | quote }}
+      locality: {{ required "subscriber locality" .Values.vice.locality | quote }}
+      organization: {{ required "subscriber organization" .Values.vice.organization | quote }}
+      organizational_unit: {{ required "subscriber organizational unit" .Values.vice.organizational_unit | quote }}
+      default_challenge: {{ required "challenge phrase for the certificates" .Values.vice.default_challenge | quote }}
     president:
       resync_period_minutes: {{ default 4 .Values.president.resync_period_minutes }}
       certificate_check_interval_minutes: {{ default 10 .Values.president.certificate_check_interval_minutes }}
-{{- end}}
