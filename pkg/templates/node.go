@@ -188,6 +188,10 @@ storage:
       contents:
         inline: |-
           net.ipv4.conf.all.accept_redirects=1
+    - path: /etc/coreos/docker-1.12
+      filesystem: root
+      contents:
+        inline: yes
     - path: /etc/kubernetes/certs/kubelet-clients-ca.pem
       filesystem: root
       mode: 0644
