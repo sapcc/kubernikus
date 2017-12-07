@@ -1,6 +1,9 @@
 package openstack
 
 import (
+	"net/http"
+
+	"github.com/golang/glog"
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/keypairs"
@@ -26,12 +29,36 @@ type ScopedClient interface {
 	GetMetadata() (*models.OpenstackMetadata, error)
 }
 
+type CustomRoundTripper struct {
+	rt http.RoundTripper
+}
+
+func (crt *CustomRoundTripper) RoundTrip(request *http.Request) (*http.Response, error) {
+	response, err := crt.rt.RoundTrip(request)
+	if response == nil {
+		return nil, err
+	}
+
+	for name, header := range response.Header {
+		for _, v := range header {
+			glog.Infof("%v: %v", name, v)
+		}
+	}
+
+	return response, err
+}
+
 func NewScopedClient(authOptions *tokens.AuthOptions) (ScopedClient, error) {
 	var err error
 	client := &scopedClient{}
 
 	if client.providerClient, err = openstack.NewClient(authOptions.IdentityEndpoint); err != nil {
 		return nil, err
+	}
+
+	transport := client.providerClient.HTTPClient.Transport
+	client.providerClient.HTTPClient.Transport = &CustomRoundTripper{
+		rt: transport,
 	}
 
 	if err := openstack.AuthenticateV3(client.providerClient, authOptions, gophercloud.EndpointOpts{}); err != nil {
@@ -79,7 +106,22 @@ func (c *scopedClient) GetMetadata() (*models.OpenstackMetadata, error) {
 func (c *scopedClient) getRouters() ([]*models.Router, error) {
 	result := []*models.Router{}
 
-	err := routers.List(c.networkClient, routers.ListOpts{}).EachPage(func(page pagination.Page) (bool, error) {
+	pager := routers.List(c.networkClient, routers.ListOpts{})
+
+	for _, k := range pager.Headers {
+		glog.Infof("%s: %s ", k, pager.Headers[k])
+	}
+
+	pager = pager.AllPages()
+		for _, k := range pager.Headers {
+			glog.Infof("%s: %s ", k, pager.Headers[k])
+		}
+		return SinglePageBase: pagination.SinglePageBase(r)
+	})
+
+	err := pager.EachPage(func(page pagination.Page) (bool, error) {
+		glog.Infof("%s", page.GetBody())
+
 		if routerList, err := routers.ExtractRouters(page); err != nil {
 			return false, err
 		} else {
@@ -89,6 +131,10 @@ func (c *scopedClient) getRouters() ([]*models.Router, error) {
 		}
 		return true, nil
 	})
+
+	for _, k := range pager.Headers {
+		glog.Infof("%s: %s ", k, pager.Headers[k])
+	}
 
 	if err != nil {
 		return nil, err
