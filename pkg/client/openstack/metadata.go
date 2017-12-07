@@ -56,9 +56,8 @@ func NewScopedClient(authOptions *tokens.AuthOptions) (ScopedClient, error) {
 		return nil, err
 	}
 
-	transport := client.providerClient.HTTPClient.Transport
 	client.providerClient.HTTPClient.Transport = &CustomRoundTripper{
-		rt: transport,
+		rt: &http.Transport{},
 	}
 
 	if err := openstack.AuthenticateV3(client.providerClient, authOptions, gophercloud.EndpointOpts{}); err != nil {
@@ -108,19 +107,10 @@ func (c *scopedClient) getRouters() ([]*models.Router, error) {
 
 	pager := routers.List(c.networkClient, routers.ListOpts{})
 
-	for _, k := range pager.Headers {
-		glog.Infof("%s: %s ", k, pager.Headers[k])
-	}
-
-	pager = pager.AllPages()
-		for _, k := range pager.Headers {
-			glog.Infof("%s: %s ", k, pager.Headers[k])
-		}
-		return SinglePageBase: pagination.SinglePageBase(r)
-	})
-
 	err := pager.EachPage(func(page pagination.Page) (bool, error) {
-		glog.Infof("%s", page.GetBody())
+		r, _ := page.(routers.RouterPage)
+		reqID := r.Header.Get("X-Openstack-Request-Id")
+		glog.Infof("X-Openstack-Request-Id: %s", reqID)
 
 		if routerList, err := routers.ExtractRouters(page); err != nil {
 			return false, err
@@ -131,10 +121,6 @@ func (c *scopedClient) getRouters() ([]*models.Router, error) {
 		}
 		return true, nil
 	})
-
-	for _, k := range pager.Headers {
-		glog.Infof("%s: %s ", k, pager.Headers[k])
-	}
 
 	if err != nil {
 		return nil, err
