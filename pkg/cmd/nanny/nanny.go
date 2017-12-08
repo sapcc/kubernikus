@@ -13,6 +13,7 @@ import (
 
 	"github.com/sapcc/kubernikus/pkg/cmd"
 	"github.com/sapcc/kubernikus/pkg/controller/routegc"
+	logutil "github.com/sapcc/kubernikus/pkg/util/log"
 )
 
 func NewCommand(name string) *cobra.Command {
@@ -46,27 +47,29 @@ type Options struct {
 	AuthDomain        string        `env:"OS_USER_DOMAIN_NAME" valid:"required"`
 	AuthProject       string        `env:"OS_PROJECT_NAME"`
 	AuthProjectDomain string        `env:"OS_PROJECT_DOMAIN_NAME"`
+	AuthProjectID     string        `env:"OS_PROJECT_ID"`
 	RouterID          string        `env:"ROUTER_ID" valid:"required"`
 	ClusterCIDR       string        `env:"CLUSTER_CIDR" valid:"cidr,required"`
 	SyncPeriod        time.Duration `env:"SYNC_PERIOD"`
 }
 
 func (o *Options) BindFlags(flags *pflag.FlagSet) {
-	flags.StringVar(&o.AuthURL, "auth-url", o.AuthURL, "Openstack keystone url")
-	flags.StringVar(&o.AuthUsername, "auth-username", o.AuthUsername, "Service user for kubernikus")
-	flags.StringVar(&o.AuthPassword, "auth-password", o.AuthPassword, "Service user password")
-	flags.StringVar(&o.AuthDomain, "auth-domain", o.AuthDomain, "Service user domain")
-	flags.StringVar(&o.AuthProject, "auth-project", o.AuthProject, "Scope service user to this project")
-	flags.StringVar(&o.AuthProjectDomain, "auth-project-domain", o.AuthProjectDomain, "Domain of the project")
-	flags.StringVar(&o.RouterID, "router-id", o.RouterID, "The OpenStack router used by the kubernetes cluster")
-	flags.StringVar(&o.ClusterCIDR, "cluster-cidr", o.ClusterCIDR, "The Pod CIDR used by the kubernetes cluster")
+	flags.StringVar(&o.AuthURL, "auth-url", "", "Openstack keystone url")
+	flags.StringVar(&o.AuthUsername, "auth-username", "", "Service user for kubernikus")
+	flags.StringVar(&o.AuthPassword, "auth-password", "", "Service user password")
+	flags.StringVar(&o.AuthDomain, "auth-domain", "", "Service user domain")
+	flags.StringVar(&o.AuthProject, "auth-project", "", "Scope service user to this project")
+	flags.StringVar(&o.AuthProjectDomain, "auth-project-domain", "", "Domain of the project")
+	flags.StringVar(&o.AuthProjectID, "auth-project-id", "", "Domain of the project")
+	flags.StringVar(&o.RouterID, "router-id", "", "The OpenStack router used by the kubernetes cluster")
+	flags.StringVar(&o.ClusterCIDR, "cluster-cidr", "", "The Pod CIDR used by the kubernetes cluster")
 	flags.DurationVar(&o.SyncPeriod, "sync-period", o.SyncPeriod, "How often should the sync handler run.")
 }
 
 func run(o *Options) error {
 	var logger log.Logger
 	logger = log.NewLogfmtLogger(log.NewSyncWriter(os.Stderr))
-	//logger = logutil.NewTrailingNilFilter(logger)
+	logger = logutil.NewTrailingNilFilter(logger)
 	logger = log.With(logger, "ts", log.DefaultTimestampUTC, "caller", log.DefaultCaller)
 
 	group := cmd.Runner()
@@ -76,6 +79,7 @@ func run(o *Options) error {
 		DomainName:       o.AuthDomain,
 		Password:         o.AuthPassword,
 		Scope: tokens.Scope{
+			ProjectID:   o.AuthProjectID,
 			ProjectName: o.AuthProject,
 			DomainName:  o.AuthProjectDomain,
 		},
