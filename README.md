@@ -40,7 +40,7 @@ It allows to easily manage Kubernetes clusters that are natively integrated with
 
 ## Documentation
 
-More documentation can be found in [/docs](docs)
+More information can be found in the [documentation](https://kubernikus.eu-nl-1.cloud.sap/docs/guide/)
 
 ## Contact
 
