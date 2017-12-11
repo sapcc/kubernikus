@@ -182,7 +182,7 @@ func (op *GroundControl) handler(key string) error {
 				}
 			}
 			glog.V(5).Infof("%d of %d pods ready for kluster %s", podsReady, len(pods), key)
-			if podsReady == 4 {
+			if podsReady == 5 {
 				clientset, err := op.Clients.Satellites.ClientFor(kluster)
 				if err != nil {
 					return err
