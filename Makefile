@@ -18,7 +18,7 @@ endif
 
 HAS_GLIDE := $(shell command -v glide;)
 HAS_GLIDE_VC := $(shell command -v glide-vc;)
-GO_SWAGGER_VERSION := 0.12.0
+GO_SWAGGER_VERSION := 0.13.0
 SWAGGER_BIN        := bin/$(GOOS)/swagger-$(GO_SWAGGER_VERSION)
 
 .PHONY: all test clean code-gen client-gen informer-gen lister-gen vendor
@@ -71,7 +71,8 @@ gh-pages:
 pkg/api/rest/operations/kubernikus_api.go: swagger.yml
 ifneq (,$(wildcard $(SWAGGER_BIN)))
 	$(SWAGGER_BIN) generate server --name kubernikus --target pkg/api --model-package models \
-		--server-package rest --flag-strategy pflag --principal models.Principal --exclude-main
+		--server-package rest --flag-strategy pflag --principal models.Principal --exclude-main \
+		--skip-flatten
 	sed -i '' -e 's/int64 `json:"\([^,]*\),omitempty"`/int64 `json:"\1"`/' pkg/api/models/*.go
 	sed -e's/^package.*/package spec/' pkg/api/rest/embedded_spec.go > pkg/api/spec/embedded_spec.go
 	rm pkg/api/rest/embedded_spec.go
@@ -87,7 +88,7 @@ pkg/api/client/kubernikus_client.go: swagger.yml
 ifneq (,$(wildcard $(SWAGGER_BIN)))
 	$(SWAGGER_BIN) generate client --name kubernikus --target pkg/api --client-package client \
 		--existing-models github.com/sapcc/kubernikus/pkg/api/models \
-		--default-scheme=https \
+		--default-scheme=https --skip-flatten \
 		--principal models.Principal
 else
 	$(warning WARNING: $(SWAGGER_BIN) missing. Run `make bootstrap` to fix.)

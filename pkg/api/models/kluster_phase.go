@@ -16,7 +16,6 @@ import (
 
 // KlusterPhase kluster phase
 // swagger:model KlusterPhase
-
 type KlusterPhase string
 
 const (

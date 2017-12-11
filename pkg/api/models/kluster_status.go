@@ -14,7 +14,6 @@ import (
 
 // KlusterStatus kluster status
 // swagger:model KlusterStatus
-
 type KlusterStatus struct {
 
 	// apiserver
@@ -35,18 +34,6 @@ type KlusterStatus struct {
 	// wormhole
 	Wormhole string `json:"wormhole,omitempty"`
 }
-
-/* polymorph KlusterStatus apiserver false */
-
-/* polymorph KlusterStatus message false */
-
-/* polymorph KlusterStatus nodePools false */
-
-/* polymorph KlusterStatus phase false */
-
-/* polymorph KlusterStatus version false */
-
-/* polymorph KlusterStatus wormhole false */
 
 // Validate validates this kluster status
 func (m *KlusterStatus) Validate(formats strfmt.Registry) error {

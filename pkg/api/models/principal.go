@@ -14,7 +14,6 @@ import (
 
 // Principal principal
 // swagger:model Principal
-
 type Principal struct {
 
 	// account id
@@ -35,18 +34,6 @@ type Principal struct {
 	// list of roles the user has in the given scope
 	Roles []string `json:"roles"`
 }
-
-/* polymorph Principal account false */
-
-/* polymorph Principal authUrl false */
-
-/* polymorph Principal domain false */
-
-/* polymorph Principal id false */
-
-/* polymorph Principal name false */
-
-/* polymorph Principal roles false */
 
 // Validate validates this principal
 func (m *Principal) Validate(formats strfmt.Registry) error {

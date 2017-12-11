@@ -17,7 +17,6 @@ import (
 
 // Event event
 // swagger:model Event
-
 type Event struct {
 
 	// The number of times this event has occurred.
@@ -38,18 +37,6 @@ type Event struct {
 	// Type of this event
 	Type string `json:"type,omitempty"`
 }
-
-/* polymorph Event count false */
-
-/* polymorph Event firstTimestamp false */
-
-/* polymorph Event lastTimestamp false */
-
-/* polymorph Event message false */
-
-/* polymorph Event reason false */
-
-/* polymorph Event type false */
 
 // Validate validates this event
 func (m *Event) Validate(formats strfmt.Registry) error {

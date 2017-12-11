@@ -1,5 +1,5 @@
-hash: deb0bca036f39bd5d24022c51416f03e7b60ce63e87c6fa540fd8e5ca4b03f58
-updated: 2017-12-01T11:25:53.43538+01:00
+hash: cc8e24ae5a8b9b242a6d595f84f409f3f01f41b447bbd0d2d88ef024d53a033d
+updated: 2017-12-11T23:57:04.147704+01:00
 imports:
 - name: github.com/ajeddeloh/yaml
   version: 1072abfea31191db507785e2e0c1b8d1440d35a5
@@ -93,9 +93,9 @@ imports:
 - name: github.com/go-openapi/jsonreference
   version: 36d33bfe519efae5632669801b180bf1a245da3b
 - name: github.com/go-openapi/loads
-  version: a80dea3052f00e5f032e860dd7355cd0cc67e24d
+  version: c3e1ca4c0b6160cac10aeef7e8b425cc95b9c820
 - name: github.com/go-openapi/runtime
-  version: bf2ff8f7150788b1c7256abb0805ba0410cbbabb
+  version: 2da70401d8fa078b6fecdd7afdf3b589ae9669e4
   subpackages:
   - client
   - flagext
@@ -105,13 +105,13 @@ imports:
   - middleware/untyped
   - security
 - name: github.com/go-openapi/spec
-  version: 3faa0055dbbf2110abc1f3b4e3adbb22721e96e7
+  version: a4fa9574c7aa73b2fc54e251eb9524d0482bb592
 - name: github.com/go-openapi/strfmt
   version: 610b6cacdcde6852f4de68998bd20ce1dac85b22
 - name: github.com/go-openapi/swag
-  version: f3f9494671f93fcff853e3c6e9e948b3eb71e590
+  version: cf0bdb963811675a4d7e74901cefc7411a1df939
 - name: github.com/go-openapi/validate
-  version: 8a82927c942c94794a5cd8b8b50ce2f48a955c0c
+  version: a52193aca9d575f354d8be388254c134765ea793
 - name: github.com/go-stack/stack
   version: 259ab82a6cad3992b4e21ff5cac294ccb06474bc
 - name: github.com/gobwas/glob
@@ -167,8 +167,6 @@ imports:
   - openstack/networking/v2/subnets
   - openstack/utils
   - pagination
-- name: github.com/gorilla/handlers
-  version: 90663712d74cb411cbef281bc1e08c19d1a76145
 - name: github.com/hashicorp/golang-lru
   version: a0d98a5f288019575c6d1f4bb1573fef2d1fcdc4
   subpackages:
@@ -194,7 +192,7 @@ imports:
 - name: github.com/kr/logfmt
   version: b84e30acd515aadc4b783ad4ff83aff3299bdfe0
 - name: github.com/mailru/easyjson
-  version: 2a92e673c9a6302dd05c3a691ae1f24aef46457d
+  version: 5f62e4f3afa2f576dc86531b7df4d966b19ef8f8
   subpackages:
   - buffer
   - jlexer
@@ -210,7 +208,7 @@ imports:
   subpackages:
   - pbutil
 - name: github.com/mitchellh/mapstructure
-  version: d0303fe809921458f417bcf828397a65db30a7e4
+  version: 06020f85339e21b2478f756a78e295255ffa4d6a
 - name: github.com/pkg/errors
   version: 645ef00459ed84a119197bfb8d8205042c6df63d
 - name: github.com/pmezard/go-difflib

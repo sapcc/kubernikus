@@ -29,42 +29,6 @@ import:
   version: 0.6.0
   subpackages:
   - log
-# Dependencies extracted from go-swagger 0.12.0
-- package: github.com/databus23/guttle
-- package: github.com/go-openapi/jsonpointer
-  version: 779f45308c19820f1a69e9a4cd965f496e0da10f
-- package: github.com/go-openapi/loads
-  version: a80dea3052f00e5f032e860dd7355cd0cc67e24d
-- package: gopkg.in/yaml.v2
-  version: eb3733d160e74a9c7e442f435eb3bea458e1d19f
-- package: github.com/PuerkitoBio/urlesc
-  version: de5bf2ad457846296e2031421a34e2568e304e35
-- package: github.com/go-openapi/analysis
-  version: 8ed83f2ea9f00f945516462951a288eaa68bf0d6
-- package: github.com/go-openapi/swag
-  version: f3f9494671f93fcff853e3c6e9e948b3eb71e590
-- package: github.com/mailru/easyjson
-  version: 2a92e673c9a6302dd05c3a691ae1f24aef46457d
-- package: gopkg.in/mgo.v2
-  version: 3f83fa5005286a7fe593b055f0d7771a7dce4655
-- package: github.com/PuerkitoBio/purell
-  version: 0bcb03f4b4d0a9428594752bd2a3b9aa0a9d4bd4
-- package: github.com/go-openapi/strfmt
-  version: 610b6cacdcde6852f4de68998bd20ce1dac85b22
-- package: github.com/go-openapi/validate
-  version: 8a82927c942c94794a5cd8b8b50ce2f48a955c0c
-- package: github.com/go-openapi/runtime
-  version: bf2ff8f7150788b1c7256abb0805ba0410cbbabb
-- package: github.com/go-openapi/spec
-  version: 3faa0055dbbf2110abc1f3b4e3adbb22721e96e7
-- package: github.com/mitchellh/mapstructure
-  version: d0303fe809921458f417bcf828397a65db30a7e4
-- package: github.com/asaskevich/govalidator
-  version: 73945b6115bfbbcc57d89b7316e28109364124e1
-- package: github.com/go-openapi/errors
-  version: 03cfca65330da08a5a440053faf994a3c682b5bf
-- package: github.com/go-openapi/jsonreference
-  version: 36d33bfe519efae5632669801b180bf1a245da3b
 - package: github.com/prometheus/prometheus
   version: ^2.0.0
   subpackages:
@@ -72,3 +36,38 @@ import:
   - client_model
   - common
   - procfs
+# Dependencies extracted from go-swagger 0.13.0
+- package: github.com/go-openapi/errors
+  version: 03cfca65330da08a5a440053faf994a3c682b5bf
+- package: github.com/go-openapi/jsonreference
+  version: 36d33bfe519efae5632669801b180bf1a245da3b
+- package: github.com/go-openapi/runtime
+  version: 2da70401d8fa078b6fecdd7afdf3b589ae9669e4
+- package: github.com/go-openapi/spec
+  version: a4fa9574c7aa73b2fc54e251eb9524d0482bb592
+- package: gopkg.in/yaml.v2
+  version: eb3733d160e74a9c7e442f435eb3bea458e1d19f
+- package: github.com/PuerkitoBio/purell
+  version: 0bcb03f4b4d0a9428594752bd2a3b9aa0a9d4bd4
+- package: github.com/PuerkitoBio/urlesc
+  version: de5bf2ad457846296e2031421a34e2568e304e35
+- package: github.com/go-openapi/loads
+  version: c3e1ca4c0b6160cac10aeef7e8b425cc95b9c820
+- package: github.com/mitchellh/mapstructure
+  version: 06020f85339e21b2478f756a78e295255ffa4d6a
+- package: github.com/go-openapi/jsonpointer
+  version: 779f45308c19820f1a69e9a4cd965f496e0da10f
+- package: github.com/go-openapi/strfmt
+  version: 610b6cacdcde6852f4de68998bd20ce1dac85b22
+- package: github.com/go-openapi/swag
+  version: cf0bdb963811675a4d7e74901cefc7411a1df939
+- package: gopkg.in/mgo.v2
+  version: 3f83fa5005286a7fe593b055f0d7771a7dce4655
+- package: github.com/asaskevich/govalidator
+  version: 73945b6115bfbbcc57d89b7316e28109364124e1
+- package: github.com/go-openapi/analysis
+  version: 8ed83f2ea9f00f945516462951a288eaa68bf0d6
+- package: github.com/go-openapi/validate
+  version: a52193aca9d575f354d8be388254c134765ea793
+- package: github.com/mailru/easyjson
+  version: 5f62e4f3afa2f576dc86531b7df4d966b19ef8f8

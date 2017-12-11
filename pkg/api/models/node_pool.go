@@ -15,7 +15,6 @@ import (
 
 // NodePool node pool
 // swagger:model NodePool
-
 type NodePool struct {
 
 	// config
@@ -38,16 +37,6 @@ type NodePool struct {
 	// Minimum: 0
 	Size int64 `json:"size"`
 }
-
-/* polymorph NodePool config false */
-
-/* polymorph NodePool flavor false */
-
-/* polymorph NodePool image false */
-
-/* polymorph NodePool name false */
-
-/* polymorph NodePool size false */
 
 // Validate validates this node pool
 func (m *NodePool) Validate(formats strfmt.Registry) error {

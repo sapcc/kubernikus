@@ -16,7 +16,6 @@ import (
 
 // OpenstackMetadata openstack metadata
 // swagger:model OpenstackMetadata
-
 type OpenstackMetadata struct {
 
 	// flavors
@@ -31,14 +30,6 @@ type OpenstackMetadata struct {
 	// security groups
 	SecurityGroups []*SecurityGroup `json:"securityGroups"`
 }
-
-/* polymorph OpenstackMetadata flavors false */
-
-/* polymorph OpenstackMetadata keyPairs false */
-
-/* polymorph OpenstackMetadata routers false */
-
-/* polymorph OpenstackMetadata securityGroups false */
 
 // Validate validates this openstack metadata
 func (m *OpenstackMetadata) Validate(formats strfmt.Registry) error {
@@ -198,7 +189,6 @@ func (m *OpenstackMetadata) UnmarshalBinary(b []byte) error {
 
 // Flavor flavor
 // swagger:model Flavor
-
 type Flavor struct {
 
 	// id
@@ -207,10 +197,6 @@ type Flavor struct {
 	// name
 	Name string `json:"name,omitempty"`
 }
-
-/* polymorph Flavor id false */
-
-/* polymorph Flavor name false */
 
 // Validate validates this flavor
 func (m *Flavor) Validate(formats strfmt.Registry) error {
@@ -242,14 +228,11 @@ func (m *Flavor) UnmarshalBinary(b []byte) error {
 
 // KeyPair key pair
 // swagger:model KeyPair
-
 type KeyPair struct {
 
 	// name
 	Name string `json:"name,omitempty"`
 }
-
-/* polymorph KeyPair name false */
 
 // Validate validates this key pair
 func (m *KeyPair) Validate(formats strfmt.Registry) error {
@@ -281,7 +264,6 @@ func (m *KeyPair) UnmarshalBinary(b []byte) error {
 
 // Router router
 // swagger:model Router
-
 type Router struct {
 
 	// id
@@ -293,12 +275,6 @@ type Router struct {
 	// networks
 	Networks []*Network `json:"networks"`
 }
-
-/* polymorph Router id false */
-
-/* polymorph Router name false */
-
-/* polymorph Router networks false */
 
 // Validate validates this router
 func (m *Router) Validate(formats strfmt.Registry) error {
@@ -362,7 +338,6 @@ func (m *Router) UnmarshalBinary(b []byte) error {
 
 // Network network
 // swagger:model Network
-
 type Network struct {
 
 	// id
@@ -374,12 +349,6 @@ type Network struct {
 	// subnets
 	Subnets []*Subnet `json:"subnets"`
 }
-
-/* polymorph Network id false */
-
-/* polymorph Network name false */
-
-/* polymorph Network subnets false */
 
 // Validate validates this network
 func (m *Network) Validate(formats strfmt.Registry) error {
@@ -443,7 +412,6 @@ func (m *Network) UnmarshalBinary(b []byte) error {
 
 // Subnet subnet
 // swagger:model Subnet
-
 type Subnet struct {
 
 	// c ID r
@@ -455,12 +423,6 @@ type Subnet struct {
 	// name
 	Name string `json:"name,omitempty"`
 }
-
-/* polymorph Subnet CIDR false */
-
-/* polymorph Subnet id false */
-
-/* polymorph Subnet name false */
 
 // Validate validates this subnet
 func (m *Subnet) Validate(formats strfmt.Registry) error {
@@ -492,7 +454,6 @@ func (m *Subnet) UnmarshalBinary(b []byte) error {
 
 // SecurityGroup security group
 // swagger:model SecurityGroup
-
 type SecurityGroup struct {
 
 	// id
@@ -501,10 +462,6 @@ type SecurityGroup struct {
 	// name
 	Name string `json:"name,omitempty"`
 }
-
-/* polymorph SecurityGroup id false */
-
-/* polymorph SecurityGroup name false */
 
 // Validate validates this security group
 func (m *SecurityGroup) Validate(formats strfmt.Registry) error {

@@ -14,7 +14,6 @@ import (
 
 // NodePoolInfo node pool info
 // swagger:model NodePoolInfo
-
 type NodePoolInfo struct {
 
 	// healthy
@@ -32,16 +31,6 @@ type NodePoolInfo struct {
 	// size
 	Size int64 `json:"size"`
 }
-
-/* polymorph NodePoolInfo healthy false */
-
-/* polymorph NodePoolInfo name false */
-
-/* polymorph NodePoolInfo running false */
-
-/* polymorph NodePoolInfo schedulable false */
-
-/* polymorph NodePoolInfo size false */
 
 // Validate validates this node pool info
 func (m *NodePoolInfo) Validate(formats strfmt.Registry) error {

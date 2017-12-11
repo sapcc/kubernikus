@@ -28,7 +28,7 @@ func NewShowClusterParams() ShowClusterParams {
 type ShowClusterParams struct {
 
 	// HTTP Request Object
-	HTTPRequest *http.Request
+	HTTPRequest *http.Request `json:"-"`
 
 	/*
 	  Required: true

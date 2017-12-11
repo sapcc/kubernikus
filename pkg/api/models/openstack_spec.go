@@ -14,7 +14,6 @@ import (
 
 // OpenstackSpec openstack spec
 // swagger:model OpenstackSpec
-
 type OpenstackSpec struct {
 
 	// l b subnet ID
@@ -29,14 +28,6 @@ type OpenstackSpec struct {
 	// router ID
 	RouterID string `json:"routerID,omitempty"`
 }
-
-/* polymorph OpenstackSpec LBSubnetID false */
-
-/* polymorph OpenstackSpec networkID false */
-
-/* polymorph OpenstackSpec projectID false */
-
-/* polymorph OpenstackSpec routerID false */
 
 // Validate validates this openstack spec
 func (m *OpenstackSpec) Validate(formats strfmt.Registry) error {

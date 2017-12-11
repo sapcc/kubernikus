@@ -131,10 +131,7 @@ func init() {
         "operationId": "TerminateCluster",
         "responses": {
           "202": {
-            "description": "OK",
-            "schema": {
-              "type": "object"
-            }
+            "description": "OK"
           },
           "default": {
             "$ref": "#/responses/errorResponse"
@@ -425,8 +422,7 @@ func init() {
           "type": "array",
           "items": {
             "$ref": "#/definitions/NodePool"
-          },
-          "x-omitempty": true
+          }
         },
         "openstack": {
           "$ref": "#/definitions/OpenstackSpec"

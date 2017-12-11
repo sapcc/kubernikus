@@ -14,7 +14,6 @@ import (
 
 // NodePoolConfig node pool config
 // swagger:model NodePoolConfig
-
 type NodePoolConfig struct {
 
 	// repair
@@ -23,10 +22,6 @@ type NodePoolConfig struct {
 	// upgrade
 	Upgrade bool `json:"upgrade,omitempty"`
 }
-
-/* polymorph NodePoolConfig repair false */
-
-/* polymorph NodePoolConfig upgrade false */
 
 // Validate validates this node pool config
 func (m *NodePoolConfig) Validate(formats strfmt.Registry) error {
