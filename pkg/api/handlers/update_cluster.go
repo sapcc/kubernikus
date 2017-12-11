@@ -2,12 +2,12 @@ package handlers
 
 import (
 	"github.com/go-openapi/runtime/middleware"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
+
 	"github.com/sapcc/kubernikus/pkg/api"
 	"github.com/sapcc/kubernikus/pkg/api/models"
 	"github.com/sapcc/kubernikus/pkg/api/rest/operations"
 	"github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
-
-	apierrors "k8s.io/apimachinery/pkg/api/errors"
 )
 
 func NewUpdateCluster(rt *api.Runtime) operations.UpdateClusterHandler {

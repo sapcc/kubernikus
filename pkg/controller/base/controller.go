@@ -6,12 +6,13 @@ import (
 	"time"
 
 	"github.com/go-kit/kit/log"
-	"github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
-	"github.com/sapcc/kubernikus/pkg/controller/config"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/util/workqueue"
+
+	"github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
+	"github.com/sapcc/kubernikus/pkg/controller/config"
 )
 
 const (

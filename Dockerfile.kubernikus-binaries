@@ -1,6 +1,7 @@
 FROM golang:1.9.2-alpine3.6 as builder
 WORKDIR /go/src/github.com/sapcc/kubernikus/
-RUN apk add --no-cache make
+RUN apk add --no-cache make git
+RUN  go get golang.org/x/tools/cmd/goimports
 COPY . .
 ARG VERSION
 RUN make all

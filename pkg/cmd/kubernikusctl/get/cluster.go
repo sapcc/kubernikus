@@ -3,9 +3,10 @@ package get
 import (
 	"github.com/golang/glog"
 	"github.com/pkg/errors"
+	"github.com/spf13/cobra"
+
 	"github.com/sapcc/kubernikus/pkg/cmd"
 	"github.com/sapcc/kubernikus/pkg/cmd/printers"
-	"github.com/spf13/cobra"
 )
 
 func (o *GetOptions) NewClusterCommand() *cobra.Command {

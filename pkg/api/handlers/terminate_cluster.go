@@ -2,13 +2,14 @@ package handlers
 
 import (
 	"github.com/go-openapi/runtime/middleware"
+
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
 	"github.com/sapcc/kubernikus/pkg/api"
 	"github.com/sapcc/kubernikus/pkg/api/models"
 	"github.com/sapcc/kubernikus/pkg/api/rest/operations"
 	"github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
-
-	apierrors "k8s.io/apimachinery/pkg/api/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 func NewTerminateCluster(rt *api.Runtime) operations.TerminateClusterHandler {

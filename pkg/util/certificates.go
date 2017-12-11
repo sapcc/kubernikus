@@ -14,9 +14,9 @@ import (
 	"time"
 
 	"github.com/kennygrant/sanitize"
-	"github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
-
 	certutil "k8s.io/client-go/util/cert"
+
+	"github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
 )
 
 const (

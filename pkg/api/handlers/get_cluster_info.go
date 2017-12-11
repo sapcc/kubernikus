@@ -8,6 +8,7 @@ import (
 	"sync"
 
 	"github.com/go-openapi/runtime/middleware"
+
 	"github.com/sapcc/kubernikus/pkg/api"
 	"github.com/sapcc/kubernikus/pkg/api/models"
 	"github.com/sapcc/kubernikus/pkg/api/rest/operations"

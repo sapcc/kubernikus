@@ -12,8 +12,9 @@ import (
 	"github.com/go-openapi/loads"
 	runtime "github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware/denco"
-	"github.com/sapcc/kubernikus/pkg/api/models"
 	flag "github.com/spf13/pflag"
+
+	"github.com/sapcc/kubernikus/pkg/api/models"
 )
 
 var (

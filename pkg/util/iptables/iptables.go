@@ -14,10 +14,11 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 	utilexec "k8s.io/utils/exec"
 
-	utilversion "github.com/sapcc/kubernikus/pkg/util/version"
 	"golang.org/x/sys/unix"
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 	"k8s.io/apimachinery/pkg/util/wait"
+
+	utilversion "github.com/sapcc/kubernikus/pkg/util/version"
 )
 
 type RulePosition string

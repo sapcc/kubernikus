@@ -11,8 +11,9 @@ import (
 	"github.com/gophercloud/gophercloud/openstack/identity/v3/tokens"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/layer3/routers"
 	"github.com/gophercloud/gophercloud/pagination"
-	"github.com/sapcc/kubernikus/pkg/version"
 	"k8s.io/apimachinery/pkg/util/wait"
+
+	"github.com/sapcc/kubernikus/pkg/version"
 )
 
 type RouteGarbageCollector struct {

@@ -1,15 +1,16 @@
 package handlers
 
 import (
+	"fmt"
+	"strings"
+
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
+
 	"github.com/sapcc/kubernikus/pkg/api/models"
 	"github.com/sapcc/kubernikus/pkg/api/spec"
 	"github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
 	kubernikusv1 "github.com/sapcc/kubernikus/pkg/generated/clientset/typed/kubernikus/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/labels"
-
-	"fmt"
-	"strings"
 )
 
 var (

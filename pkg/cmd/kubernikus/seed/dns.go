@@ -3,11 +3,12 @@ package seed
 import (
 	"errors"
 
+	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
+
 	"github.com/sapcc/kubernikus/pkg/client/kubernetes"
 	"github.com/sapcc/kubernikus/pkg/cmd"
 	"github.com/sapcc/kubernikus/pkg/controller/ground/bootstrap/dns"
-	"github.com/spf13/cobra"
-	"github.com/spf13/pflag"
 )
 
 func NewKubeDNSCommand() *cobra.Command {

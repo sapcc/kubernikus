@@ -3,13 +3,13 @@ package certificates
 import (
 	"errors"
 
-	"github.com/sapcc/kubernikus/pkg/api/models"
-	"github.com/sapcc/kubernikus/pkg/apis/kubernikus"
-	"github.com/sapcc/kubernikus/pkg/util"
-
-	"github.com/sapcc/kubernikus/pkg/cmd"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
+
+	"github.com/sapcc/kubernikus/pkg/api/models"
+	"github.com/sapcc/kubernikus/pkg/apis/kubernikus"
+	"github.com/sapcc/kubernikus/pkg/cmd"
+	"github.com/sapcc/kubernikus/pkg/util"
 )
 
 func NewFilesCommand() *cobra.Command {

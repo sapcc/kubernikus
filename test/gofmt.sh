@@ -1,7 +1,9 @@
 #!/bin/sh
+set -eo pipefail
 
-if [ -n "$(gofmt -l $@)" ]; then
+VIOLATING_FILES=$(goimports -local github.com/sapcc/kubernikus -l $@ | sed /generated/d)
+if [ -n "$VIOLATING_FILES" ]; then
   echo "Go code is not formatted:"
-  gofmt -d $@ 
+  goimports -e -d $@
   exit 1
 fi

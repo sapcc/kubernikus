@@ -2,9 +2,9 @@ package api
 
 import (
 	"github.com/go-kit/kit/log"
+	"k8s.io/client-go/kubernetes"
 
 	"github.com/sapcc/kubernikus/pkg/generated/clientset"
-	"k8s.io/client-go/kubernetes"
 )
 
 type Runtime struct {

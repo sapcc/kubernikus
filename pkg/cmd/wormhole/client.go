@@ -13,11 +13,12 @@ import (
 
 	"github.com/databus23/guttle"
 	"github.com/golang/glog"
-	"github.com/sapcc/kubernikus/pkg/cmd"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/tools/clientcmd/api"
+
+	"github.com/sapcc/kubernikus/pkg/cmd"
 )
 
 func NewClientCommand() *cobra.Command {
