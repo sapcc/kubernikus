@@ -2,8 +2,10 @@ package handlers
 
 import (
 	"fmt"
+	"net/http"
 	"strings"
 
+	kitlog "github.com/go-kit/kit/log"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 
@@ -51,4 +53,12 @@ func klusterFromCRD(k *v1.Kluster) *models.Kluster {
 		Spec:   k.Spec,
 		Status: k.Status,
 	}
+}
+
+func getTracingLogger(request *http.Request) kitlog.Logger {
+	logger, ok := request.Context().Value("logger").(kitlog.Logger)
+	if !ok {
+		logger = kitlog.NewNopLogger()
+	}
+	return logger
 }

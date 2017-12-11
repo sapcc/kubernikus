@@ -30,7 +30,7 @@ func (d *getOpenstackMetadata) Handle(params operations.GetOpenstackMetadataPara
 		},
 	}
 
-	client, err := scoped.NewClient(authOptions, d.Logger)
+	client, err := scoped.NewClient(authOptions, getTracingLogger(params.HTTPRequest))
 	if err != nil {
 		return NewErrorResponse(&operations.GetOpenstackMetadataDefault{}, 500, err.Error())
 	}
