@@ -3,10 +3,11 @@ package handlers
 import (
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/strfmt"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
 	"github.com/sapcc/kubernikus/pkg/api"
 	"github.com/sapcc/kubernikus/pkg/api/models"
 	"github.com/sapcc/kubernikus/pkg/api/rest/operations"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 func NewGetClusterEvents(rt *api.Runtime) operations.GetClusterEventsHandler {

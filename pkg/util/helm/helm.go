@@ -4,8 +4,9 @@ import (
 	"log"
 	"net/url"
 
-	"github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
 	yaml "gopkg.in/yaml.v2"
+
+	"github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
 )
 
 type OpenstackOptions struct {

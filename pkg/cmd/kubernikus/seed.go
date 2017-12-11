@@ -1,8 +1,9 @@
 package kubernikus
 
 import (
-	"github.com/sapcc/kubernikus/pkg/cmd/kubernikus/seed"
 	"github.com/spf13/cobra"
+
+	"github.com/sapcc/kubernikus/pkg/cmd/kubernikus/seed"
 )
 
 func NewSeedCommand() *cobra.Command {

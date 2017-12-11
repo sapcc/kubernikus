@@ -3,12 +3,12 @@ package certificates
 import (
 	"errors"
 
+	"github.com/spf13/cobra"
+
 	"github.com/sapcc/kubernikus/pkg/api/models"
 	"github.com/sapcc/kubernikus/pkg/apis/kubernikus"
-	"github.com/sapcc/kubernikus/pkg/util"
-
 	"github.com/sapcc/kubernikus/pkg/cmd"
-	"github.com/spf13/cobra"
+	"github.com/sapcc/kubernikus/pkg/util"
 )
 
 func NewPlainCommand() *cobra.Command {

@@ -6,8 +6,9 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/sapcc/kubernikus/pkg/api/models"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/sapcc/kubernikus/pkg/api/models"
 )
 
 func TestKubernikusctlDownloadLinks(t *testing.T) {

@@ -9,11 +9,12 @@ import (
 	"github.com/howeyc/gopass"
 	"github.com/imdario/mergo"
 	"github.com/pkg/errors"
-	"github.com/sapcc/kubernikus/pkg/cmd/kubernikusctl/common"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"k8s.io/client-go/tools/clientcmd"
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
+
+	"github.com/sapcc/kubernikus/pkg/cmd/kubernikusctl/common"
 )
 
 type InitOptions struct {

@@ -9,10 +9,11 @@ import (
 	"syscall"
 
 	"github.com/golang/glog"
-	"github.com/sapcc/kubernikus/pkg/cmd"
-	"github.com/sapcc/kubernikus/pkg/wormhole"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
+
+	"github.com/sapcc/kubernikus/pkg/cmd"
+	"github.com/sapcc/kubernikus/pkg/wormhole"
 )
 
 func NewServerCommand() *cobra.Command {

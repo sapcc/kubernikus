@@ -3,14 +3,14 @@ package config
 import (
 	"sync"
 
-	kube "github.com/sapcc/kubernikus/pkg/client/kubernetes"
-	kubernikus_clientset "github.com/sapcc/kubernikus/pkg/generated/clientset"
-	kubernikus_informers "github.com/sapcc/kubernikus/pkg/generated/informers/externalversions"
 	kubernetes_informers "k8s.io/client-go/informers"
 	kubernetes_clientset "k8s.io/client-go/kubernetes"
-
-	"github.com/sapcc/kubernikus/pkg/client/openstack"
 	"k8s.io/helm/pkg/helm"
+
+	kube "github.com/sapcc/kubernikus/pkg/client/kubernetes"
+	"github.com/sapcc/kubernikus/pkg/client/openstack"
+	kubernikus_clientset "github.com/sapcc/kubernikus/pkg/generated/clientset"
+	kubernikus_informers "github.com/sapcc/kubernikus/pkg/generated/informers/externalversions"
 )
 
 type Controller interface {

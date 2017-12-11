@@ -4,9 +4,10 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+
 	"github.com/sapcc/kubernikus/pkg/api/models"
 	"github.com/sapcc/kubernikus/pkg/api/spec"
-	"github.com/stretchr/testify/assert"
 )
 
 func TestAuthorizer(t *testing.T) {

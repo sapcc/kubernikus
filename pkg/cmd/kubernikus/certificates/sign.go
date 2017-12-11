@@ -7,13 +7,14 @@ import (
 	"os"
 
 	"github.com/ghodss/yaml"
-	"github.com/sapcc/kubernikus/pkg/client/kubernetes"
-	"github.com/sapcc/kubernikus/pkg/cmd"
-	"github.com/sapcc/kubernikus/pkg/util"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"k8s.io/apimachinery/pkg/apis/meta/v1"
 	certutil "k8s.io/client-go/util/cert"
+
+	"github.com/sapcc/kubernikus/pkg/client/kubernetes"
+	"github.com/sapcc/kubernikus/pkg/cmd"
+	"github.com/sapcc/kubernikus/pkg/util"
 )
 
 func NewSignCommand() *cobra.Command {

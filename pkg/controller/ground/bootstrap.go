@@ -3,12 +3,13 @@ package ground
 import (
 	"fmt"
 
-	"github.com/sapcc/kubernikus/pkg/controller/ground/bootstrap/dns"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	clientset "k8s.io/client-go/kubernetes"
 	rbac "k8s.io/client-go/pkg/apis/rbac/v1beta1"
 	storage "k8s.io/client-go/pkg/apis/storage/v1"
+
+	"github.com/sapcc/kubernikus/pkg/controller/ground/bootstrap/dns"
 
 	"github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
 )
