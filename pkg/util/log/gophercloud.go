@@ -1,6 +1,7 @@
 package log
 
 import (
+	"fmt"
 	"net/http"
 	"strings"
 	"time"
@@ -41,6 +42,10 @@ func (lrt *loggingRoundTripper) RoundTrip(request *http.Request) (response *http
 			keyvals = append(keyvals,
 				"status", response.StatusCode,
 				"openstack_id", strings.Join(requestIds(response), ","))
+		}
+
+		if id := request.Context().Value(KubernikusRequestID); id != nil {
+			keyvals = append(keyvals, "id", fmt.Sprintf("%s", id))
 		}
 
 		keyvals = append(keyvals,

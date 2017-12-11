@@ -81,6 +81,10 @@ func setupGlobalMiddleware(handler http.Handler, rt *apipkg.Runtime) http.Handle
 		MaxAge:         600,
 	}).Handler
 
+	requestIDHandler := func(next http.Handler) http.Handler {
+		return logutil.RequestIDHandler(next)
+	}
+
 	loggingHandler := func(next http.Handler) http.Handler {
 		return logutil.LoggingHandler(rt.Logger, next)
 	}
@@ -99,5 +103,5 @@ func setupGlobalMiddleware(handler http.Handler, rt *apipkg.Runtime) http.Handle
 		})
 	}
 
-	return alice.New(loggingHandler, handlers.RootHandler, redocHandler, staticHandler, corsHandler).Then(handler)
+	return alice.New(requestIDHandler, loggingHandler, handlers.RootHandler, redocHandler, staticHandler, corsHandler).Then(handler)
 }

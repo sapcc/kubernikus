@@ -2,6 +2,7 @@ package log
 
 import (
 	"bufio"
+	"context"
 	"fmt"
 	"net"
 	"net/http"
@@ -9,18 +10,50 @@ import (
 	"time"
 
 	kitlog "github.com/go-kit/kit/log"
+	uuid "github.com/satori/go.uuid"
 )
 
+type key int
+
+const (
+	KubernikusRequestID key = 0
+)
+
+func RequestIDHandler(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(rw http.ResponseWriter, request *http.Request) {
+		if id := request.Context().Value(KubernikusRequestID); id == nil {
+			request = request.WithContext(context.WithValue(request.Context(), KubernikusRequestID, uuid.NewV4()))
+		}
+		next.ServeHTTP(rw, request)
+	})
+}
+
 func LoggingHandler(logger kitlog.Logger, next http.Handler) http.Handler {
-	logger = kitlog.With(logger, "api", "ingress")
+	ingress_logger := kitlog.With(logger, "api", "ingress")
 	return http.HandlerFunc(func(rw http.ResponseWriter, request *http.Request) {
 		wrapper := makeWrapper(rw)
 
+		id := ""
+		if reqId := request.Context().Value(KubernikusRequestID); reqId != nil {
+			id = fmt.Sprintf("%s", reqId)
+			logger = kitlog.With(logger, "id", id)
+		}
+		request = request.WithContext(context.WithValue(request.Context(), "logger", logger))
+
 		defer func(begin time.Time) {
-			log(logger, request,
+			var keyvals = make([]interface{}, 0, 4)
+
+			keyvals = append(keyvals,
 				"status", wrapper.Status(),
 				"size", wrapper.Size(),
-				"took", time.Since(begin))
+				"took", time.Since(begin),
+			)
+
+			if id != "" {
+				keyvals = append(keyvals, "id", id)
+			}
+
+			log(ingress_logger, request, keyvals...)
 		}(time.Now())
 
 		next.ServeHTTP(wrapper, request)
