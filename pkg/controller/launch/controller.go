@@ -26,7 +26,7 @@ type LaunchReconciler struct {
 	klusterInformer informers_kubernikus.KlusterInformer
 }
 
-func NewController(factories config.Factories, clients config.Clients, recorder record.EventRecorder, logger log.Logger) base.Controller {
+func NewController(threadiness int, factories config.Factories, clients config.Clients, recorder record.EventRecorder, logger log.Logger) base.Controller {
 	logger = log.With(logger,
 		"controller", "launch")
 
@@ -41,7 +41,7 @@ func NewController(factories config.Factories, clients config.Clients, recorder 
 		metrics.LaunchFailedOperationsTotal,
 	}
 
-	return base.NewController(factories, clients, reconciler, logger)
+	return base.NewController(threadiness, factories, clients, reconciler, logger)
 }
 
 func (lr *LaunchReconciler) Reconcile(kluster *v1.Kluster) (requeue bool, err error) {
