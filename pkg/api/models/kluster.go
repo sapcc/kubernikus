@@ -15,7 +15,6 @@ import (
 
 // Kluster kluster
 // swagger:model Kluster
-
 type Kluster struct {
 
 	// name of the cluster
@@ -29,12 +28,6 @@ type Kluster struct {
 	// status
 	Status KlusterStatus `json:"status,omitempty"`
 }
-
-/* polymorph Kluster name false */
-
-/* polymorph Kluster spec false */
-
-/* polymorph Kluster status false */
 
 // Validate validates this kluster
 func (m *Kluster) Validate(formats strfmt.Registry) error {

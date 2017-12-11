@@ -30,7 +30,7 @@ func NewCreateClusterParams() CreateClusterParams {
 type CreateClusterParams struct {
 
 	// HTTP Request Object
-	HTTPRequest *http.Request
+	HTTPRequest *http.Request `json:"-"`
 
 	/*
 	  Required: true

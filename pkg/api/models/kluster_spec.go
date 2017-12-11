@@ -15,7 +15,6 @@ import (
 
 // KlusterSpec kluster spec
 // swagger:model KlusterSpec
-
 type KlusterSpec struct {
 
 	// advertise address
@@ -45,22 +44,6 @@ type KlusterSpec struct {
 	// Pattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$
 	ServiceCIDR string `json:"serviceCIDR,omitempty"`
 }
-
-/* polymorph KlusterSpec advertiseAddress false */
-
-/* polymorph KlusterSpec clusterCIDR false */
-
-/* polymorph KlusterSpec dnsAddress false */
-
-/* polymorph KlusterSpec dnsDomain false */
-
-/* polymorph KlusterSpec name false */
-
-/* polymorph KlusterSpec nodePools false */
-
-/* polymorph KlusterSpec openstack false */
-
-/* polymorph KlusterSpec serviceCIDR false */
 
 // Validate validates this kluster spec
 func (m *KlusterSpec) Validate(formats strfmt.Registry) error {

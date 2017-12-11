@@ -14,7 +14,6 @@ import (
 
 // KlusterInfo kluster info
 // swagger:model KlusterInfo
-
 type KlusterInfo struct {
 
 	// binaries
@@ -23,10 +22,6 @@ type KlusterInfo struct {
 	// setup command
 	SetupCommand string `json:"setupCommand,omitempty"`
 }
-
-/* polymorph KlusterInfo binaries false */
-
-/* polymorph KlusterInfo setupCommand false */
 
 // Validate validates this kluster info
 func (m *KlusterInfo) Validate(formats strfmt.Registry) error {
@@ -72,7 +67,6 @@ func (m *KlusterInfo) UnmarshalBinary(b []byte) error {
 
 // Binaries binaries
 // swagger:model Binaries
-
 type Binaries struct {
 
 	// links
@@ -81,10 +75,6 @@ type Binaries struct {
 	// name
 	Name string `json:"name,omitempty"`
 }
-
-/* polymorph Binaries links false */
-
-/* polymorph Binaries name false */
 
 // Validate validates this binaries
 func (m *Binaries) Validate(formats strfmt.Registry) error {
@@ -130,7 +120,6 @@ func (m *Binaries) UnmarshalBinary(b []byte) error {
 
 // Link link
 // swagger:model Link
-
 type Link struct {
 
 	// link
@@ -139,10 +128,6 @@ type Link struct {
 	// platform
 	Platform string `json:"platform,omitempty"`
 }
-
-/* polymorph Link link false */
-
-/* polymorph Link platform false */
 
 // Validate validates this link
 func (m *Link) Validate(formats strfmt.Registry) error {

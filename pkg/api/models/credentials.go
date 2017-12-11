@@ -14,14 +14,11 @@ import (
 
 // Credentials credentials
 // swagger:model Credentials
-
 type Credentials struct {
 
 	// kubeconfig
 	Kubeconfig string `json:"kubeconfig,omitempty"`
 }
-
-/* polymorph Credentials kubeconfig false */
 
 // Validate validates this credentials
 func (m *Credentials) Validate(formats strfmt.Registry) error {
