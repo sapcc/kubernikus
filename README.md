@@ -17,37 +17,34 @@ It allows to easily manage Kubernetes clusters that are natively integrated with
 ## Features
 
   * Architecured to be operated as a managed service
-  * Masters are managed centrally 
+  * Masters are managed centrally
   * Nodes are dececentralized in customer's projects
   * 100% Vanilla Kubernetes
   * 100% Compatible Openstack API
   * Air-Gapped Masters and Nodes
   * Full TLS encryption between all components
   * Auto-Updating nodes based on CoreOS Container Linux
-  * Authentication Tooling 
+  * Authentication Tooling
   * Unified Authorization Policy between Openstack and Kubernetes RBAC
-  
+
 ## Guiding Principles
 
   * Running Kubernetes using Kubernetes
   * Automation is driven by Operators
   * Cloud Native Tooling: Golang, Helm, Swagger, Prometheus
-  
+
 ## Prerequisites
 
   * Openstack (including LBaaS)
   * Kubernetes Seed-Cluster (1.7+)
-  
+
 ## Documentation
 
-More documentation can be found at:
+More documentation can be found in [/docs](docs)
 
-  * [blob/master/docs/](blob/master/docs/)
-  
 ## Contact
 
-https://convergedcloud.slack.com
+https://convergedcloud.slack.com/app_redirect?channel=kubernikus-users
 
 ## License
-This project is licensed under the Apache2 License - see the [LICENSE](blob/master/LICENSE) file for details
-
+This project is licensed under the Apache2 License - see the [LICENSE](LICENSE) file for details
