@@ -183,6 +183,7 @@ networkd:
 storage:
   files:
     - path: /etc/ssl/certs/SAPNetCA_G2.pem
+      filesystem: root
       mode: 0644
       contents:
         inline: |-
@@ -221,7 +222,7 @@ storage:
           bCuBKVgkSSoGgmasxjjjVIfMiOhkevDya52E5m0WnM1LD3ZoZzavsDSYguBP6MOV
           ViWNsVHocptphbEgdwvt3B75CDN4kf6MNZg2/t8bRhEQyK1FRy8NMeBnbRFnnEPe
           7HJNBB1ZTjnrxJAgCQgNBIQ=
-        -----END CERTIFICATE-----
+          -----END CERTIFICATE-----
     - path: /var/lib/iptables/rules-save
       filesystem: root
       mode: 0644
