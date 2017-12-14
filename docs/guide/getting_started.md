@@ -8,19 +8,12 @@ weight: -10
 [Kubernetes](https://kubernetes.io/) is an open-source system for automating
 deployment, scaling, and management of containerized applications.
 
-The "Kubernetes as a Service" offering on Converged Cloud (Codename: Kubernikus)
-makes it easy to run Kubernetes clusters that are natively integrated with
-OpenStack. It is a managed service that takes care of installing, upgrading and
-operating the cluster.
+"Kubernetes as a Service" (Codename: Kubernikus) makes it easy to run Kubernetes clusters that are natively integrated with OpenStack. It is a managed service that takes care of installing, upgrading and operating the cluster.
 
 It provides an easy entry to deploy containerized payloads and getting started
-with Kubernetes without the operational overhead of setting up  Kubernetes.
+with Kubernetes without the operational overhead of setting up Kubernetes.
 Due to the tight and convenient integration with OpenStack it becomes easy to
 combine VM and cloud-native workloads.
-
-Running on Converged Cloud opens the possibility to connect with in-house
-business/technical/development systems that can’t or shouldn't be exposed to
-public clouds.
 
 ### Key Features
 
@@ -43,38 +36,7 @@ public clouds.
 
 ## Demo
 
-<iframe width="708" height="398" src="https://www.youtube.com/embed/1dPxPU9fHTg" frameborder="0" allowfullscreen></iframe>
-
-### Tech Preview
-
-<span class="label label-info">Note</span> This service is now (Dec 2017) available
-in Tech Preview with a limited amount of beta-testers. If you are interested in
-trying it out please contact [Michael
-Schmidt](mailto:michael02.schmidt@sap.com) with a short description of your use
-case.
-
-#### Availability
-
-  * Regions: `eu-nl-1` `na-us-1`
-  * Domains: `monsoon3`
-
-#### Restrictions
-
-  * Access needs to be requested on a per-project basis
-  * Each project can only contain a single cluster
-  * Kubernetes 1.7.5
-
-#### Agreement
-
-The Tech Preview provides early access to a service that is still under
-development, enabling you to test functionality and provide feedback. However,
-the service may not be functionally complete, and is not yet intended for
-production use.
-
-We **cannot guarantee** that clusters created during the Tech Preview can be
-carried over into productive use once the service becomes generally available.
-
-~> The standard SLA provided for productive Converged Cloud services does not apply.
+[![Kubernikus Demo](http://img.youtube.com/vi/1dPxPU9fHTg/0.jpg)](http://www.youtube.com/watch?v=1dPxPU9fHTg)
 
 ### Support
 
