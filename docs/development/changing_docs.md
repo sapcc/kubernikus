@@ -14,6 +14,9 @@ It constists of 2 parts:
 A live preview for development can be started with:
 
 ```
+make documentation
+...
+
 docker run --rm -ti -p 1313:1313 \
   -v $PWD/contrib/kubernikus-docs-builder/data:/live \
   -v $PWD/docs/:/live/content \
