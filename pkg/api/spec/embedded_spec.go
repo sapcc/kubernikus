@@ -642,6 +642,9 @@ func init() {
         },
         "routerID": {
           "type": "string"
+        },
+        "securityGroupID": {
+          "type": "string"
         }
       },
       "x-nullable": false

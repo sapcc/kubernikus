@@ -141,6 +141,11 @@ func (op *GroundControl) handler(key string) error {
 		metrics.SetMetricKlusterInfo(kluster.GetNamespace(), kluster.GetName(), kluster.Status.Version, kluster.Spec.Openstack.ProjectID, kluster.GetAnnotations(), kluster.GetLabels())
 		metrics.SetMetricKlusterStatusPhase(kluster.GetName(), kluster.Status.Phase)
 
+		//TODO: remove ASAP, this is just a poor mans migration, adding the sec group id to existing klusters
+		if err := op.ensureSecurityGroupID(kluster); err != nil {
+			op.Recorder.Eventf(kluster, api_v1.EventTypeWarning, ConfigurationError, "Failed to add default security grop id to kluster: %s", err)
+		}
+
 		switch phase := kluster.Status.Phase; phase {
 		case models.KlusterPhasePending:
 			{
@@ -477,8 +482,38 @@ func (op *GroundControl) discoverOpenstackInfo(kluster *v1.Kluster) error {
 		}
 	}
 
+	if securityGroupID := copy.Spec.Openstack.SecurityGroupID; securityGroupID != "" {
+		//TODO: Validate that the securitygroup id exists
+
+	} else {
+		id, err := op.Clients.Openstack.GetSecurityGroupID(kluster.Account(), "default")
+		if err != nil {
+			return fmt.Errorf("Failed to get id for default securitygroup in project %s: %s", err, kluster.Account())
+		}
+		glog.V(5).Infof("[%v] Setting SecurityGroupID to %v", kluster.Name, copy.Spec.Openstack.SecurityGroupID)
+		copy.Spec.Openstack.SecurityGroupID = id
+	}
+
 	_, err = op.Clients.Kubernikus.Kubernikus().Klusters(kluster.Namespace).Update(copy)
 	return err
+}
+
+//TODO: remove this after it has been deployed once everywhere, this is a poor mans migration
+func (op *GroundControl) ensureSecurityGroupID(kluster *v1.Kluster) error {
+	if kluster.Spec.Openstack.SecurityGroupID == "" {
+		copy, err := op.Clients.Kubernikus.Kubernikus().Klusters(kluster.Namespace).Get(kluster.Name, metav1.GetOptions{})
+		if err != nil {
+			return err
+		}
+		id, err := op.Clients.Openstack.GetSecurityGroupID(kluster.Account(), "default")
+		if err != nil {
+			return fmt.Errorf("Failed to get id for default securitygroup in project %s: %s", err, kluster.Account())
+		}
+		copy.Spec.Openstack.SecurityGroupID = id
+		_, err = op.Clients.Kubernikus.Kubernikus().Klusters(kluster.Namespace).Update(copy)
+		return err
+	}
+	return nil
 }
 
 func (op *GroundControl) podAdd(obj interface{}) {
