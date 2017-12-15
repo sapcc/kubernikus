@@ -8,7 +8,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/golang/glog"
+	kitlog "github.com/go-kit/kit/log"
 	apiextensionsv1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	apiextensionsclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
@@ -28,20 +28,27 @@ import (
 type SharedClientFactory struct {
 	clients          *sync.Map
 	secretsInterface typedv1.SecretInterface
+	Logger           kitlog.Logger
 }
 
-func NewSharedClientFactory(secrets typedv1.SecretInterface, klusterEvents cache.SharedIndexInformer) *SharedClientFactory {
+func NewSharedClientFactory(secrets typedv1.SecretInterface, klusterEvents cache.SharedIndexInformer, logger kitlog.Logger) *SharedClientFactory {
 	factory := &SharedClientFactory{
 		clients:          new(sync.Map),
 		secretsInterface: secrets,
+		Logger:           kitlog.With(logger, "client", "kubernetes"),
 	}
 
 	if klusterEvents != nil {
 		klusterEvents.AddEventHandler(cache.ResourceEventHandlerFuncs{
 			DeleteFunc: func(obj interface{}) {
 				if kluster, ok := obj.(*kubernikus_v1.Kluster); ok {
-					glog.V(5).Infof("Deleting shared kubernetes client for kluster %s", kluster.GetName())
 					factory.clients.Delete(kluster.GetUID())
+					factory.Logger.Log(
+						"msg", "deleted shared kubernetes client",
+						"kluster", kluster.GetName(),
+						"project", kluster.Account(),
+						"v", 2,
+					)
 				}
 			},
 		})
@@ -50,11 +57,20 @@ func NewSharedClientFactory(secrets typedv1.SecretInterface, klusterEvents cache
 	return factory
 }
 
-func (f *SharedClientFactory) ClientFor(k *kubernikus_v1.Kluster) (kubernetes.Interface, error) {
+func (f *SharedClientFactory) ClientFor(k *kubernikus_v1.Kluster) (clientset kubernetes.Interface, err error) {
+	defer func() {
+		f.Logger.Log(
+			"msg", "created shared kubernetes client",
+			"kluster", k.GetName(),
+			"project", k.Account(),
+			"v", 2,
+			"err", err,
+		)
+	}()
+
 	if client, found := f.clients.Load(k.GetUID()); found {
 		return client.(kubernetes.Interface), nil
 	}
-	glog.V(5).Info("Creating new shared kubernetes client for kluster %s", k.GetName())
 	secret, err := f.secretsInterface.Get(k.GetName(), metav1.GetOptions{})
 	if err != nil {
 		return nil, err
@@ -81,7 +97,7 @@ func (f *SharedClientFactory) ClientFor(k *kubernikus_v1.Kluster) (kubernetes.In
 		},
 	}
 
-	clientset, err := kubernetes.NewForConfig(&c)
+	clientset, err = kubernetes.NewForConfig(&c)
 	if err != nil {
 		return nil, err
 	}
@@ -103,15 +119,10 @@ func NewConfig(kubeconfig, context string) (*rest.Config, error) {
 		rules.ExplicitPath = kubeconfig
 	}
 
-	config, err := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(rules, overrides).ClientConfig()
-	if err != nil {
-		glog.Fatalf("Couldn't get Kubernetes default config: %s", err)
-	}
-
-	return config, nil
+	return clientcmd.NewNonInteractiveDeferredLoadingClientConfig(rules, overrides).ClientConfig()
 }
 
-func NewClient(kubeconfig, context string) (kubernetes.Interface, error) {
+func NewClient(kubeconfig, context string, logger kitlog.Logger) (kubernetes.Interface, error) {
 	config, err := NewConfig(kubeconfig, context)
 	if err != nil {
 		return nil, err
@@ -122,7 +133,11 @@ func NewClient(kubeconfig, context string) (kubernetes.Interface, error) {
 		return nil, err
 	}
 
-	glog.V(3).Infof("Using Kubernetes Api at %s", config.Host)
+	logger.Log(
+		"msg", "created new kubernetes client",
+		"host", config.Host,
+		"v", 3,
+	)
 
 	return clientset, nil
 }
@@ -162,7 +177,7 @@ func NewClientConfigV1(name, user, url string, key, cert, ca []byte) clientcmdap
 	}
 }
 
-func EnsureCRD(clientset apiextensionsclient.Interface) error {
+func EnsureCRD(clientset apiextensionsclient.Interface, logger kitlog.Logger) error {
 	klusterCRDName := kubernikus_v1.KlusterResourcePlural + "." + kubernikus_v1.GroupName
 	crd := &apiextensionsv1beta1.CustomResourceDefinition{
 		ObjectMeta: metav1.ObjectMeta{
@@ -197,7 +212,10 @@ func EnsureCRD(clientset apiextensionsclient.Interface) error {
 				}
 			case apiextensionsv1beta1.NamesAccepted:
 				if cond.Status == apiextensionsv1beta1.ConditionFalse {
-					glog.Errorf("Name conflict: %v\n", cond.Reason)
+					logger.Log(
+						"msg", "name conflict while ensuring CRD",
+						"reason", cond.Reason,
+					)
 				}
 			}
 		}
@@ -213,14 +231,16 @@ func EnsureCRD(clientset apiextensionsclient.Interface) error {
 	return nil
 }
 
-func WaitForServer(client kubernetes.Interface, stopCh <-chan struct{}) error {
+func WaitForServer(client kubernetes.Interface, stopCh <-chan struct{}, logger kitlog.Logger) error {
 	var healthzContent string
 
 	err := wait.PollUntil(time.Second, func() (bool, error) {
 		healthStatus := 0
 		resp := client.Discovery().RESTClient().Get().AbsPath("/healthz").Do().StatusCode(&healthStatus)
 		if healthStatus != http.StatusOK {
-			glog.Errorf("Server isn't healthy yet.  Waiting a little while.")
+			logger.Log(
+				"msg", "server isn't health yet. Waiting a little while.",
+			)
 			return false, nil
 		}
 		content, _ := resp.Raw()

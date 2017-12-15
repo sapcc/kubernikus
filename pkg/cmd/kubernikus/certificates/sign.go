@@ -7,6 +7,7 @@ import (
 	"os"
 
 	"github.com/ghodss/yaml"
+	"github.com/go-kit/kit/log"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -17,8 +18,8 @@ import (
 	"github.com/sapcc/kubernikus/pkg/util"
 )
 
-func NewSignCommand() *cobra.Command {
-	o := NewSignOptions()
+func NewSignCommand(logger log.Logger) *cobra.Command {
+	o := NewSignOptions(logger)
 
 	c := &cobra.Command{
 		Use:   "sign KLUSTER",
@@ -41,14 +42,17 @@ type SignOptions struct {
 	CA           string
 	Organization string
 	ApiURL       string
+
+	Logger log.Logger
 }
 
-func NewSignOptions() *SignOptions {
+func NewSignOptions(logger log.Logger) *SignOptions {
 	return &SignOptions{
 		Namespace:    "kubernikus",
 		CA:           "apiserver-clients-ca",
 		CN:           os.Getenv("USER"),
 		Organization: "system:masters",
+		Logger:       logger,
 	}
 }
 
@@ -81,7 +85,7 @@ func (o *SignOptions) Complete(args []string) error {
 }
 
 func (o *SignOptions) Run(c *cobra.Command) error {
-	client, err := kubernetes.NewClient(o.KubeConfig, "")
+	client, err := kubernetes.NewClient(o.KubeConfig, "", o.Logger)
 	if err != nil {
 		return err
 	}

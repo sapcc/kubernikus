@@ -1,11 +1,10 @@
 package wormhole
 
 import (
-	"fmt"
 	"sync"
 	"time"
 
-	"github.com/golang/glog"
+	"github.com/go-kit/kit/log"
 	"k8s.io/client-go/informers"
 	"k8s.io/client-go/kubernetes"
 
@@ -23,6 +22,8 @@ type ServerOptions struct {
 	Context     string
 	ServiceCIDR string
 	server.TunnelOptions
+
+	Logger log.Logger
 }
 
 type Server struct {
@@ -30,12 +31,14 @@ type Server struct {
 	client     kubernetes.Interface
 	controller *server.Controller
 	tunnel     *server.Tunnel
+
+	Logger log.Logger
 }
 
 func NewServer(options *ServerOptions) (*Server, error) {
-	s := &Server{}
+	s := &Server{Logger: log.With(options.Logger, "wormhole", "server")}
 
-	client, err := kube.NewClient(options.KubeConfig, options.Context)
+	client, err := kube.NewClient(options.KubeConfig, options.Context, options.Logger)
 	if err != nil {
 		return nil, err
 	}
@@ -46,20 +49,25 @@ func NewServer(options *ServerOptions) (*Server, error) {
 	if err != nil {
 		return nil, err
 	}
-	s.controller = server.NewController(s.factory.Core().V1().Nodes(), options.ServiceCIDR, s.tunnel.Server)
+	s.controller = server.NewController(s.factory.Core().V1().Nodes(), options.ServiceCIDR, s.tunnel.Server, options.Logger)
 
 	return s, nil
 }
 
 func (s *Server) Run(stopCh <-chan struct{}, wg *sync.WaitGroup) {
-	fmt.Printf("Welcome to Wormhole %v\n", version.GitCommit)
+	s.Logger.Log(
+		"msg", "powering up wormhole generator",
+		"version", version.GitCommit,
+	)
 
-	kube.WaitForServer(s.client, stopCh)
+	kube.WaitForServer(s.client, stopCh, s.Logger)
 
 	s.factory.Start(stopCh)
 	s.factory.WaitForCacheSync(stopCh)
 
-	glog.Info("Cache primed. Ready for Action!")
+	s.Logger.Log(
+		"msg", "Cache primed. Ready for Action!",
+	)
 
 	go s.controller.Run(1, stopCh, wg)
 	go s.tunnel.Run(stopCh, wg)

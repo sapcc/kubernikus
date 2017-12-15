@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/go-kit/kit/log"
-	"github.com/golang/glog"
 	apiextensionsclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -59,7 +58,7 @@ type KubernikusOperator struct {
 	config.Config
 	config.Factories
 	config.Clients
-	logger log.Logger
+	Logger log.Logger
 }
 
 const (
@@ -75,7 +74,7 @@ var (
 	}
 )
 
-func NewKubernikusOperator(options *KubernikusOperatorOptions, logger log.Logger) *KubernikusOperator {
+func NewKubernikusOperator(options *KubernikusOperatorOptions, logger log.Logger) (*KubernikusOperator, error) {
 	var err error
 
 	o := &KubernikusOperator{
@@ -98,36 +97,36 @@ func NewKubernikusOperator(options *KubernikusOperatorOptions, logger log.Logger
 				Controllers: make(map[string]config.Controller),
 			},
 		},
-		logger: logger,
+		Logger: logger,
 	}
 
-	o.Clients.Kubernetes, err = kube.NewClient(options.KubeConfig, options.Context)
+	o.Clients.Kubernetes, err = kube.NewClient(options.KubeConfig, options.Context, logger)
 
 	if err != nil {
-		glog.Fatalf("Failed to create kubernetes clients: %s", err)
+		return nil, fmt.Errorf("Failed to create kubernetes clients: %s", err)
 	}
 
 	o.Clients.Kubernikus, err = kubernikus.NewClient(options.KubeConfig, options.Context)
 	if err != nil {
-		glog.Fatalf("Failed to create kubernikus clients: %s", err)
+		return nil, fmt.Errorf("Failed to create kubernikus clients: %s", err)
 	}
 
 	config, err := kube.NewConfig(options.KubeConfig, options.Context)
 	if err != nil {
-		glog.Fatalf("Failed to create kubernetes config: %s", err)
+		return nil, fmt.Errorf("Failed to create kubernetes config: %s", err)
 	}
-	o.Clients.Helm, err = helmutil.NewClient(o.Clients.Kubernetes, config)
+	o.Clients.Helm, err = helmutil.NewClient(o.Clients.Kubernetes, config, logger)
 	if err != nil {
-		glog.Fatalf("Failed to create helm client: %s", err)
+		return nil, fmt.Errorf("Failed to create helm client: %s", err)
 	}
 
 	apiextensionsclientset, err := apiextensionsclient.NewForConfig(config)
 	if err != nil {
-		glog.Fatal("Failed to create apiextenstionsclient: %s", err)
+		return nil, fmt.Errorf("Failed to create apiextenstionsclient: %s", err)
 	}
 
-	if err := kube.EnsureCRD(apiextensionsclientset); err != nil {
-		glog.Fatalf("Couldn't create CRD: %s", err)
+	if err := kube.EnsureCRD(apiextensionsclientset, logger); err != nil {
+		return nil, fmt.Errorf("Couldn't create CRD: %s", err)
 	}
 
 	o.Factories.Kubernikus = kubernikus_informers.NewSharedInformerFactory(o.Clients.Kubernikus, DEFAULT_RECONCILIATION)
@@ -144,34 +143,50 @@ func NewKubernikusOperator(options *KubernikusOperatorOptions, logger log.Logger
 		options.AuthDomain,
 		options.AuthProject,
 		options.AuthProjectDomain,
+		logger,
 	)
 
-	o.Clients.Satellites = kube.NewSharedClientFactory(secrets, klusters)
+	o.Clients.Satellites = kube.NewSharedClientFactory(secrets, klusters, logger)
 
 	// Add kubernikus types to the default Kubernetes Scheme so events can be
 	// logged for those types.
 	v1.AddToScheme(scheme.Scheme)
 	eventBroadcaster := record.NewBroadcaster()
-	eventBroadcaster.StartLogging(glog.Infof)
+	eventBroadcaster.StartEventWatcher(func(e *api_v1.Event) {
+		logger.Log(
+			"controller", "operator",
+			"resource", "event",
+			"msg", e.Message,
+			"reason", e.Reason,
+			"type", e.Type,
+			"kind", e.InvolvedObject.Kind,
+			"namespace", e.InvolvedObject.Namespace,
+			"name", e.InvolvedObject.Name,
+			"v", 2)
+	})
+
 	eventBroadcaster.StartRecordingToSink(&typedcorev1.EventSinkImpl{Interface: o.Clients.Kubernetes.CoreV1().Events(o.Config.Kubernikus.Namespace)})
 	recorder := eventBroadcaster.NewRecorder(scheme.Scheme, api_v1.EventSource{Component: "operator"})
 
 	for _, k := range options.Controllers {
 		switch k {
 		case "groundctl":
-			o.Config.Kubernikus.Controllers["groundctl"] = NewGroundController(o.Factories, o.Clients, recorder, o.Config)
+			o.Config.Kubernikus.Controllers["groundctl"] = NewGroundController(o.Factories, o.Clients, recorder, o.Config, logger)
 		case "launchctl":
 			o.Config.Kubernikus.Controllers["launchctl"] = launch.NewController(o.Factories, o.Clients, recorder, logger)
 		}
 	}
 
-	return o
+	return o, err
 }
 
 func (o *KubernikusOperator) Run(stopCh <-chan struct{}, wg *sync.WaitGroup) {
-	glog.Infof("Starting kubernikus operator v%v. Using namespace %s\n", version.GitCommit, o.Config.Kubernikus.Namespace)
+	o.Logger.Log(
+		"msg", "starting kubernikus operator",
+		"namespace", o.Config.Kubernikus.Namespace,
+		"version", version.GitCommit)
 
-	kube.WaitForServer(o.Clients.Kubernetes, stopCh)
+	kube.WaitForServer(o.Clients.Kubernetes, stopCh, o.Logger)
 
 	o.Factories.Kubernikus.Start(stopCh)
 	o.Factories.Kubernetes.Start(stopCh)
@@ -179,7 +194,7 @@ func (o *KubernikusOperator) Run(stopCh <-chan struct{}, wg *sync.WaitGroup) {
 	o.Factories.Kubernikus.WaitForCacheSync(stopCh)
 	o.Factories.Kubernetes.WaitForCacheSync(stopCh)
 
-	glog.Info("Cache primed. Ready for Action!")
+	o.Logger.Log("msg", "Cache primed. Ready for Action!")
 
 	for name, controller := range o.Config.Kubernikus.Controllers {
 		go controller.Run(CONTROLLER_OPTIONS[name], stopCh, wg)
@@ -193,10 +208,8 @@ func MetaLabelReleaseIndexFunc(obj interface{}) ([]string, error) {
 		return []string{""}, fmt.Errorf("object has no meta: %v", err)
 	}
 	if release, found := meta.GetLabels()["release"]; found {
-		glog.V(6).Infof("Found release %v for pod %v", release, meta.GetName())
 		return []string{release}, nil
 	}
-	glog.V(6).Infof("meta labels: %v", meta.GetLabels())
 	return []string{""}, errors.New("object has no release label")
 }
 

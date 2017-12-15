@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/go-kit/kit/log"
 	"github.com/stretchr/testify/assert"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/pkg/api/v1"
@@ -42,6 +43,6 @@ func TestGenerateNode(t *testing.T) {
 		ObjectMeta: kluster.ObjectMeta,
 		Data:       secretData,
 	}
-	_, err := Ignition.GenerateNode(&kluster, &secret)
+	_, err := Ignition.GenerateNode(&kluster, &secret, log.NewNopLogger())
 	assert.NoError(t, err)
 }

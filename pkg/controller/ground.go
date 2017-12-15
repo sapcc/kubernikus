@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/Masterminds/goutils"
-	"github.com/golang/glog"
+	"github.com/go-kit/kit/log"
 	"google.golang.org/grpc"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -49,9 +49,14 @@ type GroundControl struct {
 	queue           workqueue.RateLimitingInterface
 	klusterInformer cache.SharedIndexInformer
 	podInformer     cache.SharedIndexInformer
+
+	Logger log.Logger
 }
 
-func NewGroundController(factories config.Factories, clients config.Clients, recorder record.EventRecorder, config config.Config) *GroundControl {
+func NewGroundController(factories config.Factories, clients config.Clients, recorder record.EventRecorder, config config.Config, logger log.Logger) *GroundControl {
+	logger = log.With(logger,
+		"controller", "ground")
+
 	operator := &GroundControl{
 		Clients:         clients,
 		Factories:       factories,
@@ -60,6 +65,7 @@ func NewGroundController(factories config.Factories, clients config.Clients, rec
 		queue:           workqueue.NewRateLimitingQueue(workqueue.NewItemExponentialFailureRateLimiter(5*time.Second, 300*time.Second)),
 		klusterInformer: factories.Kubernikus.Kubernikus().V1().Klusters().Informer(),
 		podInformer:     factories.Kubernetes.Core().V1().Pods().Informer(),
+		Logger:          logger,
 	}
 
 	operator.klusterInformer.AddEventHandler(cache.ResourceEventHandlerFuncs{
@@ -81,7 +87,9 @@ func (op *GroundControl) Run(threadiness int, stopCh <-chan struct{}, wg *sync.W
 	defer op.queue.ShutDown()
 	defer wg.Done()
 	wg.Add(1)
-	glog.Infof(`Starting GroundControl with %d "threads"`, threadiness)
+	op.Logger.Log(
+		"msg", "starting GroundControl",
+		"threadiness", threadiness)
 
 	for i := 0; i < threadiness; i++ {
 		go wait.Until(op.runWorker, time.Second, stopCh)
@@ -92,7 +100,10 @@ func (op *GroundControl) Run(threadiness int, stopCh <-chan struct{}, wg *sync.W
 		for {
 			select {
 			case <-ticker.C:
-				glog.V(2).Infof("I now would do reconciliation if its was implemented. Next run in %v", KLUSTER_RECHECK_INTERVAL)
+				op.Logger.Log(
+					"msg", "I now would do reconciliation if its was implemented",
+					"kluster_recheck_interval", KLUSTER_RECHECK_INTERVAL,
+					"v", 2)
 				//op.queue.Add(true)
 			case <-stopCh:
 				ticker.Stop()
@@ -122,7 +133,9 @@ func (op *GroundControl) processNextWorkItem() bool {
 		return true
 	}
 
-	glog.Warningf("Error running handler: %v", err)
+	op.Logger.Log(
+		"msg", "Error running handler",
+		"err", err)
 	op.queue.AddRateLimited(key)
 
 	return true
@@ -134,10 +147,18 @@ func (op *GroundControl) handler(key string) error {
 		return fmt.Errorf("Failed to fetch key %s from cache: %s", key, err)
 	}
 	if !exists {
-		glog.Infof("kluster resource %s deleted", key)
+		op.Logger.Log(
+			"msg", "kluster resource already deleted",
+			"kluster", key,
+			"v", 2)
 	} else {
 		kluster := obj.(*v1.Kluster)
-		glog.V(5).Infof("Handling kluster %v in phase %q", kluster.Name, kluster.Status.Phase)
+		op.Logger.Log(
+			"msg", "handling kluster",
+			"kluster", kluster.GetName(),
+			"phase", kluster.Status.Phase,
+			"project", kluster.Account(),
+			"v", 5)
 		metrics.SetMetricKlusterInfo(kluster.GetNamespace(), kluster.GetName(), kluster.Status.Version, kluster.Spec.Openstack.ProjectID, kluster.GetAnnotations(), kluster.GetLabels())
 		metrics.SetMetricKlusterStatusPhase(kluster.GetName(), kluster.Status.Phase)
 
@@ -160,15 +181,28 @@ func (op *GroundControl) handler(key string) error {
 					return nil
 				}
 
-				glog.Infof("Creating Kluster %s", kluster.GetName())
+				op.Logger.Log(
+					"msg", "creating kluster",
+					"kluster", kluster.GetName(),
+					"project", kluster.Account(),
+					"phase", kluster.Status.Phase)
+
 				if err := op.createKluster(kluster); err != nil {
 					op.Recorder.Eventf(kluster, api_v1.EventTypeWarning, FailedCreate, "Failed to create cluster: %s", err)
 					return err
 				}
 				if err := op.updatePhase(kluster, models.KlusterPhaseCreating, "Creating Cluster"); err != nil {
-					glog.Errorf("Failed to update status of kluster %s:%s", kluster.GetName(), err)
+					op.Logger.Log(
+						"msg", "failed to update status of kluster",
+						"kluster", kluster.GetName(),
+						"project", kluster.Account(),
+						"err", err)
 				}
-				glog.Infof("Kluster %s created", kluster.GetName())
+				op.Logger.Log(
+					"msg", "created kluster",
+					"kluster", kluster.GetName(),
+					"project", kluster.Account(),
+					"phase", kluster.Status.Phase)
 			}
 		case models.KlusterPhaseCreating:
 			pods, err := op.podInformer.GetIndexer().ByIndex("kluster", kluster.GetName())
@@ -181,7 +215,12 @@ func (op *GroundControl) handler(key string) error {
 					podsReady++
 				}
 			}
-			glog.V(5).Infof("%d of %d pods ready for kluster %s", podsReady, len(pods), key)
+			op.Logger.Log(
+				"msg", "pod readiness",
+				"kluster", kluster.GetName(),
+				"project", kluster.Account(),
+				"expected", len(pods),
+				"actual", podsReady)
 			if podsReady == 4 {
 				clientset, err := op.Clients.Satellites.ClientFor(kluster)
 				if err != nil {
@@ -191,21 +230,38 @@ func (op *GroundControl) handler(key string) error {
 					return err
 				}
 				if err := op.updatePhase(kluster, models.KlusterPhaseRunning, ""); err != nil {
-					glog.Errorf("Failed to update status of kluster %s:%s", kluster.GetName(), err)
+					op.Logger.Log(
+						"msg", "failed to update status of kluster",
+						"kluster", kluster.GetName(),
+						"project", kluster.Account(),
+						"err", err)
 				}
 				metrics.SetMetricBootDurationSummary(kluster.GetCreationTimestamp().Time, time.Now())
-				glog.Infof("Kluster %s is ready!", kluster.GetName())
+				op.Logger.Log(
+					"msg", "kluster is ready",
+					"kluster", kluster.GetName(),
+					"project", kluster.Account())
 			}
 		case models.KlusterPhaseTerminating:
 			{
-				glog.Infof("Terminating Kluster %s", kluster.GetName())
+				op.Logger.Log(
+					"msg", "terminating kluster",
+					"kluster", kluster.GetName(),
+					"project", kluster.Account())
 				if err := op.terminateKluster(kluster); err != nil {
 					op.Recorder.Eventf(kluster, api_v1.EventTypeWarning, "", "Failed to terminate cluster: %s", err)
-					glog.Errorf("Failed to terminate kluster %s: %s", kluster.Name, err)
+					op.Logger.Log(
+						"msg", "Failed to terminate kluster",
+						"kluster", kluster.GetName(),
+						"project", kluster.Account(),
+						"err", err)
 					return err
 				}
 				metrics.SetMetricKlusterTerminated(kluster.GetName())
-				glog.Infof("Terminated kluster %s", kluster.GetName())
+				op.Logger.Log(
+					"msg", "terminated kluster",
+					"kluster", kluster.GetName(),
+					"project", kluster.Account())
 				return nil
 			}
 		}
@@ -219,7 +275,9 @@ func (op *GroundControl) klusterAdd(obj interface{}) {
 	if err != nil {
 		return
 	}
-	glog.Infof("Added kluster resource %s", key)
+	op.Logger.Log(
+		"msg", "Added kluster resource",
+		"key", key)
 	op.queue.Add(key)
 }
 
@@ -229,7 +287,9 @@ func (op *GroundControl) klusterTerminate(obj interface{}) {
 	if err != nil {
 		return
 	}
-	glog.Infof("Deleted kluster resource %s", key)
+	op.Logger.Log(
+		"msg", "Deleted kluster resource",
+		"key", key)
 	op.queue.Add(key)
 }
 
@@ -241,7 +301,9 @@ func (op *GroundControl) klusterUpdate(cur, old interface{}) {
 		if err != nil {
 			return
 		}
-		glog.Infof("Updated kluster resource %s", key)
+		op.Logger.Log(
+			"msg", "Updated kluster resource",
+			"key", key)
 		op.queue.Add(key)
 	}
 }
@@ -298,7 +360,12 @@ func (op *GroundControl) createKluster(kluster *v1.Kluster) error {
 		return err
 	}
 
-	glog.Infof("Creating service user %s", username)
+	op.Logger.Log(
+		"msg", "creating service user",
+		"username", username,
+		"kluster", kluster.GetName(),
+		"project", kluster.Account())
+
 	if err := op.Clients.Openstack.CreateKlusterServiceUser(
 		username,
 		password,
@@ -320,8 +387,16 @@ func (op *GroundControl) createKluster(kluster *v1.Kluster) error {
 	if err != nil {
 		return err
 	}
-	glog.Infof("Installing helm release %s", kluster.GetName())
-	glog.V(6).Infof("Chart values:\n%s", string(rawValues))
+
+	op.Logger.Log(
+		"msg", "Installing helm release",
+		"kluster", kluster.GetName(),
+		"project", kluster.Account())
+
+	op.Logger.Log(
+		"msg", "Debug Chart Values",
+		"values", string(rawValues),
+		"v", 6)
 
 	_, err = op.Clients.Helm.InstallRelease(path.Join(op.Config.Helm.ChartDirectory, "kube-master"), kluster.Namespace, helm.ValueOverrides(rawValues), helm.ReleaseName(kluster.GetName()))
 	return err
@@ -335,13 +410,23 @@ func (op *GroundControl) terminateKluster(kluster *v1.Kluster) error {
 		username := string(secret.Data["openstack-username"])
 		domain := string(secret.Data["openstack-domain-name"])
 
-		glog.Infof("Deleting openstack user %s@%s", username, domain)
+		op.Logger.Log(
+			"msg", "Deleting openstack user",
+			"kluster", kluster.GetName(),
+			"project", kluster.Account(),
+			"username", username,
+			"domain", domain)
+
 		if err := op.Clients.Openstack.DeleteUser(username, domain); err != nil {
 			return err
 		}
 	}
 
-	glog.Infof("Deleting helm release %s", kluster.GetName())
+	op.Logger.Log(
+		"msg", "Deleting helm release",
+		"kluster", kluster.GetName(),
+		"project", kluster.Account())
+
 	_, err := op.Clients.Helm.DeleteRelease(kluster.GetName(), helm.DeletePurge(true))
 	if err != nil && !strings.Contains(grpc.ErrorDesc(err), fmt.Sprintf(`release: "%s" not found`, kluster.GetName())) {
 		return err
@@ -372,7 +457,11 @@ func (op *GroundControl) requiresKubernikusInfo(kluster *v1.Kluster) bool {
 }
 
 func (op *GroundControl) discoverKubernikusInfo(kluster *v1.Kluster) error {
-	glog.V(5).Infof("[%v] Discovering KubernikusInfo", kluster.Name)
+	op.Logger.Log(
+		"msg", "discovering KubernikusInfo",
+		"kluster", kluster.GetName(),
+		"project", kluster.Account(),
+		"v", 5)
 
 	copy, err := op.Clients.Kubernikus.Kubernikus().Klusters(kluster.Namespace).Get(kluster.Name, metav1.GetOptions{})
 	if err != nil {
@@ -381,12 +470,20 @@ func (op *GroundControl) discoverKubernikusInfo(kluster *v1.Kluster) error {
 
 	if copy.Status.Apiserver == "" {
 		copy.Status.Apiserver = fmt.Sprintf("https://%s.%s", kluster.GetName(), op.Config.Kubernikus.Domain)
-		glog.Infof("[%v] Setting ServerURL to %v", kluster.Name, copy.Status.Apiserver)
+		op.Logger.Log(
+			"msg", "discovered ServerURL",
+			"url", copy.Status.Apiserver,
+			"kluster", kluster.GetName(),
+			"project", kluster.Account())
 	}
 
 	if copy.Status.Wormhole == "" {
 		copy.Status.Wormhole = fmt.Sprintf("https://%s-wormhole.%s", kluster.GetName(), op.Config.Kubernikus.Domain)
-		glog.Infof("[%v] Setting WormholeURL to %v", kluster.Name, copy.Status.Wormhole)
+		op.Logger.Log(
+			"msg", "discovered WormholeURL",
+			"url", copy.Status.Wormhole,
+			"kluster", kluster.GetName(),
+			"project", kluster.Account())
 	}
 
 	_, err = op.Clients.Kubernikus.Kubernikus().Klusters(kluster.Namespace).Update(copy)
@@ -394,7 +491,11 @@ func (op *GroundControl) discoverKubernikusInfo(kluster *v1.Kluster) error {
 }
 
 func (op *GroundControl) discoverOpenstackInfo(kluster *v1.Kluster) error {
-	glog.V(5).Infof("[%v] Discovering OpenstackInfo", kluster.Name)
+	op.Logger.Log(
+		"msg", "discovering OpenstackInfo",
+		"kluster", kluster.GetName(),
+		"project", kluster.Account(),
+		"v", 5)
 
 	routers, err := op.Clients.Openstack.GetRouters(kluster.Account())
 	if err != nil {
@@ -408,7 +509,11 @@ func (op *GroundControl) discoverOpenstackInfo(kluster *v1.Kluster) error {
 
 	if copy.Spec.Openstack.ProjectID == "" {
 		copy.Spec.Openstack.ProjectID = kluster.Account()
-		glog.Infof("[%v] Setting ProjectID to %v", kluster.Name, copy.Spec.Openstack.ProjectID)
+		op.Logger.Log(
+			"msg", "discovered ProjectID",
+			"id", copy.Spec.Openstack.ProjectID,
+			"kluster", kluster.GetName(),
+			"project", kluster.Account())
 	}
 
 	var selectedRouter *openstack.Router
@@ -426,7 +531,11 @@ func (op *GroundControl) discoverOpenstackInfo(kluster *v1.Kluster) error {
 	} else {
 		if numRouters := len(routers); numRouters == 1 {
 			selectedRouter = &routers[0]
-			glog.Infof("[%v] Setting RouterID to %v", kluster.Name, selectedRouter.ID)
+			op.Logger.Log(
+				"msg", "discovered RouterID",
+				"id", selectedRouter.ID,
+				"kluster", kluster.GetName(),
+				"project", kluster.Account())
 			copy.Spec.Openstack.RouterID = selectedRouter.ID
 		} else {
 			return fmt.Errorf("Found %d routers in project. Autoconfiguration not possible.", numRouters)
@@ -450,7 +559,11 @@ func (op *GroundControl) discoverOpenstackInfo(kluster *v1.Kluster) error {
 		if numNetworks := len(selectedRouter.Networks); numNetworks == 1 {
 			selectedNetwork = &selectedRouter.Networks[0]
 			copy.Spec.Openstack.NetworkID = selectedNetwork.ID
-			glog.Infof("[%v] Setting NetworkID to %v", kluster.Name, selectedNetwork.ID)
+			op.Logger.Log(
+				"msg", "discovered NetworkID",
+				"id", selectedNetwork.ID,
+				"kluster", kluster.GetName(),
+				"project", kluster.Account())
 		} else {
 			return fmt.Errorf("Found %d networks on router %s. Auto-configuration not possible. Please choose one.", numNetworks, selectedRouter.ID)
 
@@ -471,7 +584,11 @@ func (op *GroundControl) discoverOpenstackInfo(kluster *v1.Kluster) error {
 	} else {
 		if numSubnets := len(selectedNetwork.Subnets); numSubnets == 1 {
 			copy.Spec.Openstack.LBSubnetID = selectedNetwork.Subnets[0].ID
-			glog.V(5).Infof("[%v] Setting LBSubnetID to %v", kluster.Name, copy.Spec.Openstack.LBSubnetID)
+			op.Logger.Log(
+				"msg", "discovered LBSubnetID",
+				"id", copy.Spec.Openstack.LBSubnetID,
+				"kluster", kluster.GetName(),
+				"project", kluster.Account())
 		} else {
 			return fmt.Errorf("Found %d subnets for network %s. Auto-configuration not possible. Please choose one.", numSubnets, selectedNetwork.ID)
 		}
@@ -485,8 +602,12 @@ func (op *GroundControl) discoverOpenstackInfo(kluster *v1.Kluster) error {
 		if err != nil {
 			return fmt.Errorf("Failed to get id for default securitygroup in project %s: %s", err, kluster.Account())
 		}
-		glog.V(5).Infof("[%v] Setting SecurityGroupID to %v", kluster.Name, copy.Spec.Openstack.SecurityGroupID)
 		copy.Spec.Openstack.SecurityGroupID = id
+		op.Logger.Log(
+			"msg", "discovered SecurityGroupID",
+			"id", copy.Spec.Openstack.SecurityGroupID,
+			"kluster", kluster.GetName(),
+			"project", kluster.Account())
 	}
 
 	_, err = op.Clients.Kubernikus.Kubernikus().Klusters(kluster.Namespace).Update(copy)
@@ -498,7 +619,11 @@ func (op *GroundControl) podAdd(obj interface{}) {
 
 	if klusterName, found := pod.GetLabels()["release"]; found && len(klusterName) > 0 {
 		klusterKey := pod.GetNamespace() + "/" + klusterName
-		glog.V(5).Infof("Pod %s added for kluster %s", pod.GetName(), klusterKey)
+		op.Logger.Log(
+			"msg", "pod added",
+			"name", pod.GetName(),
+			"kluster", klusterKey,
+			"v", 5)
 		op.queue.Add(klusterKey)
 	}
 
@@ -508,7 +633,11 @@ func (op *GroundControl) podDelete(obj interface{}) {
 	pod := obj.(*api_v1.Pod)
 	if klusterName, found := pod.GetLabels()["release"]; found && len(klusterName) > 0 {
 		klusterKey := pod.GetNamespace() + "/" + klusterName
-		glog.V(5).Infof("Pod %s deleted for kluster %s", pod.GetName(), klusterKey)
+		op.Logger.Log(
+			"msg", "pod deleted",
+			"name", pod.GetName(),
+			"kluster", klusterKey,
+			"v", 5)
 		op.queue.Add(klusterKey)
 	}
 }
@@ -519,7 +648,11 @@ func (op *GroundControl) podUpdate(cur, old interface{}) {
 	if klusterName, found := pod.GetLabels()["release"]; found && len(klusterName) > 0 {
 		if !reflect.DeepEqual(oldPod, pod) {
 			klusterKey := pod.GetNamespace() + "/" + klusterName
-			glog.V(5).Infof("Pod %s updated for kluster %s", pod.GetName(), klusterKey)
+			op.Logger.Log(
+				"msg", "pod updated",
+				"name", pod.GetName(),
+				"kluster", klusterKey,
+				"v", 5)
 			op.queue.Add(klusterKey)
 		}
 	}

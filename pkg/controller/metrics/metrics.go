@@ -6,7 +6,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/golang/glog"
+	"github.com/go-kit/kit/log"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 
@@ -180,8 +180,12 @@ func init() {
 	)
 }
 
-func ExposeMetrics(metricPort int, stopCh <-chan struct{}, wg *sync.WaitGroup) error {
-	glog.Infof("Exposing metrics on localhost:%v/metrics ", metricPort)
+func ExposeMetrics(host string, metricPort int, stopCh <-chan struct{}, wg *sync.WaitGroup, logger log.Logger) error {
+	logger.Log(
+		"msg", "Exposing metrics",
+		"host", host,
+		"port", metricPort,
+		"path", "/metrics")
 	defer wg.Done()
 	wg.Add(1)
 	for {
@@ -191,7 +195,7 @@ func ExposeMetrics(metricPort int, stopCh <-chan struct{}, wg *sync.WaitGroup) e
 		default:
 			http.Handle("/metrics", promhttp.Handler())
 			return http.ListenAndServe(
-				fmt.Sprintf("0.0.0.0:%v", metricPort),
+				fmt.Sprintf("%v:%v", host, metricPort),
 				nil,
 			)
 		}
