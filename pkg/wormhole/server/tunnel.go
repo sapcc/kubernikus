@@ -9,20 +9,26 @@ import (
 	"sync"
 
 	"github.com/databus23/guttle"
-	"github.com/golang/glog"
+	"github.com/go-kit/kit/log"
 )
 
 type Tunnel struct {
 	Server *guttle.Server
+
+	Logger log.Logger
 }
 
 type TunnelOptions struct {
 	ClientCA    string
 	Certificate string
 	PrivateKey  string
+
+	Logger log.Logger
 }
 
 func NewTunnel(options *TunnelOptions) (*Tunnel, error) {
+	logger := log.With(options.Logger, "wormhole", "tunnel")
+
 	var listener net.Listener
 	if options.Certificate != "" {
 		tlsConfig, err := newTLSConfig(options.Certificate, options.PrivateKey)
@@ -46,7 +52,9 @@ func NewTunnel(options *TunnelOptions) (*Tunnel, error) {
 			return nil, fmt.Errorf("Failed to listen to 127.0.0.1:8080: %s", err)
 		}
 	}
-	glog.Infof("Listening for tunnel clients on %s", listener.Addr())
+	logger.Log(
+		"msg", "Listening for tunnel clients",
+		"addr", listener.Addr())
 
 	opts := guttle.ServerOptions{
 		Listener:   listener,
@@ -54,7 +62,7 @@ func NewTunnel(options *TunnelOptions) (*Tunnel, error) {
 		ProxyFunc:  guttle.StaticProxy("127.0.0.1:6443"),
 	}
 
-	return &Tunnel{Server: guttle.NewServer(&opts)}, nil
+	return &Tunnel{Server: guttle.NewServer(&opts), Logger: logger}, nil
 }
 
 func (t *Tunnel) Run(stopCh <-chan struct{}, wg *sync.WaitGroup) {
@@ -68,7 +76,7 @@ func (t *Tunnel) Run(stopCh <-chan struct{}, wg *sync.WaitGroup) {
 
 	err := t.Server.Start()
 	if err != nil {
-		glog.Error(err)
+		t.Logger.Log("err", err)
 	}
 
 }

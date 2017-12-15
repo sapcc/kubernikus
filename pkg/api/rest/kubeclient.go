@@ -1,7 +1,9 @@
 package rest
 
 import (
-	"github.com/golang/glog"
+	"fmt"
+
+	kitlog "github.com/go-kit/kit/log"
 	"github.com/spf13/pflag"
 	apiextensionsclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	kubernetes_clientset "k8s.io/client-go/kubernetes"
@@ -19,30 +21,30 @@ func init() {
 	pflag.StringVar(&context, "context", "", "Override context")
 }
 
-func NewKubeClients() (kubernikus_clientset.Interface, kubernetes_clientset.Interface) {
+func NewKubeClients(logger kitlog.Logger) (kubernikus_clientset.Interface, kubernetes_clientset.Interface, error) {
 	client, err := kubernikus.NewClient(kubeconfig, context)
 
 	if err != nil {
-		glog.Fatal("Failed to create kubernikus clients: %s", err)
+		return nil, nil, fmt.Errorf("Failed to create kubernikus clients: %s", err)
 	}
 
-	kubernetesClient, err := kubernetes.NewClient(kubeconfig, context)
+	kubernetesClient, err := kubernetes.NewClient(kubeconfig, context, logger)
 	if err != nil {
-		glog.Fatal("Failed to create kubernetes clients: %s", err)
+		return nil, nil, fmt.Errorf("Failed to create kubernetes clients: %s", err)
 	}
 
 	config, err := kubernetes.NewConfig(kubeconfig, context)
 	if err != nil {
-		glog.Fatalf("Failed to create kubernetes config: %s", err)
+		return nil, nil, fmt.Errorf("Failed to create kubernetes config: %s", err)
 	}
 	apiextensionsclientset, err := apiextensionsclient.NewForConfig(config)
 	if err != nil {
-		glog.Fatal("Failed to create apiextenstionsclient: %s", err)
+		return nil, nil, fmt.Errorf("Failed to create apiextenstionsclient: %s", err)
 	}
 
-	if err := kubernetes.EnsureCRD(apiextensionsclientset); err != nil {
-		glog.Fatalf("Couldn't create CRD: %s", err)
+	if err := kubernetes.EnsureCRD(apiextensionsclientset, logger); err != nil {
+		return nil, nil, fmt.Errorf("Couldn't create CRD: %s", err)
 	}
 
-	return client, kubernetesClient
+	return client, kubernetesClient, nil
 }

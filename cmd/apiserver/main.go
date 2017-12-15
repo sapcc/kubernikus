@@ -65,7 +65,14 @@ func main() {
 		Namespace: namespace,
 		Logger:    logger,
 	}
-	rt.Kubernikus, rt.Kubernetes = rest.NewKubeClients()
+	rt.Kubernikus, rt.Kubernetes, err = rest.NewKubeClients(logger)
+	if err != nil {
+		logger.Log(
+			"msg", "failed to create kubernetes clients",
+			"err", err)
+		os.Exit(1)
+	}
+
 	if err := rest.Configure(api, rt); err != nil {
 		logger.Log(
 			"msg", "failed to configure API server",

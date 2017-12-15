@@ -8,7 +8,7 @@ import (
 	"sync"
 	"syscall"
 
-	"github.com/golang/glog"
+	"github.com/go-kit/kit/log"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 
@@ -16,8 +16,8 @@ import (
 	"github.com/sapcc/kubernikus/pkg/wormhole"
 )
 
-func NewServerCommand() *cobra.Command {
-	o := NewServerOptions()
+func NewServerCommand(logger log.Logger) *cobra.Command {
+	o := NewServerOptions(log.With(logger, "wormhole", "server"))
 
 	c := &cobra.Command{
 		Use:   "server",
@@ -38,8 +38,10 @@ type ServerOptions struct {
 	wormhole.ServerOptions
 }
 
-func NewServerOptions() *ServerOptions {
-	return &ServerOptions{}
+func NewServerOptions(logger log.Logger) *ServerOptions {
+	o := &ServerOptions{}
+	o.Logger = logger
+	return o
 }
 
 func (o *ServerOptions) BindFlags(flags *pflag.FlagSet) {
@@ -76,7 +78,7 @@ func (o *ServerOptions) Run(c *cobra.Command) error {
 	go server.Run(stop, wg)
 
 	<-sigs // Wait for signals (this hangs until a signal arrives)
-	glog.Info("Shutting down...")
+	o.Logger.Log("msg", "Shutting down...")
 	close(stop) // Tell goroutines to stop themselves
 	wg.Wait()   // Wait for all to be stopped
 

@@ -101,8 +101,13 @@ func (o *Options) Run(c *cobra.Command) error {
 	signal.Notify(sigs, os.Interrupt, syscall.SIGTERM) // Push signals into channel
 	wg := &sync.WaitGroup{}                            // Goroutines can add themselves to this to be waited on
 
-	go controller.NewKubernikusOperator(&o.KubernikusOperatorOptions, logger).Run(stop, wg)
-	go metrics.ExposeMetrics(o.MetricPort, stop, wg)
+	operator, err := controller.NewKubernikusOperator(&o.KubernikusOperatorOptions, logger)
+	if err != nil {
+		return err
+	}
+
+	go operator.Run(stop, wg)
+	go metrics.ExposeMetrics("0.0.0.0", o.MetricPort, stop, wg, logger)
 
 	<-sigs // Wait for signals (this hangs until a signal arrives)
 	logger.Log("msg", "shutting down", "v", 1)

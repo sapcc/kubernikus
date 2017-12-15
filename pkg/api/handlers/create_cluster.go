@@ -3,7 +3,6 @@ package handlers
 import (
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/validate"
-	"github.com/golang/glog"
 
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -24,6 +23,7 @@ type createCluster struct {
 }
 
 func (d *createCluster) Handle(params operations.CreateClusterParams, principal *models.Principal) middleware.Responder {
+	logger := getTracingLogger(params.HTTPRequest)
 	name := params.Body.Name
 	spec := params.Body.Spec
 
@@ -49,7 +49,12 @@ func (d *createCluster) Handle(params operations.CreateClusterParams, principal 
 	k8sutil.EnsureNamespace(d.Kubernetes, d.Namespace)
 	kluster, err = d.Kubernikus.Kubernikus().Klusters(d.Namespace).Create(kluster)
 	if err != nil {
-		glog.Errorf("Failed to create cluster: %s", err)
+		logger.Log(
+			"msg", "failed to create cluster",
+			"kluster", kluster.GetName(),
+			"project", kluster.Account(),
+			"err", err)
+
 		if apierrors.IsAlreadyExists(err) {
 			return NewErrorResponse(&operations.CreateClusterDefault{}, 409, "Cluster with name %s already exists", name)
 		}

@@ -12,7 +12,7 @@ import (
 	"syscall"
 
 	"github.com/databus23/guttle"
-	"github.com/golang/glog"
+	"github.com/go-kit/kit/log"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"k8s.io/client-go/tools/clientcmd"
@@ -21,8 +21,8 @@ import (
 	"github.com/sapcc/kubernikus/pkg/cmd"
 )
 
-func NewClientCommand() *cobra.Command {
-	o := NewClientOptions()
+func NewClientCommand(logger log.Logger) *cobra.Command {
+	o := NewClientOptions(log.With(logger, "wormhole", "client"))
 
 	c := &cobra.Command{
 		Use:   "client",
@@ -44,11 +44,14 @@ type ClientOptions struct {
 	Server     string
 	Context    string
 	ListenAddr string
+
+	Logger log.Logger
 }
 
-func NewClientOptions() *ClientOptions {
+func NewClientOptions(logger log.Logger) *ClientOptions {
 	return &ClientOptions{
 		ListenAddr: "198.18.128.1:6443",
+		Logger:     logger,
 	}
 }
 
@@ -139,7 +142,10 @@ func (o *ClientOptions) Run(c *cobra.Command) error {
 				Certificates: []tls.Certificate{certificate},
 			})
 			if err != nil {
-				glog.Warningf("Failed to connect to %s: %s", address, err)
+				o.Logger.Log(
+					"msg", "failed to open connection",
+					"address", address,
+					"err", err)
 			}
 			return conn, err
 		},
@@ -149,7 +155,7 @@ func (o *ClientOptions) Run(c *cobra.Command) error {
 
 	go func() {
 		<-sigs
-		glog.Info("Shutting down...")
+		o.Logger.Log("msg", "Shutting down...")
 		client.Stop()
 	}()
 	return client.Start()
