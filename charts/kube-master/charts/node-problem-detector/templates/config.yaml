@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: node-problem-detector-config
+
+data:
+  {{- $files := .Files }}
+  {{ range tuple "kernel-monitor.json" "kubernikus-tunnel.json" "check_tunnel.sh" }}
+  {{ . }}: |
+{{ $files.Get . | indent 4 }}
+  {{- end }}
