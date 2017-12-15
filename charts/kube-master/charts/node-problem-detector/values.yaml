@@ -1,0 +1,3 @@
+image:
+  repository: sapcc/node-problem-detector
+  tag: v0.4.1
