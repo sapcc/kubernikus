@@ -370,6 +370,8 @@ definitions:
       lbSubnetID:
         x-go-name: LBSubnetID
         type: string
+      securityGroupID:
+        type: string
   NodePool:
     x-nullable: false
     type: object
