@@ -1,0 +1,40 @@
+{{/* vim: set filetype=gotexttmpl: */ -}}
+apiVersion: "extensions/v1beta1"
+kind: Deployment
+metadata:
+  name: {{ include "master.fullname" . }}-nanny
+  labels:
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}"
+    release: {{ .Release.Name }}
+spec:
+  revisionHistoryLimit: {{ .Values.revisionHistoryLimit }}
+  replicas: 1 
+  selector:
+    matchLabels:
+      app: {{ include "master.fullname" . }}-nanny
+  template:
+    metadata:
+      labels:
+        app: {{ include "master.fullname" . }}-nanny
+        release: {{ .Release.Name }}
+      annotations:
+        checksum/secrets: {{ include (print $.Template.BasePath "/secrets.yaml") . | sha256sum }}
+    spec:
+      containers:
+        - name: nanny 
+          image: "{{ .Values.nanny.image.repository }}:{{ .Values.nanny.image.tag }}"
+          args:
+            - nanny
+            - --auth-url={{ .Values.openstack.authURL }}
+            - --auth-username={{ .Values.openstack.username }}
+            - --auth-domain={{ .Values.openstack.domainName }}
+            - --router-id={{ .Values.openstack.routerID }}
+            - --cluster-cidr={{ .Values.clusterCIDR  }}
+          env:
+            - name: OS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ template "master.fullname" . }}
+                  key: openstack-password
+          resources:
+{{ toYaml .Values.nanny.resources | indent 12 }}

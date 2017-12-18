@@ -45,6 +45,7 @@ build:
 	docker build $(BUILD_ARGS) -t sapcc/kubernikusctl:$(VERSION)                                                             ./contrib/kubernikusctl
 	docker build $(BUILD_ARGS) -t sapcc/kubernikus-docs:$(VERSION)         -f Dockerfile.kubernikus-docs .
 	docker build $(BUILD_ARGS) -t sapcc/kubernikus:$(VERSION)              -f Dockerfile .
+	docker build $(BUILD_ARGS) -t sapcc/kubernikus-nanny:$(VERSION)        -f Dockerfile.nanny .
 
 pull:
 	docker pull sapcc/kubernikus-docs-builder:latest
@@ -52,6 +53,7 @@ pull:
 
 tag:
 	docker tag sapcc/kubernikus:$(VERSION)         sapcc/kubernikus:latest
+	docker tag sapcc/kubernikus-nanny:$(VERSION)   sapcc/kubernikus-nanny:latest
 	docker tag sapcc/kubernikusctl:$(VERSION)      sapcc/kubernikusctl:latest
 	docker tag sapcc/kubernikus-kubectl:$(VERSION) sapcc/kubernikus-kubectl:latest
 
@@ -62,6 +64,8 @@ push:
 	docker push sapcc/kubernikusctl:latest
 	docker push sapcc/kubernikus-kubectl:$(VERSION)
 	docker push sapcc/kubernikus-kubectl:latest
+	docker push sapcc/kubernikus-nanny:$(VERSION)
+	docker push sapcc/kubernikus-nanny:latest
 
 documentation:
 	docker build $(BUILD_ARGS) -t sapcc/kubernikus-docs-builder:$(VERSION) --cache-from=sapcc/kubernikus-docs-builder:latest ./contrib/kubernikus-docs-builder

@@ -41,6 +41,16 @@ type apiValues struct {
 	WormholeHost  string `yaml:"wormholeHost,omitempty"`
 }
 
+type nannyValues struct {
+	Image containerImage `yaml:"repository,omitempty"`
+}
+
+type containerImage struct {
+	Repository string `yaml:"repository,omitempty"`
+	Tag        string `yaml:"tag,omitempty"`
+	PullPolicy string `yaml:"pullPolicy,omitempty"`
+}
+
 type kubernikusHelmValues struct {
 	Openstack        openstackValues   `yaml:"openstack,omitempty"`
 	Certs            map[string]string `yaml:"certs,omitempty"`
@@ -51,6 +61,7 @@ type kubernikusHelmValues struct {
 	Version          string            `yaml:"version,omitempty"`
 	Etcd             etcdValues        `yaml:"etcd,omitempty"`
 	Api              apiValues         `yaml:"api,omitempty"`
+	Nanny            nannyValues       `yaml:"nanny,omitempty"`
 }
 
 func KlusterToHelmValues(kluster *v1.Kluster, openstack *OpenstackOptions, certificates map[string]string, bootstrapToken string, accessMode string) ([]byte, error) {
@@ -89,6 +100,11 @@ func KlusterToHelmValues(kluster *v1.Kluster, openstack *OpenstackOptions, certi
 		Api: apiValues{
 			ApiserverHost: apiserverURL.Hostname(),
 			WormholeHost:  wormholeURL.Hostname(),
+		},
+		Nanny: nannyValues{
+			Image: containerImage{
+				Tag: kluster.Status.Version,
+			},
 		},
 	}
 
