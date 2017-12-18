@@ -15,6 +15,7 @@ import (
 	"github.com/gophercloud/gophercloud/openstack/identity/v3/tokens"
 	"github.com/gophercloud/gophercloud/openstack/identity/v3/users"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/layer3/routers"
+	securitygroups "github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/security/groups"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/networks"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/ports"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/subnets"
@@ -26,6 +27,7 @@ import (
 
 	"github.com/sapcc/kubernikus/pkg/api/models"
 	kubernikus_v1 "github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
+	"github.com/sapcc/kubernikus/pkg/client/openstack/compute"
 	"github.com/sapcc/kubernikus/pkg/client/openstack/domains"
 	"github.com/sapcc/kubernikus/pkg/client/openstack/roles"
 )
@@ -60,6 +62,7 @@ type Client interface {
 	DeleteUser(username, domainID string) error
 	CreateKlusterServiceUser(username, password, domain, defaultProjectID string) error
 	GetKubernikusCatalogEntry() (string, error)
+	GetSecurityGroupID(project_id, name string) (string, error)
 }
 
 type Project struct {
@@ -550,13 +553,16 @@ func (c *client) CreateNode(kluster *kubernikus_v1.Kluster, pool *models.NodePoo
 	name := v1.SimpleNameGenerator.GenerateName(fmt.Sprintf("%v-%v-", kluster.Spec.Name, pool.Name))
 	glog.V(5).Infof("Creating node %v", name)
 
-	server, err := servers.Create(client, servers.CreateOpts{
-		Name:          name,
-		FlavorName:    pool.Flavor,
-		ImageName:     pool.Image,
-		Networks:      []servers.Network{servers.Network{UUID: kluster.Spec.Openstack.NetworkID}},
-		UserData:      userData,
-		ServiceClient: client,
+	server, err := servers.Create(client, compute.CreateOpts{
+		CreateOpts: servers.CreateOpts{
+			Name:           name,
+			FlavorName:     pool.Flavor,
+			ImageName:      pool.Image,
+			Networks:       []servers.Network{servers.Network{UUID: kluster.Spec.Openstack.NetworkID}},
+			UserData:       userData,
+			ServiceClient:  client,
+			SecurityGroups: []string{kluster.Spec.Openstack.SecurityGroupID},
+		},
 	}).Extract()
 
 	if err != nil {
@@ -679,4 +685,34 @@ func (c *client) GetKubernikusCatalogEntry() (string, error) {
 	}
 
 	return "", err
+}
+func (c *client) GetSecurityGroupID(project_id string, name string) (string, error) {
+
+	provider, err := c.adminClient()
+	if err != nil {
+		return "", err
+	}
+	networkClient, err := openstack.NewNetworkV2(provider, gophercloud.EndpointOpts{})
+	if err != nil {
+		return "", err
+	}
+
+	var group securitygroups.SecGroup
+
+	err = securitygroups.List(networkClient, securitygroups.ListOpts{Name: name, TenantID: project_id}).EachPage(func(page pagination.Page) (bool, error) {
+		groups, err := securitygroups.ExtractGroups(page)
+		if err != nil {
+			return false, err
+		}
+		switch len(groups) {
+		case 0:
+			return false, errors.New("Security group not found")
+		case 1:
+			group = groups[0]
+			return false, nil
+		default:
+			return false, errors.New("Multiple security groups with the same name found")
+		}
+	})
+	return group.ID, err
 }

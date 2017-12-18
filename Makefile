@@ -63,6 +63,11 @@ push:
 	docker push sapcc/kubernikus-kubectl:$(VERSION)
 	docker push sapcc/kubernikus-kubectl:latest
 
+documentation:
+	docker build $(BUILD_ARGS) -t sapcc/kubernikus-docs-builder:$(VERSION) --cache-from=sapcc/kubernikus-docs-builder:latest ./contrib/kubernikus-docs-builder
+	docker build $(BUILD_ARGS) -t sapcc/kubernikus-docs:$(VERSION)         -f Dockerfile.kubernikus-docs .
+	docker tag sapcc/kubernikus-docs:$(VERSION)  sapcc/kubernikus-docs:latest
+
 gh-pages:
 	docker run --name gh-pages sapcc/kubernikus-docs:$(VERSION) /bin/true
 	docker cp gh-pages:/public/kubernikus gh-pages
