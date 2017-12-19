@@ -8,6 +8,7 @@ import (
 	"github.com/sapcc/kubernikus/pkg/api/spec"
 	"github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
 	"github.com/sapcc/kubernikus/pkg/controller/ground/bootstrap/dns"
+	"github.com/sapcc/kubernikus/pkg/util"
 	"github.com/sapcc/kubernikus/pkg/util/ip"
 	"github.com/sapcc/kubernikus/pkg/version"
 )
@@ -72,6 +73,18 @@ func (klusterFactory) KlusterFor(spec models.KlusterSpec) (*v1.Kluster, error) {
 
 	if k.Spec.DNSDomain == "" {
 		k.Spec.DNSDomain = dns.DEFAULT_DOMAIN
+	}
+
+	if k.Spec.Version == "" {
+		k.Spec.Version = util.DEFAULT_KUBERNETES_VERSION
+	}
+
+	if k.Spec.Version == "" {
+		k.Spec.Version = util.DEFAULT_KUBERNETES_VERSION
+	}
+
+	if k.Spec.Version != util.DEFAULT_KUBERNETES_VERSION {
+		return nil, fmt.Errorf("Unabled to create cluster. Unsupported Kubernetes version.")
 	}
 
 	if k.ObjectMeta.Name == "" {

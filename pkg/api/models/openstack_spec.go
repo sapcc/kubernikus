@@ -16,6 +16,9 @@ import (
 // swagger:model OpenstackSpec
 type OpenstackSpec struct {
 
+	// l b floating network ID
+	LBFloatingNetworkID string `json:"lbFloatingNetworkID,omitempty"`
+
 	// l b subnet ID
 	LBSubnetID string `json:"lbSubnetID,omitempty"`
 

@@ -43,6 +43,11 @@ type KlusterSpec struct {
 	// CIDR Range for Services in the cluster. Can not be updated.
 	// Pattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$
 	ServiceCIDR string `json:"serviceCIDR,omitempty"`
+
+	// version
+	// Read Only: true
+	// Pattern: ^v[0-9]+\.[0-9]+\.[0-9]+$
+	Version string `json:"version,omitempty"`
 }
 
 // Validate validates this kluster spec
@@ -65,6 +70,11 @@ func (m *KlusterSpec) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateServiceCIDR(formats); err != nil {
+		// prop
+		res = append(res, err)
+	}
+
+	if err := m.validateVersion(formats); err != nil {
 		// prop
 		res = append(res, err)
 	}
@@ -120,6 +130,19 @@ func (m *KlusterSpec) validateServiceCIDR(formats strfmt.Registry) error {
 	}
 
 	if err := validate.Pattern("serviceCIDR", "body", string(m.ServiceCIDR), `^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$`); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *KlusterSpec) validateVersion(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.Version) { // not required
+		return nil
+	}
+
+	if err := validate.Pattern("version", "body", string(m.Version), `^v[0-9]+\.[0-9]+\.[0-9]+$`); err != nil {
 		return err
 	}
 

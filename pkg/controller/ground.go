@@ -449,7 +449,8 @@ func (op *GroundControl) requiresOpenstackInfo(kluster *v1.Kluster) bool {
 	return kluster.Spec.Openstack.ProjectID == "" ||
 		kluster.Spec.Openstack.RouterID == "" ||
 		kluster.Spec.Openstack.NetworkID == "" ||
-		kluster.Spec.Openstack.LBSubnetID == ""
+		kluster.Spec.Openstack.LBSubnetID == "" ||
+		kluster.Spec.Openstack.LBFloatingNetworkID == ""
 }
 
 func (op *GroundControl) requiresKubernikusInfo(kluster *v1.Kluster) bool {
@@ -591,6 +592,23 @@ func (op *GroundControl) discoverOpenstackInfo(kluster *v1.Kluster) error {
 				"project", kluster.Account())
 		} else {
 			return fmt.Errorf("Found %d subnets for network %s. Auto-configuration not possible. Please choose one.", numSubnets, selectedNetwork.ID)
+		}
+	}
+
+	if floatingNetworkID := copy.Spec.Openstack.LBFloatingNetworkID; floatingNetworkID != "" {
+		if selectedRouter.ExternalNetworkID != "" && floatingNetworkID != selectedRouter.ExternalNetworkID {
+			return fmt.Errorf("External network missmatch. Router is configured with %s but config specifies %s", selectedRouter.ExternalNetworkID, floatingNetworkID)
+		}
+	} else {
+		if selectedRouter.ExternalNetworkID == "" {
+			return fmt.Errorf("Selected router %s doesn't have an external network ID set", selectedRouter.ID)
+		} else {
+			copy.Spec.Openstack.LBFloatingNetworkID = selectedRouter.ExternalNetworkID
+			op.Logger.Log(
+				"msg", "discovered LBFloatingNetworkID",
+				"id", copy.Spec.Openstack.LBFloatingNetworkID,
+				"kluster", kluster.GetName(),
+				"project", kluster.Account())
 		}
 	}
 
