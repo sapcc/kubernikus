@@ -8,16 +8,16 @@ import (
 	"sync"
 	"syscall"
 
-	"github.com/go-kit/kit/log"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 
 	"github.com/sapcc/kubernikus/pkg/cmd"
+	logutil "github.com/sapcc/kubernikus/pkg/util/log"
 	"github.com/sapcc/kubernikus/pkg/wormhole"
 )
 
-func NewServerCommand(logger log.Logger) *cobra.Command {
-	o := NewServerOptions(log.With(logger, "wormhole", "server"))
+func NewServerCommand() *cobra.Command {
+	o := NewServerOptions()
 
 	c := &cobra.Command{
 		Use:   "server",
@@ -38,9 +38,8 @@ type ServerOptions struct {
 	wormhole.ServerOptions
 }
 
-func NewServerOptions(logger log.Logger) *ServerOptions {
+func NewServerOptions() *ServerOptions {
 	o := &ServerOptions{}
-	o.Logger = logger
 	return o
 }
 
@@ -65,6 +64,7 @@ func (o *ServerOptions) Complete(args []string) error {
 }
 
 func (o *ServerOptions) Run(c *cobra.Command) error {
+	o.Logger = logutil.NewLogger(c.Flags())
 	sigs := make(chan os.Signal, 1)
 	stop := make(chan struct{})
 	signal.Notify(sigs, os.Interrupt, syscall.SIGTERM) // Push signals into channel

@@ -22,8 +22,6 @@ type ServerOptions struct {
 	Context     string
 	ServiceCIDR string
 	server.TunnelOptions
-
-	Logger log.Logger
 }
 
 type Server struct {
@@ -37,9 +35,6 @@ type Server struct {
 
 func NewServer(options *ServerOptions) (*Server, error) {
 	s := &Server{Logger: log.With(options.Logger, "wormhole", "server")}
-	if options.TunnelOptions.Logger == nil {
-		options.TunnelOptions.Logger = options.Logger
-	}
 
 	client, err := kube.NewClient(options.KubeConfig, options.Context, options.Logger)
 	if err != nil {

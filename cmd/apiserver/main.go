@@ -24,16 +24,13 @@ func init() {
 }
 
 func main() {
-	var logger kitLog.Logger
-	logger = kitLog.NewLogfmtLogger(kitLog.NewSyncWriter(os.Stderr))
-	logger = logutil.NewTrailingNilFilter(logger)
-	logger = kitLog.With(logger, "ts", kitLog.DefaultTimestampUTC, "caller", Caller(3))
+	if f := goflag.Lookup("logtostderr"); f != nil {
+		f.Value.Set("true") // log to stderr by default
+	}
 
 	swaggerSpec, err := spec.Spec()
 	if err != nil {
-		logger.Log(
-			"msg", "failed to spec swagger spec",
-			"err", err)
+		fmt.Printf(`failed to parse swagger spec: %s`, err)
 		os.Exit(1)
 	}
 
@@ -52,12 +49,10 @@ func main() {
 		fmt.Fprintln(os.Stderr, pflag.CommandLine.FlagUsages())
 	}
 	// parse the CLI flags
-	if f := goflag.Lookup("logtostderr"); f != nil {
-		f.Value.Set("true") // log to stderr by default
-	}
 	pflag.CommandLine.AddGoFlagSet(goflag.CommandLine) //slurp in glog flags
 	pflag.Parse()
 	//goflag.CommandLine.Parse([]string{}) //https://github.com/kubernetes/kubernetes/issues/17162
+	logger := logutil.NewLogger(pflag.CommandLine)
 
 	api := operations.NewKubernikusAPI(swaggerSpec)
 

@@ -2,7 +2,6 @@ package kubernikus
 
 import (
 	"errors"
-	goflag "flag"
 	"fmt"
 	"os"
 	"os/signal"
@@ -22,10 +21,6 @@ import (
 
 func NewOperatorCommand() *cobra.Command {
 	o := NewOperatorOptions()
-
-	if f := goflag.Lookup("logtostderr"); f != nil {
-		f.Value.Set("true") // log to stderr by default
-	}
 
 	c := &cobra.Command{
 		Use:   "operator",
@@ -91,10 +86,8 @@ func (o *Options) Complete(args []string) error {
 }
 
 func (o *Options) Run(c *cobra.Command) error {
-	var logger log.Logger
-	logger = log.NewLogfmtLogger(log.NewSyncWriter(os.Stderr))
-	logger = logutil.NewTrailingNilFilter(logger)
-	logger = log.With(logger, "ts", log.DefaultTimestampUTC, "caller", Caller(3))
+
+	logger := logutil.NewLogger(c.Flags())
 
 	sigs := make(chan os.Signal, 1)
 	stop := make(chan struct{})
