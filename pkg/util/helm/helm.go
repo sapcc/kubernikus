@@ -1,7 +1,6 @@
 package helm
 
 import (
-	"fmt"
 	"log"
 	"net/url"
 
@@ -16,12 +15,6 @@ type OpenstackOptions struct {
 	Password   string
 	DomainName string
 	Region     string
-}
-
-type imageValues struct {
-	Repostiory string `yaml:"repository"`
-	Tag        string `yaml:"tag"`
-	PullPolicy string `yaml:"pullPolicy"`
 }
 
 type openstackValues struct {
@@ -55,7 +48,6 @@ type versionValues struct {
 }
 
 type kubernikusHelmValues struct {
-	Image            imageValues       `yaml:"image,omitempty"`
 	Openstack        openstackValues   `yaml:"openstack,omitempty"`
 	Certs            map[string]string `yaml:"certs,omitempty"`
 	ClusterCIDR      string            `yaml:"clusterCIDR,omitempty"`
@@ -79,7 +71,6 @@ func KlusterToHelmValues(kluster *v1.Kluster, openstack *OpenstackOptions, certi
 	}
 
 	values := kubernikusHelmValues{
-		Image:            getImageValues(kluster),
 		BoostrapToken:    bootstrapToken,
 		Certs:            certificates,
 		ClusterCIDR:      kluster.Spec.ClusterCIDR,
@@ -117,19 +108,4 @@ func KlusterToHelmValues(kluster *v1.Kluster, openstack *OpenstackOptions, certi
 	}
 
 	return result, nil
-}
-
-func getImageValues(kluster *v1.Kluster) imageValues {
-	v := imageValues{
-		Repostiory: "quay.io/coreos/hyperkube",
-		PullPolicy: "IfNotPresent",
-	}
-
-	if kluster.Spec.Version == "1.7.5" {
-		v.Tag = "v1.7.5_coreos.1"
-	} else {
-		v.Tag = fmt.Sprintf("v%s_coreos.0", kluster.Spec.Version)
-	}
-
-	return v
 }
