@@ -19,10 +19,11 @@ import (
 	"k8s.io/client-go/tools/clientcmd/api"
 
 	"github.com/sapcc/kubernikus/pkg/cmd"
+	logutil "github.com/sapcc/kubernikus/pkg/util/log"
 )
 
-func NewClientCommand(logger log.Logger) *cobra.Command {
-	o := NewClientOptions(log.With(logger, "wormhole", "client"))
+func NewClientCommand() *cobra.Command {
+	o := NewClientOptions()
 
 	c := &cobra.Command{
 		Use:   "client",
@@ -44,14 +45,11 @@ type ClientOptions struct {
 	Server     string
 	Context    string
 	ListenAddr string
-
-	Logger log.Logger
 }
 
-func NewClientOptions(logger log.Logger) *ClientOptions {
+func NewClientOptions() *ClientOptions {
 	return &ClientOptions{
 		ListenAddr: "198.18.128.1:6443",
-		Logger:     logger,
 	}
 }
 
@@ -71,6 +69,9 @@ func (o *ClientOptions) Complete(args []string) error {
 }
 
 func (o *ClientOptions) Run(c *cobra.Command) error {
+	logger := logutil.NewLogger(c.Flags())
+	logger = log.With(logger, "wormhole", "client")
+
 	sigs := make(chan os.Signal, 1)
 	signal.Notify(sigs, os.Interrupt, syscall.SIGTERM) // Push signals into channel
 
@@ -142,7 +143,7 @@ func (o *ClientOptions) Run(c *cobra.Command) error {
 				Certificates: []tls.Certificate{certificate},
 			})
 			if err != nil {
-				o.Logger.Log(
+				logger.Log(
 					"msg", "failed to open connection",
 					"address", address,
 					"err", err)
@@ -155,7 +156,7 @@ func (o *ClientOptions) Run(c *cobra.Command) error {
 
 	go func() {
 		<-sigs
-		o.Logger.Log("msg", "Shutting down...")
+		logger.Log("msg", "Shutting down...")
 		client.Stop()
 	}()
 	return client.Start()

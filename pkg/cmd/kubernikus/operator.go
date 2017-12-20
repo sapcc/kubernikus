@@ -2,15 +2,11 @@ package kubernikus
 
 import (
 	"errors"
-	goflag "flag"
-	"fmt"
 	"os"
 	"os/signal"
 	"sync"
 	"syscall"
 
-	"github.com/go-kit/kit/log"
-	"github.com/go-stack/stack"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 
@@ -22,10 +18,6 @@ import (
 
 func NewOperatorCommand() *cobra.Command {
 	o := NewOperatorOptions()
-
-	if f := goflag.Lookup("logtostderr"); f != nil {
-		f.Value.Set("true") // log to stderr by default
-	}
 
 	c := &cobra.Command{
 		Use:   "operator",
@@ -91,10 +83,8 @@ func (o *Options) Complete(args []string) error {
 }
 
 func (o *Options) Run(c *cobra.Command) error {
-	var logger log.Logger
-	logger = log.NewLogfmtLogger(log.NewSyncWriter(os.Stderr))
-	logger = logutil.NewTrailingNilFilter(logger)
-	logger = log.With(logger, "ts", log.DefaultTimestampUTC, "caller", Caller(3))
+
+	logger := logutil.NewLogger(c.Flags())
 
 	sigs := make(chan os.Signal, 1)
 	stop := make(chan struct{})
@@ -115,8 +105,4 @@ func (o *Options) Run(c *cobra.Command) error {
 	wg.Wait()   // Wait for all to be stopped
 
 	return nil
-}
-
-func Caller(depth int) log.Valuer {
-	return func() interface{} { return fmt.Sprintf("%+v", stack.Caller(depth)) }
 }

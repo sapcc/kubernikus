@@ -1,19 +1,16 @@
 package main
 
 import (
-	"flag"
+	goflag "flag"
 	"os"
 	"path/filepath"
-
-	"github.com/golang/glog"
 
 	"github.com/sapcc/kubernikus/pkg/cmd"
 	"github.com/sapcc/kubernikus/pkg/cmd/wormhole"
 )
 
 func main() {
-	defer glog.Flush()
-	if f := flag.Lookup("logtostderr"); f != nil {
+	if f := goflag.Lookup("logtostderr"); f != nil {
 		f.Value.Set("true") // log to stderr by default
 	}
 

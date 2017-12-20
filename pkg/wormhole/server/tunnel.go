@@ -18,15 +18,7 @@ type Tunnel struct {
 	Logger log.Logger
 }
 
-type TunnelOptions struct {
-	ClientCA    string
-	Certificate string
-	PrivateKey  string
-
-	Logger log.Logger
-}
-
-func NewTunnel(options *TunnelOptions) (*Tunnel, error) {
+func NewTunnel(options *Options) (*Tunnel, error) {
 	logger := log.With(options.Logger, "wormhole", "tunnel")
 
 	var listener net.Listener

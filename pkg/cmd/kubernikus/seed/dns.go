@@ -3,17 +3,17 @@ package seed
 import (
 	"errors"
 
-	"github.com/go-kit/kit/log"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 
 	"github.com/sapcc/kubernikus/pkg/client/kubernetes"
 	"github.com/sapcc/kubernikus/pkg/cmd"
 	"github.com/sapcc/kubernikus/pkg/controller/ground/bootstrap/dns"
+	logutil "github.com/sapcc/kubernikus/pkg/util/log"
 )
 
-func NewKubeDNSCommand(logger log.Logger) *cobra.Command {
-	o := NewKubeDNSOptions(logger)
+func NewKubeDNSCommand() *cobra.Command {
+	o := NewKubeDNSOptions()
 
 	c := &cobra.Command{
 		Use:   "dns",
@@ -37,16 +37,13 @@ type KubeDNSOptions struct {
 	version    string
 	domain     string
 	clusterIP  string
-
-	Logger log.Logger
 }
 
-func NewKubeDNSOptions(logger log.Logger) *KubeDNSOptions {
+func NewKubeDNSOptions() *KubeDNSOptions {
 	return &KubeDNSOptions{
 		repository: dns.DEFAULT_REPOSITORY,
 		version:    dns.DEFAULT_VERSION,
 		domain:     dns.DEFAULT_DOMAIN,
-		Logger:     logger,
 	}
 }
 
@@ -71,7 +68,8 @@ func (o *KubeDNSOptions) Complete(args []string) error {
 }
 
 func (o *KubeDNSOptions) Run(c *cobra.Command) error {
-	client, err := kubernetes.NewClient(o.kubeConfig, o.context, o.Logger)
+	logger := logutil.NewLogger(c.Flags())
+	client, err := kubernetes.NewClient(o.kubeConfig, o.context, logger)
 	if err != nil {
 		return err
 	}

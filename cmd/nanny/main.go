@@ -5,14 +5,11 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/golang/glog"
-
 	"github.com/sapcc/kubernikus/pkg/cmd"
 	"github.com/sapcc/kubernikus/pkg/cmd/nanny"
 )
 
 func main() {
-	defer glog.Flush()
 	if f := goflag.Lookup("logtostderr"); f != nil {
 		f.Value.Set("true") // log to stderr by default
 	}
