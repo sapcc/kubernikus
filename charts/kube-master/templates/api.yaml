@@ -107,9 +107,9 @@ spec:
             - --authorization-mode=Node,RBAC
             - --cloud-config=/etc/kubernetes/cloudprovider/openstack.config
             - --cloud-provider=openstack
-{{- if hasPrefix .Values.version.kubernetes "v1.8" }}
+{{- if hasPrefix .Values.version.kubernetes "1.8" }}
             - --enable-bootstrap-token-auth=true
-{{- else if hasPrefix .Values.version.kubernetes "v1.7" }}
+{{- else if hasPrefix .Values.version.kubernetes "1.7" }}
             - --experimental-bootstrap-token-auth=true
             - --runtime-config=rbac.authorization.k8s.io/v1alpha1,extensions/v1beta1=true,extensions/v1beta1/thirdpartyresources=true
 {{- end }}

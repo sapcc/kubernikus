@@ -33,7 +33,7 @@ advertiseAddress: 198.18.128.1
 
 version:
 # kubernikus:
-  kubernetes: v1.8.5
+  kubernetes: 1.8.5
 
 api:
   replicaCount: 1

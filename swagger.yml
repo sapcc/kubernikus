@@ -355,7 +355,7 @@ definitions:
         type: string
         default: cluster.local
       version:
-        pattern: '^v[0-9]+\.[0-9]+\.[0-9]+$'
+        pattern: '^[0-9]+\.[0-9]+\.[0-9]+$'
         type: string
         readOnly: true
       name:

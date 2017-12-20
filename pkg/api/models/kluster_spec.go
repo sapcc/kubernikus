@@ -46,7 +46,7 @@ type KlusterSpec struct {
 
 	// version
 	// Read Only: true
-	// Pattern: ^v[0-9]+\.[0-9]+\.[0-9]+$
+	// Pattern: ^[0-9]+\.[0-9]+\.[0-9]+$
 	Version string `json:"version,omitempty"`
 }
 
@@ -142,7 +142,7 @@ func (m *KlusterSpec) validateVersion(formats strfmt.Registry) error {
 		return nil
 	}
 
-	if err := validate.Pattern("version", "body", string(m.Version), `^v[0-9]+\.[0-9]+\.[0-9]+$`); err != nil {
+	if err := validate.Pattern("version", "body", string(m.Version), `^[0-9]+\.[0-9]+\.[0-9]+$`); err != nil {
 		return err
 	}
 

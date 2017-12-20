@@ -2,7 +2,7 @@
 
 package templates
 
-var Node_v1_7 = `
+var Node_1_7 = `
 passwd:
   users:
     - name:          core

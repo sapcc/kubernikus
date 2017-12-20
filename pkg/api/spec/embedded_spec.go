@@ -436,7 +436,7 @@ func init() {
         },
         "version": {
           "type": "string",
-          "pattern": "^v[0-9]+\\.[0-9]+\\.[0-9]+$",
+          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
           "readOnly": true
         }
       },
