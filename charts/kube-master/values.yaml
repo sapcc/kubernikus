@@ -3,7 +3,7 @@
 # Declare variables to be passed into your templates.
 image:
   repository: quay.io/coreos/hyperkube
-  tag: v1.8.5_coreos.0
+  tag: v1.9.0_coreos.0
   pullPolicy: IfNotPresent
 
 # Settings for the openstack cloudprovider
@@ -33,7 +33,7 @@ advertiseAddress: 198.18.128.1
 
 version:
 # kubernikus:
-  kubernetes: 1.8.5
+  kubernetes: 1.9.0
 
 api:
   replicaCount: 1
