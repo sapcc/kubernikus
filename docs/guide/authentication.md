@@ -18,8 +18,8 @@ to the API server, or be treated as an anonymous user.
 ### User-Management
 
 For Kubernikus clusters the user management is handled by OpenStack's Identity
-Service (Keystone). Only users that have been given a `kubernikus_admin` or
-`kubernikus_member` roles by an Keystone administrator are allowed to interact
+Service (Keystone). Only users that have been given a `os:kubernikus_admin` or
+`os:kubernikus_member` roles by an Keystone administrator are allowed to interact
 with the service or clusters.
 
 ### Authentication
