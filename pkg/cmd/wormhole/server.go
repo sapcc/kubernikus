@@ -13,7 +13,7 @@ import (
 
 	"github.com/sapcc/kubernikus/pkg/cmd"
 	logutil "github.com/sapcc/kubernikus/pkg/util/log"
-	"github.com/sapcc/kubernikus/pkg/wormhole"
+	"github.com/sapcc/kubernikus/pkg/wormhole/server"
 )
 
 func NewServerCommand() *cobra.Command {
@@ -35,7 +35,7 @@ func NewServerCommand() *cobra.Command {
 }
 
 type ServerOptions struct {
-	wormhole.ServerOptions
+	server.Options
 }
 
 func NewServerOptions() *ServerOptions {
@@ -70,7 +70,7 @@ func (o *ServerOptions) Run(c *cobra.Command) error {
 	signal.Notify(sigs, os.Interrupt, syscall.SIGTERM) // Push signals into channel
 	wg := &sync.WaitGroup{}                            // Goroutines can add themselves to this to be waited on
 
-	server, err := wormhole.NewServer(&o.ServerOptions)
+	server, err := server.New(&o.Options)
 	if err != nil {
 		return fmt.Errorf("Failed to initialize server: %s", err)
 	}
