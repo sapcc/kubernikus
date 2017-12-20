@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"os"
 
-	kitLog "github.com/go-kit/kit/log"
-	"github.com/go-stack/stack"
 	"github.com/spf13/pflag"
 
 	apipkg "github.com/sapcc/kubernikus/pkg/api"
@@ -92,8 +90,4 @@ func main() {
 		os.Exit(1)
 	}
 
-}
-
-func Caller(depth int) kitLog.Valuer {
-	return func() interface{} { return fmt.Sprintf("%+v", stack.Caller(depth)) }
 }

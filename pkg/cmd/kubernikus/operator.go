@@ -2,14 +2,11 @@ package kubernikus
 
 import (
 	"errors"
-	"fmt"
 	"os"
 	"os/signal"
 	"sync"
 	"syscall"
 
-	"github.com/go-kit/kit/log"
-	"github.com/go-stack/stack"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 
@@ -108,8 +105,4 @@ func (o *Options) Run(c *cobra.Command) error {
 	wg.Wait()   // Wait for all to be stopped
 
 	return nil
-}
-
-func Caller(depth int) log.Valuer {
-	return func() interface{} { return fmt.Sprintf("%+v", stack.Caller(depth)) }
 }
