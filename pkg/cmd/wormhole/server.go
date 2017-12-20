@@ -8,16 +8,16 @@ import (
 	"sync"
 	"syscall"
 
-	"github.com/go-kit/kit/log"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 
 	"github.com/sapcc/kubernikus/pkg/cmd"
-	"github.com/sapcc/kubernikus/pkg/wormhole"
+	logutil "github.com/sapcc/kubernikus/pkg/util/log"
+	"github.com/sapcc/kubernikus/pkg/wormhole/server"
 )
 
-func NewServerCommand(logger log.Logger) *cobra.Command {
-	o := NewServerOptions(log.With(logger, "wormhole", "server"))
+func NewServerCommand() *cobra.Command {
+	o := NewServerOptions()
 
 	c := &cobra.Command{
 		Use:   "server",
@@ -35,12 +35,11 @@ func NewServerCommand(logger log.Logger) *cobra.Command {
 }
 
 type ServerOptions struct {
-	wormhole.ServerOptions
+	server.Options
 }
 
-func NewServerOptions(logger log.Logger) *ServerOptions {
+func NewServerOptions() *ServerOptions {
 	o := &ServerOptions{}
-	o.Logger = logger
 	return o
 }
 
@@ -65,12 +64,13 @@ func (o *ServerOptions) Complete(args []string) error {
 }
 
 func (o *ServerOptions) Run(c *cobra.Command) error {
+	o.Logger = logutil.NewLogger(c.Flags())
 	sigs := make(chan os.Signal, 1)
 	stop := make(chan struct{})
 	signal.Notify(sigs, os.Interrupt, syscall.SIGTERM) // Push signals into channel
 	wg := &sync.WaitGroup{}                            // Goroutines can add themselves to this to be waited on
 
-	server, err := wormhole.NewServer(&o.ServerOptions)
+	server, err := server.New(&o.Options)
 	if err != nil {
 		return fmt.Errorf("Failed to initialize server: %s", err)
 	}

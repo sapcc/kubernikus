@@ -1,4 +1,4 @@
-package wormhole
+package server
 
 import (
 	"sync"
@@ -10,36 +10,23 @@ import (
 
 	kube "github.com/sapcc/kubernikus/pkg/client/kubernetes"
 	"github.com/sapcc/kubernikus/pkg/version"
-	"github.com/sapcc/kubernikus/pkg/wormhole/server"
 )
 
 const (
 	DEFAULT_RECONCILIATION = 5 * time.Minute
 )
 
-type ServerOptions struct {
-	KubeConfig  string
-	Context     string
-	ServiceCIDR string
-	server.TunnelOptions
-
-	Logger log.Logger
-}
-
 type Server struct {
 	factory    informers.SharedInformerFactory
 	client     kubernetes.Interface
-	controller *server.Controller
-	tunnel     *server.Tunnel
+	controller *Controller
+	tunnel     *Tunnel
 
-	Logger log.Logger
+	logger log.Logger
 }
 
-func NewServer(options *ServerOptions) (*Server, error) {
-	s := &Server{Logger: log.With(options.Logger, "wormhole", "server")}
-	if options.TunnelOptions.Logger == nil {
-		options.TunnelOptions.Logger = options.Logger
-	}
+func New(options *Options) (*Server, error) {
+	s := &Server{logger: log.With(options.Logger, "wormhole", "server")}
 
 	client, err := kube.NewClient(options.KubeConfig, options.Context, options.Logger)
 	if err != nil {
@@ -48,27 +35,27 @@ func NewServer(options *ServerOptions) (*Server, error) {
 
 	s.client = client
 	s.factory = informers.NewSharedInformerFactory(s.client, DEFAULT_RECONCILIATION)
-	s.tunnel, err = server.NewTunnel(&options.TunnelOptions)
+	s.tunnel, err = NewTunnel(options)
 	if err != nil {
 		return nil, err
 	}
-	s.controller = server.NewController(s.factory.Core().V1().Nodes(), options.ServiceCIDR, s.tunnel.Server, options.Logger)
+	s.controller = NewController(s.factory.Core().V1().Nodes(), options.ServiceCIDR, s.tunnel.Server, options.Logger)
 
 	return s, nil
 }
 
 func (s *Server) Run(stopCh <-chan struct{}, wg *sync.WaitGroup) {
-	s.Logger.Log(
-		"msg", "powering up wormhole generator",
+	s.logger.Log(
+		"msg", "Starting wormhole server",
 		"version", version.GitCommit,
 	)
 
-	kube.WaitForServer(s.client, stopCh, s.Logger)
+	kube.WaitForServer(s.client, stopCh, s.logger)
 
 	s.factory.Start(stopCh)
 	s.factory.WaitForCacheSync(stopCh)
 
-	s.Logger.Log(
+	s.logger.Log(
 		"msg", "Cache primed. Ready for Action!",
 	)
 
