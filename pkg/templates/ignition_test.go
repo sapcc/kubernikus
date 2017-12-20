@@ -26,8 +26,9 @@ func TestGenerateNode(t *testing.T) {
 			DNSAddress:       "2.2.2.2",
 			DNSDomain:        "cluster.local",
 			Openstack: models.OpenstackSpec{
-				LBSubnetID: "lb-id",
-				RouterID:   "router-id",
+				LBSubnetID:          "lb-id",
+				LBFloatingNetworkID: "lb-fipid",
+				RouterID:            "router-id",
 			},
 		},
 		Status: models.KlusterStatus{
