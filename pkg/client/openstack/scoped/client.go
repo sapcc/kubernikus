@@ -66,7 +66,7 @@ func (c *client) Authenticate(authOptions *tokens.AuthOptions) error {
 
 func (c *client) GetMetadata() (metadata *models.OpenstackMetadata, err error) {
 	metadata = &models.OpenstackMetadata{
-		Flavors:        make([]*models.Flavor, 0),
+		Flavors:        make([]models.Flavor, 0),
 		KeyPairs:       make([]*models.KeyPair, 0),
 		Routers:        make([]*models.Router, 0),
 		SecurityGroups: make([]*models.SecurityGroup, 0),
@@ -224,19 +224,20 @@ func (c *client) getSecurityGroups() ([]*models.SecurityGroup, error) {
 	return result, err
 }
 
-func (c *client) getFlavors() ([]*models.Flavor, error) {
-	result := []*models.Flavor{}
+func (c *client) getFlavors() ([]models.Flavor, error) {
+	result := []models.Flavor{}
 
-	err := flavors.ListDetail(c.ComputeClient, &flavors.ListOpts{}).EachPage(func(page pagination.Page) (bool, error) {
+	err := flavors.ListDetail(c.ComputeClient, &flavors.ListOpts{MinRAM: 2000}).EachPage(func(page pagination.Page) (bool, error) {
 		list, err := flavors.ExtractFlavors(page)
 		if err != nil {
 			return false, err
 		}
 		for _, entry := range list {
-			result = append(result, &models.Flavor{ID: entry.ID, Name: entry.Name})
+			result = append(result, models.Flavor{ID: entry.ID, Name: entry.Name, RAM: int64(entry.RAM), Vcpus: int64(entry.VCPUs)})
 		}
 		return true, nil
 	})
+	models.SortFlavors(result)
 
 	return result, err
 }
