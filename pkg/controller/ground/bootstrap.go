@@ -24,6 +24,9 @@ func SeedKluster(client clientset.Interface, kluster *v1.Kluster) error {
 	if err := SeedKubernikusAdmin(client); err != nil {
 		return err
 	}
+	if err := SeedKubernikusMember(client); err != nil {
+		return err
+	}
 	if err := SeedCinderStorageClass(client); err != nil {
 		return err
 	}
@@ -72,6 +75,26 @@ func SeedKubernikusAdmin(client clientset.Interface) error {
 			{
 				Kind: rbac.GroupKind,
 				Name: "os:kubernetes_admin",
+			},
+		},
+	})
+}
+
+func SeedKubernikusMember(client clientset.Interface) error {
+	return CreateOrUpdateRoleBinding(client, &rbac.RoleBinding{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "kubernikus:member",
+			Namespace: "default",
+		},
+		RoleRef: rbac.RoleRef{
+			APIGroup: rbac.GroupName,
+			Kind:     "Role",
+			Name:     "edit",
+		},
+		Subjects: []rbac.Subject{
+			{
+				Kind: rbac.GroupKind,
+				Name: "os:kubernetes_member",
 			},
 		},
 	})
@@ -135,6 +158,19 @@ func CreateOrUpdateClusterRoleBinding(client clientset.Interface, clusterRoleBin
 
 		if _, err := client.RbacV1beta1().ClusterRoleBindings().Update(clusterRoleBinding); err != nil {
 			return fmt.Errorf("unable to update RBAC clusterrolebinding: %v", err)
+		}
+	}
+	return nil
+}
+
+func CreateOrUpdateRoleBinding(client clientset.Interface, roleBinding *rbac.RoleBinding) error {
+	if _, err := client.RbacV1beta1().RoleBindings(roleBinding.Namespace).Create(roleBinding); err != nil {
+		if !apierrors.IsAlreadyExists(err) {
+			return fmt.Errorf("unable to create RBAC rolebinding: %v", err)
+		}
+
+		if _, err := client.RbacV1beta1().RoleBindings(roleBinding.Namespace).Update(roleBinding); err != nil {
+			return fmt.Errorf("unable to update RBAC rolebinding: %v", err)
 		}
 	}
 	return nil
