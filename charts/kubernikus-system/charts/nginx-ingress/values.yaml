@@ -143,8 +143,10 @@ defaultBackend:
   name: default-backend
   image:
     repository: sapcc/custombackend
-    tag: "0.1"
+    tag: "0.3"
     pullPolicy: IfNotPresent
+
+  custom_http_errors: 502,503,504
 
   extraArgs: {}
 
