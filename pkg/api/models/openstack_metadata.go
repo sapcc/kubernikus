@@ -19,7 +19,7 @@ import (
 type OpenstackMetadata struct {
 
 	// flavors
-	Flavors []*Flavor `json:"flavors"`
+	Flavors []Flavor `json:"flavors"`
 
 	// key pairs
 	KeyPairs []*KeyPair `json:"keyPairs"`
@@ -65,24 +65,6 @@ func (m *OpenstackMetadata) validateFlavors(formats strfmt.Registry) error {
 
 	if swag.IsZero(m.Flavors) { // not required
 		return nil
-	}
-
-	for i := 0; i < len(m.Flavors); i++ {
-
-		if swag.IsZero(m.Flavors[i]) { // not required
-			continue
-		}
-
-		if m.Flavors[i] != nil {
-
-			if err := m.Flavors[i].Validate(formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("flavors" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
 	}
 
 	return nil
@@ -196,6 +178,12 @@ type Flavor struct {
 
 	// name
 	Name string `json:"name,omitempty"`
+
+	// ram
+	RAM int64 `json:"ram"`
+
+	// vcpus
+	Vcpus int64 `json:"vcpus"`
 }
 
 // Validate validates this flavor

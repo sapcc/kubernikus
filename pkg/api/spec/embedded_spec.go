@@ -550,9 +550,16 @@ func init() {
               },
               "name": {
                 "type": "string"
+              },
+              "ram": {
+                "type": "integer"
+              },
+              "vcpus": {
+                "type": "integer"
               }
             },
-            "x-go-name": "Flavor"
+            "x-go-name": "Flavor",
+            "x-nullable": false
           }
         },
         "keyPairs": {
