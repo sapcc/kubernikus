@@ -12,6 +12,7 @@ import (
 	"github.com/sapcc/kubernikus/pkg/controller/ground/bootstrap/dns"
 
 	"github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
+	client2 "github.com/sapcc/kubernikus/pkg/api/client"
 )
 
 func SeedKluster(client clientset.Interface, kluster *v1.Kluster) error {
@@ -163,13 +164,13 @@ func CreateOrUpdateClusterRoleBinding(client clientset.Interface, clusterRoleBin
 	return nil
 }
 
-func CreateOrUpdateRoleBinding(client clientset.Interface, RoleBinding *rbac.RoleBinding) error {
-	if _, err := client.RbacV1beta1().RoleBindings("default").Create(RoleBinding); err != nil {
+func CreateOrUpdateRoleBinding(client clientset.Interface, roleBinding *rbac.RoleBinding) error {
+	if _, err := client.RbacV1beta1().RoleBindings(roleBinding.Namespace).Create(roleBinding); err != nil {
 		if !apierrors.IsAlreadyExists(err) {
 			return fmt.Errorf("unable to create RBAC rolebinding: %v", err)
 		}
 
-		if _, err := client.RbacV1beta1().RoleBindings("default").Update(RoleBinding); err != nil {
+		if _, err := client.RbacV1beta1().RoleBindings(roleBinding.Namespace).Update(roleBinding); err != nil {
 			return fmt.Errorf("unable to update RBAC rolebinding: %v", err)
 		}
 	}
