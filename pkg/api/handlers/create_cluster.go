@@ -39,6 +39,14 @@ func (d *createCluster) Handle(params operations.CreateClusterParams, principal 
 		}
 	}
 	kluster, err := kubernikus.NewKlusterFactory().KlusterFor(spec)
+	if err != nil {
+		logger.Log(
+			"msg", "failed to create cluster",
+			"kluster", name,
+			"project", principal.Account,
+			"err", err)
+		return NewErrorResponse(&operations.CreateClusterDefault{}, 400, err.Error())
+	}
 
 	kluster.ObjectMeta = metav1.ObjectMeta{
 		Name:        qualifiedName(name, principal.Account),

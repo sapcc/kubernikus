@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"strings"
 	"text/template"
 
 	"github.com/Masterminds/sprig"
@@ -36,6 +37,15 @@ var Ignition = &ignition{
 	},
 }
 
+func (i *ignition) getIgnitionTemplate(kluster *kubernikusv1.Kluster) string {
+	switch {
+	case strings.HasPrefix(kluster.Spec.Version, "1.8"):
+		return Node_1_8
+	default:
+		return Node_1_7
+	}
+}
+
 func (i *ignition) GenerateNode(kluster *kubernikusv1.Kluster, secret *v1.Secret, logger log.Logger) ([]byte, error) {
 	for _, field := range i.requiredNodeSecrets {
 		if _, ok := secret.Data[field]; !ok {
@@ -43,7 +53,8 @@ func (i *ignition) GenerateNode(kluster *kubernikusv1.Kluster, secret *v1.Secret
 		}
 	}
 
-	tmpl, err := template.New("node").Funcs(sprig.TxtFuncMap()).Parse(Node)
+	ignition := i.getIgnitionTemplate(kluster)
+	tmpl, err := template.New("node").Funcs(sprig.TxtFuncMap()).Parse(ignition)
 	if err != nil {
 		return nil, err
 	}
@@ -65,6 +76,7 @@ func (i *ignition) GenerateNode(kluster *kubernikusv1.Kluster, secret *v1.Secret
 		OpenstackDomain                    string
 		OpenstackRegion                    string
 		OpenstackLBSubnetID                string
+		OpenstackLBFloatingNetworkID       string
 		OpenstackRouterID                  string
 		KubernikusImage                    string
 		KubernikusImageTag                 string
@@ -85,6 +97,7 @@ func (i *ignition) GenerateNode(kluster *kubernikusv1.Kluster, secret *v1.Secret
 		OpenstackDomain:                    string(secret.Data["openstack-domain-name"]),
 		OpenstackRegion:                    string(secret.Data["openstack-region"]),
 		OpenstackLBSubnetID:                kluster.Spec.Openstack.LBSubnetID,
+		OpenstackLBFloatingNetworkID:       kluster.Spec.Openstack.LBFloatingNetworkID,
 		OpenstackRouterID:                  kluster.Spec.Openstack.RouterID,
 		KubernikusImage:                    "sapcc/kubernikus",
 		KubernikusImageTag:                 version.GitCommit,

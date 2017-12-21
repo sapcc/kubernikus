@@ -75,8 +75,9 @@ type Project struct {
 }
 
 type Router struct {
-	ID       string
-	Networks []Network
+	ID                string
+	ExternalNetworkID string
+	Networks          []Network
 }
 
 type Network struct {
@@ -312,7 +313,7 @@ func (c *client) GetRouters(project_id string) ([]Router, error) {
 			return false, err
 		}
 		for _, router := range routers {
-			resultRouter := Router{ID: router.ID}
+			resultRouter := Router{ID: router.ID, ExternalNetworkID: router.GatewayInfo.NetworkID}
 			networkIDs, err := getRouterNetworks(networkClient, router.ID)
 			if err != nil {
 				return false, err

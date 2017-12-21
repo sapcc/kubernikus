@@ -354,6 +354,10 @@ definitions:
         x-nullable: false
         type: string
         default: cluster.local
+      version:
+        pattern: '^[0-9]+\.[0-9]+\.[0-9]+$'
+        type: string
+        readOnly: true
       name:
         type: string
         readOnly: true
@@ -369,6 +373,9 @@ definitions:
         type: string
       lbSubnetID:
         x-go-name: LBSubnetID
+        type: string
+      lbFloatingNetworkID:
+        x-go-name: LBFloatingNetworkID
         type: string
       securityGroupID:
         type: string
