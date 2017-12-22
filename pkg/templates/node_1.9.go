@@ -243,10 +243,6 @@ storage:
       contents:
         inline: |-
           net.ipv4.conf.all.accept_redirects=1
-    - path: /etc/coreos/docker-1.12
-      filesystem: root
-      contents:
-        inline: yes
     - path: /etc/kubernetes/certs/kubelet-clients-ca.pem
       filesystem: root
       mode: 0644
@@ -368,6 +364,7 @@ storage:
           [LoadBalancer]
           lb-version=v2
           subnet-id = {{ .OpenstackLBSubnetID }}
+          floating-network-id = {{ .OpenstackLBFloatingNetworkID }} 
           create-monitor = yes
           monitor-delay = 1m
           monitor-timeout = 30s
