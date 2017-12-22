@@ -42,7 +42,7 @@ It allows to easily manage Kubernetes clusters that are natively integrated with
 
 More documentation can be found at:
 
-  * [blob/master/docs/](blob/master/docs/)
+  * [Kubernikus Docs](./docs/)
   
 ## Contact
 
