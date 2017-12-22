@@ -7,6 +7,7 @@ import (
 
 	"github.com/databus23/keystone"
 	"github.com/databus23/keystone/cache/memory"
+	"github.com/go-kit/kit/log"
 	errors "github.com/go-openapi/errors"
 	flag "github.com/spf13/pflag"
 
@@ -19,12 +20,15 @@ func init() {
 	flag.StringVar(&authURL, "auth-url", "", "Openstack identity v3 auth url")
 }
 
-func Keystone() func(token string) (*models.Principal, error) {
+func Keystone(logger log.Logger) func(token string) (*models.Principal, error) {
 
 	if !(strings.HasSuffix(authURL, "/v3") || strings.HasSuffix(authURL, "/v3/")) {
 		authURL = fmt.Sprintf("%s/%s", strings.TrimRight(authURL, "/"), "/v3")
 	}
 
+	keystone.Log = func(format string, a ...interface{}) {
+		logger.Log("library", "keystone", "msg", fmt.Sprintf(format, a...))
+	}
 	auth := keystone.New(authURL)
 	auth.TokenCache = memory.New(10 * time.Minute)
 
