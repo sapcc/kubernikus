@@ -84,7 +84,7 @@ func (klusterFactory) KlusterFor(spec models.KlusterSpec) (*v1.Kluster, error) {
 	}
 
 	if k.Spec.Version != util.DEFAULT_KUBERNETES_VERSION {
-		return nil, fmt.Errorf("Unabled to create cluster. Unsupported Kubernetes version.")
+		return nil, fmt.Errorf("Unable to create cluster. Unsupported Kubernetes version.")
 	}
 
 	if k.ObjectMeta.Name == "" {

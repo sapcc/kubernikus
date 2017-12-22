@@ -21,7 +21,7 @@ const (
 	KLUSTER_RECHECK_INTERVAL = 5 * time.Minute
 )
 
-var ErrUnkownKluster = errors.New("unkown kluster")
+var ErrUnkownKluster = errors.New("unknown kluster")
 
 type Controller interface {
 	Run(int, <-chan struct{}, *sync.WaitGroup)
