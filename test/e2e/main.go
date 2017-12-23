@@ -20,7 +20,7 @@ func init() {
 	pflag.StringVar(&options.ConfigFile, "configFile", "test/e2e/e2e_config.yaml", "Path to configuration file")
 	pflag.BoolVar(&options.IsTestCreate, "create", false, "Create a new cluster")
 	pflag.BoolVar(&options.IsTestNetwork, "network", false, "Run network tests")
-	pflag.BoolVar(&options.IsTestNetwork, "volume", false, "Run volume tests")
+	pflag.BoolVar(&options.IsTestVolume, "volume", false, "Run volume tests")
 	pflag.BoolVar(&options.IsTestDelete, "delete", false, "Delete the cluster")
 	pflag.BoolVar(&options.IsTestAll, "all", false, "The whole show. Test everything")
 	pflag.BoolVar(&options.IsTestAPI, "api", false, "Test API")
