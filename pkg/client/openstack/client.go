@@ -497,7 +497,7 @@ func (c *client) getDomainID(client *gophercloud.ServiceClient, domainName strin
 			c.domainNameToID.Store(domainName, domains[0].ID)
 			return false, nil
 		default:
-			return false, errors.New("More then one domain found")
+			return false, errors.New("More than one domain found")
 		}
 	})
 	id, _ := c.domainNameToID.Load(domainName)

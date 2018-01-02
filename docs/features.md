@@ -7,7 +7,7 @@ type: index
 
   * Architecured to be operated as a managed service
   * Masters are managed centrally 
-  * Nodes are dececentralized in customer's projects
+  * Nodes are decentralized in customer's projects
 
 ## Compliant
 
