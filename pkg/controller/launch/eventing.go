@@ -26,7 +26,7 @@ func (epm *EventingPoolManager) CreateNode() (id string, err error) {
 	id, err = epm.PoolManager.CreateNode()
 
 	if err == nil {
-		epm.Recorder.Eventf(epm.Kluster, api_v1.EventTypeNormal, events.SuccessfullCreateNode, "Successfully created node %v", id)
+		epm.Recorder.Eventf(epm.Kluster, api_v1.EventTypeNormal, events.SuccessfulCreateNode, "Successfully created node %v", id)
 	} else {
 		epm.Recorder.Eventf(epm.Kluster, api_v1.EventTypeWarning, events.FailedCreateNode, "Failed to created node: %v", err)
 	}
@@ -38,7 +38,7 @@ func (epm *EventingPoolManager) DeleteNode(id string) (err error) {
 	err = epm.PoolManager.DeleteNode(id)
 
 	if err == nil {
-		epm.Recorder.Eventf(epm.Kluster, api_v1.EventTypeNormal, events.SuccessfullDeleteNode, "Successfully deleted node %v", id)
+		epm.Recorder.Eventf(epm.Kluster, api_v1.EventTypeNormal, events.SuccessfulDeleteNode, "Successfully deleted node %v", id)
 	} else {
 		epm.Recorder.Eventf(epm.Kluster, api_v1.EventTypeWarning, events.FailedDeleteNode, "Failed to delete node: %v", err)
 	}
