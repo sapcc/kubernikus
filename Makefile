@@ -63,6 +63,11 @@ push:
 	docker push sapcc/kubernikus-kubectl:$(VERSION)
 	docker push sapcc/kubernikus-kubectl:latest
 
+CHANGELOG.md:
+	docker build $(BUILD_ARGS) -t sapcc/kubernikus-changelog-builder:$(VERSION) --cache-from=sapcc/kubernikus-changelog-builder:latest ./contrib/kubernikus-changelog-builder
+	docker tag sapcc/kubernikus-changelog-builder:$(VERSION)  sapcc/kubernikus-changelog-builder:latest
+	docker run --name changelog -v $(PWD):/host sapcc/kubernikus-changelog-builder:latest
+
 documentation:
 	docker build $(BUILD_ARGS) -t sapcc/kubernikus-docs-builder:$(VERSION) --cache-from=sapcc/kubernikus-docs-builder:latest ./contrib/kubernikus-docs-builder
 	docker build $(BUILD_ARGS) -t sapcc/kubernikus-docs:$(VERSION)         -f Dockerfile.kubernikus-docs .
