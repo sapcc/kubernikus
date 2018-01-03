@@ -36,10 +36,10 @@ func TestAuthorizer(t *testing.T) {
 	assert.NoError(t, err)
 
 	req := httptest.NewRequest("GET", "/api/v1/clusters", nil)
-	assert.NoError(t, authorizer.Authorize(req, &admin), "admin can list clustes")
+	assert.NoError(t, authorizer.Authorize(req, &admin), "admin can list clusters")
 	assert.NoError(t, authorizer.Authorize(req, &user), "user can list clusters")
 
 	req = httptest.NewRequest("POST", "/api/v1/clusters", nil)
-	assert.NoError(t, authorizer.Authorize(req, &admin), "admin can create clustes")
-	assert.Error(t, authorizer.Authorize(req, &user), "user can not create clustes")
+	assert.NoError(t, authorizer.Authorize(req, &admin), "admin can create clusters")
+	assert.Error(t, authorizer.Authorize(req, &user), "user can not create clusters")
 }

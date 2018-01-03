@@ -8,4 +8,4 @@ title: Best Practices
   
 ## Automating Authentication Refresh
 
-## Integrationn for CI Systems
+## Integration for CI Systems

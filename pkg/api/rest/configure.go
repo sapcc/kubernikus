@@ -35,7 +35,7 @@ func Configure(api *operations.KubernikusAPI, rt *apipkg.Runtime) error {
 	api.JSONProducer = runtime.JSONProducer()
 
 	// Applies when the "x-auth-token" header is set
-	api.KeystoneAuth = auth.Keystone()
+	api.KeystoneAuth = auth.Keystone(rt.Logger)
 
 	// Set your custom authorizer if needed. Default one is security.Authorized()
 	rules, err := auth.LoadPolicy(auth.DefaultPolicyFile)

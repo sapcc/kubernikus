@@ -39,6 +39,8 @@ var Ignition = &ignition{
 
 func (i *ignition) getIgnitionTemplate(kluster *kubernikusv1.Kluster) string {
 	switch {
+	case strings.HasPrefix(kluster.Spec.Version, "1.9"):
+		return Node_1_9
 	case strings.HasPrefix(kluster.Spec.Version, "1.8"):
 		return Node_1_8
 	default:

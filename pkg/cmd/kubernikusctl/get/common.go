@@ -39,7 +39,7 @@ func (o *GetOptions) SetupKubernikusClient() error {
 	if o._url == "" {
 		fmt.Println("Auto-Detecting Kubernikus Host ...")
 		if o.url, err = o.Openstack.DefaultKubernikusURL(); err != nil {
-			glog.V(2).Infof("Error detecting kubernikust host: %+v", err)
+			glog.V(2).Infof("Error detecting kubernikus host: %+v", err)
 			return errors.Errorf("You need to provide --url. Auto-Detection failed.")
 		}
 	} else {

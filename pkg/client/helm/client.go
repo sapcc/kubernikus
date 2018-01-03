@@ -39,7 +39,7 @@ func NewClient(kubeClient kubernetes.Interface, kubeConfig *rest.Config, logger 
 		//Lets see how this goes: We close the tunnel as soon as the client is GC'ed.
 		runtime.SetFinalizer(client, func(_ *helm.Client) {
 			logger.Log(
-				"msg", "trearing down tunnel to tiller",
+				"msg", "tearing down tunnel to tiller",
 				"host", tillerHost,
 				"v", 2)
 			tunnel.Close()

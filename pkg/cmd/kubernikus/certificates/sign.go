@@ -57,7 +57,7 @@ func (o *SignOptions) BindFlags(flags *pflag.FlagSet) {
 	flags.StringVar(&o.KubeConfig, "kubeconfig", o.KubeConfig, "Path to the kubeconfig file to use to talk to the Kubernetes apiserver. If unset, try the environment variable KUBECONFIG, as well as in-cluster configuration")
 	flags.StringVar(&o.Namespace, "namespace", o.Namespace, "Namespace where the kluster is located")
 	flags.StringVar(&o.CN, "cn", o.CN, "Common name in the certificate")
-	flags.StringVar(&o.Organization, "organizaion", o.Organization, "Common name in the certificate")
+	flags.StringVar(&o.Organization, "organization", o.Organization, "Common name in the certificate")
 	flags.StringVar(&o.ApiURL, "api-url", o.ApiURL, "URL for the apiserver")
 }
 
