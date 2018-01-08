@@ -6,7 +6,7 @@ title: Changing Docs
 
 The self-hosted documentation served by the apiserver is generated using Hugo.
 
-It constists of 2 parts:
+It consists of 2 parts:
 
   * Hugo Theme in `contrib/kubernikus-docs-builder/data`
   * Markdown docs in `docs`

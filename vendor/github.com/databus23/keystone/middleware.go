@@ -12,10 +12,15 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
 	"net/http"
 	"strings"
 	"time"
 )
+
+var Log func(string, ...interface{}) = func(format string, a ...interface{}) {
+	log.Printf(format, a...)
+}
 
 // Cache provides the interface for cache implementations.
 type Cache interface {
@@ -62,7 +67,7 @@ func (a *Auth) Validate(authToken string) (*Token, error) {
 	if a.TokenCache != nil {
 		var cachedToken Token
 		if ok := a.TokenCache.Get(authToken, &cachedToken); ok && cachedToken.Valid() {
-			fmt.Println("Found valid token in cache")
+			Log("Found valid token in cache")
 			return &cachedToken, nil
 		}
 	}
@@ -150,7 +155,7 @@ func (h *handler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	context, err := h.Auth.Validate(authToken)
 	if err != nil {
 		//ToDo: How to handle logging, printing to stdout isn't the best thing
-		fmt.Println("Failed to validate token. ", err)
+		Log("Failed to validate token: %v", err)
 		return
 	}
 

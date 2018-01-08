@@ -101,7 +101,7 @@ func (op *GroundControl) Run(threadiness int, stopCh <-chan struct{}, wg *sync.W
 			select {
 			case <-ticker.C:
 				op.Logger.Log(
-					"msg", "I now would do reconciliation if its was implemented",
+					"msg", "I now would do reconciliation if it was implemented",
 					"kluster_recheck_interval", KLUSTER_RECHECK_INTERVAL,
 					"v", 2)
 				//op.queue.Add(true)
@@ -310,7 +310,7 @@ func (op *GroundControl) klusterUpdate(cur, old interface{}) {
 
 func (op *GroundControl) updatePhase(kluster *v1.Kluster, phase models.KlusterPhase, message string) error {
 
-	//Never modify the cache, at leasts thats what I've been told
+	//Never modify the cache, at least that's what I've been told
 	kluster, err := op.Clients.Kubernikus.Kubernikus().Klusters(kluster.Namespace).Get(kluster.Name, metav1.GetOptions{})
 	if err != nil {
 		return err
@@ -539,7 +539,7 @@ func (op *GroundControl) discoverOpenstackInfo(kluster *v1.Kluster) error {
 				"project", kluster.Account())
 			copy.Spec.Openstack.RouterID = selectedRouter.ID
 		} else {
-			return fmt.Errorf("Found %d routers in project. Autoconfiguration not possible.", numRouters)
+			return fmt.Errorf("Found %d routers in project. Auto-configuration not possible.", numRouters)
 		}
 	}
 

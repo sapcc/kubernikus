@@ -50,7 +50,7 @@ imports:
   subpackages:
   - group
 - name: github.com/databus23/keystone
-  version: 12c566d59fdb198f5a6d7ad7dfbf99f2a7e09929
+  version: f642ecf9fb5eacb10ed79d7e7fc17e5933a296ed
   subpackages:
   - cache/memory
 - name: github.com/databus23/requestutil

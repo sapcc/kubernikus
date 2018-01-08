@@ -29,7 +29,7 @@ func NewTunnel(options *Options) (*Tunnel, error) {
 		}
 		caPool, err := loadCAFile(options.ClientCA)
 		if err != nil {
-			return nil, fmt.Errorf("Faile to load ca file %s: %s", options.ClientCA, err)
+			return nil, fmt.Errorf("Failed to load ca file %s: %s", options.ClientCA, err)
 		}
 		tlsConfig.ClientAuth = tls.RequireAndVerifyClientCert
 		tlsConfig.ClientCAs = caPool

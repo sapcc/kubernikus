@@ -17,7 +17,7 @@ You will need to provide all of the options which are:
 ``` --auth-project-domain monsoon3``` the domain of the project  
 ``` --auth-username techuser1``` the user with which to interact  
 
-### Chaging values.yaml
+### Changing values.yaml
 After the fact some values have to be added to the ```values.yaml```:
 ```
 api:
@@ -37,7 +37,7 @@ The api part represents the host of the ingress definition and has to have some 
 
 These openstack things need also be added:  
 ```region```  the region in which this is running  
-```lbSubnetID```  the private _subnet_ to which the loadbalancer should be added  
+```lbSubnetID```  the private _subnet_ to which the load balancer should be added  
 ```routerID```  the id of your router.  
 
 ### The user

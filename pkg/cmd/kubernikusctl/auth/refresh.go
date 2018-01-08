@@ -104,7 +104,7 @@ func (o *RefreshOptions) Run(c *cobra.Command) error {
 	}
 
 	if ok, err := o.isCertificateValid(); err != nil {
-		return errors.Wrap(err, "Verification of certifcates failed.")
+		return errors.Wrap(err, "Verification of certificates failed.")
 	} else {
 		if ok && !o.force {
 			glog.V(2).Infof("Certificates are good. Doing nothing.")
@@ -200,7 +200,7 @@ func (o *RefreshOptions) loadKubeconfig() (err error) {
 }
 
 func (o *RefreshOptions) isKubernikusContext() (bool, error) {
-	caCert, err := o.getCACertifciate()
+	caCert, err := o.getCACertificate()
 	if err != nil {
 		return false, err
 	}
@@ -235,7 +235,7 @@ func (o *RefreshOptions) autoDetectKubernikusClientMetadata() (string, string, e
 
 	parts := strings.Split(cert.Subject.CommonName, "@")
 	if len(parts) != 2 {
-		return "", "", errors.Errorf("Couldln't extract username/domain from client certificate %v", parts)
+		return "", "", errors.Errorf("Couldn't extract username/domain from client certificate %v", parts)
 	}
 
 	return parts[0], parts[1], nil
@@ -317,7 +317,7 @@ func (o *RefreshOptions) getRawCACertificate() ([]byte, error) {
 	return certData, nil
 }
 
-func (o *RefreshOptions) getCACertifciate() (*x509.Certificate, error) {
+func (o *RefreshOptions) getCACertificate() (*x509.Certificate, error) {
 	data, err := o.getRawCACertificate()
 	if err != nil {
 		return nil, err

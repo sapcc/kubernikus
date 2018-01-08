@@ -48,7 +48,7 @@ Triggering a specific phase ca be done as seen below:
 ```
 make tests-e2e <phase>
 ```
-Availabe phases are:
+Available phases are:
 ```
 create  - create a new cluster
 api     - run API tests

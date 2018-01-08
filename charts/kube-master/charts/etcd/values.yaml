@@ -3,7 +3,7 @@
 # Declare variables to be passed into your templates.
 image:
   repository: gcr.io/google_containers/etcd
-  tag: 3.0.17
+  tag: 3.1.10
   pullPolicy: IfNotPresent
 ## Persist data to a persitent volume
 persistence:
