@@ -83,7 +83,7 @@ func SeedKubernikusAdmin(client clientset.Interface) error {
 func SeedKubernikusMember(client clientset.Interface) error {
 	return CreateOrUpdateRoleBinding(client, &rbac.RoleBinding{
 		ObjectMeta: metav1.ObjectMeta{
-			Name: "kubernikus:member",
+			Name:      "kubernikus:member",
 			Namespace: "default",
 		},
 		RoleRef: rbac.RoleRef{
