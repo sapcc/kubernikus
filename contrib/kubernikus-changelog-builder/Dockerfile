@@ -8,4 +8,4 @@ RUN gem install github_changelog_generator --version $GITHUB_CHANGELOG_GENERATOR
 
 COPY .github_changelog_generator /
 
-ENTRYPOINT ["github_changelog_generator"]
+CMD github_changelog_generator --token $GITHUB_TOKEN
