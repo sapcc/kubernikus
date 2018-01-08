@@ -64,9 +64,13 @@ push:
 	docker push sapcc/kubernikus-kubectl:latest
 
 CHANGELOG.md:
+ifndef GITHUB_TOKEN
+	$(error you need to set KUBERNIKUS_TOKEN to a personal access token that has repo:read permission)
+else
 	docker build $(BUILD_ARGS) -t sapcc/kubernikus-changelog-builder:$(VERSION) --cache-from=sapcc/kubernikus-changelog-builder:latest ./contrib/kubernikus-changelog-builder
 	docker tag sapcc/kubernikus-changelog-builder:$(VERSION)  sapcc/kubernikus-changelog-builder:latest
-	docker run --name changelog -v $(PWD):/host sapcc/kubernikus-changelog-builder:latest
+	docker run --rm -v $(PWD):/host -e GITHUB_TOKEN=$(GITHUB_TOKEN) sapcc/kubernikus-changelog-builder:latest
+endif
 
 documentation:
 	docker build $(BUILD_ARGS) -t sapcc/kubernikus-docs-builder:$(VERSION) --cache-from=sapcc/kubernikus-docs-builder:latest ./contrib/kubernikus-docs-builder

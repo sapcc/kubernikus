@@ -1,5 +1,4 @@
 project=kubernikus
 user=sapcc
 exclude_tags_regex=v1.0.0+.+
-token=4ff4031cc4a09be557b020870e2111a6fe65c2d0
 output=/host/CHANGELOG.md
