@@ -220,6 +220,9 @@ type KeyPair struct {
 
 	// name
 	Name string `json:"name,omitempty"`
+
+	// public key
+	PublicKey string `json:"publicKey,omitempty"`
 }
 
 // Validate validates this key pair
