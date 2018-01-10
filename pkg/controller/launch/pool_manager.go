@@ -108,7 +108,7 @@ func (cpm *ConcretePoolManager) CreateNode() (id string, err error) {
 		return "", err
 	}
 
-	userdata, err := templates.Ignition.GenerateNode(cpm.Kluster, secret)
+	userdata, err := templates.Ignition.GenerateNode(cpm.Kluster, secret, cpm.Logger)
 	if err != nil {
 		return "", err
 	}

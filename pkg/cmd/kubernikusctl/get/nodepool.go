@@ -63,7 +63,7 @@ func validateNodePoolCommandArgs(args []string) error {
 		return errors.Errorf("Surplus arguments to nodepool, %v", args)
 	}
 	if len(args) < 1 {
-		return errors.Errorf("No clustername given, %v", args)
+		return errors.Errorf("No cluster name given, %v", args)
 	}
 	return nil
 }

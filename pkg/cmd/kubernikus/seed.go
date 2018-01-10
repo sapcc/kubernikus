@@ -7,6 +7,7 @@ import (
 )
 
 func NewSeedCommand() *cobra.Command {
+
 	c := &cobra.Command{
 		Use:   "seed",
 		Short: "Seed stuff",

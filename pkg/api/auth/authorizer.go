@@ -58,7 +58,7 @@ func NewOsloPolicyAuthorizer(document *loads.Document, rules map[string]string) 
 			//Add this once go-openapi/spec includes this fix: https://github.com/go-openapi/spec/pull/40
 			//secSchemes := document.Analyzer.SecurityDefinitionsFor(operation)
 			//if _, ok := rules[operation.ID]; !ok && len(secSchemes) > 0 {
-			//  glog.Errorf("No policy found for %s. The api route will not be accessible", operation.ID)
+			//  logger.Log("msg", "policy not found. The api route will not be accessible", "operation", operation.ID)
 			//}
 		}
 	}

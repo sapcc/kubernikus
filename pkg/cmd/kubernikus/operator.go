@@ -2,15 +2,11 @@ package kubernikus
 
 import (
 	"errors"
-	goflag "flag"
-	"fmt"
 	"os"
 	"os/signal"
 	"sync"
 	"syscall"
 
-	"github.com/go-kit/kit/log"
-	"github.com/go-stack/stack"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 
@@ -22,10 +18,6 @@ import (
 
 func NewOperatorCommand() *cobra.Command {
 	o := NewOperatorOptions()
-
-	if f := goflag.Lookup("logtostderr"); f != nil {
-		f.Value.Set("true") // log to stderr by default
-	}
 
 	c := &cobra.Command{
 		Use:   "operator",
@@ -91,18 +83,21 @@ func (o *Options) Complete(args []string) error {
 }
 
 func (o *Options) Run(c *cobra.Command) error {
-	var logger log.Logger
-	logger = log.NewLogfmtLogger(log.NewSyncWriter(os.Stderr))
-	logger = logutil.NewTrailingNilFilter(logger)
-	logger = log.With(logger, "ts", log.DefaultTimestampUTC, "caller", Caller(3))
+
+	logger := logutil.NewLogger(c.Flags())
 
 	sigs := make(chan os.Signal, 1)
 	stop := make(chan struct{})
 	signal.Notify(sigs, os.Interrupt, syscall.SIGTERM) // Push signals into channel
 	wg := &sync.WaitGroup{}                            // Goroutines can add themselves to this to be waited on
 
-	go controller.NewKubernikusOperator(&o.KubernikusOperatorOptions, logger).Run(stop, wg)
-	go metrics.ExposeMetrics(o.MetricPort, stop, wg)
+	operator, err := controller.NewKubernikusOperator(&o.KubernikusOperatorOptions, logger)
+	if err != nil {
+		return err
+	}
+
+	go operator.Run(stop, wg)
+	go metrics.ExposeMetrics("0.0.0.0", o.MetricPort, stop, wg, logger)
 
 	<-sigs // Wait for signals (this hangs until a signal arrives)
 	logger.Log("msg", "shutting down", "v", 1)
@@ -110,8 +105,4 @@ func (o *Options) Run(c *cobra.Command) error {
 	wg.Wait()   // Wait for all to be stopped
 
 	return nil
-}
-
-func Caller(depth int) log.Valuer {
-	return func() interface{} { return fmt.Sprintf("%+v", stack.Caller(depth)) }
 }

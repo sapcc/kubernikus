@@ -3,10 +3,8 @@ package nanny
 import (
 	"flag"
 	"net"
-	"os"
 	"time"
 
-	"github.com/go-kit/kit/log"
 	"github.com/gophercloud/gophercloud/openstack/identity/v3/tokens"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
@@ -26,7 +24,7 @@ func NewCommand(name string) *cobra.Command {
 			if err := cmd.Validate(o, c, args); err != nil {
 				return err
 			}
-			return run(o)
+			return o.Run(c)
 		},
 	}
 	o.BindFlags(c.Flags())
@@ -66,11 +64,8 @@ func (o *Options) BindFlags(flags *pflag.FlagSet) {
 	flags.DurationVar(&o.SyncPeriod, "sync-period", o.SyncPeriod, "How often should the sync handler run.")
 }
 
-func run(o *Options) error {
-	var logger log.Logger
-	logger = log.NewLogfmtLogger(log.NewSyncWriter(os.Stderr))
-	logger = logutil.NewTrailingNilFilter(logger)
-	logger = log.With(logger, "ts", log.DefaultTimestampUTC, "caller", log.DefaultCaller)
+func (o *Options) Run(c *cobra.Command) error {
+	logger := logutil.NewLogger(c.Flags())
 
 	group := cmd.Runner()
 	authOpts := tokens.AuthOptions{

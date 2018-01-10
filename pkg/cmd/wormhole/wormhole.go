@@ -7,6 +7,7 @@ import (
 )
 
 func NewCommand(name string) *cobra.Command {
+
 	c := &cobra.Command{
 		Use:   name,
 		Short: "Wormhole as a Service",

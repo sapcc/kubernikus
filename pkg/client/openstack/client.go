@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/golang/glog"
+	"github.com/go-kit/kit/log"
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/servers"
@@ -49,6 +49,8 @@ type client struct {
 
 	domainNameToID sync.Map
 	roleNameToID   sync.Map
+
+	Logger log.Logger
 }
 
 type Client interface {
@@ -73,8 +75,9 @@ type Project struct {
 }
 
 type Router struct {
-	ID       string
-	Networks []Network
+	ID                string
+	ExternalNetworkID string
+	Networks          []Network
 }
 
 type Network struct {
@@ -165,7 +168,7 @@ func (r *StateExt) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
-func NewClient(secrets typedv1.SecretInterface, klusterEvents cache.SharedIndexInformer, authURL, username, password, domain, project, projectDomain string) Client {
+func NewClient(secrets typedv1.SecretInterface, klusterEvents cache.SharedIndexInformer, authURL, username, password, domain, project, projectDomain string, logger log.Logger) Client {
 
 	c := &client{
 		authURL:           authURL,
@@ -175,12 +178,16 @@ func NewClient(secrets typedv1.SecretInterface, klusterEvents cache.SharedIndexI
 		authProject:       project,
 		authProjectDomain: projectDomain,
 		secrets:           secrets,
+		Logger:            log.With(logger, "client", "openstack"),
 	}
 
 	klusterEvents.AddEventHandler(cache.ResourceEventHandlerFuncs{
 		DeleteFunc: func(obj interface{}) {
 			if kluster, ok := obj.(*kubernikus_v1.Kluster); ok {
-				glog.V(5).Infof("Deleting shared openstack client for kluster %s", kluster.Name)
+				c.Logger.Log(
+					"msg", "deleting shared openstack client",
+					"kluster", kluster.Name,
+					"v", 5)
 				c.klusterClients.Delete(kluster.GetUID())
 			}
 		},
@@ -248,7 +255,13 @@ func (c *client) klusterClientFor(kluster *kubernikus_v1.Kluster) (*gophercloud.
 		},
 	}
 
-	glog.V(5).Infof("AuthOptions: %#v", authOptions)
+	c.Logger.Log(
+		"msg", "using authOptions from secret",
+		"identity_endpoint", authOptions.IdentityEndpoint,
+		"username", authOptions.Username,
+		"domain_name", authOptions.DomainName,
+		"project_id", authOptions.Scope.ProjectID,
+		"v", 5)
 
 	err = openstack.AuthenticateV3(provider, authOptions, gophercloud.EndpointOpts{})
 	if err != nil {
@@ -300,7 +313,7 @@ func (c *client) GetRouters(project_id string) ([]Router, error) {
 			return false, err
 		}
 		for _, router := range routers {
-			resultRouter := Router{ID: router.ID}
+			resultRouter := Router{ID: router.ID, ExternalNetworkID: router.GatewayInfo.NetworkID}
 			networkIDs, err := getRouterNetworks(networkClient, router.ID)
 			if err != nil {
 				return false, err
@@ -484,7 +497,7 @@ func (c *client) getDomainID(client *gophercloud.ServiceClient, domainName strin
 			c.domainNameToID.Store(domainName, domains[0].ID)
 			return false, nil
 		default:
-			return false, errors.New("More then one domain found")
+			return false, errors.New("More than one domain found")
 		}
 	})
 	id, _ := c.domainNameToID.Load(domainName)
@@ -526,7 +539,6 @@ func (c *client) GetNodes(kluster *kubernikus_v1.Kluster, pool *models.NodePool)
 	err = servers.List(client, opts).EachPage(func(page pagination.Page) (bool, error) {
 		nodes, err = ExtractServers(page)
 		if err != nil {
-			glog.V(5).Infof("Couldn't extract server %v", err)
 			return false, err
 		}
 
@@ -539,7 +551,22 @@ func (c *client) GetNodes(kluster *kubernikus_v1.Kluster, pool *models.NodePool)
 	return nodes, nil
 }
 
-func (c *client) CreateNode(kluster *kubernikus_v1.Kluster, pool *models.NodePool, userData []byte) (string, error) {
+func (c *client) CreateNode(kluster *kubernikus_v1.Kluster, pool *models.NodePool, userData []byte) (id string, err error) {
+	var name string
+
+	defer func() {
+		c.Logger.Log(
+			"msg", "created node",
+			"kluster", kluster.Name,
+			"project", kluster.Account(),
+			"name", name,
+			"id", id,
+			"v", 5,
+			"err", err)
+	}()
+
+	name = v1.SimpleNameGenerator.GenerateName(fmt.Sprintf("%v-%v-", kluster.Spec.Name, pool.Name))
+
 	provider, err := c.klusterClientFor(kluster)
 	if err != nil {
 		return "", err
@@ -550,8 +577,7 @@ func (c *client) CreateNode(kluster *kubernikus_v1.Kluster, pool *models.NodePoo
 		return "", err
 	}
 
-	name := v1.SimpleNameGenerator.GenerateName(fmt.Sprintf("%v-%v-", kluster.Spec.Name, pool.Name))
-	glog.V(5).Infof("Creating node %v", name)
+	name = v1.SimpleNameGenerator.GenerateName(fmt.Sprintf("%v-%v-", kluster.Spec.Name, pool.Name))
 
 	server, err := servers.Create(client, compute.CreateOpts{
 		CreateOpts: servers.CreateOpts{
@@ -566,13 +592,23 @@ func (c *client) CreateNode(kluster *kubernikus_v1.Kluster, pool *models.NodePoo
 	}).Extract()
 
 	if err != nil {
-		glog.V(5).Infof("Couldn't create node %v: %v", name, err)
 		return "", err
 	}
+
 	return server.ID, nil
 }
 
-func (c *client) DeleteNode(kluster *kubernikus_v1.Kluster, ID string) error {
+func (c *client) DeleteNode(kluster *kubernikus_v1.Kluster, ID string) (err error) {
+	defer func() {
+		c.Logger.Log(
+			"msg", "deleted node",
+			"kluster", kluster.Name,
+			"project", kluster.Account(),
+			"id", ID,
+			"v", 5,
+			"err", err)
+	}()
+
 	provider, err := c.klusterClientFor(kluster)
 	if err != nil {
 		return err
@@ -585,7 +621,6 @@ func (c *client) DeleteNode(kluster *kubernikus_v1.Kluster, ID string) error {
 
 	err = servers.Delete(client, ID).ExtractErr()
 	if err != nil {
-		glog.V(5).Infof("Couldn't delete node %v: %v", kluster.Name, err)
 		return err
 	}
 

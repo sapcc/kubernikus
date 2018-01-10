@@ -40,8 +40,8 @@ It allows to easily manage Kubernetes clusters that are natively integrated with
 
 ## Documentation
 
-More information can be found in the [documentation](/docs)
-
+  * [Kubernikus Docs](./docs/)
+  
 ## Contact
 
 https://convergedcloud.slack.com/app_redirect?channel=kubernikus-users

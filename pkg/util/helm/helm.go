@@ -18,14 +18,15 @@ type OpenstackOptions struct {
 }
 
 type openstackValues struct {
-	AuthURL    string `yaml:"authURL"`
-	Username   string `yaml:"username"`
-	Password   string `yaml:"password"`
-	DomainName string `yaml:"domainName"`
-	ProjectID  string `yaml:"projectID"`
-	Region     string `yaml:"region"`
-	LbSubnetID string `yaml:"lbSubnetID"`
-	RouterID   string `yaml:"routerID"`
+	AuthURL             string `yaml:"authURL"`
+	Username            string `yaml:"username"`
+	Password            string `yaml:"password"`
+	DomainName          string `yaml:"domainName"`
+	ProjectID           string `yaml:"projectID"`
+	Region              string `yaml:"region"`
+	LbSubnetID          string `yaml:"lbSubnetID"`
+	LbFloatingNetworkID string `yaml:"lbFloatingNetworkID"`
+	RouterID            string `yaml:"routerID"`
 }
 
 type persistenceValues struct {
@@ -41,6 +42,11 @@ type apiValues struct {
 	WormholeHost  string `yaml:"wormholeHost,omitempty"`
 }
 
+type versionValues struct {
+	Kubernetes string `yaml:"kubernetes,omitempty"`
+	Kubernikus string `yaml:"kubernikus,omitempty"`
+}
+
 type kubernikusHelmValues struct {
 	Openstack        openstackValues   `yaml:"openstack,omitempty"`
 	Certs            map[string]string `yaml:"certs,omitempty"`
@@ -48,7 +54,7 @@ type kubernikusHelmValues struct {
 	ServiceCIDR      string            `yaml:"serviceCIDR,omitempty"`
 	AdvertiseAddress string            `yaml:"advertiseAddress,omitempty"`
 	BoostrapToken    string            `yaml:"bootstrapToken,omitempty"`
-	Version          string            `yaml:"version,omitempty"`
+	Version          versionValues     `yaml:"version,omitempty"`
 	Etcd             etcdValues        `yaml:"etcd,omitempty"`
 	Api              apiValues         `yaml:"api,omitempty"`
 }
@@ -70,16 +76,20 @@ func KlusterToHelmValues(kluster *v1.Kluster, openstack *OpenstackOptions, certi
 		ClusterCIDR:      kluster.Spec.ClusterCIDR,
 		ServiceCIDR:      kluster.Spec.ServiceCIDR,
 		AdvertiseAddress: kluster.Spec.AdvertiseAddress,
-		Version:          kluster.Status.Version,
+		Version: versionValues{
+			Kubernetes: kluster.Spec.Version,
+			Kubernikus: kluster.Status.Version,
+		},
 		Openstack: openstackValues{
-			AuthURL:    openstack.AuthURL,
-			Username:   openstack.Username,
-			Password:   openstack.Password,
-			DomainName: openstack.DomainName,
-			Region:     openstack.Region,
-			ProjectID:  kluster.Spec.Openstack.ProjectID,
-			LbSubnetID: kluster.Spec.Openstack.LBSubnetID,
-			RouterID:   kluster.Spec.Openstack.RouterID,
+			AuthURL:             openstack.AuthURL,
+			Username:            openstack.Username,
+			Password:            openstack.Password,
+			DomainName:          openstack.DomainName,
+			Region:              openstack.Region,
+			ProjectID:           kluster.Spec.Openstack.ProjectID,
+			LbSubnetID:          kluster.Spec.Openstack.LBSubnetID,
+			LbFloatingNetworkID: kluster.Spec.Openstack.LBFloatingNetworkID,
+			RouterID:            kluster.Spec.Openstack.RouterID,
 		},
 		Etcd: etcdValues{
 			Persistence: persistenceValues{

@@ -205,6 +205,7 @@ definitions:
       flavors:
         type: array
         items:
+          x-nullable: false
           type: object
           x-go-name: Flavor
           properties:
@@ -212,6 +213,10 @@ definitions:
               type: string
             id:
               type: string
+            ram:
+              type: integer
+            vcpus:
+              type: integer
       securityGroups:
         type: array
         items:
@@ -354,6 +359,10 @@ definitions:
         x-nullable: false
         type: string
         default: cluster.local
+      version:
+        pattern: '^[0-9]+\.[0-9]+\.[0-9]+$'
+        type: string
+        readOnly: true
       name:
         type: string
         readOnly: true
@@ -369,6 +378,9 @@ definitions:
         type: string
       lbSubnetID:
         x-go-name: LBSubnetID
+        type: string
+      lbFloatingNetworkID:
+        x-go-name: LBFloatingNetworkID
         type: string
       securityGroupID:
         type: string

@@ -433,6 +433,11 @@ func init() {
           "default": "198.18.128.0/17",
           "pattern": "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\\/([0-9]|[1-2][0-9]|3[0-2]))$",
           "x-nullable": false
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+          "readOnly": true
         }
       },
       "x-nullable": false
@@ -545,9 +550,16 @@ func init() {
               },
               "name": {
                 "type": "string"
+              },
+              "ram": {
+                "type": "integer"
+              },
+              "vcpus": {
+                "type": "integer"
               }
             },
-            "x-go-name": "Flavor"
+            "x-go-name": "Flavor",
+            "x-nullable": false
           }
         },
         "keyPairs": {
@@ -630,6 +642,10 @@ func init() {
     "OpenstackSpec": {
       "type": "object",
       "properties": {
+        "lbFloatingNetworkID": {
+          "type": "string",
+          "x-go-name": "LBFloatingNetworkID"
+        },
         "lbSubnetID": {
           "type": "string",
           "x-go-name": "LBSubnetID"

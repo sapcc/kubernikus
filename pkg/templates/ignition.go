@@ -4,12 +4,14 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"strings"
 	"text/template"
 
 	"github.com/Masterminds/sprig"
 	"github.com/coreos/container-linux-config-transpiler/config"
 	"github.com/coreos/container-linux-config-transpiler/config/platform"
-	"github.com/golang/glog"
+	"github.com/coreos/ignition/config/validate/report"
+	"github.com/go-kit/kit/log"
 	"k8s.io/client-go/pkg/api/v1"
 
 	kubernikusv1 "github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
@@ -35,15 +37,26 @@ var Ignition = &ignition{
 	},
 }
 
-func (i *ignition) GenerateNode(kluster *kubernikusv1.Kluster, secret *v1.Secret) ([]byte, error) {
+func (i *ignition) getIgnitionTemplate(kluster *kubernikusv1.Kluster) string {
+	switch {
+	case strings.HasPrefix(kluster.Spec.Version, "1.9"):
+		return Node_1_9
+	case strings.HasPrefix(kluster.Spec.Version, "1.8"):
+		return Node_1_8
+	default:
+		return Node_1_7
+	}
+}
 
+func (i *ignition) GenerateNode(kluster *kubernikusv1.Kluster, secret *v1.Secret, logger log.Logger) ([]byte, error) {
 	for _, field := range i.requiredNodeSecrets {
 		if _, ok := secret.Data[field]; !ok {
 			return nil, fmt.Errorf("Field %s missing in secret", field)
 		}
 	}
 
-	tmpl, err := template.New("node").Funcs(sprig.TxtFuncMap()).Parse(Node)
+	ignition := i.getIgnitionTemplate(kluster)
+	tmpl, err := template.New("node").Funcs(sprig.TxtFuncMap()).Parse(ignition)
 	if err != nil {
 		return nil, err
 	}
@@ -65,6 +78,7 @@ func (i *ignition) GenerateNode(kluster *kubernikusv1.Kluster, secret *v1.Secret
 		OpenstackDomain                    string
 		OpenstackRegion                    string
 		OpenstackLBSubnetID                string
+		OpenstackLBFloatingNetworkID       string
 		OpenstackRouterID                  string
 		KubernikusImage                    string
 		KubernikusImageTag                 string
@@ -85,23 +99,34 @@ func (i *ignition) GenerateNode(kluster *kubernikusv1.Kluster, secret *v1.Secret
 		OpenstackDomain:                    string(secret.Data["openstack-domain-name"]),
 		OpenstackRegion:                    string(secret.Data["openstack-region"]),
 		OpenstackLBSubnetID:                kluster.Spec.Openstack.LBSubnetID,
+		OpenstackLBFloatingNetworkID:       kluster.Spec.Openstack.LBFloatingNetworkID,
 		OpenstackRouterID:                  kluster.Spec.Openstack.RouterID,
 		KubernikusImage:                    "sapcc/kubernikus",
 		KubernikusImageTag:                 version.GitCommit,
 	}
 
+	var dataOut []byte
 	var buffer bytes.Buffer
+	var report report.Report
+
+	defer func() {
+		logger.Log(
+			"msg", "ignition debug",
+			"data", data,
+			"yaml", string(buffer.Bytes()),
+			"json", string(dataOut),
+			"report", report.String(),
+			"v", 6,
+			"err", err)
+	}()
+
 	err = tmpl.Execute(&buffer, data)
 	if err != nil {
 		return nil, err
 	}
 
-	glog.V(6).Infof("IgnitionData: %v", data)
-	glog.V(6).Infof("IgnitionYAML: %v", string(buffer.Bytes()))
-
 	ignitionConfig, ast, report := config.Parse(buffer.Bytes())
 	if len(report.Entries) > 0 {
-		glog.V(2).Infof("Something odd while transpiling ignition file: %v", report.String())
 		if report.IsFatal() {
 			return nil, fmt.Errorf("Couldn't transpile ignition file: %v", report.String())
 		}
@@ -109,17 +134,13 @@ func (i *ignition) GenerateNode(kluster *kubernikusv1.Kluster, secret *v1.Secret
 
 	ignitionConfig2_0, report := config.ConvertAs2_0(ignitionConfig, platform.OpenStackMetadata, ast)
 	if len(report.Entries) > 0 {
-		glog.V(2).Infof("Something odd while convertion ignition config: %v", report.String())
 		if report.IsFatal() {
 			return nil, fmt.Errorf("Couldn't convert ignition config: %v", report.String())
 		}
 	}
 
-	var dataOut []byte
 	dataOut, err = json.MarshalIndent(&ignitionConfig2_0, "", "  ")
 	dataOut = append(dataOut, '\n')
-
-	glog.V(6).Infof("IgnitionJSON: %v", string(dataOut))
 
 	if err != nil {
 		return nil, err

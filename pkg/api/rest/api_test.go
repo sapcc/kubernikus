@@ -208,7 +208,7 @@ func TestClusterUpdate(t *testing.T) {
 		},
 	}
 	jsonPayload, err := updateObject.MarshalBinary()
-	assert.NoError(t, err, "marsheling update payload failed")
+	assert.NoError(t, err, "marshaling update payload failed")
 	req := createRequest("PUT", "/api/v1/clusters/nase", string(jsonPayload))
 	code, _, body := result(handler, req)
 	if !assert.Equal(t, 200, code) {

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/go-kit/kit/log"
 	"github.com/stretchr/testify/assert"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/pkg/api/v1"
@@ -25,8 +26,9 @@ func TestGenerateNode(t *testing.T) {
 			DNSAddress:       "2.2.2.2",
 			DNSDomain:        "cluster.local",
 			Openstack: models.OpenstackSpec{
-				LBSubnetID: "lb-id",
-				RouterID:   "router-id",
+				LBSubnetID:          "lb-id",
+				LBFloatingNetworkID: "lb-fipid",
+				RouterID:            "router-id",
 			},
 		},
 		Status: models.KlusterStatus{
@@ -42,6 +44,6 @@ func TestGenerateNode(t *testing.T) {
 		ObjectMeta: kluster.ObjectMeta,
 		Data:       secretData,
 	}
-	_, err := Ignition.GenerateNode(&kluster, &secret)
+	_, err := Ignition.GenerateNode(&kluster, &secret, log.NewNopLogger())
 	assert.NoError(t, err)
 }

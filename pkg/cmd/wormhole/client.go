@@ -12,13 +12,14 @@ import (
 	"syscall"
 
 	"github.com/databus23/guttle"
-	"github.com/golang/glog"
+	"github.com/go-kit/kit/log"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/tools/clientcmd/api"
 
 	"github.com/sapcc/kubernikus/pkg/cmd"
+	logutil "github.com/sapcc/kubernikus/pkg/util/log"
 )
 
 func NewClientCommand() *cobra.Command {
@@ -68,6 +69,9 @@ func (o *ClientOptions) Complete(args []string) error {
 }
 
 func (o *ClientOptions) Run(c *cobra.Command) error {
+	logger := logutil.NewLogger(c.Flags())
+	logger = log.With(logger, "wormhole", "client")
+
 	sigs := make(chan os.Signal, 1)
 	signal.Notify(sigs, os.Interrupt, syscall.SIGTERM) // Push signals into channel
 
@@ -139,7 +143,10 @@ func (o *ClientOptions) Run(c *cobra.Command) error {
 				Certificates: []tls.Certificate{certificate},
 			})
 			if err != nil {
-				glog.Warningf("Failed to connect to %s: %s", address, err)
+				logger.Log(
+					"msg", "failed to open connection",
+					"address", address,
+					"err", err)
 			}
 			return conn, err
 		},
@@ -149,7 +156,7 @@ func (o *ClientOptions) Run(c *cobra.Command) error {
 
 	go func() {
 		<-sigs
-		glog.Info("Shutting down...")
+		logger.Log("msg", "Shutting down...")
 		client.Stop()
 	}()
 	return client.Start()

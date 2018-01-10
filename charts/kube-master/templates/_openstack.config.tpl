@@ -13,6 +13,7 @@ region = {{ .Values.openstack.region }}
 [LoadBalancer]
 lb-version=v2
 subnet-id= {{ required "missing openstack.lbSubnetID" .Values.openstack.lbSubnetID }}
+floating-network-id= {{ required "missing openstack.lbFloatingNetworkID" .Values.openstack.lbFloatingNetworkID }}
 create-monitor = yes
 monitor-delay = 1m
 monitor-timeout = 30s

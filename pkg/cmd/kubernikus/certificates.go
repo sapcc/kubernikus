@@ -7,6 +7,7 @@ import (
 )
 
 func NewCertificatesCommand() *cobra.Command {
+
 	c := &cobra.Command{
 		Use:   "certificates",
 		Short: "Debug certificates",

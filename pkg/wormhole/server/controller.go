@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/databus23/guttle"
-	"github.com/golang/glog"
+	"github.com/go-kit/kit/log"
 	"k8s.io/apimachinery/pkg/util/wait"
 	informers "k8s.io/client-go/informers/core/v1"
 	"k8s.io/client-go/pkg/api/v1"
@@ -33,6 +33,8 @@ type Controller struct {
 	iptables    iptables.Interface
 	hijackPort  int
 	serviceCIDR string
+
+	Logger log.Logger
 }
 
 type route struct {
@@ -40,15 +42,17 @@ type route struct {
 	identifier string
 }
 
-func NewController(informer informers.NodeInformer, serviceCIDR string, tunnel *guttle.Server) *Controller {
+func NewController(informer informers.NodeInformer, serviceCIDR string, tunnel *guttle.Server, logger log.Logger) *Controller {
+	logger = log.With(logger, "controller", "tunnel")
 	c := &Controller{
 		nodes:       informer,
 		tunnel:      tunnel,
 		queue:       workqueue.NewRateLimitingQueue(workqueue.NewItemExponentialFailureRateLimiter(5*time.Second, 300*time.Second)),
 		store:       make(map[string][]route),
-		iptables:    iptables.New(utilexec.New(), iptables.ProtocolIpv4),
+		iptables:    iptables.New(utilexec.New(), iptables.ProtocolIpv4, logger),
 		hijackPort:  9191,
 		serviceCIDR: serviceCIDR,
+		Logger:      logger,
 	}
 
 	c.nodes.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
@@ -73,7 +77,9 @@ func (c *Controller) Run(threadiness int, stopCh <-chan struct{}, wg *sync.WaitG
 	defer c.queue.ShutDown()
 	defer wg.Done()
 	wg.Add(1)
-	glog.Infof(`Starting WormholeGenerator with %d workers`, threadiness)
+	c.Logger.Log(
+		"msg", "starting WormholeGenerator",
+		"threadiness", threadiness)
 
 	for i := 0; i < threadiness; i++ {
 		go wait.Until(c.runWorker, time.Second, stopCh)
@@ -84,7 +90,9 @@ func (c *Controller) Run(threadiness int, stopCh <-chan struct{}, wg *sync.WaitG
 		for {
 			select {
 			case <-ticker.C:
-				glog.V(5).Infof("Running periodic recheck. Queuing all known nodes...")
+				c.Logger.Log(
+					"msg", "Running periodic recheck. Queuing all known nodes...",
+					"v", 5)
 				for key, _ := range c.store {
 					c.queue.Add(key)
 				}
@@ -124,7 +132,10 @@ func (c *Controller) handleErr(err error, key interface{}) {
 		c.queue.Forget(key)
 		return
 	}
-	glog.Errorf("Requeuing %v: %v", key, err)
+	c.Logger.Log(
+		"msg", "requeuing because of error",
+		"key", key,
+		"err", err)
 
 	// This controller retries 5 times if something goes wrong. After that, it stops trying.
 	if c.queue.NumRequeues(key) < 5 {
@@ -134,7 +145,9 @@ func (c *Controller) handleErr(err error, key interface{}) {
 		return
 	}
 
-	glog.Infof("Dropping %v. Too many errors", key)
+	c.Logger.Log(
+		"msg", "dropping because of too many error",
+		"key", key)
 	c.queue.Forget(key)
 }
 
@@ -154,7 +167,9 @@ func (c *Controller) reconcile(key string) error {
 func (c *Controller) addNode(key string, node *v1.Node) error {
 
 	identifier := fmt.Sprintf("system:node:%v", node.GetName())
-	glog.Infof("Adding tunnel routes for node %v", identifier)
+	c.Logger.Log(
+		"msg", "adding tunnel routes",
+		"node", identifier)
 
 	podCIDR := node.Spec.PodCIDR
 
@@ -195,13 +210,22 @@ func (c *Controller) redoIPTablesSpratz() error {
 	table := iptables.TableNAT
 
 	if _, err := c.iptables.EnsureChain(table, KUBERNIKUS_TUNNELS); err != nil {
-		glog.Errorf("Failed to ensure that %s chain %s exists: %v", table, KUBERNIKUS_TUNNELS, err)
+		c.Logger.Log(
+			"msg", "failed to ensure that chain exists",
+			"table", table,
+			"chain", KUBERNIKUS_TUNNELS,
+			"err", err)
 		return err
 	}
 
 	args := []string{"-m", "comment", "--comment", "kubernikus tunnels", "-j", string(KUBERNIKUS_TUNNELS)}
 	if _, err := c.iptables.EnsureRule(iptables.Append, table, iptables.ChainOutput, args...); err != nil {
-		glog.Errorf("Failed to ensure that %s chain %s jumps to %s: %v", table, iptables.ChainOutput, KUBERNIKUS_TUNNELS, err)
+		c.Logger.Log(
+			"msg", "failed to ensure jump",
+			"table", table,
+			"target", iptables.ChainOutput,
+			"chain", KUBERNIKUS_TUNNELS,
+			"err", err)
 		return err
 	}
 
@@ -209,7 +233,9 @@ func (c *Controller) redoIPTablesSpratz() error {
 	existingNatChains := make(map[iptables.Chain]string)
 	err := c.iptables.SaveInto(table, iptablesSaveRaw)
 	if err != nil {
-		glog.Errorf("Failed to execute iptables-save, syncing all rules: %v", err)
+		c.Logger.Log(
+			"msg", "failed to execute iptables-save, syncing all rules",
+			"err", err)
 	} else {
 		existingNatChains = iptables.GetChainLines(table, iptablesSaveRaw.Bytes())
 	}
@@ -242,10 +268,16 @@ func (c *Controller) redoIPTablesSpratz() error {
 	writeLine(natRules, "COMMIT")
 
 	lines := append(natChains.Bytes(), natRules.Bytes()...)
-	glog.V(6).Infof("Restoring iptables rules: %s", lines)
+	c.Logger.Log(
+		"msg", "Restoring iptables rules",
+		"rules", lines,
+		"v", 6)
+
 	err = c.iptables.RestoreAll(lines, iptables.NoFlushTables, iptables.RestoreCounters)
 	if err != nil {
-		glog.Errorf("Failed to execute iptables-restore: %v", err)
+		c.Logger.Log(
+			"msg", "Failed to execute iptables-restore",
+			"err", err)
 		return err
 	}
 

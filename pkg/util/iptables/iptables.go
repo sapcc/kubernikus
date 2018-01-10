@@ -10,7 +10,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/golang/glog"
+	"github.com/go-kit/kit/log"
 	"k8s.io/apimachinery/pkg/util/sets"
 	utilexec "k8s.io/utils/exec"
 
@@ -121,16 +121,20 @@ type runner struct {
 	waitFlag        []string
 	restoreWaitFlag []string
 	lockfilePath    string
+	logger          log.Logger
 
 	reloadFuncs []func()
 }
 
 // newInternal returns a new Interface which will exec iptables, and allows the
 // caller to change the iptables-restore lockfile path
-func newInternal(exec utilexec.Interface, protocol Protocol, lockfilePath string) Interface {
+func newInternal(exec utilexec.Interface, protocol Protocol, lockfilePath string, logger log.Logger) Interface {
 	vstring, err := getIPTablesVersionString(exec)
 	if err != nil {
-		glog.Warningf("Error checking iptables version, assuming version at least %s: %v", MinCheckVersion, err)
+		logger.Log(
+			"msg", "Error checking iptables version",
+			"min_version", MinCheckVersion,
+			"err", err)
 		vstring = MinCheckVersion
 	}
 
@@ -141,18 +145,19 @@ func newInternal(exec utilexec.Interface, protocol Protocol, lockfilePath string
 	runner := &runner{
 		exec:            exec,
 		protocol:        protocol,
-		hasCheck:        getIPTablesHasCheckCommand(vstring),
-		waitFlag:        getIPTablesWaitFlag(vstring),
-		restoreWaitFlag: getIPTablesRestoreWaitFlag(exec),
+		hasCheck:        getIPTablesHasCheckCommand(vstring, logger),
+		waitFlag:        getIPTablesWaitFlag(vstring, logger),
+		restoreWaitFlag: getIPTablesRestoreWaitFlag(exec, logger),
 		lockfilePath:    lockfilePath,
+		logger:          logger,
 	}
 
 	return runner
 }
 
 // New returns a new Interface which will exec iptables.
-func New(exec utilexec.Interface, protocol Protocol) Interface {
-	return newInternal(exec, protocol, "")
+func New(exec utilexec.Interface, protocol Protocol, logger log.Logger) Interface {
+	return newInternal(exec, protocol, "", logger)
 }
 
 // Destroy is part of Interface.
@@ -265,7 +270,10 @@ func (runner *runner) SaveInto(table Table, buffer *bytes.Buffer) error {
 
 	// run and return
 	args := []string{"-t", string(table)}
-	glog.V(4).Infof("running iptables-save %v", args)
+	runner.logger.Log(
+		"msg", "running iptables-save",
+		"args", args,
+		"v", 4)
 	cmd := runner.exec.Command(cmdIPTablesSave, args...)
 	// Since CombinedOutput() doesn't support redirecting it to a buffer,
 	// we need to workaround it by redirecting stdout and stderr to buffer
@@ -317,14 +325,19 @@ func (runner *runner) restoreInternal(args []string, data []byte, flush FlushFla
 		}
 		defer func(locker iptablesLocker) {
 			if err := locker.Close(); err != nil {
-				glog.Errorf("Failed to close iptables locks: %v", err)
+				runner.logger.Log(
+					"msg", "Failed to close iptables locks",
+					"err", err)
 			}
 		}(locker)
 	}
 
 	// run the command and return the output or an error including the output and error
 	fullArgs := append(runner.restoreWaitFlag, args...)
-	glog.V(4).Infof("running iptables-restore %v", fullArgs)
+	runner.logger.Log(
+		"msg", "running iptables-restore",
+		"args", fullArgs,
+		"v", 4)
 	cmd := runner.exec.Command(cmdIPTablesRestore, fullArgs...)
 	cmd.SetStdin(bytes.NewBuffer(data))
 	b, err := cmd.CombinedOutput()
@@ -347,7 +360,11 @@ func (runner *runner) run(op operation, args []string) ([]byte, error) {
 
 	fullArgs := append(runner.waitFlag, string(op))
 	fullArgs = append(fullArgs, args...)
-	glog.V(5).Infof("running iptables %s %v", string(op), args)
+	runner.logger.Log(
+		"msg", "running iptables",
+		"op", string(op),
+		"args", args,
+		"v", 5)
 	return runner.exec.Command(iptablesCmd, fullArgs...).CombinedOutput()
 	// Don't log err here - callers might not think it is an error.
 }
@@ -372,7 +389,9 @@ func trimhex(s string) string {
 // Present for compatibility with <1.4.11 versions of iptables.  This is full
 // of hack and half-measures.  We should nix this ASAP.
 func (runner *runner) checkRuleWithoutCheck(table Table, chain Chain, args ...string) (bool, error) {
-	glog.V(1).Infof("running iptables-save -t %s", string(table))
+	runner.logger.Log(
+		"msg", "running iptables-sav",
+		"table", string(table))
 	out, err := runner.exec.Command(cmdIPTablesSave, "-t", string(table)).CombinedOutput()
 	if err != nil {
 		return false, fmt.Errorf("error checking rule: %v", err)
@@ -411,7 +430,11 @@ func (runner *runner) checkRuleWithoutCheck(table Table, chain Chain, args ...st
 		if sets.NewString(fields...).IsSuperset(argset) {
 			return true, nil
 		}
-		glog.V(5).Infof("DBG: fields is not a superset of args: fields=%v  args=%v", fields, args)
+		runner.logger.Log(
+			"msg", "DBG: fields is not a superset of args",
+			"fields", fields,
+			"args", args,
+			"v", 5)
 	}
 
 	return false, nil
@@ -449,31 +472,43 @@ func makeFullArgs(table Table, chain Chain, args ...string) []string {
 }
 
 // Checks if iptables has the "-C" flag
-func getIPTablesHasCheckCommand(vstring string) bool {
+func getIPTablesHasCheckCommand(vstring string, logger log.Logger) bool {
 	minVersion, err := utilversion.ParseGeneric(MinCheckVersion)
 	if err != nil {
-		glog.Errorf("MinCheckVersion (%s) is not a valid version string: %v", MinCheckVersion, err)
+		logger.Log(
+			"msg", "MinCheckVersion is not a valid version string",
+			"min_version", MinCheckVersion,
+			"err", err)
 		return true
 	}
 	version, err := utilversion.ParseGeneric(vstring)
 	if err != nil {
-		glog.Errorf("vstring (%s) is not a valid version string: %v", vstring, err)
+		logger.Log(
+			"msg", "vstring is not a valid version string",
+			"vstring", vstring,
+			"err", err)
 		return true
 	}
 	return version.AtLeast(minVersion)
 }
 
 // Checks if iptables version has a "wait" flag
-func getIPTablesWaitFlag(vstring string) []string {
+func getIPTablesWaitFlag(vstring string, logger log.Logger) []string {
 	version, err := utilversion.ParseGeneric(vstring)
 	if err != nil {
-		glog.Errorf("vstring (%s) is not a valid version string: %v", vstring, err)
+		logger.Log(
+			"msg", "vstring is not a valid version string",
+			"vstring", vstring,
+			"err", err)
 		return nil
 	}
 
 	minVersion, err := utilversion.ParseGeneric(MinWaitVersion)
 	if err != nil {
-		glog.Errorf("MinWaitVersion (%s) is not a valid version string: %v", MinWaitVersion, err)
+		logger.Log(
+			"msg", "MinWaitVersion is not a valid version string",
+			"min_wait_version", MinWaitVersion,
+			"err", err)
 		return nil
 	}
 	if version.LessThan(minVersion) {
@@ -482,7 +517,10 @@ func getIPTablesWaitFlag(vstring string) []string {
 
 	minVersion, err = utilversion.ParseGeneric(MinWait2Version)
 	if err != nil {
-		glog.Errorf("MinWait2Version (%s) is not a valid version string: %v", MinWait2Version, err)
+		logger.Log(
+			"msg", "MinWait2Version is not a valid version string",
+			"min_wait2_version", MinWait2Version,
+			"err", err)
 		return nil
 	}
 	if version.LessThan(minVersion) {
@@ -512,14 +550,20 @@ func getIPTablesVersionString(exec utilexec.Interface) (string, error) {
 // --wait support landed in v1.6.1+ right before --version support, so
 // any version of iptables-restore that supports --version will also
 // support --wait
-func getIPTablesRestoreWaitFlag(exec utilexec.Interface) []string {
+func getIPTablesRestoreWaitFlag(exec utilexec.Interface, logger log.Logger) []string {
 	vstring, err := getIPTablesRestoreVersionString(exec)
 	if err != nil || vstring == "" {
-		glog.V(3).Infof("couldn't get iptables-restore version; assuming it doesn't support --wait")
+		logger.Log(
+			"msg", "couldn't get iptables-restore version; assuming it doesn't support --wait",
+			"v", 3,
+			"err", err)
 		return nil
 	}
 	if _, err := utilversion.ParseGeneric(vstring); err != nil {
-		glog.V(3).Infof("couldn't parse iptables-restore version; assuming it doesn't support --wait")
+		logger.Log(
+			"msg", "couldn't parse iptables-restore version; assuming it doesn't support --wait",
+			"v", 3,
+			"err", err)
 		return nil
 	}
 
@@ -555,8 +599,8 @@ func (runner *runner) AddReloadFunc(reloadFunc func()) {
 
 // runs all reload funcs to re-sync iptables rules
 func (runner *runner) reload() {
-	glog.V(1).Infof("reloading iptables rules")
-
+	runner.logger.Log(
+		"msg", "reloading iptables rules")
 	for _, f := range runner.reloadFuncs {
 		f()
 	}

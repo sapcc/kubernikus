@@ -9,6 +9,7 @@ import (
 	"github.com/sapcc/kubernikus/pkg/client/kubernetes"
 	"github.com/sapcc/kubernikus/pkg/cmd"
 	"github.com/sapcc/kubernikus/pkg/controller/ground/bootstrap/dns"
+	logutil "github.com/sapcc/kubernikus/pkg/util/log"
 )
 
 func NewKubeDNSCommand() *cobra.Command {
@@ -67,7 +68,8 @@ func (o *KubeDNSOptions) Complete(args []string) error {
 }
 
 func (o *KubeDNSOptions) Run(c *cobra.Command) error {
-	client, err := kubernetes.NewClient(o.kubeConfig, o.context)
+	logger := logutil.NewLogger(c.Flags())
+	client, err := kubernetes.NewClient(o.kubeConfig, o.context, logger)
 	if err != nil {
 		return err
 	}
