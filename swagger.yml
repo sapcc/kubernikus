@@ -235,6 +235,9 @@ definitions:
           properties:
             name:
               type: string
+            publicKey: 
+              type: string
+
       routers:
         type: array
         items:

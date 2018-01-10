@@ -201,7 +201,7 @@ func (c *client) getKeyPairs() ([]*models.KeyPair, error) {
 	}
 
 	for _, key := range keyList {
-		result = append(result, &models.KeyPair{Name: key.Name})
+		result = append(result, &models.KeyPair{Name: key.Name, PublicKey: key.PublicKey})
 	}
 
 	return result, nil
