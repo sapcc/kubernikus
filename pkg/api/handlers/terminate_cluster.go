@@ -45,5 +45,19 @@ func (d *terminateCluster) Handle(params operations.TerminateClusterParams, prin
 	if err != nil {
 		return NewErrorResponse(&operations.TerminateClusterDefault{}, 500, err.Error())
 	}
+
+	// This issues a delete request for the Kluster CRD
+	//
+	// It actually adds a `metadata.DeletionTimestamp` to the Kluster. The Garbage-
+	// Controller will pick up on that and delete the resource. But only when the
+	// metadata.Finalizers array is empty. Until then the Kluster will keep on
+	// existing.
+	//
+	// Kubernikus Controllers are required to add/remove Finalizers if clean-up is
+	// required once a Kluster is deleted.
+	if err := kluster.Delete(qualifiedName(params.Name, principal.Account), &metav1.DeleteOptions{}); err != nil {
+		return NewErrorResponse(&operations.TerminateClusterDefault{}, 500, err.Error())
+	}
+
 	return operations.NewTerminateClusterAccepted()
 }
