@@ -362,6 +362,9 @@ definitions:
         x-nullable: false
         type: string
         default: cluster.local
+      sshPublicKey:
+        description: SSH public key that is injected into spawned nodes.
+        type: string
       version:
         pattern: '^[0-9]+\.[0-9]+\.[0-9]+$'
         type: string
