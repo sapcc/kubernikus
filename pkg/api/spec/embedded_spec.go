@@ -434,6 +434,10 @@ func init() {
           "pattern": "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\\/([0-9]|[1-2][0-9]|3[0-2]))$",
           "x-nullable": false
         },
+        "sshPublicKey": {
+          "description": "SSH public key that is injected into spawned nodes.",
+          "type": "string"
+        },
         "version": {
           "type": "string",
           "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
@@ -550,9 +554,16 @@ func init() {
               },
               "name": {
                 "type": "string"
+              },
+              "ram": {
+                "type": "integer"
+              },
+              "vcpus": {
+                "type": "integer"
               }
             },
-            "x-go-name": "Flavor"
+            "x-go-name": "Flavor",
+            "x-nullable": false
           }
         },
         "keyPairs": {
