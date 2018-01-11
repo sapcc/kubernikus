@@ -579,7 +579,7 @@ func (c *client) CreateNode(kluster *kubernikus_v1.Kluster, pool *models.NodePoo
 
 	name = v1.SimpleNameGenerator.GenerateName(fmt.Sprintf("%v-%v-", kluster.Spec.Name, pool.Name))
 
-	server, err := servers.Create(client, compute.CreateOpts{
+	server, err := compute.Create(client, compute.CreateOpts{
 		CreateOpts: servers.CreateOpts{
 			Name:           name,
 			FlavorName:     pool.Flavor,
