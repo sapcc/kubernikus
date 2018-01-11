@@ -26,7 +26,8 @@ func (ce *createError) Error400(e gophercloud.ErrUnexpectedResponseCode) error {
 }
 
 func (ce createError) Error() string {
-	return "Failed to create server. This should not never be printed."
+	//Unused, but we need to satisfy the error interface
+	return "Failed to create server. This shouldn't be returned ever."
 }
 
 // Create requests a server to be provisioned to the user in the current tenant.
