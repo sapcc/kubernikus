@@ -5,20 +5,16 @@ import:
   subpackages:
   - assert
 - package: k8s.io/client-go
-  version: release-4.0
-- package: golang.org/x/text
-  version: 2910a502d2bf9e43193af9d68ca516529614eed3 #Keep in sync with dep from client-go
-- package: golang.org/x/net
-  version: f2499483f923065a842d38eb4c7f1927e6fc6e6d  #Keep in sync with dep from client-go
+  version: v6.0.0
 - package: k8s.io/apimachinery
-  version: release-1.7
+  version: kubernetes-1.9.1
+- package: k8s.io/apiextensions-apiserver
+  version: kubernetes-1.9.1
+- package: k8s.io/code-generator
+  version: kubernetes-1.9.1
+- package: k8s.io/gengo
 - package: k8s.io/helm
   version: v2.7.2
-- package: k8s.io/apiextensions-apiserver
-  version: release-1.7
-- package: k8s.io/code-generator
-- package: k8s.io/gengo
-  version: 9e661e9308f078838e266cca1c673922088c0ea4
 - package: github.com/coreos/container-linux-config-transpiler
   version: v0.4.2
 - package: github.com/pkg/errors

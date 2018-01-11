@@ -5,7 +5,7 @@ import (
 	"log"
 	"os"
 
-	"k8s.io/client-go/pkg/api/v1"
+	"k8s.io/api/core/v1"
 )
 
 func (s *E2ETestSuite) SetupSmokeTest() {
@@ -125,7 +125,7 @@ func (s *E2ETestSuite) writeFileToMountedVolume() {
 	if err != nil {
 		result = "failure"
 	}
-	resultMsg := fmt.Sprintf("[%v] writing file %v/myfile",result,PVCMountPath)
+	resultMsg := fmt.Sprintf("[%v] writing file %v/myfile", result, PVCMountPath)
 
 	if result == "failure" {
 		s.handleError(fmt.Errorf("%v \n error: %#v", resultMsg, err), true)

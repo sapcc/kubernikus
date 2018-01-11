@@ -10,6 +10,7 @@ import (
 )
 
 // +genclient
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
 type Kluster struct {
 	metav1.TypeMeta   `json:",inline"`
@@ -17,6 +18,8 @@ type Kluster struct {
 	Spec              models.KlusterSpec   `json:"spec"`
 	Status            models.KlusterStatus `json:"status,omitempty"`
 }
+
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
 type KlusterList struct {
 	metav1.TypeMeta `json:",inline"`

@@ -1,11 +1,11 @@
 OUTPUT         := _output
-OUTPUT_BASE    := $(GOPATH)/src 
+OUTPUT_BASE    := $(GOPATH)/src
 INPUT_BASE     := github.com/sapcc/kubernikus
 API_BASE       := $(INPUT_BASE)/pkg/apis
 GENERATED_BASE := $(INPUT_BASE)/pkg/generated
 BIN            := $(OUTPUT)/bin
 
-.PHONY: client-gen informer-gen lister-gen
+.PHONY: client-gen informer-gen lister-gen deepcopy-gen
 
 client-gen: $(BIN)/client-gen
 	@rm -rf ./pkg/generated/clientset
@@ -40,6 +40,16 @@ lister-gen: $(BIN)/lister-gen
 	  --output-base    $(OUTPUT_BASE) \
 	  --input-dirs     $(API_BASE)/kubernikus/v1 \
 	  --output-package $(GENERATED_BASE)/listers 
+
+deepcopy-gen: $(BIN)/deepcopy-gen
+	@rm -rf $(API_BASE)/kubernikus/v1/zz_generated.deepcopy
+	${BIN}/deepcopy-gen \
+	  --input-dirs $(API_BASE)/kubernikus/v1 --input-dirs $(INPUT_BASE)/pkg/api/models \
+	  -O zz_generated.deepcopy \
+	  --bounding-dirs $(INPUT_BASE) \
+	  --output-base $(OUTPUT_BASE) \
+	  --go-header-file /dev/null 
+
 
 $(OUTPUT)/bin/%:
 	@mkdir -p _output/bin
