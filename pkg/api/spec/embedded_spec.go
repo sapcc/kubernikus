@@ -573,6 +573,9 @@ func init() {
             "properties": {
               "name": {
                 "type": "string"
+              },
+              "publicKey": {
+                "type": "string"
               }
             },
             "x-go-name": "KeyPair"
