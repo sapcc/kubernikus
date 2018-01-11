@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/pmylund/go-cache"
-
 	"github.com/databus23/keystone"
 )
 

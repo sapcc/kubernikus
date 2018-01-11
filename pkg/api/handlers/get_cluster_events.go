@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"github.com/go-openapi/runtime/middleware"
-	"github.com/go-openapi/strfmt"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/sapcc/kubernikus/pkg/api"
@@ -29,8 +28,8 @@ func (d *getClusterEvents) Handle(params operations.GetClusterEventsParams, prin
 	events := make([]*models.Event, 0, len(kEvents.Items))
 	for _, ev := range kEvents.Items {
 		events = append(events, &models.Event{
-			FirstTimestamp: strfmt.DateTime(ev.FirstTimestamp.Time),
-			LastTimestamp:  strfmt.DateTime(ev.LastTimestamp.Time),
+			FirstTimestamp: ev.FirstTimestamp.Time.String(),
+			LastTimestamp:  ev.LastTimestamp.Time.String(),
 			Message:        ev.Message,
 			Reason:         ev.Reason,
 			Count:          int64(ev.Count),

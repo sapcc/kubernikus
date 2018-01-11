@@ -23,10 +23,10 @@ type Event struct {
 	Count int64 `json:"count"`
 
 	// The time at which the event was first recorded
-	FirstTimestamp strfmt.DateTime `json:"firstTimestamp,omitempty"`
+	FirstTimestamp string `json:"firstTimestamp,omitempty"`
 
 	// The time at which the most recent occurrence of this event was recorded
-	LastTimestamp strfmt.DateTime `json:"lastTimestamp,omitempty"`
+	LastTimestamp string `json:"lastTimestamp,omitempty"`
 
 	// A human-readable description of the event
 	Message string `json:"message,omitempty"`

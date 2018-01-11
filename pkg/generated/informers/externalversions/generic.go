@@ -35,7 +35,7 @@ func (f *genericInformer) Lister() cache.GenericLister {
 // TODO extend this to unknown resources with a client pool
 func (f *sharedInformerFactory) ForResource(resource schema.GroupVersionResource) (GenericInformer, error) {
 	switch resource {
-	// Group=Kubernikus, Version=V1
+	// Group=kubernikus.sap.cc, Version=v1
 	case v1.SchemeGroupVersion.WithResource("klusters"):
 		return &genericInformer{resource: resource.GroupResource(), informer: f.Kubernikus().V1().Klusters().Informer()}, nil
 

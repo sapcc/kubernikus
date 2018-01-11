@@ -6,13 +6,13 @@ import (
 	"fmt"
 	"html/template"
 
+	"k8s.io/api/core/v1"
+	extensions "k8s.io/api/extensions/v1beta1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/serializer"
 	clientset "k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/pkg/api"
-	"k8s.io/client-go/pkg/api/v1"
-	apps "k8s.io/client-go/pkg/apis/apps/v1beta1"
+	clientsetscheme "k8s.io/client-go/kubernetes/scheme"
 
 	"github.com/sapcc/kubernikus/pkg/api/spec"
 )
@@ -135,36 +135,36 @@ func createKubeDNSService(client clientset.Interface, clusterIP string) error {
 	return nil
 }
 
-func getKubeDNSDeployment(options *DeploymentOptions) (*apps.Deployment, error) {
+func getKubeDNSDeployment(options *DeploymentOptions) (*extensions.Deployment, error) {
 	manifest := KubeDNSDeployment_v20171016
-	deployment := &apps.Deployment{}
 
 	template, err := RenderManifest(manifest, options)
 	if err != nil {
 		return nil, err
 	}
 
-	if err := runtime.DecodeInto(api.Codecs.UniversalDecoder(), template, deployment); err != nil {
+	deployment, _, err := serializer.NewCodecFactory(clientsetscheme.Scheme).UniversalDeserializer().Decode(template, nil, &extensions.Deployment{})
+	if err != nil {
 		return nil, err
 	}
 
-	return deployment, nil
+	return deployment.(*extensions.Deployment), nil
 }
 
 func getKubeDNSService(options *ServiceOptions) (*v1.Service, error) {
 	manifest := KubeDNSService_v20171016
-	service := &v1.Service{}
 
 	template, err := RenderManifest(manifest, options)
 	if err != nil {
 		return nil, err
 	}
 
-	if err := runtime.DecodeInto(api.Codecs.UniversalDecoder(), template, service); err != nil {
+	service, _, err := serializer.NewCodecFactory(clientsetscheme.Scheme).UniversalDeserializer().Decode(template, nil, &v1.Service{})
+	if err != nil {
 		return nil, err
 	}
 
-	return service, nil
+	return service.(*v1.Service), nil
 }
 
 func CreateOrUpdateServiceAccount(client clientset.Interface, sa *v1.ServiceAccount) error {
@@ -176,13 +176,13 @@ func CreateOrUpdateServiceAccount(client clientset.Interface, sa *v1.ServiceAcco
 	return nil
 }
 
-func CreateOrUpdateDeployment(client clientset.Interface, deploy *apps.Deployment) error {
-	if _, err := client.AppsV1beta1().Deployments(deploy.ObjectMeta.Namespace).Create(deploy); err != nil {
+func CreateOrUpdateDeployment(client clientset.Interface, deploy *extensions.Deployment) error {
+	if _, err := client.ExtensionsV1beta1().Deployments(deploy.ObjectMeta.Namespace).Create(deploy); err != nil {
 		if !apierrors.IsAlreadyExists(err) {
 			return fmt.Errorf("unable to create deployment: %v", err)
 		}
 
-		if _, err := client.AppsV1beta1().Deployments(deploy.ObjectMeta.Namespace).Update(deploy); err != nil {
+		if _, err := client.ExtensionsV1beta1().Deployments(deploy.ObjectMeta.Namespace).Update(deploy); err != nil {
 			return fmt.Errorf("unable to update deployment: %v", err)
 		}
 	}

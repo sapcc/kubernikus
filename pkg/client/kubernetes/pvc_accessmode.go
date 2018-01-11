@@ -1,9 +1,9 @@
 package kubernetes
 
 import (
+	api_v1 "k8s.io/api/core/v1"
 	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
-	api_v1 "k8s.io/client-go/pkg/api/v1"
 )
 
 //PVAccessMode is a helper that tries to determine which access mode

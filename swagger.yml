@@ -184,11 +184,9 @@ definitions:
       lastTimestamp:
         description: The time at which the most recent occurrence of this event was recorded
         type: string
-        format: date-time
       firstTimestamp:
         description: The time at which the event was first recorded
         type: string
-        format: date-time
       reason:
         description: A short, machine understandable string that gives the reason for the event
         type: string

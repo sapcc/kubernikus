@@ -4,15 +4,16 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/sapcc/kubernikus/pkg/api/client/operations"
+
+	"k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/pkg/api/v1"
-
-	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/client-go/tools/clientcmd"
+
+	"github.com/sapcc/kubernikus/pkg/api/client/operations"
 )
 
 func (s *E2ETestSuite) createClientset() {

@@ -12,7 +12,7 @@ import (
 	"github.com/coreos/container-linux-config-transpiler/config/platform"
 	"github.com/coreos/ignition/config/validate/report"
 	"github.com/go-kit/kit/log"
-	"k8s.io/client-go/pkg/api/v1"
+	"k8s.io/api/core/v1"
 
 	kubernikusv1 "github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
 	"github.com/sapcc/kubernikus/pkg/version"
