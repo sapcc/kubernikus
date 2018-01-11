@@ -30,6 +30,7 @@ func (d *updateCluster) Handle(params operations.UpdateClusterParams, principal 
 		}
 		// Update nodepool
 		kluster.Spec.NodePools = nodePools
+		kluster.Spec.SSHPublicKey = params.Body.Spec.SSHPublicKey
 	})
 	if err != nil {
 		if apierrors.IsNotFound(err) {
