@@ -272,6 +272,12 @@ imports:
   version: b91bfb9ebec76498946beb6af7c0230c7cc7ba6c
   subpackages:
   - assert
+- name: github.com/tredoe/osutil
+  version: 7d3ee1afa71c90fd1514c8f557ae6c5f414208eb
+  subpackages:
+  - user/crypt
+  - user/crypt/common
+  - user/crypt/sha512_crypt
 - name: github.com/tylerb/graceful
   version: d72b0151351a13d0421b763b88f791469c4f5dc7
 - name: github.com/vincent-petithory/dataurl
