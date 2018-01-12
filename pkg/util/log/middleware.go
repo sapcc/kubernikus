@@ -33,12 +33,14 @@ func LoggingHandler(logger kitlog.Logger, next http.Handler) http.Handler {
 	return http.HandlerFunc(func(rw http.ResponseWriter, request *http.Request) {
 		wrapper := makeWrapper(rw)
 
+		inner_logger := kitlog.With(ingress_logger)
+
 		id := ""
 		if reqId := request.Context().Value(KubernikusRequestID); reqId != nil {
 			id = fmt.Sprintf("%s", reqId)
-			logger = kitlog.With(logger, "id", id)
+			inner_logger = kitlog.With(inner_logger, "id", id)
 		}
-		request = request.WithContext(context.WithValue(request.Context(), "logger", logger))
+		request = request.WithContext(context.WithValue(request.Context(), "logger", inner_logger))
 
 		defer func(begin time.Time) {
 			var keyvals = make([]interface{}, 0, 4)
@@ -53,7 +55,7 @@ func LoggingHandler(logger kitlog.Logger, next http.Handler) http.Handler {
 				keyvals = append(keyvals, "id", id)
 			}
 
-			log(ingress_logger, request, keyvals...)
+			log(inner_logger, request, keyvals...)
 		}(time.Now())
 
 		next.ServeHTTP(wrapper, request)
