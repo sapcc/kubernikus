@@ -608,16 +608,14 @@ func (c *client) CreateNode(kluster *kubernikus_v1.Kluster, pool *models.NodePoo
 
 	name = SimpleNameGenerator.GenerateName(fmt.Sprintf("%v-%v-", kluster.Spec.Name, pool.Name))
 
-	server, err := compute.Create(client, compute.CreateOpts{
-		CreateOpts: servers.CreateOpts{
-			Name:           name,
-			FlavorName:     pool.Flavor,
-			ImageName:      pool.Image,
-			Networks:       []servers.Network{servers.Network{UUID: kluster.Spec.Openstack.NetworkID}},
-			UserData:       userData,
-			ServiceClient:  client,
-			SecurityGroups: []string{kluster.Spec.Openstack.SecurityGroupID},
-		},
+	server, err := compute.Create(client, servers.CreateOpts{
+		Name:           name,
+		FlavorName:     pool.Flavor,
+		ImageName:      pool.Image,
+		Networks:       []servers.Network{servers.Network{UUID: kluster.Spec.Openstack.NetworkID}},
+		UserData:       userData,
+		ServiceClient:  client,
+		SecurityGroups: []string{kluster.Spec.Openstack.SecurityGroupName},
 	}).Extract()
 
 	if err != nil {

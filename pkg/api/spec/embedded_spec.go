@@ -664,7 +664,7 @@ func init() {
         "routerID": {
           "type": "string"
         },
-        "securityGroupID": {
+        "securityGroupName": {
           "type": "string"
         }
       },
