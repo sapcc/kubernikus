@@ -6,12 +6,18 @@ import (
 
 	"github.com/go-kit/kit/log"
 	"github.com/stretchr/testify/assert"
+	"github.com/tredoe/osutil/user/crypt/sha512_crypt"
 	"k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/sapcc/kubernikus/pkg/api/models"
 	kubernikusv1 "github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
 )
+
+func init() {
+	//speed up tests by lowering hash rounds during testing
+	passwordHashRounds = sha512_crypt.RoundsMin
+}
 
 func TestGenerateNode(t *testing.T) {
 
@@ -21,6 +27,7 @@ func TestGenerateNode(t *testing.T) {
 			Namespace: "test",
 		},
 		Spec: models.KlusterSpec{
+			SSHPublicKey:     "ssh-rsa nasenbaer bla@fasel",
 			AdvertiseAddress: "1.1.1.1",
 			ClusterCIDR:      "3.3.3.3/24",
 			DNSAddress:       "2.2.2.2",
