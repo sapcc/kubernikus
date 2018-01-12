@@ -51,10 +51,6 @@ func LoggingHandler(logger kitlog.Logger, next http.Handler) http.Handler {
 				"took", time.Since(begin),
 			)
 
-			if id != "" {
-				keyvals = append(keyvals, "id", id)
-			}
-
 			log(inner_logger, request, keyvals...)
 		}(time.Now())
 
