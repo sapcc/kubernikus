@@ -314,12 +314,9 @@ func (op *GroundControl) klusterUpdate(cur, old interface{}) {
 }
 
 func (op *GroundControl) updatePhase(kluster *v1.Kluster, phase models.KlusterPhase, message string) error {
-
 	//Never modify the cache, at least that's what I've been told
-	kluster, err := op.Clients.Kubernikus.Kubernikus().Klusters(kluster.Namespace).Get(kluster.Name, metav1.GetOptions{})
-	if err != nil {
-		return err
-	}
+	kluster = kluster.DeepCopy()
+
 	//Do nothing is the phase is not changing
 	if kluster.Status.Phase == phase {
 		return nil
@@ -328,7 +325,7 @@ func (op *GroundControl) updatePhase(kluster *v1.Kluster, phase models.KlusterPh
 	kluster.Status.Message = message
 	kluster.Status.Phase = phase
 
-	_, err = op.Clients.Kubernikus.Kubernikus().Klusters(kluster.Namespace).Update(kluster)
+	_, err := op.Clients.Kubernikus.Kubernikus().Klusters(kluster.Namespace).Update(kluster)
 	if err == nil {
 		//Wait for up to 5 seconds for the local cache to reflect the phase change
 		waitutil.WaitForKluster(kluster, op.klusterInformer.GetIndexer(), func(k *v1.Kluster) (bool, error) {
@@ -469,10 +466,7 @@ func (op *GroundControl) discoverKubernikusInfo(kluster *v1.Kluster) error {
 		"project", kluster.Account(),
 		"v", 5)
 
-	copy, err := op.Clients.Kubernikus.Kubernikus().Klusters(kluster.Namespace).Get(kluster.Name, metav1.GetOptions{})
-	if err != nil {
-		return err
-	}
+	copy := kluster.DeepCopy()
 
 	if copy.Status.Apiserver == "" {
 		copy.Status.Apiserver = fmt.Sprintf("https://%s.%s", kluster.GetName(), op.Config.Kubernikus.Domain)
@@ -492,7 +486,7 @@ func (op *GroundControl) discoverKubernikusInfo(kluster *v1.Kluster) error {
 			"project", kluster.Account())
 	}
 
-	_, err = op.Clients.Kubernikus.Kubernikus().Klusters(kluster.Namespace).Update(copy)
+	_, err := op.Clients.Kubernikus.Kubernikus().Klusters(kluster.Namespace).Update(copy)
 	return err
 }
 
@@ -508,10 +502,7 @@ func (op *GroundControl) discoverOpenstackInfo(kluster *v1.Kluster) error {
 		return err
 	}
 
-	copy, err := op.Clients.Kubernikus.Kubernikus().Klusters(kluster.Namespace).Get(kluster.Name, metav1.GetOptions{})
-	if err != nil {
-		return err
-	}
+	copy := kluster.DeepCopy()
 
 	if copy.Spec.Openstack.ProjectID == "" {
 		copy.Spec.Openstack.ProjectID = kluster.Account()
@@ -675,9 +666,9 @@ func (op *GroundControl) podUpdate(cur, old interface{}) {
 //TODO: remove this after it has been deployed once everywhere, this is a poor mans migration
 func (op *GroundControl) ensureSecurityGroupName(kluster *v1.Kluster) error {
 	if kluster.Spec.Openstack.SecurityGroupName == "" {
-		copy, err := op.Clients.Kubernikus.Kubernikus().Klusters(kluster.Namespace).Get(kluster.Name, metav1.GetOptions{})
+		copy := kluster.DeepCopy()
 		copy.Spec.Openstack.SecurityGroupName = "default"
-		_, err = op.Clients.Kubernikus.Kubernikus().Klusters(kluster.Namespace).Update(copy)
+		_, err := op.Clients.Kubernikus.Kubernikus().Klusters(kluster.Namespace).Update(copy)
 		return err
 	}
 	return nil
