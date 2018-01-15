@@ -14,7 +14,9 @@ import (
 	api_v1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/wait"
+	listers_v1 "k8s.io/client-go/listers/core/v1"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/record"
 	"k8s.io/client-go/util/workqueue"
@@ -51,6 +53,7 @@ type GroundControl struct {
 	queue           workqueue.RateLimitingInterface
 	klusterInformer cache.SharedIndexInformer
 	podInformer     cache.SharedIndexInformer
+	podLister       listers_v1.PodLister
 
 	Logger log.Logger
 }
@@ -67,6 +70,7 @@ func NewGroundController(factories config.Factories, clients config.Clients, rec
 		queue:           workqueue.NewRateLimitingQueue(workqueue.NewItemExponentialFailureRateLimiter(5*time.Second, 300*time.Second)),
 		klusterInformer: factories.Kubernikus.Kubernikus().V1().Klusters().Informer(),
 		podInformer:     factories.Kubernetes.Core().V1().Pods().Informer(),
+		podLister:       listers_v1.NewPodLister(factories.Kubernetes.Core().V1().Pods().Informer().GetIndexer()),
 		Logger:          logger,
 	}
 
@@ -211,13 +215,13 @@ func (op *GroundControl) handler(key string) error {
 					"phase", kluster.Status.Phase)
 			}
 		case models.KlusterPhaseCreating:
-			pods, err := op.podInformer.GetIndexer().ByIndex("kluster", kluster.GetName())
+			pods, err := op.podLister.List(labels.SelectorFromValidatedSet(map[string]string{"release": kluster.GetName()}))
 			if err != nil {
 				return err
 			}
 			podsReady := 0
-			for _, obj := range pods {
-				if kubernetes.IsPodReady(obj.(*api_v1.Pod)) {
+			for _, pod := range pods {
+				if kubernetes.IsPodReady(pod) {
 					podsReady++
 				}
 			}
