@@ -4,21 +4,21 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"syscall"
 	"time"
 
-	"github.com/golang/glog"
 	"github.com/sapcc/kubernikus/pkg/api/client/operations"
 	"github.com/sapcc/kubernikus/pkg/api/models"
 
+	"github.com/golang/glog"
+	"k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/pkg/api/v1"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
-	"syscall"
 )
 
 func (s *E2ETestSuite) waitForCluster(klusterName, errorString string, waitUntilFunc func(k *models.Kluster, err error) bool) error {

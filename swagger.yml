@@ -184,11 +184,9 @@ definitions:
       lastTimestamp:
         description: The time at which the most recent occurrence of this event was recorded
         type: string
-        format: date-time
       firstTimestamp:
         description: The time at which the event was first recorded
         type: string
-        format: date-time
       reason:
         description: A short, machine understandable string that gives the reason for the event
         type: string
@@ -235,6 +233,9 @@ definitions:
           properties:
             name:
               type: string
+            publicKey: 
+              type: string
+
       routers:
         type: array
         items:
@@ -385,7 +386,7 @@ definitions:
       lbFloatingNetworkID:
         x-go-name: LBFloatingNetworkID
         type: string
-      securityGroupID:
+      securityGroupName:
         type: string
   NodePool:
     x-nullable: false

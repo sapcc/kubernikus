@@ -3,15 +3,14 @@ package ground
 import (
 	"fmt"
 
+	rbac "k8s.io/api/rbac/v1beta1"
+	storage "k8s.io/api/storage/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	clientset "k8s.io/client-go/kubernetes"
-	rbac "k8s.io/client-go/pkg/apis/rbac/v1beta1"
-	storage "k8s.io/client-go/pkg/apis/storage/v1"
-
-	"github.com/sapcc/kubernikus/pkg/controller/ground/bootstrap/dns"
 
 	"github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
+	"github.com/sapcc/kubernikus/pkg/controller/ground/bootstrap/dns"
 )
 
 func SeedKluster(client clientset.Interface, kluster *v1.Kluster) error {
@@ -125,7 +124,11 @@ func SeedAutoApproveNodeBootstrapTokens(client clientset.Interface) error {
 			Name: "kubernikus:approve-node-client-csr",
 		},
 		Rules: []rbac.PolicyRule{
-			rbac.NewRule("create").Groups("certificates.k8s.io").Resources("certificatesigningrequests/nodeclient").RuleOrDie(),
+			rbac.PolicyRule{
+				Verbs:     []string{"create"},
+				APIGroups: []string{"certificates.k8s.io"},
+				Resources: []string{"certificatesigningrequests/nodeclient"},
+			},
 		},
 	})
 	if err != nil {

@@ -3,9 +3,12 @@
 # These owners will be the default owners for everything in
 # the repo. Unless a later match takes precedence,
 
-*                           @bugroger @databus23
-/charts                     @databus23
+*                           @bugroger @databus23 @edda @auhlig @schwarzm @jonathanschwarze @vonneudeck
+/charts                     @databus23 @bugroger @vonneudeck @auhlig
 /charts/k8sniff             @auhlig
+/charts/kubernikus-system   @auhlig @bugroger
+/charts/kube-master         @databus23 @bugroger
+/charts/kubernikus          @databus23 @bugroger
 /ci                         @databus23
 /contrib                    @bugroger
 /docs                       @bugroger

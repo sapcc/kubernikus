@@ -11,10 +11,12 @@ import (
 	"github.com/Masterminds/goutils"
 	"github.com/go-kit/kit/log"
 	"google.golang.org/grpc"
+	api_v1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/wait"
-	api_v1 "k8s.io/client-go/pkg/api/v1"
+	listers_v1 "k8s.io/client-go/listers/core/v1"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/record"
 	"k8s.io/client-go/util/workqueue"
@@ -38,6 +40,8 @@ const (
 	//Reason constants for the event recorder
 	ConfigurationError = "ConfigurationError"
 	FailedCreate       = "FailedCreate"
+
+	GroundctlFinalizer = "groundctl"
 )
 
 type GroundControl struct {
@@ -49,6 +53,7 @@ type GroundControl struct {
 	queue           workqueue.RateLimitingInterface
 	klusterInformer cache.SharedIndexInformer
 	podInformer     cache.SharedIndexInformer
+	podLister       listers_v1.PodLister
 
 	Logger log.Logger
 }
@@ -65,6 +70,7 @@ func NewGroundController(factories config.Factories, clients config.Clients, rec
 		queue:           workqueue.NewRateLimitingQueue(workqueue.NewItemExponentialFailureRateLimiter(5*time.Second, 300*time.Second)),
 		klusterInformer: factories.Kubernikus.Kubernikus().V1().Klusters().Informer(),
 		podInformer:     factories.Kubernetes.Core().V1().Pods().Informer(),
+		podLister:       listers_v1.NewPodLister(factories.Kubernetes.Core().V1().Pods().Informer().GetIndexer()),
 		Logger:          logger,
 	}
 
@@ -162,6 +168,11 @@ func (op *GroundControl) handler(key string) error {
 		metrics.SetMetricKlusterInfo(kluster.GetNamespace(), kluster.GetName(), kluster.Status.Version, kluster.Spec.Openstack.ProjectID, kluster.GetAnnotations(), kluster.GetLabels())
 		metrics.SetMetricKlusterStatusPhase(kluster.GetName(), kluster.Status.Phase)
 
+		//TODO: remove ASAP, this is just a poor mans migration, adding the sec group name to existing klusters
+		if err := op.ensureSecurityGroupName(kluster); err != nil {
+			op.Recorder.Eventf(kluster, api_v1.EventTypeWarning, ConfigurationError, "Failed to add default security grop name to kluster: %s", err)
+		}
+
 		switch phase := kluster.Status.Phase; phase {
 		case models.KlusterPhasePending:
 			{
@@ -186,7 +197,6 @@ func (op *GroundControl) handler(key string) error {
 					"kluster", kluster.GetName(),
 					"project", kluster.Account(),
 					"phase", kluster.Status.Phase)
-
 				if err := op.createKluster(kluster); err != nil {
 					op.Recorder.Eventf(kluster, api_v1.EventTypeWarning, FailedCreate, "Failed to create cluster: %s", err)
 					return err
@@ -205,13 +215,13 @@ func (op *GroundControl) handler(key string) error {
 					"phase", kluster.Status.Phase)
 			}
 		case models.KlusterPhaseCreating:
-			pods, err := op.podInformer.GetIndexer().ByIndex("kluster", kluster.GetName())
+			pods, err := op.podLister.List(labels.SelectorFromValidatedSet(map[string]string{"release": kluster.GetName()}))
 			if err != nil {
 				return err
 			}
 			podsReady := 0
-			for _, obj := range pods {
-				if kubernetes.IsPodReady(obj.(*api_v1.Pod)) {
+			for _, pod := range pods {
+				if kubernetes.IsPodReady(pod) {
 					podsReady++
 				}
 			}
@@ -244,6 +254,20 @@ func (op *GroundControl) handler(key string) error {
 			}
 		case models.KlusterPhaseTerminating:
 			{
+				// Wait until all other finalizers are done.
+				//
+				// Groundctl needs to be last because it deletes the API machinery, which is
+				// needed for cleanup of Openstack resources, like Volumes, LBs, Routes.
+				// Additionally, this also removes the Secret and ServiceUsers. Without them
+				// clean-up is impossiple.
+				//
+				// There's a "soft" agreement that Finalizers are executed in order from
+				// first to last. Here we check that Groundctl is the last remaining one and
+				// spare us the trouble to maintain a ordered list.
+				if !(len(kluster.Finalizers) == 1 && kluster.Finalizers[0] == GroundctlFinalizer) {
+					return nil
+				}
+
 				op.Logger.Log(
 					"msg", "terminating kluster",
 					"kluster", kluster.GetName(),
@@ -360,6 +384,10 @@ func (op *GroundControl) createKluster(kluster *v1.Kluster) error {
 		return err
 	}
 
+	if err := util.EnsureFinalizerCreated(op.Clients.Kubernikus.KubernikusV1(), kluster, GroundctlFinalizer); err != nil {
+		return err
+	}
+
 	op.Logger.Log(
 		"msg", "creating service user",
 		"username", username,
@@ -432,6 +460,18 @@ func (op *GroundControl) terminateKluster(kluster *v1.Kluster) error {
 		return err
 	}
 
+	if err := util.EnsureFinalizerRemoved(op.Clients.Kubernikus.KubernikusV1(), kluster, GroundctlFinalizer); err != nil {
+		return err
+	}
+
+	// There's a bug in the garbage-collector regarding CRDs in 1.7. It will not delete
+	// the CRD even though all Finalizers are gone. As a workaround, here we try to just
+	// delte the kluster again.
+	//
+	// This can be removed once the control-planes include garbage collector fixes
+	// for CDRs (1.8+)
+	//
+	// See: https://github.com/kubernetes/kubernetes/issues/50528
 	err = op.Clients.Kubernikus.Discovery().RESTClient().Delete().AbsPath("apis/kubernikus.sap.cc/v1").
 		Namespace(kluster.Namespace).
 		Resource("klusters").
@@ -612,20 +652,11 @@ func (op *GroundControl) discoverOpenstackInfo(kluster *v1.Kluster) error {
 		}
 	}
 
-	if securityGroupID := copy.Spec.Openstack.SecurityGroupID; securityGroupID != "" {
-		//TODO: Validate that the securitygroup id exists
-
-	} else {
-		id, err := op.Clients.Openstack.GetSecurityGroupID(kluster.Account(), "default")
-		if err != nil {
-			return fmt.Errorf("Failed to get id for default securitygroup in project %s: %s", err, kluster.Account())
-		}
-		copy.Spec.Openstack.SecurityGroupID = id
-		op.Logger.Log(
-			"msg", "discovered SecurityGroupID",
-			"id", copy.Spec.Openstack.SecurityGroupID,
-			"kluster", kluster.GetName(),
-			"project", kluster.Account())
+	if copy.Spec.Openstack.SecurityGroupName == "" {
+		copy.Spec.Openstack.SecurityGroupName = "default"
+	}
+	if _, err := op.Clients.Openstack.GetSecurityGroupID(kluster.Account(), copy.Spec.Openstack.SecurityGroupName); err != nil {
+		return fmt.Errorf("Security group %s invalid: ", err)
 	}
 
 	_, err = op.Clients.Kubernikus.Kubernikus().Klusters(kluster.Namespace).Update(copy)
@@ -674,4 +705,15 @@ func (op *GroundControl) podUpdate(cur, old interface{}) {
 			op.queue.Add(klusterKey)
 		}
 	}
+}
+
+//TODO: remove this after it has been deployed once everywhere, this is a poor mans migration
+func (op *GroundControl) ensureSecurityGroupName(kluster *v1.Kluster) error {
+	if kluster.Spec.Openstack.SecurityGroupName == "" {
+		copy, err := op.Clients.Kubernikus.Kubernikus().Klusters(kluster.Namespace).Get(kluster.Name, metav1.GetOptions{})
+		copy.Spec.Openstack.SecurityGroupName = "default"
+		_, err = op.Clients.Kubernikus.Kubernikus().Klusters(kluster.Namespace).Update(copy)
+		return err
+	}
+	return nil
 }

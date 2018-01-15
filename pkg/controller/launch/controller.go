@@ -6,9 +6,14 @@ import (
 	"github.com/sapcc/kubernikus/pkg/controller/base"
 	"github.com/sapcc/kubernikus/pkg/controller/config"
 	"github.com/sapcc/kubernikus/pkg/controller/metrics"
+	"github.com/sapcc/kubernikus/pkg/util"
 
 	"github.com/go-kit/kit/log"
 	"k8s.io/client-go/tools/record"
+)
+
+const (
+	LaunchctlFinalizer = "launchctl"
 )
 
 type LaunchReconciler struct {
@@ -36,23 +41,59 @@ func NewController(factories config.Factories, clients config.Clients, recorder 
 	return base.NewController(factories, clients, reconciler, logger)
 }
 
-func (lr *LaunchReconciler) Reconcile(kluster *v1.Kluster) (requeueRequested bool, err error) {
-	if !(kluster.Status.Phase == models.KlusterPhaseRunning || kluster.Status.Phase == models.KlusterPhaseTerminating) {
-		return false, nil
+func (lr *LaunchReconciler) Reconcile(kluster *v1.Kluster) (requeue bool, err error) {
+	switch kluster.Status.Phase {
+	case models.KlusterPhaseCreating:
+		util.EnsureFinalizerCreated(lr.Kubernikus.KubernikusV1(), kluster, LaunchctlFinalizer)
+	case models.KlusterPhaseRunning:
+		return lr.reconcilePools(kluster)
+	case models.KlusterPhaseTerminating:
+		return lr.terminatePools(kluster)
 	}
 
+	return false, nil
+}
+
+func (lr *LaunchReconciler) reconcilePools(kluster *v1.Kluster) (requeue bool, err error) {
 	for _, pool := range kluster.Spec.NodePools {
-		_, requeue, err := lr.reconcilePool(kluster, &pool)
+		_, requeue, err = lr.reconcilePool(kluster, &pool)
 		if err != nil {
-			return false, err
-		}
-
-		if requeue {
-			requeueRequested = true
+			return
 		}
 	}
 
-	return requeueRequested, nil
+	return
+}
+
+func (lr *LaunchReconciler) terminatePools(kluster *v1.Kluster) (requeue bool, err error) {
+	for _, pool := range kluster.Spec.NodePools {
+		_, requeue, err = lr.terminatePool(kluster, &pool)
+		if err != nil {
+			return
+		}
+	}
+
+	util.EnsureFinalizerRemoved(lr.Kubernikus.KubernikusV1(), kluster, LaunchctlFinalizer)
+
+	return
+}
+
+func (lr *LaunchReconciler) terminatePool(kluster *v1.Kluster, pool *models.NodePool) (status *PoolStatus, requeue bool, err error) {
+	pm := lr.newPoolManager(kluster, pool)
+	status, err = pm.GetStatus()
+	if err != nil {
+		return
+	}
+
+	for _, node := range status.Nodes {
+		requeue = true
+		if err = pm.DeleteNode(node); err != nil {
+			return
+		}
+	}
+
+	err = pm.SetStatus(status)
+	return
 }
 
 func (lr *LaunchReconciler) reconcilePool(kluster *v1.Kluster, pool *models.NodePool) (status *PoolStatus, requeue bool, err error) {
@@ -63,14 +104,6 @@ func (lr *LaunchReconciler) reconcilePool(kluster *v1.Kluster, pool *models.Node
 	}
 
 	switch {
-	case kluster.Status.Phase == models.KlusterPhaseTerminating:
-		for _, node := range status.Nodes {
-			requeue = true
-			if err = pm.DeleteNode(node); err != nil {
-				return
-			}
-		}
-		return
 	case status.Needed > 0:
 		for i := 0; i < int(status.Needed); i++ {
 			requeue = true

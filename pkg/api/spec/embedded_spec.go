@@ -293,13 +293,11 @@ func init() {
         },
         "firstTimestamp": {
           "description": "The time at which the event was first recorded",
-          "type": "string",
-          "format": "date-time"
+          "type": "string"
         },
         "lastTimestamp": {
           "description": "The time at which the most recent occurrence of this event was recorded",
-          "type": "string",
-          "format": "date-time"
+          "type": "string"
         },
         "message": {
           "description": "A human-readable description of the event",
@@ -573,6 +571,9 @@ func init() {
             "properties": {
               "name": {
                 "type": "string"
+              },
+              "publicKey": {
+                "type": "string"
               }
             },
             "x-go-name": "KeyPair"
@@ -663,7 +664,7 @@ func init() {
         "routerID": {
           "type": "string"
         },
-        "securityGroupID": {
+        "securityGroupName": {
           "type": "string"
         }
       },
