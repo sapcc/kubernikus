@@ -1,9 +1,10 @@
 package helm
 
 import (
-	"log"
+	"fmt"
 	"net/url"
 
+	"github.com/aokoli/goutils"
 	yaml "gopkg.in/yaml.v2"
 
 	"github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
@@ -57,17 +58,23 @@ type kubernikusHelmValues struct {
 	Version          versionValues     `yaml:"version,omitempty"`
 	Etcd             etcdValues        `yaml:"etcd,omitempty"`
 	Api              apiValues         `yaml:"api,omitempty"`
+	NodePassword     string            `yaml:"nodePassword,omitempty"`
 }
 
 func KlusterToHelmValues(kluster *v1.Kluster, openstack *OpenstackOptions, certificates map[string]string, bootstrapToken string, accessMode string) ([]byte, error) {
 	apiserverURL, err := url.Parse(kluster.Status.Apiserver)
 	if err != nil {
-		log.Fatal(err)
+		return nil, fmt.Errorf("Failed to parse apiserver URL: %s", err)
 	}
 
 	wormholeURL, err := url.Parse(kluster.Status.Wormhole)
 	if err != nil {
-		log.Fatal(err)
+		return nil, fmt.Errorf("Failed to parse wormhole server URL: %s", err)
+	}
+
+	password, err := goutils.Random(12, 32, 127, true, true)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to generate password: %s", err)
 	}
 
 	values := kubernikusHelmValues{
@@ -76,6 +83,7 @@ func KlusterToHelmValues(kluster *v1.Kluster, openstack *OpenstackOptions, certi
 		ClusterCIDR:      kluster.Spec.ClusterCIDR,
 		ServiceCIDR:      kluster.Spec.ServiceCIDR,
 		AdvertiseAddress: kluster.Spec.AdvertiseAddress,
+		NodePassword:     password,
 		Version: versionValues{
 			Kubernetes: kluster.Spec.Version,
 			Kubernikus: kluster.Status.Version,

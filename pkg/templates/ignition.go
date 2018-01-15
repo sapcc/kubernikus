@@ -8,10 +8,12 @@ import (
 	"text/template"
 
 	"github.com/Masterminds/sprig"
+	"github.com/aokoli/goutils"
 	"github.com/coreos/container-linux-config-transpiler/config"
 	"github.com/coreos/container-linux-config-transpiler/config/platform"
 	"github.com/coreos/ignition/config/validate/report"
 	"github.com/go-kit/kit/log"
+	"github.com/tredoe/osutil/user/crypt/sha512_crypt"
 	"k8s.io/api/core/v1"
 
 	kubernikusv1 "github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
@@ -37,6 +39,8 @@ var Ignition = &ignition{
 	},
 }
 
+var passwordHashRounds = 1000000
+
 func (i *ignition) getIgnitionTemplate(kluster *kubernikusv1.Kluster) string {
 	switch {
 	case strings.HasPrefix(kluster.Spec.Version, "1.9"):
@@ -61,6 +65,26 @@ func (i *ignition) GenerateNode(kluster *kubernikusv1.Kluster, secret *v1.Secret
 		return nil, err
 	}
 
+	//this is the old default for backwards comptibility with clusters that don't have a passwort generated
+	//TODO: Remove once all klusters are upgraded
+	passwordHash := "$6$rounds=1000000$aldshc,xbneroyw$I756LN/FtceE1deC2H.tGeSdeeelaaZWRwzmbEuO1SANf7ssyPjnbQjlW/FcMvWGUGrhF64tX9fK0abE/4oQ80"
+	if nodePassword, ok := secret.Data["node-password"]; ok {
+		passwordCrypter := sha512_crypt.New()
+		//generate 16 byte random salt
+		salt, err := goutils.Random(sha512_crypt.SaltLenMax, 32, 127, true, true)
+		if err != nil {
+			return nil, fmt.Errorf("Unable to generate random salt: %s", err)
+		}
+		//We crank up the heat to 1 million rounds of hashing for this password (default 5000)
+		//Reason for this is we expose the resulting hash in the metadata service which is not very secure.
+		//It takes about 500ms on my workstation to compute this hash. So this means login to a node is also
+		// delayed for about a second which should be ok as this password is only meant as a last resort.
+		passwordHash, err = passwordCrypter.Generate(nodePassword, append([]byte(fmt.Sprintf("%srounds=%d$", sha512_crypt.MagicPrefix, passwordHashRounds)), salt...))
+		if err != nil {
+			return nil, fmt.Errorf("Faied to generate salted password: %s", err)
+		}
+	}
+
 	data := struct {
 		TLSCA                              string
 		KubeletClientsCA                   string
@@ -82,6 +106,8 @@ func (i *ignition) GenerateNode(kluster *kubernikusv1.Kluster, secret *v1.Secret
 		OpenstackRouterID                  string
 		KubernikusImage                    string
 		KubernikusImageTag                 string
+		LoginPassword                      string
+		LoginPublicKey                     string
 	}{
 		TLSCA:                              string(secret.Data["tls-ca.pem"]),
 		KubeletClientsCA:                   string(secret.Data["kubelet-clients-ca.pem"]),
@@ -103,6 +129,8 @@ func (i *ignition) GenerateNode(kluster *kubernikusv1.Kluster, secret *v1.Secret
 		OpenstackRouterID:                  kluster.Spec.Openstack.RouterID,
 		KubernikusImage:                    "sapcc/kubernikus",
 		KubernikusImageTag:                 version.GitCommit,
+		LoginPassword:                      passwordHash,
+		LoginPublicKey:                     kluster.Spec.SSHPublicKey,
 	}
 
 	var dataOut []byte
