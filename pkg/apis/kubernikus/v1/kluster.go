@@ -43,3 +43,52 @@ func (spec Kluster) ApiServiceIP() (net.IP, error) {
 	return ip, nil
 
 }
+
+func (k *Kluster) NeedsFinalizer(finalizer string) bool {
+	if k.ObjectMeta.DeletionTimestamp != nil {
+		// already deleted. do not add another finalizer anymore
+		return false
+	}
+
+	for _, f := range k.ObjectMeta.Finalizers {
+		if f == finalizer {
+			// Finalizer is already present, nothing to do
+			return false
+		}
+	}
+
+	return true
+}
+
+func (k *Kluster) HasFinalizer(finalizer string) bool {
+	if k.ObjectMeta.DeletionTimestamp == nil {
+		// not deleted. do not remove finalizers at this time
+		return false
+	}
+
+	for _, f := range k.ObjectMeta.Finalizers {
+		if f == finalizer {
+			// Finalizer is already present
+			return true
+		}
+	}
+
+	return false
+}
+
+func (k *Kluster) AddFinalizer(finalizer string) {
+	if k.NeedsFinalizer(finalizer) {
+		k.Finalizers = append(k.Finalizers, finalizer)
+	}
+}
+
+func (k *Kluster) RemoveFinalizer(finalizer string) {
+	if k.HasFinalizer(finalizer) {
+		for i, f := range k.Finalizers {
+			if f == finalizer {
+				k.Finalizers = append(k.Finalizers[:i], k.Finalizers[i+1:]...)
+				break
+			}
+		}
+	}
+}

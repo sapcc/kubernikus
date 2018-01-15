@@ -40,6 +40,8 @@ const (
 	//Reason constants for the event recorder
 	ConfigurationError = "ConfigurationError"
 	FailedCreate       = "FailedCreate"
+
+	GroundctlFinalizer = "groundctl"
 )
 
 type GroundControl struct {
@@ -195,7 +197,6 @@ func (op *GroundControl) handler(key string) error {
 					"kluster", kluster.GetName(),
 					"project", kluster.Account(),
 					"phase", kluster.Status.Phase)
-
 				if err := op.createKluster(kluster); err != nil {
 					op.Recorder.Eventf(kluster, api_v1.EventTypeWarning, FailedCreate, "Failed to create cluster: %s", err)
 					return err
@@ -253,6 +254,20 @@ func (op *GroundControl) handler(key string) error {
 			}
 		case models.KlusterPhaseTerminating:
 			{
+				// Wait until all other finalizers are done.
+				//
+				// Groundctl needs to be last because it deletes the API machinery, which is
+				// needed for cleanup of Openstack resources, like Volumes, LBs, Routes.
+				// Additionally, this also removes the Secret and ServiceUsers. Without them
+				// clean-up is impossiple.
+				//
+				// There's a "soft" agreement that Finalizers are executed in order from
+				// first to last. Here we check that Groundctl is the last remaining one and
+				// spare us the trouble to maintain a ordered list.
+				if !(len(kluster.Finalizers) == 1 && kluster.Finalizers[0] == GroundctlFinalizer) {
+					return nil
+				}
+
 				op.Logger.Log(
 					"msg", "terminating kluster",
 					"kluster", kluster.GetName(),
@@ -369,6 +384,10 @@ func (op *GroundControl) createKluster(kluster *v1.Kluster) error {
 		return err
 	}
 
+	if err := util.EnsureFinalizerCreated(op.Clients.Kubernikus.KubernikusV1(), kluster, GroundctlFinalizer); err != nil {
+		return err
+	}
+
 	op.Logger.Log(
 		"msg", "creating service user",
 		"username", username,
@@ -441,6 +460,18 @@ func (op *GroundControl) terminateKluster(kluster *v1.Kluster) error {
 		return err
 	}
 
+	if err := util.EnsureFinalizerRemoved(op.Clients.Kubernikus.KubernikusV1(), kluster, GroundctlFinalizer); err != nil {
+		return err
+	}
+
+	// There's a bug in the garbage-collector regarding CRDs in 1.7. It will not delete
+	// the CRD even though all Finalizers are gone. As a workaround, here we try to just
+	// delte the kluster again.
+	//
+	// This can be removed once the control-planes include garbage collector fixes
+	// for CDRs (1.8+)
+	//
+	// See: https://github.com/kubernetes/kubernetes/issues/50528
 	err = op.Clients.Kubernikus.Discovery().RESTClient().Delete().AbsPath("apis/kubernikus.sap.cc/v1").
 		Namespace(kluster.Namespace).
 		Resource("klusters").
