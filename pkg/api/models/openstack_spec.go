@@ -31,8 +31,8 @@ type OpenstackSpec struct {
 	// router ID
 	RouterID string `json:"routerID,omitempty"`
 
-	// security group ID
-	SecurityGroupID string `json:"securityGroupID,omitempty"`
+	// security group name
+	SecurityGroupName string `json:"securityGroupName,omitempty"`
 }
 
 // Validate validates this openstack spec

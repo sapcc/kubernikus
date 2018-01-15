@@ -162,6 +162,11 @@ func (op *GroundControl) handler(key string) error {
 		metrics.SetMetricKlusterInfo(kluster.GetNamespace(), kluster.GetName(), kluster.Status.Version, kluster.Spec.Openstack.ProjectID, kluster.GetAnnotations(), kluster.GetLabels())
 		metrics.SetMetricKlusterStatusPhase(kluster.GetName(), kluster.Status.Phase)
 
+		//TODO: remove ASAP, this is just a poor mans migration, adding the sec group name to existing klusters
+		if err := op.ensureSecurityGroupName(kluster); err != nil {
+			op.Recorder.Eventf(kluster, api_v1.EventTypeWarning, ConfigurationError, "Failed to add default security grop name to kluster: %s", err)
+		}
+
 		switch phase := kluster.Status.Phase; phase {
 		case models.KlusterPhasePending:
 			{
@@ -612,20 +617,11 @@ func (op *GroundControl) discoverOpenstackInfo(kluster *v1.Kluster) error {
 		}
 	}
 
-	if securityGroupID := copy.Spec.Openstack.SecurityGroupID; securityGroupID != "" {
-		//TODO: Validate that the securitygroup id exists
-
-	} else {
-		id, err := op.Clients.Openstack.GetSecurityGroupID(kluster.Account(), "default")
-		if err != nil {
-			return fmt.Errorf("Failed to get id for default securitygroup in project %s: %s", err, kluster.Account())
-		}
-		copy.Spec.Openstack.SecurityGroupID = id
-		op.Logger.Log(
-			"msg", "discovered SecurityGroupID",
-			"id", copy.Spec.Openstack.SecurityGroupID,
-			"kluster", kluster.GetName(),
-			"project", kluster.Account())
+	if copy.Spec.Openstack.SecurityGroupName == "" {
+		copy.Spec.Openstack.SecurityGroupName = "default"
+	}
+	if _, err := op.Clients.Openstack.GetSecurityGroupID(kluster.Account(), copy.Spec.Openstack.SecurityGroupName); err != nil {
+		return fmt.Errorf("Security group %s invalid: ", err)
 	}
 
 	_, err = op.Clients.Kubernikus.Kubernikus().Klusters(kluster.Namespace).Update(copy)
@@ -674,4 +670,15 @@ func (op *GroundControl) podUpdate(cur, old interface{}) {
 			op.queue.Add(klusterKey)
 		}
 	}
+}
+
+//TODO: remove this after it has been deployed once everywhere, this is a poor mans migration
+func (op *GroundControl) ensureSecurityGroupName(kluster *v1.Kluster) error {
+	if kluster.Spec.Openstack.SecurityGroupName == "" {
+		copy, err := op.Clients.Kubernikus.Kubernikus().Klusters(kluster.Namespace).Get(kluster.Name, metav1.GetOptions{})
+		copy.Spec.Openstack.SecurityGroupName = "default"
+		_, err = op.Clients.Kubernikus.Kubernikus().Klusters(kluster.Namespace).Update(copy)
+		return err
+	}
+	return nil
 }

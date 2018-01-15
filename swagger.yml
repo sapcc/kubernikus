@@ -386,7 +386,7 @@ definitions:
       lbFloatingNetworkID:
         x-go-name: LBFloatingNetworkID
         type: string
-      securityGroupID:
+      securityGroupName:
         type: string
   NodePool:
     x-nullable: false
