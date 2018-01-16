@@ -202,6 +202,28 @@ scrape_configs:
     action: replace
     replacement: ${1}
 
+- job_name: 'kube-system/kubelet'
+  kubernetes_sd_configs:
+  - role: node
+  relabel_configs:
+  - action: labelmap
+    regex: __meta_kubernetes_node_label_(.+)
+  - target_label: component
+    replacement: kubelet
+  - action: replace
+    source_labels: [__meta_kubernetes_node_name]
+    target_label: instance
+  - source_labels: [__address__]
+    action: replace
+    target_label: __address__
+    regex: ([^:;]+):(\d+)
+    replacement: ${1}:10255
+  - source_labels: [__scheme__]
+    action: replace
+    target_label: __scheme__
+    regex: https
+    replacement: http
+
 # Static Targets 
 #
 - job_name: 'kubernikus-prometheus'
