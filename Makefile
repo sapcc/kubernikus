@@ -21,7 +21,7 @@ HAS_GLIDE_VC := $(shell command -v glide-vc;)
 GO_SWAGGER_VERSION := 0.13.0
 SWAGGER_BIN        := bin/$(GOOS)/swagger-$(GO_SWAGGER_VERSION)
 
-.PHONY: all test clean code-gen client-gen informer-gen lister-gen vendor
+.PHONY: all test clean code-gen vendor
 
 all: $(BINARIES:%=bin/$(GOOS)/%)
 
@@ -62,6 +62,15 @@ push:
 	docker push sapcc/kubernikusctl:latest
 	docker push sapcc/kubernikus-kubectl:$(VERSION)
 	docker push sapcc/kubernikus-kubectl:latest
+
+CHANGELOG.md:
+ifndef GITHUB_TOKEN
+	$(error set GITHUB_TOKEN to a personal access token that has repo:read permission)
+else
+	docker build $(BUILD_ARGS) -t sapcc/kubernikus-changelog-builder:$(VERSION) --cache-from=sapcc/kubernikus-changelog-builder:latest ./contrib/kubernikus-changelog-builder
+	docker tag sapcc/kubernikus-changelog-builder:$(VERSION)  sapcc/kubernikus-changelog-builder:latest
+	docker run --rm -v $(PWD):/host -e GITHUB_TOKEN=$(GITHUB_TOKEN) sapcc/kubernikus-changelog-builder:latest
+endif
 
 documentation:
 	docker build $(BUILD_ARGS) -t sapcc/kubernikus-docs-builder:$(VERSION) --cache-from=sapcc/kubernikus-docs-builder:latest ./contrib/kubernikus-docs-builder
@@ -116,7 +125,7 @@ test-e2e:
 	go run test/e2e/*.go $(ARGS)
 
 include code-generate.mk
-code-gen: client-gen informer-gen lister-gen
+code-gen: client-gen informer-gen lister-gen deepcopy-gen
 
 vendor:
 ifndef HAS_GLIDE_VC

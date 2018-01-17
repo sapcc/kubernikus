@@ -31,6 +31,7 @@ func (d *updateCluster) Handle(params operations.UpdateClusterParams, principal 
 		// Update nodepool
 		kluster.Spec.NodePools = nodePools
 		kluster.Spec.SSHPublicKey = params.Body.Spec.SSHPublicKey
+		kluster.Spec.Openstack.SecurityGroupName = params.Body.Spec.Openstack.SecurityGroupName
 	})
 	if err != nil {
 		if apierrors.IsNotFound(err) {

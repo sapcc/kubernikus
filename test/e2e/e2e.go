@@ -7,10 +7,10 @@ import (
 	"testing"
 
 	"github.com/golang/glog"
-	kubernikusClient "github.com/sapcc/kubernikus/pkg/api/client"
-
+	"k8s.io/api/core/v1"
 	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/pkg/api/v1"
+
+	kubernikusClient "github.com/sapcc/kubernikus/pkg/api/client"
 )
 
 type E2ETestSuite struct {
