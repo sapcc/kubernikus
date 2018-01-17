@@ -9,6 +9,7 @@ import (
 	"github.com/gophercloud/gophercloud/openstack/identity/v3/tokens"
 	api_v1 "k8s.io/api/core/v1"
 	apiextensionsclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
+	"k8s.io/apimachinery/pkg/labels"
 	kubernetes_informers "k8s.io/client-go/informers"
 	"k8s.io/client-go/kubernetes/scheme"
 	typedcorev1 "k8s.io/client-go/kubernetes/typed/core/v1"
@@ -26,6 +27,7 @@ import (
 	"github.com/sapcc/kubernikus/pkg/controller/nodeobservatory"
 	"github.com/sapcc/kubernikus/pkg/controller/routegc"
 	kubernikus_informers "github.com/sapcc/kubernikus/pkg/generated/informers/externalversions"
+	"github.com/sapcc/kubernikus/pkg/migration"
 	"github.com/sapcc/kubernikus/pkg/version"
 )
 
@@ -197,7 +199,24 @@ func (o *KubernikusOperator) Run(stopCh <-chan struct{}, wg *sync.WaitGroup) {
 	o.Factories.Kubernikus.WaitForCacheSync(stopCh)
 	o.Factories.Kubernetes.WaitForCacheSync(stopCh)
 
-	o.Logger.Log("msg", "Cache primed. Ready for Action!")
+	o.Logger.Log("msg", "Cache primed")
+	if klusters, err := o.Factories.Kubernikus.Kubernikus().V1().Klusters().Lister().List(labels.Everything()); err != nil {
+		o.Logger.Log("msg", "Failed to list klusters", "err", err)
+	} else {
+		for _, kluster := range klusters {
+			if migration.MigrationsPending(kluster) {
+				err := migration.Migrate(kluster, o.Clients.Kubernetes, o.Clients.Kubernikus)
+				o.Logger.Log(
+					"msg", "Migrating spec",
+					"kluster", kluster.Name,
+					"from", int(kluster.Status.SpecVersion),
+					"to", migration.Latest(),
+					"err", err,
+				)
+			}
+		}
+	}
+	o.Logger.Log("msg", "Starting controllers")
 
 	for _, controller := range o.Config.Kubernikus.Controllers {
 		go controller.Run(stopCh, wg)

@@ -445,6 +445,8 @@ definitions:
         type: string
       version:
         type: string
+      specVersion:
+        type: integer
   NodePoolInfo:
     x-nullable: false
     type: object

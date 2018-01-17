@@ -463,6 +463,9 @@ func init() {
         "phase": {
           "$ref": "#/definitions/KlusterPhase"
         },
+        "specVersion": {
+          "type": "integer"
+        },
         "version": {
           "type": "string"
         },
