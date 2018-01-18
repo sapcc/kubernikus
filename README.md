@@ -43,10 +43,6 @@ It allows to easily manage Kubernetes clusters that are natively integrated with
 More documentation can be found at:
 
   * [Kubernikus Docs](./docs/)
-  
-## Contact
-
-https://convergedcloud.slack.com/app_redirect?channel=kubernikus-users
 
 ## License
 This project is licensed under the Apache2 License - see the [LICENSE](LICENSE) file for details
