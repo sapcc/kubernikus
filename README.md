@@ -46,8 +46,8 @@ More documentation can be found at:
   
 ## Contact
 
-https://convergedcloud.slack.com
+https://convergedcloud.slack.com/app_redirect?channel=kubernikus-users
 
 ## License
-This project is licensed under the Apache2 License - see the [LICENSE](blob/master/LICENSE) file for details
+This project is licensed under the Apache2 License - see the [LICENSE](LICENSE) file for details
 
