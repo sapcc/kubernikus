@@ -82,7 +82,10 @@ func (cpm *ConcretePoolManager) SetStatus(status *PoolStatus) error {
 		Schedulable: int64(status.Running),
 	}
 
-	copy := cpm.Kluster.DeepCopy()
+	copy, err := cpm.Clients.Kubernikus.Kubernikus().Klusters(cpm.Kluster.Namespace).Get(cpm.Kluster.Name, metav1.GetOptions{})
+	if err != nil {
+		return err
+	}
 
 	for i, curInfo := range copy.Status.NodePools {
 		if curInfo.Name == newInfo.Name {
@@ -91,7 +94,7 @@ func (cpm *ConcretePoolManager) SetStatus(status *PoolStatus) error {
 			}
 
 			copy.Status.NodePools[i] = newInfo
-			_, err := cpm.Clients.Kubernikus.Kubernikus().Klusters(copy.Namespace).Update(copy)
+			_, err = cpm.Clients.Kubernikus.Kubernikus().Klusters(copy.Namespace).Update(copy)
 			return err
 		}
 	}
