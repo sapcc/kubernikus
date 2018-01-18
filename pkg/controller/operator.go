@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"errors"
 	"fmt"
 	"sync"
 	"time"
@@ -9,15 +8,9 @@ import (
 	"github.com/go-kit/kit/log"
 	api_v1 "k8s.io/api/core/v1"
 	apiextensionsclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
-	"k8s.io/apimachinery/pkg/api/meta"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/watch"
 	kubernetes_informers "k8s.io/client-go/informers"
-	kubernetes_clientset "k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/kubernetes/scheme"
 	typedcorev1 "k8s.io/client-go/kubernetes/typed/core/v1"
-	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/record"
 
 	"github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
@@ -27,9 +20,7 @@ import (
 	"github.com/sapcc/kubernikus/pkg/client/openstack"
 	"github.com/sapcc/kubernikus/pkg/controller/config"
 	"github.com/sapcc/kubernikus/pkg/controller/launch"
-	kubernikus_clientset "github.com/sapcc/kubernikus/pkg/generated/clientset"
 	kubernikus_informers "github.com/sapcc/kubernikus/pkg/generated/informers/externalversions"
-	kubernikus_informers_v1 "github.com/sapcc/kubernikus/pkg/generated/informers/externalversions/kubernikus/v1"
 	"github.com/sapcc/kubernikus/pkg/version"
 )
 
@@ -129,9 +120,8 @@ func NewKubernikusOperator(options *KubernikusOperatorOptions, logger log.Logger
 		return nil, fmt.Errorf("Couldn't create CRD: %s", err)
 	}
 
-	o.Factories.Kubernikus = kubernikus_informers.NewSharedInformerFactory(o.Clients.Kubernikus, DEFAULT_RECONCILIATION)
-	o.Factories.Kubernetes = kubernetes_informers.NewSharedInformerFactory(o.Clients.Kubernetes, DEFAULT_RECONCILIATION)
-	o.initializeCustomInformers()
+	o.Factories.Kubernikus = kubernikus_informers.NewFilteredSharedInformerFactory(o.Clients.Kubernikus, DEFAULT_RECONCILIATION, options.Namespace, nil)
+	o.Factories.Kubernetes = kubernetes_informers.NewFilteredSharedInformerFactory(o.Clients.Kubernetes, DEFAULT_RECONCILIATION, options.Namespace, nil)
 
 	secrets := o.Clients.Kubernetes.Core().Secrets(options.Namespace)
 	klusters := o.Factories.Kubernikus.Kubernikus().V1().Klusters().Informer()
@@ -199,48 +189,4 @@ func (o *KubernikusOperator) Run(stopCh <-chan struct{}, wg *sync.WaitGroup) {
 	for name, controller := range o.Config.Kubernikus.Controllers {
 		go controller.Run(CONTROLLER_OPTIONS[name], stopCh, wg)
 	}
-}
-
-// MetaLabelReleaseIndexFunc is a default index function that indexes based on an object's release label
-func MetaLabelReleaseIndexFunc(obj interface{}) ([]string, error) {
-	meta, err := meta.Accessor(obj)
-	if err != nil {
-		return []string{""}, fmt.Errorf("object has no meta: %v", err)
-	}
-	if release, found := meta.GetLabels()["release"]; found {
-		return []string{release}, nil
-	}
-	return []string{""}, errors.New("object has no release label")
-}
-
-func (o *KubernikusOperator) initializeCustomInformers() {
-	//Manually create shared Kluster informer that only watches the given namespace
-	o.Factories.Kubernikus.InformerFor(
-		&v1.Kluster{},
-		func(client kubernikus_clientset.Interface, resyncPeriod time.Duration) cache.SharedIndexInformer {
-			return kubernikus_informers_v1.NewKlusterInformer(
-				client,
-				o.Config.Kubernikus.Namespace,
-				resyncPeriod,
-				cache.Indexers{},
-			)
-		},
-	)
-
-	//Manually create shared pod Informer that only watches the given namespace
-	o.Factories.Kubernetes.InformerFor(&api_v1.Pod{}, func(client kubernetes_clientset.Interface, resyncPeriod time.Duration) cache.SharedIndexInformer {
-		return cache.NewSharedIndexInformer(
-			&cache.ListWatch{
-				ListFunc: func(opt metav1.ListOptions) (runtime.Object, error) {
-					return client.CoreV1().Pods(o.Config.Kubernikus.Namespace).List(opt)
-				},
-				WatchFunc: func(opt metav1.ListOptions) (watch.Interface, error) {
-					return client.CoreV1().Pods(o.Config.Kubernikus.Namespace).Watch(opt)
-				},
-			},
-			&api_v1.Pod{},
-			resyncPeriod,
-			cache.Indexers{"kluster": MetaLabelReleaseIndexFunc},
-		)
-	})
 }
