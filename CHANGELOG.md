@@ -1,20 +1,5 @@
 # Change Log
 
-## [Unreleased](https://github.com/sapcc/kubernikus/tree/HEAD)
-
-[Full Changelog](https://github.com/sapcc/kubernikus/compare/rm...HEAD)
-
-**Implemented enhancements:**
-
-- Allows to Specify an SSH Public Key for Login to Nodes [\#82](https://github.com/sapcc/kubernikus/issues/82)
-
-**Fixed bugs:**
-
-- Allows to Specify an SSH Public Key for Login to Nodes [\#82](https://github.com/sapcc/kubernikus/issues/82)
-
-## [rm](https://github.com/sapcc/kubernikus/tree/rm) (2018-01-18)
-[Full Changelog](https://github.com/sapcc/kubernikus/compare/v1.5.0...rm)
-
 ## [v1.5.0](https://github.com/sapcc/kubernikus/tree/v1.5.0) (2018-01-18)
 [Full Changelog](https://github.com/sapcc/kubernikus/compare/v1.4.0...v1.5.0)
 
@@ -24,6 +9,7 @@
 - Metadata: Sort and filter flavors [\#130](https://github.com/sapcc/kubernikus/issues/130)
 - Preseed RBAC RoleBindings [\#122](https://github.com/sapcc/kubernikus/issues/122)
 - Don't offer flavours that don't work with our default image [\#109](https://github.com/sapcc/kubernikus/issues/109)
+- Allows to Specify an SSH Public Key for Login to Nodes [\#82](https://github.com/sapcc/kubernikus/issues/82)
 - Run Conformance Tests on a Kluster [\#66](https://github.com/sapcc/kubernikus/issues/66)
 - Adds Automatic CHANGELOG.md Generation [\#145](https://github.com/sapcc/kubernikus/pull/145) ([BugRoger](https://github.com/BugRoger))
 - add preseed RBAC RoleBinding kubernikus member [\#138](https://github.com/sapcc/kubernikus/pull/138) ([jonathanschwarze](https://github.com/jonathanschwarze))
@@ -32,6 +18,7 @@
 
 - Non-Default Security Group is Ignored [\#152](https://github.com/sapcc/kubernikus/issues/152)
 - Doc links broken using blob syntax [\#140](https://github.com/sapcc/kubernikus/issues/140)
+- Allows to Specify an SSH Public Key for Login to Nodes [\#82](https://github.com/sapcc/kubernikus/issues/82)
 
 **Closed issues:**
 
