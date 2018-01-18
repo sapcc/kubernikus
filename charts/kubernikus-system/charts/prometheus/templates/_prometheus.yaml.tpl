@@ -202,8 +202,46 @@ scrape_configs:
     action: replace
     replacement: ${1}
 
-# Static Targets 
-#
+- job_name: 'kube-system/kubelet'
+  kubernetes_sd_configs:
+  - role: node
+  relabel_configs:
+  - action: labelmap
+    regex: __meta_kubernetes_node_label_(.+)
+  - target_label: component
+    replacement: kubelet
+  - action: replace
+    source_labels: [__meta_kubernetes_node_name]
+    target_label: instance
+  - source_labels: [__address__]
+    action: replace
+    target_label: __address__
+    regex: ([^:;]+):(\d+)
+    replacement: ${1}:10255
+  - source_labels: [__scheme__]
+    action: replace
+    target_label: __scheme__
+    regex: https
+    replacement: http
+
+- job_name: 'kubernetes-cadvisors'
+  scheme: https
+  tls_config:
+    ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+  bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+  kubernetes_sd_configs:
+    - role: node
+  relabel_configs:
+    - action: labelmap
+      regex: __meta_kubernetes_node_label_(.+)
+    - target_label: __address__
+      replacement: kubernetes.default:443
+    - source_labels: [__meta_kubernetes_node_name]
+      regex: (.+)
+      target_label: __metrics_path__
+      replacement: /api/v1/nodes/${1}:4194/proxy/metrics
+
+# Static Targets
 - job_name: 'kubernikus-prometheus'
   metrics_path: /prometheus/metrics
   static_configs:
