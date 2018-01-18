@@ -168,11 +168,6 @@ func (op *GroundControl) handler(key string) error {
 		metrics.SetMetricKlusterInfo(kluster.GetNamespace(), kluster.GetName(), kluster.Status.Version, kluster.Spec.Openstack.ProjectID, kluster.GetAnnotations(), kluster.GetLabels())
 		metrics.SetMetricKlusterStatusPhase(kluster.GetName(), kluster.Status.Phase)
 
-		//TODO: remove ASAP, this is just a poor mans migration, adding the sec group name to existing klusters
-		if err := op.ensureSecurityGroupName(kluster); err != nil {
-			op.Recorder.Eventf(kluster, api_v1.EventTypeWarning, ConfigurationError, "Failed to add default security grop name to kluster: %s", err)
-		}
-
 		switch phase := kluster.Status.Phase; phase {
 		case models.KlusterPhasePending:
 			{
@@ -696,15 +691,4 @@ func (op *GroundControl) podUpdate(cur, old interface{}) {
 			op.queue.Add(klusterKey)
 		}
 	}
-}
-
-//TODO: remove this after it has been deployed once everywhere, this is a poor mans migration
-func (op *GroundControl) ensureSecurityGroupName(kluster *v1.Kluster) error {
-	if kluster.Spec.Openstack.SecurityGroupName == "" {
-		copy := kluster.DeepCopy()
-		copy.Spec.Openstack.SecurityGroupName = "default"
-		_, err := op.Clients.Kubernikus.Kubernikus().Klusters(kluster.Namespace).Update(copy)
-		return err
-	}
-	return nil
 }
