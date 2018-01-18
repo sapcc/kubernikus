@@ -2,18 +2,63 @@
 
 ## [Unreleased](https://github.com/sapcc/kubernikus/tree/HEAD)
 
-[Full Changelog](https://github.com/sapcc/kubernikus/compare/v1.4.0...HEAD)
+[Full Changelog](https://github.com/sapcc/kubernikus/compare/rm...HEAD)
 
 **Implemented enhancements:**
 
-- apiserver: Improve logs [\#2](https://github.com/sapcc/kubernikus/issues/2)
+- Allows to Specify an SSH Public Key for Login to Nodes [\#82](https://github.com/sapcc/kubernikus/issues/82)
+
+**Fixed bugs:**
+
+- Allows to Specify an SSH Public Key for Login to Nodes [\#82](https://github.com/sapcc/kubernikus/issues/82)
+
+## [rm](https://github.com/sapcc/kubernikus/tree/rm) (2018-01-18)
+[Full Changelog](https://github.com/sapcc/kubernikus/compare/v1.5.0...rm)
+
+## [v1.5.0](https://github.com/sapcc/kubernikus/tree/v1.5.0) (2018-01-18)
+[Full Changelog](https://github.com/sapcc/kubernikus/compare/v1.4.0...v1.5.0)
+
+**Implemented enhancements:**
+
+- Add Advanced Options to Web UI [\#147](https://github.com/sapcc/kubernikus/issues/147)
+- Metadata: Sort and filter flavors [\#130](https://github.com/sapcc/kubernikus/issues/130)
+- Preseed RBAC RoleBindings [\#122](https://github.com/sapcc/kubernikus/issues/122)
+- Don't offer flavours that don't work with our default image [\#109](https://github.com/sapcc/kubernikus/issues/109)
+- Run Conformance Tests on a Kluster [\#66](https://github.com/sapcc/kubernikus/issues/66)
+- Adds Automatic CHANGELOG.md Generation [\#145](https://github.com/sapcc/kubernikus/pull/145) ([BugRoger](https://github.com/BugRoger))
+- add preseed RBAC RoleBinding kubernikus member [\#138](https://github.com/sapcc/kubernikus/pull/138) ([jonathanschwarze](https://github.com/jonathanschwarze))
+
+**Fixed bugs:**
+
+- Non-Default Security Group is Ignored [\#152](https://github.com/sapcc/kubernikus/issues/152)
+- Doc links broken using blob syntax [\#140](https://github.com/sapcc/kubernikus/issues/140)
 
 **Closed issues:**
 
+- Validate that the securitygroup id exists [\#172](https://github.com/sapcc/kubernikus/issues/172)
+- Migrate to FilteredSharedInformer [\#169](https://github.com/sapcc/kubernikus/issues/169)
+- Add Public-Key from Spec to Ignition Templates [\#158](https://github.com/sapcc/kubernikus/issues/158)
+- Add Public-Key to Kluster Spec [\#157](https://github.com/sapcc/kubernikus/issues/157)
+- Add Public-Key to GetMetadata API [\#156](https://github.com/sapcc/kubernikus/issues/156)
+- Upgrade Code-Generators  [\#154](https://github.com/sapcc/kubernikus/issues/154)
 - Discover all missing attributes via operator [\#85](https://github.com/sapcc/kubernikus/issues/85)
+- apiserver: Improve logs [\#2](https://github.com/sapcc/kubernikus/issues/2)
 
 **Merged pull requests:**
 
+- Documentation files \(new\) [\#181](https://github.com/sapcc/kubernikus/pull/181) ([jonathanschwarze](https://github.com/jonathanschwarze))
+- scrape kubelets, cadvisor [\#180](https://github.com/sapcc/kubernikus/pull/180) ([auhlig](https://github.com/auhlig))
+- remove one-time securitygroup name migration [\#179](https://github.com/sapcc/kubernikus/pull/179) ([databus23](https://github.com/databus23))
+- Uses DeepCopy Instead of Backend Call [\#176](https://github.com/sapcc/kubernikus/pull/176) ([BugRoger](https://github.com/BugRoger))
+- Use filtered informers scoped to given namespace [\#171](https://github.com/sapcc/kubernikus/pull/171) ([databus23](https://github.com/databus23))
+- Add user defined ssh public key to ignition config [\#168](https://github.com/sapcc/kubernikus/pull/168) ([databus23](https://github.com/databus23))
+- Specify security group by name [\#167](https://github.com/sapcc/kubernikus/pull/167) ([databus23](https://github.com/databus23))
+- Upgrades to client-go v6.0.0 [\#163](https://github.com/sapcc/kubernikus/pull/163) ([BugRoger](https://github.com/BugRoger))
+- Generate a random ssh password per kluster [\#162](https://github.com/sapcc/kubernikus/pull/162) ([databus23](https://github.com/databus23))
+- Add ssh public key to Kluster spec [\#161](https://github.com/sapcc/kubernikus/pull/161) ([databus23](https://github.com/databus23))
+- Surface nova errors message for bad request responses \(400\) [\#160](https://github.com/sapcc/kubernikus/pull/160) ([databus23](https://github.com/databus23))
+- Adds Public-Key to GetMetadata Call [\#159](https://github.com/sapcc/kubernikus/pull/159) ([BugRoger](https://github.com/BugRoger))
+- Use Finalizers for Orchestrating Kluster Deletion [\#155](https://github.com/sapcc/kubernikus/pull/155) ([BugRoger](https://github.com/BugRoger))
 - Relax stalebot [\#143](https://github.com/sapcc/kubernikus/pull/143) ([databus23](https://github.com/databus23))
 - Correct Test Flag Name [\#142](https://github.com/sapcc/kubernikus/pull/142) ([notque](https://github.com/notque))
 - Typo fixes. [\#141](https://github.com/sapcc/kubernikus/pull/141) ([notque](https://github.com/notque))
@@ -25,6 +70,7 @@
 **Implemented enhancements:**
 
 - Upgrade to 1.8 [\#62](https://github.com/sapcc/kubernikus/issues/62)
+- Sort \(and filter\) flavors in metadata response [\#137](https://github.com/sapcc/kubernikus/pull/137) ([databus23](https://github.com/databus23))
 - Kubernetes v1.9.0 Support [\#135](https://github.com/sapcc/kubernikus/pull/135) ([BugRoger](https://github.com/BugRoger))
 
 **Fixed bugs:**
@@ -100,8 +146,6 @@
 **Implemented enhancements:**
 
 - Setup CoreDNS for kubernikus-system [\#70](https://github.com/sapcc/kubernikus/issues/70)
-- Log/Tracing Utility [\#24](https://github.com/sapcc/kubernikus/issues/24)
-- Configurable Defaults [\#21](https://github.com/sapcc/kubernikus/issues/21)
 
 **Fixed bugs:**
 
@@ -121,6 +165,8 @@
 - Sane Infrastructure Setup [\#54](https://github.com/sapcc/kubernikus/issues/54)
 - Github Workflow [\#50](https://github.com/sapcc/kubernikus/issues/50)
 - RKT Pods for Kubelet + Wormhole Client [\#44](https://github.com/sapcc/kubernikus/issues/44)
+- Log/Tracing Utility [\#24](https://github.com/sapcc/kubernikus/issues/24)
+- Configurable Defaults [\#21](https://github.com/sapcc/kubernikus/issues/21)
 - Cleanup and enhance spec [\#3](https://github.com/sapcc/kubernikus/issues/3)
 
 **Merged pull requests:**
@@ -140,7 +186,6 @@
 - Docker Options Dropin [\#64](https://github.com/sapcc/kubernikus/issues/64)
 - Add Kube-Proxy to Nodes [\#38](https://github.com/sapcc/kubernikus/issues/38)
 - Seed ClusterRoleBindings [\#35](https://github.com/sapcc/kubernikus/issues/35)
-- Add Kube-Proxy to Nodes [\#34](https://github.com/sapcc/kubernikus/issues/34)
 - Expose NodePool CRUD via API [\#31](https://github.com/sapcc/kubernikus/issues/31)
 
 **Fixed bugs:**
@@ -154,6 +199,7 @@
 - Improve NodeAPI [\#49](https://github.com/sapcc/kubernikus/issues/49)
 - Remove Dependency OpenstackSeeder [\#48](https://github.com/sapcc/kubernikus/issues/48)
 - Kube-Proxy br\_netfilter Missing [\#42](https://github.com/sapcc/kubernikus/issues/42)
+- Add Kube-Proxy to Nodes [\#34](https://github.com/sapcc/kubernikus/issues/34)
 - Cluster-State Aware LaunchController  [\#25](https://github.com/sapcc/kubernikus/issues/25)
 - Kluster persistence [\#18](https://github.com/sapcc/kubernikus/issues/18)
 - Implement cluster edit [\#17](https://github.com/sapcc/kubernikus/issues/17)
