@@ -26,4 +26,4 @@ groups:
   approvers:
     required: 1
     teams:
-      - committers
+      - kubernikus
