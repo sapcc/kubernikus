@@ -23,6 +23,7 @@ group_defaults:
     ignored: true
 
 groups:
-  required: 1
-  teams:
-    - Core
+  approvers:
+    required: 1
+    teams:
+      - committers
