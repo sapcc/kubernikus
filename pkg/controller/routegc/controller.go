@@ -12,11 +12,13 @@ import (
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/servers"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/layer3/routers"
 	"github.com/gophercloud/gophercloud/pagination"
+	"github.com/prometheus/client_golang/prometheus"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/tools/cache"
 
 	"github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
 	os_client "github.com/sapcc/kubernikus/pkg/client/openstack"
+	"github.com/sapcc/kubernikus/pkg/controller/metrics"
 	informers_v1 "github.com/sapcc/kubernikus/pkg/generated/informers/externalversions/kubernikus/v1"
 	"github.com/sapcc/kubernikus/pkg/version"
 )
@@ -119,11 +121,9 @@ func (r *RouteGarbageCollector) reconcile(kluster *v1.Kluster, logger log.Logger
 	logger = log.With(logger, "router", routerID)
 
 	newRoutes := make([]routers.Route, 0, len(router.Routes))
-	updated := false
 	for _, route := range router.Routes {
 		if isResponsibleForRoute(clusterCIDR, route) {
 			if _, ok := validNexthops[route.NextHop]; !ok {
-				updated = true
 				logger.Log("msg", "route orphaned", "cidr", route.DestinationCIDR, "nexthop", route.NextHop)
 				continue //delete the route (by not adding to newRoutes)
 			}
@@ -132,13 +132,14 @@ func (r *RouteGarbageCollector) reconcile(kluster *v1.Kluster, logger log.Logger
 	}
 
 	//something was changed, update the router
-	if updated {
+	if len(newRoutes) < len(router.Routes) {
 		_, err := routers.Update(networkClient, routerID, routers.UpdateOpts{
 			Routes: newRoutes,
 		}).Extract()
 		if err != nil {
 			return fmt.Errorf("Failed to remove routes: %s", err)
 		}
+		metrics.OrphanedRoutesTotal.With(prometheus.Labels{}).Add(float64(len(router.Routes) - len(newRoutes)))
 		logger.Log("msg", "removed routes")
 	}
 	return nil
@@ -169,6 +170,9 @@ func (r *RouteGarbageCollector) watchKluster(key string, stop <-chan struct{}) {
 		begin := time.Now()
 		err = r.reconcile(kluster, logger)
 		logger.Log("msg", "Reconciling", "took", time.Since(begin), "v", 5, "err", err)
+		if err != nil {
+			metrics.OrphanedRoutesTotal.With(prometheus.Labels{}).Add(1)
+		}
 	}
 	wait.JitterUntil(reconcile, r.syncPeriod, 0.5, true, stop)
 }
