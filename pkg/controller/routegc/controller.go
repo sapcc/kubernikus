@@ -171,7 +171,6 @@ func (r *RouteGarbageCollector) watchKluster(key string, stop <-chan struct{}) {
 		logger.Log("msg", "Reconciling", "took", time.Since(begin), "v", 5, "err", err)
 	}
 	wait.JitterUntil(reconcile, r.syncPeriod, 0.5, true, stop)
-	fmt.Println("done")
 }
 
 func (r *RouteGarbageCollector) klusterDelete(obj interface{}) {
