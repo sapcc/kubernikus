@@ -23,7 +23,6 @@ group_defaults:
     ignored: true
 
 groups:
-  approvers:
-    required: 1
-    teams:
-      - Core
+  required: 1
+  teams:
+    - Core
