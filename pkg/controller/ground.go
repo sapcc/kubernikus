@@ -55,10 +55,11 @@ type GroundControl struct {
 	klusterInformer informers_kubernikus.KlusterInformer
 	podInformer     informers_v1.PodInformer
 
-	Logger log.Logger
+	Logger      log.Logger
+	threadiness int
 }
 
-func NewGroundController(factories config.Factories, clients config.Clients, recorder record.EventRecorder, config config.Config, logger log.Logger) *GroundControl {
+func NewGroundController(threadiness int, factories config.Factories, clients config.Clients, recorder record.EventRecorder, config config.Config, logger log.Logger) *GroundControl {
 	logger = log.With(logger,
 		"controller", "ground")
 
@@ -71,6 +72,7 @@ func NewGroundController(factories config.Factories, clients config.Clients, rec
 		klusterInformer: factories.Kubernikus.Kubernikus().V1().Klusters(),
 		podInformer:     factories.Kubernetes.Core().V1().Pods(),
 		Logger:          logger,
+		threadiness:     threadiness,
 	}
 
 	operator.klusterInformer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
@@ -88,15 +90,15 @@ func NewGroundController(factories config.Factories, clients config.Clients, rec
 	return operator
 }
 
-func (op *GroundControl) Run(threadiness int, stopCh <-chan struct{}, wg *sync.WaitGroup) {
+func (op *GroundControl) Run(stopCh <-chan struct{}, wg *sync.WaitGroup) {
 	defer op.queue.ShutDown()
 	defer wg.Done()
 	wg.Add(1)
 	op.Logger.Log(
 		"msg", "starting GroundControl",
-		"threadiness", threadiness)
+		"threadiness", op.threadiness)
 
-	for i := 0; i < threadiness; i++ {
+	for i := 0; i < op.threadiness; i++ {
 		go wait.Until(op.runWorker, time.Second, stopCh)
 	}
 

@@ -65,6 +65,7 @@ type Client interface {
 	CreateKlusterServiceUser(username, password, domain, defaultProjectID string) error
 	GetKubernikusCatalogEntry() (string, error)
 	GetSecurityGroupID(project_id, name string) (string, error)
+	KlusterClientFor(kluster *kubernikus_v1.Kluster) (*gophercloud.ProviderClient, error)
 }
 
 type NameGenerator interface {
@@ -256,7 +257,7 @@ func (c *client) adminClient() (*gophercloud.ProviderClient, error) {
 	return c.adminProviderClient, nil
 }
 
-func (c *client) klusterClientFor(kluster *kubernikus_v1.Kluster) (*gophercloud.ProviderClient, error) {
+func (c *client) KlusterClientFor(kluster *kubernikus_v1.Kluster) (*gophercloud.ProviderClient, error) {
 	secret_name := kluster.Name
 
 	if obj, found := c.klusterClients.Load(kluster.GetUID()); found {
@@ -551,7 +552,7 @@ func getRouterNetworks(client *gophercloud.ServiceClient, routerID string) ([]st
 func (c *client) GetNodes(kluster *kubernikus_v1.Kluster, pool *models.NodePool) ([]Node, error) {
 	pool_id := pool.Name
 
-	provider, err := c.klusterClientFor(kluster)
+	provider, err := c.KlusterClientFor(kluster)
 	if err != nil {
 		return nil, err
 	}
@@ -596,7 +597,7 @@ func (c *client) CreateNode(kluster *kubernikus_v1.Kluster, pool *models.NodePoo
 
 	name = SimpleNameGenerator.GenerateName(fmt.Sprintf("%v-%v-", kluster.Spec.Name, pool.Name))
 
-	provider, err := c.klusterClientFor(kluster)
+	provider, err := c.KlusterClientFor(kluster)
 	if err != nil {
 		return "", err
 	}
@@ -636,7 +637,7 @@ func (c *client) DeleteNode(kluster *kubernikus_v1.Kluster, ID string) (err erro
 			"err", err)
 	}()
 
-	provider, err := c.klusterClientFor(kluster)
+	provider, err := c.KlusterClientFor(kluster)
 	if err != nil {
 		return err
 	}

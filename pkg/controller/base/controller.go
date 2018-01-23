@@ -24,7 +24,7 @@ const (
 var ErrUnkownKluster = errors.New("unknown kluster")
 
 type Controller interface {
-	Run(int, <-chan struct{}, *sync.WaitGroup)
+	Run(<-chan struct{}, *sync.WaitGroup)
 }
 
 type Reconciler interface {
@@ -38,16 +38,18 @@ type controller struct {
 	queue      workqueue.RateLimitingInterface
 	reconciler Reconciler
 
-	logger log.Logger
+	logger      log.Logger
+	threadiness int
 }
 
-func NewController(factories config.Factories, clients config.Clients, reconciler Reconciler, logger log.Logger) Controller {
+func NewController(threadiness int, factories config.Factories, clients config.Clients, reconciler Reconciler, logger log.Logger) Controller {
 	c := &controller{
-		Factories:  factories,
-		Clients:    clients,
-		queue:      workqueue.NewRateLimitingQueue(workqueue.NewItemExponentialFailureRateLimiter(BASE_DELAY, MAX_DELAY)),
-		reconciler: reconciler,
-		logger:     logger,
+		Factories:   factories,
+		Clients:     clients,
+		queue:       workqueue.NewRateLimitingQueue(workqueue.NewItemExponentialFailureRateLimiter(BASE_DELAY, MAX_DELAY)),
+		reconciler:  reconciler,
+		logger:      logger,
+		threadiness: threadiness,
 	}
 
 	c.Factories.Kubernikus.Kubernikus().V1().Klusters().Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
@@ -74,10 +76,10 @@ func NewController(factories config.Factories, clients config.Clients, reconcile
 	return c
 }
 
-func (c *controller) Run(threadiness int, stopCh <-chan struct{}, wg *sync.WaitGroup) {
+func (c *controller) Run(stopCh <-chan struct{}, wg *sync.WaitGroup) {
 	c.logger.Log(
 		"msg", "starting run loop",
-		"threadiness", threadiness,
+		"threadiness", c.threadiness,
 		"v", 2,
 	)
 
@@ -85,7 +87,7 @@ func (c *controller) Run(threadiness int, stopCh <-chan struct{}, wg *sync.WaitG
 	defer wg.Done()
 	wg.Add(1)
 
-	for i := 0; i < threadiness; i++ {
+	for i := 0; i < c.threadiness; i++ {
 		go wait.Until(c.runWorker, time.Second, stopCh)
 	}
 
