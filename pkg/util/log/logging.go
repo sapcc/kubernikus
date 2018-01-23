@@ -16,7 +16,6 @@ func NewLogger(flags *pflag.FlagSet) kitLog.Logger {
 	if v := flags.Lookup("v"); v != nil {
 		level, _ = strconv.Atoi(v.Value.String())
 	}
-	fmt.Println("Logging with level ", level)
 
 	var logger kitLog.Logger
 	logger = kitLog.NewLogfmtLogger(kitLog.NewSyncWriter(os.Stderr))
