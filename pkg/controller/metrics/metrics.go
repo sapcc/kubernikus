@@ -2,6 +2,7 @@ package metrics
 
 import (
 	"fmt"
+	"net"
 	"net/http"
 	"sync"
 	"time"
@@ -180,24 +181,19 @@ func init() {
 	)
 }
 
-func ExposeMetrics(host string, metricPort int, stopCh <-chan struct{}, wg *sync.WaitGroup, logger log.Logger) error {
+func ExposeMetrics(host string, metricPort int, stopCh <-chan struct{}, wg *sync.WaitGroup, logger log.Logger) {
+	wg.Add(1)
+	defer wg.Done()
+	ln, err := net.Listen("tcp", fmt.Sprintf("%v:%v", host, metricPort))
 	logger.Log(
 		"msg", "Exposing metrics",
 		"host", host,
 		"port", metricPort,
-		"path", "/metrics")
-	defer wg.Done()
-	wg.Add(1)
-	for {
-		select {
-		case <-stopCh:
-			return nil
-		default:
-			http.Handle("/metrics", promhttp.Handler())
-			return http.ListenAndServe(
-				fmt.Sprintf("%v:%v", host, metricPort),
-				nil,
-			)
-		}
+		"err", err)
+	if err != nil {
+		return
 	}
+	go http.Serve(ln, promhttp.Handler())
+	<-stopCh
+	ln.Close()
 }

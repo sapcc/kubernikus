@@ -58,17 +58,17 @@ This will create a Kubernetes service that exposes the dashboard on
 a high-level service port on each node of the cluster. Additionally,
 a load-balancer is created in OpenStack which points to each node.
 
-![Load Balancer](/assets/images/docs/containers/kubernetes/loadbalancer0.png)
+![Load Balancer](https://raw.githubusercontent.com/sapcc/kubernikus/master/assets/images/docs/containers/kubernetes/loadbalancer0.png)
 
 As the load-balancers are not in the default instance group, they need to be
 added to the security group explicitly. Without this the health monitors won't
 be able to reach the node port and the listener will be offline.
 
-![Security Group](/assets/images/docs/containers/kubernetes/loadbalancer1.png)
+![Security Group](https://raw.githubusercontent.com/sapcc/kubernikus/master/assets/images/docs/containers/kubernetes/loadbalancer1.png)
 
 Once the health monitors turn healthy, attaching a floating IP will make the
 dashboard accessible from the outside via `https` on port `443`.
 
-![FIP](/assets/images/docs/containers/kubernetes/loadbalancer2.png)
+![FIP](https://raw.githubusercontent.com/sapcc/kubernikus/master/assets/images/docs/containers/kubernetes/loadbalancer2.png)
 
 ~> This setup exposes a unauthenticated Dashboard with full access to the cluster. This is a security risk. See the [Access Control](https://github.com/kubernetes/dashboard/wiki/Access-control) documentation for more info.

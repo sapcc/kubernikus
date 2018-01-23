@@ -53,12 +53,12 @@ Users with `Keystone Administrator` role are allowed to change user role
 assignments in a project.
 
 ![User Role
-Assignments](/assets/images/docs/containers/kubernetes/userroleassignments.png)
+Assignments](https://raw.githubusercontent.com/sapcc/kubernikus/master/assets/images/docs/containers/kubernetes/userroleassignments.png)
 
 To add additional users to a cluster they need to be
 given either `Kubernetes Admin` or `Kubernetes Member` roles.
 
-![Role Assignments](/assets/images/docs/containers/kubernetes/roleassignment.png)
+![Role Assignments](https://raw.githubusercontent.com/sapcc/kubernikus/master/assets/images/docs/containers/kubernetes/roleassignment.png)
 /assets/images/docs/containers/kubernetes/userroleassignments.png
 
 ## Authenticating with Kubernetes
@@ -72,7 +72,7 @@ documentation](https://kubernetes.io/docs/user-guide/kubectl-overview/).
 A preconfigured `.kubeconfig` file can be downloaded from the UI or fetched via
 API:
 
-![Download Credentials](/assets/images/docs/containers/kubernetes/credentials.png)
+![Download Credentials](https://raw.githubusercontent.com/sapcc/kubernikus/master/assets/images/docs/containers/kubernetes/credentials.png)
 
 ### Automatic Refresh
 
@@ -91,7 +91,7 @@ Setting up an automatic refresh of the `.kubeconfig` file is a 2-step process:
 The initialisation only needs to be done once. Afterwards a `refresh` is
 possible without repeating all authentication details.
 
-![Setup](/assets/images/docs/containers/kubernetes/setup.png)
+![Setup](https://raw.githubusercontent.com/sapcc/kubernikus/master/assets/images/docs/containers/kubernetes/setup.png)
 
 The UI provides the full `kubernikusctl auth init` initialisation command for
 convenience.
@@ -115,3 +115,5 @@ kubectl create clusterrolebinding cluster-admin
 ```
 
 ~> Note: This allows to perform any action against the API, including viewing secrets and modifying permissions. It is not a recommended policy.
+
+
