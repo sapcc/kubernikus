@@ -244,16 +244,24 @@ scrape_configs:
 - job_name: 'blackbox-ingress'
   metrics_path: /probe
   params:
-    module: [http_2xx]  # Look for a HTTP 200 response.
+    # Look for a HTTP 200 response per default.
+    # Can be overwritten by annotating the ingress resource with the expected return codes, e.g. `prometheus.io/probe_code: "4xx"`
+    module: [http_2xx]
   kubernetes_sd_configs:
   - role: ingress
   relabel_configs:
-  - source_labels: [__meta_kubernetes_ingress_annotation_prometheus_io_probe]
-    action: keep
-    regex: true
+  # don't scrape yourself
   - source_labels: [__meta_kubernetes_ingress_path]
     regex: /prometheus
     action: drop
+  - source_labels: [__meta_kubernetes_ingress_annotation_prometheus_io_probe]
+    action: keep
+    regex: true
+  # consider prometheus.io/probe_code annotation. mind below regex.
+  - source_labels: [__meta_kubernetes_ingress_annotation_prometheus_io_probe_code]
+    regex: ^(\d).+
+    replacement: http_${1}xx
+    target_label: __param_module
   - source_labels: [__meta_kubernetes_ingress_scheme,__address__,__meta_kubernetes_ingress_path]
     regex: (.+);(.+);(.+)
     replacement: ${1}://${2}${3}

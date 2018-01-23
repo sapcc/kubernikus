@@ -5,7 +5,6 @@ metadata:
   name: kubernikus-api
   annotations:
     vice-president: "true"
-    prometheus.io/scrape: "true"
     prometheus.io/probe: "true"
 spec:
   tls:

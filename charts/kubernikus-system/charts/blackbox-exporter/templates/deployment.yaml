@@ -22,3 +22,12 @@ spec:
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
             - containerPort: {{ .Values.service.internalPort }}
+          args:
+            - --config.file=/etc/blackbox-exporter/blackbox.yml
+          volumeMounts:
+            - name: config
+              mountPath: /etc/blackbox-exporter
+      volumes:
+        - name: config
+          configMap:
+            name: {{ .Chart.Name }}
