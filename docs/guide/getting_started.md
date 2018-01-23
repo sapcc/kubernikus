@@ -38,19 +38,3 @@ combine VM and cloud-native workloads.
 
 [![Kubernikus Demo](http://img.youtube.com/vi/1dPxPU9fHTg/0.jpg)](http://www.youtube.com/watch?v=1dPxPU9fHTg)
 
-### Support
-
-To allow for direct, convenient feedback and support please join the
-[#kubernikus-users](https://convergedcloud.slack.com/messages/kubernikus-users)
-channel in the [Converged Cloud Slack](https://convergedcloud.slack.com)
-workspace. Any SAP employee is allowed to sign up and access this workspace
-using the SAP email address.
-
-There's also an open weekly meeting for all users and everyone interested in
-Kubernikus. Next dates are being announced and pinned in
-[#kubernikus-users](https://convergedcloud.slack.com/messages/kubernikus-users).
-
-There you will also find the
-[#kubernetes](https://convergedcloud.slack.com/messages/kubernikus-users)
-channel for general topics related to Kubernetes in SAP and specifially on
-Converged Cloud.
