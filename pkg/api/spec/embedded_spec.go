@@ -333,6 +333,7 @@ func init() {
         "name": {
           "description": "name of the cluster",
           "type": "string",
+          "maxLength": 20,
           "pattern": "^[a-z]([-a-z0-9]*[a-z0-9])?$",
           "x-nullable": false
         },
