@@ -16,7 +16,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/wait"
-	listers_v1 "k8s.io/client-go/listers/core/v1"
+	informers_v1 "k8s.io/client-go/informers/core/v1"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/record"
 	"k8s.io/client-go/util/workqueue"
@@ -29,6 +29,7 @@ import (
 	"github.com/sapcc/kubernikus/pkg/controller/config"
 	"github.com/sapcc/kubernikus/pkg/controller/ground"
 	"github.com/sapcc/kubernikus/pkg/controller/metrics"
+	informers_kubernikus "github.com/sapcc/kubernikus/pkg/generated/informers/externalversions/kubernikus/v1"
 	"github.com/sapcc/kubernikus/pkg/util"
 	helm_util "github.com/sapcc/kubernikus/pkg/util/helm"
 	waitutil "github.com/sapcc/kubernikus/pkg/util/wait"
@@ -51,14 +52,14 @@ type GroundControl struct {
 	Recorder record.EventRecorder
 
 	queue           workqueue.RateLimitingInterface
-	klusterInformer cache.SharedIndexInformer
-	podInformer     cache.SharedIndexInformer
-	podLister       listers_v1.PodLister
+	klusterInformer informers_kubernikus.KlusterInformer
+	podInformer     informers_v1.PodInformer
 
-	Logger log.Logger
+	Logger      log.Logger
+	threadiness int
 }
 
-func NewGroundController(factories config.Factories, clients config.Clients, recorder record.EventRecorder, config config.Config, logger log.Logger) *GroundControl {
+func NewGroundController(threadiness int, factories config.Factories, clients config.Clients, recorder record.EventRecorder, config config.Config, logger log.Logger) *GroundControl {
 	logger = log.With(logger,
 		"controller", "ground")
 
@@ -68,19 +69,19 @@ func NewGroundController(factories config.Factories, clients config.Clients, rec
 		Config:          config,
 		Recorder:        recorder,
 		queue:           workqueue.NewRateLimitingQueue(workqueue.NewItemExponentialFailureRateLimiter(5*time.Second, 300*time.Second)),
-		klusterInformer: factories.Kubernikus.Kubernikus().V1().Klusters().Informer(),
-		podInformer:     factories.Kubernetes.Core().V1().Pods().Informer(),
-		podLister:       listers_v1.NewPodLister(factories.Kubernetes.Core().V1().Pods().Informer().GetIndexer()),
+		klusterInformer: factories.Kubernikus.Kubernikus().V1().Klusters(),
+		podInformer:     factories.Kubernetes.Core().V1().Pods(),
 		Logger:          logger,
+		threadiness:     threadiness,
 	}
 
-	operator.klusterInformer.AddEventHandler(cache.ResourceEventHandlerFuncs{
+	operator.klusterInformer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
 		AddFunc:    operator.klusterAdd,
 		UpdateFunc: operator.klusterUpdate,
 		DeleteFunc: operator.klusterTerminate,
 	})
 
-	operator.podInformer.AddEventHandler(cache.ResourceEventHandlerFuncs{
+	operator.podInformer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
 		AddFunc:    operator.podAdd,
 		UpdateFunc: operator.podUpdate,
 		DeleteFunc: operator.podDelete,
@@ -89,15 +90,15 @@ func NewGroundController(factories config.Factories, clients config.Clients, rec
 	return operator
 }
 
-func (op *GroundControl) Run(threadiness int, stopCh <-chan struct{}, wg *sync.WaitGroup) {
+func (op *GroundControl) Run(stopCh <-chan struct{}, wg *sync.WaitGroup) {
 	defer op.queue.ShutDown()
 	defer wg.Done()
 	wg.Add(1)
 	op.Logger.Log(
 		"msg", "starting GroundControl",
-		"threadiness", threadiness)
+		"threadiness", op.threadiness)
 
-	for i := 0; i < threadiness; i++ {
+	for i := 0; i < op.threadiness; i++ {
 		go wait.Until(op.runWorker, time.Second, stopCh)
 	}
 
@@ -147,8 +148,17 @@ func (op *GroundControl) processNextWorkItem() bool {
 	return true
 }
 
+func (op *GroundControl) updateKluster(namespace, name string, updateFunc func(kluster *v1.Kluster) error) error {
+	_, err := util.UpdateKlusterWithRetries(
+		op.Clients.Kubernikus.Kubernikus().Klusters(namespace),
+		op.klusterInformer.Lister().Klusters(namespace),
+		name,
+		updateFunc)
+	return err
+}
+
 func (op *GroundControl) handler(key string) error {
-	obj, exists, err := op.klusterInformer.GetIndexer().GetByKey(key)
+	obj, exists, err := op.klusterInformer.Informer().GetIndexer().GetByKey(key)
 	if err != nil {
 		return fmt.Errorf("Failed to fetch key %s from cache: %s", key, err)
 	}
@@ -172,7 +182,7 @@ func (op *GroundControl) handler(key string) error {
 		case models.KlusterPhasePending:
 			{
 				if op.requiresOpenstackInfo(kluster) {
-					if err := op.discoverOpenstackInfo(kluster); err != nil {
+					if err := op.updateKluster(kluster.Namespace, kluster.Name, op.discoverOpenstackInfo); err != nil {
 						op.Recorder.Eventf(kluster, api_v1.EventTypeWarning, ConfigurationError, "Discovery of openstack parameters failed: %s", err)
 						return err
 					}
@@ -180,7 +190,7 @@ func (op *GroundControl) handler(key string) error {
 				}
 
 				if op.requiresKubernikusInfo(kluster) {
-					if err := op.discoverKubernikusInfo(kluster); err != nil {
+					if err := op.updateKluster(kluster.Namespace, kluster.Name, op.discoverKubernikusInfo); err != nil {
 						op.Recorder.Eventf(kluster, api_v1.EventTypeWarning, ConfigurationError, "Discovery of kubernikus parameters failed: %s", err)
 						return err
 					}
@@ -210,7 +220,7 @@ func (op *GroundControl) handler(key string) error {
 					"phase", kluster.Status.Phase)
 			}
 		case models.KlusterPhaseCreating:
-			pods, err := op.podLister.List(labels.SelectorFromValidatedSet(map[string]string{"release": kluster.GetName()}))
+			pods, err := op.podInformer.Lister().List(labels.SelectorFromValidatedSet(map[string]string{"release": kluster.GetName()}))
 			if err != nil {
 				return err
 			}
@@ -328,24 +338,19 @@ func (op *GroundControl) klusterUpdate(cur, old interface{}) {
 }
 
 func (op *GroundControl) updatePhase(kluster *v1.Kluster, phase models.KlusterPhase, message string) error {
-	//Never modify the cache, at least that's what I've been told
-	kluster, err := op.Clients.Kubernikus.Kubernikus().Klusters(kluster.Namespace).Get(kluster.Name, metav1.GetOptions{})
-	if err != nil {
-		return err
-	}
 
 	//Do nothing is the phase is not changing
 	if kluster.Status.Phase == phase {
 		return nil
 	}
-	op.Recorder.Eventf(kluster, api_v1.EventTypeNormal, string(phase), "%s cluster", phase)
-	kluster.Status.Message = message
-	kluster.Status.Phase = phase
+	err := util.UpdateKlusterPhase(op.Clients.Kubernikus.Kubernikus(), kluster, phase)
 
-	_, err = op.Clients.Kubernikus.Kubernikus().Klusters(kluster.Namespace).Update(kluster)
 	if err == nil {
+		op.Recorder.Eventf(kluster, api_v1.EventTypeNormal, string(phase), "%s kluster", phase)
+		kluster.Status.Message = message
+		kluster.Status.Phase = phase
 		//Wait for up to 5 seconds for the local cache to reflect the phase change
-		waitutil.WaitForKluster(kluster, op.klusterInformer.GetIndexer(), func(k *v1.Kluster) (bool, error) {
+		waitutil.WaitForKluster(kluster, op.klusterInformer.Informer().GetIndexer(), func(k *v1.Kluster) (bool, error) {
 			return k.Status.Phase == phase, nil
 		})
 	}
@@ -379,7 +384,7 @@ func (op *GroundControl) createKluster(kluster *v1.Kluster) error {
 		return err
 	}
 
-	if err := util.EnsureFinalizerCreated(op.Clients.Kubernikus.KubernikusV1(), kluster, GroundctlFinalizer); err != nil {
+	if err := util.EnsureFinalizerCreated(op.Clients.Kubernikus.KubernikusV1(), op.klusterInformer.Lister(), kluster, GroundctlFinalizer); err != nil {
 		return err
 	}
 
@@ -455,7 +460,7 @@ func (op *GroundControl) terminateKluster(kluster *v1.Kluster) error {
 		return err
 	}
 
-	if err := util.EnsureFinalizerRemoved(op.Clients.Kubernikus.KubernikusV1(), kluster, GroundctlFinalizer); err != nil {
+	if err := util.EnsureFinalizerRemoved(op.Clients.Kubernikus.KubernikusV1(), op.klusterInformer.Lister(), kluster, GroundctlFinalizer); err != nil {
 		return err
 	}
 
@@ -475,7 +480,7 @@ func (op *GroundControl) terminateKluster(kluster *v1.Kluster) error {
 		Error()
 
 	if err == nil {
-		waitutil.WaitForKlusterDeletion(kluster, op.klusterInformer.GetIndexer())
+		waitutil.WaitForKlusterDeletion(kluster, op.klusterInformer.Informer().GetIndexer())
 	}
 	return err
 }
@@ -499,31 +504,25 @@ func (op *GroundControl) discoverKubernikusInfo(kluster *v1.Kluster) error {
 		"project", kluster.Account(),
 		"v", 5)
 
-	copy, err := op.Clients.Kubernikus.Kubernikus().Klusters(kluster.Namespace).Get(kluster.Name, metav1.GetOptions{})
-	if err != nil {
-		return err
-	}
-
-	if copy.Status.Apiserver == "" {
-		copy.Status.Apiserver = fmt.Sprintf("https://%s.%s", kluster.GetName(), op.Config.Kubernikus.Domain)
+	if kluster.Status.Apiserver == "" {
+		kluster.Status.Apiserver = fmt.Sprintf("https://%s.%s", kluster.GetName(), op.Config.Kubernikus.Domain)
 		op.Logger.Log(
 			"msg", "discovered ServerURL",
-			"url", copy.Status.Apiserver,
+			"url", kluster.Status.Apiserver,
 			"kluster", kluster.GetName(),
 			"project", kluster.Account())
 	}
 
-	if copy.Status.Wormhole == "" {
-		copy.Status.Wormhole = fmt.Sprintf("https://%s-wormhole.%s", kluster.GetName(), op.Config.Kubernikus.Domain)
+	if kluster.Status.Wormhole == "" {
+		kluster.Status.Wormhole = fmt.Sprintf("https://%s-wormhole.%s", kluster.GetName(), op.Config.Kubernikus.Domain)
 		op.Logger.Log(
 			"msg", "discovered WormholeURL",
-			"url", copy.Status.Wormhole,
+			"url", kluster.Status.Wormhole,
 			"kluster", kluster.GetName(),
 			"project", kluster.Account())
 	}
 
-	_, err = op.Clients.Kubernikus.Kubernikus().Klusters(kluster.Namespace).Update(copy)
-	return err
+	return nil
 }
 
 func (op *GroundControl) discoverOpenstackInfo(kluster *v1.Kluster) error {
@@ -538,20 +537,18 @@ func (op *GroundControl) discoverOpenstackInfo(kluster *v1.Kluster) error {
 		return err
 	}
 
-	copy := kluster.DeepCopy()
-
-	if copy.Spec.Openstack.ProjectID == "" {
-		copy.Spec.Openstack.ProjectID = kluster.Account()
+	if kluster.Spec.Openstack.ProjectID == "" {
+		kluster.Spec.Openstack.ProjectID = kluster.Account()
 		op.Logger.Log(
 			"msg", "discovered ProjectID",
-			"id", copy.Spec.Openstack.ProjectID,
+			"id", kluster.Spec.Openstack.ProjectID,
 			"kluster", kluster.GetName(),
 			"project", kluster.Account())
 	}
 
 	var selectedRouter *openstack.Router
 
-	if routerID := copy.Spec.Openstack.RouterID; routerID != "" {
+	if routerID := kluster.Spec.Openstack.RouterID; routerID != "" {
 		for _, router := range routers {
 			if router.ID == routerID {
 				selectedRouter = &router
@@ -569,7 +566,7 @@ func (op *GroundControl) discoverOpenstackInfo(kluster *v1.Kluster) error {
 				"id", selectedRouter.ID,
 				"kluster", kluster.GetName(),
 				"project", kluster.Account())
-			copy.Spec.Openstack.RouterID = selectedRouter.ID
+			kluster.Spec.Openstack.RouterID = selectedRouter.ID
 		} else {
 			return fmt.Errorf("Found %d routers in project. Auto-configuration not possible.", numRouters)
 		}
@@ -578,7 +575,7 @@ func (op *GroundControl) discoverOpenstackInfo(kluster *v1.Kluster) error {
 	//we have a router beyond this point
 	var selectedNetwork *openstack.Network
 
-	if networkID := copy.Spec.Openstack.NetworkID; networkID != "" {
+	if networkID := kluster.Spec.Openstack.NetworkID; networkID != "" {
 		for _, network := range selectedRouter.Networks {
 			if network.ID == networkID {
 				selectedNetwork = &network
@@ -591,7 +588,7 @@ func (op *GroundControl) discoverOpenstackInfo(kluster *v1.Kluster) error {
 	} else {
 		if numNetworks := len(selectedRouter.Networks); numNetworks == 1 {
 			selectedNetwork = &selectedRouter.Networks[0]
-			copy.Spec.Openstack.NetworkID = selectedNetwork.ID
+			kluster.Spec.Openstack.NetworkID = selectedNetwork.ID
 			op.Logger.Log(
 				"msg", "discovered NetworkID",
 				"id", selectedNetwork.ID,
@@ -603,7 +600,7 @@ func (op *GroundControl) discoverOpenstackInfo(kluster *v1.Kluster) error {
 		}
 	}
 
-	if subnetID := copy.Spec.Openstack.LBSubnetID; subnetID != "" {
+	if subnetID := kluster.Spec.Openstack.LBSubnetID; subnetID != "" {
 		found := false
 		for _, subnet := range selectedNetwork.Subnets {
 			if subnet.ID == subnetID {
@@ -616,10 +613,10 @@ func (op *GroundControl) discoverOpenstackInfo(kluster *v1.Kluster) error {
 		}
 	} else {
 		if numSubnets := len(selectedNetwork.Subnets); numSubnets == 1 {
-			copy.Spec.Openstack.LBSubnetID = selectedNetwork.Subnets[0].ID
+			kluster.Spec.Openstack.LBSubnetID = selectedNetwork.Subnets[0].ID
 			op.Logger.Log(
 				"msg", "discovered LBSubnetID",
-				"id", copy.Spec.Openstack.LBSubnetID,
+				"id", kluster.Spec.Openstack.LBSubnetID,
 				"kluster", kluster.GetName(),
 				"project", kluster.Account())
 		} else {
@@ -627,7 +624,7 @@ func (op *GroundControl) discoverOpenstackInfo(kluster *v1.Kluster) error {
 		}
 	}
 
-	if floatingNetworkID := copy.Spec.Openstack.LBFloatingNetworkID; floatingNetworkID != "" {
+	if floatingNetworkID := kluster.Spec.Openstack.LBFloatingNetworkID; floatingNetworkID != "" {
 		if selectedRouter.ExternalNetworkID != "" && floatingNetworkID != selectedRouter.ExternalNetworkID {
 			return fmt.Errorf("External network missmatch. Router is configured with %s but config specifies %s", selectedRouter.ExternalNetworkID, floatingNetworkID)
 		}
@@ -635,24 +632,23 @@ func (op *GroundControl) discoverOpenstackInfo(kluster *v1.Kluster) error {
 		if selectedRouter.ExternalNetworkID == "" {
 			return fmt.Errorf("Selected router %s doesn't have an external network ID set", selectedRouter.ID)
 		} else {
-			copy.Spec.Openstack.LBFloatingNetworkID = selectedRouter.ExternalNetworkID
+			kluster.Spec.Openstack.LBFloatingNetworkID = selectedRouter.ExternalNetworkID
 			op.Logger.Log(
 				"msg", "discovered LBFloatingNetworkID",
-				"id", copy.Spec.Openstack.LBFloatingNetworkID,
+				"id", kluster.Spec.Openstack.LBFloatingNetworkID,
 				"kluster", kluster.GetName(),
 				"project", kluster.Account())
 		}
 	}
 
-	if copy.Spec.Openstack.SecurityGroupName == "" {
-		copy.Spec.Openstack.SecurityGroupName = "default"
+	if kluster.Spec.Openstack.SecurityGroupName == "" {
+		kluster.Spec.Openstack.SecurityGroupName = "default"
 	}
-	if _, err := op.Clients.Openstack.GetSecurityGroupID(kluster.Account(), copy.Spec.Openstack.SecurityGroupName); err != nil {
+	if _, err := op.Clients.Openstack.GetSecurityGroupID(kluster.Account(), kluster.Spec.Openstack.SecurityGroupName); err != nil {
 		return fmt.Errorf("Security group %s invalid: ", err)
 	}
 
-	_, err = op.Clients.Kubernikus.Kubernikus().Klusters(kluster.Namespace).Update(copy)
-	return err
+	return nil
 }
 
 func (op *GroundControl) podAdd(obj interface{}) {

@@ -1,0 +1,50 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Chart.Name }}
+  labels:
+    app: {{ template "blackbox-exporter.name" . }}
+    chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+
+data:
+  blackbox.yml: |
+    modules:
+      http_2xx:
+        prober: http
+      http_post_2xx:
+        prober: http
+        http:
+          method: POST
+      icmp:
+        prober: icmp
+      irc_banner:
+        prober: tcp
+        tcp:
+          query_response:
+          - send: NICK prober
+          - send: USER prober prober prober :prober
+          - expect: PING :([^ ]+)
+            send: PONG ${1}
+          - expect: ^:[^ ]+ 001
+      pop3s_banner:
+        prober: tcp
+        tcp:
+          query_response:
+          - expect: ^+OK
+          tls: true
+      ssh_banner:
+        prober: tcp
+        tcp:
+          query_response:
+          - expect: ^SSH-2.0-
+      tcp_connect:
+        prober: tcp
+
+      http_4xx:
+        prober: http
+        http:
+          valid_status_codes: [401,403]
+      http_post_4xx:
+        prober: http
+        http:
+          method: POST

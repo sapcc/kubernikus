@@ -14,7 +14,7 @@ import (
 )
 
 type Controller interface {
-	Run(threadiness int, stopCh <-chan struct{}, wg *sync.WaitGroup)
+	Run(stopCh <-chan struct{}, wg *sync.WaitGroup)
 }
 
 type OpenstackConfig struct {

@@ -1,68 +1,104 @@
 package routegc
 
 import (
+	"fmt"
 	"net"
+	"sync"
 	"time"
 
 	"github.com/go-kit/kit/log"
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/servers"
-	"github.com/gophercloud/gophercloud/openstack/identity/v3/tokens"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/layer3/routers"
 	"github.com/gophercloud/gophercloud/pagination"
+	"github.com/prometheus/client_golang/prometheus"
 	"k8s.io/apimachinery/pkg/util/wait"
+	"k8s.io/client-go/tools/cache"
 
+	"github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
+	os_client "github.com/sapcc/kubernikus/pkg/client/openstack"
+	"github.com/sapcc/kubernikus/pkg/controller/metrics"
+	informers_v1 "github.com/sapcc/kubernikus/pkg/generated/informers/externalversions/kubernikus/v1"
 	"github.com/sapcc/kubernikus/pkg/version"
 )
 
 type RouteGarbageCollector struct {
-	authOpts    tokens.AuthOptions
-	compute     *gophercloud.ServiceClient
-	network     *gophercloud.ServiceClient
-	routerID    string
-	clusterCIDR *net.IPNet
-	logger      log.Logger
+	logger       log.Logger
+	watchers     sync.Map
+	syncPeriod   time.Duration
+	klusterIndex cache.Indexer
+	osClient     os_client.Client
 }
 
-func New(authOpts tokens.AuthOptions, routerID string, clusterCIDR *net.IPNet) *RouteGarbageCollector {
-	return &RouteGarbageCollector{
-		authOpts:    authOpts,
-		routerID:    routerID,
-		clusterCIDR: clusterCIDR,
+func New(syncPeriod time.Duration, informer informers_v1.KlusterInformer, oclient os_client.Client, logger log.Logger) *RouteGarbageCollector {
+
+	gc := &RouteGarbageCollector{
+		logger:       log.With(logger, "controller", "routegc"),
+		syncPeriod:   syncPeriod,
+		klusterIndex: informer.Informer().GetIndexer(),
+		osClient:     oclient,
 	}
 
+	informer.Informer().AddEventHandler(
+		cache.ResourceEventHandlerFuncs{
+			AddFunc:    gc.klusterAdd,
+			DeleteFunc: gc.klusterDelete,
+		})
+	return gc
+
 }
 
-func (r *RouteGarbageCollector) Run(logger log.Logger, syncPeriod time.Duration, stopCh <-chan struct{}) error {
-	r.logger = log.With(logger, "controller", "routegc")
-	r.logger.Log("msg", "Starting", "version", version.GitCommit, "interval", syncPeriod)
+func (r *RouteGarbageCollector) Run(stopCh <-chan struct{}, wg *sync.WaitGroup) {
+	wg.Add(1)
+	defer wg.Done()
 
+	r.logger.Log("msg", "Starting", "version", version.GitCommit, "interval", r.syncPeriod)
 	defer r.logger.Log("msg", "Stopped")
-	client, err := openstack.NewClient(r.authOpts.IdentityEndpoint)
-	if err != nil {
-		return err
-	}
-	if err := openstack.AuthenticateV3(client, &r.authOpts, gophercloud.EndpointOpts{}); err != nil {
-		return err
-	}
-	if r.compute, err = openstack.NewComputeV2(client, gophercloud.EndpointOpts{}); err != nil {
-		return err
-	}
-	if r.network, err = openstack.NewNetworkV2(client, gophercloud.EndpointOpts{}); err != nil {
-		return err
-	}
-	wait.Until(r.Reconcile, syncPeriod, stopCh)
-	return nil
+	<-stopCh
+	//Stop all reconciliation loops
+	r.watchers.Range(func(key, value interface{}) bool {
+		close(value.(chan struct{}))
+		return true
+	})
 }
 
-func (r *RouteGarbageCollector) Reconcile() {
+func (r *RouteGarbageCollector) reconcile(kluster *v1.Kluster, logger log.Logger) error {
+	routerID := kluster.Spec.Openstack.RouterID
 	defer func(begin time.Time) {
-		r.logger.Log("msg", "Reconciling", "took", time.Since(begin), "v", 2)
 	}(time.Now())
 
+	providerClient, err := r.osClient.KlusterClientFor(kluster)
+	if err != nil {
+		return fmt.Errorf("Failed to inititalize openstack client: %s", err)
+	}
+
+	networkClient, err := openstack.NewNetworkV2(providerClient, gophercloud.EndpointOpts{})
+	if err != nil {
+		return fmt.Errorf("Failed to setup openstack network client: %s", err)
+	}
+
+	_, clusterCIDR, err := net.ParseCIDR(kluster.Spec.ClusterCIDR)
+	if err != nil {
+		return fmt.Errorf("Failed to parse clusterCIDR: %s", err)
+	}
+
+	router, err := routers.Get(networkClient, routerID).Extract()
+	if err != nil {
+		return fmt.Errorf("Failed to get router %s: %s", routerID, err)
+	}
+
+	if len(router.Routes) == 0 {
+		return nil
+	}
+
+	computeClient, err := openstack.NewComputeV2(providerClient, gophercloud.EndpointOpts{})
+	if err != nil {
+		return fmt.Errorf("Failed to setup openstack compute client: %s", err)
+	}
+
 	validNexthops := map[string]string{}
-	err := foreachServer(r.compute, servers.ListOpts{}, func(srv *servers.Server) (bool, error) {
+	err = foreachServer(computeClient, servers.ListOpts{}, func(srv *servers.Server) (bool, error) {
 		for _, addrs := range srv.Addresses {
 			for _, nase := range addrs.([]interface{}) {
 				addresses, ok := nase.(map[string]interface{})
@@ -79,23 +115,15 @@ func (r *RouteGarbageCollector) Reconcile() {
 		return true, nil
 	})
 	if err != nil {
-		r.logger.Log("msg", "list servers", "err", err)
-		return
+		return fmt.Errorf("Failed to list servers: %s", err)
 	}
 
-	logger := log.With(r.logger, "router", r.routerID)
+	logger = log.With(logger, "router", routerID)
 
-	router, err := routers.Get(r.network, r.routerID).Extract()
-	if err != nil {
-		logger.Log("msg", "show router", "err", err)
-		return
-	}
 	newRoutes := make([]routers.Route, 0, len(router.Routes))
-	updated := false
 	for _, route := range router.Routes {
-		if r.isResponsibleForRoute(route) {
+		if isResponsibleForRoute(clusterCIDR, route) {
 			if _, ok := validNexthops[route.NextHop]; !ok {
-				updated = true
 				logger.Log("msg", "route orphaned", "cidr", route.DestinationCIDR, "nexthop", route.NextHop)
 				continue //delete the route (by not adding to newRoutes)
 			}
@@ -104,23 +132,66 @@ func (r *RouteGarbageCollector) Reconcile() {
 	}
 
 	//something was changed, update the router
-	if updated {
-		_, err := routers.Update(r.network, r.routerID, routers.UpdateOpts{
+	if len(newRoutes) < len(router.Routes) {
+		_, err := routers.Update(networkClient, routerID, routers.UpdateOpts{
 			Routes: newRoutes,
 		}).Extract()
-
-		logger.Log("msg", "removed routes", "err", err)
-
+		if err != nil {
+			return fmt.Errorf("Failed to remove routes: %s", err)
+		}
+		metrics.OrphanedRoutesTotal.With(prometheus.Labels{}).Add(float64(len(router.Routes) - len(newRoutes)))
+		logger.Log("msg", "removed routes")
 	}
+	return nil
 
 }
 
+func (r *RouteGarbageCollector) klusterAdd(obj interface{}) {
+	//TODO: Don't start routegc watchloop for 1.10+ klusters
+	key, err := cache.MetaNamespaceKeyFunc(obj)
+	if err != nil {
+		return
+	}
+	closeCh := make(chan struct{})
+	if _, alreadyStored := r.watchers.LoadOrStore(key, closeCh); alreadyStored {
+		return
+	}
+	go r.watchKluster(key, closeCh)
+}
+
+func (r *RouteGarbageCollector) watchKluster(key string, stop <-chan struct{}) {
+	reconcile := func() {
+		obj, exists, err := r.klusterIndex.GetByKey(key)
+		if !exists || err != nil {
+			return
+		}
+		kluster := obj.(*v1.Kluster)
+		logger := log.With(r.logger, "kluster", kluster.Name)
+		begin := time.Now()
+		err = r.reconcile(kluster, logger)
+		logger.Log("msg", "Reconciling", "took", time.Since(begin), "v", 5, "err", err)
+		if err != nil {
+			metrics.OrphanedRoutesTotal.With(prometheus.Labels{}).Add(1)
+		}
+	}
+	wait.JitterUntil(reconcile, r.syncPeriod, 0.5, true, stop)
+}
+
+func (r *RouteGarbageCollector) klusterDelete(obj interface{}) {
+	key, err := cache.DeletionHandlingMetaNamespaceKeyFunc(obj)
+	if err != nil {
+		return
+	}
+	if stopCh, found := r.watchers.Load(key); found {
+		close(stopCh.(chan struct{}))
+		r.watchers.Delete(key)
+	}
+}
+
 //adapted from  k8s.io/pkg/controller/route
-func (r *RouteGarbageCollector) isResponsibleForRoute(route routers.Route) bool {
+func isResponsibleForRoute(clusterCIDR *net.IPNet, route routers.Route) bool {
 	_, cidr, err := net.ParseCIDR(route.DestinationCIDR)
 	if err != nil {
-
-		r.logger.Log("msg", "unparsable CIDR", "cidr", route.DestinationCIDR, "err", err)
 		return false
 	}
 	// Not responsible if this route's CIDR is not within our clusterCIDR
@@ -128,7 +199,7 @@ func (r *RouteGarbageCollector) isResponsibleForRoute(route routers.Route) bool 
 	for i := range lastIP {
 		lastIP[i] = cidr.IP[i] | ^cidr.Mask[i]
 	}
-	if !r.clusterCIDR.Contains(cidr.IP) || !r.clusterCIDR.Contains(lastIP) {
+	if !clusterCIDR.Contains(cidr.IP) || !clusterCIDR.Contains(lastIP) {
 		return false
 	}
 	return true

@@ -1,15 +1,16 @@
 package launch
 
 import (
+	"github.com/go-kit/kit/log"
+	"k8s.io/client-go/tools/record"
+
 	"github.com/sapcc/kubernikus/pkg/api/models"
 	"github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
 	"github.com/sapcc/kubernikus/pkg/controller/base"
 	"github.com/sapcc/kubernikus/pkg/controller/config"
 	"github.com/sapcc/kubernikus/pkg/controller/metrics"
+	informers_kubernikus "github.com/sapcc/kubernikus/pkg/generated/informers/externalversions/kubernikus/v1"
 	"github.com/sapcc/kubernikus/pkg/util"
-
-	"github.com/go-kit/kit/log"
-	"k8s.io/client-go/tools/record"
 )
 
 const (
@@ -21,14 +22,16 @@ type LaunchReconciler struct {
 
 	Recorder record.EventRecorder
 	Logger   log.Logger
+
+	klusterInformer informers_kubernikus.KlusterInformer
 }
 
-func NewController(factories config.Factories, clients config.Clients, recorder record.EventRecorder, logger log.Logger) base.Controller {
+func NewController(threadiness int, factories config.Factories, clients config.Clients, recorder record.EventRecorder, logger log.Logger) base.Controller {
 	logger = log.With(logger,
 		"controller", "launch")
 
 	var reconciler base.Reconciler
-	reconciler = &LaunchReconciler{clients, recorder, logger}
+	reconciler = &LaunchReconciler{clients, recorder, logger, factories.Kubernikus.Kubernikus().V1().Klusters()}
 	reconciler = &base.LoggingReconciler{reconciler, logger}
 	reconciler = &base.InstrumentingReconciler{
 		reconciler,
@@ -38,13 +41,13 @@ func NewController(factories config.Factories, clients config.Clients, recorder 
 		metrics.LaunchFailedOperationsTotal,
 	}
 
-	return base.NewController(factories, clients, reconciler, logger)
+	return base.NewController(threadiness, factories, clients, reconciler, logger)
 }
 
 func (lr *LaunchReconciler) Reconcile(kluster *v1.Kluster) (requeue bool, err error) {
 	switch kluster.Status.Phase {
 	case models.KlusterPhaseCreating:
-		util.EnsureFinalizerCreated(lr.Kubernikus.KubernikusV1(), kluster, LaunchctlFinalizer)
+		util.EnsureFinalizerCreated(lr.Kubernikus.Kubernikus(), lr.klusterInformer.Lister(), kluster, LaunchctlFinalizer)
 	case models.KlusterPhaseRunning:
 		return lr.reconcilePools(kluster)
 	case models.KlusterPhaseTerminating:
@@ -73,7 +76,7 @@ func (lr *LaunchReconciler) terminatePools(kluster *v1.Kluster) (requeue bool, e
 		}
 	}
 
-	util.EnsureFinalizerRemoved(lr.Kubernikus.KubernikusV1(), kluster, LaunchctlFinalizer)
+	util.EnsureFinalizerRemoved(lr.Kubernikus.KubernikusV1(), lr.klusterInformer.Lister(), kluster, LaunchctlFinalizer)
 
 	return
 }
