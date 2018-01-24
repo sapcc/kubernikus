@@ -2,7 +2,7 @@
 apiVersion: "extensions/v1beta1"
 kind: Deployment
 metadata:
-  name: {{ include "master.fullname" . }}-controller-manager
+  name: {{ include "master.fullname" . }}-c-manager
   labels:
     chart: "{{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}"
     release: {{ .Release.Name }}
@@ -55,7 +55,7 @@ spec:
                 path: openstack.config
         - name: openstack-hacks
           configMap:
-            name: {{ include "master.fullname" . }}-openstack-hacks
+            name: {{ include "master.fullname" . }}-os-hacks
       containers:
         - name: controller-manager
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
@@ -96,7 +96,7 @@ spec:
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ include "master.fullname" . }}-openstack-hacks
+  name: {{ include "master.fullname" . }}-os-hacks
   labels:
     chart: "{{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}"
     release: {{ .Release.Name }}
