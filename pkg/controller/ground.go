@@ -168,6 +168,9 @@ func (op *GroundControl) handler(key string) error {
 			"v", 2)
 	} else {
 		kluster := obj.(*v1.Kluster)
+		if kluster.Disabled() {
+			return nil
+		}
 		op.Logger.Log(
 			"msg", "handling kluster",
 			"kluster", kluster.GetName(),

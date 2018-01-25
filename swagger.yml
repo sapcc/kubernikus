@@ -433,6 +433,8 @@ definitions:
     properties:
       phase:
         $ref: '#/definitions/KlusterPhase'
+      migrationsPending:
+        type: boolean
       message:
         type: string
       nodePools:

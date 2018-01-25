@@ -454,6 +454,9 @@ func init() {
         "message": {
           "type": "string"
         },
+        "migrationsPending": {
+          "type": "boolean"
+        },
         "nodePools": {
           "type": "array",
           "items": {

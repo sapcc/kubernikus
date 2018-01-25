@@ -12,12 +12,12 @@ import (
 
 var defaultRegistry Registry
 
-//Migration describes an individual migration step.
-//The klusterRaw and kluster contain the to be migrate kluster.
-//The function is expected to modify the kluster accordingly, changed object is persisted
-//automatically after the handler returns with no error.
-//The kubernetes client can be used to modify other things (e.g. kluster secret)
-type Migration func(klusterRw []byte, kluster *v1.Kluster, client kubernetes.Interface) (err error)
+// Migration describes an individual migration step.
+// The klusterRaw and kluster contain the to be migrate kluster.
+// The function is expected to modify the kluster accordingly, changed object is persisted
+// automatically after the handler returns with no error.
+// The kubernetes client can be used to modify other things (e.g. kluster secret)
+type Migration func(klusterRaw []byte, kluster *v1.Kluster, client kubernetes.Interface) (err error)
 
 //Latest returns to latest spec version available
 func Latest() int {

@@ -2,6 +2,7 @@ package util
 
 import (
 	"fmt"
+	"strconv"
 
 	"k8s.io/apimachinery/pkg/types"
 
@@ -28,6 +29,23 @@ func EnsureFinalizerRemoved(client clientset.KubernikusV1Interface, lister liste
 			return nil
 		})
 	}
+	return err
+}
+
+func UpdateKlusterMigrationStatus(client clientset.KubernikusV1Interface, kluster *v1.Kluster, pending bool) error {
+
+	if kluster.Status.MigrationsPending == pending {
+		return nil // already up to date
+	}
+
+	//According to this comment https://github.com/kubernetes/kubernetes/issues/21479#issuecomment-186454413
+	//patches are retried on the server side so a single try should be sufficient
+
+	_, err := client.Klusters(kluster.Namespace).Patch(
+		kluster.Name,
+		types.MergePatchType,
+		[]byte(fmt.Sprintf(`{"status":{"migrationsPending":%s}}`, strconv.FormatBool(pending))),
+	)
 	return err
 }
 

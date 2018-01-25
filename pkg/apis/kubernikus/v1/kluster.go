@@ -92,3 +92,7 @@ func (k *Kluster) RemoveFinalizer(finalizer string) {
 		}
 	}
 }
+
+func (k *Kluster) Disabled() bool {
+	return k.Status.MigrationsPending
+}

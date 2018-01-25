@@ -22,6 +22,9 @@ type KlusterStatus struct {
 	// message
 	Message string `json:"message,omitempty"`
 
+	// migrations pending
+	MigrationsPending bool `json:"migrationsPending,omitempty"`
+
 	// node pools
 	NodePools []NodePoolInfo `json:"nodePools"`
 
