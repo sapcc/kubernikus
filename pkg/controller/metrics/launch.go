@@ -2,6 +2,15 @@ package metrics
 
 import "github.com/prometheus/client_golang/prometheus"
 
+func init() {
+	prometheus.MustRegister(
+		LaunchOperationsLatency,
+		LaunchOperationsTotal,
+		LaunchSuccessfulOperationsTotal,
+		LaunchFailedOperationsTotal,
+	)
+}
+
 var LaunchOperationsLatency = prometheus.NewSummaryVec(
 	prometheus.SummaryOpts{
 		Namespace: "kubernikus",
