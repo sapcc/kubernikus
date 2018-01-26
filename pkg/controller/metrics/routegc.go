@@ -22,7 +22,7 @@ var OrphanedRoutesTotal = prometheus.NewCounterVec(
 var RouteGCFailedOperationsTotal = prometheus.NewCounterVec(
 	prometheus.CounterOpts{
 		Namespace: "kubernikus",
-		Subsystem: "routgc",
+		Subsystem: "routegc",
 		Name:      "failed_operation_total",
 		Help:      "Number of failed operations.",
 	},
