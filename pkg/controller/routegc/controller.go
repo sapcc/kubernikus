@@ -3,7 +3,6 @@ package routegc
 import (
 	"fmt"
 	"net"
-	"sync"
 	"time"
 
 	"github.com/go-kit/kit/log"
@@ -13,60 +12,40 @@ import (
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/layer3/routers"
 	"github.com/gophercloud/gophercloud/pagination"
 	"github.com/prometheus/client_golang/prometheus"
-	"k8s.io/apimachinery/pkg/util/wait"
-	"k8s.io/client-go/tools/cache"
 
 	"github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
+	os_client "github.com/sapcc/kubernikus/pkg/client/openstack"
+	"github.com/sapcc/kubernikus/pkg/controller/base"
 	"github.com/sapcc/kubernikus/pkg/controller/config"
 	"github.com/sapcc/kubernikus/pkg/controller/metrics"
-	"github.com/sapcc/kubernikus/pkg/version"
 )
 
-type RouteGarbageCollector struct {
-	config.Factories
-	logger       log.Logger
-	watchers     sync.Map
-	syncPeriod   time.Duration
-	klusterIndex cache.Indexer
+type routeGarbageCollector struct {
+	logger          log.Logger
+	osClientFactory os_client.SharedOpenstackClientFactory
 }
 
-func New(syncPeriod time.Duration, factories config.Factories, logger log.Logger) *RouteGarbageCollector {
-	gc := &RouteGarbageCollector{
-		Factories:    factories,
-		logger:       log.With(logger, "controller", "routegc"),
-		syncPeriod:   syncPeriod,
-		klusterIndex: factories.Kubernikus.Kubernikus().V1().Klusters().Informer().GetIndexer(),
+func New(syncPeriod time.Duration, factories config.Factories, logger log.Logger) base.Controller {
+
+	logger = log.With(logger, "controller", "routegc")
+
+	routeGC := routeGarbageCollector{
+		logger:          logger,
+		osClientFactory: factories.Openstack,
 	}
 
-	factories.Kubernikus.Kubernikus().V1().Klusters().Informer().AddEventHandler(
-		cache.ResourceEventHandlerFuncs{
-			AddFunc:    gc.klusterAdd,
-			DeleteFunc: gc.klusterDelete,
-		})
-	return gc
-
+	return base.NewPollingController(syncPeriod, factories.Kubernikus.Kubernikus().V1().Klusters(), &routeGC, logger)
 }
 
-func (r *RouteGarbageCollector) Run(stopCh <-chan struct{}, wg *sync.WaitGroup) {
-	wg.Add(1)
-	defer wg.Done()
-
-	r.logger.Log("msg", "Starting", "version", version.GitCommit, "interval", r.syncPeriod)
-	defer r.logger.Log("msg", "Stopped")
-	<-stopCh
-	//Stop all reconciliation loops
-	r.watchers.Range(func(key, value interface{}) bool {
-		close(value.(chan struct{}))
-		return true
-	})
-}
-
-func (r *RouteGarbageCollector) reconcile(kluster *v1.Kluster, logger log.Logger) error {
+func (w *routeGarbageCollector) Reconcile(kluster *v1.Kluster) (err error) {
 	routerID := kluster.Spec.Openstack.RouterID
 	defer func(begin time.Time) {
+		if err != nil {
+			metrics.OrphanedRoutesTotal.With(prometheus.Labels{}).Add(1)
+		}
 	}(time.Now())
 
-	providerClient, err := r.Openstack.ProviderClientForKluster(kluster, logger)
+	providerClient, err := w.osClientFactory.ProviderClientForKluster(kluster, w.logger)
 	if err != nil {
 		return err
 	}
@@ -116,7 +95,7 @@ func (r *RouteGarbageCollector) reconcile(kluster *v1.Kluster, logger log.Logger
 		return fmt.Errorf("Failed to list servers: %s", err)
 	}
 
-	logger = log.With(logger, "router", routerID)
+	logger := log.With(w.logger, "router", routerID)
 
 	newRoutes := make([]routers.Route, 0, len(router.Routes))
 	for _, route := range router.Routes {
@@ -142,48 +121,6 @@ func (r *RouteGarbageCollector) reconcile(kluster *v1.Kluster, logger log.Logger
 	}
 	return nil
 
-}
-
-func (r *RouteGarbageCollector) klusterAdd(obj interface{}) {
-	//TODO: Don't start routegc watchloop for 1.10+ klusters
-	key, err := cache.MetaNamespaceKeyFunc(obj)
-	if err != nil {
-		return
-	}
-	closeCh := make(chan struct{})
-	if _, alreadyStored := r.watchers.LoadOrStore(key, closeCh); alreadyStored {
-		return
-	}
-	go r.watchKluster(key, closeCh)
-}
-
-func (r *RouteGarbageCollector) watchKluster(key string, stop <-chan struct{}) {
-	reconcile := func() {
-		obj, exists, err := r.klusterIndex.GetByKey(key)
-		if !exists || err != nil {
-			return
-		}
-		kluster := obj.(*v1.Kluster)
-		logger := log.With(r.logger, "kluster", kluster.Name)
-		begin := time.Now()
-		err = r.reconcile(kluster, logger)
-		logger.Log("msg", "Reconciling", "took", time.Since(begin), "v", 5, "err", err)
-		if err != nil {
-			metrics.RouteGCFailedOperationsTotal.With(prometheus.Labels{}).Add(1)
-		}
-	}
-	wait.JitterUntil(reconcile, r.syncPeriod, 0.5, true, stop)
-}
-
-func (r *RouteGarbageCollector) klusterDelete(obj interface{}) {
-	key, err := cache.DeletionHandlingMetaNamespaceKeyFunc(obj)
-	if err != nil {
-		return
-	}
-	if stopCh, found := r.watchers.Load(key); found {
-		close(stopCh.(chan struct{}))
-		r.watchers.Delete(key)
-	}
 }
 
 //adapted from  k8s.io/pkg/controller/route
