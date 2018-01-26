@@ -2,8 +2,10 @@ package kubernikus
 
 import (
 	"errors"
+	"fmt"
 	"os"
 	"os/signal"
+	"strings"
 	"sync"
 	"syscall"
 
@@ -47,7 +49,7 @@ func NewOperatorOptions() *Options {
 	options.KubernikusDomain = "kluster.staging.cloud.sap"
 	options.Namespace = "kubernikus"
 	options.MetricPort = 9091
-	options.Controllers = []string{"groundctl", "launchctl"}
+	options.Controllers = []string{"groundctl", "launchctl", "routegc"}
 	return options
 }
 
@@ -67,7 +69,7 @@ func (o *Options) BindFlags(flags *pflag.FlagSet) {
 	flags.StringVar(&o.KubernikusNetworkID, "kubernikus-networkid", o.KubernikusNetworkID, "ID of the network the k*s control plane.")
 	flags.StringVar(&o.Namespace, "namespace", o.Namespace, "Restrict operator to resources in the given namespace")
 	flags.IntVar(&o.MetricPort, "metric-port", o.MetricPort, "Port on which metrics are exposed")
-	flags.StringSliceVar(&o.Controllers, "controllers", o.Controllers, "A list of controllers to enable.  Default is to enable all. controllers: groundctl, launchctl")
+	flags.StringSliceVar(&o.Controllers, "controllers", o.Controllers, fmt.Sprintf("A list of controllers to enable.  Default is to enable all. controllers: %s", strings.Join(o.Controllers, ", ")))
 }
 
 func (o *Options) Validate(c *cobra.Command, args []string) error {
