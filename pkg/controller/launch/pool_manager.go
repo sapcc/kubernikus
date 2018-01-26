@@ -137,7 +137,11 @@ func (cpm *ConcretePoolManager) nodeIDs(nodes []openstack.Node) []string {
 	return result
 }
 
-func (cpm *ConcretePoolManager) starting(nodes []openstack.Node) int {
+type PoolNode interface {
+	Running() int
+}
+
+func (cpm *ConcretePoolManager) starting(nodes []PoolNode) int {
 	var count int = 0
 	for _, n := range nodes {
 		if n.Starting() {
