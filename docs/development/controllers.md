@@ -254,3 +254,6 @@ Workarounds:
  * None. Neutron needs to be reconfigured
  * Clean up duplicate routes
 
+Migration controller
+--------------------
+The migration controller continuously applies pending migrations to all klusters. It does so by checking if `Status.SpecVersion` reflects the latest known version (See https://github.com/sapcc/kubernikus/blob/master/pkg/util/migration/migration.go). If a kluster is not up to date it will try to migrate the Kluster the current version. See `migrations.md` for more details.
