@@ -19,6 +19,7 @@ import (
 	"github.com/sapcc/kubernikus/pkg/client/kubernikus"
 	"github.com/sapcc/kubernikus/pkg/client/openstack"
 	"github.com/sapcc/kubernikus/pkg/controller/config"
+	"github.com/sapcc/kubernikus/pkg/controller/deorbit"
 	"github.com/sapcc/kubernikus/pkg/controller/launch"
 	"github.com/sapcc/kubernikus/pkg/controller/routegc"
 	kubernikus_informers "github.com/sapcc/kubernikus/pkg/generated/informers/externalversions"
@@ -158,6 +159,8 @@ func NewKubernikusOperator(options *KubernikusOperatorOptions, logger log.Logger
 			o.Config.Kubernikus.Controllers["launchctl"] = launch.NewController(1, o.Factories, o.Clients, recorder, logger)
 		case "routegc":
 			o.Config.Kubernikus.Controllers["routegc"] = routegc.New(60*time.Second, o.Factories.Kubernikus.Kubernikus().V1().Klusters(), o.Clients.Openstack, logger)
+		case "deorbiter":
+			o.Config.Kubernikus.Controllers["deorbiter"] = deorbit.NewController(10, o.Factories, o.Clients, recorder, logger)
 		}
 	}
 

@@ -5,15 +5,15 @@
 
 *                           @bugroger @databus23 @edda @auhlig @schwarzm @jonathanschwarze @vonneudeck
 /charts                     @databus23 @bugroger @vonneudeck @auhlig
-/charts/k8sniff             @auhlig @databus23
-/charts/kubernikus-system   @auhlig @bugroger
+/charts/k8sniff             @auhlig @databus23 @bugroger
+/charts/kubernikus-system   @auhlig @databus23 @bugroger
 /charts/kube-master         @databus23 @bugroger
 /charts/kubernikus          @databus23 @bugroger
 /ci                         @databus23 @bugroger
 /contrib                    @bugroger @databus23
-/docs                       @bugroger @jonathanschwarze
+/docs                       @bugroger @jonathanschwarze @databus23
 /pkg                        @databus23 @bugroger
-/pkg/templates              @schwarzm @bugroger
-/pkg/cmd/kubernikusctl      @schwarzm @bugroger
+/pkg/templates              @schwarzm @bugroger @databus23
+/pkg/cmd/kubernikusctl      @schwarzm @bugroger @databus23
 /pkg/cmd/kubernikusctl/auth @bugroger @databus23
 swagger                     @databus23 @bugroger

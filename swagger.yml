@@ -322,6 +322,7 @@ definitions:
         description: name of the cluster
         type: string
         pattern: '^[a-z]([-a-z0-9]*[a-z0-9])?$'
+        maxLength: 20
       spec:
         $ref: '#/definitions/KlusterSpec'
       status:
