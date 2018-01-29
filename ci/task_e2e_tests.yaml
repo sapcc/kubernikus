@@ -4,19 +4,23 @@ platform: 'linux'
 image_resource:
   type: docker-image
   source:
-    repository: sapcc/kubernikus-kubectl
-    tag: 'latest'
+    repository: golang
+    tag: 1.9.2-alpine3.6
 
 inputs:
-  - name: pipeline.git
+  - name: kubernikus.builds
+    path: gopath/src/github.com/sapcc/kubernikus
 
 run:
   path: /bin/sh
   args:
     - -c
     - |
-      set -exo pipefail
-      make -C pipeline.git test-e2e
+      export GOPATH=$PWD/gopath
+      cd gopath/src/github.com/sapcc/kubernikus
+
+      apk add --no-cache make git
+      make test-e2e
 
 params:
   OS_AUTH_URL:
