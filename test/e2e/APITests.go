@@ -92,6 +92,9 @@ func (s *E2ETestSuite) TestShowCluster() {
 }
 
 func (s *E2ETestSuite) TestGetClusterInfo() {
+
+	log.Print("Testing cluster info")
+
 	clusterInfo, err := s.kubernikusClient.Operations.GetClusterInfo(
 		operations.NewGetClusterInfoParams().WithName(s.ClusterName),
 		s.authFunc(),

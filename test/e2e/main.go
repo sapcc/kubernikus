@@ -5,14 +5,11 @@ import (
 	"log"
 	"os"
 	"os/signal"
-
-	"github.com/spf13/pflag"
-
 	"sync"
 	"syscall"
 	"testing"
 
-	"github.com/golang/glog"
+	"github.com/spf13/pflag"
 )
 
 var options E2ETestSuiteOptions
@@ -43,7 +40,7 @@ func main() {
 
 	testSuite := NewE2ETestSuite(&testing.T{}, options)
 	if testSuite == nil {
-		glog.Fatal("Couldn't create e2e test suite. Aborting")
+		log.Print("Couldn't create e2e test suite. Aborting")
 	}
 
 	go testSuite.Run(wg, sigs, stop)

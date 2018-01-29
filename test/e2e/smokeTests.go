@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"time"
 
 	"k8s.io/api/core/v1"
 )
@@ -19,7 +18,6 @@ func (s *E2ETestSuite) SetupSmokeTest() {
 	s.cleanUp()
 	s.createPods()
 	s.createServices()
-	time.Sleep(SmokeTestWaitTime)
 }
 
 func (s *E2ETestSuite) RunSmokeTest() {

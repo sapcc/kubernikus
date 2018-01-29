@@ -45,7 +45,7 @@ func (s *E2ETestSuite) createClientset() {
 func (s *E2ETestSuite) isClusterBigEnoughForSmokeTest() {
 	nodeCount := len(s.readyNodes)
 	if nodeCount < 2 {
-		s.handleError(fmt.Errorf("found %v nodes in cluster. the smoke test requires a minimum of 2 nodes. aborting", nodeCount))
+		s.handleError(fmt.Errorf("[failure] found %v nodes in cluster. the smoke test requires a minimum of 2 nodes. aborting", nodeCount))
 	}
 }
 

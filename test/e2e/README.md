@@ -50,10 +50,15 @@ Triggering a single or multiple phases as shown below:
 ```
 Available phases are:
 ```
-create  - create a new cluster
-api     - run API tests
-smoke   - run smoke tests
-network - run network tests
-volume  - run persistent volume tests
-delete  - delete the cluster
+create      - create a new cluster
+api         - run API tests
+smoke       - run smoke tests
+network     - run network tests
+volume      - run persistent volume tests
+delete      - delete the cluster
+all         - run all tests
+
+# additionally you can specify
+noTeardown  - do not tear down kluster on error
+
 ```
