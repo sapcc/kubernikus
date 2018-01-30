@@ -44,16 +44,21 @@ Invoke the integration tests via the Makefile in the root directory of the Kuber
 ```
 make test-e2e
 ``` 
-Triggering a specific phase ca be done as seen below:
+Triggering a single or multiple phases as shown below:
 ```
-make tests-e2e <phase>
+./test/e2e/test.sh --<phase>
 ```
 Available phases are:
 ```
-create  - create a new cluster
-api     - run API tests
-smoke   - run smoke tests
-network - run network tests
-volume  - run persistent volume tests
-delete  - delete the cluster
+create      - create a new cluster
+api         - run API tests
+smoke       - run smoke tests
+network     - run network tests
+volume      - run persistent volume tests
+delete      - delete the cluster
+all         - run all tests
+
+# additionally you can specify
+noTeardown  - do not tear down kluster on error
+
 ```

@@ -5,12 +5,13 @@ import (
 	"os"
 	"sync"
 	"testing"
+	"time"
 
-	"github.com/golang/glog"
 	"k8s.io/api/core/v1"
-	"k8s.io/client-go/kubernetes"
 
 	kubernikusClient "github.com/sapcc/kubernikus/pkg/api/client"
+
+	"k8s.io/client-go/kubernetes"
 )
 
 type E2ETestSuite struct {
@@ -29,26 +30,27 @@ type E2ETestSuite struct {
 	readyServices []v1.Service
 	kubeConfig    string
 
-	stopCh *chan bool
+	stopCh chan bool
+	sigCh  chan os.Signal
 }
 
 func NewE2ETestSuite(t *testing.T, options E2ETestSuiteOptions) *E2ETestSuite {
 	if err := options.OptionsFromConfigFile(); err != nil {
-		glog.Fatal(err)
+		log.Fatal(err)
 	}
 
 	if err := options.Verify(); err != nil {
-		log.Printf("Couldn't obtain openstack token using parameters given in config. Trying parameters from ENV. ")
+		log.Println("Couldn't obtain openstack token using parameters given in config. Trying parameters from ENV")
 		options.OpenStackCredentials = getOpenStackCredentialsFromENV()
 		if err := options.Verify(); err != nil {
-			glog.Errorf("Checked config and env. Insufficient parameters for authentication : %v", err)
+			log.Printf("Checked config and env. Insufficient parameters for authentication : %v", err)
 			os.Exit(1)
 		}
 	}
 
 	token, err := getToken(options.OpenStackCredentials)
 	if err != nil {
-		glog.Fatalf("Authentication failed. Verify config file or environment")
+		log.Fatalf("Authentication failed. Verify config file or environment")
 	}
 
 	options.OpenStackCredentials.Token = token
@@ -74,7 +76,8 @@ func (s *E2ETestSuite) Run(wg *sync.WaitGroup, sigs chan os.Signal, stopCh chan 
 	defer wg.Done()
 	wg.Add(1)
 
-	s.stopCh = &stopCh
+	s.stopCh = stopCh
+	s.sigCh = sigs
 
 	log.Println("Running tests")
 
@@ -88,6 +91,10 @@ func (s *E2ETestSuite) Run(wg *sync.WaitGroup, sigs chan os.Signal, stopCh chan 
 		s.TestShowCluster()
 		s.TestUpdateCluster()
 		s.TestGetClusterInfo()
+
+		// FIXME: wait before starting smoke test to mitigate risk of kluster that is not yet ready, though node health might indicate this
+		log.Printf("Waiting %v seconds before running smoke test to ensure all nodes are healthy and ready for action", SmokeTestWaitTime)
+		time.Sleep(SmokeTestWaitTime)
 	}
 
 	// Smoke tests
@@ -99,6 +106,8 @@ func (s *E2ETestSuite) Run(wg *sync.WaitGroup, sigs chan os.Signal, stopCh chan 
 	if s.IsTestDelete || s.IsTestAPI || s.IsTestAll {
 		s.TestTerminateCluster()
 	}
+
+	log.Println("[passed all tests]")
 
 	//stopCh <- true
 	s.exitGraceful(sigs)
