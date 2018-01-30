@@ -59,7 +59,6 @@ To add additional users to a cluster they need to be
 given either `Kubernetes Admin` or `Kubernetes Member` roles.
 
 ![Role Assignments](https://raw.githubusercontent.com/sapcc/kubernikus/master/assets/images/docs/containers/kubernetes/roleassignment.png)
-/assets/images/docs/containers/kubernetes/userroleassignments.png
 
 ## Authenticating with Kubernetes
 

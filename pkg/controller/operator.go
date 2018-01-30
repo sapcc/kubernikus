@@ -13,13 +13,17 @@ import (
 	typedcorev1 "k8s.io/client-go/kubernetes/typed/core/v1"
 	"k8s.io/client-go/tools/record"
 
+	"github.com/sapcc/kubernikus/pkg/controller/nodeobservatory"
+
 	"github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
 	helmutil "github.com/sapcc/kubernikus/pkg/client/helm"
 	kube "github.com/sapcc/kubernikus/pkg/client/kubernetes"
 	"github.com/sapcc/kubernikus/pkg/client/kubernikus"
 	"github.com/sapcc/kubernikus/pkg/client/openstack"
 	"github.com/sapcc/kubernikus/pkg/controller/config"
+	"github.com/sapcc/kubernikus/pkg/controller/deorbit"
 	"github.com/sapcc/kubernikus/pkg/controller/launch"
+	"github.com/sapcc/kubernikus/pkg/controller/routegc"
 	kubernikus_informers "github.com/sapcc/kubernikus/pkg/generated/informers/externalversions"
 	"github.com/sapcc/kubernikus/pkg/version"
 )
@@ -53,16 +57,7 @@ type KubernikusOperator struct {
 }
 
 const (
-	DEFAULT_WORKERS        = 1
 	DEFAULT_RECONCILIATION = 5 * time.Minute
-)
-
-var (
-	CONTROLLER_OPTIONS = map[string]int{
-		"groundctl":         10,
-		"launchctl":         DEFAULT_WORKERS,
-		"wormholegenerator": DEFAULT_WORKERS,
-	}
 )
 
 func NewKubernikusOperator(options *KubernikusOperatorOptions, logger log.Logger) (*KubernikusOperator, error) {
@@ -161,9 +156,15 @@ func NewKubernikusOperator(options *KubernikusOperatorOptions, logger log.Logger
 	for _, k := range options.Controllers {
 		switch k {
 		case "groundctl":
-			o.Config.Kubernikus.Controllers["groundctl"] = NewGroundController(o.Factories, o.Clients, recorder, o.Config, logger)
+			o.Config.Kubernikus.Controllers["groundctl"] = NewGroundController(10, o.Factories, o.Clients, recorder, o.Config, logger)
 		case "launchctl":
-			o.Config.Kubernikus.Controllers["launchctl"] = launch.NewController(o.Factories, o.Clients, recorder, logger)
+			o.Config.Kubernikus.Controllers["launchctl"] = launch.NewController(1, o.Factories, o.Clients, recorder, logger)
+		case "routegc":
+			o.Config.Kubernikus.Controllers["routegc"] = routegc.New(60*time.Second, o.Factories.Kubernikus.Kubernikus().V1().Klusters(), o.Clients.Openstack, logger)
+		case "deorbiter":
+			o.Config.Kubernikus.Controllers["deorbiter"] = deorbit.NewController(10, o.Factories, o.Clients, recorder, logger)
+		case "nodeobservatory":
+			o.Config.Kubernikus.Controllers["nodeobservatory"] = nodeobservatory.NewController(o.Factories, o.Clients, logger, options.Namespace, 1)
 		}
 	}
 
@@ -186,7 +187,7 @@ func (o *KubernikusOperator) Run(stopCh <-chan struct{}, wg *sync.WaitGroup) {
 
 	o.Logger.Log("msg", "Cache primed. Ready for Action!")
 
-	for name, controller := range o.Config.Kubernikus.Controllers {
-		go controller.Run(CONTROLLER_OPTIONS[name], stopCh, wg)
+	for _, controller := range o.Config.Kubernikus.Controllers {
+		go controller.Run(stopCh, wg)
 	}
 }

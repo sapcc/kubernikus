@@ -2,44 +2,35 @@ package metrics
 
 import "github.com/prometheus/client_golang/prometheus"
 
-func init() {
-	prometheus.MustRegister(
-		LaunchOperationsLatency,
-		LaunchOperationsTotal,
-		LaunchSuccessfulOperationsTotal,
-		LaunchFailedOperationsTotal,
-	)
-}
-
-var LaunchOperationsLatency = prometheus.NewSummaryVec(
+var DeorbitOperationsLatency = prometheus.NewSummaryVec(
 	prometheus.SummaryOpts{
 		Namespace: "kubernikus",
-		Subsystem: "launch",
+		Subsystem: "deorbit",
 		Name:      "operation_latency_seconds",
 		Help:      "Total duration of reconciliation in microseconds.",
 	},
 	[]string{"method"})
 
-var LaunchOperationsTotal = prometheus.NewCounterVec(
+var DeorbitOperationsTotal = prometheus.NewCounterVec(
 	prometheus.CounterOpts{
 		Namespace: "kubernikus",
-		Subsystem: "launch",
+		Subsystem: "deorbit",
 		Name:      "operation_total",
 		Help:      "Number of operations."},
 	[]string{"method"})
 
-var LaunchSuccessfulOperationsTotal = prometheus.NewCounterVec(
+var DeorbitSuccessfulOperationsTotal = prometheus.NewCounterVec(
 	prometheus.CounterOpts{
 		Namespace: "kubernikus",
-		Subsystem: "launch",
+		Subsystem: "deorbit",
 		Name:      "successful_operation_total",
 		Help:      "Number of successful operations."},
 	[]string{"method"})
 
-var LaunchFailedOperationsTotal = prometheus.NewCounterVec(
+var DeorbitFailedOperationsTotal = prometheus.NewCounterVec(
 	prometheus.CounterOpts{
 		Namespace: "kubernikus",
-		Subsystem: "launch",
+		Subsystem: "deorbit",
 		Name:      "failed_operation_total",
 		Help:      "Number of failed operations."},
 	[]string{"method"})

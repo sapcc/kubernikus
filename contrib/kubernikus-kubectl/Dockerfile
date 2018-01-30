@@ -6,7 +6,7 @@ FROM alpine:3.6
 ARG KUBERNETES_VERSION=v1.7.7
 ARG HELM_VERSION=v2.7.0
 
-RUN apk add --no-cache --virtual=build-dependencies bash jq curl ca-certificates 
+RUN apk add --no-cache --virtual=build-dependencies bash jq curl ca-certificates make
 
 RUN curl -fLo /usr/bin/kubectl https://storage.googleapis.com/kubernetes-release/release/${KUBERNETES_VERSION}/bin/linux/amd64/kubectl \
     && chmod +x /usr/bin/kubectl /usr/bin/kubectl \

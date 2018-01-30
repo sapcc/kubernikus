@@ -174,10 +174,6 @@ func init() {
 		klusterBootDurationSummary,
 		nodePoolSize,
 		nodePoolStatus,
-		LaunchOperationsLatency,
-		LaunchOperationsTotal,
-		LaunchSuccessfulOperationsTotal,
-		LaunchFailedOperationsTotal,
 	)
 }
 
