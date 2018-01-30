@@ -8,6 +8,16 @@ global:
   external_labels:
     region: {{ .Values.global.region }}
 
+{{- if .Values.use_alertmanager }}
+alerting:
+  alertmanagers:
+  - scheme: https
+    static_configs:
+    - targets:
+      - "alertmanager.eu-de-1.cloud.sap"
+      - "alertmanager.eu-nl-1.cloud.sap"
+{{- end}}
+
 scrape_configs:
 - job_name: 'endpoints'
   kubernetes_sd_configs:
@@ -282,16 +292,8 @@ scrape_configs:
 # Static Targets 
 #
 - job_name: 'kubernikus-prometheus'
-  metrics_path: /prometheus/metrics
+  metrics_path: /metrics
   static_configs:
     - targets: ['localhost:9090']
 
-{{- if .Values.use_alertmanager }}
-alerting:
-  alertmanagers:
-  - scheme: https
-    static_configs:
-    - targets:
-      - "alertmanager.eu-de-1.cloud.sap"
-      - "alertmanager.eu-nl-1.cloud.sap"
-{{- end}}
+
