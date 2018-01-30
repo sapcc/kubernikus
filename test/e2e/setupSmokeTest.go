@@ -4,20 +4,19 @@ import (
 	"fmt"
 	"log"
 
-
 	"k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/tools/clientcmd"
 
 	"github.com/sapcc/kubernikus/pkg/api/client/operations"
+
+	"k8s.io/client-go/tools/clientcmd"
 )
 
 func (s *E2ETestSuite) createClientset() {
-	//TODO: this looks unnecessarily complicated
 	s.getClusterKubeConfig()
 
 	config, err := clientcmd.Load([]byte(s.KubeConfig))
@@ -46,7 +45,7 @@ func (s *E2ETestSuite) createClientset() {
 func (s *E2ETestSuite) isClusterBigEnoughForSmokeTest() {
 	nodeCount := len(s.readyNodes)
 	if nodeCount < 2 {
-		s.handleError(fmt.Errorf("found %v nodes in cluster. the smoke test requires a minimum of 2 nodes. aborting", nodeCount))
+		s.handleError(fmt.Errorf("[failure] found %v nodes in cluster. the smoke test requires a minimum of 2 nodes. aborting", nodeCount))
 	}
 }
 
@@ -85,7 +84,7 @@ func (s *E2ETestSuite) createPods() {
 		log.Printf("created pod %v/%v on node %v", pod.GetNamespace(), pod.GetName(), node.Name)
 
 		// wait until ready
-		w, err := s.clientSet.Pods(Namespace).Watch(meta_v1.SingleObject(
+		w, err := s.clientSet.CoreV1().Pods(Namespace).Watch(meta_v1.SingleObject(
 			meta_v1.ObjectMeta{
 				Name: pod.GetName(),
 			},
@@ -127,14 +126,14 @@ func (s *E2ETestSuite) createServices() {
 
 		log.Printf("created service %v/%v for pod on node %v", service.GetNamespace(), service.GetName(), node.Name)
 
-		_, err := s.clientSet.Services(Namespace).Create(service)
+		_, err := s.clientSet.CoreV1().Services(Namespace).Create(service)
 		s.handleError(err)
 	}
 	s.getReadyServices()
 }
 
 func (s *E2ETestSuite) getReadyNodes() {
-	nodes, err := s.clientSet.Nodes().List(meta_v1.ListOptions{})
+	nodes, err := s.clientSet.CoreV1().Nodes().List(meta_v1.ListOptions{})
 	s.handleError(err)
 	for _, node := range nodes.Items {
 		log.Printf("found node: %s", node.Name)
@@ -143,7 +142,7 @@ func (s *E2ETestSuite) getReadyNodes() {
 }
 
 func (s *E2ETestSuite) getReadyPods() {
-	pods, err := s.clientSet.Pods(Namespace).List(meta_v1.ListOptions{
+	pods, err := s.clientSet.CoreV1().Pods(Namespace).List(meta_v1.ListOptions{
 		LabelSelector: fmt.Sprintf("app=%s", NginxName),
 	})
 	s.handleError(err)
@@ -154,7 +153,7 @@ func (s *E2ETestSuite) getReadyPods() {
 }
 
 func (s *E2ETestSuite) getReadyServices() {
-	services, err := s.clientSet.Services(Namespace).List(meta_v1.ListOptions{
+	services, err := s.clientSet.CoreV1().Services(Namespace).List(meta_v1.ListOptions{
 		LabelSelector: fmt.Sprintf("app=%s", NginxName),
 	})
 	s.handleError(err)
@@ -165,7 +164,7 @@ func (s *E2ETestSuite) getReadyServices() {
 }
 
 func (s *E2ETestSuite) createPVCForPod() {
-	pvc, err := s.clientSet.PersistentVolumeClaims(Namespace).Create(&v1.PersistentVolumeClaim{
+	pvc, err := s.clientSet.CoreV1().PersistentVolumeClaims(Namespace).Create(&v1.PersistentVolumeClaim{
 		ObjectMeta: meta_v1.ObjectMeta{
 			Namespace: Namespace,
 			Name:      PVCName,
@@ -236,7 +235,7 @@ func (s *E2ETestSuite) createPodWithMount() {
 
 	log.Printf("waiting for pod %v/%v to become ready", pod.GetNamespace(), pod.GetName())
 	// wait until ready
-	w, err := s.clientSet.Pods(Namespace).Watch(meta_v1.SingleObject(
+	w, err := s.clientSet.CoreV1().Pods(Namespace).Watch(meta_v1.SingleObject(
 		meta_v1.ObjectMeta{
 			Name: pod.GetName(),
 		},
@@ -248,7 +247,7 @@ func (s *E2ETestSuite) createPodWithMount() {
 
 func (s *E2ETestSuite) cleanUp() {
 	log.Printf("cleaning up before running smoke tests")
-	pods, err := s.clientSet.Pods(Namespace).List(meta_v1.ListOptions{
+	pods, err := s.clientSet.CoreV1().Pods(Namespace).List(meta_v1.ListOptions{
 		LabelSelector: "test=e2e",
 	})
 	if err != nil {
@@ -256,7 +255,7 @@ func (s *E2ETestSuite) cleanUp() {
 	}
 	// pods
 	for _, pod := range pods.Items {
-		if err = s.clientSet.Pods(pod.GetNamespace()).Delete(pod.GetName(), &meta_v1.DeleteOptions{}); err != nil {
+		if err = s.clientSet.CoreV1().Pods(pod.GetNamespace()).Delete(pod.GetName(), &meta_v1.DeleteOptions{}); err != nil {
 			log.Printf("could not delete pod %v/%v", pod.GetNamespace(), pod.GetName())
 		}
 		_, err = s.waitForPodDeleted(pod.GetNamespace(), pod.GetName())
@@ -265,26 +264,26 @@ func (s *E2ETestSuite) cleanUp() {
 		}
 	}
 	// services
-	svcs, err := s.clientSet.Services(Namespace).List(meta_v1.ListOptions{
+	svcs, err := s.clientSet.CoreV1().Services(Namespace).List(meta_v1.ListOptions{
 		LabelSelector: "test=e2e",
 	})
 	if err != nil {
 		log.Printf("error while cleaning smoke tests services %v", err)
 	}
 	for _, svc := range svcs.Items {
-		if err = s.clientSet.Services(svc.GetNamespace()).Delete(svc.GetName(), &meta_v1.DeleteOptions{}); err != nil {
+		if err = s.clientSet.CoreV1().Services(svc.GetNamespace()).Delete(svc.GetName(), &meta_v1.DeleteOptions{}); err != nil {
 			log.Printf("could not delete service %v/%v", svc.GetNamespace(), svc.GetName())
 		}
 	}
 	// pvcs
-	pvcs, err := s.clientSet.PersistentVolumeClaims(Namespace).List(meta_v1.ListOptions{
+	pvcs, err := s.clientSet.CoreV1().PersistentVolumeClaims(Namespace).List(meta_v1.ListOptions{
 		LabelSelector: "test=e2e",
 	})
 	if err != nil {
 		log.Printf("error while cleaning smoke tests pvc %v", err)
 	}
 	for _, pvc := range pvcs.Items {
-		if err = s.clientSet.PersistentVolumeClaims(pvc.GetNamespace()).Delete(pvc.GetName(), &meta_v1.DeleteOptions{}); err != nil {
+		if err = s.clientSet.CoreV1().PersistentVolumeClaims(pvc.GetNamespace()).Delete(pvc.GetName(), &meta_v1.DeleteOptions{}); err != nil {
 			log.Printf("could not delete pvc %v/%v", pvc.GetNamespace(), pvc.GetName())
 		}
 	}

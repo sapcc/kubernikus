@@ -5,13 +5,11 @@ import (
 	"log"
 	"os"
 	"os/signal"
-
-	"github.com/spf13/pflag"
-
-	"github.com/golang/glog"
 	"sync"
 	"syscall"
 	"testing"
+
+	"github.com/spf13/pflag"
 )
 
 var options E2ETestSuiteOptions
@@ -25,6 +23,7 @@ func init() {
 	pflag.BoolVar(&options.IsTestAll, "all", false, "The whole show. Test everything")
 	pflag.BoolVar(&options.IsTestAPI, "api", false, "Test API")
 	pflag.BoolVar(&options.IsTestSmoke, "smoke", false, "Run smoke test")
+	pflag.BoolVar(&options.IsNoTeardown, "noTeardown", false, "Do not tear down kluster on error")
 }
 
 func main() {
@@ -41,7 +40,7 @@ func main() {
 
 	testSuite := NewE2ETestSuite(&testing.T{}, options)
 	if testSuite == nil {
-		glog.Fatal("Couldn't create e2e test suite. Aborting")
+		log.Print("Couldn't create e2e test suite. Aborting")
 	}
 
 	go testSuite.Run(wg, sigs, stop)

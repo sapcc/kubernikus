@@ -4,9 +4,10 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/stretchr/testify/assert"
+
 	"github.com/sapcc/kubernikus/pkg/api/client/operations"
 	"github.com/sapcc/kubernikus/pkg/api/models"
-	"github.com/stretchr/testify/assert"
 )
 
 // TestCreateCluster tests kluster creation and waits until the kluster is ready
@@ -18,7 +19,7 @@ func (s *E2ETestSuite) TestCreateCluster() {
 		operations.NewCreateClusterParams().WithBody(newE2ECluster(s.ClusterName)),
 		s.authFunc(),
 	)
-	s.handleError(err, false)
+	s.handleError(err)
 
 	kluster := kl.Payload
 	s.ClusterName = kluster.Name
@@ -43,7 +44,7 @@ func (s *E2ETestSuite) TestCreateCluster() {
 			return false
 		},
 	)
-	s.handleError(err, true)
+	s.handleError(err)
 
 	assert.Equal(s.testing, fmt.Sprintf("%v-%v", s.ClusterName, s.ProjectName), kluster.Name)
 	assert.Equal(s.testing, 2, len(kluster.Spec.NodePools))
@@ -91,6 +92,9 @@ func (s *E2ETestSuite) TestShowCluster() {
 }
 
 func (s *E2ETestSuite) TestGetClusterInfo() {
+
+	log.Print("Testing cluster info")
+
 	clusterInfo, err := s.kubernikusClient.Operations.GetClusterInfo(
 		operations.NewGetClusterInfoParams().WithName(s.ClusterName),
 		s.authFunc(),

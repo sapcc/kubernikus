@@ -6,6 +6,9 @@ const (
 	Timeout       = 10 * time.Minute
 	CheckInterval = 10 * time.Second
 
+	// time after creating smoke test prerequisites (pods,svc) and before running smoke test
+	SmokeTestWaitTime = 300 * time.Second
+
 	TimeoutPod = 5 * time.Minute
 
 	ClusterName               = "e2e"

@@ -12,6 +12,7 @@ import (
 
 	"github.com/golang/glog"
 	"k8s.io/api/core/v1"
+
 	"k8s.io/apimachinery/pkg/api/errors"
 	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -38,7 +39,7 @@ func (s *E2ETestSuite) waitForCluster(klusterName, errorString string, waitUntil
 			if waitUntilFunc(kluster.Payload, err) {
 				return nil
 			}
-		case <-*s.stopCh:
+		case <-s.stopCh:
 			os.Exit(1)
 		}
 	}
@@ -193,7 +194,7 @@ func (s *E2ETestSuite) waitForPodDeleted(namespace, name string) (bool, error) {
 	for start := time.Now(); time.Since(start) < TimeoutPod; time.Sleep(CheckInterval) {
 		select {
 		default:
-			_, err := s.clientSet.Pods(namespace).Get(name, meta_v1.GetOptions{})
+			_, err := s.clientSet.CoreV1().Pods(namespace).Get(name, meta_v1.GetOptions{})
 			if err != nil {
 				if errors.IsNotFound(err) {
 					log.Printf("pod %v/%v was deleted", namespace, name)
@@ -202,20 +203,20 @@ func (s *E2ETestSuite) waitForPodDeleted(namespace, name string) (bool, error) {
 				return false, err
 			}
 			log.Printf("pod %v/%v still exists", namespace, name)
-		case <-*s.stopCh:
+		case <-s.stopCh:
 			os.Exit(1)
 		}
 	}
 	return false, nil
 }
 
-func (s *E2ETestSuite) handleError(err error, isTearDownCluster ...bool) {
+func (s *E2ETestSuite) handleError(err error) {
 	if err == nil {
 		return
 	}
 	log.Print(err)
 	// cleanup
-	if isTearDownCluster != nil && isTearDownCluster[0] {
+	if !s.IsNoTeardown {
 		s.tearDownCluster()
 	}
 	os.Exit(1)
