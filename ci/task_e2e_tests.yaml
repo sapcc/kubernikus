@@ -16,10 +16,15 @@ run:
   args:
     - -c
     - |
+      export KUBERNETES_VERSION=v1.7.7
       export GOPATH=$PWD/gopath
       cd gopath/src/github.com/sapcc/kubernikus
 
-      apk add --no-cache make git
+      apk add --no-cache make git curl
+      curl -fLo /usr/bin/kubectl https://storage.googleapis.com/kubernetes-release/release/${KUBERNETES_VERSION}/bin/linux/amd64/kubectl \
+        && chmod +x /usr/bin/kubectl /usr/bin/kubectl \
+        && /usr/bin/kubectl version -c
+
       make test-e2e
 
 params:
