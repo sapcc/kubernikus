@@ -2,13 +2,17 @@ package launch
 
 import (
 	"github.com/go-kit/kit/log"
+	core_v1 "k8s.io/api/core/v1"
+	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/record"
+	"k8s.io/client-go/util/workqueue"
 
 	"github.com/sapcc/kubernikus/pkg/api/models"
 	"github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
 	"github.com/sapcc/kubernikus/pkg/controller/base"
 	"github.com/sapcc/kubernikus/pkg/controller/config"
 	"github.com/sapcc/kubernikus/pkg/controller/metrics"
+	"github.com/sapcc/kubernikus/pkg/controller/nodeobservatory"
 	informers_kubernikus "github.com/sapcc/kubernikus/pkg/generated/informers/externalversions/kubernikus/v1"
 	"github.com/sapcc/kubernikus/pkg/util"
 )
@@ -24,6 +28,7 @@ type LaunchReconciler struct {
 	Logger   log.Logger
 
 	klusterInformer informers_kubernikus.KlusterInformer
+	nodeObervatory  *nodeobservatory.NodeObservatory
 }
 
 func NewController(threadiness int, factories config.Factories, clients config.Clients, recorder record.EventRecorder, logger log.Logger) base.Controller {
@@ -31,7 +36,7 @@ func NewController(threadiness int, factories config.Factories, clients config.C
 		"controller", "launch")
 
 	var reconciler base.Reconciler
-	reconciler = &LaunchReconciler{clients, recorder, logger, factories.Kubernikus.Kubernikus().V1().Klusters()}
+	reconciler = &LaunchReconciler{clients, recorder, logger, factories.Kubernikus.Kubernikus().V1().Klusters(), factories.NodesObservatory.NodeInformer()}
 	reconciler = &base.LoggingReconciler{reconciler, logger}
 	reconciler = &base.InstrumentingReconciler{
 		reconciler,
@@ -41,7 +46,28 @@ func NewController(threadiness int, factories config.Factories, clients config.C
 		metrics.LaunchFailedOperationsTotal,
 	}
 
-	return base.NewController(threadiness, factories, clients, reconciler, logger)
+	queue := workqueue.NewRateLimitingQueue(workqueue.NewItemExponentialFailureRateLimiter(base.BASE_DELAY, base.MAX_DELAY))
+	factories.NodesObservatory.NodeInformer().AddEventHandlerFuncs(nodeobservatory.NodeEventHandlerFuncs{
+		AddFunc: func(kluster *v1.Kluster, node *core_v1.Node) {
+			if key, err := cache.MetaNamespaceKeyFunc(kluster); err == nil {
+				queue.Add(key)
+			}
+		},
+		UpdateFunc: func(kluster *v1.Kluster, old, new *core_v1.Node) {
+			if key, err := cache.MetaNamespaceKeyFunc(kluster); err == nil {
+				if util.IsNodeReady(old) != util.IsNodeReady(new) || old.Spec.Unschedulable != new.Spec.Unschedulable {
+					queue.Add(key)
+				}
+			}
+		},
+		DeleteFunc: func(kluster *v1.Kluster, node *core_v1.Node) {
+			if key, err := cache.MetaNamespaceKeyFunc(kluster); err == nil {
+				queue.Add(key)
+			}
+		},
+	})
+
+	return base.NewController(threadiness, factories, reconciler, logger, queue)
 }
 
 func (lr *LaunchReconciler) Reconcile(kluster *v1.Kluster) (requeue bool, err error) {

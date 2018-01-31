@@ -9,6 +9,7 @@ import (
 
 	kube "github.com/sapcc/kubernikus/pkg/client/kubernetes"
 	"github.com/sapcc/kubernikus/pkg/client/openstack"
+	"github.com/sapcc/kubernikus/pkg/controller/nodeobservatory"
 	kubernikus_clientset "github.com/sapcc/kubernikus/pkg/generated/clientset"
 	kubernikus_informers "github.com/sapcc/kubernikus/pkg/generated/informers/externalversions"
 )
@@ -53,6 +54,7 @@ type Clients struct {
 }
 
 type Factories struct {
-	Kubernikus kubernikus_informers.SharedInformerFactory
-	Kubernetes kubernetes_informers.SharedInformerFactory
+	Kubernikus       kubernikus_informers.SharedInformerFactory
+	Kubernetes       kubernetes_informers.SharedInformerFactory
+	NodesObservatory *nodeobservatory.InformerFactory
 }
