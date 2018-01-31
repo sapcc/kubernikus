@@ -9,7 +9,7 @@ import (
 	kubernikus_informers_v1 "github.com/sapcc/kubernikus/pkg/generated/informers/externalversions/kubernikus/v1"
 )
 
-func NewInformerFactory(informer kubernikus_informers_v1.KlusterInformer, clients *kube.SharedClientFactory, logger log.Logger) *InformerFactory {
+func NewInformerFactory(informer kubernikus_informers_v1.KlusterInformer, clients kube.SharedClientFactory, logger log.Logger) *InformerFactory {
 	return &InformerFactory{
 		informer:      informer,
 		clientFactory: clients,
@@ -21,7 +21,7 @@ type InformerFactory struct {
 	lock          sync.Mutex
 	observatory   *NodeObservatory
 	informer      kubernikus_informers_v1.KlusterInformer
-	clientFactory *kube.SharedClientFactory
+	clientFactory kube.SharedClientFactory
 	logger        log.Logger
 }
 

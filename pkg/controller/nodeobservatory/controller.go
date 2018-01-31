@@ -38,7 +38,7 @@ type (
 	}
 
 	NodeObservatory struct {
-		clientFactory       *kube.SharedClientFactory
+		clientFactory       kube.SharedClientFactory
 		klusterInformer     kubernikus_informers_v1.KlusterInformer
 		namespace           string
 		queue               workqueue.RateLimitingInterface
@@ -53,7 +53,7 @@ type (
 	}
 )
 
-func NewController(informer kubernikus_informers_v1.KlusterInformer, factory *kube.SharedClientFactory, logger log.Logger, threadiness int) *NodeObservatory {
+func NewController(informer kubernikus_informers_v1.KlusterInformer, factory kube.SharedClientFactory, logger log.Logger, threadiness int) *NodeObservatory {
 	logger = log.With(logger,
 		"controller", "nodeobservatory",
 		"threadiness", threadiness,
@@ -154,27 +154,16 @@ func (n *NodeObservatory) processNextWorkItem() bool {
 	defer n.queue.Done(key)
 
 	var kluster *v1.Kluster
-	var requeue bool
 
 	if obj, exists, _ := n.klusterInformer.Informer().GetIndexer().GetByKey(key.(string)); exists {
 		kluster = obj.(*v1.Kluster)
 	}
 
 	// Invoke the method containing the business logic
-	requeue, err := n.reconcile(kluster)
+	err := n.reconcile(kluster)
 
 	if err == nil {
-		// Forget about the #AddRateLimited history of the key on every successful synchronization.
-		// This ensures that future processing of updates for this key is not delayed because of
-		// an outdated error history.
-
-		if requeue == false {
-			n.queue.Forget(key)
-		} else {
-			// Requeue requested
-			n.queue.AddAfter(key, BaseDelay)
-		}
-
+		n.queue.Forget(key)
 		return true
 	}
 
@@ -190,17 +179,17 @@ func (n *NodeObservatory) processNextWorkItem() bool {
 	return true
 }
 
-func (n *NodeObservatory) reconcile(kluster *v1.Kluster) (bool, error) {
+func (n *NodeObservatory) reconcile(kluster *v1.Kluster) error {
 
 	n.cleanUpInformers()
 
 	if kluster != nil && (kluster.Status.Phase == models.KlusterPhaseRunning || kluster.Status.Phase == models.KlusterPhaseTerminating) {
 		if err := n.createAndWatchNodeInformerForKluster(kluster); err != nil {
-			return true, err
+			return err
 		}
 	}
 
-	return false, nil
+	return nil
 }
 
 func (n *NodeObservatory) cleanUpInformers() {

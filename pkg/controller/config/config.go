@@ -48,7 +48,7 @@ type Config struct {
 type Clients struct {
 	Kubernikus kubernikus_clientset.Interface
 	Kubernetes kubernetes_clientset.Interface
-	Satellites *kube.SharedClientFactory
+	Satellites kube.SharedClientFactory
 	Openstack  openstack.Client
 	Helm       *helm.Client
 }
