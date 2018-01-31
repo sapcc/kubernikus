@@ -278,14 +278,6 @@ scrape_configs:
     target_label: name
   - source_labels: [__meta_kubernetes_ingress_path]
     target_label: path
-  - source_labels: [__meta_kubernetes_ingress_label_app]
-    target_label: app
-  - source_labels: [__meta_kubernetes_ingress_label_component]
-    target_label: component
-  - source_labels: [__meta_kubernetes_ingress_label_system]
-    target_label: system  
-  - source_labels: [__meta_kubernetes_ingress_label_type]
-    target_label: type
 
 # Static Targets 
 #
