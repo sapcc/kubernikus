@@ -276,6 +276,8 @@ scrape_configs:
     target_label: kubernetes_namespace
   - source_labels: [__meta_kubernetes_ingress_name]
     target_label: kubernetes_name
+  - source_labels: [__meta_kubernetes_ingress_path]
+    target_label: path
 
 # Static Targets 
 #

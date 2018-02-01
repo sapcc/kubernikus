@@ -171,7 +171,7 @@ func (r *RouteGarbageCollector) watchKluster(key string, stop <-chan struct{}) {
 		err = r.reconcile(kluster, logger)
 		logger.Log("msg", "Reconciling", "took", time.Since(begin), "v", 5, "err", err)
 		if err != nil {
-			metrics.OrphanedRoutesTotal.With(prometheus.Labels{}).Add(1)
+			metrics.RouteGCFailedOperationsTotal.With(prometheus.Labels{}).Add(1)
 		}
 	}
 	wait.JitterUntil(reconcile, r.syncPeriod, 0.5, true, stop)

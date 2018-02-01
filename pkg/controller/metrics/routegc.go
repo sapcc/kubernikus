@@ -2,6 +2,13 @@ package metrics
 
 import "github.com/prometheus/client_golang/prometheus"
 
+func init() {
+	prometheus.MustRegister(
+		OrphanedRoutesTotal,
+		RouteGCFailedOperationsTotal,
+	)
+}
+
 var OrphanedRoutesTotal = prometheus.NewCounterVec(
 	prometheus.CounterOpts{
 		Namespace: "kubernikus",
@@ -15,7 +22,7 @@ var OrphanedRoutesTotal = prometheus.NewCounterVec(
 var RouteGCFailedOperationsTotal = prometheus.NewCounterVec(
 	prometheus.CounterOpts{
 		Namespace: "kubernikus",
-		Subsystem: "routgc",
+		Subsystem: "routegc",
 		Name:      "failed_operation_total",
 		Help:      "Number of failed operations.",
 	},
