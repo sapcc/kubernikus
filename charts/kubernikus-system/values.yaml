@@ -30,6 +30,9 @@ grafana:
 
     installPlugins: grafana-piechart-panel,natel-discrete-panel,grafana-worldmap-panel
 
+    provisioning:
+      enabled: true
+
   serverDashboardFiles: 
     kubernikus.json: |
       {
@@ -2702,8 +2705,7 @@ grafana:
         "version": 16
       }
 
-  provisioning:
-    enabled: true
+
 
   provisioningDashboardsFiles:
     default.yaml: |
