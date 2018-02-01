@@ -119,6 +119,10 @@ func (o *RefreshOptions) Run(c *cobra.Command) error {
 		o.openstack.IdentityEndpoint = identityEndpoint
 		glog.V(2).Infof("Detected authentication scope for project-id: %v", projectID)
 		o.openstack.Scope.ProjectID = projectID
+		//Ignore conflicting values from environment
+		o.openstack.Scope.ProjectName = ""
+		o.openstack.Scope.DomainID = ""
+		o.openstack.Scope.DomainName = ""
 	}
 
 	if kurl, err := o.autoDetectKubernikusURL(); err != nil {
@@ -137,6 +141,7 @@ func (o *RefreshOptions) Run(c *cobra.Command) error {
 	} else {
 		glog.V(2).Infof("Detected username: %v", username)
 		o.openstack.Username = username
+		o.openstack.UserID = "" //Ignore conflicting value from env environment
 	}
 
 	if domainName, err := o.autoDetectUserDomainName(); err != nil {
@@ -144,6 +149,7 @@ func (o *RefreshOptions) Run(c *cobra.Command) error {
 	} else {
 		glog.V(2).Infof("Detected domain-name: %v", domainName)
 		o.openstack.DomainName = domainName
+		o.openstack.DomainID = "" //Ignore conflicting value from environment
 	}
 
 	if o.openstack.Password == "" {
