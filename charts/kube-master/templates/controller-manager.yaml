@@ -2,7 +2,7 @@
 apiVersion: "extensions/v1beta1"
 kind: Deployment
 metadata:
-  name: {{ include "master.fullname" . }}-c-manager
+  name: {{ include "master.fullname" . }}-cmanager
   labels:
     chart: "{{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}"
     release: {{ .Release.Name }}
