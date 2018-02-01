@@ -15,11 +15,15 @@ spec:
       maxSurge: 1
   selector:
     matchLabels:
-      app: {{ include "master.fullname" . }}-controller-manager
+      app: controller-manager
+      kluster: {{ .Values.name }}
+      account: {{ .Values.account }}
   template:
     metadata:
       labels:
-        app: {{ include "master.fullname" . }}-controller-manager
+        app: controller-manager
+        kluster: {{ .Values.name }}
+        account: {{ .Values.account }}
         release: {{ .Release.Name }}
       annotations:
         checksum/secrets: {{ include (print $.Template.BasePath "/secrets.yaml") . | sha256sum }}
