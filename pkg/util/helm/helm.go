@@ -59,6 +59,8 @@ type kubernikusHelmValues struct {
 	Etcd             etcdValues        `yaml:"etcd,omitempty"`
 	Api              apiValues         `yaml:"api,omitempty"`
 	NodePassword     string            `yaml:"nodePassword,omitempty"`
+	Name             string            `yaml:"name"`
+	Account          string            `yaml:"account"`
 }
 
 func KlusterToHelmValues(kluster *v1.Kluster, openstack *OpenstackOptions, certificates map[string]string, bootstrapToken string, accessMode string) ([]byte, error) {
@@ -78,11 +80,13 @@ func KlusterToHelmValues(kluster *v1.Kluster, openstack *OpenstackOptions, certi
 	}
 
 	values := kubernikusHelmValues{
+		Account:          kluster.Account(),
 		BoostrapToken:    bootstrapToken,
 		Certs:            certificates,
 		ClusterCIDR:      kluster.Spec.ClusterCIDR,
 		ServiceCIDR:      kluster.Spec.ServiceCIDR,
 		AdvertiseAddress: kluster.Spec.AdvertiseAddress,
+		Name:             kluster.Spec.Name,
 		NodePassword:     password,
 		Version: versionValues{
 			Kubernetes: kluster.Spec.Version,

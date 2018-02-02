@@ -31,6 +31,8 @@ serviceCIDR: 198.18.128.0/17
 advertiseAddress: 198.18.128.1
 #bootstrapToken
 #nodePassword:
+#name:
+#account:
 
 version:
 # kubernikus:
