@@ -5,3 +5,6 @@ dependencies:
   - name: kube-state-metrics
     repository: file://vendor/kube-state-metrics
     version: 1.1.0
+  - name: grafana 
+    repository: https://raw.githubusercontent.com/BugRoger/charts/repo
+    version: 0.6.2

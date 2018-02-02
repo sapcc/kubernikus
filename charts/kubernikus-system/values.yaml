@@ -1,4 +1,2880 @@
+#global:
+#  region: eu-de-1
+
 nginx-ingress:
   enabled: true
   rbac:
     create: true 
+
+grafana:
+  server:
+    image: "grafana/grafana:master"
+    imagePullPolicy: IfNotPresent
+    name: grafana
+    adminUser: "admin"
+    adminPassword: "admin"
+
+    persistentVolume:
+      enabled: false
+
+    readinessProbe:
+      httpGet:
+        path: /login
+        port: 3000
+      initialDelaySeconds: 30
+      timeoutSeconds: 30
+
+    service:
+      type: ClusterIP
+      httpPort: 80
+
+    installPlugins: grafana-piechart-panel,natel-discrete-panel,grafana-worldmap-panel
+
+    provisioning:
+      enabled: true
+
+  serverDashboardFiles: 
+    kubernikus.json: |
+      {
+        "annotations": {
+          "list": [
+            {
+              "builtIn": 1,
+              "datasource": "default",
+              "enable": true,
+              "hide": true,
+              "iconColor": "rgba(0, 211, 255, 1)",
+              "name": "Annotations & Alerts",
+              "type": "dashboard"
+            }
+          ]
+        },
+        "editable": true,
+        "gnetId": null,
+        "graphTooltip": 0,
+        "links": [],
+        "panels": [
+          {
+            "collapsed": false,
+            "gridPos": {
+              "h": 1,
+              "w": 24,
+              "x": 0,
+              "y": 0
+            },
+            "id": 25,
+            "panels": [],
+            "title": "Overview",
+            "type": "row"
+          },
+          {
+            "content": "\n\n\n![Kubernikus](https://github.com/sapcc/kubernikus/raw/master/assets/kubernikus_64x64.png)",
+            "gridPos": {
+              "h": 4,
+              "w": 1,
+              "x": 0,
+              "y": 1
+            },
+            "id": 18,
+            "links": [],
+            "mode": "markdown",
+            "title": "",
+            "transparent": true,
+            "type": "text"
+          },
+          {
+            "content": "\n# Klusters\n\n",
+            "gridPos": {
+              "h": 4,
+              "w": 2,
+              "x": 1,
+              "y": 1
+            },
+            "id": 19,
+            "links": [],
+            "mode": "markdown",
+            "title": "",
+            "transparent": true,
+            "type": "text"
+          },
+          {
+            "cacheTimeout": null,
+            "colorBackground": false,
+            "colorValue": false,
+            "colors": [
+              "#299c46",
+              "rgba(237, 129, 40, 0.89)",
+              "#d44a3a"
+            ],
+            "datasource": null,
+            "decimals": 0,
+            "format": "none",
+            "gauge": {
+              "maxValue": 100,
+              "minValue": 0,
+              "show": false,
+              "thresholdLabels": false,
+              "thresholdMarkers": true
+            },
+            "gridPos": {
+              "h": 4,
+              "w": 2,
+              "x": 3,
+              "y": 1
+            },
+            "hideTimeOverride": true,
+            "id": 2,
+            "interval": null,
+            "links": [],
+            "mappingType": 1,
+            "mappingTypes": [
+              {
+                "name": "value to text",
+                "value": 1
+              },
+              {
+                "name": "range to text",
+                "value": 2
+              }
+            ],
+            "maxDataPoints": 100,
+            "nullPointMode": "connected",
+            "nullText": null,
+            "postfix": "Klusters",
+            "postfixFontSize": "50%",
+            "prefix": "",
+            "prefixFontSize": "50%",
+            "rangeMaps": [
+              {
+                "from": "null",
+                "text": "N/A",
+                "to": "null"
+              }
+            ],
+            "sparkline": {
+              "fillColor": "rgba(31, 118, 189, 0.18)",
+              "full": false,
+              "lineColor": "rgb(31, 120, 193)",
+              "show": true
+            },
+            "tableColumn": "",
+            "targets": [
+              {
+                "expr": "sum(kubernikus_kluster_status_phase{phase=\"Running\"})",
+                "format": "time_series",
+                "intervalFactor": 1,
+                "legendFormat": "",
+                "refId": "A"
+              }
+            ],
+            "thresholds": "",
+            "timeFrom": "5m",
+            "timeShift": null,
+            "title": "Running",
+            "type": "singlestat",
+            "valueFontSize": "200%",
+            "valueMaps": [
+              {
+                "op": "=",
+                "text": "N/A",
+                "value": "null"
+              }
+            ],
+            "valueName": "current"
+          },
+          {
+            "cacheTimeout": null,
+            "colorBackground": false,
+            "colorValue": false,
+            "colors": [
+              "#299c46",
+              "rgba(237, 129, 40, 0.89)",
+              "#d44a3a"
+            ],
+            "datasource": null,
+            "decimals": 0,
+            "format": "none",
+            "gauge": {
+              "maxValue": 100,
+              "minValue": 0,
+              "show": false,
+              "thresholdLabels": false,
+              "thresholdMarkers": true
+            },
+            "gridPos": {
+              "h": 4,
+              "w": 2,
+              "x": 5,
+              "y": 1
+            },
+            "hideTimeOverride": true,
+            "id": 15,
+            "interval": null,
+            "links": [],
+            "mappingType": 1,
+            "mappingTypes": [
+              {
+                "name": "value to text",
+                "value": 1
+              },
+              {
+                "name": "range to text",
+                "value": 2
+              }
+            ],
+            "maxDataPoints": 100,
+            "nullPointMode": "connected",
+            "nullText": null,
+            "postfix": "Klusters",
+            "postfixFontSize": "50%",
+            "prefix": "",
+            "prefixFontSize": "50%",
+            "rangeMaps": [
+              {
+                "from": "null",
+                "text": "N/A",
+                "to": "null"
+              }
+            ],
+            "sparkline": {
+              "fillColor": "rgba(31, 118, 189, 0.18)",
+              "full": false,
+              "lineColor": "rgb(31, 120, 193)",
+              "show": true
+            },
+            "tableColumn": "",
+            "targets": [
+              {
+                "expr": "sum(kubernikus_kluster_status_phase{phase=\"Creating\"})",
+                "format": "time_series",
+                "intervalFactor": 1,
+                "legendFormat": "",
+                "refId": "A"
+              }
+            ],
+            "thresholds": "",
+            "timeFrom": "5m",
+            "timeShift": null,
+            "title": "Creating",
+            "type": "singlestat",
+            "valueFontSize": "200%",
+            "valueMaps": [
+              {
+                "op": "=",
+                "text": "N/A",
+                "value": "null"
+              }
+            ],
+            "valueName": "current"
+          },
+          {
+            "cacheTimeout": null,
+            "colorBackground": false,
+            "colorValue": false,
+            "colors": [
+              "#299c46",
+              "rgba(237, 129, 40, 0.89)",
+              "#d44a3a"
+            ],
+            "datasource": null,
+            "decimals": 0,
+            "format": "none",
+            "gauge": {
+              "maxValue": 100,
+              "minValue": 0,
+              "show": false,
+              "thresholdLabels": false,
+              "thresholdMarkers": true
+            },
+            "gridPos": {
+              "h": 4,
+              "w": 2,
+              "x": 7,
+              "y": 1
+            },
+            "hideTimeOverride": true,
+            "id": 14,
+            "interval": null,
+            "links": [],
+            "mappingType": 1,
+            "mappingTypes": [
+              {
+                "name": "value to text",
+                "value": 1
+              },
+              {
+                "name": "range to text",
+                "value": 2
+              }
+            ],
+            "maxDataPoints": 100,
+            "nullPointMode": "connected",
+            "nullText": null,
+            "postfix": "Klusters",
+            "postfixFontSize": "50%",
+            "prefix": "",
+            "prefixFontSize": "50%",
+            "rangeMaps": [
+              {
+                "from": "null",
+                "text": "N/A",
+                "to": "null"
+              }
+            ],
+            "sparkline": {
+              "fillColor": "rgba(31, 118, 189, 0.18)",
+              "full": false,
+              "lineColor": "rgb(31, 120, 193)",
+              "show": true
+            },
+            "tableColumn": "",
+            "targets": [
+              {
+                "expr": "sum(kubernikus_kluster_status_phase{phase=\"Pending\"})",
+                "format": "time_series",
+                "intervalFactor": 1,
+                "legendFormat": "",
+                "refId": "A"
+              }
+            ],
+            "thresholds": "",
+            "timeFrom": "5m",
+            "timeShift": null,
+            "title": "Pending",
+            "type": "singlestat",
+            "valueFontSize": "200%",
+            "valueMaps": [
+              {
+                "op": "=",
+                "text": "N/A",
+                "value": "null"
+              }
+            ],
+            "valueName": "current"
+          },
+          {
+            "cacheTimeout": null,
+            "colorBackground": false,
+            "colorValue": false,
+            "colors": [
+              "#299c46",
+              "rgba(237, 129, 40, 0.89)",
+              "#d44a3a"
+            ],
+            "datasource": null,
+            "decimals": 0,
+            "format": "none",
+            "gauge": {
+              "maxValue": 100,
+              "minValue": 0,
+              "show": false,
+              "thresholdLabels": false,
+              "thresholdMarkers": true
+            },
+            "gridPos": {
+              "h": 4,
+              "w": 2,
+              "x": 9,
+              "y": 1
+            },
+            "hideTimeOverride": true,
+            "id": 16,
+            "interval": null,
+            "links": [],
+            "mappingType": 1,
+            "mappingTypes": [
+              {
+                "name": "value to text",
+                "value": 1
+              },
+              {
+                "name": "range to text",
+                "value": 2
+              }
+            ],
+            "maxDataPoints": 100,
+            "nullPointMode": "connected",
+            "nullText": null,
+            "postfix": "Klusters",
+            "postfixFontSize": "50%",
+            "prefix": "",
+            "prefixFontSize": "50%",
+            "rangeMaps": [
+              {
+                "from": "null",
+                "text": "N/A",
+                "to": "null"
+              }
+            ],
+            "sparkline": {
+              "fillColor": "rgba(31, 118, 189, 0.18)",
+              "full": false,
+              "lineColor": "rgb(31, 120, 193)",
+              "show": true
+            },
+            "tableColumn": "",
+            "targets": [
+              {
+                "$$hashKey": "object:3742",
+                "expr": "sum(kubernikus_kluster_status_phase{phase=\"Terminating\"})",
+                "format": "time_series",
+                "intervalFactor": 1,
+                "legendFormat": "",
+                "refId": "A"
+              }
+            ],
+            "thresholds": "",
+            "timeFrom": "5m",
+            "timeShift": null,
+            "title": "Terminating",
+            "transparent": false,
+            "type": "singlestat",
+            "valueFontSize": "200%",
+            "valueMaps": [
+              {
+                "op": "=",
+                "text": "N/A",
+                "value": "null"
+              }
+            ],
+            "valueName": "current"
+          },
+          {
+            "content": "\n\n\n![Kubernikus](https://github.com/sapcc/kubernikus/raw/master/assets/kubernikus_64x64.png)",
+            "gridPos": {
+              "h": 4,
+              "w": 1,
+              "x": 11,
+              "y": 1
+            },
+            "id": 61,
+            "links": [],
+            "mode": "markdown",
+            "title": "",
+            "transparent": true,
+            "type": "text"
+          },
+          {
+            "content": "# Availability",
+            "gridPos": {
+              "h": 4,
+              "w": 2,
+              "x": 12,
+              "y": 1
+            },
+            "id": 31,
+            "links": [],
+            "mode": "markdown",
+            "title": "",
+            "transparent": true,
+            "type": "text"
+          },
+          {
+            "aliasColors": {},
+            "bars": false,
+            "dashLength": 10,
+            "dashes": false,
+            "datasource": null,
+            "fill": 3,
+            "gridPos": {
+              "h": 4,
+              "w": 4,
+              "x": 14,
+              "y": 1
+            },
+            "id": 49,
+            "legend": {
+              "alignAsTable": false,
+              "avg": true,
+              "current": false,
+              "max": true,
+              "min": true,
+              "rightSide": true,
+              "show": false,
+              "total": false,
+              "values": true
+            },
+            "lines": true,
+            "linewidth": 1,
+            "links": [],
+            "nullPointMode": "connected",
+            "percentage": false,
+            "pointradius": 5,
+            "points": false,
+            "renderer": "flot",
+            "seriesOverrides": [
+              {
+                "$$hashKey": "object:4033",
+                "alias": "Avg",
+                "fill": 0,
+                "linewidth": 3
+              }
+            ],
+            "spaceLength": 10,
+            "stack": false,
+            "steppedLine": false,
+            "targets": [
+              {
+                "$$hashKey": "object:3461",
+                "expr": "sum(probe_http_duration_seconds{path=\"/\"}) * 1000",
+                "format": "time_series",
+                "instant": false,
+                "intervalFactor": 1,
+                "legendFormat": "API",
+                "refId": "A"
+              },
+              {
+                "$$hashKey": "object:3922",
+                "expr": "sum(avg_over_time(probe_http_duration_seconds{path=\"/\"}[1h])) * 1000",
+                "format": "time_series",
+                "intervalFactor": 1,
+                "legendFormat": "Avg",
+                "refId": "B"
+              }
+            ],
+            "thresholds": [],
+            "timeFrom": null,
+            "timeShift": null,
+            "title": "Kubernikus",
+            "tooltip": {
+              "shared": true,
+              "sort": 0,
+              "value_type": "individual"
+            },
+            "transparent": true,
+            "type": "graph",
+            "xaxis": {
+              "buckets": null,
+              "mode": "time",
+              "name": null,
+              "show": true,
+              "values": []
+            },
+            "yaxes": [
+              {
+                "$$hashKey": "object:3486",
+                "format": "ms",
+                "label": null,
+                "logBase": 1,
+                "max": null,
+                "min": null,
+                "show": true
+              },
+              {
+                "$$hashKey": "object:3487",
+                "format": "short",
+                "label": null,
+                "logBase": 1,
+                "max": null,
+                "min": null,
+                "show": true
+              }
+            ]
+          },
+          {
+            "aliasColors": {},
+            "bars": false,
+            "dashLength": 10,
+            "dashes": false,
+            "datasource": null,
+            "fill": 3,
+            "gridPos": {
+              "h": 4,
+              "w": 4,
+              "x": 18,
+              "y": 1
+            },
+            "id": 60,
+            "legend": {
+              "alignAsTable": false,
+              "avg": true,
+              "current": false,
+              "max": true,
+              "min": true,
+              "rightSide": true,
+              "show": false,
+              "total": false,
+              "values": true
+            },
+            "lines": true,
+            "linewidth": 1,
+            "links": [],
+            "nullPointMode": "connected",
+            "percentage": false,
+            "pointradius": 5,
+            "points": false,
+            "renderer": "flot",
+            "seriesOverrides": [
+              {
+                "$$hashKey": "object:4033",
+                "alias": "Avg",
+                "fill": 0,
+                "linewidth": 3
+              }
+            ],
+            "spaceLength": 10,
+            "stack": false,
+            "steppedLine": false,
+            "targets": [
+              {
+                "$$hashKey": "object:3461",
+                "expr": "sum(probe_http_duration_seconds{path=\"/\"}) * 1000",
+                "format": "time_series",
+                "instant": false,
+                "intervalFactor": 1,
+                "legendFormat": "API",
+                "refId": "A"
+              },
+              {
+                "$$hashKey": "object:3922",
+                "expr": "sum(avg_over_time(probe_http_duration_seconds{path=\"/\"}[1h])) * 1000",
+                "format": "time_series",
+                "intervalFactor": 1,
+                "legendFormat": "Avg",
+                "refId": "B"
+              }
+            ],
+            "thresholds": [],
+            "timeFrom": null,
+            "timeShift": null,
+            "title": "Klusters",
+            "tooltip": {
+              "shared": true,
+              "sort": 0,
+              "value_type": "individual"
+            },
+            "transparent": true,
+            "type": "graph",
+            "xaxis": {
+              "buckets": null,
+              "mode": "time",
+              "name": null,
+              "show": true,
+              "values": []
+            },
+            "yaxes": [
+              {
+                "$$hashKey": "object:3486",
+                "format": "ms",
+                "label": null,
+                "logBase": 1,
+                "max": null,
+                "min": null,
+                "show": true
+              },
+              {
+                "$$hashKey": "object:3487",
+                "format": "short",
+                "label": null,
+                "logBase": 1,
+                "max": null,
+                "min": null,
+                "show": true
+              }
+            ]
+          },
+          {
+            "backgroundColor": "rgb(60, 60, 60)",
+            "colorMaps": [
+              {
+                "$$hashKey": "object:6781",
+                "color": "#e5ac0e",
+                "text": "N/A"
+              },
+              {
+                "$$hashKey": "object:6782",
+                "color": "#508642",
+                "text": "up"
+              },
+              {
+                "$$hashKey": "object:6783",
+                "color": "#bf1b00",
+                "text": "down"
+              }
+            ],
+            "datasource": null,
+            "display": "timeline",
+            "extendLastValue": true,
+            "gridPos": {
+              "h": 4,
+              "w": 2,
+              "x": 22,
+              "y": 1
+            },
+            "hideTimeOverride": true,
+            "highlightOnMouseover": false,
+            "id": 21,
+            "legendSortBy": "-ms",
+            "lineColor": "rgba(0, 0, 0, 0.53)",
+            "links": [],
+            "mappingTypes": [
+              {
+                "name": "value to text",
+                "value": 1
+              },
+              {
+                "name": "range to text",
+                "value": 2
+              }
+            ],
+            "metricNameColor": "#fff",
+            "rangeMaps": [
+              {
+                "$$hashKey": "object:6538",
+                "from": "null",
+                "text": "N/A",
+                "to": "null"
+              }
+            ],
+            "rowHeight": 60,
+            "showDistinctCount": false,
+            "showLegend": false,
+            "showLegendCounts": false,
+            "showLegendNames": true,
+            "showLegendPercent": true,
+            "showLegendTime": false,
+            "showLegendValues": true,
+            "showTransitionCount": false,
+            "targets": [
+              {
+                "$$hashKey": "object:6451",
+                "expr": "probe_success{path=\"/\"}",
+                "format": "time_series",
+                "intervalFactor": 1,
+                "legendFormat": "Kubernikus",
+                "refId": "A"
+              },
+              {
+                "$$hashKey": "object:6452",
+                "expr": "probe_success{path=\"/grafana\"}",
+                "format": "time_series",
+                "intervalFactor": 1,
+                "legendFormat": "Klusters",
+                "refId": "B"
+              }
+            ],
+            "textSize": 20,
+            "timeFrom": "24h",
+            "timeShift": null,
+            "title": "",
+            "transparent": true,
+            "type": "natel-discrete-panel",
+            "valueMaps": [
+              {
+                "$$hashKey": "object:6530",
+                "op": "=",
+                "text": "N/A",
+                "value": "null"
+              },
+              {
+                "$$hashKey": "object:6531",
+                "op": "=",
+                "text": "up",
+                "value": "1"
+              },
+              {
+                "$$hashKey": "object:6532",
+                "op": "=",
+                "text": "down",
+                "value": "0"
+              },
+              {
+                "$$hashKey": "object:6533",
+                "op": "=",
+                "text": "",
+                "value": ""
+              }
+            ],
+            "valueTextColor": "#fff",
+            "writeAllValues": false,
+            "writeLastValue": true,
+            "writeMetricNames": true
+          },
+          {
+            "collapsed": true,
+            "gridPos": {
+              "h": 1,
+              "w": 24,
+              "x": 0,
+              "y": 5
+            },
+            "id": 33,
+            "panels": [],
+            "title": "Capacity",
+            "type": "row"
+          },
+          {
+            "content": "\n\n\n![Kubernetes](https://avatars1.githubusercontent.com/u/13629408?s=64&v=4)",
+            "gridPos": {
+              "h": 6,
+              "w": 1,
+              "x": 0,
+              "y": 6
+            },
+            "id": 46,
+            "links": [],
+            "mode": "markdown",
+            "title": "",
+            "transparent": true,
+            "type": "text"
+          },
+          {
+            "content": "# Capacity",
+            "gridPos": {
+              "h": 3,
+              "w": 2,
+              "x": 1,
+              "y": 6
+            },
+            "id": 27,
+            "links": [],
+            "mode": "markdown",
+            "title": "",
+            "transparent": true,
+            "type": "text"
+          },
+          {
+            "cacheTimeout": null,
+            "colorBackground": true,
+            "colorValue": false,
+            "colors": [
+              "#d44a3a",
+              "rgba(237, 129, 40, 0.89)",
+              "#299c46"
+            ],
+            "datasource": null,
+            "decimals": 0,
+            "description": "Out of CPU in this many Klusters",
+            "format": "none",
+            "gauge": {
+              "maxValue": 100,
+              "minValue": 0,
+              "show": false,
+              "thresholdLabels": false,
+              "thresholdMarkers": true
+            },
+            "gridPos": {
+              "h": 3,
+              "w": 2,
+              "x": 3,
+              "y": 6
+            },
+            "hideTimeOverride": true,
+            "id": 8,
+            "interval": null,
+            "links": [],
+            "mappingType": 1,
+            "mappingTypes": [
+              {
+                "name": "value to text",
+                "value": 1
+              },
+              {
+                "name": "range to text",
+                "value": 2
+              }
+            ],
+            "maxDataPoints": 100,
+            "nullPointMode": "connected",
+            "nullText": null,
+            "postfix": "Klusters",
+            "postfixFontSize": "50%",
+            "prefix": "",
+            "prefixFontSize": "50%",
+            "rangeMaps": [
+              {
+                "from": "null",
+                "text": "N/A",
+                "to": "null"
+              }
+            ],
+            "sparkline": {
+              "fillColor": "rgba(31, 118, 189, 0.18)",
+              "full": false,
+              "lineColor": "rgb(31, 120, 193)",
+              "show": false
+            },
+            "tableColumn": "",
+            "targets": [
+              {
+                "expr": "(sum(kube_node_status_allocatable_cpu_cores) - sum(kube_pod_container_resource_requests_cpu_cores)) / (sum(kube_pod_container_resource_requests_cpu_cores{namespace=\"kubernikus\"}) / sum(kubernikus_kluster_status_phase))",
+                "format": "time_series",
+                "interval": "",
+                "intervalFactor": 1,
+                "legendFormat": "",
+                "refId": "A"
+              }
+            ],
+            "thresholds": "5,10",
+            "timeFrom": "1m",
+            "timeShift": null,
+            "title": "Remaining CPUs",
+            "type": "singlestat",
+            "valueFontSize": "200%",
+            "valueMaps": [
+              {
+                "op": "=",
+                "text": "N/A",
+                "value": "null"
+              }
+            ],
+            "valueName": "current"
+          },
+          {
+            "cacheTimeout": null,
+            "colorBackground": true,
+            "colorValue": false,
+            "colors": [
+              "#d44a3a",
+              "rgba(237, 129, 40, 0.89)",
+              "#299c46"
+            ],
+            "datasource": null,
+            "decimals": 0,
+            "description": "Out of Memory in this many Klusters",
+            "format": "none",
+            "gauge": {
+              "maxValue": 100,
+              "minValue": 0,
+              "show": false,
+              "thresholdLabels": false,
+              "thresholdMarkers": true
+            },
+            "gridPos": {
+              "h": 3,
+              "w": 2,
+              "x": 5,
+              "y": 6
+            },
+            "hideTimeOverride": true,
+            "id": 9,
+            "interval": null,
+            "links": [],
+            "mappingType": 1,
+            "mappingTypes": [
+              {
+                "name": "value to text",
+                "value": 1
+              },
+              {
+                "name": "range to text",
+                "value": 2
+              }
+            ],
+            "maxDataPoints": 100,
+            "nullPointMode": "connected",
+            "nullText": null,
+            "postfix": "Klusters",
+            "postfixFontSize": "50%",
+            "prefix": "",
+            "prefixFontSize": "50%",
+            "rangeMaps": [
+              {
+                "from": "null",
+                "text": "N/A",
+                "to": "null"
+              }
+            ],
+            "sparkline": {
+              "fillColor": "rgba(31, 118, 189, 0.18)",
+              "full": false,
+              "lineColor": "#0a50a1",
+              "show": false
+            },
+            "tableColumn": "",
+            "targets": [
+              {
+                "expr": "(sum(kube_node_status_allocatable_memory_bytes) - sum(kube_pod_container_resource_requests_memory_bytes)) / (sum(kube_pod_container_resource_requests_memory_bytes{namespace=\"kubernikus\"}) / sum(kubernikus_kluster_status_phase))",
+                "format": "time_series",
+                "interval": "",
+                "intervalFactor": 1,
+                "legendFormat": "",
+                "refId": "A"
+              }
+            ],
+            "thresholds": "5,10",
+            "timeFrom": "1m",
+            "timeShift": null,
+            "title": "Remaining Memory",
+            "type": "singlestat",
+            "valueFontSize": "200%",
+            "valueMaps": [
+              {
+                "op": "=",
+                "text": "N/A",
+                "value": "null"
+              }
+            ],
+            "valueName": "current"
+          },
+          {
+            "cacheTimeout": null,
+            "colorBackground": true,
+            "colorValue": false,
+            "colors": [
+              "#d44a3a",
+              "rgba(237, 129, 40, 0.89)",
+              "#299c46"
+            ],
+            "datasource": null,
+            "decimals": 0,
+            "description": "Out of Podsin this many Klusters",
+            "format": "none",
+            "gauge": {
+              "maxValue": 100,
+              "minValue": 0,
+              "show": false,
+              "thresholdLabels": false,
+              "thresholdMarkers": true
+            },
+            "gridPos": {
+              "h": 3,
+              "w": 2,
+              "x": 7,
+              "y": 6
+            },
+            "hideTimeOverride": true,
+            "id": 10,
+            "interval": null,
+            "links": [],
+            "mappingType": 1,
+            "mappingTypes": [
+              {
+                "name": "value to text",
+                "value": 1
+              },
+              {
+                "name": "range to text",
+                "value": 2
+              }
+            ],
+            "maxDataPoints": 100,
+            "nullPointMode": "connected",
+            "nullText": null,
+            "postfix": "Klusters",
+            "postfixFontSize": "50%",
+            "prefix": "",
+            "prefixFontSize": "50%",
+            "rangeMaps": [
+              {
+                "from": "null",
+                "text": "N/A",
+                "to": "null"
+              }
+            ],
+            "sparkline": {
+              "fillColor": "rgba(31, 118, 189, 0.18)",
+              "full": false,
+              "lineColor": "#0a50a1",
+              "show": false
+            },
+            "tableColumn": "",
+            "targets": [
+              {
+                "expr": "(sum(kube_node_status_allocatable_pods) - sum(kube_pod_container_info)) / 4",
+                "format": "time_series",
+                "interval": "",
+                "intervalFactor": 1,
+                "legendFormat": "",
+                "refId": "A"
+              }
+            ],
+            "thresholds": "5,10",
+            "timeFrom": "1m",
+            "timeShift": null,
+            "title": "Remaining Pods",
+            "type": "singlestat",
+            "valueFontSize": "200%",
+            "valueMaps": [
+              {
+                "op": "=",
+                "text": "N/A",
+                "value": "null"
+              }
+            ],
+            "valueName": "current"
+          },
+          {
+            "content": "",
+            "gridPos": {
+              "h": 6,
+              "w": 2,
+              "x": 9,
+              "y": 6
+            },
+            "id": 52,
+            "links": [],
+            "mode": "markdown",
+            "title": "",
+            "transparent": true,
+            "type": "text"
+          },
+          {
+            "content": "\n\n\n![Openstack](https://raw.githubusercontent.com/sapcc/kubernikus/master/assets/openstack_64x64.png) \n",
+            "gridPos": {
+              "h": 6,
+              "w": 1,
+              "x": 11,
+              "y": 6
+            },
+            "id": 47,
+            "links": [],
+            "mode": "markdown",
+            "title": "",
+            "transparent": true,
+            "type": "text"
+          },
+          {
+            "content": "# Capacity",
+            "gridPos": {
+              "h": 3,
+              "w": 2,
+              "x": 12,
+              "y": 6
+            },
+            "id": 59,
+            "links": [],
+            "mode": "markdown",
+            "title": "",
+            "transparent": true,
+            "type": "text"
+          },
+          {
+            "cacheTimeout": null,
+            "colorBackground": true,
+            "colorValue": false,
+            "colors": [
+              "#d44a3a",
+              "rgba(237, 129, 40, 0.89)",
+              "#299c46"
+            ],
+            "datasource": null,
+            "decimals": 0,
+            "description": "Out of Volumes in this many Klusters",
+            "format": "none",
+            "gauge": {
+              "maxValue": 100,
+              "minValue": 0,
+              "show": false,
+              "thresholdLabels": false,
+              "thresholdMarkers": true
+            },
+            "gridPos": {
+              "h": 3,
+              "w": 2,
+              "x": 14,
+              "y": 6
+            },
+            "hideTimeOverride": true,
+            "id": 34,
+            "interval": null,
+            "links": [],
+            "mappingType": 1,
+            "mappingTypes": [
+              {
+                "name": "value to text",
+                "value": 1
+              },
+              {
+                "name": "range to text",
+                "value": 2
+              }
+            ],
+            "maxDataPoints": 100,
+            "nullPointMode": "connected",
+            "nullText": null,
+            "postfix": "Kl",
+            "postfixFontSize": "50%",
+            "prefix": "",
+            "prefixFontSize": "50%",
+            "rangeMaps": [
+              {
+                "from": "null",
+                "text": "N/A",
+                "to": "null"
+              }
+            ],
+            "sparkline": {
+              "fillColor": "rgba(31, 118, 189, 0.18)",
+              "full": false,
+              "lineColor": "#0a50a1",
+              "show": false
+            },
+            "tableColumn": "",
+            "targets": [
+              {
+                "$$hashKey": "object:4274",
+                "expr": "limes_project_quota{project=\"kubernikus\",resource=\"volumes\",domain=\"ccadmin\"} - limes_project_usage{project=\"kubernikus\",resource=\"volumes\",domain=\"ccadmin\"}",
+                "format": "time_series",
+                "interval": "",
+                "intervalFactor": 1,
+                "legendFormat": "",
+                "refId": "A"
+              }
+            ],
+            "thresholds": "5,10",
+            "timeFrom": "1m",
+            "timeShift": null,
+            "title": "Volumes",
+            "type": "singlestat",
+            "valueFontSize": "200%",
+            "valueMaps": [
+              {
+                "op": "=",
+                "text": "N/A",
+                "value": "null"
+              }
+            ],
+            "valueName": "current"
+          },
+          {
+            "cacheTimeout": null,
+            "colorBackground": true,
+            "colorValue": false,
+            "colors": [
+              "#d44a3a",
+              "rgba(237, 129, 40, 0.89)",
+              "#299c46"
+            ],
+            "datasource": null,
+            "decimals": 0,
+            "description": "Out of Volumes in this many Klusters",
+            "format": "none",
+            "gauge": {
+              "maxValue": 100,
+              "minValue": 0,
+              "show": false,
+              "thresholdLabels": false,
+              "thresholdMarkers": true
+            },
+            "gridPos": {
+              "h": 3,
+              "w": 2,
+              "x": 16,
+              "y": 6
+            },
+            "hideTimeOverride": true,
+            "id": 55,
+            "interval": null,
+            "links": [],
+            "mappingType": 1,
+            "mappingTypes": [
+              {
+                "name": "value to text",
+                "value": 1
+              },
+              {
+                "name": "range to text",
+                "value": 2
+              }
+            ],
+            "maxDataPoints": 100,
+            "nullPointMode": "connected",
+            "nullText": null,
+            "postfix": "Kl",
+            "postfixFontSize": "50%",
+            "prefix": "",
+            "prefixFontSize": "50%",
+            "rangeMaps": [
+              {
+                "from": "null",
+                "text": "N/A",
+                "to": "null"
+              }
+            ],
+            "sparkline": {
+              "fillColor": "rgba(31, 118, 189, 0.18)",
+              "full": false,
+              "lineColor": "#0a50a1",
+              "show": false
+            },
+            "tableColumn": "",
+            "targets": [
+              {
+                "$$hashKey": "object:4344",
+                "expr": "(limes_project_quota{project=\"kubernikus\",resource=\"capacity\",domain=\"ccadmin\",service=\"volumev2\"} - limes_project_usage{project=\"kubernikus\",resource=\"capacity\",domain=\"ccadmin\",service=\"volumev2\"}) / 10",
+                "format": "time_series",
+                "interval": "",
+                "intervalFactor": 1,
+                "legendFormat": "",
+                "refId": "A"
+              },
+              {
+                "$$hashKey": "object:4365",
+                "expr": "",
+                "format": "time_series",
+                "intervalFactor": 1,
+                "refId": "B"
+              }
+            ],
+            "thresholds": "5,10",
+            "timeFrom": "1m",
+            "timeShift": null,
+            "title": "Cinder",
+            "type": "singlestat",
+            "valueFontSize": "200%",
+            "valueMaps": [
+              {
+                "op": "=",
+                "text": "N/A",
+                "value": "null"
+              }
+            ],
+            "valueName": "current"
+          },
+          {
+            "cacheTimeout": null,
+            "colorBackground": true,
+            "colorValue": false,
+            "colors": [
+              "#d44a3a",
+              "rgba(237, 129, 40, 0.89)",
+              "#299c46"
+            ],
+            "datasource": null,
+            "decimals": 0,
+            "description": "",
+            "format": "none",
+            "gauge": {
+              "maxValue": 100,
+              "minValue": 0,
+              "show": false,
+              "thresholdLabels": false,
+              "thresholdMarkers": true
+            },
+            "gridPos": {
+              "h": 3,
+              "w": 2,
+              "x": 18,
+              "y": 6
+            },
+            "hideTimeOverride": true,
+            "id": 63,
+            "interval": null,
+            "links": [],
+            "mappingType": 1,
+            "mappingTypes": [
+              {
+                "$$hashKey": "object:7703",
+                "name": "value to text",
+                "value": 1
+              },
+              {
+                "$$hashKey": "object:7704",
+                "name": "range to text",
+                "value": 2
+              }
+            ],
+            "maxDataPoints": 100,
+            "nullPointMode": "connected",
+            "nullText": null,
+            "postfix": "Nodes",
+            "postfixFontSize": "50%",
+            "prefix": "",
+            "prefixFontSize": "50%",
+            "rangeMaps": [
+              {
+                "from": "null",
+                "text": "N/A",
+                "to": "null"
+              }
+            ],
+            "sparkline": {
+              "fillColor": "rgba(31, 118, 189, 0.18)",
+              "full": false,
+              "lineColor": "#0a50a1",
+              "show": false
+            },
+            "tableColumn": "",
+            "targets": [
+              {
+                "$$hashKey": "object:4344",
+                "expr": "limes_project_quota{project=\"kubernikus\",resource=\"instances\",domain=\"ccadmin\"} - limes_project_usage{project=\"kubernikus\",resource=\"instances\",domain=\"ccadmin\"}",
+                "format": "time_series",
+                "interval": "",
+                "intervalFactor": 1,
+                "legendFormat": "",
+                "refId": "A"
+              }
+            ],
+            "thresholds": "0,1",
+            "timeFrom": "1m",
+            "timeShift": null,
+            "title": "Instances",
+            "type": "singlestat",
+            "valueFontSize": "200%",
+            "valueMaps": [
+              {
+                "$$hashKey": "object:7706",
+                "op": "=",
+                "text": "N/A",
+                "value": "null"
+              }
+            ],
+            "valueName": "current"
+          },
+          {
+            "cacheTimeout": null,
+            "colorBackground": true,
+            "colorValue": false,
+            "colors": [
+              "#d44a3a",
+              "rgba(237, 129, 40, 0.89)",
+              "#299c46"
+            ],
+            "datasource": null,
+            "decimals": 0,
+            "description": "",
+            "format": "none",
+            "gauge": {
+              "maxValue": 100,
+              "minValue": 0,
+              "show": false,
+              "thresholdLabels": false,
+              "thresholdMarkers": true
+            },
+            "gridPos": {
+              "h": 3,
+              "w": 2,
+              "x": 20,
+              "y": 6
+            },
+            "hideTimeOverride": true,
+            "id": 64,
+            "interval": null,
+            "links": [],
+            "mappingType": 1,
+            "mappingTypes": [
+              {
+                "$$hashKey": "object:7703",
+                "name": "value to text",
+                "value": 1
+              },
+              {
+                "$$hashKey": "object:7704",
+                "name": "range to text",
+                "value": 2
+              }
+            ],
+            "maxDataPoints": 100,
+            "nullPointMode": "connected",
+            "nullText": null,
+            "postfix": "Nodes",
+            "postfixFontSize": "50%",
+            "prefix": "",
+            "prefixFontSize": "50%",
+            "rangeMaps": [
+              {
+                "from": "null",
+                "text": "N/A",
+                "to": "null"
+              }
+            ],
+            "sparkline": {
+              "fillColor": "rgba(31, 118, 189, 0.18)",
+              "full": false,
+              "lineColor": "#0a50a1",
+              "show": false
+            },
+            "tableColumn": "",
+            "targets": [
+              {
+                "$$hashKey": "object:4344",
+                "expr": "(limes_project_quota{project=\"kubernikus\",resource=\"cores\",domain=\"ccadmin\"} - limes_project_usage{project=\"kubernikus\",resource=\"cores\",domain=\"ccadmin\"}) / 8",
+                "format": "time_series",
+                "interval": "",
+                "intervalFactor": 1,
+                "legendFormat": "",
+                "refId": "A"
+              }
+            ],
+            "thresholds": "0,1",
+            "timeFrom": "1m",
+            "timeShift": null,
+            "title": "Cores",
+            "type": "singlestat",
+            "valueFontSize": "200%",
+            "valueMaps": [
+              {
+                "$$hashKey": "object:7706",
+                "op": "=",
+                "text": "N/A",
+                "value": "null"
+              }
+            ],
+            "valueName": "current"
+          },
+          {
+            "cacheTimeout": null,
+            "colorBackground": true,
+            "colorValue": false,
+            "colors": [
+              "#d44a3a",
+              "rgba(237, 129, 40, 0.89)",
+              "#299c46"
+            ],
+            "datasource": null,
+            "decimals": 0,
+            "description": "",
+            "format": "none",
+            "gauge": {
+              "maxValue": 100,
+              "minValue": 0,
+              "show": false,
+              "thresholdLabels": false,
+              "thresholdMarkers": true
+            },
+            "gridPos": {
+              "h": 3,
+              "w": 2,
+              "x": 22,
+              "y": 6
+            },
+            "hideTimeOverride": true,
+            "id": 65,
+            "interval": null,
+            "links": [],
+            "mappingType": 1,
+            "mappingTypes": [
+              {
+                "$$hashKey": "object:7703",
+                "name": "value to text",
+                "value": 1
+              },
+              {
+                "$$hashKey": "object:7704",
+                "name": "range to text",
+                "value": 2
+              }
+            ],
+            "maxDataPoints": 100,
+            "nullPointMode": "connected",
+            "nullText": null,
+            "postfix": "Nodes",
+            "postfixFontSize": "50%",
+            "prefix": "",
+            "prefixFontSize": "50%",
+            "rangeMaps": [
+              {
+                "from": "null",
+                "text": "N/A",
+                "to": "null"
+              }
+            ],
+            "sparkline": {
+              "fillColor": "rgba(31, 118, 189, 0.18)",
+              "full": false,
+              "lineColor": "#0a50a1",
+              "show": false
+            },
+            "tableColumn": "",
+            "targets": [
+              {
+                "$$hashKey": "object:4344",
+                "expr": "(limes_project_quota{project=\"kubernikus\",resource=\"ram\",domain=\"ccadmin\"} - limes_project_usage{project=\"kubernikus\",resource=\"ram\",domain=\"ccadmin\"}) / 16000",
+                "format": "time_series",
+                "interval": "",
+                "intervalFactor": 1,
+                "legendFormat": "",
+                "refId": "A"
+              }
+            ],
+            "thresholds": "0,1",
+            "timeFrom": "1m",
+            "timeShift": null,
+            "title": "RAM",
+            "type": "singlestat",
+            "valueFontSize": "200%",
+            "valueMaps": [
+              {
+                "$$hashKey": "object:7706",
+                "op": "=",
+                "text": "N/A",
+                "value": "null"
+              }
+            ],
+            "valueName": "current"
+          },
+          {
+            "content": "# Usage",
+            "gridPos": {
+              "h": 3,
+              "w": 2,
+              "x": 1,
+              "y": 9
+            },
+            "id": 45,
+            "links": [],
+            "mode": "markdown",
+            "title": "",
+            "transparent": true,
+            "type": "text"
+          },
+          {
+            "aliasColors": {},
+            "bars": false,
+            "dashLength": 10,
+            "dashes": false,
+            "datasource": null,
+            "decimals": 0,
+            "fill": 6,
+            "gridPos": {
+              "h": 3,
+              "w": 2,
+              "x": 3,
+              "y": 9
+            },
+            "id": 41,
+            "legend": {
+              "alignAsTable": false,
+              "avg": false,
+              "current": false,
+              "max": false,
+              "min": false,
+              "show": false,
+              "total": false,
+              "values": false
+            },
+            "lines": true,
+            "linewidth": 3,
+            "links": [],
+            "nullPointMode": "connected",
+            "percentage": true,
+            "pointradius": 5,
+            "points": false,
+            "renderer": "flot",
+            "seriesOverrides": [],
+            "spaceLength": 10,
+            "stack": false,
+            "steppedLine": false,
+            "targets": [
+              {
+                "$$hashKey": "object:260",
+                "expr": "sum(irate(node_cpu{mode=~\"system|user|iowait\"}[5m])) by (instance) / sum(irate(node_cpu{}[5m])) by (instance)",
+                "format": "time_series",
+                "interval": "",
+                "intervalFactor": 3,
+                "legendFormat": "{{instance}}",
+                "refId": "A"
+              }
+            ],
+            "thresholds": [],
+            "timeFrom": null,
+            "timeShift": null,
+            "title": "CPU",
+            "tooltip": {
+              "shared": true,
+              "sort": 0,
+              "value_type": "individual"
+            },
+            "type": "graph",
+            "xaxis": {
+              "buckets": null,
+              "mode": "time",
+              "name": null,
+              "show": false,
+              "values": []
+            },
+            "yaxes": [
+              {
+                "$$hashKey": "object:344",
+                "decimals": null,
+                "format": "percentunit",
+                "label": "",
+                "logBase": 1,
+                "max": "1",
+                "min": "0",
+                "show": false
+              },
+              {
+                "$$hashKey": "object:345",
+                "format": "short",
+                "label": null,
+                "logBase": 1,
+                "max": null,
+                "min": null,
+                "show": false
+              }
+            ]
+          },
+          {
+            "aliasColors": {},
+            "bars": false,
+            "dashLength": 10,
+            "dashes": false,
+            "datasource": null,
+            "decimals": 0,
+            "fill": 6,
+            "gridPos": {
+              "h": 3,
+              "w": 2,
+              "x": 5,
+              "y": 9
+            },
+            "id": 42,
+            "legend": {
+              "alignAsTable": false,
+              "avg": false,
+              "current": false,
+              "max": false,
+              "min": false,
+              "show": false,
+              "total": false,
+              "values": false
+            },
+            "lines": true,
+            "linewidth": 2,
+            "links": [],
+            "nullPointMode": "connected",
+            "percentage": false,
+            "pointradius": 5,
+            "points": false,
+            "renderer": "flot",
+            "seriesOverrides": [],
+            "spaceLength": 10,
+            "stack": true,
+            "steppedLine": false,
+            "targets": [
+              {
+                "$$hashKey": "object:260",
+                "expr": "(sum(node_memory_MemTotal) by (instance) - sum(node_memory_MemFree+node_memory_Buffers+node_memory_Cached) by (instance)) / (sum(node_memory_MemTotal) by (instance)) * 100",
+                "format": "time_series",
+                "interval": "",
+                "intervalFactor": 1,
+                "legendFormat": "{{instance}}",
+                "refId": "A"
+              },
+              {
+                "$$hashKey": "object:1694",
+                "expr": "",
+                "format": "time_series",
+                "intervalFactor": 1,
+                "legendFormat": "",
+                "refId": "B"
+              }
+            ],
+            "thresholds": [],
+            "timeFrom": null,
+            "timeShift": null,
+            "title": "Memory",
+            "tooltip": {
+              "shared": true,
+              "sort": 0,
+              "value_type": "individual"
+            },
+            "type": "graph",
+            "xaxis": {
+              "buckets": null,
+              "mode": "time",
+              "name": null,
+              "show": false,
+              "values": []
+            },
+            "yaxes": [
+              {
+                "$$hashKey": "object:344",
+                "decimals": null,
+                "format": "percent",
+                "label": "",
+                "logBase": 1,
+                "max": "400",
+                "min": "0.0",
+                "show": false
+              },
+              {
+                "$$hashKey": "object:345",
+                "format": "short",
+                "label": null,
+                "logBase": 1,
+                "max": null,
+                "min": null,
+                "show": false
+              }
+            ]
+          },
+          {
+            "aliasColors": {},
+            "bars": false,
+            "dashLength": 10,
+            "dashes": false,
+            "datasource": null,
+            "decimals": 0,
+            "fill": 6,
+            "gridPos": {
+              "h": 3,
+              "w": 2,
+              "x": 7,
+              "y": 9
+            },
+            "id": 58,
+            "legend": {
+              "alignAsTable": false,
+              "avg": false,
+              "current": false,
+              "max": false,
+              "min": false,
+              "show": false,
+              "total": false,
+              "values": false
+            },
+            "lines": true,
+            "linewidth": 2,
+            "links": [],
+            "nullPointMode": "connected",
+            "percentage": false,
+            "pointradius": 5,
+            "points": false,
+            "renderer": "flot",
+            "seriesOverrides": [],
+            "spaceLength": 10,
+            "stack": true,
+            "steppedLine": false,
+            "targets": [
+              {
+                "$$hashKey": "object:260",
+                "expr": "sum(label_replace(kubelet_running_pod_count, \"node\", \"$1\", \"instance\", \"(.*)\")) by (node) / sum(kube_node_status_capacity_pods) by (node) * 100",
+                "format": "time_series",
+                "interval": "",
+                "intervalFactor": 1,
+                "legendFormat": "{{node}}",
+                "refId": "A"
+              },
+              {
+                "$$hashKey": "object:1694",
+                "expr": "",
+                "format": "time_series",
+                "intervalFactor": 1,
+                "legendFormat": "",
+                "refId": "B"
+              }
+            ],
+            "thresholds": [],
+            "timeFrom": null,
+            "timeShift": null,
+            "title": "Pods",
+            "tooltip": {
+              "shared": true,
+              "sort": 0,
+              "value_type": "individual"
+            },
+            "type": "graph",
+            "xaxis": {
+              "buckets": null,
+              "mode": "time",
+              "name": null,
+              "show": false,
+              "values": []
+            },
+            "yaxes": [
+              {
+                "$$hashKey": "object:344",
+                "decimals": null,
+                "format": "percent",
+                "label": "",
+                "logBase": 1,
+                "max": "400",
+                "min": "0.0",
+                "show": false
+              },
+              {
+                "$$hashKey": "object:345",
+                "format": "short",
+                "label": null,
+                "logBase": 1,
+                "max": null,
+                "min": null,
+                "show": false
+              }
+            ]
+          },
+          {
+            "content": "# Usage",
+            "gridPos": {
+              "h": 2,
+              "w": 2,
+              "x": 12,
+              "y": 9
+            },
+            "id": 30,
+            "links": [],
+            "mode": "markdown",
+            "title": "",
+            "transparent": true,
+            "type": "text"
+          },
+          {
+            "cacheTimeout": null,
+            "colorBackground": false,
+            "colorValue": false,
+            "colors": [
+              "#299c46",
+              "rgba(237, 129, 40, 0.89)",
+              "#d44a3a"
+            ],
+            "datasource": null,
+            "decimals": 0,
+            "format": "percent",
+            "gauge": {
+              "maxValue": 100,
+              "minValue": 0,
+              "show": true,
+              "thresholdLabels": false,
+              "thresholdMarkers": true
+            },
+            "gridPos": {
+              "h": 3,
+              "w": 2,
+              "x": 14,
+              "y": 9
+            },
+            "hideTimeOverride": true,
+            "id": 57,
+            "interval": null,
+            "links": [],
+            "mappingType": 1,
+            "mappingTypes": [
+              {
+                "name": "value to text",
+                "value": 1
+              },
+              {
+                "name": "range to text",
+                "value": 2
+              }
+            ],
+            "maxDataPoints": 100,
+            "nullPointMode": "connected",
+            "nullText": null,
+            "postfix": "",
+            "postfixFontSize": "50%",
+            "prefix": "",
+            "prefixFontSize": "50%",
+            "rangeMaps": [
+              {
+                "from": "null",
+                "text": "N/A",
+                "to": "null"
+              }
+            ],
+            "sparkline": {
+              "fillColor": "rgba(31, 118, 189, 0.18)",
+              "full": false,
+              "lineColor": "rgb(31, 120, 193)",
+              "show": false
+            },
+            "tableColumn": "",
+            "targets": [
+              {
+                "$$hashKey": "object:4935",
+                "expr": "limes_project_usage{project=\"kubernikus\",resource=\"volumes\",domain=\"ccadmin\"} / limes_project_quota{project=\"kubernikus\",resource=\"volumes\",domain=\"ccadmin\"} * 100",
+                "format": "time_series",
+                "hide": false,
+                "instant": false,
+                "interval": "",
+                "intervalFactor": 1,
+                "legendFormat": "Quota",
+                "refId": "B"
+              }
+            ],
+            "thresholds": "80,90",
+            "timeFrom": "1m",
+            "title": "Volumes",
+            "type": "singlestat",
+            "valueFontSize": "80%",
+            "valueMaps": [
+              {
+                "op": "=",
+                "text": "N/A",
+                "value": "null"
+              }
+            ],
+            "valueName": "current"
+          },
+          {
+            "cacheTimeout": null,
+            "colorBackground": false,
+            "colorValue": false,
+            "colors": [
+              "#299c46",
+              "rgba(237, 129, 40, 0.89)",
+              "#d44a3a"
+            ],
+            "datasource": null,
+            "decimals": 0,
+            "format": "percent",
+            "gauge": {
+              "maxValue": 100,
+              "minValue": 0,
+              "show": true,
+              "thresholdLabels": false,
+              "thresholdMarkers": true
+            },
+            "gridPos": {
+              "h": 3,
+              "w": 2,
+              "x": 16,
+              "y": 9
+            },
+            "hideTimeOverride": true,
+            "id": 37,
+            "interval": null,
+            "links": [],
+            "mappingType": 1,
+            "mappingTypes": [
+              {
+                "name": "value to text",
+                "value": 1
+              },
+              {
+                "name": "range to text",
+                "value": 2
+              }
+            ],
+            "maxDataPoints": 100,
+            "nullPointMode": "connected",
+            "nullText": null,
+            "postfix": "",
+            "postfixFontSize": "50%",
+            "prefix": "",
+            "prefixFontSize": "50%",
+            "rangeMaps": [
+              {
+                "from": "null",
+                "text": "N/A",
+                "to": "null"
+              }
+            ],
+            "sparkline": {
+              "fillColor": "rgba(31, 118, 189, 0.18)",
+              "full": false,
+              "lineColor": "rgb(31, 120, 193)",
+              "show": false
+            },
+            "tableColumn": "",
+            "targets": [
+              {
+                "$$hashKey": "object:4935",
+                "expr": "sum(container_fs_usage_bytes{pod_name=~\".*-etcd-.*\",image!~\".*pause.*\"}) / sum(kube_persistentvolumeclaim_resource_requests_storage_bytes) * 100",
+                "format": "time_series",
+                "hide": false,
+                "instant": false,
+                "interval": "",
+                "intervalFactor": 1,
+                "legendFormat": "Quota",
+                "refId": "B"
+              }
+            ],
+            "thresholds": "50,80",
+            "timeFrom": "1m",
+            "title": "Cinder",
+            "type": "singlestat",
+            "valueFontSize": "80%",
+            "valueMaps": [
+              {
+                "op": "=",
+                "text": "N/A",
+                "value": "null"
+              }
+            ],
+            "valueName": "current"
+          },
+          {
+            "cacheTimeout": null,
+            "colorBackground": false,
+            "colorValue": false,
+            "colors": [
+              "#299c46",
+              "rgba(237, 129, 40, 0.89)",
+              "#d44a3a"
+            ],
+            "datasource": null,
+            "format": "percentunit",
+            "gauge": {
+              "maxValue": 1,
+              "minValue": 0,
+              "show": true,
+              "thresholdLabels": false,
+              "thresholdMarkers": true
+            },
+            "gridPos": {
+              "h": 3,
+              "w": 2,
+              "x": 18,
+              "y": 9
+            },
+            "hideTimeOverride": true,
+            "id": 39,
+            "interval": null,
+            "links": [],
+            "mappingType": 1,
+            "mappingTypes": [
+              {
+                "name": "value to text",
+                "value": 1
+              },
+              {
+                "name": "range to text",
+                "value": 2
+              }
+            ],
+            "maxDataPoints": 100,
+            "nullPointMode": "connected",
+            "nullText": null,
+            "postfix": "",
+            "postfixFontSize": "50%",
+            "prefix": "",
+            "prefixFontSize": "50%",
+            "rangeMaps": [
+              {
+                "from": "null",
+                "text": "N/A",
+                "to": "null"
+              }
+            ],
+            "sparkline": {
+              "fillColor": "rgba(31, 118, 189, 0.18)",
+              "full": false,
+              "lineColor": "rgb(31, 120, 193)",
+              "show": false
+            },
+            "tableColumn": "",
+            "targets": [
+              {
+                "$$hashKey": "object:7405",
+                "expr": "limes_project_quota{project=\"kubernikus\",resource=\"instances\",domain=\"ccadmin\"} / limes_project_usage{project=\"kubernikus\",resource=\"instances\",domain=\"ccadmin\"}",
+                "format": "time_series",
+                "intervalFactor": 1,
+                "legendFormat": "",
+                "refId": "A"
+              }
+            ],
+            "thresholds": "",
+            "timeFrom": "1m",
+            "title": "Instances",
+            "type": "singlestat",
+            "valueFontSize": "80%",
+            "valueMaps": [
+              {
+                "op": "=",
+                "text": "N/A",
+                "value": "null"
+              }
+            ],
+            "valueName": "current"
+          },
+          {
+            "cacheTimeout": null,
+            "colorBackground": false,
+            "colorValue": false,
+            "colors": [
+              "#299c46",
+              "rgba(237, 129, 40, 0.89)",
+              "#d44a3a"
+            ],
+            "datasource": null,
+            "decimals": 0,
+            "format": "percentunit",
+            "gauge": {
+              "maxValue": 1,
+              "minValue": 0,
+              "show": true,
+              "thresholdLabels": false,
+              "thresholdMarkers": true
+            },
+            "gridPos": {
+              "h": 3,
+              "w": 2,
+              "x": 20,
+              "y": 9
+            },
+            "hideTimeOverride": true,
+            "id": 38,
+            "interval": null,
+            "links": [],
+            "mappingType": 1,
+            "mappingTypes": [
+              {
+                "name": "value to text",
+                "value": 1
+              },
+              {
+                "name": "range to text",
+                "value": 2
+              }
+            ],
+            "maxDataPoints": 100,
+            "nullPointMode": "connected",
+            "nullText": null,
+            "postfix": "",
+            "postfixFontSize": "50%",
+            "prefix": "",
+            "prefixFontSize": "50%",
+            "rangeMaps": [
+              {
+                "from": "null",
+                "text": "N/A",
+                "to": "null"
+              }
+            ],
+            "sparkline": {
+              "fillColor": "rgba(31, 118, 189, 0.18)",
+              "full": false,
+              "lineColor": "rgb(31, 120, 193)",
+              "show": false
+            },
+            "tableColumn": "",
+            "targets": [
+              {
+                "$$hashKey": "object:7227",
+                "expr": "limes_project_quota{project=\"kubernikus\",resource=\"cores\",domain=\"ccadmin\"} / limes_project_usage{project=\"kubernikus\",resource=\"cores\",domain=\"ccadmin\"}",
+                "format": "time_series",
+                "intervalFactor": 1,
+                "legendFormat": "",
+                "refId": "A"
+              }
+            ],
+            "thresholds": "",
+            "timeFrom": "1m",
+            "title": "Cores",
+            "type": "singlestat",
+            "valueFontSize": "80%",
+            "valueMaps": [
+              {
+                "op": "=",
+                "text": "N/A",
+                "value": "null"
+              }
+            ],
+            "valueName": "current"
+          },
+          {
+            "cacheTimeout": null,
+            "colorBackground": false,
+            "colorValue": false,
+            "colors": [
+              "#299c46",
+              "rgba(237, 129, 40, 0.89)",
+              "#d44a3a"
+            ],
+            "datasource": null,
+            "decimals": 0,
+            "format": "percentunit",
+            "gauge": {
+              "maxValue": 1,
+              "minValue": 0,
+              "show": true,
+              "thresholdLabels": false,
+              "thresholdMarkers": true
+            },
+            "gridPos": {
+              "h": 3,
+              "w": 2,
+              "x": 22,
+              "y": 9
+            },
+            "hideTimeOverride": true,
+            "id": 56,
+            "interval": null,
+            "links": [],
+            "mappingType": 1,
+            "mappingTypes": [
+              {
+                "name": "value to text",
+                "value": 1
+              },
+              {
+                "name": "range to text",
+                "value": 2
+              }
+            ],
+            "maxDataPoints": 100,
+            "nullPointMode": "connected",
+            "nullText": null,
+            "postfix": "",
+            "postfixFontSize": "50%",
+            "prefix": "",
+            "prefixFontSize": "50%",
+            "rangeMaps": [
+              {
+                "from": "null",
+                "text": "N/A",
+                "to": "null"
+              }
+            ],
+            "sparkline": {
+              "fillColor": "rgba(31, 118, 189, 0.18)",
+              "full": false,
+              "lineColor": "rgb(31, 120, 193)",
+              "show": false
+            },
+            "tableColumn": "",
+            "targets": [
+              {
+                "expr": "limes_project_quota{project=\"kubernikus\",resource=\"ram\",domain=\"ccadmin\"} / limes_project_usage{project=\"kubernikus\",resource=\"ram\",domain=\"ccadmin\"}",
+                "format": "time_series",
+                "intervalFactor": 1,
+                "legendFormat": "",
+                "refId": "A"
+              }
+            ],
+            "thresholds": "",
+            "timeFrom": "1m",
+            "title": "RAM",
+            "type": "singlestat",
+            "valueFontSize": "80%",
+            "valueMaps": [
+              {
+                "op": "=",
+                "text": "N/A",
+                "value": "null"
+              }
+            ],
+            "valueName": "current"
+          },
+          {
+            "collapsed": true,
+            "gridPos": {
+              "h": 1,
+              "w": 24,
+              "x": 0,
+              "y": 12
+            },
+            "id": 23,
+            "panels": [],
+            "title": "Operator",
+            "type": "row"
+          },
+          {
+            "aliasColors": {},
+            "bars": true,
+            "dashLength": 10,
+            "dashes": false,
+            "datasource": null,
+            "fill": 1,
+            "gridPos": {
+              "h": 7,
+              "w": 6,
+              "x": 0,
+              "y": 13
+            },
+            "hideTimeOverride": true,
+            "id": 6,
+            "legend": {
+              "alignAsTable": false,
+              "avg": false,
+              "current": false,
+              "max": true,
+              "min": true,
+              "show": false,
+              "total": false,
+              "values": true
+            },
+            "lines": false,
+            "linewidth": 1,
+            "links": [],
+            "nullPointMode": "connected",
+            "percentage": false,
+            "pointradius": 5,
+            "points": false,
+            "renderer": "flot",
+            "seriesOverrides": [],
+            "spaceLength": 10,
+            "stack": false,
+            "steppedLine": false,
+            "targets": [
+              {
+                "expr": "kubernikus_kluster_boot_duration",
+                "format": "time_series",
+                "hide": false,
+                "instant": false,
+                "intervalFactor": 1,
+                "legendFormat": "Klusters",
+                "refId": "A"
+              }
+            ],
+            "thresholds": [],
+            "timeFrom": "14d",
+            "timeShift": null,
+            "title": "Kluster Boot Times",
+            "tooltip": {
+              "shared": false,
+              "sort": 0,
+              "value_type": "individual"
+            },
+            "type": "graph",
+            "xaxis": {
+              "buckets": 5,
+              "mode": "histogram",
+              "name": null,
+              "show": true,
+              "values": [
+                "total"
+              ]
+            },
+            "yaxes": [
+              {
+                "decimals": 0,
+                "format": "short",
+                "label": "Count",
+                "logBase": 1,
+                "max": null,
+                "min": null,
+                "show": true
+              },
+              {
+                "decimals": null,
+                "format": "dtdurations",
+                "label": null,
+                "logBase": 1,
+                "max": null,
+                "min": null,
+                "show": false
+              }
+            ]
+          },
+          {
+            "aliasColors": {},
+            "bars": false,
+            "dashLength": 10,
+            "dashes": false,
+            "datasource": null,
+            "fill": 0,
+            "gridPos": {
+              "h": 7,
+              "w": 6,
+              "x": 6,
+              "y": 13
+            },
+            "id": 11,
+            "legend": {
+              "avg": false,
+              "current": false,
+              "max": false,
+              "min": false,
+              "show": true,
+              "total": false,
+              "values": false
+            },
+            "lines": true,
+            "linewidth": 3,
+            "links": [],
+            "nullPointMode": "connected",
+            "percentage": false,
+            "pointradius": 5,
+            "points": false,
+            "renderer": "flot",
+            "seriesOverrides": [
+              {
+                "alias": "Failed",
+                "color": "#bf1b00",
+                "linewidth": 3
+              },
+              {
+                "alias": "Sucess",
+                "color": "#629e51",
+                "linewidth": 3
+              }
+            ],
+            "spaceLength": 10,
+            "stack": false,
+            "steppedLine": false,
+            "targets": [
+              {
+                "expr": "sum(300 * rate(kubernikus_launch_failed_operation_total{method!=\"Reconcile\"}[5m])) by (method)",
+                "format": "time_series",
+                "hide": true,
+                "instant": false,
+                "intervalFactor": 5,
+                "legendFormat": "failed/{{method}}",
+                "refId": "A"
+              },
+              {
+                "expr": "sum(300 * rate(kubernikus_launch_successful_operation_total{method!=\"Reconcile\"}[5m])) by (method)",
+                "format": "time_series",
+                "hide": true,
+                "intervalFactor": 5,
+                "legendFormat": "success/{{method}}",
+                "refId": "B"
+              },
+              {
+                "expr": "60 * sum(rate(kubernikus_deorbit_successful_operation_total[5m]))",
+                "format": "time_series",
+                "interval": "",
+                "intervalFactor": 10,
+                "legendFormat": "Sucess",
+                "refId": "C"
+              },
+              {
+                "expr": "60 * sum(rate(kubernikus_deorbit_failed_operation_total[5m]))",
+                "format": "time_series",
+                "intervalFactor": 10,
+                "legendFormat": "Failed",
+                "refId": "D"
+              }
+            ],
+            "thresholds": [],
+            "timeFrom": null,
+            "timeShift": null,
+            "title": "Deorbit Operations",
+            "tooltip": {
+              "shared": true,
+              "sort": 0,
+              "value_type": "individual"
+            },
+            "type": "graph",
+            "xaxis": {
+              "buckets": null,
+              "mode": "time",
+              "name": null,
+              "show": true,
+              "values": []
+            },
+            "yaxes": [
+              {
+                "format": "ops",
+                "label": null,
+                "logBase": 1,
+                "max": null,
+                "min": null,
+                "show": true
+              },
+              {
+                "format": "short",
+                "label": null,
+                "logBase": 1,
+                "max": null,
+                "min": null,
+                "show": true
+              }
+            ]
+          },
+          {
+            "aliasColors": {},
+            "bars": false,
+            "dashLength": 10,
+            "dashes": false,
+            "datasource": null,
+            "fill": 0,
+            "gridPos": {
+              "h": 7,
+              "w": 6,
+              "x": 12,
+              "y": 13
+            },
+            "id": 4,
+            "legend": {
+              "avg": false,
+              "current": false,
+              "max": false,
+              "min": false,
+              "show": true,
+              "total": false,
+              "values": false
+            },
+            "lines": true,
+            "linewidth": 3,
+            "links": [],
+            "nullPointMode": "connected",
+            "percentage": false,
+            "pointradius": 5,
+            "points": false,
+            "renderer": "flot",
+            "seriesOverrides": [
+              {
+                "alias": "Failed",
+                "color": "#bf1b00",
+                "linewidth": 3
+              },
+              {
+                "alias": "Sucess",
+                "color": "#629e51",
+                "linewidth": 3
+              }
+            ],
+            "spaceLength": 10,
+            "stack": false,
+            "steppedLine": false,
+            "targets": [
+              {
+                "expr": "sum(60 * rate(kubernikus_launch_failed_operation_total[5m])) by (method)",
+                "format": "time_series",
+                "hide": true,
+                "instant": false,
+                "intervalFactor": 5,
+                "legendFormat": "failed/{{method}}",
+                "refId": "A"
+              },
+              {
+                "expr": "sum(60 * rate(kubernikus_launch_successful_operation_total{}[5m])) by (method)",
+                "format": "time_series",
+                "hide": true,
+                "intervalFactor": 5,
+                "legendFormat": "success/{{method}}",
+                "refId": "B"
+              },
+              {
+                "expr": "60 * sum(rate(kubernikus_launch_successful_operation_total[5m]))",
+                "format": "time_series",
+                "interval": "",
+                "intervalFactor": 10,
+                "legendFormat": "Sucess",
+                "refId": "C"
+              },
+              {
+                "expr": "60 * sum(rate(kubernikus_launch_failed_operation_total[5m]))",
+                "format": "time_series",
+                "intervalFactor": 10,
+                "legendFormat": "Failed",
+                "refId": "D"
+              }
+            ],
+            "thresholds": [],
+            "timeFrom": null,
+            "timeShift": null,
+            "title": "Launch Operations",
+            "tooltip": {
+              "shared": true,
+              "sort": 0,
+              "value_type": "individual"
+            },
+            "type": "graph",
+            "xaxis": {
+              "buckets": null,
+              "mode": "time",
+              "name": null,
+              "show": true,
+              "values": []
+            },
+            "yaxes": [
+              {
+                "format": "ops",
+                "label": null,
+                "logBase": 1,
+                "max": null,
+                "min": null,
+                "show": true
+              },
+              {
+                "format": "short",
+                "label": null,
+                "logBase": 1,
+                "max": null,
+                "min": null,
+                "show": true
+              }
+            ]
+          }
+        ],
+        "schemaVersion": 16,
+        "style": "dark",
+        "tags": [],
+        "templating": {
+          "list": []
+        },
+        "time": {
+          "from": "now-24h",
+          "to": "now"
+        },
+        "timepicker": {
+          "refresh_intervals": [
+            "5s",
+            "10s",
+            "30s",
+            "1m",
+            "5m",
+            "15m",
+            "30m",
+            "1h",
+            "2h",
+            "1d"
+          ],
+          "time_options": [
+            "5m",
+            "15m",
+            "1h",
+            "6h",
+            "12h",
+            "24h",
+            "2d",
+            "7d",
+            "30d"
+          ]
+        },
+        "timezone": "",
+        "title": "Kubernikus",
+        "version": 16
+      }
+
+
+
+  provisioningDashboardsFiles:
+    default.yaml: |
+      - name: 'default'
+        org_id: 1
+        type: file
+        options:
+          path: /var/lib/grafana/dashboards
+
+  provisioningDatasourcesFiles:
+    prometheus.yaml: |
+      datasources:
+      - name: Prometheus 
+        type: prometheus
+        access: proxy
+        org_id: 1
+        url: http://kubernikus-prometheus:9090
+        is_default: true
+        version: 1
+        editable: false 
+
+  serverConfigFile:
+    grafana.ini: |
+      [paths]
+      data = /var/lib/grafana/data
+      logs = /var/log/grafana
+      plugins = /var/lib/grafana/plugins
+      provisioning = /var/lib/grafana/provisioning
+
+      [server]
+      protocol = http
+      http_addr =
+      http_port = 3000
+      domain = localhost
+      enforce_domain = false
+      root_url = %(protocol)s://%(domain)s:%(http_port)s/grafana
+      router_logging = false 
+      static_root_path = public
+      enable_gzip = false
+      cert_file =
+      cert_key =
+      socket = /tmp/grafana.sock
+
+      [database]
+      ;type = sqlite3
+      ;host = 127.0.0.1:3306
+      ;name = grafana
+      ;user = root
+      ;password =
+      ;ssl_mode = disable
+      ;path = grafana.db
+
+      [session]
+      ;provider = file
+      ;provider_config = sessions
+      ;cookie_name = grafana_sess
+      ;cookie_secure = false
+      ;session_life_time = 86400
+
+      [analytics]
+      ;reporting_enabled = true
+      ;check_for_updates = true
+      ;google_analytics_ua_id =
+
+      [security]
+      ;admin_user = admin
+      ;admin_password = admin
+      ;secret_key = SW2YcwTIb9zpOOhoPsMm
+      ;login_remember_days = 7
+      ;cookie_username = grafana_user
+      ;cookie_remember_name = grafana_remember
+      ;disable_gravatar = false
+      ;data_source_proxy_whitelist =
+
+      [snapshots]
+      ;external_enabled = true
+      ;external_snapshot_url = https://snapshots-origin.raintank.io
+      ;external_snapshot_name = Publish to snapshot.raintank.io
+
+      [users]
+      allow_sign_up = false 
+      ;allow_org_create = true
+      ;auto_assign_org = true
+      ;auto_assign_org_role = Viewer
+      ;login_hint = email or username
+      ;default_theme = dark
+
+      [auth.anonymous]
+      enabled = true
+      org_name = Main Org.
+      org_role = Viewer
+
+      [auth.github]
+      ;enabled = false
+      ;allow_sign_up = false
+      ;client_id = some_id
+      ;client_secret = some_secret
+      ;scopes = user:email,read:org
+      ;auth_url = https://github.com/login/oauth/authorize
+      ;token_url = https://github.com/login/oauth/access_token
+      ;api_url = https://api.github.com/user
+      ;team_ids =
+      ;allowed_organizations =
+
+      [auth.google]
+      ;enabled = false
+      ;allow_sign_up = false
+      ;client_id = some_client_id
+      ;client_secret = some_client_secret
+      ;scopes = https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email
+      ;auth_url = https://accounts.google.com/o/oauth2/auth
+      ;token_url = https://accounts.google.com/o/oauth2/token
+      ;api_url = https://www.googleapis.com/oauth2/v1/userinfo
+      ;allowed_domains =
+
+      [auth.proxy]
+      ;enabled = false
+      ;header_name = X-WEBAUTH-USER
+      ;header_property = username
+      ;auto_sign_up = true
+
+      [auth.basic]
+      enabled = true
+
+      [auth.ldap]
+      ;enabled = false
+      ;config_file = /etc/grafana/ldap.toml
+
+      [smtp]
+      enabled = false
+      ;host = localhost:25
+      ;user =
+      ;password =
+      ;cert_file =
+      ;key_file =
+      ;skip_verify = false
+      ;from_address = admin@grafana.localhost
+
+      [emails]
+      ;welcome_email_on_sign_up = false
+
+      [log]
+      mode = console
+      level = info 
+
+      [log.console]
+      ;level =
+      ;format = console
+
+      [event_publisher]
+      ;enabled = false
+      ;rabbitmq_url = amqp://localhost/
+      ;exchange = grafana_events
+
+      [dashboards.json]
+      enabled = true
+      path = /var/lib/grafana/dashboards
+
+      [metrics]
+      ;enabled           = true
+      ;interval_seconds  = 10
+
+      ; [metrics.graphite]
+      ; address = localhost:2003
+      ; prefix = prod.grafana.%(instance_name)s.
+
+      [grafana_net]
+      url = https://grafana.net
+
+      [alerting]
+      enabled = false
+

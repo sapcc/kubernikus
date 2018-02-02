@@ -12,3 +12,10 @@ persistence:
   name: kubernikus-prometheus-data
   accessMode: ReadWriteOnce
   size: 300Gi
+
+#extra_scrape_config: |
+#  - job_name: 'prometheus-region-federation'
+#    scheme: https
+#    scrape_interval: 30s
+#    ...
+

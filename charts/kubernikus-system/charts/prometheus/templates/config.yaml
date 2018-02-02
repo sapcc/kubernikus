@@ -11,3 +11,6 @@ data:
   {{- end }}
   prometheus.yaml: |
 {{ include "kubernikus-system/charts/prometheus/templates/_prometheus.yaml.tpl" . | indent 4 }}
+{{- if .Values.extra_scrape_config }}
+{{ tpl .Values.extra_scrape_config . | indent 4 }}
+{{- end}}
