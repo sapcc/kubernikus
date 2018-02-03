@@ -235,6 +235,8 @@ func (c *client) adminClient() (*gophercloud.ProviderClient, error) {
 		return nil, err
 	}
 
+	provider.UseTokenLock()
+
 	authOptions := &tokens.AuthOptions{
 		IdentityEndpoint: c.authURL,
 		Username:         c.authUsername,
