@@ -40,17 +40,15 @@ func NewE2ETestSuite(t *testing.T, options E2ETestSuiteOptions) *E2ETestSuite {
 	}
 
 	if err := options.Verify(); err != nil {
-		log.Println("Couldn't obtain openstack token using parameters given in config. Trying parameters from ENV")
 		options.OpenStackCredentials = getOpenStackCredentialsFromENV()
 		if err := options.Verify(); err != nil {
-			log.Printf("Checked config and env. Insufficient parameters for authentication : %v", err)
-			os.Exit(1)
+			log.Fatalf("Checked config and env. Insufficient parameters for authentication : %v", err)
 		}
 	}
 
 	token, err := getToken(options.OpenStackCredentials)
 	if err != nil {
-		log.Fatalf("Authentication failed. Verify config file or environment")
+		log.Fatalf("Authentication failed:\n %v", err)
 	}
 
 	options.OpenStackCredentials.Token = token
@@ -66,7 +64,7 @@ func NewE2ETestSuite(t *testing.T, options E2ETestSuiteOptions) *E2ETestSuite {
 	return &E2ETestSuite{
 		E2ETestSuiteOptions: options,
 		testing:             t,
-		ClusterName:         "e2e",
+		ClusterName:         ClusterName,
 		timeout:             5,
 		kubernikusClient:    kubernikusCli,
 	}
@@ -80,6 +78,26 @@ func (s *E2ETestSuite) Run(wg *sync.WaitGroup, sigs chan os.Signal, stopCh chan 
 	s.sigCh = sigs
 
 	log.Println("Running tests")
+	log.Printf(
+		`
+	#############################################
+
+	  Running Kubernikus e2e tests
+
+	  Creating kluster %s
+	  Region %s
+	  Domain %s
+	  Project %s
+	  Kubernikus API %s
+
+	#############################################
+	`,
+		s.ClusterName,
+		s.RegionName,
+		s.ProjectDomainName,
+		s.ProjectName,
+		s.APIURL,
+	)
 
 	// API tests
 	if s.IsTestCreate || s.IsTestAPI || s.IsTestAll {
@@ -93,7 +111,7 @@ func (s *E2ETestSuite) Run(wg *sync.WaitGroup, sigs chan os.Signal, stopCh chan 
 		s.TestGetClusterInfo()
 
 		// FIXME: wait before starting smoke test to mitigate risk of kluster that is not yet ready, though node health might indicate this
-		log.Printf("Waiting %v seconds before running smoke test to ensure all nodes are healthy and ready for action", SmokeTestWaitTime)
+		log.Printf("Waiting %v before running smoke test to ensure all nodes are healthy and ready for action", SmokeTestWaitTime)
 		time.Sleep(SmokeTestWaitTime)
 	}
 

@@ -1,6 +1,8 @@
-kubernikus_api_server: "kubernikus.eu-nl-1.cloud.sap"
-kubernikus_api_version: "v1"
-kluster_kubeconfig: ""
+# example configuration for kubernikus e2e tests
+# parameters can also be provided via env
+
+kubernikus_api_server: ""
+kubernikus_api_version: ""
 
 openstack:
   project_name: ""
