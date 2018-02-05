@@ -276,6 +276,8 @@ func (c *client) KlusterClientFor(kluster *kubernikus_v1.Kluster) (*gophercloud.
 		return nil, err
 	}
 
+	provider.UseTokenLock()
+
 	authOptions := &tokens.AuthOptions{
 		IdentityEndpoint: string(secret.Data["openstack-auth-url"]),
 		Username:         string(secret.Data["openstack-username"]),

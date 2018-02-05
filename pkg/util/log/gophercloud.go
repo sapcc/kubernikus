@@ -17,6 +17,8 @@ func NewLoggingProviderClient(endpoint string, logger kitlog.Logger) (*gopherclo
 		return nil, err
 	}
 
+	providerClient.UseTokenLock()
+
 	transport := providerClient.HTTPClient.Transport
 	if transport == nil {
 		transport = http.DefaultTransport
