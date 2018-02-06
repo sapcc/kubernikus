@@ -9,6 +9,7 @@ import (
 	runtime "github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/justinas/alice"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/rs/cors"
 
 	apipkg "github.com/sapcc/kubernikus/pkg/api"
@@ -102,6 +103,16 @@ func setupGlobalMiddleware(handler http.Handler, rt *apipkg.Runtime) http.Handle
 			next.ServeHTTP(rw, r)
 		})
 	}
+	instrumentationHandler := func(next http.Handler) http.Handler {
+		return promhttp.InstrumentHandlerCounter(HTTPRequestsTotal, next)
+	}
 
-	return alice.New(requestIDHandler, loggingHandler, handlers.RootHandler, redocHandler, staticHandler, corsHandler).Then(handler)
+	return alice.New(
+		requestIDHandler,
+		loggingHandler,
+		instrumentationHandler,
+		handlers.RootHandler,
+		redocHandler,
+		staticHandler,
+		corsHandler).Then(handler)
 }
