@@ -3,8 +3,11 @@ package main
 import (
 	goflag "flag"
 	"fmt"
+	"net"
+	"net/http"
 	"os"
 
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/spf13/pflag"
 
 	apipkg "github.com/sapcc/kubernikus/pkg/api"
@@ -15,10 +18,14 @@ import (
 	"github.com/sapcc/kubernikus/pkg/version"
 )
 
-var namespace string
+var (
+	namespace   string
+	metricsPort int
+)
 
 func init() {
 	pflag.StringVar(&namespace, "namespace", "kubernikus", "Namespace the apiserver should work in")
+	pflag.IntVar(&metricsPort, "metrics-port", 9100, "Lister port for metric exposition")
 }
 
 func main() {
@@ -79,8 +86,22 @@ func main() {
 
 	// get server with flag values filled out
 	server = rest.NewServer(api)
-
 	defer server.Shutdown()
+
+	//Setup metrics listener
+	metricsHost := "0.0.0.0"
+	metricsListener, err := net.Listen("tcp", fmt.Sprintf("%v:%v", metricsHost, metricsPort))
+	logger.Log(
+		"msg", "Exposing metrics",
+		"host", metricsHost,
+		"port", metricsPort,
+		"err", err)
+	if err == nil {
+		go http.Serve(metricsListener, promhttp.Handler())
+		api.ServerShutdown = func() {
+			metricsListener.Close()
+		}
+	}
 
 	server.ConfigureAPI()
 	if err := server.Serve(); err != nil {

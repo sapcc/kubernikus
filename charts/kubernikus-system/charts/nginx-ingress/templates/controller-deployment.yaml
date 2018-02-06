@@ -39,7 +39,7 @@ spec:
           {{- if (contains "0.9" .Values.controller.image.tag) }}
             - --ingress-class={{ .Values.controller.ingressClass }}
           {{- end }}
-          {{- if (contains "0.9" .Values.controller.image.tag) }}
+          {{- if (contains "0.10" .Values.controller.image.tag) }}
             - --configmap={{ .Release.Namespace }}/{{ template "controller.fullname" . }}
           {{- else }}
             - --nginx-configmap={{ .Release.Namespace }}/{{ template "controller.fullname" . }}

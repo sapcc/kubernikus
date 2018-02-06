@@ -6,7 +6,7 @@ metadata:
   annotations:
     vice-president: "true"
     prometheus.io/probe: "true"
-    ingress.kubernetes.io/rewrite-target: /
+
 spec:
   tls:
      - secretName: kubernikus-api
@@ -19,11 +19,3 @@ spec:
           backend:
             serviceName: kubernikus-api
             servicePort: {{ .Values.api.port }}
-        - path: /prometheus
-          backend:
-            serviceName: kubernikus-prometheus
-            servicePort: 9090
-        - path: /grafana
-          backend:
-            serviceName: kubernikus-system-grafana
-            servicePort: 80
