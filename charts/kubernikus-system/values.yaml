@@ -1,3 +1,14 @@
+#authentication:
+#  enabled: true
+#  cacrt: |
+#    -----BEGIN CERTIFICATE-----
+#    MIIB+jCCAWOgAwIBAgIEAQAAADANBgkqhkiG9w0BAQUFADAvMQswCQYDVQQGEwJE
+#    ...
+#    vrEcgtBVIuzM+sVEp7RRM6Y+fL9u+69krtndZ8Ft
+#    -----END CERTIFICATE-----
+
+#domain: "kubernikus.cloud.sap"
+
 #global:
 #  region: eu-de-1
 
@@ -11,8 +22,6 @@ grafana:
     image: "grafana/grafana:master"
     imagePullPolicy: IfNotPresent
     name: grafana
-    adminUser: "admin"
-    adminPassword: "admin"
 
     persistentVolume:
       enabled: false
@@ -21,7 +30,7 @@ grafana:
       httpGet:
         path: /login
         port: 3000
-      initialDelaySeconds: 30
+      initialDelaySeconds: 5 
       timeoutSeconds: 30
 
     service:
@@ -32,6 +41,79 @@ grafana:
 
     provisioning:
       enabled: true
+
+  provisioningDashboardsFiles:
+    default.yaml: |
+      - name: 'default'
+        org_id: 1
+        type: file
+        options:
+          path: /var/lib/grafana/dashboards
+
+  provisioningDatasourcesFiles:
+    prometheus.yaml: |
+      datasources:
+      - name: Prometheus 
+        type: prometheus
+        access: proxy
+        org_id: 1
+        url: http://kubernikus-prometheus:9090
+        is_default: true
+        version: 1
+        editable: false 
+
+  serverConfigFile:
+    grafana.ini: |
+      [paths]
+      data = /var/lib/grafana/data
+      logs = /var/log/grafana
+      plugins = /var/lib/grafana/plugins
+      provisioning = /var/lib/grafana/provisioning
+
+      [server]
+      protocol = http
+      http_addr =
+      http_port = 3000
+      domain = localhost
+      enforce_domain = false
+      root_url = %(protocol)s://%(domain)s:%(http_port)s
+      router_logging = false 
+      static_root_path = public
+      enable_gzip = false
+      cert_file =
+      cert_key =
+      socket = /tmp/grafana.sock
+
+      [users]
+      allow_sign_up = true 
+      allow_org_create = false
+      auto_assign_org = true
+      auto_assign_org_role = Admin
+      default_theme = dark
+
+      [auth.anonymous]
+      enabled = true
+      org_name = Main Org.
+      org_role = Viewer 
+
+      [auth.proxy]
+      enabled = true
+      header_name = X-REMOTE-USER
+      header_property = username
+      auto_sign_up = true
+
+      [auth.basic]
+      enabled = false 
+
+      [smtp]
+      enabled = false
+
+      [log]
+      mode = console
+      level = debug 
+
+      [alerting]
+      enabled = false
 
   serverDashboardFiles: 
     kubernikus.json: |
@@ -52,6 +134,7 @@ grafana:
         "editable": true,
         "gnetId": null,
         "graphTooltip": 0,
+        "iteration": 1517825496293,
         "links": [],
         "panels": [
           {
@@ -415,7 +498,6 @@ grafana:
             "tableColumn": "",
             "targets": [
               {
-                "$$hashKey": "object:3742",
                 "expr": "sum(kubernikus_kluster_status_phase{phase=\"Terminating\"})",
                 "format": "time_series",
                 "intervalFactor": 1,
@@ -504,7 +586,6 @@ grafana:
             "renderer": "flot",
             "seriesOverrides": [
               {
-                "$$hashKey": "object:4033",
                 "alias": "Avg",
                 "fill": 0,
                 "linewidth": 3
@@ -515,7 +596,6 @@ grafana:
             "steppedLine": false,
             "targets": [
               {
-                "$$hashKey": "object:3461",
                 "expr": "sum(probe_http_duration_seconds{path=\"/\"}) * 1000",
                 "format": "time_series",
                 "instant": false,
@@ -524,7 +604,6 @@ grafana:
                 "refId": "A"
               },
               {
-                "$$hashKey": "object:3922",
                 "expr": "sum(avg_over_time(probe_http_duration_seconds{path=\"/\"}[1h])) * 1000",
                 "format": "time_series",
                 "intervalFactor": 1,
@@ -552,7 +631,6 @@ grafana:
             },
             "yaxes": [
               {
-                "$$hashKey": "object:3486",
                 "format": "ms",
                 "label": null,
                 "logBase": 1,
@@ -561,7 +639,6 @@ grafana:
                 "show": true
               },
               {
-                "$$hashKey": "object:3487",
                 "format": "short",
                 "label": null,
                 "logBase": 1,
@@ -606,7 +683,6 @@ grafana:
             "renderer": "flot",
             "seriesOverrides": [
               {
-                "$$hashKey": "object:4033",
                 "alias": "Avg",
                 "fill": 0,
                 "linewidth": 3
@@ -617,7 +693,6 @@ grafana:
             "steppedLine": false,
             "targets": [
               {
-                "$$hashKey": "object:3461",
                 "expr": "sum(probe_http_duration_seconds{path=\"/\"}) * 1000",
                 "format": "time_series",
                 "instant": false,
@@ -626,7 +701,6 @@ grafana:
                 "refId": "A"
               },
               {
-                "$$hashKey": "object:3922",
                 "expr": "sum(avg_over_time(probe_http_duration_seconds{path=\"/\"}[1h])) * 1000",
                 "format": "time_series",
                 "intervalFactor": 1,
@@ -654,7 +728,6 @@ grafana:
             },
             "yaxes": [
               {
-                "$$hashKey": "object:3486",
                 "format": "ms",
                 "label": null,
                 "logBase": 1,
@@ -663,7 +736,6 @@ grafana:
                 "show": true
               },
               {
-                "$$hashKey": "object:3487",
                 "format": "short",
                 "label": null,
                 "logBase": 1,
@@ -677,17 +749,14 @@ grafana:
             "backgroundColor": "rgb(60, 60, 60)",
             "colorMaps": [
               {
-                "$$hashKey": "object:6781",
                 "color": "#e5ac0e",
                 "text": "N/A"
               },
               {
-                "$$hashKey": "object:6782",
                 "color": "#508642",
                 "text": "up"
               },
               {
-                "$$hashKey": "object:6783",
                 "color": "#bf1b00",
                 "text": "down"
               }
@@ -720,7 +789,6 @@ grafana:
             "metricNameColor": "#fff",
             "rangeMaps": [
               {
-                "$$hashKey": "object:6538",
                 "from": "null",
                 "text": "N/A",
                 "to": "null"
@@ -737,7 +805,6 @@ grafana:
             "showTransitionCount": false,
             "targets": [
               {
-                "$$hashKey": "object:6451",
                 "expr": "probe_success{path=\"/\"}",
                 "format": "time_series",
                 "intervalFactor": 1,
@@ -745,7 +812,6 @@ grafana:
                 "refId": "A"
               },
               {
-                "$$hashKey": "object:6452",
                 "expr": "probe_success{path=\"/grafana\"}",
                 "format": "time_series",
                 "intervalFactor": 1,
@@ -761,25 +827,21 @@ grafana:
             "type": "natel-discrete-panel",
             "valueMaps": [
               {
-                "$$hashKey": "object:6530",
                 "op": "=",
                 "text": "N/A",
                 "value": "null"
               },
               {
-                "$$hashKey": "object:6531",
                 "op": "=",
                 "text": "up",
                 "value": "1"
               },
               {
-                "$$hashKey": "object:6532",
                 "op": "=",
                 "text": "down",
                 "value": "0"
               },
               {
-                "$$hashKey": "object:6533",
                 "op": "=",
                 "text": "",
                 "value": ""
@@ -834,6 +896,21 @@ grafana:
             "type": "text"
           },
           {
+            "content": "<style>\n  table.info td {\n    border: none;\n    background: none;\n  }   \n  table.info th {\n    border: none;\n    font-weight: bold;\n    background: none;\n  } \n</style>\n\n<table class=\"info\">\n<tr><th>CoreOS</th><td>$coreos_version</td></tr>\n<tr><th>Kernel</th><td>$kernel_version</td></tr>\n<tr><th>Kubernetes</th><td>$kubelet_version</td></tr>\n<tr><th>Docker</th><td>$container_runtime_version</td></tr>\n</table>\n",
+            "gridPos": {
+              "h": 6,
+              "w": 2,
+              "x": 3,
+              "y": 6
+            },
+            "id": 67,
+            "links": [],
+            "mode": "html",
+            "title": "Control Plane",
+            "transparent": false,
+            "type": "text"
+          },
+          {
             "cacheTimeout": null,
             "colorBackground": true,
             "colorValue": false,
@@ -856,7 +933,7 @@ grafana:
             "gridPos": {
               "h": 3,
               "w": 2,
-              "x": 3,
+              "x": 5,
               "y": 6
             },
             "hideTimeOverride": true,
@@ -943,7 +1020,7 @@ grafana:
             "gridPos": {
               "h": 3,
               "w": 2,
-              "x": 5,
+              "x": 7,
               "y": 6
             },
             "hideTimeOverride": true,
@@ -1030,7 +1107,7 @@ grafana:
             "gridPos": {
               "h": 3,
               "w": 2,
-              "x": 7,
+              "x": 9,
               "y": 6
             },
             "hideTimeOverride": true,
@@ -1093,21 +1170,6 @@ grafana:
               }
             ],
             "valueName": "current"
-          },
-          {
-            "content": "",
-            "gridPos": {
-              "h": 6,
-              "w": 2,
-              "x": 9,
-              "y": 6
-            },
-            "id": 52,
-            "links": [],
-            "mode": "markdown",
-            "title": "",
-            "transparent": true,
-            "type": "text"
           },
           {
             "content": "\n\n\n![Openstack](https://raw.githubusercontent.com/sapcc/kubernikus/master/assets/openstack_64x64.png) \n",
@@ -1203,7 +1265,6 @@ grafana:
             "tableColumn": "",
             "targets": [
               {
-                "$$hashKey": "object:4274",
                 "expr": "limes_project_quota{project=\"kubernikus\",resource=\"volumes\",domain=\"ccadmin\"} - limes_project_usage{project=\"kubernikus\",resource=\"volumes\",domain=\"ccadmin\"}",
                 "format": "time_series",
                 "interval": "",
@@ -1291,7 +1352,6 @@ grafana:
             "tableColumn": "",
             "targets": [
               {
-                "$$hashKey": "object:4344",
                 "expr": "(limes_project_quota{project=\"kubernikus\",resource=\"capacity\",domain=\"ccadmin\",service=\"volumev2\"} - limes_project_usage{project=\"kubernikus\",resource=\"capacity\",domain=\"ccadmin\",service=\"volumev2\"}) / 10",
                 "format": "time_series",
                 "interval": "",
@@ -1300,7 +1360,6 @@ grafana:
                 "refId": "A"
               },
               {
-                "$$hashKey": "object:4365",
                 "expr": "",
                 "format": "time_series",
                 "intervalFactor": 1,
@@ -1355,12 +1414,10 @@ grafana:
             "mappingType": 1,
             "mappingTypes": [
               {
-                "$$hashKey": "object:7703",
                 "name": "value to text",
                 "value": 1
               },
               {
-                "$$hashKey": "object:7704",
                 "name": "range to text",
                 "value": 2
               }
@@ -1388,7 +1445,6 @@ grafana:
             "tableColumn": "",
             "targets": [
               {
-                "$$hashKey": "object:4344",
                 "expr": "limes_project_quota{project=\"kubernikus\",resource=\"instances\",domain=\"ccadmin\"} - limes_project_usage{project=\"kubernikus\",resource=\"instances\",domain=\"ccadmin\"}",
                 "format": "time_series",
                 "interval": "",
@@ -1405,7 +1461,6 @@ grafana:
             "valueFontSize": "200%",
             "valueMaps": [
               {
-                "$$hashKey": "object:7706",
                 "op": "=",
                 "text": "N/A",
                 "value": "null"
@@ -1446,12 +1501,10 @@ grafana:
             "mappingType": 1,
             "mappingTypes": [
               {
-                "$$hashKey": "object:7703",
                 "name": "value to text",
                 "value": 1
               },
               {
-                "$$hashKey": "object:7704",
                 "name": "range to text",
                 "value": 2
               }
@@ -1479,7 +1532,6 @@ grafana:
             "tableColumn": "",
             "targets": [
               {
-                "$$hashKey": "object:4344",
                 "expr": "(limes_project_quota{project=\"kubernikus\",resource=\"cores\",domain=\"ccadmin\"} - limes_project_usage{project=\"kubernikus\",resource=\"cores\",domain=\"ccadmin\"}) / 8",
                 "format": "time_series",
                 "interval": "",
@@ -1496,7 +1548,6 @@ grafana:
             "valueFontSize": "200%",
             "valueMaps": [
               {
-                "$$hashKey": "object:7706",
                 "op": "=",
                 "text": "N/A",
                 "value": "null"
@@ -1537,12 +1588,10 @@ grafana:
             "mappingType": 1,
             "mappingTypes": [
               {
-                "$$hashKey": "object:7703",
                 "name": "value to text",
                 "value": 1
               },
               {
-                "$$hashKey": "object:7704",
                 "name": "range to text",
                 "value": 2
               }
@@ -1570,7 +1619,6 @@ grafana:
             "tableColumn": "",
             "targets": [
               {
-                "$$hashKey": "object:4344",
                 "expr": "(limes_project_quota{project=\"kubernikus\",resource=\"ram\",domain=\"ccadmin\"} - limes_project_usage{project=\"kubernikus\",resource=\"ram\",domain=\"ccadmin\"}) / 16000",
                 "format": "time_series",
                 "interval": "",
@@ -1587,7 +1635,6 @@ grafana:
             "valueFontSize": "200%",
             "valueMaps": [
               {
-                "$$hashKey": "object:7706",
                 "op": "=",
                 "text": "N/A",
                 "value": "null"
@@ -1621,7 +1668,7 @@ grafana:
             "gridPos": {
               "h": 3,
               "w": 2,
-              "x": 3,
+              "x": 5,
               "y": 9
             },
             "id": 41,
@@ -1649,7 +1696,6 @@ grafana:
             "steppedLine": false,
             "targets": [
               {
-                "$$hashKey": "object:260",
                 "expr": "sum(irate(node_cpu{mode=~\"system|user|iowait\"}[5m])) by (instance) / sum(irate(node_cpu{}[5m])) by (instance)",
                 "format": "time_series",
                 "interval": "",
@@ -1677,7 +1723,6 @@ grafana:
             },
             "yaxes": [
               {
-                "$$hashKey": "object:344",
                 "decimals": null,
                 "format": "percentunit",
                 "label": "",
@@ -1687,7 +1732,6 @@ grafana:
                 "show": false
               },
               {
-                "$$hashKey": "object:345",
                 "format": "short",
                 "label": null,
                 "logBase": 1,
@@ -1708,7 +1752,7 @@ grafana:
             "gridPos": {
               "h": 3,
               "w": 2,
-              "x": 5,
+              "x": 7,
               "y": 9
             },
             "id": 42,
@@ -1736,7 +1780,6 @@ grafana:
             "steppedLine": false,
             "targets": [
               {
-                "$$hashKey": "object:260",
                 "expr": "(sum(node_memory_MemTotal) by (instance) - sum(node_memory_MemFree+node_memory_Buffers+node_memory_Cached) by (instance)) / (sum(node_memory_MemTotal) by (instance)) * 100",
                 "format": "time_series",
                 "interval": "",
@@ -1745,7 +1788,6 @@ grafana:
                 "refId": "A"
               },
               {
-                "$$hashKey": "object:1694",
                 "expr": "",
                 "format": "time_series",
                 "intervalFactor": 1,
@@ -1772,7 +1814,6 @@ grafana:
             },
             "yaxes": [
               {
-                "$$hashKey": "object:344",
                 "decimals": null,
                 "format": "percent",
                 "label": "",
@@ -1782,7 +1823,6 @@ grafana:
                 "show": false
               },
               {
-                "$$hashKey": "object:345",
                 "format": "short",
                 "label": null,
                 "logBase": 1,
@@ -1803,7 +1843,7 @@ grafana:
             "gridPos": {
               "h": 3,
               "w": 2,
-              "x": 7,
+              "x": 9,
               "y": 9
             },
             "id": 58,
@@ -1831,7 +1871,6 @@ grafana:
             "steppedLine": false,
             "targets": [
               {
-                "$$hashKey": "object:260",
                 "expr": "sum(label_replace(kubelet_running_pod_count, \"node\", \"$1\", \"instance\", \"(.*)\")) by (node) / sum(kube_node_status_capacity_pods) by (node) * 100",
                 "format": "time_series",
                 "interval": "",
@@ -1840,7 +1879,6 @@ grafana:
                 "refId": "A"
               },
               {
-                "$$hashKey": "object:1694",
                 "expr": "",
                 "format": "time_series",
                 "intervalFactor": 1,
@@ -1867,7 +1905,6 @@ grafana:
             },
             "yaxes": [
               {
-                "$$hashKey": "object:344",
                 "decimals": null,
                 "format": "percent",
                 "label": "",
@@ -1877,7 +1914,6 @@ grafana:
                 "show": false
               },
               {
-                "$$hashKey": "object:345",
                 "format": "short",
                 "label": null,
                 "logBase": 1,
@@ -1965,7 +2001,6 @@ grafana:
             "tableColumn": "",
             "targets": [
               {
-                "$$hashKey": "object:4935",
                 "expr": "limes_project_usage{project=\"kubernikus\",resource=\"volumes\",domain=\"ccadmin\"} / limes_project_quota{project=\"kubernikus\",resource=\"volumes\",domain=\"ccadmin\"} * 100",
                 "format": "time_series",
                 "hide": false,
@@ -2053,7 +2088,6 @@ grafana:
             "tableColumn": "",
             "targets": [
               {
-                "$$hashKey": "object:4935",
                 "expr": "sum(container_fs_usage_bytes{pod_name=~\".*-etcd-.*\",image!~\".*pause.*\"}) / sum(kube_persistentvolumeclaim_resource_requests_storage_bytes) * 100",
                 "format": "time_series",
                 "hide": false,
@@ -2140,7 +2174,6 @@ grafana:
             "tableColumn": "",
             "targets": [
               {
-                "$$hashKey": "object:7405",
                 "expr": "limes_project_quota{project=\"kubernikus\",resource=\"instances\",domain=\"ccadmin\"} / limes_project_usage{project=\"kubernikus\",resource=\"instances\",domain=\"ccadmin\"}",
                 "format": "time_series",
                 "intervalFactor": 1,
@@ -2225,7 +2258,6 @@ grafana:
             "tableColumn": "",
             "targets": [
               {
-                "$$hashKey": "object:7227",
                 "expr": "limes_project_quota{project=\"kubernikus\",resource=\"cores\",domain=\"ccadmin\"} / limes_project_usage{project=\"kubernikus\",resource=\"cores\",domain=\"ccadmin\"}",
                 "format": "time_series",
                 "intervalFactor": 1,
@@ -2669,7 +2701,100 @@ grafana:
         "style": "dark",
         "tags": [],
         "templating": {
-          "list": []
+          "list": [
+            {
+              "allValue": null,
+              "current": {
+                "text": "1.12.6",
+                "value": "1.12.6"
+              },
+              "datasource": "Prometheus",
+              "hide": 2,
+              "includeAll": false,
+              "label": null,
+              "multi": false,
+              "name": "container_runtime_version",
+              "options": [],
+              "query": "label_values(kube_node_info,container_runtime_version)",
+              "refresh": 1,
+              "regex": "/[^0-9]*([0-9]+.[0-9]+.[0-9]+)[^0-9]*/",
+              "sort": 0,
+              "tagValuesQuery": "",
+              "tags": [],
+              "tagsQuery": "",
+              "type": "query",
+              "useTags": false
+            },
+            {
+              "allValue": null,
+              "current": {
+                "text": "1.7.5",
+                "value": "1.7.5"
+              },
+              "datasource": "Prometheus",
+              "hide": 2,
+              "includeAll": false,
+              "label": null,
+              "multi": false,
+              "name": "kubelet_version",
+              "options": [],
+              "query": "label_values(kube_node_info, kubelet_version)",
+              "refresh": 1,
+              "regex": "/[^0-9]*([0-9]+.[0-9]+.[0-9]+)[^0-9]*/",
+              "sort": 0,
+              "tagValuesQuery": "",
+              "tags": [],
+              "tagsQuery": "",
+              "type": "query",
+              "useTags": false
+            },
+            {
+              "allValue": null,
+              "current": {
+                "text": "1576.4.0",
+                "value": "1576.4.0"
+              },
+              "datasource": "Prometheus",
+              "hide": 2,
+              "includeAll": false,
+              "label": null,
+              "multi": false,
+              "name": "coreos_version",
+              "options": [],
+              "query": "label_values(kube_node_info, os_image)",
+              "refresh": 1,
+              "regex": "/[^0-9]*([0-9]+.[0-9]+.[0-9]+)[^0-9]*/",
+              "sort": 3,
+              "tagValuesQuery": "",
+              "tags": [],
+              "tagsQuery": "",
+              "type": "query",
+              "useTags": false
+            },
+            {
+              "allValue": null,
+              "current": {
+                "text": "4.13.16",
+                "value": "4.13.16"
+              },
+              "datasource": "Prometheus",
+              "hide": 2,
+              "includeAll": false,
+              "label": null,
+              "multi": false,
+              "name": "kernel_version",
+              "options": [],
+              "query": "label_values(kube_node_info, kernel_version)",
+              "refresh": 1,
+              "regex": "/[^0-9]*([0-9]+.[0-9]+.[0-9]+)[^0-9]*/",
+              "sort": 3,
+              "tagValuesQuery": "",
+              "tags": [],
+              "tagsQuery": "",
+              "type": "query",
+              "useTags": false
+            }
+          ]
         },
         "time": {
           "from": "now-24h",
@@ -2702,179 +2827,5 @@ grafana:
         },
         "timezone": "",
         "title": "Kubernikus",
-        "version": 16
+        "version": 5
       }
-
-
-
-  provisioningDashboardsFiles:
-    default.yaml: |
-      - name: 'default'
-        org_id: 1
-        type: file
-        options:
-          path: /var/lib/grafana/dashboards
-
-  provisioningDatasourcesFiles:
-    prometheus.yaml: |
-      datasources:
-      - name: Prometheus 
-        type: prometheus
-        access: proxy
-        org_id: 1
-        url: http://kubernikus-prometheus:9090
-        is_default: true
-        version: 1
-        editable: false 
-
-  serverConfigFile:
-    grafana.ini: |
-      [paths]
-      data = /var/lib/grafana/data
-      logs = /var/log/grafana
-      plugins = /var/lib/grafana/plugins
-      provisioning = /var/lib/grafana/provisioning
-
-      [server]
-      protocol = http
-      http_addr =
-      http_port = 3000
-      domain = localhost
-      enforce_domain = false
-      root_url = %(protocol)s://%(domain)s:%(http_port)s/grafana
-      router_logging = false 
-      static_root_path = public
-      enable_gzip = false
-      cert_file =
-      cert_key =
-      socket = /tmp/grafana.sock
-
-      [database]
-      ;type = sqlite3
-      ;host = 127.0.0.1:3306
-      ;name = grafana
-      ;user = root
-      ;password =
-      ;ssl_mode = disable
-      ;path = grafana.db
-
-      [session]
-      ;provider = file
-      ;provider_config = sessions
-      ;cookie_name = grafana_sess
-      ;cookie_secure = false
-      ;session_life_time = 86400
-
-      [analytics]
-      ;reporting_enabled = true
-      ;check_for_updates = true
-      ;google_analytics_ua_id =
-
-      [security]
-      ;admin_user = admin
-      ;admin_password = admin
-      ;secret_key = SW2YcwTIb9zpOOhoPsMm
-      ;login_remember_days = 7
-      ;cookie_username = grafana_user
-      ;cookie_remember_name = grafana_remember
-      ;disable_gravatar = false
-      ;data_source_proxy_whitelist =
-
-      [snapshots]
-      ;external_enabled = true
-      ;external_snapshot_url = https://snapshots-origin.raintank.io
-      ;external_snapshot_name = Publish to snapshot.raintank.io
-
-      [users]
-      allow_sign_up = false 
-      ;allow_org_create = true
-      ;auto_assign_org = true
-      ;auto_assign_org_role = Viewer
-      ;login_hint = email or username
-      ;default_theme = dark
-
-      [auth.anonymous]
-      enabled = true
-      org_name = Main Org.
-      org_role = Viewer
-
-      [auth.github]
-      ;enabled = false
-      ;allow_sign_up = false
-      ;client_id = some_id
-      ;client_secret = some_secret
-      ;scopes = user:email,read:org
-      ;auth_url = https://github.com/login/oauth/authorize
-      ;token_url = https://github.com/login/oauth/access_token
-      ;api_url = https://api.github.com/user
-      ;team_ids =
-      ;allowed_organizations =
-
-      [auth.google]
-      ;enabled = false
-      ;allow_sign_up = false
-      ;client_id = some_client_id
-      ;client_secret = some_client_secret
-      ;scopes = https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email
-      ;auth_url = https://accounts.google.com/o/oauth2/auth
-      ;token_url = https://accounts.google.com/o/oauth2/token
-      ;api_url = https://www.googleapis.com/oauth2/v1/userinfo
-      ;allowed_domains =
-
-      [auth.proxy]
-      ;enabled = false
-      ;header_name = X-WEBAUTH-USER
-      ;header_property = username
-      ;auto_sign_up = true
-
-      [auth.basic]
-      enabled = true
-
-      [auth.ldap]
-      ;enabled = false
-      ;config_file = /etc/grafana/ldap.toml
-
-      [smtp]
-      enabled = false
-      ;host = localhost:25
-      ;user =
-      ;password =
-      ;cert_file =
-      ;key_file =
-      ;skip_verify = false
-      ;from_address = admin@grafana.localhost
-
-      [emails]
-      ;welcome_email_on_sign_up = false
-
-      [log]
-      mode = console
-      level = info 
-
-      [log.console]
-      ;level =
-      ;format = console
-
-      [event_publisher]
-      ;enabled = false
-      ;rabbitmq_url = amqp://localhost/
-      ;exchange = grafana_events
-
-      [dashboards.json]
-      enabled = true
-      path = /var/lib/grafana/dashboards
-
-      [metrics]
-      ;enabled           = true
-      ;interval_seconds  = 10
-
-      ; [metrics.graphite]
-      ; address = localhost:2003
-      ; prefix = prod.grafana.%(instance_name)s.
-
-      [grafana_net]
-      url = https://grafana.net
-
-      [alerting]
-      enabled = false
-

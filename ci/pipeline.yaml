@@ -72,7 +72,7 @@ resource_types:
   - name: slack-notification
     type: docker-image
     source:
-      repository: cfcommunity/slack-notification-resource
+      repository: hub.global.cloud.sap/concourse/slack-notification-resource
       tag: latest
   - name: gh-status
     type: docker-image
@@ -166,6 +166,8 @@ jobs:
           OS_PROJECT_NAME: kubernikus-e2e
           OS_PROJECT_DOMAIN_NAME: ccadmin
           OS_REGION_NAME: eu-nl-1
+    on_failure:
+      <<: *post_failure_to_slack
 
   - name: rollout
     serial: true
