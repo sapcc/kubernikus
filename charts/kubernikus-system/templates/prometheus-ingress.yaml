@@ -1,0 +1,26 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+
+metadata:
+  name: prometheus 
+  annotations:
+    vice-president: "true"
+    prometheus.io/probe: "true"
+    {{- if .Values.authentication.enabled}}
+    nginx.ingress.kubernetes.io/auth-tls-secret: "kubernikus-system/ca-crt"
+    nginx.ingress.kubernetes.io/auth-tls-verify-depth: "3"
+    nginx.ingress.kubernetes.io/auth-tls-verify-client: "on"
+    {{ end }}
+
+spec:
+  tls:
+     - secretName: prometheus
+       hosts: [prometheus.{{ required "domain missing" .Values.domain }}]
+  rules:
+    - host: prometheus.{{ required "domain missing" .Values.domain }}
+      http:
+        paths:
+        - path: /
+          backend:
+            serviceName: kubernikus-prometheus
+            servicePort: 9090

@@ -5,10 +5,17 @@ controller:
   name: controller
   image:
     repository: sapcc/nginx-ingress-controller
-    tag: "0.9.0-beta.17"
+    tag: "0.10.2"
     pullPolicy: IfNotPresent
 
-  config: {}
+  config: 
+    http-snippet: |
+      map $ssl_client_s_dn $ssl_client_s_dn_cn {
+          default "anonymous";
+          ~CN=(?<CN>[^/,\"]+) $CN;
+      }
+    location-snippet: |
+      proxy_set_header X-REMOTE-USER $ssl_client_s_dn_cn;
 
   # Required for use with CNI based kubernetes installations (such as ones set up by kubeadm),
   # since CNI and hostport don't mix yet. Can be deprecated once https://github.com/kubernetes/kubernetes/issues/23920
