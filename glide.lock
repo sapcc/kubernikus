@@ -147,7 +147,7 @@ imports:
   - compiler
   - extensions
 - name: github.com/gophercloud/gophercloud
-  version: 8183543f90d1aef267a5ecc209f2e0715b355acb
+  version: 3b177406222d4b76d93e90d6ab412e7b7dc160f4
   subpackages:
   - internal
   - openstack

@@ -235,6 +235,8 @@ func (c *client) adminClient() (*gophercloud.ProviderClient, error) {
 		return nil, err
 	}
 
+	provider.UseTokenLock()
+
 	authOptions := &tokens.AuthOptions{
 		IdentityEndpoint: c.authURL,
 		Username:         c.authUsername,
@@ -273,6 +275,8 @@ func (c *client) KlusterClientFor(kluster *kubernikus_v1.Kluster) (*gophercloud.
 	if err != nil {
 		return nil, err
 	}
+
+	provider.UseTokenLock()
 
 	authOptions := &tokens.AuthOptions{
 		IdentityEndpoint: string(secret.Data["openstack-auth-url"]),
