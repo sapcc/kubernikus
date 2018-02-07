@@ -267,10 +267,10 @@ scrape_configs:
   - source_labels: [__meta_kubernetes_ingress_annotation_prometheus_io_probe]
     action: keep
     regex: true
-  # consider prometheus.io/probe_code annotation. mind below regex.
+  # consider prometheus.io/probe_code annotation.
   - source_labels: [__meta_kubernetes_ingress_annotation_prometheus_io_probe_code]
-    regex: ^(\d).+
-    replacement: http_${1}xx
+    regex: \b\w{3,}
+    replacement: http_${1}
     target_label: __param_module
   - source_labels: [__meta_kubernetes_ingress_scheme,__address__,__meta_kubernetes_ingress_path]
     regex: (.+);(.+);(.+)
