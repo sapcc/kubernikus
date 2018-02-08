@@ -42,8 +42,12 @@ func (s *E2ETestSuite) RunSmokeTest() {
 func (s *E2ETestSuite) TestSetupKubernikusCtl() {
 	log.Printf("Setting up kubernikusctl")
 	// get kluster info which contains the URL to the kubernikusctl binary and download it
-	if err := s.getKubernikusctlBinary(); err != nil {
-		s.handleError(fmt.Errorf("[failure] could not get kubernikusctl. reason: %v", err))
+	if runtime.GOOS == "darwin" {
+		log.Println("Detected dev machine. skipping kubernikusctl download. make sure 'kubernikusctl' is installed.")
+	} else {
+		if err := s.getKubernikusctlBinary(); err != nil {
+			s.handleError(fmt.Errorf("[failure] could not get kubernikusctl. reason: %v", err))
+		}
 	}
 	// auth init to get kubeconfig for kluster
 	if err := s.initKubernikusctl(); err != nil {
