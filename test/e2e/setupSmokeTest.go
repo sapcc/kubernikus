@@ -57,10 +57,9 @@ func (s *E2ETestSuite) createPods() {
 				Name:      fmt.Sprintf("%s-%s", NginxName, node.Name),
 				Namespace: Namespace,
 				Labels: map[string]string{
-					"app":         NginxName,
-					"nodeName":    node.Name,
-					"test":        "e2e",
-					"hostNetwork": "true",
+					"app":      NginxName,
+					"nodeName": node.Name,
+					"test":     "e2e",
 				},
 			},
 			Spec: v1.PodSpec{
