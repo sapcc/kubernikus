@@ -10,6 +10,7 @@ import (
 	"os/signal"
 	"strings"
 	"syscall"
+	"time"
 
 	"github.com/databus23/guttle"
 	"github.com/go-kit/kit/log"
@@ -138,7 +139,8 @@ func (o *ClientOptions) Run(c *cobra.Command) error {
 		ServerAddr: serverAddr,
 		ListenAddr: o.ListenAddr,
 		Dial: func(network, address string) (net.Conn, error) {
-			conn, err := tls.Dial(network, address, &tls.Config{
+			dialer := &net.Dialer{Timeout: 10 * time.Second}
+			conn, err := tls.DialWithDialer(dialer, network, address, &tls.Config{
 				RootCAs:      rootCAs,
 				Certificates: []tls.Certificate{certificate},
 			})
