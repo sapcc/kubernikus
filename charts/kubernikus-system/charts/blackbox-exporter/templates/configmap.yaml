@@ -11,40 +11,34 @@ data:
     modules:
       http_2xx:
         prober: http
-      http_post_2xx:
+        http:
+          fail_if_not_ssl: true
+          no_follow_redirects: false
+      http_400:
         prober: http
         http:
-          method: POST
-      icmp:
-        prober: icmp
-      irc_banner:
-        prober: tcp
-        tcp:
-          query_response:
-          - send: NICK prober
-          - send: USER prober prober prober :prober
-          - expect: PING :([^ ]+)
-            send: PONG ${1}
-          - expect: ^:[^ ]+ 001
-      pop3s_banner:
-        prober: tcp
-        tcp:
-          query_response:
-          - expect: ^+OK
-          tls: true
-      ssh_banner:
-        prober: tcp
-        tcp:
-          query_response:
-          - expect: ^SSH-2.0-
-      tcp_connect:
-        prober: tcp
-
-      http_4xx:
+          fail_if_not_ssl: true
+          valid_status_codes: [400]
+      http_401:
         prober: http
         http:
-          valid_status_codes: [401,403]
+          fail_if_not_ssl: true
+          valid_status_codes: [401]
+      http_403:
+        prober: http
+        http:
+          fail_if_not_ssl: true
+          valid_status_codes: [403]
       http_post_4xx:
         prober: http
         http:
+          fail_if_not_ssl: true
           method: POST
+      icmp:
+        prober: icmp
+      tcp_connect:
+        prober: tcp
+        timeout: 5s
+        tcp:
+          tls: true
+      
