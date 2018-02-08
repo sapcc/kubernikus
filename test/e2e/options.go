@@ -1,9 +1,5 @@
 package main
 
-import (
-	"github.com/golang/glog"
-)
-
 type E2ETestSuiteOptions struct {
 	Config
 	ConfigFile string
@@ -20,17 +16,14 @@ type E2ETestSuiteOptions struct {
 }
 
 func (o *E2ETestSuiteOptions) OptionsFromConfigFile() error {
-	if o.ConfigFile == "" {
-		o.ConfigFile = "test/e2e/e2e_config.yaml"
-		glog.Infof("mandatory path to config not provided. trying default.")
+	if o.ConfigFile != "" {
+		cfg, err := ReadConfig(o.ConfigFile)
+		if err != nil {
+			return err
+		}
+		o.Config = cfg
 	}
 
-	cfg, err := ReadConfig(o.ConfigFile)
-	if err != nil {
-		return err
-	}
-
-	o.Config = cfg
 	o.checkTestPhases()
 
 	return nil

@@ -25,4 +25,7 @@ const (
 	PVCSize      = "1Gi"
 	PVCName      = "e2e-nginx-pvc"
 	PVCMountPath = "/mymount"
+
+	PathBin                 = "/usr/bin"
+	KubernikusctlBinaryName = "kubernikusctl"
 )

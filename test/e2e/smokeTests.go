@@ -2,15 +2,22 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"log"
+	"net/http"
 	"os"
+	"os/exec"
+	"runtime"
 
 	"k8s.io/api/core/v1"
+
+	"github.com/sapcc/kubernikus/pkg/api/client/operations"
 )
 
 func (s *E2ETestSuite) SetupSmokeTest() {
 	// double check if cluster is ready for smoke test or exit
 	s.isClusterUpOrWait()
+	s.TestSetupKubernikusCtl()
 	s.createClientset()
 	s.getReadyPods()
 	s.getReadyNodes()
@@ -29,7 +36,83 @@ func (s *E2ETestSuite) RunSmokeTest() {
 		s.TestAttachVolume()
 	}
 
-	log.Print("[passed smoke tests]")
+	log.Print("[passed] smoke tests")
+}
+
+func (s *E2ETestSuite) TestSetupKubernikusCtl() {
+	log.Printf("Setting up kubernikusctl")
+	// get kluster info which contains the URL to the kubernikusctl binary and download it
+	if err := s.getKubernikusctlBinary(); err != nil {
+		s.handleError(fmt.Errorf("[failure] could not get kubernikusctl. reason: %v", err))
+	}
+	// auth init to get kubeconfig for kluster
+	if err := s.initKubernikusctl(); err != nil {
+		s.handleError(fmt.Errorf("[failure] could not 'kubernikusctl auth init'. reason: %v", err))
+	}
+}
+
+func (s *E2ETestSuite) getKubernikusctlBinary() error {
+	log.Printf("getting info for kluster %s to obtain link to kubernikusctl", s.ClusterName)
+	info, err := s.kubernikusClient.Operations.GetClusterInfo(operations.NewGetClusterInfoParams().WithName(s.ClusterName), s.authFunc())
+	if err != nil {
+		return err
+	}
+	for _, b := range info.Payload.Binaries {
+		if b.Name == "kubernikusctl" {
+			for _, l := range b.Links {
+				if l.Platform == runtime.GOOS {
+					filePath := fmt.Sprintf("%s/%s", PathBin, KubernikusctlBinaryName)
+
+					p := PathBin + ":" + os.Getenv("PATH")
+					if err := os.Setenv("PATH", p); err != nil {
+						return err
+					}
+					log.Printf("updated PATH=%v", os.Getenv("PATH"))
+
+					log.Printf("Downloading %s", l.Link)
+					resp, err := http.Get(l.Link)
+					if err != nil {
+						return err
+					}
+					defer resp.Body.Close()
+
+					fOut, err := os.Create(filePath)
+					if err != nil {
+						return err
+					}
+					defer fOut.Close()
+
+					_, err = io.Copy(fOut, resp.Body)
+					if err != nil {
+						return err
+					}
+
+					if err := fOut.Chmod(0777); err != nil {
+						return err
+					}
+					// make sure the file is closed before using it
+					fOut.Close()
+
+					path, err := exec.LookPath(KubernikusctlBinaryName)
+					if err != nil {
+						return err
+					}
+					log.Printf("found %s", path)
+
+					_, err = RunKubernikusctlHostCmd("--help")
+					return err
+				}
+			}
+		}
+	}
+	return fmt.Errorf("no link for kubernikusctl binary found for os: %v", runtime.GOOS)
+}
+
+func (s *E2ETestSuite) initKubernikusctl() error {
+	// gets auth params from env
+	out, err := RunKubernikusctlHostCmd("auth", "init")
+	log.Println(out)
+	return err
 }
 
 func (s *E2ETestSuite) TestAttachVolume() {
@@ -148,12 +231,12 @@ func (s *E2ETestSuite) dialServiceName(source *v1.Pod, target *v1.Service) {
 
 func (s *E2ETestSuite) dial(sourcePod *v1.Pod, targetIP string, targetPort int32) (string, error) {
 	cmd := fmt.Sprintf("wget --timeout=%v -O - http://%v:%v", TimeoutWGET, targetIP, targetPort)
-	return RunHostCmd(s.KubeConfig, sourcePod.GetNamespace(), sourcePod.GetName(), cmd)
+	return RunKubectlHostCmd(sourcePod.GetNamespace(), sourcePod.GetName(), cmd)
 }
 
 func (s *E2ETestSuite) writeFileToMountedVolume() {
 	cmd := fmt.Sprintf("echo hase > %v/myfile", PVCMountPath)
-	_, err := RunHostCmd(s.KubeConfig, Namespace, PVCName, cmd)
+	_, err := RunKubectlHostCmd(Namespace, PVCName, cmd)
 	result := "success"
 	if err != nil {
 		result = "failure"
@@ -169,7 +252,7 @@ func (s *E2ETestSuite) writeFileToMountedVolume() {
 
 func (s *E2ETestSuite) readFileFromMountedVolume() {
 	cmd := fmt.Sprintf("cat %v/myfile", PVCMountPath)
-	_, err := RunHostCmd(s.KubeConfig, Namespace, PVCName, cmd)
+	_, err := RunKubectlHostCmd(Namespace, PVCName, cmd)
 	result := "success"
 	if err != nil {
 		result = "failure"
