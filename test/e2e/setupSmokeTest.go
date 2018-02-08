@@ -63,8 +63,7 @@ func (s *E2ETestSuite) createPods() {
 				},
 			},
 			Spec: v1.PodSpec{
-				NodeName:    node.Name,
-				HostNetwork: true,
+				NodeName: node.Name,
 				Containers: []v1.Container{
 					{
 						Image: NginxImage,
