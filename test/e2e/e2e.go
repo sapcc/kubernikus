@@ -77,25 +77,30 @@ func (s *E2ETestSuite) Run(wg *sync.WaitGroup, sigs chan os.Signal, stopCh chan 
 	s.stopCh = stopCh
 	s.sigCh = sigs
 
-	log.Println("Running tests")
 	log.Printf(
 		`
-	#############################################
+	#################################################################
 
 	  Running Kubernikus e2e tests
 
-	  Creating kluster %s
-	  Region %s
-	  Domain %s
-	  Project %s
-	  Kubernikus API %s
+	  Creating kluster: %s
+	  Region: %s
+	  Project domain: %s
+	  Project: %s
+		Username: %s
+		User domain name: %s
+		Identity URL: %s
+	  Kubernikus API: %s
 
-	#############################################
+	#################################################################
 	`,
 		s.ClusterName,
 		s.RegionName,
 		s.ProjectDomainName,
 		s.ProjectName,
+		s.Username,
+		s.UserDomainName,
+		s.AuthURL,
 		s.APIURL,
 	)
 
