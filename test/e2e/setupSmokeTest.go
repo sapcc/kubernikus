@@ -134,7 +134,7 @@ func (s *E2ETestSuite) getReadyNodes() {
 	nodes, err := s.clientSet.CoreV1().Nodes().List(meta_v1.ListOptions{})
 	s.handleError(err)
 	for _, node := range nodes.Items {
-		log.Printf("found node: %s", node.Name)
+		log.Printf("found node: %s podCidr: %s, IP: %s", node.Name, node.Spec.PodCIDR, node.Status.Addresses[0].Address)
 	}
 	s.readyNodes = nodes.Items
 }
