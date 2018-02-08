@@ -85,7 +85,7 @@ grafana:
       socket = /tmp/grafana.sock
 
       [users]
-      allow_sign_up = true 
+      allow_sign_up = false 
       allow_org_create = false
       auto_assign_org = true
       auto_assign_org_role = Admin
@@ -94,13 +94,13 @@ grafana:
       [auth.anonymous]
       enabled = true
       org_name = Main Org.
-      org_role = Viewer 
+      org_role = Admin 
 
       [auth.proxy]
       enabled = true
       header_name = X-REMOTE-USER
       header_property = username
-      auto_sign_up = true
+      auto_sign_up = false
 
       [auth.basic]
       enabled = false 
@@ -134,7 +134,7 @@ grafana:
         "editable": true,
         "gnetId": null,
         "graphTooltip": 0,
-        "iteration": 1517825496293,
+        "iteration": 1517997489021,
         "links": [],
         "panels": [
           {
@@ -596,16 +596,20 @@ grafana:
             "steppedLine": false,
             "targets": [
               {
+                "$$hashKey": "object:5818",
                 "expr": "sum(probe_http_duration_seconds{path=\"/\"}) * 1000",
                 "format": "time_series",
+                "hide": false,
                 "instant": false,
                 "intervalFactor": 1,
                 "legendFormat": "API",
                 "refId": "A"
               },
               {
+                "$$hashKey": "object:5819",
                 "expr": "sum(avg_over_time(probe_http_duration_seconds{path=\"/\"}[1h])) * 1000",
                 "format": "time_series",
+                "hide": false,
                 "intervalFactor": 1,
                 "legendFormat": "Avg",
                 "refId": "B"
@@ -2512,6 +2516,7 @@ grafana:
             "steppedLine": false,
             "targets": [
               {
+                "$$hashKey": "object:5395",
                 "expr": "sum(300 * rate(kubernikus_launch_failed_operation_total{method!=\"Reconcile\"}[5m])) by (method)",
                 "format": "time_series",
                 "hide": true,
@@ -2521,6 +2526,7 @@ grafana:
                 "refId": "A"
               },
               {
+                "$$hashKey": "object:5396",
                 "expr": "sum(300 * rate(kubernikus_launch_successful_operation_total{method!=\"Reconcile\"}[5m])) by (method)",
                 "format": "time_series",
                 "hide": true,
@@ -2529,17 +2535,19 @@ grafana:
                 "refId": "B"
               },
               {
-                "expr": "60 * sum(rate(kubernikus_deorbit_successful_operation_total[5m]))",
+                "$$hashKey": "object:5397",
+                "expr": "60 * sum(rate(kubernikus_deorbit_successful_operation_total[11m]))",
                 "format": "time_series",
                 "interval": "",
-                "intervalFactor": 10,
+                "intervalFactor": 1,
                 "legendFormat": "Sucess",
                 "refId": "C"
               },
               {
-                "expr": "60 * sum(rate(kubernikus_deorbit_failed_operation_total[5m]))",
+                "$$hashKey": "object:5398",
+                "expr": "60 * sum(rate(kubernikus_deorbit_failed_operation_total[11m]))",
                 "format": "time_series",
-                "intervalFactor": 10,
+                "intervalFactor": 1,
                 "legendFormat": "Failed",
                 "refId": "D"
               }
@@ -2628,6 +2636,7 @@ grafana:
             "steppedLine": false,
             "targets": [
               {
+                "$$hashKey": "object:4964",
                 "expr": "sum(60 * rate(kubernikus_launch_failed_operation_total[5m])) by (method)",
                 "format": "time_series",
                 "hide": true,
@@ -2637,6 +2646,7 @@ grafana:
                 "refId": "A"
               },
               {
+                "$$hashKey": "object:4965",
                 "expr": "sum(60 * rate(kubernikus_launch_successful_operation_total{}[5m])) by (method)",
                 "format": "time_series",
                 "hide": true,
@@ -2645,17 +2655,19 @@ grafana:
                 "refId": "B"
               },
               {
-                "expr": "60 * sum(rate(kubernikus_launch_successful_operation_total[5m]))",
+                "$$hashKey": "object:4966",
+                "expr": "60 * sum(rate(kubernikus_launch_successful_operation_total[11m]))",
                 "format": "time_series",
                 "interval": "",
-                "intervalFactor": 10,
+                "intervalFactor": 1,
                 "legendFormat": "Sucess",
                 "refId": "C"
               },
               {
-                "expr": "60 * sum(rate(kubernikus_launch_failed_operation_total[5m]))",
+                "$$hashKey": "object:4967",
+                "expr": "60 * sum(rate(kubernikus_launch_failed_operation_total[11m]))",
                 "format": "time_series",
-                "intervalFactor": 10,
+                "intervalFactor": 1,
                 "legendFormat": "Failed",
                 "refId": "D"
               }
@@ -2697,6 +2709,7 @@ grafana:
             ]
           }
         ],
+        "refresh": "5s",
         "schemaVersion": 16,
         "style": "dark",
         "tags": [],
@@ -2827,5 +2840,5 @@ grafana:
         },
         "timezone": "",
         "title": "Kubernikus",
-        "version": 5
+        "version": 1
       }

@@ -3,7 +3,9 @@ package main
 import (
 	"bytes"
 	"fmt"
+	"io/ioutil"
 	"log"
+	"os"
 	"os/exec"
 	"strings"
 	"time"
@@ -20,11 +22,28 @@ func NewKubectlCommand(args ...string) *kubectlBuilder {
 	return b
 }
 
-func RunHostCmd(namespace, name, cmd string) (string, error) {
-	return RunKubectl("exec", fmt.Sprintf("--namespace=%v", namespace), name, "--", "/bin/sh", "-c", cmd)
+func RunHostCmd(config, namespace, name, cmd string) (string, error) {
+	return RunKubectl(config, "exec", fmt.Sprintf("--namespace=%v", namespace), name, "--", "/bin/sh", "-c", cmd)
 }
 
-func RunKubectl(args ...string) (string, error) {
+func RunKubectl(config string, args ...string) (string, error) {
+	tmpfile, err := ioutil.TempFile("", "kubeconfig")
+	if err != nil {
+		return "", fmt.Errorf("Couldn't create temporary kubeconfig: %v", err)
+	}
+	defer os.Remove(tmpfile.Name())
+
+	if _, err := tmpfile.Write([]byte(config)); err != nil {
+		return "", fmt.Errorf("Couldn't write temporary kubeconfig: %v", err)
+	}
+
+	if err := tmpfile.Close(); err != nil {
+		return "", fmt.Errorf("Couldn't close temporary kubeconfig: %v", err)
+	}
+
+	kubeConfigArg := fmt.Sprintf("--kubeconfig=%s", tmpfile.Name())
+	args = append([]string{kubeConfigArg}, args...)
+
 	return NewKubectlCommand(args...).Exec()
 }
 
