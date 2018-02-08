@@ -26,12 +26,14 @@ type PoolManager interface {
 }
 
 type PoolStatus struct {
-	Nodes    []string
-	Running  int
-	Starting int
-	Stopping int
-	Needed   int
-	UnNeeded int
+	Nodes       []string
+	Running     int
+	Starting    int
+	Stopping    int
+	Needed      int
+	UnNeeded    int
+	Healthy     int
+	Schedulable int
 }
 
 type ConcretePoolManager struct {
@@ -69,41 +71,30 @@ func (cpm *ConcretePoolManager) GetStatus() (status *PoolStatus, err error) {
 	if err != nil {
 		return status, err
 	}
+	healthy, schedulable := cpm.healthyAndSchedulable()
 
 	return &PoolStatus{
-		Nodes:    cpm.nodeIDs(nodes),
-		Running:  cpm.running(nodes),
-		Starting: cpm.starting(nodes),
-		Stopping: cpm.stopping(nodes),
-		Needed:   cpm.needed(nodes),
-		UnNeeded: cpm.unNeeded(nodes),
+		Nodes:       cpm.nodeIDs(nodes),
+		Running:     cpm.running(nodes),
+		Starting:    cpm.starting(nodes),
+		Stopping:    cpm.stopping(nodes),
+		Needed:      cpm.needed(nodes),
+		UnNeeded:    cpm.unNeeded(nodes),
+		Healthy:     healthy,
+		Schedulable: schedulable,
 	}, nil
 }
 
 func (cpm *ConcretePoolManager) SetStatus(status *PoolStatus) error {
-	var healthy, schedulable int64
-	if nodeLister, err := cpm.nodeObservatory.GetListerForKluster(cpm.Kluster); err == nil {
-		if nodes, err := nodeLister.List(labels.Everything()); err == nil {
-			for _, node := range nodes {
-				//Does the node belong to this pool?
-				if strings.HasPrefix(node.Name, fmt.Sprintf("%s-%s", cpm.Kluster.Spec.Name, cpm.Pool.Name)) {
-					if !node.Spec.Unschedulable {
-						schedulable++
-					}
-					if util.IsNodeReady(node) {
-						healthy++
-					}
-				}
-			}
-		}
-	}
+
+	healthy, schedulable := cpm.healthyAndSchedulable()
 
 	newInfo := models.NodePoolInfo{
 		Name:        cpm.Pool.Name,
 		Size:        cpm.Pool.Size,
 		Running:     int64(status.Running + status.Starting),
-		Healthy:     healthy,
-		Schedulable: schedulable,
+		Healthy:     int64(healthy),
+		Schedulable: int64(schedulable),
 	}
 
 	//TODO: Use util.UpdateKlusterWithRetries here
@@ -205,4 +196,27 @@ func (cpm ConcretePoolManager) unNeeded(nodes []openstack.Node) int {
 		return 0
 	}
 	return unneeded
+}
+
+func (cpm *ConcretePoolManager) healthyAndSchedulable() (healthy int, schedulable int) {
+	nodeLister, err := cpm.nodeObservatory.GetListerForKluster(cpm.Kluster)
+	if err != nil {
+		return
+	}
+	nodes, err := nodeLister.List(labels.Everything())
+	if err != nil {
+		return
+	}
+	for _, node := range nodes {
+		//Does the node belong to this pool?
+		if strings.HasPrefix(node.Name, fmt.Sprintf("%s-%s", cpm.Kluster.Spec.Name, cpm.Pool.Name)) {
+			if !node.Spec.Unschedulable {
+				schedulable++
+			}
+			if util.IsNodeReady(node) {
+				healthy++
+			}
+		}
+	}
+	return
 }
