@@ -4,8 +4,9 @@ import (
 	"fmt"
 	"io/ioutil"
 
-	yaml "gopkg.in/yaml.v2"
 	"os"
+
+	yaml "gopkg.in/yaml.v2"
 )
 
 type Config struct {
@@ -29,16 +30,16 @@ func ReadConfig(filePath string) (Config, error) {
 	return cfg, nil
 }
 
-func ReadFromEnv() (Config, error) {
+func ReadFromEnv() Config {
 	return Config{
 		APIURL:     os.Getenv("KUBERNIKUS_API_SERVER"),
 		APIVersion: os.Getenv("KUBERNIKUS_API_VERSION"),
-	}, nil
+	}
 }
 
 func (cfg *Config) Verify() error {
-	if cfg.APIURL == "" {
-		cfg.APIURL = "kubernikus.staging.cloud.sap"
+	if cfg.APIURL == "" && cfg.RegionName != "" {
+		cfg.APIURL = fmt.Sprintf("kubernikus.%s.cloud.sap", cfg.RegionName)
 	}
 	if cfg.APIVersion == "" {
 		cfg.APIVersion = "v1"

@@ -88,30 +88,34 @@ func getToken(c OpenStackCredentials) (string, error) {
 
 // Verify parameters used for OpenStack authentication
 func (c *OpenStackCredentials) Verify() error {
+	errorString := ""
 	if c.ProjectName == "" {
-		return fmt.Errorf("missing project name")
+		errorString += "missing OS_PROJECT_NAME\n"
 	}
 	if c.ProjectDomainName == "" {
-		return fmt.Errorf("missing project domain name")
+		errorString += "missing OS_PROJECT_DOMAIN_NAME\n"
 	}
 	if c.Username == "" {
-		return fmt.Errorf("missing username")
+		errorString += "missing OS_USERNAME\n"
 	}
 	if c.UserDomainName == "" {
-		return fmt.Errorf("missing user domain name")
+		errorString += "missing OS_USER_DOMAIN_NAME\n"
 	}
 	if c.Password == "" {
-		return fmt.Errorf("missing password")
+		errorString += "missing OS_PASSWORD\n"
 	}
 	if c.AuthURL == "" {
-		return fmt.Errorf("missing auth url")
+		errorString += "missing OS_AUTH_URL\n"
 	} else {
 		if !strings.HasSuffix(c.AuthURL, "/") {
 			c.AuthURL += "/"
 		}
 	}
 	if c.RegionName == "" {
-		return fmt.Errorf("missing region name")
+		errorString += "missing OS_REGION_NAME\n"
+	}
+	if errorString != "" {
+		return fmt.Errorf(errorString)
 	}
 	return nil
 }
