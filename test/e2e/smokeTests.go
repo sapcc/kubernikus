@@ -148,12 +148,12 @@ func (s *E2ETestSuite) dialServiceName(source *v1.Pod, target *v1.Service) {
 
 func (s *E2ETestSuite) dial(sourcePod *v1.Pod, targetIP string, targetPort int32) (string, error) {
 	cmd := fmt.Sprintf("wget --timeout=%v -O - http://%v:%v", TimeoutWGET, targetIP, targetPort)
-	return RunHostCmd(sourcePod.GetNamespace(), sourcePod.GetName(), cmd)
+	return RunHostCmd(s.KubeConfig, sourcePod.GetNamespace(), sourcePod.GetName(), cmd)
 }
 
 func (s *E2ETestSuite) writeFileToMountedVolume() {
 	cmd := fmt.Sprintf("echo hase > %v/myfile", PVCMountPath)
-	_, err := RunHostCmd(Namespace, PVCName, cmd)
+	_, err := RunHostCmd(s.KubeConfig, Namespace, PVCName, cmd)
 	result := "success"
 	if err != nil {
 		result = "failure"
@@ -169,7 +169,7 @@ func (s *E2ETestSuite) writeFileToMountedVolume() {
 
 func (s *E2ETestSuite) readFileFromMountedVolume() {
 	cmd := fmt.Sprintf("cat %v/myfile", PVCMountPath)
-	_, err := RunHostCmd(Namespace, PVCName, cmd)
+	_, err := RunHostCmd(s.KubeConfig, Namespace, PVCName, cmd)
 	result := "success"
 	if err != nil {
 		result = "failure"
