@@ -16,7 +16,6 @@ run:
   args:
     - -c
     - |
-      export KUBERNIKUS_API_SERVER=kubernikus.staging.cloud.sap
       export KUBERNETES_VERSION=v1.9.0
       export GOPATH=$PWD/gopath
       cd gopath/src/github.com/sapcc/kubernikus
