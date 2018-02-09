@@ -251,7 +251,9 @@ scrape_configs:
       target_label: __metrics_path__
       replacement: /api/v1/nodes/${1}:4194/proxy/metrics
 
-- job_name: 'blackbox-ingress'
+{{- range .Values.prometheus.region_probed_from }}
+- job_name: 'blackbox-ingress-{{ . }}'
+  scrape_interval: 5s
   metrics_path: /probe
   params:
     # Look for a HTTP 200 response per default.
@@ -277,7 +279,11 @@ scrape_configs:
     replacement: ${1}://${2}${3}
     target_label: __param_target
   - target_label: __address__
+  {{- if eq . $.Values.global.region }}
     replacement: blackbox-exporter.kubernikus-system.svc:9115
+  {{- else }}
+    replacement: prober.{{ . }}.cloud.sap
+  {{- end }}
   - source_labels: [__param_target]
     target_label: instance
   - action: labelmap
@@ -288,6 +294,9 @@ scrape_configs:
     target_label: kubernetes_name
   - source_labels: [__meta_kubernetes_ingress_path]
     target_label: path
+  - target_label: region_probed_from
+    replacement: {{ . }}
+{{- end}}
 
 # Static Targets 
 #
