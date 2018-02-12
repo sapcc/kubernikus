@@ -11,9 +11,6 @@
 
 #global:
 #  region: eu-de-1
-#  region_probed_from:
-#  - eu-de-1
-#  - eu-nl-1
 
 nginx-ingress:
   enabled: true

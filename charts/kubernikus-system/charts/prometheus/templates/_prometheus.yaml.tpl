@@ -250,8 +250,8 @@ scrape_configs:
       regex: (.+)
       target_label: __metrics_path__
       replacement: /api/v1/nodes/${1}:4194/proxy/metrics
+{{- range .Values.region_probed_from }}
 
-{{- range .Values.prometheus.region_probed_from }}
 - job_name: 'blackbox-ingress-{{ . }}'
   scrape_interval: 5s
   metrics_path: /probe
