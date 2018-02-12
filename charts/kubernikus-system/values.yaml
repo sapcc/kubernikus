@@ -134,7 +134,6 @@ grafana:
         "editable": true,
         "gnetId": null,
         "graphTooltip": 0,
-        "id": 1,
         "iteration": 1518439197401,
         "links": [],
         "panels": [
