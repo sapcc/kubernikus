@@ -13,6 +13,8 @@ groups:
       description: Kluster {{ $labels.kluster_id }} is stuck in {{ $labels.phase }} for 1h
       summary: Kluster stuck in phase {{ $labels.phase }}
 
+- name: launchctl.alerts
+  rules:
   - alert: KubernikusLaunchOperationErrorSpike
     expr: sum(irate(kubernikus_launch_failed_operation_total[5m])) by (method) > sum(avg_over_time(kubernikus_launch_failed_operation_total[12h] offset 12h)) by (method)
     for: 10m
@@ -20,11 +22,25 @@ groups:
       tier: kubernikus
       service: launch
       severity: warning
-      context: kluster
+      context: operator
     annotations:
       description: Unusually high amount of failed launchctl operations
       summary: Unusually many launchctl failures
 
+  - alert: KubernikusLaunchHanging
+    expr: sum(kubernikus_launch_operation_total) == 0
+    for: 15m
+    labels:
+      tier: kubernikus
+      service: launchctl
+      severity: critical
+      context: operator
+    annotations:
+      description: Launchctl operations dropped to 0. The operator might be hanging.
+      summary: Launchctl operations dropped to 0
+
+- name: routegc.alerts
+  rules:
   - alert: KubernikusRouteGcOperationErrorSpike
     expr: sum(irate(kubernikus_routegc_failed_operation_total[5m])) by (method) > sum(avg_over_time(kubernikus_routegc_failed_operation_total[12h] offset 12h)) by (method)
     for: 10m
@@ -32,7 +48,21 @@ groups:
       tier: kubernikus
       service: routegc
       severity: warning
-      context: kluster
+      context: operator
     annotations:
       description: Unusually high amount of failed routegc operations
       summary:  Unusually many routegc failures
+
+- name: deorbit.alerts
+  rules:
+  - alert: KubernikusDeorbiterHanging
+    expr: sum(kubernikus_deorbit_operation_total) == 0
+    for: 10m
+    labels:
+      tier: kubernikus
+      service: deorbit
+      severity: critical
+      context: operator
+    annotations:
+      description: Deorbiter operations dropped to 0. The operator might be hanging.
+      summary: Deorbiter operations dropped to 0
