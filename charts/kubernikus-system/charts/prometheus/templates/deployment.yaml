@@ -5,7 +5,10 @@ metadata:
   name: kubernikus-prometheus
 
 spec:
-  replicas: 1 
+  replicas: 1
+  minReadySeconds: 10
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       tier: kubernikus
