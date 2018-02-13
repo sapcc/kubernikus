@@ -12,3 +12,27 @@ groups:
     annotations:
       description: Kluster {{ $labels.kluster_id }} is stuck in {{ $labels.phase }} for 1h
       summary: Kluster stuck in phase {{ $labels.phase }}
+
+  - alert: KubernikusLaunchOperationErrorSpike
+    expr: sum(irate(kubernikus_launch_failed_operation_total[5m])) by (method) > sum(avg_over_time(kubernikus_launch_failed_operation_total[12h] offset 12h)) by (method)
+    for: 10m
+    labels:
+      tier: kubernikus
+      service: launch
+      severity: warning
+      context: kluster
+    annotations:
+      description: Unusually high amount of failed launchctl operations
+      summary: Unusually many launchctl failures
+
+  - alert: KubernikusRouteGcOperationErrorSpike
+    expr: sum(irate(kubernikus_routegc_failed_operation_total[5m])) by (method) > sum(avg_over_time(kubernikus_routegc_failed_operation_total[12h] offset 12h)) by (method)
+    for: 10m
+    labels:
+      tier: kubernikus
+      service: routegc
+      severity: warning
+      context: kluster
+    annotations:
+      description: Unusually high amount of failed routegc operations
+      summary:  Unusually many routegc failures
