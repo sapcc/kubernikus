@@ -1,5 +1,0 @@
-dependencies:
-  - name: k8sniff
-    repository: file://../k8sniff
-    version: 0.1.0
-    condition: k8sniff.enabled
