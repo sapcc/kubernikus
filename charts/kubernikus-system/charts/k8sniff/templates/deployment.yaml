@@ -4,9 +4,6 @@ metadata:
   name: k8sniff-ingress-lb
   labels:
     role: k8sniff-ingress-lb
-  annotations:
-    prometheus.io/scrape: "true"
-    prometheus.io/port: {{ default "9091" .Values.metrics_port | quote }}
 
 spec:
   replicas: 1
@@ -15,6 +12,9 @@ spec:
       role: k8sniff-ingress-lb
   template:
     metadata:
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: {{ default "9091" .Values.metrics_port | quote }}
       labels:
         role: k8sniff-ingress-lb
     spec:
@@ -30,6 +30,8 @@ spec:
         ports:
         - name: https
           containerPort: 8443
+        - name: metrics
+          containerPort: {{ default 9091 .Values.metrics_port }}
         volumeMounts:
         - name: k8sniff-config
           mountPath: /etc/config
