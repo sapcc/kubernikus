@@ -32,7 +32,7 @@ func ReadConfig(filePath string) (Config, error) {
 
 func ReadFromEnv() Config {
 	return Config{
-		APIURL:     os.Getenv("KUBERNIKUS_API_SERVER"),
+		APIURL:     os.Getenv("KUBERNIKUS_URL"),
 		APIVersion: os.Getenv("KUBERNIKUS_API_VERSION"),
 	}
 }
