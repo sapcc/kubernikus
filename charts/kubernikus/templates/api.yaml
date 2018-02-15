@@ -30,7 +30,7 @@ spec:
             - --auth-url={{ trimSuffix "/" .Values.openstack.auth_url | trimSuffix "/v3" }}/v3
             - --v={{ default 1 .Values.api.log_level }}
             - --namespace={{ default "kubernikus" .Values.namespace }}
-            - --policy=/etc/kubernikus/policy.json
+            - --policy={{ default "/etc/kubernikus/policy.json" .Values.api.policyFile }}
           ports:
             - name: http
               containerPort: {{ .Values.api.port }}

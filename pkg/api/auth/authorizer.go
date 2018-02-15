@@ -96,7 +96,7 @@ func (o *osloPolicyAuthorizer) Authorize(req *http.Request, principal interface{
 	}
 
 	allowed := o.enforcer.Enforce(operationID, policy.Context{
-		Auth:    map[string]string{"user_id": authUser.ID, "project_id": authUser.Account},
+		Auth:    map[string]string{"user_id": authUser.ID, "project_id": authUser.Account, "domain_name": authUser.Domain},
 		Roles:   authUser.Roles,
 		Request: requestVars,
 	})
