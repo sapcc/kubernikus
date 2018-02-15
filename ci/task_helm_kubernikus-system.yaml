@@ -8,7 +8,7 @@ image_resource:
     tag: 'latest'
 
 inputs:
-  - name: charts.git
+  - name: kubernikus.builds
   - name: secrets.git
 
 run:
@@ -22,11 +22,11 @@ run:
       # recent helm versions fails with `invalid cross-device link` when trying to rename charts.git
       # rename(2) for a directory is allowed only when both the source and the destination path are on the top layer
       # https://github.com/kubernetes/helm/issues/2998
-      cp -a charts.git charts-copy.git
+      cp -a kubernikus.builds kubernikus-copy.builds
 
       helm repo add forked https://raw.githubusercontent.com/BugRoger/charts/repo
-      helm dep up --skip-refresh charts-copy.git/charts/kubernikus-system/
-      helm upgrade kubernikus-system charts-copy.git/charts/kubernikus-system/ --namespace=kubernikus-system --values secrets.git/kubernikus/$KUBERNIKUS_NAME/values/kubernikus-system.yaml --install
+      helm dep up --skip-refresh kubernikus-copy.builds/charts/kubernikus-system/
+      helm upgrade kubernikus-system kubernikus-copy.builds/charts/kubernikus-system/ --namespace=kubernikus-system --values secrets.git/kubernikus/$KUBERNIKUS_NAME/values/kubernikus-system.yaml --install
 
 params:
   OS_AUTH_URL:
