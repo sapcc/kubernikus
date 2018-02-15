@@ -121,6 +121,7 @@ grafana:
         "annotations": {
           "list": [
             {
+              "$$hashKey": "object:269",
               "builtIn": 1,
               "datasource": "default",
               "enable": true,
@@ -134,7 +135,7 @@ grafana:
         "editable": true,
         "gnetId": null,
         "graphTooltip": 0,
-        "iteration": 1518439197401,
+        "iteration": 1518640266926,
         "links": [],
         "panels": [
           {
@@ -552,7 +553,9 @@ grafana:
             "type": "text"
           },
           {
-            "aliasColors": {},
+            "aliasColors": {
+              "{instance=\"https://kubernikus.eu-nl-1.cloud.sap/\",job=\"blackbox-ingress\",kubernetes_name=\"kubernikus-api\",kubernetes_namespace=\"kubernikus-system\",path=\"/\",phase=\"connect\"}": "#eab839"
+            },
             "bars": false,
             "dashLength": 10,
             "dashes": false,
@@ -586,7 +589,9 @@ grafana:
             "renderer": "flot",
             "seriesOverrides": [
               {
-                "alias": "Avg",
+                "$$hashKey": "object:967",
+                "alias": "0.95",
+                "dashes": true,
                 "fill": 0,
                 "linewidth": 3
               }
@@ -596,20 +601,24 @@ grafana:
             "steppedLine": false,
             "targets": [
               {
-                "expr": "sum(probe_http_duration_seconds{path=\"/\"}) * 1000",
+                "$$hashKey": "object:497",
+                "expr": "sum(probe_http_duration_seconds{instance=~\"https://kubernikus.*\",path=\"/\"}) * 1000",
                 "format": "time_series",
                 "hide": false,
                 "instant": false,
+                "interval": "",
                 "intervalFactor": 1,
                 "legendFormat": "API",
                 "refId": "A"
               },
               {
-                "expr": "sum(avg_over_time(probe_http_duration_seconds{path=\"/\"}[1h])) * 1000",
+                "$$hashKey": "object:498",
+                "expr": "quantile_over_time(0.95, probe_duration_seconds{instance=~\"https://kubernikus.*\"}[24h]) * 1000",
                 "format": "time_series",
                 "hide": false,
+                "interval": "",
                 "intervalFactor": 1,
-                "legendFormat": "Avg",
+                "legendFormat": "0.95",
                 "refId": "B"
               }
             ],
@@ -633,6 +642,7 @@ grafana:
             },
             "yaxes": [
               {
+                "$$hashKey": "object:543",
                 "format": "ms",
                 "label": null,
                 "logBase": 1,
@@ -641,6 +651,7 @@ grafana:
                 "show": true
               },
               {
+                "$$hashKey": "object:544",
                 "format": "short",
                 "label": null,
                 "logBase": 1,
@@ -2798,7 +2809,7 @@ grafana:
             ]
           }
         ],
-        "refresh": "1m",
+        "refresh": false,
         "schemaVersion": 16,
         "style": "dark",
         "tags": [],
@@ -2899,8 +2910,8 @@ grafana:
           ]
         },
         "time": {
-          "from": "now-24h",
-          "to": "now"
+          "from": "2018-02-14T15:51:41.744Z",
+          "to": "2018-02-14T20:57:19.704Z"
         },
         "timepicker": {
           "refresh_intervals": [
