@@ -60,6 +60,16 @@ func (d *getClusterInfo) getLinks() ([]models.Link, error) {
 	if err != nil {
 		return nil, fmt.Errorf("Failed to fetch release %s: %s", release, err)
 	}
+	//Fall back to latest relese if the specific release is not found
+	if resp.StatusCode == 404 {
+		resp.Body.Close()
+		resp, err = http.Get(fmt.Sprintf("%s/repos/sapcc/kubernikus/releases/latest", d.githubApiURL))
+		if err != nil {
+			return nil, fmt.Errorf("Failed to fetch latest release %s: %s", err)
+		}
+	}
+	defer resp.Body.Close()
+
 	if resp.StatusCode >= 400 {
 		return nil, fmt.Errorf("Failed to fetch release %s: %s", release, resp.Status)
 	}
