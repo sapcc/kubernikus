@@ -5,7 +5,6 @@ import (
 	"os"
 	"sync"
 	"testing"
-	"time"
 
 	"k8s.io/api/core/v1"
 
@@ -114,10 +113,6 @@ func (s *E2ETestSuite) Run(wg *sync.WaitGroup, sigs chan os.Signal, stopCh chan 
 		s.TestShowCluster()
 		s.TestUpdateCluster()
 		s.TestGetClusterInfo()
-
-		// FIXME: wait before starting smoke test to mitigate risk of kluster that is not yet ready, though node health might indicate this
-		log.Printf("Waiting %v before running smoke test to ensure all nodes are healthy and ready for action", SmokeTestWaitTime)
-		time.Sleep(SmokeTestWaitTime)
 	}
 
 	// Smoke tests
