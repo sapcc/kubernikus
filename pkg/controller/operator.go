@@ -13,8 +13,6 @@ import (
 	typedcorev1 "k8s.io/client-go/kubernetes/typed/core/v1"
 	"k8s.io/client-go/tools/record"
 
-	"github.com/sapcc/kubernikus/pkg/controller/nodeobservatory"
-
 	"github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
 	helmutil "github.com/sapcc/kubernikus/pkg/client/helm"
 	kube "github.com/sapcc/kubernikus/pkg/client/kubernetes"
@@ -23,6 +21,7 @@ import (
 	"github.com/sapcc/kubernikus/pkg/controller/config"
 	"github.com/sapcc/kubernikus/pkg/controller/deorbit"
 	"github.com/sapcc/kubernikus/pkg/controller/launch"
+	"github.com/sapcc/kubernikus/pkg/controller/nodeobservatory"
 	"github.com/sapcc/kubernikus/pkg/controller/routegc"
 	kubernikus_informers "github.com/sapcc/kubernikus/pkg/generated/informers/externalversions"
 	"github.com/sapcc/kubernikus/pkg/version"
@@ -133,6 +132,8 @@ func NewKubernikusOperator(options *KubernikusOperatorOptions, logger log.Logger
 
 	o.Clients.Satellites = kube.NewSharedClientFactory(secrets, klusters, logger)
 
+	o.Factories.NodesObservatory = nodeobservatory.NewInformerFactory(o.Factories.Kubernikus.Kubernikus().V1().Klusters(), o.Clients.Satellites, logger)
+
 	// Add kubernikus types to the default Kubernetes Scheme so events can be
 	// logged for those types.
 	v1.AddToScheme(scheme.Scheme)
@@ -163,8 +164,6 @@ func NewKubernikusOperator(options *KubernikusOperatorOptions, logger log.Logger
 			o.Config.Kubernikus.Controllers["routegc"] = routegc.New(60*time.Second, o.Factories.Kubernikus.Kubernikus().V1().Klusters(), o.Clients.Openstack, logger)
 		case "deorbiter":
 			o.Config.Kubernikus.Controllers["deorbiter"] = deorbit.NewController(10, o.Factories, o.Clients, recorder, logger)
-		case "nodeobservatory":
-			o.Config.Kubernikus.Controllers["nodeobservatory"] = nodeobservatory.NewController(o.Factories, o.Clients, logger, options.Namespace, 1)
 		}
 	}
 
@@ -181,6 +180,7 @@ func (o *KubernikusOperator) Run(stopCh <-chan struct{}, wg *sync.WaitGroup) {
 
 	o.Factories.Kubernikus.Start(stopCh)
 	o.Factories.Kubernetes.Start(stopCh)
+	o.Factories.NodesObservatory.Start(stopCh)
 
 	o.Factories.Kubernikus.WaitForCacheSync(stopCh)
 	o.Factories.Kubernetes.WaitForCacheSync(stopCh)

@@ -7,6 +7,7 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/databus23/requestutil"
 	"github.com/go-openapi/runtime/middleware"
 
 	"github.com/sapcc/kubernikus/pkg/api"
@@ -33,8 +34,20 @@ func (d *getClusterInfo) Handle(params operations.GetClusterInfoParams, principa
 		return NewErrorResponse(&operations.GetClusterInfoDefault{}, 500, err.Error())
 	}
 
+	baseURL := fmt.Sprintf("%s://%s", requestutil.Scheme(params.HTTPRequest), requestutil.HostWithPort(params.HTTPRequest))
+
+	command := []string{
+		"kubernikusctl", "auth", "init",
+		"--username", principal.Name,
+		"--user-domain-name", principal.Domain,
+		"--project-id", principal.Account,
+		"--auth-url", principal.AuthURL,
+		"--url", baseURL,
+		"--name", params.Name,
+	}
+
 	info := &models.KlusterInfo{
-		SetupCommand: createSetupCommand(principal),
+		SetupCommand: strings.Join(command, " "),
 		Binaries: []models.Binaries{
 			{
 				Name:  "kubernikusctl",
@@ -60,6 +73,16 @@ func (d *getClusterInfo) getLinks() ([]models.Link, error) {
 	if err != nil {
 		return nil, fmt.Errorf("Failed to fetch release %s: %s", release, err)
 	}
+	//Fall back to latest relese if the specific release is not found
+	if resp.StatusCode == 404 {
+		resp.Body.Close()
+		resp, err = http.Get(fmt.Sprintf("%s/repos/sapcc/kubernikus/releases/latest", d.githubApiURL))
+		if err != nil {
+			return nil, fmt.Errorf("Failed to fetch latest release %s: %s", err)
+		}
+	}
+	defer resp.Body.Close()
+
 	if resp.StatusCode >= 400 {
 		return nil, fmt.Errorf("Failed to fetch release %s: %s", release, resp.Status)
 	}
@@ -94,13 +117,4 @@ func (d *getClusterInfo) getLinks() ([]models.Link, error) {
 	d.links = links
 	return links, nil
 
-}
-
-func createSetupCommand(principal *models.Principal) string {
-	userName := principal.Name
-	userDomainName := principal.Domain
-	projectId := principal.Account
-	authUrl := principal.AuthURL
-
-	return fmt.Sprintf("kubernikusctl auth init --username %v --user-domain-name %v --project-id %v --auth-url %v", userName, userDomainName, projectId, authUrl)
 }
