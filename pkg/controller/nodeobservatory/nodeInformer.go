@@ -26,7 +26,7 @@ type NodeInformer struct {
 	stopCh  chan struct{}
 }
 
-func newNodeInformerForKluster(clientFactory *kubernetes.SharedClientFactory, kluster *v1.Kluster) (*NodeInformer, error) {
+func newNodeInformerForKluster(clientFactory kubernetes.SharedClientFactory, kluster *v1.Kluster) (*NodeInformer, error) {
 	client, err := clientFactory.ClientFor(kluster)
 	if err != nil {
 		return nil, err
