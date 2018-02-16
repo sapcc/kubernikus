@@ -13,6 +13,7 @@ openstack:
 api:
   port: 1234
   log_level: 1
+  policyFile: /etc/kubernikus/policy.json
 
 groundctl:
   log_level: 1

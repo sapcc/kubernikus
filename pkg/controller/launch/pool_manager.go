@@ -1,15 +1,21 @@
 package launch
 
 import (
+	"fmt"
+	"strings"
+
 	"github.com/sapcc/kubernikus/pkg/api/models"
 	"github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
 	"github.com/sapcc/kubernikus/pkg/client/openstack"
 	"github.com/sapcc/kubernikus/pkg/controller/config"
 	"github.com/sapcc/kubernikus/pkg/controller/metrics"
+	"github.com/sapcc/kubernikus/pkg/controller/nodeobservatory"
 	"github.com/sapcc/kubernikus/pkg/templates"
+	"github.com/sapcc/kubernikus/pkg/util"
 
 	"github.com/go-kit/kit/log"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
 )
 
 type PoolManager interface {
@@ -20,16 +26,19 @@ type PoolManager interface {
 }
 
 type PoolStatus struct {
-	Nodes    []string
-	Running  int
-	Starting int
-	Stopping int
-	Needed   int
-	UnNeeded int
+	Nodes       []string
+	Running     int
+	Starting    int
+	Stopping    int
+	Needed      int
+	UnNeeded    int
+	Healthy     int
+	Schedulable int
 }
 
 type ConcretePoolManager struct {
 	config.Clients
+	nodeObservatory *nodeobservatory.NodeObservatory
 
 	Kluster *v1.Kluster
 	Pool    *models.NodePool
@@ -43,7 +52,7 @@ func (lr *LaunchReconciler) newPoolManager(kluster *v1.Kluster, pool *models.Nod
 		"pool", pool.Name)
 
 	var pm PoolManager
-	pm = &ConcretePoolManager{lr.Clients, kluster, pool, logger}
+	pm = &ConcretePoolManager{lr.Clients, lr.nodeObervatory, kluster, pool, logger}
 	pm = &EventingPoolManager{pm, kluster, lr.Recorder}
 	pm = &LoggingPoolManager{pm, logger}
 	pm = &InstrumentingPoolManager{pm,
@@ -62,24 +71,30 @@ func (cpm *ConcretePoolManager) GetStatus() (status *PoolStatus, err error) {
 	if err != nil {
 		return status, err
 	}
+	healthy, schedulable := cpm.healthyAndSchedulable()
 
 	return &PoolStatus{
-		Nodes:    cpm.nodeIDs(nodes),
-		Running:  cpm.running(nodes),
-		Starting: cpm.starting(nodes),
-		Stopping: cpm.stopping(nodes),
-		Needed:   cpm.needed(nodes),
-		UnNeeded: cpm.unNeeded(nodes),
+		Nodes:       cpm.nodeIDs(nodes),
+		Running:     cpm.running(nodes),
+		Starting:    cpm.starting(nodes),
+		Stopping:    cpm.stopping(nodes),
+		Needed:      cpm.needed(nodes),
+		UnNeeded:    cpm.unNeeded(nodes),
+		Healthy:     healthy,
+		Schedulable: schedulable,
 	}, nil
 }
 
 func (cpm *ConcretePoolManager) SetStatus(status *PoolStatus) error {
+
+	healthy, schedulable := cpm.healthyAndSchedulable()
+
 	newInfo := models.NodePoolInfo{
 		Name:        cpm.Pool.Name,
 		Size:        cpm.Pool.Size,
 		Running:     int64(status.Running + status.Starting),
-		Healthy:     int64(status.Running),
-		Schedulable: int64(status.Running),
+		Healthy:     int64(healthy),
+		Schedulable: int64(schedulable),
 	}
 
 	//TODO: Use util.UpdateKlusterWithRetries here
@@ -181,4 +196,27 @@ func (cpm ConcretePoolManager) unNeeded(nodes []openstack.Node) int {
 		return 0
 	}
 	return unneeded
+}
+
+func (cpm *ConcretePoolManager) healthyAndSchedulable() (healthy int, schedulable int) {
+	nodeLister, err := cpm.nodeObservatory.GetListerForKluster(cpm.Kluster)
+	if err != nil {
+		return
+	}
+	nodes, err := nodeLister.List(labels.Everything())
+	if err != nil {
+		return
+	}
+	for _, node := range nodes {
+		//Does the node belong to this pool?
+		if strings.HasPrefix(node.Name, fmt.Sprintf("%s-%s", cpm.Kluster.Spec.Name, cpm.Pool.Name)) {
+			if !node.Spec.Unschedulable {
+				schedulable++
+			}
+			if util.IsNodeReady(node) {
+				healthy++
+			}
+		}
+	}
+	return
 }

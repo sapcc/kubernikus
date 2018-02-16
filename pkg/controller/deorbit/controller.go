@@ -58,7 +58,8 @@ func NewController(threadiness int, factories config.Factories, clients config.C
 		metrics.DeorbitSuccessfulOperationsTotal,
 		metrics.DeorbitFailedOperationsTotal,
 	}
-	return base.NewController(threadiness, factories, clients, reconciler, logger)
+	return base.NewController(threadiness, factories, reconciler, logger, nil)
+
 }
 
 func (d *DeorbitReconciler) Reconcile(kluster *v1.Kluster) (bool, error) {
