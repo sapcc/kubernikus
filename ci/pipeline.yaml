@@ -9,16 +9,69 @@ post_failure_to_slack: &post_failure_to_slack
       :boom: <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|$BUILD_PIPELINE_NAME $BUILD_JOB_NAME job #$BUILD_NAME failed>
       To debug run `fly hijack -j $BUILD_PIPELINE_NAME/$BUILD_JOB_NAME -b $BUILD_NAME`
 
+auth_master: &auth_master
+  OS_AUTH_URL: https://identity-3.eu-nl-1.cloud.sap/v3
+  OS_USERNAME: {{kubernikus-eu-nl-1-username}}
+  OS_PASSWORD: {{kubernikus-eu-nl-1-password}}
+  OS_USER_DOMAIN_NAME: ccadmin
+  OS_PROJECT_NAME: kubernikus-master
+  OS_PROJECT_DOMAIN_NAME: ccadmin
+  KUBERNIKUS_NAME: k-master
+  KUBERNIKUS_URL: https://k-master.admin.cloud.sap
+
+auth_feature: &auth_feature
+  OS_AUTH_URL: https://identity-3.eu-nl-1.cloud.sap/v3
+  OS_USERNAME: {{kubernikus-eu-nl-1-username}}
+  OS_PASSWORD: {{kubernikus-eu-nl-1-password}}
+  OS_USER_DOMAIN_NAME: ccadmin
+  OS_PROJECT_NAME: kubernikus-feature
+  OS_PROJECT_DOMAIN_NAME: ccadmin
+  KUBERNIKUS_NAME: k-feature
+  KUBERNIKUS_URL: https://k-feature.admin.cloud.sap
+
+auth_e2e: &auth_e2e
+  OS_AUTH_URL: https://identity-3.eu-nl-1.cloud.sap/v3
+  OS_USERNAME: {{kubernikus-eu-nl-1-username}}
+  OS_PASSWORD: {{kubernikus-eu-nl-1-password}}
+  OS_USER_DOMAIN_NAME: ccadmin
+  OS_PROJECT_NAME: kubernikus-e2e
+  OS_PROJECT_DOMAIN_NAME: ccadmin
+  KUBERNIKUS_NAME: e2e 
+  KUBERNIKUS_URL: https://kubernikus-master.eu-nl-1.cloud.sap
+
+auth_staging: &auth_staging
+  OS_AUTH_URL: https://identity-3.staging.cloud.sap/v3
+  OS_USERNAME: {{kubernikus-staging-username}}
+  OS_PASSWORD: {{kubernikus-staging-password}}
+  OS_USER_DOMAIN_NAME: ccadmin
+  OS_PROJECT_NAME: kubernikus
+  OS_PROJECT_DOMAIN_NAME: ccadmin
+  KUBERNIKUS_NAME: k-staging
+  KUBERNIKUS_URL: https://k-staging.admin.cloud.sap
+
+auth_eu-nl-1: &auth_eu-nl-1
+  OS_AUTH_URL: https://identity-3.eu-nl-1.cloud.sap/v3
+  OS_USERNAME: {{kubernikus-eu-nl-1-username}}
+  OS_PASSWORD: {{kubernikus-eu-nl-1-password}}
+  OS_USER_DOMAIN_NAME: ccadmin
+  OS_PROJECT_NAME: kubernikus
+  OS_PROJECT_DOMAIN_NAME: ccadmin
+  KUBERNIKUS_NAME: k-eu-nl-1 
+  KUBERNIKUS_URL: https://k-eu-nl-1.admin.cloud.sap
+
+auth_na-us-1: &auth_na-us-1
+  OS_AUTH_URL: https://identity-3.na-us-1.cloud.sap/v3
+  OS_USERNAME: {{kubernikus-na-us-1-username}}
+  OS_PASSWORD: {{kubernikus-na-us-1-password}}
+  OS_USER_DOMAIN_NAME: ccadmin
+  OS_PROJECT_NAME: kubernikus
+  OS_PROJECT_DOMAIN_NAME: ccadmin
+  KUBERNIKUS_NAME: k-na-us-1
+  KUBERNIKUS_URL: https://k-na-us-1.admin.cloud.sap
+
 resources:
 
-  - name: kubernikusctl.release
-    type: github-release
-    source:
-      owner: sapcc
-      repository: kubernikus
-      access_token: ((github-com-access-token))
-
-  - name: kubernikus.builds
+  - name: master.builds
     type: gh-status
     source:
       username: sapcc-bot
@@ -28,27 +81,17 @@ resources:
       access_token: ((github-com-access-token))
       branch: master
       depth: 1
-      ignore_paths: ["charts", "ci"]
 
-  - name: charts.git
-    type: git
+  - name: feature.builds
+    type: gh-status
     source:
       username: sapcc-bot
       password: ((github-com-access-token))
-      uri:    https://github.com/sapcc/kubernikus.git
-      branch: master
+      owner:    sapcc
+      repo:     kubernikus
+      access_token: ((github-com-access-token))
+      branch: feature 
       depth: 1
-      paths: ["charts"]
-
-  - name: pipeline.git
-    type: git
-    source:
-      username: sapcc-bot
-      password: ((github-com-access-token))
-      uri:    https://github.com/sapcc/kubernikus.git
-      branch: master
-      depth: 1
-      paths: ["ci"]
 
   - name: secrets.git
     type: git
@@ -58,10 +101,10 @@ resources:
       branch:      master
       depth: 1
 
-  - name: slack-alert
-    type: slack-notification
-    source:
-      url: {{slack-webhook-url}}
+  - name: daily
+    type: time
+    source: {interval: 24h}
+
 
 resource_types:
   - name: time-version
@@ -79,331 +122,191 @@ resource_types:
     source:
       repository: hub.global.cloud.sap/concourse/ghstatus-resource
       tag: latest
-groups:
-  - name: kubernikus
-    jobs:
-      - cli
-      - staging
-      - e2e
-      - rollout
-      - eu-nl-1
-      - na-us-1
-  - name: admin
-    jobs:
-      - admin_staging
-      - rollout_admin
-      - admin_eu-nl-1
-      - admin_na-us-1
-  - name: kubernikus-system
-    jobs:
-      - staging_kubernikus-system
-      - rollout_kubernikus-system
-      - eu-nl-1_kubernikus-system
-      - na-us-1_kubernikus-system
 
 jobs:
-####################################################################################
-#
-# kubernikus
-#
-####################################################################################
-
-  - name: cli
-    plan:
-      - aggregate:
-        - get: kubernikus.builds
-          trigger: true
-      - task: build
-        file: kubernikus.builds/ci/task_cli.yaml
-      - put: kubernikusctl.release
-        params:
-          name: binaries/tag
-          tag: binaries/tag
-          tag_prefix: v
-          commitish: binaries/commitish
-          globs:
-            - binaries/kubernikusctl*
-        get_params:
-          globs: []
-
-  - name: staging
+  - name: master 
     serial: true
     plan:
       - aggregate:
         - get: secrets.git
-        - get: pipeline.git
         - get: kubernikus.builds
+          resource: master.builds
           trigger: true
-      - task: deploy
-        file: pipeline.git/ci/task_helm_kubernikus.yaml
-        params:
-          OS_AUTH_URL: https://identity-3.eu-nl-1.cloud.sap/v3
-          OS_USERNAME: {{kubernikus-eu-nl-1-username}}
-          OS_PASSWORD: {{kubernikus-eu-nl-1-password}}
-          OS_USER_DOMAIN_NAME: ccadmin
-          OS_PROJECT_NAME: kubernikus-staging
-          OS_PROJECT_DOMAIN_NAME: ccadmin
-          KUBERNIKUS_NAME: k-staging
-          KUBERNIKUS_URL: https://k-staging.admin.cloud.sap
-    on_failure:
-      <<: *post_failure_to_slack
+      - aggregate:
+        - task: kubernikus 
+          file: kubernikus.builds/ci/task_helm_kubernikus.yaml
+          params:
+            <<: *auth_master
+        - task: kubernikus-system 
+          file: kubernikus.builds/ci/task_helm_kubernikus-system.yaml
+          params:
+            <<: *auth_master
+
+  - name: feature 
+    serial: true
+    plan:
+      - aggregate:
+        - get: secrets.git
+        - get: kubernikus.builds
+          resource: feature.builds
+          trigger: true
+      - aggregate:
+        - task: kubernikus 
+          file: kubernikus.builds/ci/task_helm_kubernikus.yaml
+          params:
+            <<: *auth_feature
+        - task: kubernikus-system 
+          file: kubernikus.builds/ci/task_helm_kubernikus-system.yaml
+          params:
+            <<: *auth_feature
 
   - name: e2e
     serial: true
     plan:
       - aggregate:
-        - get: pipeline.git
+        - get: secrets.git
         - get: kubernikus.builds
-          passed: [staging]
+          resource: master.builds
+          passed: [master]
           trigger: true
       - task: e2e_tests
-        file: pipeline.git/ci/task_e2e_tests.yaml
+        file: kubernikus.builds/ci/task_e2e_tests.yaml
         params:
-          OS_AUTH_URL: https://identity-3.staging.cloud.sap/v3
-          OS_USERNAME: {{kubernikus-staging-username}}
-          OS_PASSWORD: {{kubernikus-staging-password}}
-          OS_USER_DOMAIN_NAME: ccadmin
-          OS_PROJECT_NAME: kubernikus-e2e
-          OS_PROJECT_DOMAIN_NAME: ccadmin
-          OS_REGION_NAME: staging
-    on_failure:
-      <<: *post_failure_to_slack
+          <<: *auth_e2e
 
-  - name: rollout
+  - name: conformance 
+    serial: true
+    plan:
+      - aggregate:
+        - get: kubernikus.builds
+          resource: master.builds
+          passed: [e2e]
+        - get: daily
+          trigger: true
+
+  - name: prod 
     serial: true
     plan:
       - get: kubernikus.builds
+        resource: master.builds
         passed: [e2e]
-        trigger: true
 
-  - name: eu-nl-1
+  - name: emea 
     serial: true
     plan:
       - aggregate:
         - get: secrets.git
-        - get: pipeline.git
         - get: kubernikus.builds
-          passed: [rollout]
+          resource: master.builds
+          passed: [prod]
           trigger: true
-      - task: deploy
-        file: pipeline.git/ci/task_helm_kubernikus.yaml
-        params:
-          OS_AUTH_URL: https://identity-3.eu-nl-1.cloud.sap/v3
-          OS_USERNAME: {{kubernikus-eu-nl-1-username}}
-          OS_PASSWORD: {{kubernikus-eu-nl-1-password}}
-          OS_USER_DOMAIN_NAME: ccadmin
-          OS_PROJECT_NAME: kubernikus
-          OS_PROJECT_DOMAIN_NAME: ccadmin
-          KUBERNIKUS_NAME: k-eu-nl-1
-          KUBERNIKUS_URL: https://k-eu-nl-1.admin.cloud.sap
-    on_failure:
-      <<: *post_failure_to_slack
+      - aggregate:
+        - task: kubernikus_eu-nl-1
+          file: kubernikus.builds/ci/task_helm_kubernikus.yaml
+          params:
+            <<: *auth_eu-nl-1
+        - task: kubernikus-system_eu-nl-1
+          file: kubernikus.builds/ci/task_helm_kubernikus-system.yaml
+          params:
+            <<: *auth_eu-nl-1
 
-  - name: na-us-1
+  - name: asia
     serial: true
     plan:
       - aggregate:
         - get: secrets.git
-        - get: pipeline.git
         - get: kubernikus.builds
-          passed: [rollout]
+          resource: master.builds
+          passed: [prod]
           trigger: true
-      - task: deploy
-        file: pipeline.git/ci/task_helm_kubernikus.yaml
-        params:
-          OS_AUTH_URL: https://identity-3.na-us-1.cloud.sap/v3
-          OS_USERNAME: {{kubernikus-na-us-1-username}}
-          OS_PASSWORD: {{kubernikus-na-us-1-password}}
-          OS_USER_DOMAIN_NAME: ccadmin
-          OS_PROJECT_NAME: kubernikus
-          OS_PROJECT_DOMAIN_NAME: ccadmin
-          KUBERNIKUS_NAME: k-na-us-1
-          KUBERNIKUS_URL: https://k-na-us-1.admin.cloud.sap
-    on_failure:
-      <<: *post_failure_to_slack
 
-####################################################################################
-#
-# admin
-#
-####################################################################################
-#
-  - name: admin_staging
+  - name: americas 
     serial: true
     plan:
       - aggregate:
         - get: secrets.git
-        - get: pipeline.git
         - get: kubernikus.builds
+          resource: master.builds
+          passed: [prod]
           trigger: true
-      - task: deploy
-        file: kubernikus.builds/ci/task_helm-admin_kubernikus.yaml
-        params:
-          REGION: admin
-          KUBERNIKUS_NAME: k-staging
-          GITHUB_TOKEN: ((github-access-token))
-    on_failure:
-      <<: *post_failure_to_slack
+      - aggregate:
+        - task: kubernikus_na-us-1
+          file: kubernikus.builds/ci/task_helm_kubernikus.yaml
+          params:
+            <<: *auth_na-us-1
+        - task: kubernikus-system_na-us-1
+          file: kubernikus.builds/ci/task_helm_kubernikus-system.yaml
+          params:
+            <<: *auth_na-us-1
 
-  - name: rollout_admin
-    serial: true
-    plan:
-      - get: kubernikus.builds
-        passed: [admin_staging]
-        trigger: true
-
-  - name: admin_eu-nl-1
+  - name: admin 
     serial: true
     plan:
       - aggregate:
         - get: secrets.git
-        - get: pipeline.git
         - get: kubernikus.builds
-          passed: [rollout_admin]
+          resource: master.builds
+          passed: [prod]
           trigger: true
-      - task: deploy
-        file: kubernikus.builds/ci/task_helm-admin_kubernikus.yaml
-        params:
-          REGION: admin
-          KUBERNIKUS_NAME: k-eu-nl-1
-          GITHUB_TOKEN: ((github-access-token))
-    on_failure:
-      <<: *post_failure_to_slack
+      - aggregate:
+        - task: k-master 
+          file: kubernikus.builds/ci/task_helm-admin_kubernikus.yaml
+          params:
+            REGION: admin
+            KUBERNIKUS_NAME: k-master
+            GITHUB_TOKEN: ((github-access-token))
+        - task: k-feature
+          file: kubernikus.builds/ci/task_helm-admin_kubernikus.yaml
+          params:
+            REGION: admin
+            KUBERNIKUS_NAME: k-feature
+            GITHUB_TOKEN: ((github-access-token))
+        - task: k-eu-nl-1
+          file: kubernikus.builds/ci/task_helm-admin_kubernikus.yaml
+          params:
+            REGION: admin
+            KUBERNIKUS_NAME: k-eu-nl-1
+            GITHUB_TOKEN: ((github-access-token))
+        - task: k-na-us-1
+          file: kubernikus.builds/ci/task_helm-admin_kubernikus.yaml
+          params:
+            REGION: admin
+            KUBERNIKUS_NAME: k-na-us-1
+            GITHUB_TOKEN: ((github-access-token))
 
-  - name: admin_na-us-1
+  - name: staging 
     serial: true
     plan:
       - aggregate:
         - get: secrets.git
-        - get: pipeline.git
         - get: kubernikus.builds
-          passed: [rollout_admin]
+          resource: feature.builds
+          passed: [feature]
           trigger: true
-      - task: deploy
-        file: kubernikus.builds/ci/task_helm-admin_kubernikus.yaml
-        params:
-          REGION: admin
-          KUBERNIKUS_NAME: k-na-us-1
-          GITHUB_TOKEN: ((github-access-token))
-    on_failure:
-      <<: *post_failure_to_slack
-
-####################################################################################
-#
-# kubernikus-system
-#
-####################################################################################
-
-  - name: staging_kubernikus-system
-    serial: true
-    plan:
       - aggregate:
-        - get: charts.git
-          trigger: true
-        - get: secrets.git
-        - get: pipeline.git
-      - task: deploy
-        file: pipeline.git/ci/task_helm_kubernikus-system.yaml
-        params:
-          OS_AUTH_URL: https://identity-3.eu-nl-1.cloud.sap/v3
-          OS_USERNAME: {{kubernikus-eu-nl-1-username}}
-          OS_PASSWORD: {{kubernikus-eu-nl-1-password}}
-          OS_USER_DOMAIN_NAME: ccadmin
-          OS_PROJECT_NAME: kubernikus-staging
-          OS_PROJECT_DOMAIN_NAME: ccadmin
-          KUBERNIKUS_NAME: k-staging
-          KUBERNIKUS_URL: https://k-staging.admin.cloud.sap
-      - task: reload prometheus configuration
-        file: pipeline.git/ci/task_reload_prometheus_config.yaml
-        params:
-          NAMESPACE: kubernikus-system
-          DELAY_SECONDS: 30
-          OS_AUTH_URL: https://identity-3.eu-nl-1.cloud.sap/v3
-          OS_USERNAME: {{kubernikus-eu-nl-1-username}}
-          OS_PASSWORD: {{kubernikus-eu-nl-1-password}}
-          OS_USER_DOMAIN_NAME: ccadmin
-          OS_PROJECT_NAME: kubernikus-staging
-          OS_PROJECT_DOMAIN_NAME: ccadmin
-          KUBERNIKUS_NAME: k-staging
-          KUBERNIKUS_URL: https://k-staging.admin.cloud.sap
-    on_failure:
-      <<: *post_failure_to_slack
+        - task: k-staging
+          file: kubernikus.builds/ci/task_helm-admin_kubernikus.yaml
+          params:
+            REGION: admin
+            KUBERNIKUS_NAME: k-staging
+            GITHUB_TOKEN: ((github-access-token))
+        - task: kubernikus
+          file: kubernikus.builds/ci/task_helm_kubernikus.yaml
+          params:
+            <<: *auth_staging
+        - task: kubernikus-system
+          file: kubernikus.builds/ci/task_helm_kubernikus-system.yaml
+          params:
+            <<: *auth_staging
 
-  - name: rollout_kubernikus-system
-    serial: true
-    plan:
-      - get: charts.git
-        passed: [staging_kubernikus-system]
-        trigger: true
-
-  - name: eu-nl-1_kubernikus-system
+  - name: qa
     serial: true
     plan:
       - aggregate:
         - get: secrets.git
-        - get: pipeline.git
-        - get: charts.git
-          passed: [rollout_kubernikus-system]
+        - get: kubernikus.builds
+          resource: feature.builds
+          passed: [feature]
           trigger: true
-      - task: deploy
-        file: pipeline.git/ci/task_helm_kubernikus-system.yaml
-        params:
-          OS_AUTH_URL: https://identity-3.eu-nl-1.cloud.sap/v3
-          OS_USERNAME: {{kubernikus-eu-nl-1-username}}
-          OS_PASSWORD: {{kubernikus-eu-nl-1-password}}
-          OS_USER_DOMAIN_NAME: ccadmin
-          OS_PROJECT_NAME: kubernikus
-          OS_PROJECT_DOMAIN_NAME: ccadmin
-          KUBERNIKUS_NAME: k-eu-nl-1
-          KUBERNIKUS_URL: https://k-eu-nl-1.admin.cloud.sap
-      - task: reload prometheus configuration
-        file: pipeline.git/ci/task_reload_prometheus_config.yaml
-        params:
-          NAMESPACE: kubernikus-system
-          DELAY_SECONDS: 30
-          OS_AUTH_URL: https://identity-3.eu-nl-1.cloud.sap/v3
-          OS_USERNAME: {{kubernikus-eu-nl-1-username}}
-          OS_PASSWORD: {{kubernikus-eu-nl-1-password}}
-          OS_USER_DOMAIN_NAME: ccadmin
-          OS_PROJECT_NAME: kubernikus
-          OS_PROJECT_DOMAIN_NAME: ccadmin
-          KUBERNIKUS_NAME: k-eu-nl-1
-          KUBERNIKUS_URL: https://k-eu-nl-1.admin.cloud.sap
-    on_failure:
-      <<: *post_failure_to_slack
 
-  - name: na-us-1_kubernikus-system
-    serial: true
-    plan:
-      - aggregate:
-        - get: secrets.git
-        - get: pipeline.git
-        - get: charts.git
-          passed: [rollout_kubernikus-system]
-          trigger: true
-      - task: deploy
-        file: pipeline.git/ci/task_helm_kubernikus-system.yaml
-        params:
-          OS_AUTH_URL: https://identity-3.na-us-1.cloud.sap/v3
-          OS_USERNAME: {{kubernikus-na-us-1-username}}
-          OS_PASSWORD: {{kubernikus-na-us-1-password}}
-          OS_USER_DOMAIN_NAME: ccadmin
-          OS_PROJECT_NAME: kubernikus
-          OS_PROJECT_DOMAIN_NAME: ccadmin
-          KUBERNIKUS_NAME: k-na-us-1
-          KUBERNIKUS_URL: https://k-na-us-1.admin.cloud.sap
-      - task: reload prometheus configuration
-        file: pipeline.git/ci/task_reload_prometheus_config.yaml
-        params:
-          NAMESPACE: kubernikus-system
-          DELAY_SECONDS: 30
-          OS_AUTH_URL: https://identity-3.na-us-1.cloud.sap/v3
-          OS_USERNAME: {{kubernikus-na-us-1-username}}
-          OS_PASSWORD: {{kubernikus-na-us-1-password}}
-          OS_USER_DOMAIN_NAME: ccadmin
-          OS_PROJECT_NAME: kubernikus
-          OS_PROJECT_DOMAIN_NAME: ccadmin
-          KUBERNIKUS_NAME: k-na-us-1
-          KUBERNIKUS_URL: https://k-na-us-1.admin.cloud.sap
-    on_failure:
-      <<: *post_failure_to_slack
+
