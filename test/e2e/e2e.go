@@ -39,6 +39,7 @@ func NewE2ETestSuite(t *testing.T, options E2ETestSuiteOptions) *E2ETestSuite {
 	}
 
 	if err := options.Verify(); err != nil {
+		options.Config = ReadFromEnv()
 		options.OpenStackCredentials = getOpenStackCredentialsFromENV()
 		if err := options.Verify(); err != nil {
 			log.Fatalf("Checked config and env. Insufficient parameters for authentication : %v", err)

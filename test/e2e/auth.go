@@ -111,9 +111,6 @@ func (c *OpenStackCredentials) Verify() error {
 			c.AuthURL += "/"
 		}
 	}
-	if c.RegionName == "" {
-		errorString += "missing OS_REGION_NAME\n"
-	}
 	if errorString != "" {
 		return fmt.Errorf(errorString)
 	}

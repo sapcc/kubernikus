@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 	"io/ioutil"
+	"log"
+	"net/url"
 
 	"os"
 
@@ -31,8 +33,18 @@ func ReadConfig(filePath string) (Config, error) {
 }
 
 func ReadFromEnv() Config {
+	env := os.Getenv("KUBERNIKUS_URL")
+	if env == "" {
+		return Config{}
+	}
+
+	kubernikus_url, err := url.Parse(env)
+	if err != nil {
+		log.Fatalf("Couldn't parse KUBERNIKUS_URL: %v", err)
+	}
+
 	return Config{
-		APIURL:     os.Getenv("KUBERNIKUS_API_SERVER"),
+		APIURL:     kubernikus_url.Host,
 		APIVersion: os.Getenv("KUBERNIKUS_API_VERSION"),
 	}
 }

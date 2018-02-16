@@ -42,8 +42,12 @@ func (s *E2ETestSuite) RunSmokeTest() {
 func (s *E2ETestSuite) TestSetupKubernikusCtl() {
 	log.Printf("Setting up kubernikusctl")
 	// get kluster info which contains the URL to the kubernikusctl binary and download it
-	if err := s.getKubernikusctlBinary(); err != nil {
-		s.handleError(fmt.Errorf("[failure] could not get kubernikusctl. reason: %v", err))
+	if runtime.GOOS == "darwin" {
+		log.Println("Detected dev machine. skipping kubernikusctl download. make sure 'kubernikusctl' is installed.")
+	} else {
+		if err := s.getKubernikusctlBinary(); err != nil {
+			s.handleError(fmt.Errorf("[failure] could not get kubernikusctl. reason: %v", err))
+		}
 	}
 	// auth init to get kubeconfig for kluster
 	if err := s.initKubernikusctl(); err != nil {
@@ -230,7 +234,7 @@ func (s *E2ETestSuite) dialServiceName(source *v1.Pod, target *v1.Service) {
 }
 
 func (s *E2ETestSuite) dial(sourcePod *v1.Pod, targetIP string, targetPort int32) (string, error) {
-	cmd := fmt.Sprintf("wget --timeout=%v -O - http://%v:%v", TimeoutWGET, targetIP, targetPort)
+	cmd := fmt.Sprintf("wget --tries=1 --timeout=%v -O - http://%v:%v", TimeoutWGET, targetIP, targetPort)
 	return RunKubectlHostCmd(sourcePod.GetNamespace(), sourcePod.GetName(), cmd)
 }
 

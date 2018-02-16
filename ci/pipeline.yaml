@@ -159,13 +159,13 @@ jobs:
       - task: e2e_tests
         file: pipeline.git/ci/task_e2e_tests.yaml
         params:
-          OS_AUTH_URL: https://identity-3.eu-nl-1.cloud.sap/v3
-          OS_USERNAME: {{kubernikus-eu-nl-1-username}}
-          OS_PASSWORD: {{kubernikus-eu-nl-1-password}}
+          OS_AUTH_URL: https://identity-3.staging.cloud.sap/v3
+          OS_USERNAME: {{kubernikus-staging-username}}
+          OS_PASSWORD: {{kubernikus-staging-password}}
           OS_USER_DOMAIN_NAME: ccadmin
           OS_PROJECT_NAME: kubernikus-e2e
           OS_PROJECT_DOMAIN_NAME: ccadmin
-          OS_REGION_NAME: eu-nl-1
+          OS_REGION_NAME: staging
     on_failure:
       <<: *post_failure_to_slack
 
