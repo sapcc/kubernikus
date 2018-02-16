@@ -33,7 +33,6 @@ type Reconciler interface {
 
 type controller struct {
 	config.Factories
-	config.Clients
 
 	queue      workqueue.RateLimitingInterface
 	reconciler Reconciler
@@ -42,14 +41,16 @@ type controller struct {
 	threadiness int
 }
 
-func NewController(threadiness int, factories config.Factories, clients config.Clients, reconciler Reconciler, logger log.Logger) Controller {
+func NewController(threadiness int, factories config.Factories, reconciler Reconciler, logger log.Logger, queue workqueue.RateLimitingInterface) Controller {
 	c := &controller{
 		Factories:   factories,
-		Clients:     clients,
-		queue:       workqueue.NewRateLimitingQueue(workqueue.NewItemExponentialFailureRateLimiter(BASE_DELAY, MAX_DELAY)),
+		queue:       queue,
 		reconciler:  reconciler,
 		logger:      logger,
 		threadiness: threadiness,
+	}
+	if c.queue == nil {
+		c.queue = workqueue.NewRateLimitingQueue(workqueue.NewItemExponentialFailureRateLimiter(BASE_DELAY, MAX_DELAY))
 	}
 
 	c.Factories.Kubernikus.Kubernikus().V1().Klusters().Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{

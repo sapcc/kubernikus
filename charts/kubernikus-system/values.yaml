@@ -131,10 +131,10 @@ grafana:
             }
           ]
         },
-        "editable": true,
+        "editable": false,
         "gnetId": null,
         "graphTooltip": 0,
-        "iteration": 1517997489021,
+        "iteration": 1518790730814,
         "links": [],
         "panels": [
           {
@@ -552,7 +552,9 @@ grafana:
             "type": "text"
           },
           {
-            "aliasColors": {},
+            "aliasColors": {
+              "{instance=\"https://kubernikus.eu-nl-1.cloud.sap/\",job=\"blackbox-ingress\",kubernetes_name=\"kubernikus-api\",kubernetes_namespace=\"kubernikus-system\",path=\"/\",phase=\"connect\"}": "#eab839"
+            },
             "bars": false,
             "dashLength": 10,
             "dashes": false,
@@ -586,7 +588,8 @@ grafana:
             "renderer": "flot",
             "seriesOverrides": [
               {
-                "alias": "Avg",
+                "alias": "0.95",
+                "dashes": true,
                 "fill": 0,
                 "linewidth": 3
               }
@@ -596,22 +599,22 @@ grafana:
             "steppedLine": false,
             "targets": [
               {
-                "$$hashKey": "object:5818",
-                "expr": "sum(probe_http_duration_seconds{path=\"/\"}) * 1000",
+                "expr": "sum(probe_http_duration_seconds{instance=~\"https://kubernikus.*\",path=\"/\"}) * 1000",
                 "format": "time_series",
                 "hide": false,
                 "instant": false,
+                "interval": "",
                 "intervalFactor": 1,
                 "legendFormat": "API",
                 "refId": "A"
               },
               {
-                "$$hashKey": "object:5819",
-                "expr": "sum(avg_over_time(probe_http_duration_seconds{path=\"/\"}[1h])) * 1000",
+                "expr": "quantile_over_time(0.95, probe_duration_seconds{instance=~\"https://kubernikus.*\"}[24h]) * 1000",
                 "format": "time_series",
                 "hide": false,
+                "interval": "",
                 "intervalFactor": 1,
-                "legendFormat": "Avg",
+                "legendFormat": "0.95",
                 "refId": "B"
               }
             ],
@@ -635,9 +638,10 @@ grafana:
             },
             "yaxes": [
               {
+                "decimals": null,
                 "format": "ms",
                 "label": null,
-                "logBase": 1,
+                "logBase": 10,
                 "max": null,
                 "min": null,
                 "show": true
@@ -2039,10 +2043,10 @@ grafana:
               "#d44a3a"
             ],
             "datasource": null,
-            "decimals": 0,
-            "format": "percent",
+            "decimals": null,
+            "format": "percentunit",
             "gauge": {
-              "maxValue": 100,
+              "maxValue": 1,
               "minValue": 0,
               "show": true,
               "thresholdLabels": false,
@@ -2092,7 +2096,8 @@ grafana:
             "tableColumn": "",
             "targets": [
               {
-                "expr": "sum(container_fs_usage_bytes{pod_name=~\".*-etcd-.*\",image!~\".*pause.*\"}) / sum(kube_persistentvolumeclaim_resource_requests_storage_bytes) * 100",
+                "$$hashKey": "object:658",
+                "expr": "sum(container_fs_usage_bytes{pod_name=~\".*-etcd-.*\",image!~\".*pause.*\"}) / sum(kube_persistentvolumeclaim_resource_requests_storage_bytes{namespace=\"kubernikus\"})",
                 "format": "time_series",
                 "hide": false,
                 "instant": false,
@@ -2102,7 +2107,7 @@ grafana:
                 "refId": "B"
               }
             ],
-            "thresholds": "50,80",
+            "thresholds": "0.7,0.9",
             "timeFrom": "1m",
             "title": "Cinder",
             "type": "singlestat",
@@ -2147,10 +2152,12 @@ grafana:
             "mappingType": 1,
             "mappingTypes": [
               {
+                "$$hashKey": "object:314",
                 "name": "value to text",
                 "value": 1
               },
               {
+                "$$hashKey": "object:315",
                 "name": "range to text",
                 "value": 2
               }
@@ -2178,20 +2185,23 @@ grafana:
             "tableColumn": "",
             "targets": [
               {
-                "expr": "limes_project_quota{project=\"kubernikus\",resource=\"instances\",domain=\"ccadmin\"} / limes_project_usage{project=\"kubernikus\",resource=\"instances\",domain=\"ccadmin\"}",
+                "$$hashKey": "object:258",
+                "expr": "limes_project_usage{project=\"kubernikus\",resource=\"instances\",domain=\"ccadmin\"} / limes_project_quota{project=\"kubernikus\",resource=\"instances\",domain=\"ccadmin\"}",
                 "format": "time_series",
+                "instant": true,
                 "intervalFactor": 1,
                 "legendFormat": "",
                 "refId": "A"
               }
             ],
-            "thresholds": "",
+            "thresholds": "0.7,0.9",
             "timeFrom": "1m",
             "title": "Instances",
             "type": "singlestat",
             "valueFontSize": "80%",
             "valueMaps": [
               {
+                "$$hashKey": "object:317",
                 "op": "=",
                 "text": "N/A",
                 "value": "null"
@@ -2209,7 +2219,7 @@ grafana:
               "#d44a3a"
             ],
             "datasource": null,
-            "decimals": 0,
+            "decimals": null,
             "format": "percentunit",
             "gauge": {
               "maxValue": 1,
@@ -2262,14 +2272,15 @@ grafana:
             "tableColumn": "",
             "targets": [
               {
-                "expr": "limes_project_quota{project=\"kubernikus\",resource=\"cores\",domain=\"ccadmin\"} / limes_project_usage{project=\"kubernikus\",resource=\"cores\",domain=\"ccadmin\"}",
+                "$$hashKey": "object:500",
+                "expr": "limes_project_usage{project=\"kubernikus\",resource=\"cores\",domain=\"ccadmin\"} / limes_project_quota{project=\"kubernikus\",resource=\"cores\",domain=\"ccadmin\"} ",
                 "format": "time_series",
                 "intervalFactor": 1,
                 "legendFormat": "",
                 "refId": "A"
               }
             ],
-            "thresholds": "",
+            "thresholds": "0.7,0.9",
             "timeFrom": "1m",
             "title": "Cores",
             "type": "singlestat",
@@ -2293,7 +2304,7 @@ grafana:
               "#d44a3a"
             ],
             "datasource": null,
-            "decimals": 0,
+            "decimals": null,
             "format": "percentunit",
             "gauge": {
               "maxValue": 1,
@@ -2315,10 +2326,12 @@ grafana:
             "mappingType": 1,
             "mappingTypes": [
               {
+                "$$hashKey": "object:422",
                 "name": "value to text",
                 "value": 1
               },
               {
+                "$$hashKey": "object:423",
                 "name": "range to text",
                 "value": 2
               }
@@ -2346,20 +2359,23 @@ grafana:
             "tableColumn": "",
             "targets": [
               {
-                "expr": "limes_project_quota{project=\"kubernikus\",resource=\"ram\",domain=\"ccadmin\"} / limes_project_usage{project=\"kubernikus\",resource=\"ram\",domain=\"ccadmin\"}",
+                "$$hashKey": "object:399",
+                "expr": "limes_project_usage{project=\"kubernikus\",resource=\"ram\",domain=\"ccadmin\"} / limes_project_quota{project=\"kubernikus\",resource=\"ram\",domain=\"ccadmin\"}",
                 "format": "time_series",
+                "instant": true,
                 "intervalFactor": 1,
                 "legendFormat": "",
                 "refId": "A"
               }
             ],
-            "thresholds": "",
+            "thresholds": "0.7,0.9",
             "timeFrom": "1m",
             "title": "RAM",
             "type": "singlestat",
             "valueFontSize": "80%",
             "valueMaps": [
               {
+                "$$hashKey": "object:425",
                 "op": "=",
                 "text": "N/A",
                 "value": "null"
@@ -2516,7 +2532,6 @@ grafana:
             "steppedLine": false,
             "targets": [
               {
-                "$$hashKey": "object:5395",
                 "expr": "sum(300 * rate(kubernikus_launch_failed_operation_total{method!=\"Reconcile\"}[5m])) by (method)",
                 "format": "time_series",
                 "hide": true,
@@ -2526,7 +2541,6 @@ grafana:
                 "refId": "A"
               },
               {
-                "$$hashKey": "object:5396",
                 "expr": "sum(300 * rate(kubernikus_launch_successful_operation_total{method!=\"Reconcile\"}[5m])) by (method)",
                 "format": "time_series",
                 "hide": true,
@@ -2535,7 +2549,6 @@ grafana:
                 "refId": "B"
               },
               {
-                "$$hashKey": "object:5397",
                 "expr": "60 * sum(rate(kubernikus_deorbit_successful_operation_total[11m]))",
                 "format": "time_series",
                 "interval": "",
@@ -2544,7 +2557,6 @@ grafana:
                 "refId": "C"
               },
               {
-                "$$hashKey": "object:5398",
                 "expr": "60 * sum(rate(kubernikus_deorbit_failed_operation_total[11m]))",
                 "format": "time_series",
                 "intervalFactor": 1,
@@ -2636,7 +2648,6 @@ grafana:
             "steppedLine": false,
             "targets": [
               {
-                "$$hashKey": "object:4964",
                 "expr": "sum(60 * rate(kubernikus_launch_failed_operation_total[5m])) by (method)",
                 "format": "time_series",
                 "hide": true,
@@ -2646,7 +2657,6 @@ grafana:
                 "refId": "A"
               },
               {
-                "$$hashKey": "object:4965",
                 "expr": "sum(60 * rate(kubernikus_launch_successful_operation_total{}[5m])) by (method)",
                 "format": "time_series",
                 "hide": true,
@@ -2655,7 +2665,6 @@ grafana:
                 "refId": "B"
               },
               {
-                "$$hashKey": "object:4966",
                 "expr": "60 * sum(rate(kubernikus_launch_successful_operation_total[11m]))",
                 "format": "time_series",
                 "interval": "",
@@ -2664,7 +2673,6 @@ grafana:
                 "refId": "C"
               },
               {
-                "$$hashKey": "object:4967",
                 "expr": "60 * sum(rate(kubernikus_launch_failed_operation_total[11m]))",
                 "format": "time_series",
                 "intervalFactor": 1,
@@ -2707,9 +2715,103 @@ grafana:
                 "show": true
               }
             ]
+          },
+          {
+            "aliasColors": {},
+            "bars": false,
+            "dashLength": 10,
+            "dashes": false,
+            "datasource": null,
+            "fill": 0,
+            "gridPos": {
+              "h": 7,
+              "w": 6,
+              "x": 18,
+              "y": 13
+            },
+            "id": 69,
+            "legend": {
+              "avg": false,
+              "current": false,
+              "max": false,
+              "min": false,
+              "show": false,
+              "total": false,
+              "values": false
+            },
+            "lines": true,
+            "linewidth": 2,
+            "links": [],
+            "nullPointMode": "connected",
+            "percentage": false,
+            "pointradius": 5,
+            "points": false,
+            "renderer": "flot",
+            "seriesOverrides": [
+              {
+                "alias": "24h Average",
+                "dashes": true,
+                "linewidth": 5
+              }
+            ],
+            "spaceLength": 10,
+            "stack": false,
+            "steppedLine": false,
+            "targets": [
+              {
+                "expr": "rate(go_goroutines{app=\"kubernikus\"}[5m])",
+                "format": "time_series",
+                "intervalFactor": 1,
+                "legendFormat": "Current",
+                "refId": "D"
+              },
+              {
+                "expr": "rate(go_goroutines{app=\"kubernikus\"}[24h])\n",
+                "format": "time_series",
+                "intervalFactor": 1,
+                "legendFormat": "24h Average",
+                "refId": "A"
+              }
+            ],
+            "thresholds": [],
+            "timeFrom": null,
+            "timeShift": null,
+            "title": "GoRoutines",
+            "tooltip": {
+              "shared": true,
+              "sort": 0,
+              "value_type": "individual"
+            },
+            "type": "graph",
+            "xaxis": {
+              "buckets": null,
+              "mode": "time",
+              "name": null,
+              "show": true,
+              "values": []
+            },
+            "yaxes": [
+              {
+                "decimals": null,
+                "format": "short",
+                "label": null,
+                "logBase": 1,
+                "max": null,
+                "min": null,
+                "show": true
+              },
+              {
+                "format": "short",
+                "label": null,
+                "logBase": 1,
+                "max": null,
+                "min": null,
+                "show": true
+              }
+            ]
           }
         ],
-        "refresh": "5s",
+        "refresh": "1m",
         "schemaVersion": 16,
         "style": "dark",
         "tags": [],
@@ -2840,5 +2942,6 @@ grafana:
         },
         "timezone": "",
         "title": "Kubernikus",
-        "version": 1
+        "uid": "0zgHSx3kz",
+        "version": 5
       }
