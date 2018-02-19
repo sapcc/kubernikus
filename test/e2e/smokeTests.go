@@ -234,7 +234,7 @@ func (s *E2ETestSuite) dialServiceName(source *v1.Pod, target *v1.Service) {
 }
 
 func (s *E2ETestSuite) dial(sourcePod *v1.Pod, targetIP string, targetPort int32) (string, error) {
-	cmd := fmt.Sprintf("wget --tries=1 --timeout=%v -O - http://%v:%v", TimeoutWGET, targetIP, targetPort)
+	cmd := fmt.Sprintf("wget --tries=%v --timeout=%v --retry-connrefused -O - http://%v:%v", WGETRetries, WGETTimeout, targetIP, targetPort)
 	return RunKubectlHostCmd(sourcePod.GetNamespace(), sourcePod.GetName(), cmd)
 }
 
