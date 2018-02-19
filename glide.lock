@@ -1,5 +1,5 @@
-hash: 1f1c5307c81960da9f3950bd1234df82475f4141bf10bfc30dea9d7d447f9464
-updated: 2018-01-11T17:56:17.420269822+01:00
+hash: 5a4f6ca3c667d683e8ecf32067a37bdd403f700ff5d6b23fdb58f5a541bae202
+updated: 2018-02-19T13:13:22.522337+01:00
 imports:
 - name: github.com/ajeddeloh/yaml
   version: 1072abfea31191db507785e2e0c1b8d1440d35a5
@@ -10,7 +10,7 @@ imports:
 - name: github.com/asaskevich/govalidator
   version: 73945b6115bfbbcc57d89b7316e28109364124e1
 - name: github.com/beorn7/perks
-  version: 3ac7bf7a47d159a033b107610db8a1b6575507a4
+  version: 4c0e84591b9aa9e6dcfdf3e020114cd81f89d5f9
   subpackages:
   - quantile
 - name: github.com/BurntSushi/toml
@@ -108,7 +108,7 @@ imports:
 - name: github.com/go-stack/stack
   version: 259ab82a6cad3992b4e21ff5cac294ccb06474bc
 - name: github.com/gobwas/glob
-  version: bea32b9cd2d6f55753d94a28e959b13f0244797a
+  version: 5ccd90ef52e1e632236f7326478d4faa74f99438
   subpackages:
   - compiler
   - match
@@ -231,12 +231,12 @@ imports:
 - name: github.com/pmylund/go-cache
   version: a3647f8e31d79543b2d0f0ae2fe5c379d72cedc0
 - name: github.com/prometheus/client_golang
-  version: e7e903064f5e9eb5da98208bae10b475d4db0f8c
+  version: fcc130e101e76c5d303513d0e28f4b6d732845c7
   subpackages:
   - prometheus
   - prometheus/promhttp
 - name: github.com/prometheus/client_model
-  version: fa8ad6fec33561be4280a8f0514318c79d7f6cb6
+  version: 99fa1f4be8e564e8a6b613da7fa6f46c9edafc6c
   subpackages:
   - go
 - name: github.com/prometheus/common
@@ -249,13 +249,6 @@ imports:
   version: 65c1f6f8f0fc1e2185eb9863a3bc751496404259
   subpackages:
   - xfs
-- name: github.com/prometheus/prometheus
-  version: 0a74f98628a0463dddc90528220c94de5032d1a0
-  subpackages:
-  - client_go
-  - client_model
-  - common
-  - procfs
 - name: github.com/PuerkitoBio/purell
   version: 0bcb03f4b4d0a9428594752bd2a3b9aa0a9d4bd4
 - name: github.com/PuerkitoBio/urlesc
@@ -269,9 +262,10 @@ imports:
 - name: github.com/spf13/pflag
   version: 4c012f6dcd9546820e378d0bdda4d8fc772cdfea
 - name: github.com/stretchr/testify
-  version: b91bfb9ebec76498946beb6af7c0230c7cc7ba6c
+  version: 12b6f73e6084dad08a7c6e575284b177ecafbc71
   subpackages:
   - assert
+  - require
 - name: github.com/tredoe/osutil
   version: 7d3ee1afa71c90fd1514c8f557ae6c5f414208eb
   subpackages:
@@ -587,6 +581,7 @@ imports:
   - util/flowcontrol
   - util/homedir
   - util/integer
+  - util/retry
   - util/workqueue
 - name: k8s.io/code-generator
   version: 91d3f6a57905178524105a085085901bb73bd3dc
@@ -628,7 +623,7 @@ imports:
   - pkg/common
   - pkg/util/proto
 - name: k8s.io/utils
-  version: a99a3e11a96751670db62ba77c6d278d1136931e
+  version: aedf551cdb8b0119df3a19c65fde413a13b34997
   subpackages:
   - exec
 testImports: []
