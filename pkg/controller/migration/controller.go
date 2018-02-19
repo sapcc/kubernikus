@@ -30,7 +30,7 @@ func NewController(threadiness int, factories config.Factories, clients config.C
 	var reconciler base.Reconciler
 	reconciler = &MigrationReconciler{clients, recorder, logger}
 
-	return base.NewController(threadiness, factories, clients, reconciler, logger)
+	return base.NewController(threadiness, factories, reconciler, logger, nil)
 }
 
 func (mr *MigrationReconciler) Reconcile(kluster *v1.Kluster) (bool, error) {
