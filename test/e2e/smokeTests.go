@@ -23,6 +23,7 @@ func (s *E2ETestSuite) SetupSmokeTest() {
 	s.getReadyNodes()
 	s.isClusterBigEnoughForSmokeTest()
 	s.cleanUp()
+	s.waitForKubeDNS()
 	s.createPods()
 	s.createServices()
 }
