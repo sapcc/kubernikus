@@ -6,7 +6,8 @@ const (
 	Timeout       = 10 * time.Minute
 	CheckInterval = 10 * time.Second
 
-	TimeoutPod = 5 * time.Minute
+	TimeoutPod     = 5 * time.Minute
+	TimeoutKubeDNS = 2 * time.Minute
 
 	ClusterName               = "e2e"
 	ClusterSmallNodePoolSize  = 2

@@ -173,6 +173,8 @@ func newE2ESmokeTestCluster(klusterName string) *models.Kluster {
 	}
 }
 
+
+
 func isPodRunning(event watch.Event) (bool, error) {
 	switch event.Type {
 	case watch.Deleted:
