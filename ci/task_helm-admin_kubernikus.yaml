@@ -22,6 +22,7 @@ run:
       helm upgrade $KUBERNIKUS_NAME kubernikus.builds/charts/kubernikus/ \
         --namespace=$KUBERNIKUS_NAME \
         --values secrets.git/global/values/kubernikus.yaml \
+        --values secrets.git/kubernikus/$KUBERNIKUS_NAME/values/kubernikus.yaml \
         --values secrets.git/admin/values/$KUBERNIKUS_NAME.yaml \
         --set imageTag=$VERSION \
         --install
