@@ -26,7 +26,11 @@ run:
 
       helm repo add forked https://raw.githubusercontent.com/BugRoger/charts/repo
       helm dep up --skip-refresh kubernikus-copy.builds/charts/kubernikus-system/
-      helm upgrade kubernikus-system kubernikus-copy.builds/charts/kubernikus-system/ --namespace=kubernikus-system --values secrets.git/kubernikus/$KUBERNIKUS_NAME/values/kubernikus-system.yaml --install --force
+      helm upgrade kubernikus-system kubernikus-copy.builds/charts/kubernikus-system/ \
+        --namespace=kubernikus-system 
+        --values secrets.git/global/values/kubernikus-system.yaml 
+        --values secrets.git/kubernikus/$KUBERNIKUS_NAME/values/kubernikus-system.yaml 
+        --install 
 
 params:
   OS_AUTH_URL:
