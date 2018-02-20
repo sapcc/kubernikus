@@ -17,8 +17,8 @@ const (
 	NginxPort  = 80
 	Namespace  = "default"
 
-	WGETRetries = 12
-	WGETTimeout = 10
+	WGETRetries = 10
+	WGETTimeout = 60
 
 	PVCSize      = "1Gi"
 	PVCName      = "e2e-nginx-pvc"
