@@ -17,9 +17,9 @@ metadata:
 spec:
   tls:
      - secretName: grafana
-       hosts: [grafana.{{ required "domain missing" .Values.domain }}]
+       hosts: [grafana.{{ required "domain missing" .Values.global.domain }}]
   rules:
-    - host: grafana.{{ required "domain missing" .Values.domain }}
+    - host: grafana.{{ required "domain missing" .Values.global.domain }}
       http:
         paths:
         - path: /

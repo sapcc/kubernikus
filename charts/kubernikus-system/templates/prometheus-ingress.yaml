@@ -16,9 +16,9 @@ metadata:
 spec:
   tls:
      - secretName: prometheus
-       hosts: [prometheus.{{ required "domain missing" .Values.domain }}]
+       hosts: [prometheus.{{ required "domain missing" .Values.global.domain }}]
   rules:
-    - host: prometheus.{{ required "domain missing" .Values.domain }}
+    - host: prometheus.{{ required "domain missing" .Values.global.domain }}
       http:
         paths:
         - path: /
