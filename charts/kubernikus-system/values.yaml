@@ -134,7 +134,7 @@ grafana:
         "editable": true,
         "gnetId": null,
         "graphTooltip": 0,
-        "iteration": 1519055723950,
+        "iteration": 1519059007733,
         "links": [],
         "panels": [
           {
@@ -599,7 +599,6 @@ grafana:
             "steppedLine": false,
             "targets": [
               {
-                "$$hashKey": "object:855",
                 "expr": "sum(probe_http_duration_seconds{instance=~\"https://kubernikus.*\",path=\"/\"}) ",
                 "format": "time_series",
                 "hide": false,
@@ -610,7 +609,6 @@ grafana:
                 "refId": "A"
               },
               {
-                "$$hashKey": "object:856",
                 "expr": "quantile_over_time(0.95, probe_duration_seconds{instance=~\"https://kubernikus.*\"}[24h]) ",
                 "format": "time_series",
                 "hide": false,
@@ -640,7 +638,6 @@ grafana:
             },
             "yaxes": [
               {
-                "$$hashKey": "object:2124",
                 "decimals": null,
                 "format": "s",
                 "label": null,
@@ -650,7 +647,6 @@ grafana:
                 "show": true
               },
               {
-                "$$hashKey": "object:2125",
                 "format": "short",
                 "label": null,
                 "logBase": 1,
@@ -695,7 +691,6 @@ grafana:
             "renderer": "flot",
             "seriesOverrides": [
               {
-                "$$hashKey": "object:1960",
                 "alias": "Avg",
                 "dashes": true,
                 "fill": 0,
@@ -707,7 +702,6 @@ grafana:
             "steppedLine": false,
             "targets": [
               {
-                "$$hashKey": "object:772",
                 "expr": "avg(probe_http_duration_seconds{path=\"/\"})",
                 "format": "time_series",
                 "instant": false,
@@ -716,7 +710,6 @@ grafana:
                 "refId": "A"
               },
               {
-                "$$hashKey": "object:773",
                 "expr": "avg(quantile_over_time(0.5, probe_duration_seconds{path=\"/\"}[24h]))",
                 "format": "time_series",
                 "interval": "",
@@ -745,7 +738,6 @@ grafana:
             },
             "yaxes": [
               {
-                "$$hashKey": "object:1897",
                 "decimals": null,
                 "format": "s",
                 "label": null,
@@ -755,7 +747,6 @@ grafana:
                 "show": true
               },
               {
-                "$$hashKey": "object:1898",
                 "format": "short",
                 "label": null,
                 "logBase": 1,
@@ -769,17 +760,14 @@ grafana:
             "backgroundColor": "rgb(60, 60, 60)",
             "colorMaps": [
               {
-                "$$hashKey": "object:1531",
                 "color": "#e5ac0e",
                 "text": "N/A"
               },
               {
-                "$$hashKey": "object:1532",
                 "color": "#508642",
                 "text": "up"
               },
               {
-                "$$hashKey": "object:1533",
                 "color": "#bf1b00",
                 "text": "down"
               }
@@ -812,7 +800,6 @@ grafana:
             "metricNameColor": "#fff",
             "rangeMaps": [
               {
-                "$$hashKey": "object:1550",
                 "from": "null",
                 "text": "N/A",
                 "to": "null"
@@ -829,7 +816,6 @@ grafana:
             "showTransitionCount": false,
             "targets": [
               {
-                "$$hashKey": "object:967",
                 "expr": "probe_success{path=\"/\"}",
                 "format": "time_series",
                 "hide": false,
@@ -847,25 +833,21 @@ grafana:
             "type": "natel-discrete-panel",
             "valueMaps": [
               {
-                "$$hashKey": "object:1542",
                 "op": "=",
                 "text": "N/A",
                 "value": "null"
               },
               {
-                "$$hashKey": "object:1543",
                 "op": "=",
                 "text": "up",
                 "value": "1"
               },
               {
-                "$$hashKey": "object:1544",
                 "op": "=",
                 "text": "down",
                 "value": "0"
               },
               {
-                "$$hashKey": "object:1545",
                 "op": "=",
                 "text": "",
                 "value": ""
@@ -2432,10 +2414,12 @@ grafana:
             "mappingType": 1,
             "mappingTypes": [
               {
+                "$$hashKey": "object:684",
                 "name": "value to text",
                 "value": 1
               },
               {
+                "$$hashKey": "object:685",
                 "name": "range to text",
                 "value": 2
               }
@@ -2463,9 +2447,10 @@ grafana:
             "tableColumn": "",
             "targets": [
               {
-                "$$hashKey": "object:159",
+                "$$hashKey": "object:661",
                 "expr": "kubernikus_kluster_boot_duration_sum / kubernikus_kluster_boot_duration_count",
                 "format": "time_series",
+                "instant": false,
                 "intervalFactor": 1,
                 "legendFormat": "Boot Time",
                 "refId": "A"
@@ -2477,6 +2462,7 @@ grafana:
             "valueFontSize": "80%",
             "valueMaps": [
               {
+                "$$hashKey": "object:687",
                 "op": "=",
                 "text": "N/A",
                 "value": "null"
@@ -2735,12 +2721,13 @@ grafana:
               "current": false,
               "max": false,
               "min": false,
+              "rightSide": false,
               "show": false,
               "total": false,
               "values": false
             },
             "lines": true,
-            "linewidth": 2,
+            "linewidth": 3,
             "links": [],
             "nullPointMode": "connected",
             "percentage": false,
@@ -2759,14 +2746,16 @@ grafana:
             "steppedLine": false,
             "targets": [
               {
-                "expr": "sum(rate(go_goroutines{app=\"kubernikus\"}[5m]))",
+                "$$hashKey": "object:444",
+                "expr": "sum(go_goroutines{app=\"kubernikus\"})",
                 "format": "time_series",
                 "intervalFactor": 1,
-                "legendFormat": "Current",
+                "legendFormat": "",
                 "refId": "D"
               },
               {
-                "expr": "sum(rate(go_goroutines{app=\"kubernikus\"}[24h]))\n",
+                "$$hashKey": "object:445",
+                "expr": "go_rout",
                 "format": "time_series",
                 "intervalFactor": 1,
                 "legendFormat": "24h Average",
@@ -2792,6 +2781,7 @@ grafana:
             },
             "yaxes": [
               {
+                "$$hashKey": "object:517",
                 "decimals": null,
                 "format": "short",
                 "label": null,
@@ -2801,6 +2791,7 @@ grafana:
                 "show": true
               },
               {
+                "$$hashKey": "object:518",
                 "format": "short",
                 "label": null,
                 "logBase": 1,
@@ -2943,5 +2934,5 @@ grafana:
         },
         "timezone": "",
         "title": "Kubernikus",
-        "version": 6
+        "version": 7
       }
