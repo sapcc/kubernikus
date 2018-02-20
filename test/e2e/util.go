@@ -216,9 +216,9 @@ func (s *E2ETestSuite) handleError(err error) {
 	}
 	log.Print(err)
 	// cleanup
-	if !s.IsNoTeardown {
-		s.tearDownCluster()
-	}
+	//if !s.IsNoTeardown {
+	//  s.tearDownCluster()
+	//}
 	os.Exit(1)
 }
 
