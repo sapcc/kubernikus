@@ -131,10 +131,10 @@ grafana:
             }
           ]
         },
-        "editable": true,
+        "editable": false,
         "gnetId": null,
         "graphTooltip": 0,
-        "iteration": 1519059007733,
+        "iteration": 1519221161829,
         "links": [],
         "panels": [
           {
@@ -1761,7 +1761,7 @@ grafana:
               "x": 7,
               "y": 9
             },
-            "id": 42,
+            "id": 73,
             "legend": {
               "alignAsTable": false,
               "avg": false,
@@ -1773,38 +1773,31 @@ grafana:
               "values": false
             },
             "lines": true,
-            "linewidth": 2,
+            "linewidth": 3,
             "links": [],
             "nullPointMode": "connected",
-            "percentage": false,
+            "percentage": true,
             "pointradius": 5,
             "points": false,
             "renderer": "flot",
             "seriesOverrides": [],
             "spaceLength": 10,
-            "stack": true,
+            "stack": false,
             "steppedLine": false,
             "targets": [
               {
-                "expr": "(sum(node_memory_MemTotal) by (instance) - sum(node_memory_MemFree+node_memory_Buffers+node_memory_Cached) by (instance)) / (sum(node_memory_MemTotal) by (instance)) * 100",
+                "expr": "sum(irate(node_cpu{mode=~\"system|user|iowait\"}[5m])) by (instance) / sum(irate(node_cpu{}[5m])) by (instance)",
                 "format": "time_series",
                 "interval": "",
-                "intervalFactor": 1,
+                "intervalFactor": 3,
                 "legendFormat": "{{instance}}",
                 "refId": "A"
-              },
-              {
-                "expr": "",
-                "format": "time_series",
-                "intervalFactor": 1,
-                "legendFormat": "",
-                "refId": "B"
               }
             ],
             "thresholds": [],
             "timeFrom": null,
             "timeShift": null,
-            "title": "Memory",
+            "title": "CPU",
             "tooltip": {
               "shared": true,
               "sort": 0,
@@ -1821,11 +1814,11 @@ grafana:
             "yaxes": [
               {
                 "decimals": null,
-                "format": "percent",
+                "format": "percentunit",
                 "label": "",
                 "logBase": 1,
-                "max": "400",
-                "min": "0.0",
+                "max": "1",
+                "min": "0",
                 "show": false
               },
               {
@@ -2404,7 +2397,7 @@ grafana:
             },
             "gridPos": {
               "h": 7,
-              "w": 6,
+              "w": 3,
               "x": 0,
               "y": 13
             },
@@ -2476,11 +2469,198 @@ grafana:
             "dashLength": 10,
             "dashes": false,
             "datasource": null,
+            "decimals": 0,
+            "fill": 1,
+            "gridPos": {
+              "h": 7,
+              "w": 4,
+              "x": 3,
+              "y": 13
+            },
+            "id": 72,
+            "legend": {
+              "alignAsTable": false,
+              "avg": false,
+              "current": false,
+              "max": false,
+              "min": false,
+              "rightSide": false,
+              "show": false,
+              "total": false,
+              "values": false
+            },
+            "lines": true,
+            "linewidth": 3,
+            "links": [],
+            "nullPointMode": "connected",
+            "percentage": false,
+            "pointradius": 5,
+            "points": false,
+            "renderer": "flot",
+            "seriesOverrides": [],
+            "spaceLength": 10,
+            "stack": false,
+            "steppedLine": false,
+            "targets": [
+              {
+                "$$hashKey": "object:506",
+                "expr": "sum(label_replace(rate(container_cpu_usage_seconds_total{namespace=\"kubernikus\",name=~\".*(etcd|manager|scheduler|apiserver).*\",image!~\".*pause.*\"}[1h]), \"container\", \"$1\", \"name\", \".*(etcd|manager|scheduler|apiserver).*\")) by (container) / sum(label_replace(kube_pod_container_resource_requests_cpu_cores{container=~\"apiserver|etcd|scheduler|controller-manager\"}, \"container\", \"$1\", \"container\", \".*(etcd|manager|scheduler|apiserver)\")) by (container)",
+                "format": "time_series",
+                "hide": false,
+                "instant": false,
+                "intervalFactor": 10,
+                "legendFormat": "{{container}}",
+                "refId": "B"
+              },
+              {
+                "$$hashKey": "object:870",
+                "expr": "",
+                "format": "time_series",
+                "hide": false,
+                "intervalFactor": 1,
+                "legendFormat": "",
+                "refId": "C"
+              }
+            ],
+            "thresholds": [],
+            "timeFrom": null,
+            "timeShift": null,
+            "title": "CPU Usage Ratio",
+            "tooltip": {
+              "shared": true,
+              "sort": 2,
+              "value_type": "individual"
+            },
+            "type": "graph",
+            "xaxis": {
+              "buckets": null,
+              "mode": "time",
+              "name": null,
+              "show": false,
+              "values": []
+            },
+            "yaxes": [
+              {
+                "$$hashKey": "object:531",
+                "decimals": 1,
+                "format": "percentunit",
+                "label": "",
+                "logBase": 1,
+                "max": null,
+                "min": "0",
+                "show": true
+              },
+              {
+                "$$hashKey": "object:532",
+                "format": "short",
+                "label": null,
+                "logBase": 1,
+                "max": null,
+                "min": null,
+                "show": false
+              }
+            ]
+          },
+          {
+            "aliasColors": {},
+            "bars": false,
+            "dashLength": 10,
+            "dashes": false,
+            "datasource": null,
+            "decimals": 0,
+            "fill": 1,
+            "gridPos": {
+              "h": 7,
+              "w": 4,
+              "x": 7,
+              "y": 13
+            },
+            "id": 42,
+            "legend": {
+              "alignAsTable": false,
+              "avg": false,
+              "current": false,
+              "max": false,
+              "min": false,
+              "rightSide": false,
+              "show": false,
+              "total": false,
+              "values": false
+            },
+            "lines": true,
+            "linewidth": 2,
+            "links": [],
+            "nullPointMode": "connected",
+            "percentage": false,
+            "pointradius": 5,
+            "points": false,
+            "renderer": "flot",
+            "seriesOverrides": [],
+            "spaceLength": 10,
+            "stack": false,
+            "steppedLine": false,
+            "targets": [
+              {
+                "$$hashKey": "object:1526",
+                "expr": "sum(label_replace(container_memory_usage_bytes{namespace=\"kubernikus\",name=~\".*(etcd|manager|scheduler|apiserver).*\",image!~\".*pause.*\"}, \"container\", \"$1\", \"name\", \".*(etcd|manager|scheduler|apiserver).*\")) by (container) / sum(label_replace(kube_pod_container_resource_requests_memory_bytes{container=~\"apiserver|etcd|scheduler|controller-manager\"}, \"container\", \"$1\", \"container\", \".*(etcd|manager|scheduler|apiserver)\")) by (container)",
+                "format": "time_series",
+                "hide": false,
+                "interval": "",
+                "intervalFactor": 10,
+                "legendFormat": "{{container}}",
+                "refId": "A"
+              }
+            ],
+            "thresholds": [],
+            "timeFrom": null,
+            "timeShift": null,
+            "title": "Memory Usage Ratio",
+            "tooltip": {
+              "shared": true,
+              "sort": 2,
+              "value_type": "individual"
+            },
+            "type": "graph",
+            "xaxis": {
+              "buckets": null,
+              "mode": "time",
+              "name": null,
+              "show": false,
+              "values": []
+            },
+            "yaxes": [
+              {
+                "$$hashKey": "object:1887",
+                "decimals": null,
+                "format": "percentunit",
+                "label": "",
+                "logBase": 1,
+                "max": null,
+                "min": null,
+                "show": true
+              },
+              {
+                "$$hashKey": "object:1888",
+                "format": "short",
+                "label": null,
+                "logBase": 1,
+                "max": null,
+                "min": null,
+                "show": false
+              }
+            ]
+          },
+          {
+            "aliasColors": {},
+            "bars": false,
+            "dashLength": 10,
+            "dashes": false,
+            "datasource": null,
             "fill": 0,
             "gridPos": {
               "h": 7,
-              "w": 6,
-              "x": 6,
+              "w": 4,
+              "x": 11,
               "y": 13
             },
             "id": 11,
@@ -2595,8 +2775,8 @@ grafana:
             "fill": 0,
             "gridPos": {
               "h": 7,
-              "w": 6,
-              "x": 12,
+              "w": 4,
+              "x": 15,
               "y": 13
             },
             "id": 4,
@@ -2711,8 +2891,8 @@ grafana:
             "fill": 0,
             "gridPos": {
               "h": 7,
-              "w": 6,
-              "x": 18,
+              "w": 5,
+              "x": 19,
               "y": 13
             },
             "id": 69,
@@ -2934,5 +3114,6 @@ grafana:
         },
         "timezone": "",
         "title": "Kubernikus",
-        "version": 7
+        "uid": "5XtTRCqkk",
+        "version": 5
       }
