@@ -44,7 +44,7 @@ api:
   # wormholeHost:
   resources:
     requests:
-      cpu: 250m
+      cpu: 100m
       memory: 256Mi
     limits:
       cpu: 500m
@@ -54,7 +54,7 @@ controllerManager:
   replicaCount: 1
   resources:
     requests:
-      cpu: 250m
+      cpu: 50m
       memory: 256Mi
     limits:
       cpu: 500m
@@ -64,7 +64,7 @@ scheduler:
   replicaCount: 1
   resources:
     requests:
-      cpu: 250m
+      cpu: 50m
       memory: 256Mi
     limits:
       cpu: 500m

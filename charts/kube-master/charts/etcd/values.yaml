@@ -14,7 +14,7 @@ persistence:
   # existingClaim: claimName
 resources:
   requests:
-    cpu: 250m
+    cpu: 100m
     memory: 256Mi
   limits:
     cpu: 500m
