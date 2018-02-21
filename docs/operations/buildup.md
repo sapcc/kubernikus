@@ -138,3 +138,29 @@ The LB with one pool is the sniffer. Mental mark.
   * prometheus.kubernikus.$REGION.cloud.sap.CNAME	kubernikus-ingress.$REGION.cloud.sap.	1800	
   * grafana.kubernikus.$REGION.cloud.sap. CNAME kubernikus-ingress.$REGION.cloud.sap.	1800	
 
+## Relevant URLs
+
+```
+for _, region := range []string{"staging", "qa-de-1", "ap-au-1", "eu-de-1", "eu-nl-1", "na-us-1"} {
+  ======================================================================
+  Admin Control Plane
+  ======================================================================
+  Kubernikus API: https://k-%v.admin.cloud.sap
+
+  ======================================================================
+  Regional Control Plane
+  ======================================================================
+  Project:        https://dashboard.%v.cloud.sap/ccadmin/kubernikus/home
+  Kubernikus API: https://kubernikus.%v.cloud.sap
+  Prometheus:     https://prometheus.kubernikus.%v.cloud.sap
+  Grafana:        https://grafana.kubernikus.%v.cloud.sap
+  Bastion Host:   gateway.kubernikus.%v.cloud.sap
+}
+```
+
+Poor Man's VPN:
+```
+sshuttle -r ccloud@gateway.kubernikus.%v.cloud.sap 198.18.0.0/24
+```
+
+
