@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: common-prometheus-rules
+  labels:
+    app: fusion
+    type: rule
+  annotations:
+    prometheus.io/rule: "true"
+data:
+{{ (.Files.Glob "rules/*").AsConfig | indent 2 }}
