@@ -12,6 +12,7 @@ import (
 	kitlog "github.com/go-kit/kit/log"
 	errors "github.com/go-openapi/errors"
 	"github.com/stretchr/testify/assert"
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/fake"
 
@@ -110,6 +111,23 @@ func TestCreateCluster(t *testing.T) {
 	req.Header.Del("X-Auth-Token")
 	code, _, _ = result(handler, req)
 	assert.Equal(t, 401, code)
+
+	//Ensure we refuse service CIDRs that overlap with the control plane
+	rt.Kubernikus = kubernikusfake.NewSimpleClientset()
+	rt.Kubernetes = fake.NewSimpleClientset(&corev1.Service{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "kubernetes",
+			Namespace: "default",
+		},
+		Spec: corev1.ServiceSpec{
+			ClusterIP: "198.18.128.1",
+		},
+	})
+	req = createRequest("POST", "/api/v1/clusters", `{"name": "nase"}`)
+	code, _, body = result(handler, req)
+	if assert.Equal(t, 409, code) {
+		assert.Contains(t, string(body), "CIDR")
+	}
 
 }
 

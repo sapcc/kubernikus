@@ -1,6 +1,8 @@
 package handlers
 
 import (
+	"net"
+
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/validate"
 
@@ -15,11 +17,12 @@ import (
 )
 
 func NewCreateCluster(rt *api.Runtime) operations.CreateClusterHandler {
-	return &createCluster{rt}
+	return &createCluster{Runtime: rt}
 }
 
 type createCluster struct {
 	*api.Runtime
+	cpServiceIP net.IP
 }
 
 func (d *createCluster) Handle(params operations.CreateClusterParams, principal *models.Principal) middleware.Responder {
@@ -48,6 +51,14 @@ func (d *createCluster) Handle(params operations.CreateClusterParams, principal 
 		return NewErrorResponse(&operations.CreateClusterDefault{}, 400, err.Error())
 	}
 
+	//Ensure that the service CIDR range does not overlap with the control plane service CIDR
+	//Otherwise the wormhole server will prevent the kluster apiserver from reaching its etcd
+	if _, svcCIDR, err := net.ParseCIDR(kluster.Spec.ServiceCIDR); err == nil {
+		if svcIP := d.controlPlaneServiceIP(); svcIP != nil && svcCIDR.Contains(svcIP) {
+			return NewErrorResponse(&operations.CreateClusterDefault{}, 409, "Service CIDR %s not allowed", kluster.Spec.ServiceCIDR)
+		}
+	}
+
 	kluster.ObjectMeta = metav1.ObjectMeta{
 		Name:        qualifiedName(name, principal.Account),
 		Labels:      map[string]string{"account": principal.Account},
@@ -70,4 +81,17 @@ func (d *createCluster) Handle(params operations.CreateClusterParams, principal 
 	}
 
 	return operations.NewCreateClusterCreated().WithPayload(klusterFromCRD(kluster))
+}
+
+//get (and cache) the kubernetes apiserver service ip of the control plane
+func (d *createCluster) controlPlaneServiceIP() net.IP {
+	if d.cpServiceIP != nil {
+		return d.cpServiceIP
+	}
+	svc, err := d.Kubernetes.Core().Services("default").Get("kubernetes", metav1.GetOptions{})
+	if err != nil {
+		return nil
+	}
+	d.cpServiceIP = net.ParseIP(svc.Spec.ClusterIP)
+	return d.cpServiceIP
 }
