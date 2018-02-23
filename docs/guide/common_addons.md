@@ -51,7 +51,7 @@ In order to expose the Dashboard without the local proxy, we need to:
 Let's create the service:
 
 ```
-kubectl expose deployment kubernetes-dashboard --namespace kube-system --type=LoadBalancer --name kubernete-dashboard-external --port=443
+kubectl expose deployment kubernetes-dashboard --namespace kube-system --type=LoadBalancer --name kubernete-dashboard-external --port=443 --target-port=8443
 ```
 
 This will create a Kubernetes service that exposes the dashboard on
