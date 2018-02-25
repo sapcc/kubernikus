@@ -95,6 +95,14 @@ Use the UI to create a cluster with the `k-$region` naming scheme in the
 `ccadmin/kubernikus` project. Create a `default` pool with 3 nodes in
 `m2.xlarge`. Add and select the Kubernikus Master public key.
 
+Note: The `serviceCIDR` needs to be changed!!!!!!!
+
+Until supported via UI the cluster needs to be created using the API:
+
+```
+echo '{"name":"k-eu-de-1","spec":{"serviceCIDR": "192.168.128.0/17","sshPublicKey": "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQCXIxVEUgtUVkvk2VM1hmIb8MxvxsmvYoiq9OBy3J8akTGNybqKsA2uhcwxSJX5Cn3si8kfMfka9EWiJT+e1ybvtsGILO5XRZPxyhYzexwb3TcALwc3LuzpF3Z/Dg2jYTRELTGhYmyca3mxzTlCjNXvYayLNedjJ8fIBzoCuSXNqDRToHru7h0Glz+wtuE74mNkOiXSvhtuJtJs7VCNVjobFQNfC1aeDsri2bPRHJJZJ0QF4LLYSayMEz3lVwIDyAviQR2Aa97WfuXiofiAemfGqiH47Kq6b8X7j3bOYGBvJKMUV7XeWhGsskAmTsvvnFxkc5PAD3Ct+liULjiQWlzDrmpTE8aMqLK4l0YQw7/8iRVz6gli42iEc2ZG56ob1ErpTLAKFWyCNOebZuGoygdEQaGTIIunAncXg5Rz07TdPl0Tf5ZZLpiAgR5ck0H1SETnjDTZ/S83CiVZWJgmCpu8YOKWyYRD4orWwdnA77L4+ixeojLIhEoNL8KlBgsP9Twx+fFMWLfxMmiuX+yksM6Hu+Lsm+Ao7Q284VPp36EB1rxP1JM7HCiEOEm50Jb6hNKjgN4aoLhG5yg+GnDhwCZqUwcRJo1bWtm3QvRA+rzrGZkId4EY3cyOK5QnYV5+24x93Ex0UspHMn7HGsHUESsVeV0fLqlfXyd2RbHTmDMP6w==", "nodePools":[{"flavor":"m1.xlarge_cpu","image":"coreos-stable-amd64","name":"payload","size":3}]}}' | curl -K _scratch/.curlrc-kubernikus-eu-de-1 -d  @- -XPOST https://k-eu-de-1.admin.cloud.sap/api/v1/clusters
+```
+
 You should end up with a running kluster and healthy nodes.
 
 ### Security Group
