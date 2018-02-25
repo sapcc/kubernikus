@@ -5,7 +5,10 @@ import (
 	"time"
 
 	"github.com/gophercloud/gophercloud"
+	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/secgroups"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/servers"
+	securitygroups "github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/security/groups"
+	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/security/rules"
 	"github.com/gophercloud/gophercloud/pagination"
 	"k8s.io/client-go/tools/cache"
 
@@ -18,6 +21,8 @@ type KlusterClient interface {
 	CreateNode(*models.NodePool, []byte) (string, error)
 	DeleteNode(string) error
 	ListNodes(*models.NodePool) ([]Node, error)
+	SetSecurityGroup(nodeID string) error
+	EnsureKubernikusRuleInSecurityGroup() (bool, error)
 }
 
 type klusterClient struct {
@@ -115,6 +120,95 @@ func (c *klusterClient) ListNodes(pool *models.NodePool) (nodes []Node, err erro
 	}
 
 	return nodes, nil
+}
+
+func (c *klusterClient) SetSecurityGroup(nodeID string) (err error) {
+	return secgroups.AddServer(c.ComputeClient, nodeID, c.Kluster.Spec.Openstack.SecurityGroupName).ExtractErr()
+}
+
+func (c *klusterClient) EnsureKubernikusRuleInSecurityGroup() (created bool, err error) {
+	page, err := securitygroups.List(c.NetworkClient, securitygroups.ListOpts{Name: c.Kluster.Spec.Openstack.SecurityGroupName}).AllPages()
+	if err != nil {
+		return false, fmt.Errorf("SecurityGroup %v not found: %s", c.Kluster.Spec.Openstack.SecurityGroupName, err)
+	}
+
+	groups, err := securitygroups.ExtractGroups(page)
+	if err != nil {
+		return false, err
+	}
+
+	if len(groups) != 1 {
+		return false, fmt.Errorf("More than one SecurityGroup with name %v found", c.Kluster.Spec.Openstack.SecurityGroupName)
+	}
+
+	udp := false
+	tcp := false
+	icmp := false
+	for _, rule := range groups[0].Rules {
+		if rule.Direction != string(rules.DirIngress) {
+			continue
+		}
+
+		if rule.EtherType != string(rules.EtherType4) {
+			continue
+		}
+
+		if rule.RemoteIPPrefix != c.Kluster.Spec.ClusterCIDR {
+			continue
+		}
+
+		if rule.Protocol == string(rules.ProtocolICMP) {
+			icmp = true
+			continue
+		}
+
+		if rule.Protocol == string(rules.ProtocolUDP) {
+			udp = true
+			continue
+		}
+
+		if rule.Protocol == string(rules.ProtocolTCP) {
+			tcp = true
+			continue
+		}
+
+		if icmp && udp && tcp {
+			break
+		}
+	}
+
+	opts := rules.CreateOpts{
+		Direction:      rules.DirIngress,
+		EtherType:      rules.EtherType4,
+		SecGroupID:     groups[0].ID,
+		RemoteIPPrefix: c.Kluster.Spec.ClusterCIDR,
+	}
+
+	if !udp {
+		opts.Protocol = rules.ProtocolUDP
+		_, err := rules.Create(c.NetworkClient, opts).Extract()
+		if err != nil {
+			return false, err
+		}
+	}
+
+	if !tcp {
+		opts.Protocol = rules.ProtocolTCP
+		_, err := rules.Create(c.NetworkClient, opts).Extract()
+		if err != nil {
+			return false, err
+		}
+	}
+
+	if !icmp {
+		opts.Protocol = rules.ProtocolICMP
+		_, err := rules.Create(c.NetworkClient, opts).Extract()
+		if err != nil {
+			return false, err
+		}
+	}
+
+	return !udp || !tcp || !icmp, nil
 }
 
 func ExtractServers(r pagination.Page) ([]Node, error) {

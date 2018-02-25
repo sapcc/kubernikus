@@ -4,6 +4,7 @@ import:
   version: ^1.1.0
   subpackages:
   - assert
+  - mock
 - package: k8s.io/client-go
   version: v6.0.0
 - package: k8s.io/apimachinery
@@ -27,7 +28,7 @@ import:
   - log
 # overwrite gophercloud version given in k8s deps
 - package: github.com/gophercloud/gophercloud
-  version: fe864ba585e153c296567b9ab4bbb1345d05900a
+  version: c7ca48da8eafab13e1835090a1147e64cfc10174
 # Dependencies extracted from go-swagger 0.13.0
 - package: github.com/go-openapi/errors
   version: 03cfca65330da08a5a440053faf994a3c682b5bf
