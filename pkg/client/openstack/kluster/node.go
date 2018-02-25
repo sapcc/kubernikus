@@ -1,6 +1,10 @@
 package kluster
 
-import "github.com/gophercloud/gophercloud/openstack/compute/v2/servers"
+import (
+	"time"
+
+	"github.com/gophercloud/gophercloud/openstack/compute/v2/servers"
+)
 
 type Node struct {
 	servers.Server
@@ -68,6 +72,28 @@ func (n *Node) Running() bool {
 	}
 
 	return false
+}
+
+func (n *Node) GetID() string {
+	return n.ID
+}
+
+func (n *Node) GetName() string {
+	return n.Name
+}
+
+func (n *Node) GetCreated() time.Time {
+	return n.Created
+}
+
+func (n *Node) GetSecurityGroupNames() []string {
+	names := []string{}
+	for _, s := range n.Server.SecurityGroups {
+		if name, ok := s["name"].(string); ok {
+			names = append(names, name)
+		}
+	}
+	return names
 }
 
 type StateExt struct {
