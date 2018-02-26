@@ -72,3 +72,145 @@ dashboard accessible from the outside via `https` on port `443`.
 ![FIP](https://raw.githubusercontent.com/sapcc/kubernikus/master/assets/images/docs/containers/kubernetes/loadbalancer2.png)
 
 ~> This setup exposes a unauthenticated Dashboard with full access to the cluster. This is a security risk. See the [Access Control](https://github.com/kubernetes/dashboard/wiki/Access-control) documentation for more info.
+
+## Deploy HANA Express database on Kubernikus
+
+Create a Kubernetes cluster and deploy SAP HANA, express edition containers (database server only).
+
+### Step 1: Create Kubernetes Cluster
+Login to the Converged Cloud Dashboard and navigate to your project. Open `Containers > Kubernetes`. Click `Create Cluster`, choose a cluster name (max. 20 digits), give your nodepool a name, choose a number of nodes and use at least a `m1.large` flavor which offers you `4 vCPU, ~8 GB RAM` per node. Create the `kluster` (Cluster by Kubernikus). 
+
+### Step 2: Connect to your kluster
+Use the following instructions to get access to your Kubernetes Cluster. [Authenticating with Kubernetes](https://kubernikus.eu-nl-1.cloud.sap/docs/guide/authentication/#authenticating-with-kubernetes).
+
+### Step 3: Create the deployments configuration files
+At first you should create a `secret` with your Docker credentials in order to pull images from the docker registry.
+
+```
+kubectl create secret docker-registry docker-secret \ 
+--docker-server=https://index.docker.io/v1/ \ 
+--docker-username=<<DOCKER_USER>> \ 
+--docker-password=<<DOCKER_PASSWORD>> \
+--docker-email=<<DOCKER_EMAIL>>
+``` 
+
+### Step 4: Create the deployments configuration files
+Create a file `hxe.yaml` on your local machine and copy the following code into it. Replace the password inside the ConfigMap with your own one. Please check the password policy to avoid errors:
+```
+SAP HANA, express edition requires a very strong password that complies with these rules:
+
+At least 8 characters
+At least 1 uppercase letter
+At least 1 lowercase letter
+At least 1 number
+Can contain special characters, but not backtick, dollar sign, backslash, single or double quote
+Cannot contain dictionary words
+Cannot contain simplistic or systematic values, like strings in ascending or descending numerical or alphabetical order
+```
+
+Create your local yaml file (`hxe.yaml`):
+
+```
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  creationTimestamp: 2018-01-18T19:14:38Z
+  name: hxe-pass
+data:
+  password.json: |+
+    {"master_password" : "HXEHana1"}
+---
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: persistent-vol-hxe
+  labels:
+    type: local
+spec:
+  storageClassName: manual
+  capacity:
+    storage: 150Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: "/data/hxe_pv"
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: hxe-pvc
+spec:
+  storageClassName: manual
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 50Gi
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: hxe-pod
+  labels:
+    name: hxe-pod
+spec:
+  initContainers:
+    - name: install
+      image: busybox
+      command: [ 'sh', '-c', 'chown 12000:79 /hana/mounts' ]
+      volumeMounts:
+        - name: hxe-data
+          mountPath: /hana/mounts
+  restartPolicy: OnFailure
+  volumes:
+    - name: hxe-data
+      persistentVolumeClaim:
+         claimName: hxe-pvc
+    - name: hxe-config
+      configMap:
+         name: hxe-pass
+  imagePullSecrets:
+  - name: docker-secret
+  containers:
+  - name: hxe-container
+    image: "store/saplabs/hanaexpress:2.00.022.00.20171211.1"
+    ports:
+      - containerPort: 39013
+        name: port1
+      - containerPort: 39015
+        name: port2
+      - containerPort: 39017
+        name: port3
+      - containerPort: 8090
+        name: port4
+      - containerPort: 39041
+        name: port5
+      - containerPort: 59013
+        name: port6
+    args: [ "--agree-to-sap-license", "--dont-check-system", "--passwords-url", "file:///hana/hxeconfig/password.json" ]
+    volumeMounts:
+      - name: hxe-data
+        mountPath: /hana/mounts
+      - name: hxe-config
+        mountPath: /hana/hxeconfig
+```
+Now create the resources with `kubectl`:
+
+```
+kubectl create -f hxe.yaml
+```
+
+The pod is now creating and should be running after some seconds.
+```
+kubectl get pods
+```
+
+Let's look into the pod for more information
+```
+kubectl describe pod hxe-pod
+kubectl logs hxe-pod
+```
+You can check if SAP HANA, express edition is running by using `HDB info` inside the pod with `kubectl exec -it hxe-pod bash`. The container is running but is not available outside the Kubernetes cluster. You can create a [Kubernetes service](https://kubernetes.io/docs/concepts/services-networking/service/) to reach the pod. 
+
+
+
