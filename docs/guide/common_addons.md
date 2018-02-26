@@ -40,7 +40,7 @@ Now access Dashboard at:
 
 [http://localhost:8001/api/v1/namespaces/kube-system/services/https:kubernetes-dashboard:/proxy/.](http://localhost:8001/api/v1/namespaces/kube-system/services/https:kubernetes-dashboard:/proxy/.)
 
-### Exposig the Dashboard
+### Exposing the Dashboard
 
 In order to expose the Dashboard without the local proxy, we need to:
 
@@ -61,7 +61,7 @@ a load-balancer is created in OpenStack which points to each node.
 ![Load Balancer](https://raw.githubusercontent.com/sapcc/kubernikus/master/assets/images/docs/containers/kubernetes/loadbalancer0.png)
 
 As the load-balancers are not in the default instance group, they need to be
-added to the security group explicitly. Without this the health monitors won't
+added to the security group explicitly. Without this, the health monitors won't
 be able to reach the node port and the listener will be offline.
 
 ![Security Group](https://raw.githubusercontent.com/sapcc/kubernikus/master/assets/images/docs/containers/kubernetes/loadbalancer1.png)
@@ -71,7 +71,7 @@ dashboard accessible from the outside via `https` on port `443`.
 
 ![FIP](https://raw.githubusercontent.com/sapcc/kubernikus/master/assets/images/docs/containers/kubernetes/loadbalancer2.png)
 
-~> This setup exposes a unauthenticated Dashboard with full access to the cluster. This is a security risk. See the [Access Control](https://github.com/kubernetes/dashboard/wiki/Access-control) documentation for more info.
+~> This setup exposes an unauthenticated Dashboard with full access to the cluster. This is a security risk. See the [Access Control](https://github.com/kubernetes/dashboard/wiki/Access-control) documentation for more info.
 
 ## Deploy HANA Express database on Kubernikus
 
@@ -84,7 +84,7 @@ Login to the Converged Cloud Dashboard and navigate to your project. Open `Conta
 Use the following instructions to get access to your Kubernetes Cluster. [Authenticating with Kubernetes](https://kubernikus.eu-nl-1.cloud.sap/docs/guide/authentication/#authenticating-with-kubernetes).
 
 ### Step 3: Create the deployments configuration files
-At first you should create a `secret` with your Docker credentials in order to pull images from the docker registry.
+At first, you should create a `secret` with your Docker credentials in order to pull images from the docker registry.
 
 ```
 kubectl create secret docker-registry docker-secret \ 
@@ -95,7 +95,7 @@ kubectl create secret docker-registry docker-secret \
 ``` 
 
 ### Step 4: Create the deployments configuration files
-Create a file `hxe.yaml` on your local machine and copy the following code into it. Replace the password inside the ConfigMap with your own one. Please check the password policy to avoid errors:
+Create a file `hxe.yaml` on your local machine and copy the following content into it. Replace the password inside the ConfigMap with your own one. Please check the password policy to avoid errors:
 ```
 SAP HANA, express edition requires a very strong password that complies with these rules:
 
@@ -147,70 +147,81 @@ spec:
     requests:
       storage: 50Gi
 ---
-apiVersion: v1
-kind: Pod
+apiVersion: apps/v1
+kind: Deployment
 metadata:
-  name: hxe-pod
-  labels:
-    name: hxe-pod
+  name: hxe
 spec:
-  initContainers:
-    - name: install
-      image: busybox
-      command: [ 'sh', '-c', 'chown 12000:79 /hana/mounts' ]
-      volumeMounts:
+  selector:
+    matchLabels:
+      app: hxe
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: hxe
+    spec:
+      initContainers:
+        - name: install
+          image: busybox
+          command: [ 'sh', '-c', 'chown 12000:79 /hana/mounts' ]
+          volumeMounts:
+            - name: hxe-data
+              mountPath: /hana/mounts
+      restartPolicy: Always
+      volumes:
         - name: hxe-data
-          mountPath: /hana/mounts
-  restartPolicy: OnFailure
-  volumes:
-    - name: hxe-data
-      persistentVolumeClaim:
-         claimName: hxe-pvc
-    - name: hxe-config
-      configMap:
-         name: hxe-pass
-  imagePullSecrets:
-  - name: docker-secret
-  containers:
-  - name: hxe-container
-    image: "store/saplabs/hanaexpress:2.00.022.00.20171211.1"
-    ports:
-      - containerPort: 39013
-        name: port1
-      - containerPort: 39015
-        name: port2
-      - containerPort: 39017
-        name: port3
-      - containerPort: 8090
-        name: port4
-      - containerPort: 39041
-        name: port5
-      - containerPort: 59013
-        name: port6
-    args: [ "--agree-to-sap-license", "--dont-check-system", "--passwords-url", "file:///hana/hxeconfig/password.json" ]
-    volumeMounts:
-      - name: hxe-data
-        mountPath: /hana/mounts
-      - name: hxe-config
-        mountPath: /hana/hxeconfig
+          persistentVolumeClaim:
+             claimName: hxe-pvc
+        - name: hxe-config
+          configMap:
+             name: hxe-pass
+      imagePullSecrets:
+      - name: docker-secret
+      containers:
+      - name: hxe-container
+        image: "store/saplabs/hanaexpress:2.00.022.00.20171211.1"
+        ports:
+          - containerPort: 39013
+            name: port1
+          - containerPort: 39015
+            name: port2
+          - containerPort: 39017
+            name: port3
+          - containerPort: 8090
+            name: port4
+          - containerPort: 39041
+            name: port5
+          - containerPort: 59013
+            name: port6
+        args: [ "--agree-to-sap-license", "--dont-check-system", "--passwords-url", "file:///hana/hxeconfig/password.json" ]
+        volumeMounts:
+          - name: hxe-data
+            mountPath: /hana/mounts
+          - name: hxe-config
+            mountPath: /hana/hxeconfig
+
 ```
 Now create the resources with `kubectl`:
-
 ```
 kubectl create -f hxe.yaml
 ```
 
-The pod is now creating and should be running after some seconds.
+The deployment creates in this example just one pod. It should be running after some seconds. The name of the pod starts with hxe and is followed by some generated numbers / hash (eg. hxe-699d795cf6-7m6jk)
 ```
 kubectl get pods
 ```
 
 Let's look into the pod for more information
 ```
-kubectl describe pod hxe-pod
-kubectl logs hxe-pod
+kubectl describe pod hxe-<<value>>
+kubectl logs hxe-<<value>>
 ```
-You can check if SAP HANA, express edition is running by using `HDB info` inside the pod with `kubectl exec -it hxe-pod bash`. The container is running but is not available outside the Kubernetes cluster. You can create a [Kubernetes service](https://kubernetes.io/docs/concepts/services-networking/service/) to reach the pod. 
+You can check if SAP HANA, express edition is running by using `HDB info` inside the pod with `kubectl exec -it hxe-pod bash`. 
 
+### Step 5: Get access to the database 
+The container is running and pods are available inside the Kubernetes cluster. Now, you can create a [Kubernetes service](https://kubernetes.io/docs/concepts/services-networking/service/) to reach the pod.
 
+`kubectl expose deployment hxe --name=hxe-svc --type=LoadBalancer --port=39013`
 
+This example exposes the pod on port 39013. With `kubectl get svc` you can check the assigned floating ip. 
