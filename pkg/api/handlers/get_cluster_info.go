@@ -78,7 +78,7 @@ func (d *getClusterInfo) getLinks() ([]models.Link, error) {
 		resp.Body.Close()
 		resp, err = http.Get(fmt.Sprintf("%s/repos/sapcc/kubernikus/releases/latest", d.githubApiURL))
 		if err != nil {
-			return nil, fmt.Errorf("Failed to fetch latest release %s: %s", err)
+			return nil, fmt.Errorf("Failed to fetch latest release: %s", err)
 		}
 	}
 	defer resp.Body.Close()
