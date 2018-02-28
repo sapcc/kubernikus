@@ -25,8 +25,7 @@ run:
         --values secrets.git/global/values/kubernikus.yaml \
         --values secrets.git/kubernikus/$KUBERNIKUS_NAME/values/kubernikus.yaml \
         --set imageTag=$VERSION \
-        --install \
-        --force
+        --install 
       kubectl rollout status deployment/kubernikus-api --namespace=kubernikus-system
       kubectl rollout status deployment/kubernikus-operator --namespace=kubernikus-system
 
