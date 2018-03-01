@@ -124,11 +124,11 @@ func setMetricNodePoolSize(klusterID, nodePoolName, imageName, flavorName string
 
 /*
 kubernikus_node_pool_status{"kluster_id"="<id", "node_pool"="<name>", "status"="<status>"} < number of nodes in that status >
-kubernikus_node_pool_status{"kluster_id"="<id", "node_pool"="<name>", "status"="ready"} 1
+kubernikus_node_pool_status{"kluster_id"="<id", "node_pool"="<name>", "status"="schedulable"} 1
 kubernikus_node_pool_status{"kluster_id"="<id", "node_pool"="<name>", "status"="running"} 1
 kubernikus_node_pool_status{"kluster_id"="<id", "node_pool"="<name>", "status"="healthy"} 1
 */
-func setMetricNodePoolStatus(klusterID, nodePoolName string, status map[string]int64) {
+func SetMetricNodePoolStatus(klusterID, nodePoolName string, status map[string]int64) {
 	if status != nil {
 		for s, v := range status {
 			nodePoolStatus.With(prometheus.Labels{
