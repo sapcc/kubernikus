@@ -294,7 +294,7 @@ scrape_configs:
     target_label: kubernetes_name
   - source_labels: [__meta_kubernetes_ingress_path]
     target_label: path
-  - target_label: region_probed_from
+  - target_label: probed_from
     replacement: {{ . }}
 {{- end}}
 
