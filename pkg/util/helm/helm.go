@@ -10,6 +10,9 @@ import (
 	"github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
 )
 
+//contains unamibious characters for generic random passwords
+var randomPasswordChars = []rune("abcdefghjkmnpqrstuvwxABCDEFGHJKLMNPQRSTUVWX23456789")
+
 type OpenstackOptions struct {
 	AuthURL    string
 	Username   string
@@ -74,7 +77,8 @@ func KlusterToHelmValues(kluster *v1.Kluster, openstack *OpenstackOptions, certi
 		return nil, fmt.Errorf("Failed to parse wormhole server URL: %s", err)
 	}
 
-	password, err := goutils.Random(12, 32, 127, true, true)
+	password, err := goutils.Random(12, 0, 0, true, true, randomPasswordChars...)
+
 	if err != nil {
 		return nil, fmt.Errorf("Failed to generate password: %s", err)
 	}

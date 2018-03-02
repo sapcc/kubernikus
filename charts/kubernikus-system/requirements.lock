@@ -1,12 +1,12 @@
 dependencies:
 - name: vice-president
   repository: file://vendor/vice-president
-  version: 0.1.1
+  version: 0.1.2
 - name: kube-state-metrics
   repository: file://vendor/kube-state-metrics
   version: 1.1.0
 - name: grafana
   repository: https://raw.githubusercontent.com/BugRoger/charts/repo
   version: 0.6.2
-digest: sha256:36122d44ef6a3b54e2e3feeff3d3dce7140290cbc060c9e2183f8bf3bb4d4a31
-generated: 2018-02-01T12:10:35.867222+01:00
+digest: sha256:624325f1597ae4d409c451301e844bfb56968fbe3fd1b4ef003ff94194df11d7
+generated: 2018-02-27T15:45:34.387622+01:00

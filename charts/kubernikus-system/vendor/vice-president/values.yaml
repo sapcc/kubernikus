@@ -1,6 +1,6 @@
 image:
   repository: sapcc/vice-president
-  tag: v201711151607
+  tag: v201802041527
   pullPolicy: IfNotPresent
 
 # config
@@ -53,6 +53,7 @@ vice:
 president:
   resync_period_minutes: 12
   certificate_check_interval_minutes: 30
+  rate_limit: 4
   metrics_port: 9091
   log_level: 1
 

@@ -139,6 +139,30 @@ func (s *E2ETestSuite) getReadyNodes() {
 	s.readyNodes = nodes.Items
 }
 
+func (s *E2ETestSuite) waitForKubeDNS() {
+	log.Printf("waiting for kube-system/kube-dns to become ready")
+	endpointWatch, err := s.clientSet.CoreV1().Endpoints("kube-system").Watch(meta_v1.SingleObject(
+		meta_v1.ObjectMeta{
+			Name: "kube-dns",
+		},
+	))
+
+	s.handleError(err)
+	_, err = watch.Until(TimeoutKubeDNS, endpointWatch, func(event watch.Event) (bool, error) {
+		if endpoints, ok := event.Object.(*v1.Endpoints); ok {
+			ready := 0
+			for _, sub := range endpoints.Subsets {
+				if len(sub.Addresses) > 0 {
+					ready++
+				}
+			}
+			return ready == len(endpoints.Subsets), nil
+		}
+		return false, nil
+	})
+	s.handleError(err)
+}
+
 func (s *E2ETestSuite) getReadyPods() {
 	pods, err := s.clientSet.CoreV1().Pods(Namespace).List(meta_v1.ListOptions{
 		LabelSelector: fmt.Sprintf("app=%s", NginxName),

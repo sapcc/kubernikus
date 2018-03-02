@@ -6,7 +6,8 @@ const (
 	Timeout       = 10 * time.Minute
 	CheckInterval = 10 * time.Second
 
-	TimeoutPod = 5 * time.Minute
+	TimeoutPod     = 5 * time.Minute
+	TimeoutKubeDNS = 2 * time.Minute
 
 	ClusterName               = "e2e"
 	ClusterSmallNodePoolSize  = 2
@@ -17,7 +18,8 @@ const (
 	NginxPort  = 80
 	Namespace  = "default"
 
-	TimeoutWGET = 10
+	WGETRetries = 10
+	WGETTimeout = 60
 
 	PVCSize      = "1Gi"
 	PVCName      = "e2e-nginx-pvc"

@@ -134,7 +134,7 @@ grafana:
         "editable": false,
         "gnetId": null,
         "graphTooltip": 0,
-        "iteration": 1518790730814,
+        "iteration": 1519221161829,
         "links": [],
         "panels": [
           {
@@ -562,7 +562,7 @@ grafana:
             "fill": 3,
             "gridPos": {
               "h": 4,
-              "w": 4,
+              "w": 3,
               "x": 14,
               "y": 1
             },
@@ -573,7 +573,7 @@ grafana:
               "current": false,
               "max": true,
               "min": true,
-              "rightSide": true,
+              "rightSide": false,
               "show": false,
               "total": false,
               "values": true
@@ -599,7 +599,7 @@ grafana:
             "steppedLine": false,
             "targets": [
               {
-                "expr": "sum(probe_http_duration_seconds{instance=~\"https://kubernikus.*\",path=\"/\"}) * 1000",
+                "expr": "sum(probe_http_duration_seconds{instance=~\"https://kubernikus.*\",path=\"/\"}) ",
                 "format": "time_series",
                 "hide": false,
                 "instant": false,
@@ -609,7 +609,7 @@ grafana:
                 "refId": "A"
               },
               {
-                "expr": "quantile_over_time(0.95, probe_duration_seconds{instance=~\"https://kubernikus.*\"}[24h]) * 1000",
+                "expr": "quantile_over_time(0.95, probe_duration_seconds{instance=~\"https://kubernikus.*\"}[24h]) ",
                 "format": "time_series",
                 "hide": false,
                 "interval": "",
@@ -639,7 +639,7 @@ grafana:
             "yaxes": [
               {
                 "decimals": null,
-                "format": "ms",
+                "format": "s",
                 "label": null,
                 "logBase": 10,
                 "max": null,
@@ -665,21 +665,21 @@ grafana:
             "fill": 3,
             "gridPos": {
               "h": 4,
-              "w": 4,
-              "x": 18,
+              "w": 3,
+              "x": 17,
               "y": 1
             },
             "id": 60,
             "legend": {
               "alignAsTable": false,
-              "avg": true,
+              "avg": false,
               "current": false,
-              "max": true,
-              "min": true,
-              "rightSide": true,
+              "max": false,
+              "min": false,
+              "rightSide": false,
               "show": false,
               "total": false,
-              "values": true
+              "values": false
             },
             "lines": true,
             "linewidth": 1,
@@ -692,6 +692,7 @@ grafana:
             "seriesOverrides": [
               {
                 "alias": "Avg",
+                "dashes": true,
                 "fill": 0,
                 "linewidth": 3
               }
@@ -701,7 +702,7 @@ grafana:
             "steppedLine": false,
             "targets": [
               {
-                "expr": "sum(probe_http_duration_seconds{path=\"/\"}) * 1000",
+                "expr": "avg(probe_http_duration_seconds{path=\"/\"})",
                 "format": "time_series",
                 "instant": false,
                 "intervalFactor": 1,
@@ -709,8 +710,9 @@ grafana:
                 "refId": "A"
               },
               {
-                "expr": "sum(avg_over_time(probe_http_duration_seconds{path=\"/\"}[1h])) * 1000",
+                "expr": "avg(quantile_over_time(0.5, probe_duration_seconds{path=\"/\"}[24h]))",
                 "format": "time_series",
+                "interval": "",
                 "intervalFactor": 1,
                 "legendFormat": "Avg",
                 "refId": "B"
@@ -736,10 +738,11 @@ grafana:
             },
             "yaxes": [
               {
-                "format": "ms",
+                "decimals": null,
+                "format": "s",
                 "label": null,
                 "logBase": 1,
-                "max": null,
+                "max": "0.1",
                 "min": null,
                 "show": true
               },
@@ -774,8 +777,8 @@ grafana:
             "extendLastValue": true,
             "gridPos": {
               "h": 4,
-              "w": 2,
-              "x": 22,
+              "w": 4,
+              "x": 20,
               "y": 1
             },
             "hideTimeOverride": true,
@@ -802,7 +805,7 @@ grafana:
                 "to": "null"
               }
             ],
-            "rowHeight": 60,
+            "rowHeight": 32,
             "showDistinctCount": false,
             "showLegend": false,
             "showLegendCounts": false,
@@ -815,19 +818,14 @@ grafana:
               {
                 "expr": "probe_success{path=\"/\"}",
                 "format": "time_series",
+                "hide": false,
+                "interval": "",
                 "intervalFactor": 1,
-                "legendFormat": "Kubernikus",
+                "legendFormat": "{{instance}}",
                 "refId": "A"
-              },
-              {
-                "expr": "probe_success{path=\"/grafana\"}",
-                "format": "time_series",
-                "intervalFactor": 1,
-                "legendFormat": "Klusters",
-                "refId": "B"
               }
             ],
-            "textSize": 20,
+            "textSize": 12,
             "timeFrom": "24h",
             "timeShift": null,
             "title": "",
@@ -857,11 +855,11 @@ grafana:
             ],
             "valueTextColor": "#fff",
             "writeAllValues": false,
-            "writeLastValue": true,
+            "writeLastValue": false,
             "writeMetricNames": true
           },
           {
-            "collapsed": true,
+            "collapsed": false,
             "gridPos": {
               "h": 1,
               "w": 24,
@@ -1763,7 +1761,7 @@ grafana:
               "x": 7,
               "y": 9
             },
-            "id": 42,
+            "id": 73,
             "legend": {
               "alignAsTable": false,
               "avg": false,
@@ -1775,38 +1773,31 @@ grafana:
               "values": false
             },
             "lines": true,
-            "linewidth": 2,
+            "linewidth": 3,
             "links": [],
             "nullPointMode": "connected",
-            "percentage": false,
+            "percentage": true,
             "pointradius": 5,
             "points": false,
             "renderer": "flot",
             "seriesOverrides": [],
             "spaceLength": 10,
-            "stack": true,
+            "stack": false,
             "steppedLine": false,
             "targets": [
               {
-                "expr": "(sum(node_memory_MemTotal) by (instance) - sum(node_memory_MemFree+node_memory_Buffers+node_memory_Cached) by (instance)) / (sum(node_memory_MemTotal) by (instance)) * 100",
+                "expr": "sum(irate(node_cpu{mode=~\"system|user|iowait\"}[5m])) by (instance) / sum(irate(node_cpu{}[5m])) by (instance)",
                 "format": "time_series",
                 "interval": "",
-                "intervalFactor": 1,
+                "intervalFactor": 3,
                 "legendFormat": "{{instance}}",
                 "refId": "A"
-              },
-              {
-                "expr": "",
-                "format": "time_series",
-                "intervalFactor": 1,
-                "legendFormat": "",
-                "refId": "B"
               }
             ],
             "thresholds": [],
             "timeFrom": null,
             "timeShift": null,
-            "title": "Memory",
+            "title": "CPU",
             "tooltip": {
               "shared": true,
               "sort": 0,
@@ -1823,11 +1814,11 @@ grafana:
             "yaxes": [
               {
                 "decimals": null,
-                "format": "percent",
+                "format": "percentunit",
                 "label": "",
                 "logBase": 1,
-                "max": "400",
-                "min": "0.0",
+                "max": "1",
+                "min": "0",
                 "show": false
               },
               {
@@ -2096,7 +2087,6 @@ grafana:
             "tableColumn": "",
             "targets": [
               {
-                "$$hashKey": "object:658",
                 "expr": "sum(container_fs_usage_bytes{pod_name=~\".*-etcd-.*\",image!~\".*pause.*\"}) / sum(kube_persistentvolumeclaim_resource_requests_storage_bytes{namespace=\"kubernikus\"})",
                 "format": "time_series",
                 "hide": false,
@@ -2152,12 +2142,10 @@ grafana:
             "mappingType": 1,
             "mappingTypes": [
               {
-                "$$hashKey": "object:314",
                 "name": "value to text",
                 "value": 1
               },
               {
-                "$$hashKey": "object:315",
                 "name": "range to text",
                 "value": 2
               }
@@ -2185,7 +2173,6 @@ grafana:
             "tableColumn": "",
             "targets": [
               {
-                "$$hashKey": "object:258",
                 "expr": "limes_project_usage{project=\"kubernikus\",resource=\"instances\",domain=\"ccadmin\"} / limes_project_quota{project=\"kubernikus\",resource=\"instances\",domain=\"ccadmin\"}",
                 "format": "time_series",
                 "instant": true,
@@ -2201,7 +2188,6 @@ grafana:
             "valueFontSize": "80%",
             "valueMaps": [
               {
-                "$$hashKey": "object:317",
                 "op": "=",
                 "text": "N/A",
                 "value": "null"
@@ -2272,7 +2258,6 @@ grafana:
             "tableColumn": "",
             "targets": [
               {
-                "$$hashKey": "object:500",
                 "expr": "limes_project_usage{project=\"kubernikus\",resource=\"cores\",domain=\"ccadmin\"} / limes_project_quota{project=\"kubernikus\",resource=\"cores\",domain=\"ccadmin\"} ",
                 "format": "time_series",
                 "intervalFactor": 1,
@@ -2326,12 +2311,10 @@ grafana:
             "mappingType": 1,
             "mappingTypes": [
               {
-                "$$hashKey": "object:422",
                 "name": "value to text",
                 "value": 1
               },
               {
-                "$$hashKey": "object:423",
                 "name": "range to text",
                 "value": 2
               }
@@ -2359,7 +2342,6 @@ grafana:
             "tableColumn": "",
             "targets": [
               {
-                "$$hashKey": "object:399",
                 "expr": "limes_project_usage{project=\"kubernikus\",resource=\"ram\",domain=\"ccadmin\"} / limes_project_quota{project=\"kubernikus\",resource=\"ram\",domain=\"ccadmin\"}",
                 "format": "time_series",
                 "instant": true,
@@ -2375,7 +2357,6 @@ grafana:
             "valueFontSize": "80%",
             "valueMaps": [
               {
-                "$$hashKey": "object:425",
                 "op": "=",
                 "text": "N/A",
                 "value": "null"
@@ -2384,7 +2365,7 @@ grafana:
             "valueName": "current"
           },
           {
-            "collapsed": true,
+            "collapsed": false,
             "gridPos": {
               "h": 1,
               "w": 24,
@@ -2397,32 +2378,119 @@ grafana:
             "type": "row"
           },
           {
-            "aliasColors": {},
-            "bars": true,
-            "dashLength": 10,
-            "dashes": false,
+            "cacheTimeout": null,
+            "colorBackground": false,
+            "colorValue": false,
+            "colors": [
+              "#299c46",
+              "rgba(237, 129, 40, 0.89)",
+              "#d44a3a"
+            ],
             "datasource": null,
-            "fill": 1,
+            "format": "dtdurations",
+            "gauge": {
+              "maxValue": 100,
+              "minValue": 0,
+              "show": false,
+              "thresholdLabels": false,
+              "thresholdMarkers": false
+            },
             "gridPos": {
               "h": 7,
-              "w": 6,
+              "w": 3,
               "x": 0,
               "y": 13
             },
-            "hideTimeOverride": true,
-            "id": 6,
+            "id": 71,
+            "interval": null,
+            "links": [],
+            "mappingType": 1,
+            "mappingTypes": [
+              {
+                "$$hashKey": "object:684",
+                "name": "value to text",
+                "value": 1
+              },
+              {
+                "$$hashKey": "object:685",
+                "name": "range to text",
+                "value": 2
+              }
+            ],
+            "maxDataPoints": 100,
+            "nullPointMode": "connected",
+            "nullText": null,
+            "postfix": "",
+            "postfixFontSize": "50%",
+            "prefix": "",
+            "prefixFontSize": "50%",
+            "rangeMaps": [
+              {
+                "from": "null",
+                "text": "N/A",
+                "to": "null"
+              }
+            ],
+            "sparkline": {
+              "fillColor": "rgba(31, 118, 189, 0.18)",
+              "full": false,
+              "lineColor": "rgb(31, 120, 193)",
+              "show": true
+            },
+            "tableColumn": "",
+            "targets": [
+              {
+                "$$hashKey": "object:661",
+                "expr": "kubernikus_kluster_boot_duration_sum / kubernikus_kluster_boot_duration_count",
+                "format": "time_series",
+                "instant": false,
+                "intervalFactor": 1,
+                "legendFormat": "Boot Time",
+                "refId": "A"
+              }
+            ],
+            "thresholds": "",
+            "title": "Average Kluster Boot Time",
+            "type": "singlestat",
+            "valueFontSize": "80%",
+            "valueMaps": [
+              {
+                "$$hashKey": "object:687",
+                "op": "=",
+                "text": "N/A",
+                "value": "null"
+              }
+            ],
+            "valueName": "avg"
+          },
+          {
+            "aliasColors": {},
+            "bars": false,
+            "dashLength": 10,
+            "dashes": false,
+            "datasource": null,
+            "decimals": 0,
+            "fill": 1,
+            "gridPos": {
+              "h": 7,
+              "w": 4,
+              "x": 3,
+              "y": 13
+            },
+            "id": 72,
             "legend": {
               "alignAsTable": false,
               "avg": false,
               "current": false,
-              "max": true,
-              "min": true,
+              "max": false,
+              "min": false,
+              "rightSide": false,
               "show": false,
               "total": false,
-              "values": true
+              "values": false
             },
-            "lines": false,
-            "linewidth": 1,
+            "lines": true,
+            "linewidth": 3,
             "links": [],
             "nullPointMode": "connected",
             "percentage": false,
@@ -2435,47 +2503,145 @@ grafana:
             "steppedLine": false,
             "targets": [
               {
-                "expr": "kubernikus_kluster_boot_duration",
+                "$$hashKey": "object:506",
+                "expr": "sum(label_replace(rate(container_cpu_usage_seconds_total{namespace=\"kubernikus\",name=~\".*(etcd|manager|scheduler|apiserver).*\",image!~\".*pause.*\"}[1h]), \"container\", \"$1\", \"name\", \".*(etcd|manager|scheduler|apiserver).*\")) by (container) / sum(label_replace(kube_pod_container_resource_requests_cpu_cores{container=~\"apiserver|etcd|scheduler|controller-manager\"}, \"container\", \"$1\", \"container\", \".*(etcd|manager|scheduler|apiserver)\")) by (container)",
                 "format": "time_series",
                 "hide": false,
                 "instant": false,
+                "intervalFactor": 10,
+                "legendFormat": "{{container}}",
+                "refId": "B"
+              },
+              {
+                "$$hashKey": "object:870",
+                "expr": "",
+                "format": "time_series",
+                "hide": false,
                 "intervalFactor": 1,
-                "legendFormat": "Klusters",
-                "refId": "A"
+                "legendFormat": "",
+                "refId": "C"
               }
             ],
             "thresholds": [],
-            "timeFrom": "14d",
+            "timeFrom": null,
             "timeShift": null,
-            "title": "Kluster Boot Times",
+            "title": "CPU Usage Ratio",
             "tooltip": {
-              "shared": false,
-              "sort": 0,
+              "shared": true,
+              "sort": 2,
               "value_type": "individual"
             },
             "type": "graph",
             "xaxis": {
-              "buckets": 5,
-              "mode": "histogram",
+              "buckets": null,
+              "mode": "time",
               "name": null,
-              "show": true,
-              "values": [
-                "total"
-              ]
+              "show": false,
+              "values": []
             },
             "yaxes": [
               {
-                "decimals": 0,
+                "$$hashKey": "object:531",
+                "decimals": 1,
+                "format": "percentunit",
+                "label": "",
+                "logBase": 1,
+                "max": null,
+                "min": "0",
+                "show": true
+              },
+              {
+                "$$hashKey": "object:532",
                 "format": "short",
-                "label": "Count",
+                "label": null,
+                "logBase": 1,
+                "max": null,
+                "min": null,
+                "show": false
+              }
+            ]
+          },
+          {
+            "aliasColors": {},
+            "bars": false,
+            "dashLength": 10,
+            "dashes": false,
+            "datasource": null,
+            "decimals": 0,
+            "fill": 1,
+            "gridPos": {
+              "h": 7,
+              "w": 4,
+              "x": 7,
+              "y": 13
+            },
+            "id": 42,
+            "legend": {
+              "alignAsTable": false,
+              "avg": false,
+              "current": false,
+              "max": false,
+              "min": false,
+              "rightSide": false,
+              "show": false,
+              "total": false,
+              "values": false
+            },
+            "lines": true,
+            "linewidth": 2,
+            "links": [],
+            "nullPointMode": "connected",
+            "percentage": false,
+            "pointradius": 5,
+            "points": false,
+            "renderer": "flot",
+            "seriesOverrides": [],
+            "spaceLength": 10,
+            "stack": false,
+            "steppedLine": false,
+            "targets": [
+              {
+                "$$hashKey": "object:1526",
+                "expr": "sum(label_replace(container_memory_usage_bytes{namespace=\"kubernikus\",name=~\".*(etcd|manager|scheduler|apiserver).*\",image!~\".*pause.*\"}, \"container\", \"$1\", \"name\", \".*(etcd|manager|scheduler|apiserver).*\")) by (container) / sum(label_replace(kube_pod_container_resource_requests_memory_bytes{container=~\"apiserver|etcd|scheduler|controller-manager\"}, \"container\", \"$1\", \"container\", \".*(etcd|manager|scheduler|apiserver)\")) by (container)",
+                "format": "time_series",
+                "hide": false,
+                "interval": "",
+                "intervalFactor": 10,
+                "legendFormat": "{{container}}",
+                "refId": "A"
+              }
+            ],
+            "thresholds": [],
+            "timeFrom": null,
+            "timeShift": null,
+            "title": "Memory Usage Ratio",
+            "tooltip": {
+              "shared": true,
+              "sort": 2,
+              "value_type": "individual"
+            },
+            "type": "graph",
+            "xaxis": {
+              "buckets": null,
+              "mode": "time",
+              "name": null,
+              "show": false,
+              "values": []
+            },
+            "yaxes": [
+              {
+                "$$hashKey": "object:1887",
+                "decimals": null,
+                "format": "percentunit",
+                "label": "",
                 "logBase": 1,
                 "max": null,
                 "min": null,
                 "show": true
               },
               {
-                "decimals": null,
-                "format": "dtdurations",
+                "$$hashKey": "object:1888",
+                "format": "short",
                 "label": null,
                 "logBase": 1,
                 "max": null,
@@ -2493,8 +2659,8 @@ grafana:
             "fill": 0,
             "gridPos": {
               "h": 7,
-              "w": 6,
-              "x": 6,
+              "w": 4,
+              "x": 11,
               "y": 13
             },
             "id": 11,
@@ -2609,8 +2775,8 @@ grafana:
             "fill": 0,
             "gridPos": {
               "h": 7,
-              "w": 6,
-              "x": 12,
+              "w": 4,
+              "x": 15,
               "y": 13
             },
             "id": 4,
@@ -2725,8 +2891,8 @@ grafana:
             "fill": 0,
             "gridPos": {
               "h": 7,
-              "w": 6,
-              "x": 18,
+              "w": 5,
+              "x": 19,
               "y": 13
             },
             "id": 69,
@@ -2735,12 +2901,13 @@ grafana:
               "current": false,
               "max": false,
               "min": false,
+              "rightSide": false,
               "show": false,
               "total": false,
               "values": false
             },
             "lines": true,
-            "linewidth": 2,
+            "linewidth": 3,
             "links": [],
             "nullPointMode": "connected",
             "percentage": false,
@@ -2759,14 +2926,16 @@ grafana:
             "steppedLine": false,
             "targets": [
               {
-                "expr": "rate(go_goroutines{app=\"kubernikus\"}[5m])",
+                "$$hashKey": "object:444",
+                "expr": "sum(go_goroutines{app=\"kubernikus\"})",
                 "format": "time_series",
                 "intervalFactor": 1,
-                "legendFormat": "Current",
+                "legendFormat": "",
                 "refId": "D"
               },
               {
-                "expr": "rate(go_goroutines{app=\"kubernikus\"}[24h])\n",
+                "$$hashKey": "object:445",
+                "expr": "go_rout",
                 "format": "time_series",
                 "intervalFactor": 1,
                 "legendFormat": "24h Average",
@@ -2792,6 +2961,7 @@ grafana:
             },
             "yaxes": [
               {
+                "$$hashKey": "object:517",
                 "decimals": null,
                 "format": "short",
                 "label": null,
@@ -2801,6 +2971,7 @@ grafana:
                 "show": true
               },
               {
+                "$$hashKey": "object:518",
                 "format": "short",
                 "label": null,
                 "logBase": 1,
@@ -2916,6 +3087,7 @@ grafana:
           "to": "now"
         },
         "timepicker": {
+          "hidden": true,
           "refresh_intervals": [
             "5s",
             "10s",
@@ -2942,6 +3114,6 @@ grafana:
         },
         "timezone": "",
         "title": "Kubernikus",
-        "uid": "0zgHSx3kz",
+        "uid": "5XtTRCqkk",
         "version": 5
       }

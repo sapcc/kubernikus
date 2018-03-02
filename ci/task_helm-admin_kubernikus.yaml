@@ -19,7 +19,13 @@ run:
       set -exo pipefail
       VERSION=$(cat kubernikus.builds/.git/HEAD)
       helm dep up --skip-refresh kubernikus.builds/charts/kubernikus/
-      helm upgrade $KUBERNIKUS_NAME kubernikus.builds/charts/kubernikus/ --namespace=$KUBERNIKUS_NAME --values secrets.git/admin/values/$KUBERNIKUS_NAME.yaml --set imageTag=$VERSION --install
+      helm upgrade $KUBERNIKUS_NAME kubernikus.builds/charts/kubernikus/ \
+        --namespace=$KUBERNIKUS_NAME \
+        --values secrets.git/global/values/kubernikus.yaml \
+        --values secrets.git/kubernikus/$KUBERNIKUS_NAME/values/kubernikus.yaml \
+        --values secrets.git/admin/values/$KUBERNIKUS_NAME.yaml \
+        --set imageTag=$VERSION \
+        --install
       kubectl rollout status deployment/kubernikus-api --namespace=$KUBERNIKUS_NAME
       kubectl rollout status deployment/kubernikus-operator --namespace=$KUBERNIKUS_NAME
 
