@@ -613,6 +613,7 @@ func (c *client) CreateNode(kluster *kubernikus_v1.Kluster, pool *models.NodePoo
 
 	name = SimpleNameGenerator.GenerateName(fmt.Sprintf("%v-%v-", kluster.Spec.Name, pool.Name))
 
+	configDrive := true
 	server, err := compute.Create(client, servers.CreateOpts{
 		Name:           name,
 		FlavorName:     pool.Flavor,
@@ -621,6 +622,7 @@ func (c *client) CreateNode(kluster *kubernikus_v1.Kluster, pool *models.NodePoo
 		UserData:       userData,
 		ServiceClient:  client,
 		SecurityGroups: []string{kluster.Spec.Openstack.SecurityGroupName},
+		ConfigDrive:    &configDrive,
 	}).Extract()
 
 	if err != nil {

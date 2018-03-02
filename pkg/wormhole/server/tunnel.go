@@ -77,7 +77,7 @@ func loadCAFile(cafile string) (*x509.CertPool, error) {
 	pool := x509.NewCertPool()
 	cas, err := ioutil.ReadFile(cafile)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to read file %s: %s", cafile)
+		return nil, fmt.Errorf("Failed to read file %s: %s", cafile, err)
 	}
 	if !pool.AppendCertsFromPEM(cas) {
 		return nil, fmt.Errorf("No certs found in file %s", cafile)
