@@ -40,6 +40,10 @@ Now access Dashboard at:
 
 [http://localhost:8001/api/v1/namespaces/kube-system/services/https:kubernetes-dashboard:/proxy/.](http://localhost:8001/api/v1/namespaces/kube-system/services/https:kubernetes-dashboard:/proxy/.)
 
+Skip the selection of Kubeconfig or Token:
+
+![Selection](https://raw.githubusercontent.com/sapcc/kubernikus/master/assets/images/docs/containers/kubernetes/selection.png)
+
 ### Exposing the Dashboard
 
 In order to expose the Dashboard without the local proxy, we need to:
