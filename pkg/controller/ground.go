@@ -175,6 +175,7 @@ func (op *GroundControl) handler(key string) error {
 			"phase", kluster.Status.Phase,
 			"project", kluster.Account(),
 			"v", 5)
+
 		metrics.SetMetricKlusterInfo(kluster.GetNamespace(), kluster.GetName(), kluster.Status.Version, kluster.Spec.Openstack.ProjectID, kluster.GetAnnotations(), kluster.GetLabels())
 		metrics.SetMetricKlusterStatusPhase(kluster.GetName(), kluster.Status.Phase)
 
@@ -464,6 +465,7 @@ func (op *GroundControl) terminateKluster(kluster *v1.Kluster) error {
 		return err
 	}
 
+	// TODO: remove if all control-planes are running k8s 1.8+
 	// There's a bug in the garbage-collector regarding CRDs in 1.7. It will not delete
 	// the CRD even though all Finalizers are gone. As a workaround, here we try to just
 	// delte the kluster again.
@@ -479,10 +481,12 @@ func (op *GroundControl) terminateKluster(kluster *v1.Kluster) error {
 		Do().
 		Error()
 
-	if err == nil {
-		waitutil.WaitForKlusterDeletion(kluster, op.klusterInformer.Informer().GetIndexer())
+	if err != nil && !apierrors.IsNotFound(err) {
+		return err
 	}
-	return err
+
+	waitutil.WaitForKlusterDeletion(kluster, op.klusterInformer.Informer().GetIndexer())
+	return nil
 }
 
 func (op *GroundControl) requiresOpenstackInfo(kluster *v1.Kluster) bool {
