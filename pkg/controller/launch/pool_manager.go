@@ -85,6 +85,28 @@ func (cpm *ConcretePoolManager) GetStatus() (status *PoolStatus, err error) {
 	}, nil
 }
 
+func nodePoolInfoGet(pool []models.NodePoolInfo, name string) (int, bool) {
+	for i, node := range pool {
+		if node.Name == name {
+			return i, true
+		}
+	}
+	return 0, false
+}
+
+func nodePoolSpecGet(pool []models.NodePool, name string) (int, bool) {
+	for i, node := range pool {
+		if node.Name == name {
+			return i, true
+		}
+	}
+	return 0, false
+}
+
+func removeNodePool(pool []models.NodePoolInfo, index int) []models.NodePoolInfo {
+	return append(pool[:index], pool[index+1:]...)
+}
+
 func (cpm *ConcretePoolManager) SetStatus(status *PoolStatus) error {
 
 	healthy, schedulable := cpm.healthyAndSchedulable()
@@ -113,13 +135,31 @@ func (cpm *ConcretePoolManager) SetStatus(status *PoolStatus) error {
 		return err
 	}
 
-	for i, curInfo := range copy.Status.NodePools {
-		if curInfo.Name == newInfo.Name {
-			if curInfo == newInfo {
+	// Add new pools in the spec to the status
+	for _, specPool := range copy.Spec.NodePools {
+		// Find the pool
+		if npi, ok := nodePoolInfoGet(copy.Status.NodePools, specPool.Name); ok {
+			// is there a need to update?
+			if copy.Status.NodePools[npi] == newInfo {
 				return nil
 			}
+			copy.Status.NodePools[npi] = newInfo
+			_, err = cpm.Clients.Kubernikus.Kubernikus().Klusters(copy.Namespace).Update(copy)
+			return err
+			// not found so add it
+		} else {
+			copy.Status.NodePools = append(copy.Status.NodePools, newInfo)
+			_, err = cpm.Clients.Kubernikus.Kubernikus().Klusters(copy.Namespace).Update(copy)
+			return err
+		}
+	}
 
-			copy.Status.NodePools[i] = newInfo
+	// Delete pools from the status that are not in spec
+	for i, infoPool := range copy.Status.NodePools {
+		// find the pool
+		if _, ok := nodePoolSpecGet(copy.Spec.NodePools, infoPool.Name); !ok {
+			// not found in the spec anymore so delete it
+			copy.Status.NodePools = removeNodePool(copy.Status.NodePools, i)
 			_, err = cpm.Clients.Kubernikus.Kubernikus().Klusters(copy.Namespace).Update(copy)
 			return err
 		}
