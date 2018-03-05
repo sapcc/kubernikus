@@ -1,70 +1,43 @@
-package scoped
+package project
 
 import (
-	"github.com/go-kit/kit/log"
 	"github.com/gophercloud/gophercloud"
-	"github.com/gophercloud/gophercloud/openstack"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/keypairs"
-	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/secgroups"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/flavors"
-	"github.com/gophercloud/gophercloud/openstack/identity/v3/tokens"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/layer3/routers"
+	securitygroups "github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/security/groups"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/networks"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/ports"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/subnets"
 	"github.com/gophercloud/gophercloud/pagination"
 
 	"github.com/sapcc/kubernikus/pkg/api/models"
-	"github.com/sapcc/kubernikus/pkg/client/openstack/util"
-	utillog "github.com/sapcc/kubernikus/pkg/util/log"
 )
 
-type client struct {
-	util.AuthenticatedClient
-	Logger log.Logger
-}
-
-type Client interface {
-	Authenticate(*tokens.AuthOptions) error
+type ProjectClient interface {
 	GetMetadata() (*models.OpenstackMetadata, error)
 }
 
-func NewClient(authOptions *tokens.AuthOptions, logger log.Logger) (Client, error) {
-	logger = utillog.NewAuthLogger(logger, authOptions)
+type projectClient struct {
+	projectID string
 
-	var c Client
-	c = &client{Logger: logger}
-	c = LoggingClient{c, logger}
-
-	return c, c.Authenticate(authOptions)
+	NetworkClient  *gophercloud.ServiceClient
+	ComputeClient  *gophercloud.ServiceClient
+	IdentityClient *gophercloud.ServiceClient
 }
 
-func (c *client) Authenticate(authOptions *tokens.AuthOptions) error {
-	providerClient, err := utillog.NewLoggingProviderClient(authOptions.IdentityEndpoint, c.Logger)
-	if err != nil {
-		return err
+func NewProjectClient(projectID string, network, compute, identity *gophercloud.ServiceClient) ProjectClient {
+	var client ProjectClient
+	client = &projectClient{
+		projectID:      projectID,
+		NetworkClient:  network,
+		ComputeClient:  compute,
+		IdentityClient: identity,
 	}
-
-	if err := openstack.AuthenticateV3(providerClient, authOptions, gophercloud.EndpointOpts{}); err != nil {
-		return err
-	}
-
-	if c.IdentityClient, err = openstack.NewIdentityV3(providerClient, gophercloud.EndpointOpts{}); err != nil {
-		return err
-	}
-
-	if c.ComputeClient, err = openstack.NewComputeV2(providerClient, gophercloud.EndpointOpts{}); err != nil {
-		return err
-	}
-
-	if c.NetworkClient, err = openstack.NewNetworkV2(providerClient, gophercloud.EndpointOpts{}); err != nil {
-		return err
-	}
-
-	return nil
+	return client
 }
 
-func (c *client) GetMetadata() (metadata *models.OpenstackMetadata, err error) {
+func (c *projectClient) GetMetadata() (metadata *models.OpenstackMetadata, err error) {
 	metadata = &models.OpenstackMetadata{
 		Flavors:        make([]models.Flavor, 0),
 		KeyPairs:       make([]*models.KeyPair, 0),
@@ -90,15 +63,15 @@ func (c *client) GetMetadata() (metadata *models.OpenstackMetadata, err error) {
 	return metadata, nil
 }
 
-func (c *client) getRouters() ([]*models.Router, error) {
+func (c *projectClient) getRouters() ([]*models.Router, error) {
 	result := []*models.Router{}
 
-	err := routers.List(c.NetworkClient, routers.ListOpts{}).EachPage(func(page pagination.Page) (bool, error) {
+	err := routers.List(c.NetworkClient, routers.ListOpts{TenantID: c.projectID}).EachPage(func(page pagination.Page) (bool, error) {
 		if routerList, err := routers.ExtractRouters(page); err != nil {
 			return false, err
 		} else {
 			for _, router := range routerList {
-				result = append(result, &models.Router{ID: router.ID, Name: router.Name})
+				result = append(result, &models.Router{ID: router.ID, Name: router.Name, ExternalNetworkID: router.GatewayInfo.NetworkID})
 			}
 		}
 		return true, nil
@@ -117,7 +90,7 @@ func (c *client) getRouters() ([]*models.Router, error) {
 	return result, nil
 }
 
-func (c *client) getNetworks(router *models.Router) ([]*models.Network, error) {
+func (c *projectClient) getNetworks(router *models.Router) ([]*models.Network, error) {
 	result := []*models.Network{}
 
 	networkIDs, err := c.getRouterNetworkIDs(router)
@@ -142,7 +115,7 @@ func (c *client) getNetworks(router *models.Router) ([]*models.Network, error) {
 	return result, nil
 }
 
-func (c *client) getRouterNetworkIDs(router *models.Router) ([]string, error) {
+func (c *projectClient) getRouterNetworkIDs(router *models.Router) ([]string, error) {
 	result := []string{}
 
 	err := ports.List(c.NetworkClient, ports.ListOpts{DeviceID: router.ID, DeviceOwner: "network:router_interface"}).EachPage(func(page pagination.Page) (bool, error) {
@@ -159,7 +132,7 @@ func (c *client) getRouterNetworkIDs(router *models.Router) ([]string, error) {
 	return result, err
 }
 
-func (c *client) getSubnetIDs(network *models.Network) ([]string, error) {
+func (c *projectClient) getSubnetIDs(network *models.Network) ([]string, error) {
 	result, err := networks.Get(c.NetworkClient, network.ID).Extract()
 	if err != nil {
 		return []string{}, err
@@ -168,7 +141,7 @@ func (c *client) getSubnetIDs(network *models.Network) ([]string, error) {
 	return result.Subnets, nil
 }
 
-func (c *client) getSubnets(network *models.Network) ([]*models.Subnet, error) {
+func (c *projectClient) getSubnets(network *models.Network) ([]*models.Subnet, error) {
 	result := []*models.Subnet{}
 
 	subnetIDs, err := c.getSubnetIDs(network)
@@ -187,7 +160,7 @@ func (c *client) getSubnets(network *models.Network) ([]*models.Subnet, error) {
 	return result, nil
 }
 
-func (c *client) getKeyPairs() ([]*models.KeyPair, error) {
+func (c *projectClient) getKeyPairs() ([]*models.KeyPair, error) {
 	result := []*models.KeyPair{}
 
 	pager, err := keypairs.List(c.ComputeClient).AllPages()
@@ -207,11 +180,11 @@ func (c *client) getKeyPairs() ([]*models.KeyPair, error) {
 	return result, nil
 }
 
-func (c *client) getSecurityGroups() ([]*models.SecurityGroup, error) {
+func (c *projectClient) getSecurityGroups() ([]*models.SecurityGroup, error) {
 	result := []*models.SecurityGroup{}
 
-	err := secgroups.List(c.ComputeClient).EachPage(func(page pagination.Page) (bool, error) {
-		secGroupList, err := secgroups.ExtractSecurityGroups(page)
+	err := securitygroups.List(c.NetworkClient, securitygroups.ListOpts{TenantID: c.projectID}).EachPage(func(page pagination.Page) (bool, error) {
+		secGroupList, err := securitygroups.ExtractGroups(page)
 		if err != nil {
 			return false, err
 		}
@@ -224,7 +197,7 @@ func (c *client) getSecurityGroups() ([]*models.SecurityGroup, error) {
 	return result, err
 }
 
-func (c *client) getFlavors() ([]models.Flavor, error) {
+func (c *projectClient) getFlavors() ([]models.Flavor, error) {
 	result := []models.Flavor{}
 
 	err := flavors.ListDetail(c.ComputeClient, &flavors.ListOpts{MinRAM: 2000}).EachPage(func(page pagination.Page) (bool, error) {

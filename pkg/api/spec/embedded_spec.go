@@ -585,6 +585,10 @@ func init() {
           "items": {
             "type": "object",
             "properties": {
+              "externalNetworkID": {
+                "type": "string",
+                "x-go-name": "ExternalNetworkID"
+              },
               "id": {
                 "type": "string"
               },

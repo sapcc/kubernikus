@@ -257,6 +257,9 @@ func (m *KeyPair) UnmarshalBinary(b []byte) error {
 // swagger:model Router
 type Router struct {
 
+	// external network ID
+	ExternalNetworkID string `json:"externalNetworkID,omitempty"`
+
 	// id
 	ID string `json:"id,omitempty"`
 
