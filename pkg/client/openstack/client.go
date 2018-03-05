@@ -10,7 +10,6 @@ import (
 	"github.com/gophercloud/gophercloud/openstack"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/servers"
 	"github.com/gophercloud/gophercloud/openstack/identity/v3/endpoints"
-	"github.com/gophercloud/gophercloud/openstack/identity/v3/projects"
 	"github.com/gophercloud/gophercloud/openstack/identity/v3/services"
 	"github.com/gophercloud/gophercloud/openstack/identity/v3/tokens"
 	"github.com/gophercloud/gophercloud/openstack/identity/v3/users"
@@ -58,7 +57,6 @@ type Client interface {
 	DeleteNode(*kubernikus_v1.Kluster, string) error
 	GetNodes(*kubernikus_v1.Kluster, *models.NodePool) ([]Node, error)
 
-	GetProject(id string) (*Project, error)
 	GetRegion() (string, error)
 	GetRouters(project_id string) ([]Router, error)
 	DeleteUser(username, domainID string) error
@@ -95,13 +93,6 @@ func (simpleNameGenerator) GenerateName(base string) string {
 		base = base[:maxGeneratedNameLength]
 	}
 	return fmt.Sprintf("%s%s", base, utilrand.String(randomLength))
-}
-
-type Project struct {
-	ID       string
-	Name     string
-	Domain   string
-	DomainID string
 }
 
 type Router struct {
@@ -305,29 +296,6 @@ func (c *client) KlusterClientFor(kluster *kubernikus_v1.Kluster) (*gophercloud.
 	c.klusterClients.Store(kluster.GetUID(), provider)
 
 	return provider, nil
-}
-
-func (c *client) GetProject(id string) (*Project, error) {
-	provider, err := c.adminClient()
-	if err != nil {
-		return nil, err
-	}
-
-	identity, err := openstack.NewIdentityV3(provider, gophercloud.EndpointOpts{})
-	if err != nil {
-		return nil, err
-	}
-	project, err := projects.Get(identity, id).Extract()
-	if err != nil {
-		return nil, err
-	}
-
-	domain, err := domains.Get(identity, project.DomainID).Extract()
-	if err != nil {
-		return nil, err
-	}
-
-	return &Project{ID: id, Name: project.Name, DomainID: project.DomainID, Domain: domain.Name}, nil
 }
 
 func (c *client) GetRouters(project_id string) ([]Router, error) {
