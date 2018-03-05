@@ -135,22 +135,21 @@ func (cpm *ConcretePoolManager) SetStatus(status *PoolStatus) error {
 		return err
 	}
 
+	updated := false
 	// Add new pools in the spec to the status
 	for _, specPool := range copy.Spec.NodePools {
 		// Find the pool
 		if npi, ok := nodePoolInfoGet(copy.Status.NodePools, specPool.Name); ok {
 			// is there a need to update?
 			if copy.Status.NodePools[npi] == newInfo {
-				return nil
+				continue
 			}
 			copy.Status.NodePools[npi] = newInfo
-			_, err = cpm.Clients.Kubernikus.Kubernikus().Klusters(copy.Namespace).Update(copy)
-			return err
+			updated = true
 			// not found so add it
 		} else {
 			copy.Status.NodePools = append(copy.Status.NodePools, newInfo)
-			_, err = cpm.Clients.Kubernikus.Kubernikus().Klusters(copy.Namespace).Update(copy)
-			return err
+			updated = true
 		}
 	}
 
@@ -160,12 +159,14 @@ func (cpm *ConcretePoolManager) SetStatus(status *PoolStatus) error {
 		if _, ok := nodePoolSpecGet(copy.Spec.NodePools, infoPool.Name); !ok {
 			// not found in the spec anymore so delete it
 			copy.Status.NodePools = removeNodePool(copy.Status.NodePools, i)
-			_, err = cpm.Clients.Kubernikus.Kubernikus().Klusters(copy.Namespace).Update(copy)
-			return err
+			updated = true
 		}
 	}
 
-	return nil
+	if updated {
+		_, err = cpm.Clients.Kubernikus.Kubernikus().Klusters(copy.Namespace).Update(copy)
+	}
+	return err
 }
 
 func (cpm *ConcretePoolManager) CreateNode() (id string, err error) {
