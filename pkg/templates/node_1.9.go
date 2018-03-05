@@ -156,7 +156,7 @@ systemd:
       contents: |
         [Unit]
         Description=Update the certificates w/ self-signed root CAs
-        ConditionPathIsSymbolicLink=!/etc/ssl/certs/48b11003.0
+        ConditionPathIsSymbolicLink=!/etc/ssl/certs/381107d7.0
         Before=early-docker.service docker.service
         [Service]
         ExecStart=/usr/sbin/update-ca-certificates
