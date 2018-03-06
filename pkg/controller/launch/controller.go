@@ -108,7 +108,7 @@ func (lr *LaunchReconciler) terminatePools(kluster *v1.Kluster) (requeue bool, e
 }
 
 func (lr *LaunchReconciler) terminatePool(kluster *v1.Kluster, pool *models.NodePool) (status *PoolStatus, requeue bool, err error) {
-	pm := lr.newPoolManager(kluster, pool, lr.klusterInformer.Lister())
+	pm := lr.newPoolManager(kluster, pool)
 	status, err = pm.GetStatus()
 	if err != nil {
 		return
@@ -126,7 +126,7 @@ func (lr *LaunchReconciler) terminatePool(kluster *v1.Kluster, pool *models.Node
 }
 
 func (lr *LaunchReconciler) reconcilePool(kluster *v1.Kluster, pool *models.NodePool) (status *PoolStatus, requeue bool, err error) {
-	pm := lr.newPoolManager(kluster, pool, lr.klusterInformer.Lister())
+	pm := lr.newPoolManager(kluster, pool)
 	status, err = pm.GetStatus()
 	if err != nil {
 		return

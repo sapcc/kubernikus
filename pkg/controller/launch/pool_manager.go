@@ -47,14 +47,14 @@ type ConcretePoolManager struct {
 	Lister  kubernikus_listers.KlusterLister
 }
 
-func (lr *LaunchReconciler) newPoolManager(kluster *v1.Kluster, pool *models.NodePool, lister kubernikus_listers.KlusterLister) PoolManager {
+func (lr *LaunchReconciler) newPoolManager(kluster *v1.Kluster, pool *models.NodePool) PoolManager {
 	logger := log.With(lr.Logger,
 		"kluster", kluster.Spec.Name,
 		"project", kluster.Account(),
 		"pool", pool.Name)
 
 	var pm PoolManager
-	pm = &ConcretePoolManager{lr.Clients, lr.nodeObervatory, kluster, pool, logger, lister}
+	pm = &ConcretePoolManager{lr.Clients, lr.nodeObervatory, kluster, pool, logger, lr.klusterInformer.Lister()}
 	pm = &EventingPoolManager{pm, kluster, lr.Recorder}
 	pm = &LoggingPoolManager{pm, logger}
 	pm = &InstrumentingPoolManager{pm,
@@ -131,9 +131,7 @@ func (cpm *ConcretePoolManager) SetStatus(status *PoolStatus) error {
 		},
 	)
 
-	//TODO: Use util.UpdateKlusterWithRetries here
 	copy, err := cpm.Clients.Kubernikus.Kubernikus().Klusters(cpm.Kluster.Namespace).Get(cpm.Kluster.Name, metav1.GetOptions{})
-
 	if err != nil {
 		return err
 	}
@@ -149,8 +147,8 @@ func (cpm *ConcretePoolManager) SetStatus(status *PoolStatus) error {
 			}
 			copy.Status.NodePools[npi] = newInfo
 			updated = true
-			// not found so add it
 		} else {
+			// not found so add it
 			copy.Status.NodePools = append(copy.Status.NodePools, newInfo)
 			updated = true
 		}
@@ -158,7 +156,7 @@ func (cpm *ConcretePoolManager) SetStatus(status *PoolStatus) error {
 
 	// Delete pools from the status that are not in spec
 	for i, infoPool := range copy.Status.NodePools {
-		// find the pool
+		// skip the pool if it is still in the spec
 		if _, ok := nodePoolSpecGet(copy.Spec.NodePools, infoPool.Name); !ok {
 			// not found in the spec anymore so delete it
 			copy.Status.NodePools = removeNodePool(copy.Status.NodePools, i)
