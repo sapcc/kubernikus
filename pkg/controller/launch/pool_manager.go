@@ -10,6 +10,7 @@ import (
 	"github.com/sapcc/kubernikus/pkg/controller/config"
 	"github.com/sapcc/kubernikus/pkg/controller/metrics"
 	"github.com/sapcc/kubernikus/pkg/controller/nodeobservatory"
+	kubernikus_listers "github.com/sapcc/kubernikus/pkg/generated/listers/kubernikus/v1"
 	"github.com/sapcc/kubernikus/pkg/templates"
 	"github.com/sapcc/kubernikus/pkg/util"
 
@@ -43,16 +44,17 @@ type ConcretePoolManager struct {
 	Kluster *v1.Kluster
 	Pool    *models.NodePool
 	Logger  log.Logger
+	Lister  kubernikus_listers.KlusterLister
 }
 
-func (lr *LaunchReconciler) newPoolManager(kluster *v1.Kluster, pool *models.NodePool) PoolManager {
+func (lr *LaunchReconciler) newPoolManager(kluster *v1.Kluster, pool *models.NodePool, lister kubernikus_listers.KlusterLister) PoolManager {
 	logger := log.With(lr.Logger,
 		"kluster", kluster.Spec.Name,
 		"project", kluster.Account(),
 		"pool", pool.Name)
 
 	var pm PoolManager
-	pm = &ConcretePoolManager{lr.Clients, lr.nodeObervatory, kluster, pool, logger}
+	pm = &ConcretePoolManager{lr.Clients, lr.nodeObervatory, kluster, pool, logger, lister}
 	pm = &EventingPoolManager{pm, kluster, lr.Recorder}
 	pm = &LoggingPoolManager{pm, logger}
 	pm = &InstrumentingPoolManager{pm,
@@ -131,6 +133,7 @@ func (cpm *ConcretePoolManager) SetStatus(status *PoolStatus) error {
 
 	//TODO: Use util.UpdateKlusterWithRetries here
 	copy, err := cpm.Clients.Kubernikus.Kubernikus().Klusters(cpm.Kluster.Namespace).Get(cpm.Kluster.Name, metav1.GetOptions{})
+
 	if err != nil {
 		return err
 	}
@@ -164,7 +167,10 @@ func (cpm *ConcretePoolManager) SetStatus(status *PoolStatus) error {
 	}
 
 	if updated {
-		_, err = cpm.Clients.Kubernikus.Kubernikus().Klusters(copy.Namespace).Update(copy)
+		_, err = util.UpdateKlusterWithRetries(cpm.Clients.Kubernikus.Kubernikus().Klusters(cpm.Kluster.Namespace), cpm.Lister.Klusters(cpm.Kluster.Namespace), cpm.Kluster.GetName(), func(kluster *v1.Kluster) error {
+			kluster.Status.NodePools = copy.Status.NodePools
+			return nil
+		})
 	}
 	return err
 }
