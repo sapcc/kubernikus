@@ -137,31 +137,27 @@ func (cpm *ConcretePoolManager) SetStatus(status *PoolStatus) error {
 	}
 
 	updated := false
-	// Add new pools in the spec to the status
-	for _, specPool := range copy.Spec.NodePools {
-		// Find the pool
-		if npi, ok := nodePoolInfoGet(copy.Status.NodePools, specPool.Name); ok {
-			// is there a need to update?
-			if copy.Status.NodePools[npi] == newInfo {
-				continue
-			}
-			copy.Status.NodePools[npi] = newInfo
-			updated = true
-		} else {
-			// not found so add it
-			copy.Status.NodePools = append(copy.Status.NodePools, newInfo)
-			updated = true
+	// Add new pool in the spec to the status
+	// Find the pool
+	if npi, ok := nodePoolInfoGet(copy.Status.NodePools, cpm.Pool.Name); ok {
+		// is there a need to update?
+		if copy.Status.NodePools[npi] == newInfo {
+			continue
 		}
+		copy.Status.NodePools[npi] = newInfo
+		updated = true
+	} else {
+		// not found so add it
+		copy.Status.NodePools = append(copy.Status.NodePools, newInfo)
+		updated = true
 	}
 
-	// Delete pools from the status that are not in spec
-	for i, infoPool := range copy.Status.NodePools {
-		// skip the pool if it is still in the spec
-		if _, ok := nodePoolSpecGet(copy.Spec.NodePools, infoPool.Name); !ok {
-			// not found in the spec anymore so delete it
-			copy.Status.NodePools = removeNodePool(copy.Status.NodePools, i)
-			updated = true
-		}
+	// Delete pool from the status that are not in spec
+	// skip the pool if it is still in the spec
+	if _, ok := nodePoolSpecGet(copy.Spec.NodePools, cpm.Pool.Name); !ok {
+		// not found in the spec anymore so delete it
+		copy.Status.NodePools = removeNodePool(copy.Status.NodePools, i)
+		updated = true
 	}
 
 	if updated {
