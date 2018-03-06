@@ -105,8 +105,12 @@ func nodePoolSpecGet(pool []models.NodePool, name string) (int, bool) {
 	return 0, false
 }
 
-func removeNodePool(pool []models.NodePoolInfo, index int) []models.NodePoolInfo {
-	return append(pool[:index], pool[index+1:]...)
+func removeNodePool(pool []models.NodePoolInfo, name string) ([]models.NodePoolInfo, error) {
+	index, ok := nodePoolInfoGet(pool, name)
+	if !ok {
+		return nil, fmt.Errorf("Failed to delete PoolInfo: %s", name)
+	}
+	return append(pool[:index], pool[index+1:]...), nil
 }
 
 func (cpm *ConcretePoolManager) SetStatus(status *PoolStatus) error {
@@ -141,11 +145,10 @@ func (cpm *ConcretePoolManager) SetStatus(status *PoolStatus) error {
 	// Find the pool
 	if npi, ok := nodePoolInfoGet(copy.Status.NodePools, cpm.Pool.Name); ok {
 		// is there a need to update?
-		if copy.Status.NodePools[npi] == newInfo {
-			continue
+		if copy.Status.NodePools[npi] != newInfo {
+			copy.Status.NodePools[npi] = newInfo
+			updated = true
 		}
-		copy.Status.NodePools[npi] = newInfo
-		updated = true
 	} else {
 		// not found so add it
 		copy.Status.NodePools = append(copy.Status.NodePools, newInfo)
@@ -156,7 +159,10 @@ func (cpm *ConcretePoolManager) SetStatus(status *PoolStatus) error {
 	// skip the pool if it is still in the spec
 	if _, ok := nodePoolSpecGet(copy.Spec.NodePools, cpm.Pool.Name); !ok {
 		// not found in the spec anymore so delete it
-		copy.Status.NodePools = removeNodePool(copy.Status.NodePools, i)
+		copy.Status.NodePools, err = removeNodePool(copy.Status.NodePools, cpm.Pool.Name)
+		if err != nil {
+			return err
+		}
 		updated = true
 	}
 
