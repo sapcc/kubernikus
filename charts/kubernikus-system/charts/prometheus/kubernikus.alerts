@@ -7,11 +7,35 @@ groups:
     labels:
       tier: kubernikus
       service: k8s
-      severity: critical
+      severity: warning
       context: kluster
     annotations:
       description: Kluster {{ $labels.kluster_id }} is stuck in {{ $labels.phase }} for 1h
       summary: Kluster stuck in phase {{ $labels.phase }}
+
+  - alert: KubernikusAPIDown
+    expr: probe_success{kubernetes_name="kubernikus-api"} != 1
+    for: 5m
+    labels:
+      tier: kubernikus
+      service: kubernikus
+      severity: critical
+      context: availability
+    annotations:
+      description: "{{ $labels.instance }} is unavailable"
+      summary: "{{ $labels.instance }} is unavailable"
+
+  - alert: BackendUnavailable
+    expr: probe_success != 1
+    for: 10m
+    labels:
+      tier: kubernikus
+      service: kubernikus
+      severity: warning
+      context: availability
+    annotations:
+      description: "{{ $labels.instance }} is unavailable"
+      summary: "{{ $labels.instance }} is unavailable"
 
 - name: operator.alerts
   rules:
