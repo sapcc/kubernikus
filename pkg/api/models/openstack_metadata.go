@@ -18,6 +18,9 @@ import (
 // swagger:model OpenstackMetadata
 type OpenstackMetadata struct {
 
+	// availability zones
+	AvailabilityZones []AvailabilityZone `json:"availabilityZones"`
+
 	// flavors
 	Flavors []Flavor `json:"flavors"`
 
@@ -34,6 +37,11 @@ type OpenstackMetadata struct {
 // Validate validates this openstack metadata
 func (m *OpenstackMetadata) Validate(formats strfmt.Registry) error {
 	var res []error
+
+	if err := m.validateAvailabilityZones(formats); err != nil {
+		// prop
+		res = append(res, err)
+	}
 
 	if err := m.validateFlavors(formats); err != nil {
 		// prop
@@ -58,6 +66,15 @@ func (m *OpenstackMetadata) Validate(formats strfmt.Registry) error {
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *OpenstackMetadata) validateAvailabilityZones(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.AvailabilityZones) { // not required
+		return nil
+	}
+
 	return nil
 }
 
@@ -162,6 +179,45 @@ func (m *OpenstackMetadata) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *OpenstackMetadata) UnmarshalBinary(b []byte) error {
 	var res OpenstackMetadata
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// AvailabilityZone availability zone
+// swagger:model AvailabilityZone
+type AvailabilityZone struct {
+
+	// available
+	Available bool `json:"available,omitempty"`
+
+	// name
+	Name string `json:"name,omitempty"`
+}
+
+// Validate validates this availability zone
+func (m *AvailabilityZone) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *AvailabilityZone) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *AvailabilityZone) UnmarshalBinary(b []byte) error {
+	var res AvailabilityZone
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

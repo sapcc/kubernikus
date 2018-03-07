@@ -17,6 +17,9 @@ import (
 // swagger:model NodePool
 type NodePool struct {
 
+	// availability zone
+	AvailabilityZone string `json:"availabilityZone,omitempty"`
+
 	// config
 	Config NodePoolConfig `json:"config,omitempty"`
 

@@ -486,6 +486,10 @@ func init() {
         "flavor"
       ],
       "properties": {
+        "availabilityZone": {
+          "type": "string",
+          "x-nullable": false
+        },
         "config": {
           "$ref": "#/definitions/NodePoolConfig"
         },
@@ -549,6 +553,22 @@ func init() {
     "OpenstackMetadata": {
       "type": "object",
       "properties": {
+        "availabilityZones": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "available": {
+                "type": "boolean"
+              },
+              "name": {
+                "type": "string"
+              }
+            },
+            "x-go-name": "AvailabilityZone",
+            "x-nullable": false
+          }
+        },
         "flavors": {
           "type": "array",
           "items": {
