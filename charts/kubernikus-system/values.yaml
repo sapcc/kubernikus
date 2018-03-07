@@ -13,9 +13,63 @@
 #  region: eu-de-1
 
 nginx-ingress:
-  enabled: true
+  controller:
+    name: controller
+    image:
+      repository: sapcc/nginx-ingress-controller
+      tag: "0.10.2"
+      pullPolicy: IfNotPresent
+
+    config:
+      http-snippet: |
+        map $ssl_client_s_dn $ssl_client_s_dn_cn {
+            default "anonymous";
+            ~CN=(?<CN>[^/,\"]+) $CN;
+        }
+      location-snippet: |
+        proxy_set_header X-REMOTE-USER $ssl_client_s_dn_cn;
+      custom-http-errors: 502,503,504
+
+    ## DaemonSet or Deployment
+    kind: Deployment
+    replicaCount: 1
+
+    minReadySeconds: 30
+    updateStrategy:
+      type: RollingUpdate
+      rollingUpdate:
+        maxUnavailable: 1
+
+    stats:
+      enabled: true
+
   rbac:
-    create: true 
+    create: true
+
+  statsExporter:
+    resources:
+      limits:
+        cpu: 10m
+        memory: 20Mi
+      requests:
+        cpu: 10m
+        memory: 20Mi
+
+  defaultBackend:
+    ## If false, controller.defaultBackendService must be provided
+    enabled: true
+    custom_http_errors: 502,503,504
+    image:
+      repository: sapcc/custombackend
+      tag: "0.3"
+      pullPolicy: IfNotPresent
+    resources:
+      limits:
+        cpu: 10m
+        memory: 20Mi
+      requests:
+        cpu: 10m
+        memory: 20Mi
 
 grafana:
   server:

@@ -8,3 +8,6 @@ dependencies:
   - name: grafana 
     repository: https://raw.githubusercontent.com/BugRoger/charts/repo
     version: 0.6.2
+  - name: nginx-ingress
+    repository: https://kubernetes-charts.storage.googleapis.com/
+    version: 0.9.4
