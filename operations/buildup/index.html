@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+  
+  
+  
+  
+   <html class="no-js"> 
+
+  <head lang="en-us">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,user-scalable=no,initial-scale=1,maximum-scale=1">
+    <meta http-equiv="X-UA-Compatible" content="IE=10" />
+    <title>Regional Buildup - Kubernikus</title>
+    <meta name="generator" content="Hugo 0.30.2" />
+
+    
+    <link rel="canonical" href="/kubernikus/operations/buildup/">
+    
+
+    <meta property="og:url" content="/kubernikus/operations/buildup/">
+    <meta property="og:title" content="Kubernikus">
+    <meta property="og:image" content="/kubernikus/images/logo.png">
+    <meta name="apple-mobile-web-app-title" content="Kubernikus">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+    <link rel="shortcut icon" type="image/x-icon" href="/kubernikus/images/favicon.ico">
+    <link rel="icon" type="image/x-icon" href="/kubernikus/images/favicon.ico">
+
+    <style>
+      @font-face {
+        font-family: 'Icon';
+        src: url('/kubernikus/fonts/icon.eot');
+        src: url('/kubernikus/fonts/icon.eot')
+               format('embedded-opentype'),
+             url('/kubernikus/fonts/icon.woff')
+               format('woff'),
+             url('/kubernikus/fonts/icon.ttf')
+               format('truetype'),
+             url('/kubernikus/fonts/icon.svg')
+               format('svg');
+        font-weight: normal;
+        font-style: normal;
+      }
+    </style>
+
+    <link rel="stylesheet" href="/kubernikus/stylesheets/application.css">
+    <link rel="stylesheet" href="/kubernikus/stylesheets/temporary.css">
+    <link rel="stylesheet" href="/kubernikus/stylesheets/palettes.css">
+    <link rel="stylesheet" href="/kubernikus/stylesheets/highlight/highlight.css">
+
+    
+    
+    
+    <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Ubuntu:400,700|Ubuntu&#43;Mono">
+    <style>
+      body, input {
+        font-family: 'Ubuntu', Helvetica, Arial, sans-serif;
+      }
+      pre, code {
+        font-family: 'Ubuntu Mono', 'Courier New', 'Courier', monospace;
+      }
+    </style>
+
+    
+    <link rel="stylesheet" href="/kubernikus/stylesheets/hacks.css">
+    
+    
+    <script src="/kubernikus/javascripts/modernizr.js"></script>
+
+    
+
+  </head>
+  <body class="palette-primary-blue palette-accent-teal">
+
+
+
+	
+	
+
+
+<div class="backdrop">
+	<div class="backdrop-paper"></div>
+</div>
+
+<input class="toggle" type="checkbox" id="toggle-drawer">
+<input class="toggle" type="checkbox" id="toggle-search">
+<label class="toggle-button overlay" for="toggle-drawer"></label>
+
+<header class="header">
+	<nav aria-label="Header">
+  <div class="bar default">
+    <div class="button button-menu" role="button" aria-label="Menu">
+      <label class="toggle-button icon icon-menu" for="toggle-drawer">
+        <span></span>
+      </label>
+    </div>
+    <div class="stretch">
+      <div class="title">
+        Regional Buildup
+      </div>
+    </div>
+
+    
+
+    
+    <div class="button button-github" role="button" aria-label="GitHub">
+      <a href="https://github.com/sapcc/kubernikus" title="@sapcc/kubernikus on GitHub" target="_blank" class="toggle-button icon icon-github"></a>
+    </div>
+    
+    
+        
+  </div>
+  <div class="bar search">
+    <div class="button button-close" role="button" aria-label="Close">
+      <label class="toggle-button icon icon-back" for="toggle-search"></label>
+    </div>
+    <div class="stretch">
+      <div class="field">
+        <input class="query" type="text" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck>
+      </div>
+    </div>
+    <div class="button button-reset" role="button" aria-label="Search">
+      <button class="toggle-button icon icon-close" id="reset-search"></button>
+    </div>
+  </div>
+</nav>
+</header>
+
+<main class="main">
+	<div class="drawer">
+		<nav aria-label="Navigation">
+  <a href="https://github.com/sapcc/kubernikus" class="project">
+    <div class="banner">
+      
+        <div class="logo">
+          <img src="/kubernikus/images/logo.png">
+        </div>
+      
+      <div class="name">
+        <strong>Kubernikus </strong>
+        
+          <br>
+          sapcc/kubernikus
+        
+      </div>
+    </div>
+  </a>
+
+  <div class="scrollable">
+    <div class="wrapper">
+      
+        <ul class="repo">
+          <li class="repo-download">
+            <a href="https://github.com/sapcc/kubernikus/archive/master.zip" target="_blank" title="Download" data-action="download">
+              <i class="icon icon-download"></i> Download
+            </a>
+          </li>
+          <li class="repo-stars">
+            <a href="https://github.com/sapcc/kubernikus/stargazers" target="_blank" title="Stargazers" data-action="star">
+              <i class="icon icon-star"></i> Stars
+              <span class="count">&ndash;</span>
+            </a>
+          </li>
+        </ul>
+        <hr>
+      
+
+      <div class="toc">
+        
+
+
+<ul>
+  
+  <li>
+    <a  href="/kubernikus/development/controllers/">Development</a>
+
+    
+  </li>
+  
+  <li>
+    <a  href="/kubernikus/guide/getting_started/">Guide</a>
+
+    
+  </li>
+  
+  <li>
+    <a  href="/kubernikus/operations/controlplane/">Operations</a>
+
+    
+    <ul class="anchor">
+      
+      <li class="anchor"><a  href="/kubernikus/operations/controlplane/">ControlPlane</a></li>
+      
+      <li class="anchor"><a  href="/kubernikus/operations/logging/">Logging</a></li>
+      
+      <li class="anchor"><a class="current" href="/kubernikus/operations/buildup/">Regional Buildup</a></li>
+      
+    </ul>
+    
+  </li>
+  
+</ul>
+
+
+        
+      </div>
+    </div>
+  </div>
+</nav>
+
+	</div>
+
+	<article class="article">
+		<div class="wrapper">
+			<h1>Regional Buildup </h1>
+
+			
+
+<h2 id="prepare-values">Prepare Values</h2>
+
+<p>In the secret repository create values:</p>
+
+<ul>
+<li><code>admin/values/$REGION.yaml</code></li>
+<li><code>kubernikus/$REGION/values/kubernikus.yaml</code></li>
+<li><code>kubernikus/$REGION/values/kubernikus-system.yaml</code></li>
+</ul>
+
+<p>Create a random password for authentication. Everything else should be a simple
+copy/search/replace job.</p>
+
+<h2 id="setting-up-a-new-region">Setting up a new Region</h2>
+
+<p>Project is being created using the seed chart:
+<a href="https://github.com/sapcc/helm-charts/tree/master/openstack/kubernikus">openstack/kubernikus</a></p>
+
+<p>Install with:</p>
+
+<pre><code>helm upgrade kubernikus openstack/kubernikus --namespace monsoon3 --install
+</code></pre>
+
+<p>Complete the project by sharing the external Floating-IP network. Per
+convention this is <code>FloatingIP-external-ccadmin</code> in the <code>ccadmin-net-infra</code>
+project in the <code>ccadmin</code> domain.</p>
+
+<p>Scope yourself to <code>cloud_admin</code> in <code>ccadmin</code>:</p>
+
+<pre><code>openstack project show -c id -f value --domain ccadmin kubernikus                                                                                                                    
+d7df5ce6c37643e49b3c93528c29818b
+
+openstack network show -c id -f value FloatingIP-external-ccadmin                                                                                                                   
+c2b999de-adb1-4125-ac3f-f74b9f3a1c63
+
+openstack network rbac create --target-project d7df5ce6c37643e49b3c93528c29818b --action access_as_shared --type network c2b999de-adb1-4125-ac3f-f74b9f3a1c63 
++-------------------+--------------------------------------+
+| Field             | Value                                |
++-------------------+--------------------------------------+
+| action            | access_as_shared                     |
+| id                | 8643f406-6282-46b2-beee-aa6720cf11d5 |
+| name              | None                                 |
+| object_id         | c2b999de-adb1-4125-ac3f-f74b9f3a1c63 |
+| object_type       | network                              |
+| project_id        | adc7f04e690a4357a59098c6b2a48db0     |
+| target_project_id | d7df5ce6c37643e49b3c93528c29818b     |
++-------------------+--------------------------------------+
+</code></pre>
+
+<h2 id="admin-control-plane">Admin Control Plane</h2>
+
+<h3 id="add-pipeline-service-user">Add Pipeline Service User</h3>
+
+<p>In <code>ccadmin/cloud_admin</code> add the Pipeline service user to the
+<code>ccadmin/kubernikus</code> project and give it <code>kubernetes_admin</code> permissions. While
+already here also do the same for the group <code>CCADMIN_CLOUD_ADMINS</code></p>
+
+<h3 id="adapt-pipeline">Adapt Pipeline</h3>
+
+<p>Add authentication blob and new tasks to the <code>admin</code> job in the
+<code>ci/pipeline.yaml</code>. Run the installation of the admin klusters.</p>
+
+<h3 id="add-dns-entries">Add DNS Entries</h3>
+
+<p>Use <code>na-us-1/ccadmin/master</code> to add the following DNS entries:</p>
+
+<ul>
+<li><code>k-$REGION.admin.cloud.sap.</code> CNAME  ingress.admin.cloud.sap.    1800</li>
+<li><code>*.k-$REGION.admin.cloud.sap.</code> CNAME    kubernikus.admin.cloud.sap. 1800</li>
+</ul>
+
+<h3 id="rewire-kubernikus-dashboard-ui">Rewire Kubernikus Dashboard UI</h3>
+
+<p>Scoped as <code>ccadmin/cloud_admin</code> create an additional service and endpoint in
+the catalog:</p>
+
+<pre><code>openstack service create --name kubernikus kubernikus-kubernikus
+openstack endpoint create --region $REGION $SERVICEID public https://k-$REGION.admin.cloud.sap
+</code></pre>
+
+<h3 id="smoke-test">Smoke Test</h3>
+
+<ol>
+<li>Check <a href="https://k-$REGION.admin.cloud.sap">https://k-$REGION.admin.cloud.sap</a>. You should see the Kubernikus splash
+page.</li>
+<li>Go to <code>ccadmin/kubernikus</code> to the Kubernetes tab. It should show you
+ a workin UI with no klusters.</li>
+</ol>
+
+<h2 id="create-regional-control-plane">Create Regional Control Plane</h2>
+
+<p>Use the UI to create a cluster with the <code>k-$region</code> naming scheme in the
+<code>ccadmin/kubernikus</code> project. Create a <code>default</code> pool with 3 nodes in
+<code>m2.xlarge</code>. Add and select the Kubernikus Master public key.</p>
+
+<p>Note: The <code>serviceCIDR</code> needs to be changed!!!!!!!</p>
+
+<p>Until supported via UI the cluster needs to be created using the API:</p>
+
+<pre><code>echo '{&quot;name&quot;:&quot;k-eu-de-1&quot;,&quot;spec&quot;:{&quot;serviceCIDR&quot;: &quot;192.168.128.0/17&quot;,&quot;sshPublicKey&quot;: &quot;ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQCXIxVEUgtUVkvk2VM1hmIb8MxvxsmvYoiq9OBy3J8akTGNybqKsA2uhcwxSJX5Cn3si8kfMfka9EWiJT+e1ybvtsGILO5XRZPxyhYzexwb3TcALwc3LuzpF3Z/Dg2jYTRELTGhYmyca3mxzTlCjNXvYayLNedjJ8fIBzoCuSXNqDRToHru7h0Glz+wtuE74mNkOiXSvhtuJtJs7VCNVjobFQNfC1aeDsri2bPRHJJZJ0QF4LLYSayMEz3lVwIDyAviQR2Aa97WfuXiofiAemfGqiH47Kq6b8X7j3bOYGBvJKMUV7XeWhGsskAmTsvvnFxkc5PAD3Ct+liULjiQWlzDrmpTE8aMqLK4l0YQw7/8iRVz6gli42iEc2ZG56ob1ErpTLAKFWyCNOebZuGoygdEQaGTIIunAncXg5Rz07TdPl0Tf5ZZLpiAgR5ck0H1SETnjDTZ/S83CiVZWJgmCpu8YOKWyYRD4orWwdnA77L4+ixeojLIhEoNL8KlBgsP9Twx+fFMWLfxMmiuX+yksM6Hu+Lsm+Ao7Q284VPp36EB1rxP1JM7HCiEOEm50Jb6hNKjgN4aoLhG5yg+GnDhwCZqUwcRJo1bWtm3QvRA+rzrGZkId4EY3cyOK5QnYV5+24x93Ex0UspHMn7HGsHUESsVeV0fLqlfXyd2RbHTmDMP6w==&quot;, &quot;nodePools&quot;:[{&quot;flavor&quot;:&quot;m1.xlarge_cpu&quot;,&quot;image&quot;:&quot;coreos-stable-amd64&quot;,&quot;name&quot;:&quot;payload&quot;,&quot;size&quot;:3}]}}' | curl -K _scratch/.curlrc-kubernikus-eu-de-1 -d  @- -XPOST https://k-eu-de-1.admin.cloud.sap/api/v1/clusters
+</code></pre>
+
+<p>You should end up with a running kluster and healthy nodes.</p>
+
+<h3 id="security-group">Security Group</h3>
+
+<p>Add TCP/UDP Ingress for the source range <code>198.18.0.0/15</code>. Required for load
+balancers and as a safeguard for DVS agent missed events.</p>
+
+<h3 id="authenticating">Authenticating</h3>
+
+<p>Done via UI in the Dashboard in the <code>ccadmin/kubernikus</code> project</p>
+
+<h3 id="prepare-kluster">Prepare Kluster</h3>
+
+<pre><code>kubectl -n kube-system create sa tiller
+kubectl create clusterrolebinding tiller --clusterrole cluster-admin --serviceaccount=kube-system:tiller
+helm init --service-account tiller --history-max 5
+</code></pre>
+
+<h3 id="adapt-pipeline-1">Adapt Pipeline</h3>
+
+<p>Check the regional <code>$CONTINENT</code> jobs. Add tasks for <code>kubernikus</code> and
+<code>kubernikus-system</code> using the authentication blob from earlier. Run the
+installation of the continent.</p>
+
+<h3 id="load-balancer-config">Load Balancer Config</h3>
+
+<p>Once the installation was succesfull, two loadbalancers will appear. Make sure
+they have IPs from the <code>147.*.*.*</code> range assigned. If not detach, release and
+reallocate correct IPs.</p>
+
+<p>Take note that there is one load-balancer with 2 Pools. That is the ingress.
+The LB with one pool is the sniffer. Mental mark.</p>
+
+<h3 id="add-dns">Add DNS</h3>
+
+<ul>
+<li>kubernikus-ingress.$REGION.cloud.sap. A $LB_SNIGGER_IP 1800</li>
+<li>kubernikus-k8sniff.$REGION.cloud.sap. A $LP_INGRESS_IP 1800</li>
+<li>*.kubernikus.$REGION.cloud.sap. CNAME   kubernikus-k8sniff.$REGION.cloud.sap.   1800<br /></li>
+<li>kubernikus.$REGION.cloud.sap. CNAME kubernikus-ingress.$REGION.cloud.sap.   1800<br /></li>
+<li>prometheus.kubernikus.$REGION.cloud.sap.CNAME   kubernikus-ingress.$REGION.cloud.sap.   1800<br /></li>
+<li>grafana.kubernikus.$REGION.cloud.sap. CNAME kubernikus-ingress.$REGION.cloud.sap.   1800<br /></li>
+</ul>
+
+<h2 id="relevant-urls">Relevant URLs</h2>
+
+<pre><code>for _, region := range []string{&quot;staging&quot;, &quot;qa-de-1&quot;, &quot;ap-au-1&quot;, &quot;eu-de-1&quot;, &quot;eu-nl-1&quot;, &quot;na-us-1&quot;} {
+  ======================================================================
+  Admin Control Plane
+  ======================================================================
+  Kubernikus API: https://k-%v.admin.cloud.sap
+
+  ======================================================================
+  Regional Control Plane
+  ======================================================================
+  Project:        https://dashboard.%v.cloud.sap/ccadmin/kubernikus/home
+  Kubernikus API: https://kubernikus.%v.cloud.sap
+  Prometheus:     https://prometheus.kubernikus.%v.cloud.sap
+  Grafana:        https://grafana.kubernikus.%v.cloud.sap
+  Bastion Host:   gateway.kubernikus.%v.cloud.sap
+}
+</code></pre>
+
+<p>Poor Man&rsquo;s VPN:</p>
+
+<pre><code>sshuttle -r ccloud@gateway.kubernikus.%v.cloud.sap 198.18.0.0/24
+</code></pre>
+
+
+			<aside class="copyright" role="note">
+				
+			</aside>
+
+			<footer class="footer">
+				
+
+<nav class="pagination" aria-label="Footer">
+  <div class="previous">
+  
+      <a href="/kubernikus/operations/logging/" title="Logging">
+        <span class="direction">
+          Previous
+        </span>
+        <div class="page">
+          <div class="button button-previous" role="button" aria-label="Previous">
+            <i class="icon icon-back"></i>
+          </div>
+          <div class="stretch">
+            <div class="title">
+              Logging
+            </div>
+          </div>
+        </div>
+      </a>
+  
+  </div>
+
+  <div class="next">
+  
+  </div>
+</nav>
+
+
+
+
+
+			</footer>
+		</div>
+	</article>
+
+	<div class="results" role="status" aria-live="polite">
+		<div class="scrollable">
+			<div class="wrapper">
+				<div class="meta"></div>
+				<div class="list"></div>
+			</div>
+		</div>
+	</div>
+</main>
+
+    <script>
+    
+      var base_url = '\/kubernikus';
+      var repo_id  = 'sapcc\/kubernikus';
+    
+    </script>
+
+    <script src="/kubernikus/javascripts/application.js"></script>
+    
+
+    <script>
+      /* Add headers to scrollspy */
+      var headers   = document.getElementsByTagName("h2");
+      var scrollspy = document.getElementById('scrollspy');
+
+      if(scrollspy) {
+        if(headers.length > 0) {
+          for(var i = 0; i < headers.length; i++) {
+            var li = document.createElement("li");
+            li.setAttribute("class", "anchor");
+
+            var a  = document.createElement("a");
+            a.setAttribute("href", "#" + headers[i].id);
+            a.setAttribute("title", headers[i].innerHTML);
+            a.innerHTML = headers[i].innerHTML;
+
+            li.appendChild(a)
+            scrollspy.appendChild(li);
+          }
+        } else {
+          scrollspy.parentElement.removeChild(scrollspy)
+        }
+
+
+        /* Add permanent link next to the headers */
+        var headers = document.querySelectorAll("h1, h2, h3, h4, h5, h6");
+
+        for(var i = 0; i < headers.length; i++) {
+            var a = document.createElement("a");
+            a.setAttribute("class", "headerlink");
+            a.setAttribute("href", "#" + headers[i].id);
+            a.setAttribute("title", "Permanent link")
+            a.innerHTML = "#";
+            headers[i].appendChild(a);
+        }
+      }
+    </script>
+
+    
+
+    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.8.0/highlight.min.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
+  </body>
+</html>
+

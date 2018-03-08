@@ -1,0 +1,60 @@
+.project .logo img {
+  background: none;
+  border-radius: none;
+}
+
+.project:focus .logo img, .project:hover .logo img {
+  box-shadow: none;
+}
+
+.about {
+    position: absolute;
+    top: 450px;
+    width: 100%;
+    left: 0;
+    text-align: center;
+    background: #6ea4fb;
+}
+
+.about .wrap {
+    padding: 4em 0 4em 0;
+    width: 100%;
+    max-width: 1200px;
+    display: inline-block;
+    text-align: left;
+    font-size: 28px;
+    line-height: 1.5em;
+    color: #fff;
+    letter-spacing: 0.05em;
+    font-family: "Source Sans Pro";
+    height: 400px;
+}
+
+.features {
+    position: absolute;
+    top: 820px;
+    width: 100%;
+    left: 0;
+    text-align: center;
+    background: #ddeefd;
+}
+
+.features .wrap {
+    padding: 1em 0 2em 0;
+    width: 100%;
+    max-width: 1200px;
+    display: inline-block;
+    text-align: left;
+    line-height: 1.5em;
+    font-family: "Source Sans Pro";
+    font-size: 3em;
+}
+
+.features .wrap h2 {
+  padding: 1em 0 0.5em 0;
+}
+
+
+body.palette-primary-blue {
+  background: #ddeefd;
+}

@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Development on Kubernikus</title>
+    <link>/kubernikus/development/</link>
+    <description>Recent content in Development on Kubernikus</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    
+	<atom:link href="/kubernikus/development/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title></title>
+      <link>/kubernikus/development/controllers/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>/kubernikus/development/controllers/</guid>
+      <description>Kubernikus Controllers The Kubernikus operator contains various independent controllers each one handling a different aspect of the managed kubernetes clusters.
+Deorbit Controller The Kubernetes controller-manager runs controllers that are responsible for creating, updating and deleting of OpenStack resources. It auto-provisions Cinder volumes for Persistent Volume Claims, load balancers for services and routes for nodes in the cluster. When a kluster is terminated it is desired that these resources are cleaned up automatically.</description>
+    </item>
+    
+    <item>
+      <title>Changing Docs</title>
+      <link>/kubernikus/development/changing_docs/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>/kubernikus/development/changing_docs/</guid>
+      <description>Self-Hosted Docs The self-hosted documentation served by the apiserver is generated using Hugo.
+It consists of 2 parts:
+ Hugo Theme in contrib/kubernikus-docs-builder/data Markdown docs in docs  A live preview for development can be started with:
+make documentation ... docker run --rm -ti -p 1313:1313 \ -v $PWD/contrib/kubernikus-docs-builder/data:/live \ -v $PWD/docs/:/live/content \ --workdir /live \ sapcc/kubernikus-docs:latest \ hugo server \ --bind 0.0.0.0 \ --baseURL &amp;quot;http://localhost:1313/docs&amp;quot; \ --debug  The docs are then accessible locally on http://localhost:1313</description>
+    </item>
+    
+    <item>
+      <title>Developing Helm Charts</title>
+      <link>/kubernikus/development/helm_dev/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>/kubernikus/development/helm_dev/</guid>
+      <description>Helm value generation When developing on the Helm charts you can generate the values file (including certs) via kubernikus helm --with --many --options &amp;gt; values.yaml
+You will need to provide all of the options which are:
+--api https://k-eu-nl-1.admin.cloud.sap the region of kubernikus you are interacting with
+--auth-url https://identity-3.eu-nl-1.cloud.sap/v3/ the identity instance of that region (v3 is important)
+--auth-project marian the name of the project you are interacting with
+--auth-domain kubernikus the domain of the user you want to use</description>
+    </item>
+    
+  </channel>
+</rss>

@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Guide on Kubernikus</title>
+    <link>/kubernikus/guide/</link>
+    <description>Recent content in Guide on Kubernikus</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    
+	<atom:link href="/kubernikus/guide/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Getting Started</title>
+      <link>/kubernikus/guide/getting_started/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>/kubernikus/guide/getting_started/</guid>
+      <description>Getting Started Kubernetes is an open-source system for automating deployment, scaling, and management of containerized applications.
+&amp;ldquo;Kubernetes as a Service&amp;rdquo; (Codename: Kubernikus) makes it easy to run Kubernetes clusters that are natively integrated with OpenStack. It is a managed service that takes care of installing, upgrading and operating the cluster.
+It provides an easy entry to deploy containerized payloads and getting started with Kubernetes without the operational overhead of setting up Kubernetes.</description>
+    </item>
+    
+    <item>
+      <title>Authentication</title>
+      <link>/kubernikus/guide/authentication/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>/kubernikus/guide/authentication/</guid>
+      <description>Intro In Kubernetes regular end-users are assumed to be managed by an outside, independent service. In this regard, Kubernetes does not have objects which represent normal user accounts. Regular users cannot be added to a cluster through an API call.
+API requests are tied to either a normal user or a service account, or are treated as anonymous requests. This means every process inside or outside the cluster, from a human user typing kubectl on a workstation, to kubelets on nodes, to members of the control plane, must authenticate when making requests to the API server, or be treated as an anonymous user.</description>
+    </item>
+    
+    <item>
+      <title>Best Practices</title>
+      <link>/kubernikus/guide/best_practices/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>/kubernikus/guide/best_practices/</guid>
+      <description>Surviving Node-Updates  Container-Linux-Update-Orchestrator as seen in Bare-Metal   Automating Authentication Refresh Integration for CI Systems  Add credentials to a build agent to communicate with a Kubernikus Kluster.  Set up kubectl an kubernikusctl First you have to install kubectl and kubernikusctl on your build agent. Here you can find the instructions.
+Add credentials to your environment kubernikusctl will update your certificates since they expire daily. Within your build you can add environment variables which kubernikusctl will use to authenticate against the Kubernikus Kluster.</description>
+    </item>
+    
+    <item>
+      <title>Common Addons</title>
+      <link>/kubernikus/guide/common_addons/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>/kubernikus/guide/common_addons/</guid>
+      <description>Kubernetes Dashboard Kubernetes Dashboard is a general purpose, web-based UI for Kubernetes clusters. It allows users to manage applications running in the cluster and troubleshoot them, as well as manage the cluster itself.
+Installation Installation is straight forward:
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/master/src/deploy/recommended/kubernetes-dashboard.yaml  Granting Permissions You can grant full admin privileges to Dashboard&amp;rsquo;s Service Account by creating below ClusterRoleBinding.
+kubectl create clusterrolebinding kubernetes-dashboard --clusterrole=cluster-admin --serviceaccount=kube-system:kubernetes-dashboard  Accessing the Dashboard To access Dashboard from your local workstation you must create a secure channel to your Kubernetes cluster.</description>
+    </item>
+    
+  </channel>
+</rss>

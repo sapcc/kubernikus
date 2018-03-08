@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+  xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  
+  <url>
+    <loc>/kubernikus/guide/getting_started/</loc>
+  </url>
+  
+  <url>
+    <loc>/kubernikus/</loc>
+    <lastmod>2016-03-08T21:07:13+01:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/kubernikus/about/</loc>
+  </url>
+  
+  <url>
+    <loc>/kubernikus/development/controllers/</loc>
+  </url>
+  
+  <url>
+    <loc>/kubernikus/features/</loc>
+  </url>
+  
+  <url>
+    <loc>/kubernikus/guide/authentication/</loc>
+  </url>
+  
+  <url>
+    <loc>/kubernikus/guide/best_practices/</loc>
+  </url>
+  
+  <url>
+    <loc>/kubernikus/categories/</loc>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>/kubernikus/development/changing_docs/</loc>
+  </url>
+  
+  <url>
+    <loc>/kubernikus/guide/common_addons/</loc>
+  </url>
+  
+  <url>
+    <loc>/kubernikus/operations/controlplane/</loc>
+  </url>
+  
+  <url>
+    <loc>/kubernikus/development/helm_dev/</loc>
+  </url>
+  
+  <url>
+    <loc>/kubernikus/development/</loc>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>/kubernikus/guide/</loc>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>/kubernikus/operations/logging/</loc>
+  </url>
+  
+  <url>
+    <loc>/kubernikus/operations/</loc>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>/kubernikus/operations/buildup/</loc>
+  </url>
+  
+  <url>
+    <loc>/kubernikus/tags/</loc>
+    <priority>0</priority>
+  </url>
+  
+</urlset>

@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Operations on Kubernikus</title>
+    <link>/kubernikus/operations/</link>
+    <description>Recent content in Operations on Kubernikus</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    
+	<atom:link href="/kubernikus/operations/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>ControlPlane</title>
+      <link>/kubernikus/operations/controlplane/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>/kubernikus/operations/controlplane/</guid>
+      <description>Setting up a new Region  Create a new Openstack project, e.g. ccadmin/kubernikus Create service user: openstack user create kubernikus --domain Default t--password abc123 Create a new network: openstack network create kubernikus Create a subnet: openstack subnet create --network kubernikus --subnet-range 198.18.0.0/24 kubernikus Create a role: openstack role create kubernetes_admin Create Router Assign administrative roles: openstack role add --user kubernikus --user-domain Default --domain ccadmin admin  openstack role add --user kubernikus --user-domain Default --project cloud_admin --project-domain ccadmin admin openstack role add --user kubernikus --user-domain Default --project cloud_admin --project-domain ccadmin cloud_network_admin openstack role add --user kubernikus --user-domain Default --project cloud_admin --project-domain ccadmin cloud_compute_admin openstack role add --user kubernikus --user-domain Default --project cloud_admin --project-domain ccadmin cloud_dns_admin   Create Openstack Service: openstack service create --name kubernikus --description &amp;quot;Kubernikus Service&amp;quot; kubernikus Create Endpoint: openstack endpoint create --region na-us-1 kubernikus public https://kubernikus.</description>
+    </item>
+    
+    <item>
+      <title>Logging</title>
+      <link>/kubernikus/operations/logging/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>/kubernikus/operations/logging/</guid>
+      <description>Setting up a new Region Prepare Tiller with RBAC kubectl -n kube-system create sa tiller kubectl create clusterrolebinding tiller --clusterrole cluster-admin --serviceaccount=kube-system:tiller helm init --service-account tiller  Authenticating Initial kubeconfig setup:
+kubernikusctl auth init --url https://k-staging.admin.cloud.sap --name k-staging --user-domain-name ccadmin --project-name kubernikus-staging --project-domain-name ccadmin --auth-url https://identity-3.eu-nl-1.cloud.sap --username &amp;lt;USER&amp;gt; kubernikusctl auth init --url https://k-eu-nl-1.admin.cloud.sap --name k-eu-nl-1 --user-domain-name ccadmin --project-name kubernikus --project-domain-name ccadmin --auth-url https://identity-3.eu-nl-1.cloud.sap --username &amp;lt;USER&amp;gt;  Refresh certificates with:</description>
+    </item>
+    
+    <item>
+      <title>Regional Buildup</title>
+      <link>/kubernikus/operations/buildup/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>/kubernikus/operations/buildup/</guid>
+      <description>Prepare Values In the secret repository create values:
+ admin/values/$REGION.yaml kubernikus/$REGION/values/kubernikus.yaml kubernikus/$REGION/values/kubernikus-system.yaml  Create a random password for authentication. Everything else should be a simple copy/search/replace job.
+Setting up a new Region Project is being created using the seed chart: openstack/kubernikus
+Install with:
+helm upgrade kubernikus openstack/kubernikus --namespace monsoon3 --install  Complete the project by sharing the external Floating-IP network. Per convention this is FloatingIP-external-ccadmin in the ccadmin-net-infra project in the ccadmin domain.</description>
+    </item>
+    
+  </channel>
+</rss>

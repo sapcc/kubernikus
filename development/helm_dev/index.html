@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+  
+  
+  
+  
+   <html class="no-js"> 
+
+  <head lang="en-us">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,user-scalable=no,initial-scale=1,maximum-scale=1">
+    <meta http-equiv="X-UA-Compatible" content="IE=10" />
+    <title>Developing Helm Charts - Kubernikus</title>
+    <meta name="generator" content="Hugo 0.30.2" />
+
+    
+    <link rel="canonical" href="/kubernikus/development/helm_dev/">
+    
+
+    <meta property="og:url" content="/kubernikus/development/helm_dev/">
+    <meta property="og:title" content="Kubernikus">
+    <meta property="og:image" content="/kubernikus/images/logo.png">
+    <meta name="apple-mobile-web-app-title" content="Kubernikus">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+    <link rel="shortcut icon" type="image/x-icon" href="/kubernikus/images/favicon.ico">
+    <link rel="icon" type="image/x-icon" href="/kubernikus/images/favicon.ico">
+
+    <style>
+      @font-face {
+        font-family: 'Icon';
+        src: url('/kubernikus/fonts/icon.eot');
+        src: url('/kubernikus/fonts/icon.eot')
+               format('embedded-opentype'),
+             url('/kubernikus/fonts/icon.woff')
+               format('woff'),
+             url('/kubernikus/fonts/icon.ttf')
+               format('truetype'),
+             url('/kubernikus/fonts/icon.svg')
+               format('svg');
+        font-weight: normal;
+        font-style: normal;
+      }
+    </style>
+
+    <link rel="stylesheet" href="/kubernikus/stylesheets/application.css">
+    <link rel="stylesheet" href="/kubernikus/stylesheets/temporary.css">
+    <link rel="stylesheet" href="/kubernikus/stylesheets/palettes.css">
+    <link rel="stylesheet" href="/kubernikus/stylesheets/highlight/highlight.css">
+
+    
+    
+    
+    <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Ubuntu:400,700|Ubuntu&#43;Mono">
+    <style>
+      body, input {
+        font-family: 'Ubuntu', Helvetica, Arial, sans-serif;
+      }
+      pre, code {
+        font-family: 'Ubuntu Mono', 'Courier New', 'Courier', monospace;
+      }
+    </style>
+
+    
+    <link rel="stylesheet" href="/kubernikus/stylesheets/hacks.css">
+    
+    
+    <script src="/kubernikus/javascripts/modernizr.js"></script>
+
+    
+
+  </head>
+  <body class="palette-primary-blue palette-accent-teal">
+
+
+
+	
+	
+
+
+<div class="backdrop">
+	<div class="backdrop-paper"></div>
+</div>
+
+<input class="toggle" type="checkbox" id="toggle-drawer">
+<input class="toggle" type="checkbox" id="toggle-search">
+<label class="toggle-button overlay" for="toggle-drawer"></label>
+
+<header class="header">
+	<nav aria-label="Header">
+  <div class="bar default">
+    <div class="button button-menu" role="button" aria-label="Menu">
+      <label class="toggle-button icon icon-menu" for="toggle-drawer">
+        <span></span>
+      </label>
+    </div>
+    <div class="stretch">
+      <div class="title">
+        Developing Helm Charts
+      </div>
+    </div>
+
+    
+
+    
+    <div class="button button-github" role="button" aria-label="GitHub">
+      <a href="https://github.com/sapcc/kubernikus" title="@sapcc/kubernikus on GitHub" target="_blank" class="toggle-button icon icon-github"></a>
+    </div>
+    
+    
+        
+  </div>
+  <div class="bar search">
+    <div class="button button-close" role="button" aria-label="Close">
+      <label class="toggle-button icon icon-back" for="toggle-search"></label>
+    </div>
+    <div class="stretch">
+      <div class="field">
+        <input class="query" type="text" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck>
+      </div>
+    </div>
+    <div class="button button-reset" role="button" aria-label="Search">
+      <button class="toggle-button icon icon-close" id="reset-search"></button>
+    </div>
+  </div>
+</nav>
+</header>
+
+<main class="main">
+	<div class="drawer">
+		<nav aria-label="Navigation">
+  <a href="https://github.com/sapcc/kubernikus" class="project">
+    <div class="banner">
+      
+        <div class="logo">
+          <img src="/kubernikus/images/logo.png">
+        </div>
+      
+      <div class="name">
+        <strong>Kubernikus </strong>
+        
+          <br>
+          sapcc/kubernikus
+        
+      </div>
+    </div>
+  </a>
+
+  <div class="scrollable">
+    <div class="wrapper">
+      
+        <ul class="repo">
+          <li class="repo-download">
+            <a href="https://github.com/sapcc/kubernikus/archive/master.zip" target="_blank" title="Download" data-action="download">
+              <i class="icon icon-download"></i> Download
+            </a>
+          </li>
+          <li class="repo-stars">
+            <a href="https://github.com/sapcc/kubernikus/stargazers" target="_blank" title="Stargazers" data-action="star">
+              <i class="icon icon-star"></i> Stars
+              <span class="count">&ndash;</span>
+            </a>
+          </li>
+        </ul>
+        <hr>
+      
+
+      <div class="toc">
+        
+
+
+<ul>
+  
+  <li>
+    <a  href="/kubernikus/development/controllers/">Development</a>
+
+    
+    <ul class="anchor">
+      
+      <li class="anchor"><a  href="/kubernikus/development/controllers/"></a></li>
+      
+      <li class="anchor"><a  href="/kubernikus/development/changing_docs/">Changing Docs</a></li>
+      
+      <li class="anchor"><a class="current" href="/kubernikus/development/helm_dev/">Developing Helm Charts</a></li>
+      
+    </ul>
+    
+  </li>
+  
+  <li>
+    <a  href="/kubernikus/guide/getting_started/">Guide</a>
+
+    
+  </li>
+  
+  <li>
+    <a  href="/kubernikus/operations/controlplane/">Operations</a>
+
+    
+  </li>
+  
+</ul>
+
+
+        
+      </div>
+    </div>
+  </div>
+</nav>
+
+	</div>
+
+	<article class="article">
+		<div class="wrapper">
+			<h1>Developing Helm Charts </h1>
+
+			
+
+<h2 id="helm-value-generation">Helm value generation</h2>
+
+<p>When developing on the Helm charts you can generate the values file (including certs) via
+<code>kubernikus helm --with --many --options &gt; values.yaml</code></p>
+
+<p>You will need to provide all of the options which are:<br />
+<code>--api https://k-eu-nl-1.admin.cloud.sap</code> the region of kubernikus you are interacting with<br />
+<code>--auth-url https://identity-3.eu-nl-1.cloud.sap/v3/</code> the identity instance of that region (<em>v3</em> is important)<br />
+<code>--auth-project marian</code> the name of the project you are interacting with<br />
+<code>--auth-domain kubernikus</code> the domain of the user you want to use<br />
+<code>--project-id 513be7d11ee64ed7826f5c7c4cfdf10c</code><br />
+<code>--auth-password supersecret</code> the password of the user<br />
+<code>--auth-project-domain monsoon3</code> the domain of the project<br />
+<code>--auth-username techuser1</code> the user with which to interact</p>
+
+<h3 id="changing-values-yaml">Changing values.yaml</h3>
+
+<p>After the fact some values have to be added to the <code>values.yaml</code>:</p>
+
+<pre><code>api:
+  apiserverHost: m2-513be7d11ee64ed7826f5c7c4cfdf10c.kubernikus.eu-nl-1.cloud.sap
+  wormholeHost: m2-513be7d11ee64ed7826f5c7c4cfdf10c-wormhole.kubernikus.eu-nl-1.cloud.sap
+
+openstack:
+  region: eu-nl-1
+  lbSubnetID: &quot;4e16419d-eb9f-4245-bcd3-179067c59298&quot;
+  routerID: &quot;757e348c-6e10-457c-b418-81933725c077&quot;
+</code></pre>
+
+<p>The api part represents the host of the ingress definition and has to have some form:</p>
+
+<pre><code>&lt;clustername&gt;-&lt;projectid&gt;.kubernikus.&lt;region&gt;.cloud.sap
+&lt;clustername&gt;-&lt;projectid&gt;-wormhole.kubernikus.&lt;region&gt;.cloud.sap
+</code></pre>
+
+<p>These openstack things need also be added:<br />
+<code>region</code>  the region in which this is running<br />
+<code>lbSubnetID</code>  the private <em>subnet</em> to which the load balancer should be added<br />
+<code>routerID</code>  the id of your router.</p>
+
+<h3 id="the-user">The user</h3>
+
+<p>The technical user which you use to interact has to have a default project set. This is very problematic as we have no way of changing a normal user whcih is in LDAP.</p>
+
+<p>Thus the user has to be a technical user and created via commandline.
+To be able to do this it has to be created outside of any LDAP configured domain.</p>
+
+<pre><code>openstack user create --with --many --options
+</code></pre>
+
+<p>Will help to create a user inside the <code>kubernikus</code> domain with a default project set to the project id.</p>
+
+<p><code>openstack role list</code> and <code>openstack role add</code> will need to be used to get the user the necessary rights inside your target project.</p>
+
+<pre><code>admin
+kubernetes_admin
+member
+network_admin
+compute_admin
+</code></pre>
+
+<p>Now you should be able to see your tech user in elektra including it&rsquo;s roles.</p>
+
+<h2 id="installing">Installing</h2>
+
+<pre><code>helm install --name m2-513be7d11ee64ed7826f5c7c4cfdf10c charts/kube-master/ --values values.yaml  --namespace kubernikus
+</code></pre>
+
+<p>Should now suffice the name is your clustername and the projectid.</p>
+
+
+			<aside class="copyright" role="note">
+				
+			</aside>
+
+			<footer class="footer">
+				
+
+<nav class="pagination" aria-label="Footer">
+  <div class="previous">
+  
+      <a href="/kubernikus/operations/controlplane/" title="ControlPlane">
+        <span class="direction">
+          Previous
+        </span>
+        <div class="page">
+          <div class="button button-previous" role="button" aria-label="Previous">
+            <i class="icon icon-back"></i>
+          </div>
+          <div class="stretch">
+            <div class="title">
+              ControlPlane
+            </div>
+          </div>
+        </div>
+      </a>
+  
+  </div>
+
+  <div class="next">
+  
+      <a href="/kubernikus/operations/logging/" title="Logging">
+        <span class="direction">
+          Next
+        </span>
+        <div class="page">
+          <div class="stretch">
+            <div class="title">
+              Logging
+            </div>
+          </div>
+          <div class="button button-next" role="button" aria-label="Next">
+            <i class="icon icon-forward"></i>
+          </div>
+        </div>
+      </a>
+  
+  </div>
+</nav>
+
+
+
+
+
+			</footer>
+		</div>
+	</article>
+
+	<div class="results" role="status" aria-live="polite">
+		<div class="scrollable">
+			<div class="wrapper">
+				<div class="meta"></div>
+				<div class="list"></div>
+			</div>
+		</div>
+	</div>
+</main>
+
+    <script>
+    
+      var base_url = '\/kubernikus';
+      var repo_id  = 'sapcc\/kubernikus';
+    
+    </script>
+
+    <script src="/kubernikus/javascripts/application.js"></script>
+    
+
+    <script>
+      /* Add headers to scrollspy */
+      var headers   = document.getElementsByTagName("h2");
+      var scrollspy = document.getElementById('scrollspy');
+
+      if(scrollspy) {
+        if(headers.length > 0) {
+          for(var i = 0; i < headers.length; i++) {
+            var li = document.createElement("li");
+            li.setAttribute("class", "anchor");
+
+            var a  = document.createElement("a");
+            a.setAttribute("href", "#" + headers[i].id);
+            a.setAttribute("title", headers[i].innerHTML);
+            a.innerHTML = headers[i].innerHTML;
+
+            li.appendChild(a)
+            scrollspy.appendChild(li);
+          }
+        } else {
+          scrollspy.parentElement.removeChild(scrollspy)
+        }
+
+
+        /* Add permanent link next to the headers */
+        var headers = document.querySelectorAll("h1, h2, h3, h4, h5, h6");
+
+        for(var i = 0; i < headers.length; i++) {
+            var a = document.createElement("a");
+            a.setAttribute("class", "headerlink");
+            a.setAttribute("href", "#" + headers[i].id);
+            a.setAttribute("title", "Permanent link")
+            a.innerHTML = "#";
+            headers[i].appendChild(a);
+        }
+      }
+    </script>
+
+    
+
+    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.8.0/highlight.min.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
+  </body>
+</html>
+
