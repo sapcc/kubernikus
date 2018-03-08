@@ -11,8 +11,6 @@ type LoggingClient struct {
 	Logger log.Logger
 }
 
-
-
 func (c LoggingClient) CreateKlusterServiceUser(username, password, domainName, projectID string) (err error) {
 	defer func(begin time.Time) {
 		c.Logger.Log(
