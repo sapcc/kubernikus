@@ -1,5 +1,5 @@
-hash: 5a4f6ca3c667d683e8ecf32067a37bdd403f700ff5d6b23fdb58f5a541bae202
-updated: 2018-02-19T13:13:22.522337+01:00
+hash: 8671e5d55bd26920ce1e87d65a2ccb4a3cc5cedc86ed1ff6bc255f27daa933c3
+updated: 2018-03-06T09:25:58.44956+01:00
 imports:
 - name: github.com/ajeddeloh/yaml
   version: 1072abfea31191db507785e2e0c1b8d1440d35a5
@@ -147,7 +147,7 @@ imports:
   - compiler
   - extensions
 - name: github.com/gophercloud/gophercloud
-  version: 3b177406222d4b76d93e90d6ab412e7b7dc160f4
+  version: fe864ba585e153c296567b9ab4bbb1345d05900a
   subpackages:
   - internal
   - openstack
