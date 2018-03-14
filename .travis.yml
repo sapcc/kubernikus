@@ -28,11 +28,3 @@ notifications:
     on_failure: always
     rooms:
       secure: VnsgHYsE5CLoKD8pSrY7i587YHeB6aGQUDUKBSDFL5EKPuObtNjeVa8V5Id87jBAEhns/lXQJ+nDO5q0/Tdz8rUGzfbO3IjylGyJNazGA6c9D/4BGVY5E8/cdxemn4HLi6Hq+S4z+eTOsqzCEsNitdYrHefCNQHDMkGwj0ZMfgC5yW2vYZ2fLGT+dvV/WHcbTl6J96uCgeL4I2cDIYMTVmiQExt/wuEz2l4bPK2ZO2AEXYnMYbCxgK3u40SOlBCUn/0rUCEvGslnceZSNDBFlaVQUQOpFeuOW/DsXXGpdtFlTxsD5/bDZJNGVNH8QM7SRekoSZcwqJ3FlOnrX+FUGjPEV+CwoUwTI/mPBU9OErR/BcO12d3joQQUHcgcMWHphJC/5UEigJDnLat5WzP0Lx4B4vuYld63djFRrFcYIoNu+0CNWenY4G5gY12qQai+q0tASBYGmRUban4mGyKyquVbEnhegpj9DYC4fmKCETfjK6/bhubRAixEb/IM59/049TWPAQUeWustBnRi5WHIVqxXvMSPCD5U9m4rJ6GCBn0DD84dbDeQfQ8dG0X1WAVvor+BJLVyraq+0b5DEbuJmJr5A9keVomjuxDVAGtZM5fSOz4Dew4mF0E5FkhbkAOvGlMNzJ+58THFCUW3x/bTZh6B3oqqlkYGwNY8hsYF9A=
-
-deploy:
-  provider: pages
-  skip_cleanup: true
-  github_token: $GITHUB_TOKEN 
-  local_dir: gh-pages 
-  on:
-    branch: master
