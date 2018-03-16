@@ -10,5 +10,6 @@
   "UpdateCluster": "rule:kubernetes_admin",
   "GetClusterCredentials": "rule:kubernetes_user",
   "GetClusterEvents": "rule:kubernetes_user",
-  "GetClusterInfo": "rule:kubernetes_user"
+  "GetClusterInfo": "rule:kubernetes_user",
+  "GetClusterIgnition": "rule:kubernetes_admin"
 }

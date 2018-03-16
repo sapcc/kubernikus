@@ -37,6 +37,7 @@ func NewKubernikusAPI(spec *loads.Document) *KubernikusAPI {
 		BearerAuthenticator: security.BearerAuth,
 		JSONConsumer:        runtime.JSONConsumer(),
 		JSONProducer:        runtime.JSONProducer(),
+		TxtProducer:         runtime.TextProducer(),
 		CreateClusterHandler: CreateClusterHandlerFunc(func(params CreateClusterParams, principal *models.Principal) middleware.Responder {
 			return middleware.NotImplemented("operation CreateCluster has not yet been implemented")
 		}),
@@ -45,6 +46,9 @@ func NewKubernikusAPI(spec *loads.Document) *KubernikusAPI {
 		}),
 		GetClusterEventsHandler: GetClusterEventsHandlerFunc(func(params GetClusterEventsParams, principal *models.Principal) middleware.Responder {
 			return middleware.NotImplemented("operation GetClusterEvents has not yet been implemented")
+		}),
+		GetClusterIgnitionHandler: GetClusterIgnitionHandlerFunc(func(params GetClusterIgnitionParams, principal *models.Principal) middleware.Responder {
+			return middleware.NotImplemented("operation GetClusterIgnition has not yet been implemented")
 		}),
 		GetClusterInfoHandler: GetClusterInfoHandlerFunc(func(params GetClusterInfoParams, principal *models.Principal) middleware.Responder {
 			return middleware.NotImplemented("operation GetClusterInfo has not yet been implemented")
@@ -106,6 +110,8 @@ type KubernikusAPI struct {
 
 	// JSONProducer registers a producer for a "application/json" mime type
 	JSONProducer runtime.Producer
+	// TxtProducer registers a producer for a "text/plain" mime type
+	TxtProducer runtime.Producer
 
 	// KeystoneAuth registers a function that takes a token and returns a principal
 	// it performs authentication based on an api key x-auth-token provided in the header
@@ -120,6 +126,8 @@ type KubernikusAPI struct {
 	GetClusterCredentialsHandler GetClusterCredentialsHandler
 	// GetClusterEventsHandler sets the operation handler for the get cluster events operation
 	GetClusterEventsHandler GetClusterEventsHandler
+	// GetClusterIgnitionHandler sets the operation handler for the get cluster ignition operation
+	GetClusterIgnitionHandler GetClusterIgnitionHandler
 	// GetClusterInfoHandler sets the operation handler for the get cluster info operation
 	GetClusterInfoHandler GetClusterInfoHandler
 	// GetOpenstackMetadataHandler sets the operation handler for the get openstack metadata operation
@@ -199,6 +207,10 @@ func (o *KubernikusAPI) Validate() error {
 		unregistered = append(unregistered, "JSONProducer")
 	}
 
+	if o.TxtProducer == nil {
+		unregistered = append(unregistered, "TxtProducer")
+	}
+
 	if o.KeystoneAuth == nil {
 		unregistered = append(unregistered, "XAuthTokenAuth")
 	}
@@ -213,6 +225,10 @@ func (o *KubernikusAPI) Validate() error {
 
 	if o.GetClusterEventsHandler == nil {
 		unregistered = append(unregistered, "GetClusterEventsHandler")
+	}
+
+	if o.GetClusterIgnitionHandler == nil {
+		unregistered = append(unregistered, "GetClusterIgnitionHandler")
 	}
 
 	if o.GetClusterInfoHandler == nil {
@@ -311,6 +327,9 @@ func (o *KubernikusAPI) ProducersFor(mediaTypes []string) map[string]runtime.Pro
 		case "application/json":
 			result["application/json"] = o.JSONProducer
 
+		case "text/plain":
+			result["text/plain"] = o.TxtProducer
+
 		}
 	}
 	return result
@@ -363,6 +382,11 @@ func (o *KubernikusAPI) initHandlerCache() {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/api/v1/clusters/{name}/events"] = NewGetClusterEvents(o.context, o.GetClusterEventsHandler)
+
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/api/v1/clusters/{name}/ignition"] = NewGetClusterIgnition(o.context, o.GetClusterIgnitionHandler)
 
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
