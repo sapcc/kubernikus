@@ -83,6 +83,7 @@ systemd:
           --cluster-domain={{ .ClusterDomain }} \
           --client-ca-file=/etc/kubernetes/certs/kubelet-clients-ca.pem \
           --non-masquerade-cidr=0.0.0.0/0 \
+          --read-only-port=0 \
           --anonymous-auth=false
         ExecStop=-/usr/bin/rkt stop --uuid-file=/var/run/kubelet-pod.uuid
         Restart=always
