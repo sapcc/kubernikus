@@ -12,23 +12,61 @@ data:
       http_2xx:
         prober: http
         http:
+          no_follow_redirects: false
+          tls_config:
+            insecure_skip_verify: true
+
+      https_2xx:
+        prober: http
+        http:
           fail_if_not_ssl: true
           no_follow_redirects: false
+
       http_400:
         prober: http
         http:
-          fail_if_not_ssl: true
+          no_follow_redirects: false
           valid_status_codes: [400]
+          tls_config:
+            insecure_skip_verify: true
+
+      https_400:
+        prober: http
+        http:
+          fail_if_not_ssl: true
+          no_follow_redirects: false
+          valid_status_codes: [400]
+
       http_401:
         prober: http
         http:
+          no_follow_redirects: false
+          valid_status_codes: [401]
+          tls_config:
+            insecure_skip_verify: true
+
+      https_401:
+        prober: http
+        http:
+          no_follow_redirects: false
           fail_if_not_ssl: true
           valid_status_codes: [401]
+
       http_403:
         prober: http
         http:
+          no_follow_redirects: false
+          valid_status_codes: [403]
+          tls_config:
+            insecure_skip_verify: true
+
+      https_403:
+        prober: http
+        http:
+          no_follow_redirects: false
           fail_if_not_ssl: true
           valid_status_codes: [403]
+
       http_post_4xx:
         prober: http
         http:
@@ -41,4 +79,3 @@ data:
         timeout: 5s
         tcp:
           tls: true
-      

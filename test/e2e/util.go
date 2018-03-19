@@ -216,10 +216,10 @@ func (s *E2ETestSuite) handleError(err error) {
 		return
 	}
 	log.Print(err)
-	// cleanup
-	//if !s.IsNoTeardown {
-	//  s.tearDownCluster()
-	//}
+	// Uncomment this to disabled auto-cleanup
+	if !s.IsNoTeardown {
+		s.tearDownCluster()
+	}
 	os.Exit(1)
 }
 

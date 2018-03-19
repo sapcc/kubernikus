@@ -246,6 +246,9 @@ definitions:
               type: string
             id:
               type: string
+            externalNetworkID:
+              type: string
+              x-go-name: ExternalNetworkID
             networks:
               type: array
               items:

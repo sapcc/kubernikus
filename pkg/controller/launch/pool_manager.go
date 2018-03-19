@@ -6,10 +6,11 @@ import (
 
 	"github.com/sapcc/kubernikus/pkg/api/models"
 	"github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
-	"github.com/sapcc/kubernikus/pkg/client/openstack"
+	openstack_kluster "github.com/sapcc/kubernikus/pkg/client/openstack/kluster"
 	"github.com/sapcc/kubernikus/pkg/controller/config"
 	"github.com/sapcc/kubernikus/pkg/controller/metrics"
 	"github.com/sapcc/kubernikus/pkg/controller/nodeobservatory"
+	kubernikus_listers "github.com/sapcc/kubernikus/pkg/generated/listers/kubernikus/v1"
 	"github.com/sapcc/kubernikus/pkg/templates"
 	"github.com/sapcc/kubernikus/pkg/util"
 
@@ -38,21 +39,29 @@ type PoolStatus struct {
 
 type ConcretePoolManager struct {
 	config.Clients
+
+	klusterClient   openstack_kluster.KlusterClient
 	nodeObservatory *nodeobservatory.NodeObservatory
 
 	Kluster *v1.Kluster
 	Pool    *models.NodePool
 	Logger  log.Logger
+	Lister  kubernikus_listers.KlusterLister
 }
 
-func (lr *LaunchReconciler) newPoolManager(kluster *v1.Kluster, pool *models.NodePool) PoolManager {
+func (lr *LaunchReconciler) newPoolManager(kluster *v1.Kluster, pool *models.NodePool) (PoolManager, error) {
 	logger := log.With(lr.Logger,
 		"kluster", kluster.Spec.Name,
 		"project", kluster.Account(),
 		"pool", pool.Name)
 
+	klusterClient, err := lr.Factories.Openstack.KlusterClientFor(kluster)
+	if err != nil {
+		return nil, err
+	}
+
 	var pm PoolManager
-	pm = &ConcretePoolManager{lr.Clients, lr.nodeObervatory, kluster, pool, logger}
+	pm = &ConcretePoolManager{lr.Clients, klusterClient, lr.nodeObervatory, kluster, pool, logger, lr.klusterInformer.Lister()}
 	pm = &EventingPoolManager{pm, kluster, lr.Recorder}
 	pm = &LoggingPoolManager{pm, logger}
 	pm = &InstrumentingPoolManager{pm,
@@ -62,12 +71,13 @@ func (lr *LaunchReconciler) newPoolManager(kluster *v1.Kluster, pool *models.Nod
 		metrics.LaunchFailedOperationsTotal,
 	}
 
-	return pm
+	return pm, nil
 }
 
 func (cpm *ConcretePoolManager) GetStatus() (status *PoolStatus, err error) {
 	status = &PoolStatus{}
-	nodes, err := cpm.Clients.Openstack.GetNodes(cpm.Kluster, cpm.Pool)
+
+	nodes, err := cpm.klusterClient.ListNodes(cpm.Pool)
 	if err != nil {
 		return status, err
 	}
@@ -85,8 +95,33 @@ func (cpm *ConcretePoolManager) GetStatus() (status *PoolStatus, err error) {
 	}, nil
 }
 
-func (cpm *ConcretePoolManager) SetStatus(status *PoolStatus) error {
+func nodePoolInfoGet(pool []models.NodePoolInfo, name string) (int, bool) {
+	for i, node := range pool {
+		if node.Name == name {
+			return i, true
+		}
+	}
+	return 0, false
+}
 
+func nodePoolSpecGet(pool []models.NodePool, name string) (int, bool) {
+	for i, node := range pool {
+		if node.Name == name {
+			return i, true
+		}
+	}
+	return 0, false
+}
+
+func removeNodePool(pool []models.NodePoolInfo, name string) ([]models.NodePoolInfo, error) {
+	index, ok := nodePoolInfoGet(pool, name)
+	if !ok {
+		return nil, fmt.Errorf("Failed to delete PoolInfo: %s", name)
+	}
+	return append(pool[:index], pool[index+1:]...), nil
+}
+
+func (cpm *ConcretePoolManager) SetStatus(status *PoolStatus) error {
 	healthy, schedulable := cpm.healthyAndSchedulable()
 
 	newInfo := models.NodePoolInfo{
@@ -107,25 +142,44 @@ func (cpm *ConcretePoolManager) SetStatus(status *PoolStatus) error {
 		},
 	)
 
-	//TODO: Use util.UpdateKlusterWithRetries here
 	copy, err := cpm.Clients.Kubernikus.Kubernikus().Klusters(cpm.Kluster.Namespace).Get(cpm.Kluster.Name, metav1.GetOptions{})
 	if err != nil {
 		return err
 	}
 
-	for i, curInfo := range copy.Status.NodePools {
-		if curInfo.Name == newInfo.Name {
-			if curInfo == newInfo {
-				return nil
-			}
-
-			copy.Status.NodePools[i] = newInfo
-			_, err = cpm.Clients.Kubernikus.Kubernikus().Klusters(copy.Namespace).Update(copy)
-			return err
+	updated := false
+	// Add new pools in the spec to the status
+	// Find the pool
+	if npi, ok := nodePoolInfoGet(copy.Status.NodePools, cpm.Pool.Name); ok {
+		// is there a need to update?
+		if copy.Status.NodePools[npi] != newInfo {
+			copy.Status.NodePools[npi] = newInfo
+			updated = true
 		}
+	} else {
+		// not found so add it
+		copy.Status.NodePools = append(copy.Status.NodePools, newInfo)
+		updated = true
 	}
 
-	return nil
+	// Delete pools from the status that are not in spec
+	// skip the pool if it is still in the spec
+	if _, ok := nodePoolSpecGet(copy.Spec.NodePools, cpm.Pool.Name); !ok {
+		// not found in the spec anymore so delete it
+		copy.Status.NodePools, err = removeNodePool(copy.Status.NodePools, cpm.Pool.Name)
+		if err != nil {
+			return err
+		}
+		updated = true
+	}
+
+	if updated {
+		_, err = util.UpdateKlusterWithRetries(cpm.Clients.Kubernikus.Kubernikus().Klusters(cpm.Kluster.Namespace), cpm.Lister.Klusters(cpm.Kluster.Namespace), cpm.Kluster.GetName(), func(kluster *v1.Kluster) error {
+			kluster.Status.NodePools = copy.Status.NodePools
+			return nil
+		})
+	}
+	return err
 }
 
 func (cpm *ConcretePoolManager) CreateNode() (id string, err error) {
@@ -139,7 +193,7 @@ func (cpm *ConcretePoolManager) CreateNode() (id string, err error) {
 		return "", err
 	}
 
-	id, err = cpm.Clients.Openstack.CreateNode(cpm.Kluster, cpm.Pool, userdata)
+	id, err = cpm.klusterClient.CreateNode(cpm.Pool, userdata)
 	if err != nil {
 		return "", err
 	}
@@ -148,13 +202,13 @@ func (cpm *ConcretePoolManager) CreateNode() (id string, err error) {
 }
 
 func (cpm *ConcretePoolManager) DeleteNode(id string) (err error) {
-	if err = cpm.Clients.Openstack.DeleteNode(cpm.Kluster, id); err != nil {
+	if err = cpm.klusterClient.DeleteNode(id); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (cpm *ConcretePoolManager) nodeIDs(nodes []openstack.Node) []string {
+func (cpm *ConcretePoolManager) nodeIDs(nodes []openstack_kluster.Node) []string {
 	result := []string{}
 	for _, n := range nodes {
 		result = append(result, n.ID)
@@ -162,7 +216,7 @@ func (cpm *ConcretePoolManager) nodeIDs(nodes []openstack.Node) []string {
 	return result
 }
 
-func (cpm *ConcretePoolManager) starting(nodes []openstack.Node) int {
+func (cpm *ConcretePoolManager) starting(nodes []openstack_kluster.Node) int {
 	var count int = 0
 	for _, n := range nodes {
 		if n.Starting() {
@@ -172,7 +226,7 @@ func (cpm *ConcretePoolManager) starting(nodes []openstack.Node) int {
 	return count
 }
 
-func (cpm *ConcretePoolManager) stopping(nodes []openstack.Node) int {
+func (cpm *ConcretePoolManager) stopping(nodes []openstack_kluster.Node) int {
 	var count int = 0
 	for _, n := range nodes {
 		if n.Stopping() {
@@ -182,7 +236,7 @@ func (cpm *ConcretePoolManager) stopping(nodes []openstack.Node) int {
 	return count
 }
 
-func (cpm *ConcretePoolManager) running(nodes []openstack.Node) int {
+func (cpm *ConcretePoolManager) running(nodes []openstack_kluster.Node) int {
 	var count int = 0
 	for _, n := range nodes {
 		if n.Running() {
@@ -192,7 +246,7 @@ func (cpm *ConcretePoolManager) running(nodes []openstack.Node) int {
 	return count
 }
 
-func (cpm *ConcretePoolManager) needed(nodes []openstack.Node) int {
+func (cpm *ConcretePoolManager) needed(nodes []openstack_kluster.Node) int {
 	needed := int(cpm.Pool.Size) - cpm.running(nodes) - cpm.starting(nodes)
 	if needed < 0 {
 		return 0
@@ -200,7 +254,7 @@ func (cpm *ConcretePoolManager) needed(nodes []openstack.Node) int {
 	return needed
 }
 
-func (cpm ConcretePoolManager) unNeeded(nodes []openstack.Node) int {
+func (cpm ConcretePoolManager) unNeeded(nodes []openstack_kluster.Node) int {
 	unneeded := cpm.running(nodes) + cpm.starting(nodes) - int(cpm.Pool.Size)
 	if unneeded < 0 {
 		return 0

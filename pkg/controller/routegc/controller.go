@@ -17,30 +17,28 @@ import (
 	"k8s.io/client-go/tools/cache"
 
 	"github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
-	os_client "github.com/sapcc/kubernikus/pkg/client/openstack"
+	"github.com/sapcc/kubernikus/pkg/controller/config"
 	"github.com/sapcc/kubernikus/pkg/controller/metrics"
-	informers_v1 "github.com/sapcc/kubernikus/pkg/generated/informers/externalversions/kubernikus/v1"
 	"github.com/sapcc/kubernikus/pkg/version"
 )
 
 type RouteGarbageCollector struct {
+	config.Factories
 	logger       log.Logger
 	watchers     sync.Map
 	syncPeriod   time.Duration
 	klusterIndex cache.Indexer
-	osClient     os_client.Client
 }
 
-func New(syncPeriod time.Duration, informer informers_v1.KlusterInformer, oclient os_client.Client, logger log.Logger) *RouteGarbageCollector {
-
+func New(syncPeriod time.Duration, factories config.Factories, logger log.Logger) *RouteGarbageCollector {
 	gc := &RouteGarbageCollector{
+		Factories:    factories,
 		logger:       log.With(logger, "controller", "routegc"),
 		syncPeriod:   syncPeriod,
-		klusterIndex: informer.Informer().GetIndexer(),
-		osClient:     oclient,
+		klusterIndex: factories.Kubernikus.Kubernikus().V1().Klusters().Informer().GetIndexer(),
 	}
 
-	informer.Informer().AddEventHandler(
+	factories.Kubernikus.Kubernikus().V1().Klusters().Informer().AddEventHandler(
 		cache.ResourceEventHandlerFuncs{
 			AddFunc:    gc.klusterAdd,
 			DeleteFunc: gc.klusterDelete,
@@ -68,9 +66,9 @@ func (r *RouteGarbageCollector) reconcile(kluster *v1.Kluster, logger log.Logger
 	defer func(begin time.Time) {
 	}(time.Now())
 
-	providerClient, err := r.osClient.KlusterClientFor(kluster)
+	providerClient, err := r.Openstack.ProviderClientForKluster(kluster, logger)
 	if err != nil {
-		return fmt.Errorf("Failed to inititalize openstack client: %s", err)
+		return err
 	}
 
 	networkClient, err := openstack.NewNetworkV2(providerClient, gophercloud.EndpointOpts{})

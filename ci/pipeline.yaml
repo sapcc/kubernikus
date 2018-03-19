@@ -39,6 +39,16 @@ auth_e2e: &auth_e2e
   KUBERNIKUS_NAME: e2e 
   KUBERNIKUS_URL: https://kubernikus-master.eu-nl-1.cloud.sap
 
+auth_e2e_qa-de-1: &auth_e2e_qa-de-1
+  OS_AUTH_URL: https://identity-3.qa-de-1.cloud.sap/v3
+  OS_USERNAME: {{kubernikus-qa-username}}
+  OS_PASSWORD: {{kubernikus-qa-password}}
+  OS_USER_DOMAIN_NAME: ccadmin
+  OS_PROJECT_NAME: kubernikus-e2e
+  OS_PROJECT_DOMAIN_NAME: ccadmin
+  KUBERNIKUS_NAME: e2e_qa-de-1
+  KUBERNIKUS_URL: https://kubernikus.qa-de-1.cloud.sap
+
 auth_staging: &auth_staging
   OS_AUTH_URL: https://identity-3.staging.cloud.sap/v3
   OS_USERNAME: {{kubernikus-staging-username}}
@@ -135,6 +145,9 @@ resources:
     type: time
     source: {interval: 24h}
 
+  - name: hourly 
+    type: time
+    source: {interval: 1h}
 
 resource_types:
   - name: time-version
@@ -382,3 +395,18 @@ jobs:
           file: kubernikus.builds/ci/task_helm_kubernikus-system.yaml
           params:
             <<: *auth_qa-de-1
+
+  - name: asrsoaking
+    serial: true
+    plan:
+      - aggregate:
+        - get: secrets.git
+        - get: kubernikus.builds
+          resource: master.builds
+          passed: [e2e]
+        - get: hourly 
+          trigger: true
+      - task: e2e_tests
+        file: kubernikus.builds/ci/task_e2e_tests.yaml
+        params:
+          <<: *auth_e2e_qa-de-1

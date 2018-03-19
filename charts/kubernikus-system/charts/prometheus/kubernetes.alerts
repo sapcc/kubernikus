@@ -90,15 +90,3 @@ groups:
     annotations:
       description: "PVC {{ $labels.namespace }}/{{ $labels.persistentvolumeclaim }} stuck in phase {{ $labels.phase }}"
       summary: "PVC stuck in phase {{ $labels.phase }}"
-
-  - alert: BackendUnavailable
-    expr: probe_success != 1
-    for: 5m
-    labels:
-      tier: kubernikus
-      service: kubernikus
-      severity: critical
-      context: availability
-    annotations:
-      description: "{{ $labels.instance }} is unavailable"
-      summary: "{{ $labels.instance }} is unavailable"

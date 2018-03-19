@@ -25,7 +25,7 @@ run:
       cp -a kubernikus.builds kubernikus-copy.builds
 
       helm repo add forked https://raw.githubusercontent.com/BugRoger/charts/repo
-      helm dep up --skip-refresh kubernikus-copy.builds/charts/kubernikus-system/
+      helm dep up kubernikus-copy.builds/charts/kubernikus-system/
       helm upgrade kubernikus-system kubernikus-copy.builds/charts/kubernikus-system/ \
         --namespace=kubernikus-system \
         --values secrets.git/global/values/kubernikus-system.yaml \
