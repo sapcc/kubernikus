@@ -84,7 +84,7 @@ You can create a private docker registry in your Kubernikus cluster to store you
 The private registry runs as a Pod in your cluster. A proxy on each node is exposing a port onto the node (via a hostPort), which Docker accepts as "secure", since it is accessed by localhost.
 
 ### Create a persisten volume claim
-There is already a default storageClass and your cluster knows that storage exists. You just have to create a persistent volume claim to claim the storage. 
+There is already a default storageClass and your cluster knows that storage exists. You just have to create a persistent volume claim to claim the storage. Adjust the storage size as needed.
 
 ```
 kind: PersistentVolumeClaim
@@ -96,7 +96,7 @@ spec:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 1Gi
+      storage: 5Gi
 ```
 
 ### Run the registry
