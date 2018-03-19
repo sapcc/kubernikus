@@ -97,6 +97,16 @@ func (cpm *ConcretePoolManager) SetStatus(status *PoolStatus) error {
 		Schedulable: int64(schedulable),
 	}
 
+	metrics.SetMetricNodePoolStatus(
+		cpm.Kluster.GetName(),
+		cpm.Pool.Name,
+		map[string]int64{
+			"running":     newInfo.Running,
+			"healthy":     newInfo.Healthy,
+			"schedulable": newInfo.Schedulable,
+		},
+	)
+
 	//TODO: Use util.UpdateKlusterWithRetries here
 	copy, err := cpm.Clients.Kubernikus.Kubernikus().Klusters(cpm.Kluster.Namespace).Get(cpm.Kluster.Name, metav1.GetOptions{})
 	if err != nil {
