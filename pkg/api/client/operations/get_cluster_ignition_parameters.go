@@ -62,6 +62,8 @@ for the get cluster ignition operation typically these are written to a http.Req
 */
 type GetClusterIgnitionParams struct {
 
+	/*Mac*/
+	Mac string
 	/*Name*/
 	Name string
 
@@ -103,6 +105,17 @@ func (o *GetClusterIgnitionParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
+// WithMac adds the mac to the get cluster ignition params
+func (o *GetClusterIgnitionParams) WithMac(mac string) *GetClusterIgnitionParams {
+	o.SetMac(mac)
+	return o
+}
+
+// SetMac adds the mac to the get cluster ignition params
+func (o *GetClusterIgnitionParams) SetMac(mac string) {
+	o.Mac = mac
+}
+
 // WithName adds the name to the get cluster ignition params
 func (o *GetClusterIgnitionParams) WithName(name string) *GetClusterIgnitionParams {
 	o.SetName(name)
@@ -121,6 +134,15 @@ func (o *GetClusterIgnitionParams) WriteToRequest(r runtime.ClientRequest, reg s
 		return err
 	}
 	var res []error
+
+	// query param mac
+	qrMac := o.Mac
+	qMac := qrMac
+	if qMac != "" {
+		if err := r.SetQueryParam("mac", qMac); err != nil {
+			return err
+		}
+	}
 
 	// path param name
 	if err := r.SetPathParam("name", o.Name); err != nil {

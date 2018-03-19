@@ -113,7 +113,11 @@ func NewKubernikusOperator(options *KubernikusOperatorOptions, logger log.Logger
 		return nil, fmt.Errorf("Failed to create apiextenstionsclient: %s", err)
 	}
 
-	if err := kube.EnsureCRD(apiextensionsclientset, logger); err != nil {
+	if err := kube.EnsureCRD(v1.KlusterResourcePlural, apiextensionsclientset, logger); err != nil {
+		return nil, fmt.Errorf("Couldn't create CRD: %s", err)
+	}
+
+	if err := kube.EnsureCRD(v1.ExternalNodeResourcePlural, apiextensionsclientset, logger); err != nil {
 		return nil, fmt.Errorf("Couldn't create CRD: %s", err)
 	}
 

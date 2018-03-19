@@ -2,7 +2,7 @@
 
 package templates
 
-var Node_1_9 = `
+var BareMetalNode_1_9 = `
 passwd:
   users:
     - name:          core
@@ -350,30 +350,4 @@ storage:
           portRange: ""
           resourceContainer: /kube-proxy
           udpTimeoutMilliseconds: 250ms
-    - path: /etc/kubernetes/openstack/openstack.config
-      filesystem: root
-      mode: 0644
-      contents: 
-        inline: |-
-          [Global]
-          auth-url = {{ .OpenstackAuthURL }}
-          username = {{ .OpenstackUsername }}
-          password = {{ .OpenstackPassword }}
-          domain-name = {{ .OpenstackDomain }}
-          region = {{ .OpenstackRegion }}
-
-          [LoadBalancer]
-          lb-version=v2
-          subnet-id = {{ .OpenstackLBSubnetID }}
-          floating-network-id = {{ .OpenstackLBFloatingNetworkID }} 
-          create-monitor = yes
-          monitor-delay = 1m
-          monitor-timeout = 30s
-          monitor-max-retries = 3
-
-          [BlockStorage]
-          trust-device-path = no
-
-          [Route]
-          router-id = {{ .OpenstackRouterID }}
 `

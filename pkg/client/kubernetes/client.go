@@ -91,19 +91,19 @@ func NewClientConfigV1(name, user, url string, key, cert, ca []byte) clientcmdap
 	}
 }
 
-func EnsureCRD(clientset apiextensionsclient.Interface, logger kitlog.Logger) error {
-	klusterCRDName := kubernikus_v1.KlusterResourcePlural + "." + kubernikus_v1.GroupName
+func EnsureCRD(pluralName string, clientset apiextensionsclient.Interface, logger kitlog.Logger) error {
+	name := pluralName + "." + kubernikus_v1.GroupName
 	crd := &apiextensionsv1beta1.CustomResourceDefinition{
 		ObjectMeta: metav1.ObjectMeta{
-			Name: klusterCRDName,
+			Name: name,
 		},
 		Spec: apiextensionsv1beta1.CustomResourceDefinitionSpec{
 			Group:   kubernikus_v1.GroupName,
 			Version: kubernikus_v1.SchemeGroupVersion.Version,
 			Scope:   apiextensionsv1beta1.NamespaceScoped,
 			Names: apiextensionsv1beta1.CustomResourceDefinitionNames{
-				Plural: kubernikus_v1.KlusterResourcePlural,
-				Kind:   reflect.TypeOf(kubernikus_v1.Kluster{}).Name(),
+				Plural: pluralName,
+				Kind:   reflect.TypeOf(kubernikus_v1.ExternalNode{}).Name(),
 			},
 		},
 	}
@@ -114,7 +114,7 @@ func EnsureCRD(clientset apiextensionsclient.Interface, logger kitlog.Logger) er
 	}
 	// wait for CRD being established
 	err = wait.Poll(500*time.Millisecond, 60*time.Second, func() (bool, error) {
-		crd, err = clientset.ApiextensionsV1beta1().CustomResourceDefinitions().Get(klusterCRDName, metav1.GetOptions{})
+		crd, err = clientset.ApiextensionsV1beta1().CustomResourceDefinitions().Get(name, metav1.GetOptions{})
 		if err != nil {
 			return false, err
 		}
@@ -136,7 +136,7 @@ func EnsureCRD(clientset apiextensionsclient.Interface, logger kitlog.Logger) er
 		return false, err
 	})
 	if err != nil {
-		deleteErr := clientset.ApiextensionsV1beta1().CustomResourceDefinitions().Delete(klusterCRDName, nil)
+		deleteErr := clientset.ApiextensionsV1beta1().CustomResourceDefinitions().Delete(name, nil)
 		if deleteErr != nil {
 			return apiutilerrors.NewAggregate([]error{err, deleteErr})
 		}

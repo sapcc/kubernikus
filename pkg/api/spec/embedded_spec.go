@@ -229,6 +229,13 @@ func init() {
           "name": "name",
           "in": "path",
           "required": true
+        },
+        {
+          "uniqueItems": true,
+          "type": "string",
+          "name": "mac",
+          "in": "query",
+          "required": true
         }
       ]
     },

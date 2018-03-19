@@ -16,6 +16,8 @@ import (
 type GetClusterIgnitionURL struct {
 	Name string
 
+	Mac string
+
 	_basePath string
 	// avoid unkeyed usage
 	_ struct{}
@@ -50,6 +52,15 @@ func (o *GetClusterIgnitionURL) Build() (*url.URL, error) {
 	}
 	_basePath := o._basePath
 	result.Path = golangswaggerpaths.Join(_basePath, _path)
+
+	qs := make(url.Values)
+
+	mac := o.Mac
+	if mac != "" {
+		qs.Set("mac", mac)
+	}
+
+	result.RawQuery = qs.Encode()
 
 	return &result, nil
 }

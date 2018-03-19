@@ -181,6 +181,11 @@ paths:
         name: name
         required: true
         in: path
+      - uniqueItems: true
+        type: string
+        name: mac 
+        required: true
+        in: query 
     get:
       operationId: GetClusterIgnition
       summary: Get Ignition Config for Node in this Cluster 

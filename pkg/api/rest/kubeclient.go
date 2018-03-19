@@ -8,6 +8,7 @@ import (
 	apiextensionsclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	kubernetes_clientset "k8s.io/client-go/kubernetes"
 
+	"github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
 	"github.com/sapcc/kubernikus/pkg/client/kubernetes"
 	"github.com/sapcc/kubernikus/pkg/client/kubernikus"
 	kubernikus_clientset "github.com/sapcc/kubernikus/pkg/generated/clientset"
@@ -42,7 +43,11 @@ func NewKubeClients(logger kitlog.Logger) (kubernikus_clientset.Interface, kuber
 		return nil, nil, fmt.Errorf("Failed to create apiextenstionsclient: %s", err)
 	}
 
-	if err := kubernetes.EnsureCRD(apiextensionsclientset, logger); err != nil {
+	if err := kubernetes.EnsureCRD(v1.KlusterResourcePlural, apiextensionsclientset, logger); err != nil {
+		return nil, nil, fmt.Errorf("Couldn't create CRD: %s", err)
+	}
+
+	if err := kubernetes.EnsureCRD(v1.ExternalNodeResourcePlural, apiextensionsclientset, logger); err != nil {
 		return nil, nil, fmt.Errorf("Couldn't create CRD: %s", err)
 	}
 
