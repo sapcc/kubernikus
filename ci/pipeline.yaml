@@ -403,7 +403,7 @@ jobs:
         - get: secrets.git
         - get: kubernikus.builds
           resource: master.builds
-          passed: [master]
+          passed: [e2e]
         - get: hourly 
           trigger: true
       - task: e2e_tests
