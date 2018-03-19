@@ -217,7 +217,6 @@ func (s *E2ETestSuite) handleError(err error) {
 	}
 	log.Print(err)
 	// Uncomment this to disabled auto-cleanup
-	cleanup
 	if !s.IsNoTeardown {
 		s.tearDownCluster()
 	}

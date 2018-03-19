@@ -402,8 +402,8 @@ jobs:
       - aggregate:
         - get: secrets.git
         - get: kubernikus.builds
-          resource: feature.builds
-          passed: [qa]
+          resource: master.builds
+          passed: [master]
         - get: hourly 
           trigger: true
       - task: e2e_tests
