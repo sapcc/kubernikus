@@ -6,7 +6,7 @@ import (
 
 	"github.com/sapcc/kubernikus/pkg/api/models"
 	"github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
-	"github.com/sapcc/kubernikus/pkg/client/openstack"
+	openstack_kluster "github.com/sapcc/kubernikus/pkg/client/openstack/kluster"
 	"github.com/sapcc/kubernikus/pkg/controller/config"
 	"github.com/sapcc/kubernikus/pkg/controller/metrics"
 	"github.com/sapcc/kubernikus/pkg/controller/nodeobservatory"
@@ -39,6 +39,8 @@ type PoolStatus struct {
 
 type ConcretePoolManager struct {
 	config.Clients
+
+	klusterClient   openstack_kluster.KlusterClient
 	nodeObservatory *nodeobservatory.NodeObservatory
 
 	Kluster *v1.Kluster
@@ -47,14 +49,19 @@ type ConcretePoolManager struct {
 	Lister  kubernikus_listers.KlusterLister
 }
 
-func (lr *LaunchReconciler) newPoolManager(kluster *v1.Kluster, pool *models.NodePool) PoolManager {
+func (lr *LaunchReconciler) newPoolManager(kluster *v1.Kluster, pool *models.NodePool) (PoolManager, error) {
 	logger := log.With(lr.Logger,
 		"kluster", kluster.Spec.Name,
 		"project", kluster.Account(),
 		"pool", pool.Name)
 
+	klusterClient, err := lr.Factories.Openstack.KlusterClientFor(kluster)
+	if err != nil {
+		return nil, err
+	}
+
 	var pm PoolManager
-	pm = &ConcretePoolManager{lr.Clients, lr.nodeObervatory, kluster, pool, logger, lr.klusterInformer.Lister()}
+	pm = &ConcretePoolManager{lr.Clients, klusterClient, lr.nodeObervatory, kluster, pool, logger, lr.klusterInformer.Lister()}
 	pm = &EventingPoolManager{pm, kluster, lr.Recorder}
 	pm = &LoggingPoolManager{pm, logger}
 	pm = &InstrumentingPoolManager{pm,
@@ -64,12 +71,13 @@ func (lr *LaunchReconciler) newPoolManager(kluster *v1.Kluster, pool *models.Nod
 		metrics.LaunchFailedOperationsTotal,
 	}
 
-	return pm
+	return pm, nil
 }
 
 func (cpm *ConcretePoolManager) GetStatus() (status *PoolStatus, err error) {
 	status = &PoolStatus{}
-	nodes, err := cpm.Clients.Openstack.GetNodes(cpm.Kluster, cpm.Pool)
+
+	nodes, err := cpm.klusterClient.ListNodes(cpm.Pool)
 	if err != nil {
 		return status, err
 	}
@@ -114,7 +122,6 @@ func removeNodePool(pool []models.NodePoolInfo, name string) ([]models.NodePoolI
 }
 
 func (cpm *ConcretePoolManager) SetStatus(status *PoolStatus) error {
-
 	healthy, schedulable := cpm.healthyAndSchedulable()
 
 	newInfo := models.NodePoolInfo{
@@ -186,7 +193,7 @@ func (cpm *ConcretePoolManager) CreateNode() (id string, err error) {
 		return "", err
 	}
 
-	id, err = cpm.Clients.Openstack.CreateNode(cpm.Kluster, cpm.Pool, userdata)
+	id, err = cpm.klusterClient.CreateNode(cpm.Pool, userdata)
 	if err != nil {
 		return "", err
 	}
@@ -195,13 +202,13 @@ func (cpm *ConcretePoolManager) CreateNode() (id string, err error) {
 }
 
 func (cpm *ConcretePoolManager) DeleteNode(id string) (err error) {
-	if err = cpm.Clients.Openstack.DeleteNode(cpm.Kluster, id); err != nil {
+	if err = cpm.klusterClient.DeleteNode(id); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (cpm *ConcretePoolManager) nodeIDs(nodes []openstack.Node) []string {
+func (cpm *ConcretePoolManager) nodeIDs(nodes []openstack_kluster.Node) []string {
 	result := []string{}
 	for _, n := range nodes {
 		result = append(result, n.ID)
@@ -209,7 +216,7 @@ func (cpm *ConcretePoolManager) nodeIDs(nodes []openstack.Node) []string {
 	return result
 }
 
-func (cpm *ConcretePoolManager) starting(nodes []openstack.Node) int {
+func (cpm *ConcretePoolManager) starting(nodes []openstack_kluster.Node) int {
 	var count int = 0
 	for _, n := range nodes {
 		if n.Starting() {
@@ -219,7 +226,7 @@ func (cpm *ConcretePoolManager) starting(nodes []openstack.Node) int {
 	return count
 }
 
-func (cpm *ConcretePoolManager) stopping(nodes []openstack.Node) int {
+func (cpm *ConcretePoolManager) stopping(nodes []openstack_kluster.Node) int {
 	var count int = 0
 	for _, n := range nodes {
 		if n.Stopping() {
@@ -229,7 +236,7 @@ func (cpm *ConcretePoolManager) stopping(nodes []openstack.Node) int {
 	return count
 }
 
-func (cpm *ConcretePoolManager) running(nodes []openstack.Node) int {
+func (cpm *ConcretePoolManager) running(nodes []openstack_kluster.Node) int {
 	var count int = 0
 	for _, n := range nodes {
 		if n.Running() {
@@ -239,7 +246,7 @@ func (cpm *ConcretePoolManager) running(nodes []openstack.Node) int {
 	return count
 }
 
-func (cpm *ConcretePoolManager) needed(nodes []openstack.Node) int {
+func (cpm *ConcretePoolManager) needed(nodes []openstack_kluster.Node) int {
 	needed := int(cpm.Pool.Size) - cpm.running(nodes) - cpm.starting(nodes)
 	if needed < 0 {
 		return 0
@@ -247,7 +254,7 @@ func (cpm *ConcretePoolManager) needed(nodes []openstack.Node) int {
 	return needed
 }
 
-func (cpm ConcretePoolManager) unNeeded(nodes []openstack.Node) int {
+func (cpm ConcretePoolManager) unNeeded(nodes []openstack_kluster.Node) int {
 	unneeded := cpm.running(nodes) + cpm.starting(nodes) - int(cpm.Pool.Size)
 	if unneeded < 0 {
 		return 0

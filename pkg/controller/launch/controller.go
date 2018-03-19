@@ -24,8 +24,9 @@ const (
 type LaunchReconciler struct {
 	config.Clients
 
-	Recorder record.EventRecorder
-	Logger   log.Logger
+	Factories config.Factories
+	Recorder  record.EventRecorder
+	Logger    log.Logger
 
 	klusterInformer informers_kubernikus.KlusterInformer
 	nodeObervatory  *nodeobservatory.NodeObservatory
@@ -36,7 +37,7 @@ func NewController(threadiness int, factories config.Factories, clients config.C
 		"controller", "launch")
 
 	var reconciler base.Reconciler
-	reconciler = &LaunchReconciler{clients, recorder, logger, factories.Kubernikus.Kubernikus().V1().Klusters(), factories.NodesObservatory.NodeInformer()}
+	reconciler = &LaunchReconciler{clients, factories, recorder, logger, factories.Kubernikus.Kubernikus().V1().Klusters(), factories.NodesObservatory.NodeInformer()}
 	reconciler = &base.LoggingReconciler{reconciler, logger}
 	reconciler = &base.InstrumentingReconciler{
 		reconciler,
@@ -108,7 +109,11 @@ func (lr *LaunchReconciler) terminatePools(kluster *v1.Kluster) (requeue bool, e
 }
 
 func (lr *LaunchReconciler) terminatePool(kluster *v1.Kluster, pool *models.NodePool) (status *PoolStatus, requeue bool, err error) {
-	pm := lr.newPoolManager(kluster, pool)
+	pm, err := lr.newPoolManager(kluster, pool)
+	if err != nil {
+		return
+	}
+
 	status, err = pm.GetStatus()
 	if err != nil {
 		return
@@ -126,7 +131,11 @@ func (lr *LaunchReconciler) terminatePool(kluster *v1.Kluster, pool *models.Node
 }
 
 func (lr *LaunchReconciler) reconcilePool(kluster *v1.Kluster, pool *models.NodePool) (status *PoolStatus, requeue bool, err error) {
-	pm := lr.newPoolManager(kluster, pool)
+	pm, err := lr.newPoolManager(kluster, pool)
+	if err != nil {
+		return
+	}
+
 	status, err = pm.GetStatus()
 	if err != nil {
 		return
