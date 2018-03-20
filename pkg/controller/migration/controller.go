@@ -35,7 +35,7 @@ func NewController(threadiness int, factories config.Factories, clients config.C
 
 func (mr *MigrationReconciler) Reconcile(kluster *v1.Kluster) (bool, error) {
 
-	//We only care about klustes with pending migrations
+	//We only care about klusters with pending migrations
 	if !migration.MigrationsPending(kluster) {
 		// Ensure the kluster migration status is up to date
 		return false, util.UpdateKlusterMigrationStatus(mr.Kubernikus.Kubernikus(), kluster, false)
