@@ -54,7 +54,8 @@ func (i *ignition) getIgnitionTemplate(kluster *kubernikusv1.Kluster) string {
 	}
 }
 
-func (i *ignition) GenerateNode(kluster *kubernikusv1.Kluster, nodeName string, secret *v1.Secret, logger log.Logger) ([]byte, error) {
+
+func (i *ignition) GenerateNode(kluster *kubernikusv1.Kluster, nodeName string, secret *v1.Secret, externalNode *kubernikusv1.ExternalNode, logger log.Logger) ([]byte, error) {
 	for _, field := range i.requiredNodeSecrets {
 		if _, ok := secret.Data[field]; !ok {
 			return nil, fmt.Errorf("Field %s missing in secret", field)
@@ -62,6 +63,13 @@ func (i *ignition) GenerateNode(kluster *kubernikusv1.Kluster, nodeName string, 
 	}
 
 	ignition := i.getIgnitionTemplate(kluster)
+
+	if externalNode == nil {
+		externalNode = &kubernikusv1.ExternalNode{}
+	} else {
+		ignition = BareMetalNode_1_9
+	}
+
 	tmpl, err := template.New("node").Funcs(sprig.TxtFuncMap()).Parse(ignition)
 	if err != nil {
 		return nil, err
@@ -110,7 +118,11 @@ func (i *ignition) GenerateNode(kluster *kubernikusv1.Kluster, nodeName string, 
 		KubernikusImageTag                 string
 		LoginPassword                      string
 		LoginPublicKey                     string
+<<<<<<< HEAD
 		NodeName                           string
+=======
+		ExternalNode                       *kubernikusv1.ExternalNode
+>>>>>>> generate baremetal network config
 	}{
 		TLSCA:                              string(secret.Data["tls-ca.pem"]),
 		KubeletClientsCA:                   string(secret.Data["kubelet-clients-ca.pem"]),
@@ -134,7 +146,11 @@ func (i *ignition) GenerateNode(kluster *kubernikusv1.Kluster, nodeName string, 
 		KubernikusImageTag:                 version.GitCommit,
 		LoginPassword:                      passwordHash,
 		LoginPublicKey:                     kluster.Spec.SSHPublicKey,
+<<<<<<< HEAD
 		NodeName:                           nodeName,
+=======
+		ExternalNode:                       externalNode,
+>>>>>>> generate baremetal network config
 	}
 
 	var dataOut []byte

@@ -8,6 +8,7 @@ import (
 	"github.com/sapcc/kubernikus/pkg/api"
 	"github.com/sapcc/kubernikus/pkg/api/models"
 	"github.com/sapcc/kubernikus/pkg/api/rest/operations"
+	"github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
 	"github.com/sapcc/kubernikus/pkg/templates"
 )
 
@@ -38,15 +39,15 @@ func (d *getClusterIgnition) Handle(params operations.GetClusterIgnitionParams, 
 		return NewErrorResponse(&operations.GetClusterIgnitionDefault{}, 500, err.Error())
 	}
 
-	found := ""
+	var found *v1.ExternalNode
 	for _, node := range nodes.Items {
 		if node.Spec.IPXE == params.Mac {
-			found = params.Mac
+			found = &node
 			break
 		}
 	}
 
-	if found == "" {
+	if found == nil {
 		return NewErrorResponse(&operations.GetClusterIgnitionDefault{}, 404, "Not found")
 	}
 
@@ -58,7 +59,7 @@ func (d *getClusterIgnition) Handle(params operations.GetClusterIgnitionParams, 
 		return NewErrorResponse(&operations.GetClusterIgnitionDefault{}, 500, err.Error())
 	}
 
-	userdata, err := templates.Ignition.GenerateNode(kluster, secret, d.Logger)
+	userdata, err := templates.Ignition.GenerateNode(kluster, secret, found, d.Logger)
 	if err != nil {
 		return NewErrorResponse(&operations.GetClusterIgnitionDefault{}, 500, err.Error())
 	}

@@ -11,36 +11,11 @@ passwd:
       ssh_authorized_keys:
         - {{ .LoginPublicKey | quote }}
 {{- end }}
-locksmith:
-  reboot_strategy: "reboot"
 
 systemd:
   units:
     - name: iptables-restore.service
       enable: true
-    - name: ccloud-metadata.service
-      contents: |
-        [Unit]
-        Description=Converged Cloud Metadata Agent
-
-        [Service]
-        Type=oneshot
-        ExecStart=/usr/bin/coreos-metadata --provider=openstack-metadata --attributes=/run/metadata/coreos --ssh-keys=core --hostname=/etc/hostname
-    - name: ccloud-metadata-hostname.service
-      enable: true
-      contents: |
-        [Unit]
-        Description=Workaround for coreos-metadata hostname bug
-        Requires=ccloud-metadata.service
-        After=ccloud-metadata.service
-
-        [Service]
-        Type=oneshot
-        EnvironmentFile=/run/metadata/coreos
-        ExecStart=/usr/bin/hostnamectl set-hostname ${COREOS_OPENSTACK_HOSTNAME}
-        
-        [Install]
-        WantedBy=multi-user.target
     - name: docker.service
       enable: true
       dropins:
@@ -53,7 +28,6 @@ systemd:
       contents: |
         [Unit]
         Description=Kubelet via Hyperkube ACI
-
         [Service]
         Environment="RKT_RUN_ARGS=--uuid-file-save=/var/run/kubelet-pod.uuid \
           --inherit-env \
@@ -71,7 +45,6 @@ systemd:
         ExecStart=/usr/lib/coreos/kubelet-wrapper \
           --cert-dir=/var/lib/kubelet/pki \
           --cloud-config=/etc/kubernetes/openstack/openstack.config \
-          --cloud-provider=openstack \
           --require-kubeconfig \
           --bootstrap-kubeconfig=/etc/kubernetes/bootstrap/kubeconfig \
           --network-plugin=kubenet \
@@ -87,7 +60,6 @@ systemd:
         ExecStop=-/usr/bin/rkt stop --uuid-file=/var/run/kubelet-pod.uuid
         Restart=always
         RestartSec=10
-
         [Install]
         WantedBy=multi-user.target
     - name: wormhole.service
@@ -180,6 +152,62 @@ networkd:
         [Network]
         DHCP=no
         Address={{ .ApiserverIP }}/32
+{{ range $network := .ExternalNode.Spec.Networks }}
+    - name: {{ .Name }}.network
+      contents: |
+  {{- if .Match }}
+        [Match]
+    {{- if .Match.Name }}
+        Name={{ .Match.Name }}{{ end }}
+    {{- if .Match.MACAddress }}
+        MACAddress={{ .Match.MACAddress }}{{ end }}
+  {{- end }}
+  {{- if .Network }}
+        [Network]
+    {{- if .Network.DHCP }}
+        DHCP={{ .Network.DHCP }}{{ end }}
+    {{- if .Network.Address }}
+        Address={{ .Network.Address }}{{ end }}
+    {{- if .Network.Gateway }}
+        Gateway={{ .Network.Gateway }}{{ end }}
+    {{- if .Network.DNS }}
+        DNS={{ .Network.DNS | join "," }}{{ end }}
+    {{- if .Network.Domains }}
+        Domains={{ .Network.Domains }}{{ end }}
+    {{- if .Network.LLDP }}
+        LLDP={{ .Network.LLDP }}{{ end }}
+    {{- if .Network.Bond }}
+        Bond={{ .Network.Bond }}{{ end }}
+  {{- end }}
+{{ end }}
+{{ range $netdev := .ExternalNode.Spec.Netdevs }}
+    - name: {{ .Name }}.netdev
+      contents: |
+  {{- if .NetDev }}
+        [NetDev]
+    {{- if .NetDev.Name }}
+        Name={{ .NetDev.Name }}{{ end }}
+    {{- if .NetDev.Kind }}
+        Kind={{ .NetDev.Kind }}{{ end }}
+    {{- if .NetDev.MTUBytes }}
+        MTUBytes={{ .NetDev.MTUBytes }}{{ end }}
+  {{- end }}
+  {{- if .Bond }}
+        [Bond]
+    {{- if .Bond.Mode }}
+        Mode={{ .Bond.Mode }}{{ end }}
+    {{- if .Bond.MIMMonitorSec }}
+        MIMMonitorSec={{ .Bond.MIMMonitorSec }}{{ end }}
+    {{- if .Bond.LACPTransmitRate }}
+        LACPTransmitRate={{ .Bond.LACPTransmitRate }}{{ end }}
+    {{- if .Bond.UpDelaySec }}
+        UpDelaySec={{ .Bond.UpDelaySec }}{{ end }}
+    {{- if .Bond.DownDelaySec }}
+        DownDelaySec={{ .Bond.DownDelaySec }}{{ end }}
+    {{- if .Bond.MinLinks }}
+        MinLinks={{ .Bond.MinLinks }}{{ end }}
+  {{- end }}
+{{ end }}
 
 storage:
   files:
