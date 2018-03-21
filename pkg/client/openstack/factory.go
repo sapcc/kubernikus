@@ -47,7 +47,7 @@ func NewSharedOpenstackClientFactory(secrets core_v1.SecretInterface, klusters c
 		logger:           logger,
 	}
 
-	if klusrers != nil {
+	if klusters != nil {
 		klusters.AddEventHandler(cache.ResourceEventHandlerFuncs{
 			DeleteFunc: func(obj interface{}) {
 				if kluster, ok := obj.(*kubernikus_v1.Kluster); ok {
