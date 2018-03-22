@@ -109,9 +109,6 @@ func (s *E2ETestSuite) TestGetClusterInfo() {
 
 // TestTerminateCluster tests kluster deletion and waits until the kluster is gone
 func (s *E2ETestSuite) TestTerminateCluster() {
-	// empty nodePools before terminating cluster
-	s.emptyNodePoolsOfKluster()
-
 	log.Printf("Testing kluster termination")
 
 	_, err := s.kubernikusClient.Operations.TerminateCluster(
