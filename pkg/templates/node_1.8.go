@@ -24,7 +24,6 @@ systemd:
         Description=Converged Cloud Metadata Agent
 
         [Service]
-        Type=oneshot
         ExecStart=/usr/bin/coreos-metadata --provider=openstack-metadata --attributes=/run/metadata/coreos --ssh-keys=core --hostname=/etc/hostname
 				Restart=on-failure
 				RestartSec=30
