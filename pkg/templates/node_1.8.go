@@ -346,7 +346,7 @@ storage:
             minSyncPeriod: 0s
             syncPeriod: 30s
           metricsBindAddress: 127.0.0.1:10249
-          mode: ""
+          mode: "iptables"
           oomScoreAdj: -999
           portRange: ""
           resourceContainer: /kube-proxy
