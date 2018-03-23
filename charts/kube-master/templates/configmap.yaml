@@ -14,7 +14,7 @@ data:
       - name: local
         cluster:
            certificate-authority: /etc/kubernetes/certs/tls-ca.pem
-           server: https://{{ include "master.fullname" . }}-apiserver
+           server: https://{{ include "master.fullname" . }}:6443
     contexts:
       - name: local
         context:
