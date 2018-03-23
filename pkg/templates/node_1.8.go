@@ -25,8 +25,8 @@ systemd:
 
         [Service]
         ExecStart=/usr/bin/coreos-metadata --provider=openstack-metadata --attributes=/run/metadata/coreos --ssh-keys=core --hostname=/etc/hostname
-				Restart=on-failure
-				RestartSec=30
+        Restart=on-failure
+        RestartSec=30
     - name: docker.service
       enable: true
       dropins:
