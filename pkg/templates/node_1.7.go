@@ -27,21 +27,6 @@ systemd:
         ExecStart=/usr/bin/coreos-metadata --provider=openstack-metadata --attributes=/run/metadata/coreos --ssh-keys=core --hostname=/etc/hostname
 				Restart=on-failure
 				RestartSec=30
-    - name: ccloud-metadata-hostname.service
-      enable: true
-      contents: |
-        [Unit]
-        Description=Workaround for coreos-metadata hostname bug
-        Requires=ccloud-metadata.service
-        After=ccloud-metadata.service
-
-        [Service]
-        Type=oneshot
-        EnvironmentFile=/run/metadata/coreos
-        ExecStart=/usr/bin/hostnamectl set-hostname ${COREOS_OPENSTACK_HOSTNAME}
-        
-        [Install]
-        WantedBy=multi-user.target
     - name: docker.service
       enable: true
       dropins:
