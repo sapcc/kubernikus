@@ -3,7 +3,7 @@ package main
 import "time"
 
 const (
-	Timeout       = 10 * time.Minute
+	Timeout       = 20 * time.Minute
 	CheckInterval = 10 * time.Second
 
 	TimeoutPod     = 5 * time.Minute

@@ -47,17 +47,19 @@ func NewSharedOpenstackClientFactory(secrets core_v1.SecretInterface, klusters c
 		logger:           logger,
 	}
 
-	klusters.AddEventHandler(cache.ResourceEventHandlerFuncs{
-		DeleteFunc: func(obj interface{}) {
-			if kluster, ok := obj.(*kubernikus_v1.Kluster); ok {
-				factory.logger.Log(
-					"msg", "deleting shared openstack client",
-					"kluster", kluster.Name,
-					"v", 5)
-				factory.klusterClients.Delete(kluster.GetUID())
-			}
-		},
-	})
+	if klusters != nil {
+		klusters.AddEventHandler(cache.ResourceEventHandlerFuncs{
+			DeleteFunc: func(obj interface{}) {
+				if kluster, ok := obj.(*kubernikus_v1.Kluster); ok {
+					factory.logger.Log(
+						"msg", "deleting shared openstack client",
+						"kluster", kluster.Name,
+						"v", 5)
+					factory.klusterClients.Delete(kluster.GetUID())
+				}
+			},
+		})
+	}
 
 	return factory
 }
@@ -97,7 +99,7 @@ func (f *factory) KlusterClientFor(kluster *kubernikus_v1.Kluster) (openstack_kl
 	}
 
 	var client openstack_kluster.KlusterClient
-	client = openstack_kluster.NewKlusterClient(identity, compute, network, kluster)
+	client = openstack_kluster.NewKlusterClient(network, compute, identity, kluster)
 	client = &openstack_kluster.LoggingClient{client, log.With(f.logger, "kluster", kluster.GetName(), "project", kluster.Account())}
 
 	f.klusterClients.Store(kluster.GetUID(), client)

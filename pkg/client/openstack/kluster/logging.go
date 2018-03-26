@@ -54,3 +54,31 @@ func (c LoggingClient) ListNodes(pool *models.NodePool) (nodes []Node, err error
 
 	return c.Client.ListNodes(pool)
 }
+
+func (c LoggingClient) SetSecurityGroup(nodeID string) (err error) {
+	defer func(begin time.Time) {
+		c.Logger.Log(
+			"msg", "setting security group",
+			"node_id", nodeID,
+			"took", time.Since(begin),
+			"v", 2,
+			"err", err,
+		)
+	}(time.Now())
+
+	return c.Client.SetSecurityGroup(nodeID)
+}
+
+func (c LoggingClient) EnsureKubernikusRuleInSecurityGroup() (created bool, err error) {
+	defer func(begin time.Time) {
+		c.Logger.Log(
+			"msg", "ensured securitygroup",
+			"created", created,
+			"took", time.Since(begin),
+			"v", 2,
+			"err", err,
+		)
+	}(time.Now())
+
+	return c.Client.EnsureKubernikusRuleInSecurityGroup()
+}
