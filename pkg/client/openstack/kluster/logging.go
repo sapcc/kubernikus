@@ -27,10 +27,11 @@ func (c LoggingClient) DeleteNode(id string) (err error) {
 	return c.Client.DeleteNode(id)
 }
 
-func (c LoggingClient) CreateNode(pool *models.NodePool, userData []byte) (id string, err error) {
+func (c LoggingClient) CreateNode(pool *models.NodePool, nodeName string, userData []byte) (id string, err error) {
 	defer func(begin time.Time) {
 		c.Logger.Log(
 			"msg", "created node",
+			"name", nodeName,
 			"id", id,
 			"took", time.Since(begin),
 			"v", 2,
@@ -38,7 +39,7 @@ func (c LoggingClient) CreateNode(pool *models.NodePool, userData []byte) (id st
 		)
 	}(time.Now())
 
-	return c.Client.CreateNode(pool, userData)
+	return c.Client.CreateNode(pool, nodeName, userData)
 }
 
 func (c LoggingClient) ListNodes(pool *models.NodePool) (nodes []Node, err error) {

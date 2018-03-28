@@ -43,8 +43,8 @@ type MockKlusterClient struct {
 	mock.Mock
 }
 
-func (m *MockKlusterClient) CreateNode(pool *models.NodePool, data []byte) (string, error) {
-	args := m.Called(pool, data)
+func (m *MockKlusterClient) CreateNode(pool *models.NodePool, nodeName string, data []byte) (string, error) {
+	args := m.Called(pool, nodeName, data)
 	return args.String(0), args.Error(1)
 }
 

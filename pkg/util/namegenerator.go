@@ -1,4 +1,4 @@
-package kluster
+package util
 
 import (
 	"fmt"
