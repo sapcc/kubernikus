@@ -53,9 +53,9 @@ func TestGenerateNode(t *testing.T) {
 		Data:       secretData,
 	}
 
-	for _, version := range []string{"1.7", "1.8", "1.9"} {
+	for _, version := range []string{"1.7", "1.8", "1.9", "1.10"} {
 		kluster.Spec.Version = version
-		data, err := Ignition.GenerateNode(&kluster, &secret, log.NewNopLogger())
+		data, err := Ignition.GenerateNode(&kluster, "test", &secret, log.NewNopLogger())
 		if assert.NoError(t, err, "Failed to generate node for version %s", version) {
 			//Ensure we rendered the expected template
 			assert.Contains(t, string(data), fmt.Sprintf("KUBELET_IMAGE_TAG=v%s", version))

@@ -21,7 +21,7 @@ const (
 	SERVICE_ACCOUNT    = "kube-dns"
 	CONFIGMAP          = "kube-dns"
 	DEFAULT_REPOSITORY = "gcr.io/google_containers"
-	DEFAULT_VERSION    = "1.14.7"
+	DEFAULT_VERSION    = "1.14.9"
 )
 
 var (

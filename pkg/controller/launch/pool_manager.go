@@ -188,12 +188,14 @@ func (cpm *ConcretePoolManager) CreateNode() (id string, err error) {
 		return "", err
 	}
 
-	userdata, err := templates.Ignition.GenerateNode(cpm.Kluster, secret, cpm.Logger)
+	nodeName := util.SimpleNameGenerator.GenerateName(fmt.Sprintf("%v-%v-", cpm.Kluster.Spec.Name, cpm.Pool.Name))
+
+	userdata, err := templates.Ignition.GenerateNode(cpm.Kluster, nodeName, secret, cpm.Logger)
 	if err != nil {
 		return "", err
 	}
 
-	id, err = cpm.klusterClient.CreateNode(cpm.Pool, userdata)
+	id, err = cpm.klusterClient.CreateNode(cpm.Pool, nodeName, userdata)
 	if err != nil {
 		return "", err
 	}

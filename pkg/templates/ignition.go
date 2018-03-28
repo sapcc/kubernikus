@@ -43,6 +43,8 @@ var passwordHashRounds = 1000000
 
 func (i *ignition) getIgnitionTemplate(kluster *kubernikusv1.Kluster) string {
 	switch {
+	case strings.HasPrefix(kluster.Spec.Version, "1.10"):
+		return Node_1_10
 	case strings.HasPrefix(kluster.Spec.Version, "1.9"):
 		return Node_1_9
 	case strings.HasPrefix(kluster.Spec.Version, "1.8"):
@@ -52,7 +54,7 @@ func (i *ignition) getIgnitionTemplate(kluster *kubernikusv1.Kluster) string {
 	}
 }
 
-func (i *ignition) GenerateNode(kluster *kubernikusv1.Kluster, secret *v1.Secret, logger log.Logger) ([]byte, error) {
+func (i *ignition) GenerateNode(kluster *kubernikusv1.Kluster, nodeName string, secret *v1.Secret, logger log.Logger) ([]byte, error) {
 	for _, field := range i.requiredNodeSecrets {
 		if _, ok := secret.Data[field]; !ok {
 			return nil, fmt.Errorf("Field %s missing in secret", field)
@@ -108,6 +110,7 @@ func (i *ignition) GenerateNode(kluster *kubernikusv1.Kluster, secret *v1.Secret
 		KubernikusImageTag                 string
 		LoginPassword                      string
 		LoginPublicKey                     string
+		NodeName                           string
 	}{
 		TLSCA:                              string(secret.Data["tls-ca.pem"]),
 		KubeletClientsCA:                   string(secret.Data["kubelet-clients-ca.pem"]),
@@ -131,6 +134,7 @@ func (i *ignition) GenerateNode(kluster *kubernikusv1.Kluster, secret *v1.Secret
 		KubernikusImageTag:                 version.GitCommit,
 		LoginPassword:                      passwordHash,
 		LoginPublicKey:                     kluster.Spec.SSHPublicKey,
+		NodeName:                           nodeName,
 	}
 
 	var dataOut []byte
