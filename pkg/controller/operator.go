@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/go-kit/kit/log"
+	"github.com/gophercloud/gophercloud/openstack/identity/v3/tokens"
 	api_v1 "k8s.io/api/core/v1"
 	apiextensionsclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	kubernetes_informers "k8s.io/client-go/informers"
@@ -20,6 +21,7 @@ import (
 	"github.com/sapcc/kubernikus/pkg/client/openstack"
 	"github.com/sapcc/kubernikus/pkg/controller/config"
 	"github.com/sapcc/kubernikus/pkg/controller/deorbit"
+	"github.com/sapcc/kubernikus/pkg/controller/flight"
 	"github.com/sapcc/kubernikus/pkg/controller/launch"
 	"github.com/sapcc/kubernikus/pkg/controller/nodeobservatory"
 	"github.com/sapcc/kubernikus/pkg/controller/routegc"
@@ -114,23 +116,31 @@ func NewKubernikusOperator(options *KubernikusOperatorOptions, logger log.Logger
 		return nil, fmt.Errorf("Couldn't create CRD: %s", err)
 	}
 
+	adminAuthOptions := &tokens.AuthOptions{
+		IdentityEndpoint: options.AuthURL,
+		Username:         options.AuthUsername,
+		Password:         options.AuthPassword,
+		DomainName:       options.AuthDomain,
+		AllowReauth:      true,
+		Scope: tokens.Scope{
+			ProjectName: options.AuthProject,
+			DomainName:  options.AuthProjectDomain,
+		},
+	}
+
 	o.Factories.Kubernikus = kubernikus_informers.NewFilteredSharedInformerFactory(o.Clients.Kubernikus, DEFAULT_RECONCILIATION, options.Namespace, nil)
 	o.Factories.Kubernetes = kubernetes_informers.NewFilteredSharedInformerFactory(o.Clients.Kubernetes, DEFAULT_RECONCILIATION, options.Namespace, nil)
 
 	secrets := o.Clients.Kubernetes.Core().Secrets(options.Namespace)
 	klusters := o.Factories.Kubernikus.Kubernikus().V1().Klusters().Informer()
 
-	o.Clients.Openstack = openstack.NewClient(secrets, klusters,
-		options.AuthURL,
-		options.AuthUsername,
-		options.AuthPassword,
-		options.AuthDomain,
-		options.AuthProject,
-		options.AuthProjectDomain,
-		logger,
-	)
+	o.Factories.Openstack = openstack.NewSharedOpenstackClientFactory(secrets, klusters, adminAuthOptions, logger)
 
 	o.Clients.Satellites = kube.NewSharedClientFactory(secrets, klusters, logger)
+	o.Clients.OpenstackAdmin, err = o.Factories.Openstack.AdminClient()
+	if err != nil {
+		return nil, fmt.Errorf("Couldn't create Openstack client: %v", err)
+	}
 
 	o.Factories.NodesObservatory = nodeobservatory.NewInformerFactory(o.Factories.Kubernikus.Kubernikus().V1().Klusters(), o.Clients.Satellites, logger)
 
@@ -161,9 +171,11 @@ func NewKubernikusOperator(options *KubernikusOperatorOptions, logger log.Logger
 		case "launchctl":
 			o.Config.Kubernikus.Controllers["launchctl"] = launch.NewController(1, o.Factories, o.Clients, recorder, logger)
 		case "routegc":
-			o.Config.Kubernikus.Controllers["routegc"] = routegc.New(60*time.Second, o.Factories.Kubernikus.Kubernikus().V1().Klusters(), o.Clients.Openstack, logger)
+			o.Config.Kubernikus.Controllers["routegc"] = routegc.New(60*time.Second, o.Factories, logger)
 		case "deorbiter":
 			o.Config.Kubernikus.Controllers["deorbiter"] = deorbit.NewController(10, o.Factories, o.Clients, recorder, logger)
+		case "flight":
+			o.Config.Kubernikus.Controllers["flight"] = flight.NewController(10, o.Factories, o.Clients, recorder, logger)
 		}
 	}
 

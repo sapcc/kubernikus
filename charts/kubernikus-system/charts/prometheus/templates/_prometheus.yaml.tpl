@@ -251,44 +251,6 @@ scrape_configs:
       target_label: __metrics_path__
       replacement: /api/v1/nodes/${1}:4194/proxy/metrics
 
-- job_name: 'blackbox-ingress'
-  metrics_path: /probe
-  params:
-    # Look for a HTTP 200 response per default.
-    # Can be overwritten by annotating the ingress resource with the expected return codes, e.g. `prometheus.io/probe_code: "4xx"`
-    module: [http_2xx]
-  kubernetes_sd_configs:
-  - role: ingress
-  relabel_configs:
-  # don't scrape yourself
-  - source_labels: [__meta_kubernetes_ingress_path]
-    regex: /prometheus
-    action: drop
-  - source_labels: [__meta_kubernetes_ingress_annotation_prometheus_io_probe]
-    action: keep
-    regex: true
-  # consider prometheus.io/probe_code annotation.
-  - source_labels: [__meta_kubernetes_ingress_annotation_prometheus_io_probe_code]
-    regex: (\b\w{3,})
-    replacement: http_${1}
-    target_label: __param_module
-  - source_labels: [__meta_kubernetes_ingress_scheme,__address__,__meta_kubernetes_ingress_path]
-    regex: (.+);(.+);(.+)
-    replacement: ${1}://${2}${3}
-    target_label: __param_target
-  - target_label: __address__
-    replacement: blackbox-exporter.kubernikus-system.svc:9115
-  - source_labels: [__param_target]
-    target_label: instance
-  - action: labelmap
-    regex: __meta_kubernetes_ingress_label_(.+)
-  - source_labels: [__meta_kubernetes_namespace]
-    target_label: kubernetes_namespace
-  - source_labels: [__meta_kubernetes_ingress_name]
-    target_label: kubernetes_name
-  - source_labels: [__meta_kubernetes_ingress_path]
-    target_label: path
-
 # Static Targets 
 #
 - job_name: 'kubernikus-prometheus'

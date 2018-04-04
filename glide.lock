@@ -1,5 +1,5 @@
-hash: 5a4f6ca3c667d683e8ecf32067a37bdd403f700ff5d6b23fdb58f5a541bae202
-updated: 2018-02-19T13:13:22.522337+01:00
+hash: e0de60b5a6bff8fecfdd8a8f8c08e5788a5346c107358963927fefa494890878
+updated: 2018-03-26T17:32:00.336884+02:00
 imports:
 - name: github.com/ajeddeloh/yaml
   version: 1072abfea31191db507785e2e0c1b8d1440d35a5
@@ -147,7 +147,7 @@ imports:
   - compiler
   - extensions
 - name: github.com/gophercloud/gophercloud
-  version: 3b177406222d4b76d93e90d6ab412e7b7dc160f4
+  version: c7ca48da8eafab13e1835090a1147e64cfc10174
   subpackages:
   - internal
   - openstack
@@ -261,10 +261,13 @@ imports:
   version: f62e98d28ab7ad31d707ba837a966378465c7b57
 - name: github.com/spf13/pflag
   version: 4c012f6dcd9546820e378d0bdda4d8fc772cdfea
+- name: github.com/stretchr/objx
+  version: 8a3f7159479fbc75b30357fbc48f380b7320f08e
 - name: github.com/stretchr/testify
   version: 12b6f73e6084dad08a7c6e575284b177ecafbc71
   subpackages:
   - assert
+  - mock
   - require
 - name: github.com/tredoe/osutil
   version: 7d3ee1afa71c90fd1514c8f557ae6c5f414208eb

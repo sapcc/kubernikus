@@ -25,7 +25,6 @@ import (
 	"github.com/sapcc/kubernikus/pkg/api/models"
 	"github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
 	"github.com/sapcc/kubernikus/pkg/client/kubernetes"
-	"github.com/sapcc/kubernikus/pkg/client/openstack"
 	"github.com/sapcc/kubernikus/pkg/controller/config"
 	"github.com/sapcc/kubernikus/pkg/controller/ground"
 	"github.com/sapcc/kubernikus/pkg/controller/metrics"
@@ -175,6 +174,7 @@ func (op *GroundControl) handler(key string) error {
 			"phase", kluster.Status.Phase,
 			"project", kluster.Account(),
 			"v", 5)
+
 		metrics.SetMetricKlusterInfo(kluster.GetNamespace(), kluster.GetName(), kluster.Status.Version, kluster.Spec.Openstack.ProjectID, kluster.GetAnnotations(), kluster.GetLabels())
 		metrics.SetMetricKlusterStatusPhase(kluster.GetName(), kluster.Status.Phase)
 
@@ -363,7 +363,7 @@ func (op *GroundControl) createKluster(kluster *v1.Kluster) error {
 		return fmt.Errorf("Couldn't determine access mode for pvc: %s", err)
 	}
 
-	apiURL, err := op.Clients.Openstack.GetKubernikusCatalogEntry()
+	apiURL, err := op.Clients.OpenstackAdmin.GetKubernikusCatalogEntry()
 	if err != nil {
 		return fmt.Errorf("Couldn't determine kubernikus api from service catalog: %s", err)
 	}
@@ -379,7 +379,7 @@ func (op *GroundControl) createKluster(kluster *v1.Kluster) error {
 		return fmt.Errorf("Failed to generate password: %s", err)
 	}
 	domain := "kubernikus"
-	region, err := op.Clients.Openstack.GetRegion()
+	region, err := op.Clients.OpenstackAdmin.GetRegion()
 	if err != nil {
 		return err
 	}
@@ -394,7 +394,7 @@ func (op *GroundControl) createKluster(kluster *v1.Kluster) error {
 		"kluster", kluster.GetName(),
 		"project", kluster.Account())
 
-	if err := op.Clients.Openstack.CreateKlusterServiceUser(
+	if err := op.Clients.OpenstackAdmin.CreateKlusterServiceUser(
 		username,
 		password,
 		domain,
@@ -445,7 +445,7 @@ func (op *GroundControl) terminateKluster(kluster *v1.Kluster) error {
 			"username", username,
 			"domain", domain)
 
-		if err := op.Clients.Openstack.DeleteUser(username, domain); err != nil {
+		if err := op.Clients.OpenstackAdmin.DeleteUser(username, domain); err != nil {
 			return err
 		}
 	}
@@ -464,6 +464,7 @@ func (op *GroundControl) terminateKluster(kluster *v1.Kluster) error {
 		return err
 	}
 
+	// TODO: remove if all control-planes are running k8s 1.8+
 	// There's a bug in the garbage-collector regarding CRDs in 1.7. It will not delete
 	// the CRD even though all Finalizers are gone. As a workaround, here we try to just
 	// delte the kluster again.
@@ -479,10 +480,12 @@ func (op *GroundControl) terminateKluster(kluster *v1.Kluster) error {
 		Do().
 		Error()
 
-	if err == nil {
-		waitutil.WaitForKlusterDeletion(kluster, op.klusterInformer.Informer().GetIndexer())
+	if err != nil && !apierrors.IsNotFound(err) {
+		return err
 	}
-	return err
+
+	waitutil.WaitForKlusterDeletion(kluster, op.klusterInformer.Informer().GetIndexer())
+	return nil
 }
 
 func (op *GroundControl) requiresOpenstackInfo(kluster *v1.Kluster) bool {
@@ -532,11 +535,6 @@ func (op *GroundControl) discoverOpenstackInfo(kluster *v1.Kluster) error {
 		"project", kluster.Account(),
 		"v", 5)
 
-	routers, err := op.Clients.Openstack.GetRouters(kluster.Account())
-	if err != nil {
-		return err
-	}
-
 	if kluster.Spec.Openstack.ProjectID == "" {
 		kluster.Spec.Openstack.ProjectID = kluster.Account()
 		op.Logger.Log(
@@ -546,12 +544,21 @@ func (op *GroundControl) discoverOpenstackInfo(kluster *v1.Kluster) error {
 			"project", kluster.Account())
 	}
 
-	var selectedRouter *openstack.Router
+	client, err := op.Factories.Openstack.ProjectAdminClientFor(kluster.Spec.Openstack.ProjectID)
+	if err != nil {
+		return err
+	}
 
+	metadata, err := client.GetMetadata()
+	if err != nil {
+		return err
+	}
+
+	var selectedRouter *models.Router
 	if routerID := kluster.Spec.Openstack.RouterID; routerID != "" {
-		for _, router := range routers {
+		for _, router := range metadata.Routers {
 			if router.ID == routerID {
-				selectedRouter = &router
+				selectedRouter = router
 				break
 			}
 		}
@@ -559,8 +566,8 @@ func (op *GroundControl) discoverOpenstackInfo(kluster *v1.Kluster) error {
 			return fmt.Errorf("Specified router %s not found in project", routerID)
 		}
 	} else {
-		if numRouters := len(routers); numRouters == 1 {
-			selectedRouter = &routers[0]
+		if numRouters := len(metadata.Routers); numRouters == 1 {
+			selectedRouter = metadata.Routers[0]
 			op.Logger.Log(
 				"msg", "discovered RouterID",
 				"id", selectedRouter.ID,
@@ -573,12 +580,11 @@ func (op *GroundControl) discoverOpenstackInfo(kluster *v1.Kluster) error {
 	}
 
 	//we have a router beyond this point
-	var selectedNetwork *openstack.Network
-
+	var selectedNetwork *models.Network
 	if networkID := kluster.Spec.Openstack.NetworkID; networkID != "" {
 		for _, network := range selectedRouter.Networks {
 			if network.ID == networkID {
-				selectedNetwork = &network
+				selectedNetwork = network
 				break
 			}
 		}
@@ -587,7 +593,7 @@ func (op *GroundControl) discoverOpenstackInfo(kluster *v1.Kluster) error {
 		}
 	} else {
 		if numNetworks := len(selectedRouter.Networks); numNetworks == 1 {
-			selectedNetwork = &selectedRouter.Networks[0]
+			selectedNetwork = selectedRouter.Networks[0]
 			kluster.Spec.Openstack.NetworkID = selectedNetwork.ID
 			op.Logger.Log(
 				"msg", "discovered NetworkID",
@@ -641,11 +647,24 @@ func (op *GroundControl) discoverOpenstackInfo(kluster *v1.Kluster) error {
 		}
 	}
 
-	if kluster.Spec.Openstack.SecurityGroupName == "" {
+	if secGroupName := kluster.Spec.Openstack.SecurityGroupName; secGroupName != "" {
+		found := false
+		for _, sg := range metadata.SecurityGroups {
+			if sg.Name == secGroupName {
+				found = true
+				break
+			}
+		}
+		if !found {
+			return fmt.Errorf("Selected security group %s not found in project", secGroupName)
+		}
+	} else {
 		kluster.Spec.Openstack.SecurityGroupName = "default"
-	}
-	if _, err := op.Clients.Openstack.GetSecurityGroupID(kluster.Account(), kluster.Spec.Openstack.SecurityGroupName); err != nil {
-		return fmt.Errorf("Security group %s invalid: ", err)
+		op.Logger.Log(
+			"msg", "discovered SecurityGroup",
+			"name", "default",
+			"kluster", kluster.GetName(),
+			"project", kluster.Account())
 	}
 
 	return nil

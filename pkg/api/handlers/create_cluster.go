@@ -1,6 +1,9 @@
 package handlers
 
 import (
+	"errors"
+	"net"
+
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/validate"
 
@@ -11,15 +14,18 @@ import (
 	"github.com/sapcc/kubernikus/pkg/api/models"
 	"github.com/sapcc/kubernikus/pkg/api/rest/operations"
 	"github.com/sapcc/kubernikus/pkg/apis/kubernikus"
+	"github.com/sapcc/kubernikus/pkg/util/ip"
 	k8sutil "github.com/sapcc/kubernikus/pkg/util/k8s"
 )
 
 func NewCreateCluster(rt *api.Runtime) operations.CreateClusterHandler {
-	return &createCluster{rt}
+	return &createCluster{Runtime: rt}
 }
 
 type createCluster struct {
 	*api.Runtime
+	cpServiceCIDR *net.IPNet
+	cpClusterCIDR *net.IPNet
 }
 
 func (d *createCluster) Handle(params operations.CreateClusterParams, principal *models.Principal) middleware.Responder {
@@ -48,6 +54,17 @@ func (d *createCluster) Handle(params operations.CreateClusterParams, principal 
 		return NewErrorResponse(&operations.CreateClusterDefault{}, 400, err.Error())
 	}
 
+	//Ensure that the service CIDR range does not overlap with any control plane CIDR
+	//Otherwise the wormhole server will prevent the kluster apiserver from functioning properly
+	if overlap, err := d.overlapWithControlPlane(kluster.Spec.ServiceCIDR); overlap {
+		return NewErrorResponse(&operations.CreateClusterDefault{}, 409, "Service CIDR %s not allowed: %s", kluster.Spec.ServiceCIDR, err)
+	}
+	//Ensure that the cluster CIDR range does not overlap with any control plane CIDR
+	//Otherwise the wormhole server will prevent the kluster apiserver from functioning properly
+	if overlap, err := d.overlapWithControlPlane(kluster.Spec.ClusterCIDR); overlap {
+		return NewErrorResponse(&operations.CreateClusterDefault{}, 409, "Cluster CIDR %s not allowed: %s", kluster.Spec.ClusterCIDR, err)
+	}
+
 	kluster.ObjectMeta = metav1.ObjectMeta{
 		Name:        qualifiedName(name, principal.Account),
 		Labels:      map[string]string{"account": principal.Account},
@@ -70,4 +87,55 @@ func (d *createCluster) Handle(params operations.CreateClusterParams, principal 
 	}
 
 	return operations.NewCreateClusterCreated().WithPayload(klusterFromCRD(kluster))
+}
+
+func (d *createCluster) overlapWithControlPlane(cidr string) (bool, error) {
+	_, inputCIDR, err := net.ParseCIDR(cidr)
+	if err != nil {
+		return false, err
+	}
+	clusterCIDR := d.controlPlaneClusterCIDR()
+	if clusterCIDR != nil && ip.CIDROverlap(inputCIDR, clusterCIDR) {
+		return true, errors.New("overlap with control plane cluster CIDR")
+	}
+	svcCIDR := d.controlPlaneServiceCIDR()
+	if svcCIDR != nil && ip.CIDROverlap(inputCIDR, svcCIDR) {
+		return true, errors.New("overlap with control plane service CIDR")
+	}
+	return false, nil
+}
+
+//approximate the control plane service CIDR by getting one service IP and assuming a /17 prefix
+func (d *createCluster) controlPlaneServiceCIDR() *net.IPNet {
+	if d.cpServiceCIDR != nil {
+		return d.cpServiceCIDR
+	}
+	svc, err := d.Kubernetes.Core().Services("default").Get("kubernetes", metav1.GetOptions{})
+	if err != nil {
+		return nil
+	}
+	_, ipnet, err := net.ParseCIDR(svc.Spec.ClusterIP + "/17")
+	if err != nil {
+		return nil
+	}
+	d.cpServiceCIDR = ipnet
+	return d.cpServiceCIDR
+}
+
+//we infer the clusterCIDR by taking a Pod IP and assuming /16
+func (d *createCluster) controlPlaneClusterCIDR() *net.IPNet {
+	if d.cpClusterCIDR != nil {
+		return d.cpClusterCIDR
+	}
+	podList, err := d.Kubernetes.Core().Pods(metav1.NamespaceAll).List(metav1.ListOptions{Limit: 1})
+	if err != nil || len(podList.Items) == 0 {
+		return nil
+	}
+	_, ipnet, err := net.ParseCIDR(podList.Items[0].Status.PodIP + "/16")
+
+	if err != nil {
+		return nil
+	}
+	d.cpClusterCIDR = ipnet
+	return d.cpClusterCIDR
 }

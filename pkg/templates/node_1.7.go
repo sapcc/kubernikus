@@ -24,23 +24,9 @@ systemd:
         Description=Converged Cloud Metadata Agent
 
         [Service]
-        Type=oneshot
         ExecStart=/usr/bin/coreos-metadata --provider=openstack-metadata --attributes=/run/metadata/coreos --ssh-keys=core --hostname=/etc/hostname
-    - name: ccloud-metadata-hostname.service
-      enable: true
-      contents: |
-        [Unit]
-        Description=Workaround for coreos-metadata hostname bug
-        Requires=ccloud-metadata.service
-        After=ccloud-metadata.service
-
-        [Service]
-        Type=oneshot
-        EnvironmentFile=/run/metadata/coreos
-        ExecStart=/usr/bin/hostnamectl set-hostname ${COREOS_OPENSTACK_HOSTNAME}
-        
-        [Install]
-        WantedBy=multi-user.target
+        Restart=on-failure
+        RestartSec=30
     - name: docker.service
       enable: true
       dropins:
@@ -83,6 +69,7 @@ systemd:
           --cluster-domain={{ .ClusterDomain }} \
           --client-ca-file=/etc/kubernetes/certs/kubelet-clients-ca.pem \
           --non-masquerade-cidr=0.0.0.0/0 \
+          --read-only-port=0 \
           --anonymous-auth=false
         ExecStop=-/usr/bin/rkt stop --uuid-file=/var/run/kubelet-pod.uuid
         Restart=always
@@ -156,7 +143,7 @@ systemd:
       contents: |
         [Unit]
         Description=Update the certificates w/ self-signed root CAs
-        ConditionPathIsSymbolicLink=!/etc/ssl/certs/48b11003.0
+        ConditionPathIsSymbolicLink=!/etc/ssl/certs/381107d7.0
         Before=early-docker.service docker.service
         [Service]
         ExecStart=/usr/sbin/update-ca-certificates
@@ -234,8 +221,8 @@ storage:
           :INPUT ACCEPT [0:0]
           :OUTPUT ACCEPT [0:0]
           :POSTROUTING ACCEPT [0:0]
-          -A POSTROUTING -p tcp ! -d {{ .ClusterCIDR }} -m addrtype ! --dst-type LOCAL -j MASQUERADE --to-ports 32678-65535
-          -A POSTROUTING -p udp ! -d {{ .ClusterCIDR }} -m addrtype ! --dst-type LOCAL -j MASQUERADE --to-ports 32678-65535
+          -A POSTROUTING -p tcp ! -d {{ .ClusterCIDR }} -m addrtype ! --dst-type LOCAL -j MASQUERADE --to-ports 32768-65535
+          -A POSTROUTING -p udp ! -d {{ .ClusterCIDR }} -m addrtype ! --dst-type LOCAL -j MASQUERADE --to-ports 32768-65535
           -A POSTROUTING -p icmp ! -d {{ .ClusterCIDR }} -m addrtype ! --dst-type LOCAL -j MASQUERADE
           COMMIT
     - path: /etc/sysctl.d/10-enable-icmp-redirects.conf
@@ -349,7 +336,7 @@ storage:
             minSyncPeriod: 0s
             syncPeriod: 30s
           metricsBindAddress: 127.0.0.1:10249
-          mode: ""
+          mode: "iptables"
           oomScoreAdj: -999
           portRange: ""
           resourceContainer: /kube-proxy

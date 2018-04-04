@@ -80,52 +80,6 @@ func getNodePoolSizeFromSpec(nodePoolsSpec []models.NodePool, name string) int64
 	return -1
 }
 
-func (s *E2ETestSuite) emptyNodePoolsOfKluster() {
-
-	log.Printf("stopping all nodes of cluster %v", s.ClusterName)
-
-	cluster, err := s.kubernikusClient.Operations.ShowCluster(
-		operations.NewShowClusterParams().WithName(s.ClusterName),
-		s.authFunc(),
-	)
-	s.handleError(err)
-
-	nodePools := []models.NodePool{}
-	for _, nodePool := range cluster.Payload.Spec.NodePools {
-		nodePool.Size = 0
-		nodePools = append(nodePools, nodePool)
-	}
-	cluster.Payload.Spec.NodePools = nodePools
-
-	// empty node pools
-	_, err = s.kubernikusClient.Operations.UpdateCluster(
-		operations.NewUpdateClusterParams().
-			WithName(s.ClusterName).
-			WithBody(cluster.Payload),
-		s.authFunc(),
-	)
-	s.handleError(err)
-
-	err = s.waitForCluster(
-		s.ClusterName,
-		fmt.Sprintf("Not all nodes of cluster %v could be terminated in time", s.ClusterName),
-		func(k *models.Kluster, err error) bool {
-			if err != nil {
-				log.Println(err)
-				return false
-			}
-			for _, node := range k.Status.NodePools {
-				if node.Running != 0 {
-					log.Printf("Cluster %v has nodes in state running", k.Name)
-					return false
-				}
-			}
-			return true
-		},
-	)
-	s.handleError(err)
-}
-
 func newE2ECluster(klusterName string) *models.Kluster {
 	return &models.Kluster{
 		Name: klusterName,
@@ -216,15 +170,14 @@ func (s *E2ETestSuite) handleError(err error) {
 		return
 	}
 	log.Print(err)
-	// cleanup
-	//if !s.IsNoTeardown {
-	//  s.tearDownCluster()
-	//}
+	// Uncomment this to disabled auto-cleanup
+	if !s.IsNoTeardown {
+		s.tearDownCluster()
+	}
 	os.Exit(1)
 }
 
 func (s *E2ETestSuite) tearDownCluster() {
-	s.emptyNodePoolsOfKluster()
 	log.Printf("Deleting cluster %v", s.ClusterName)
 
 	_, err := s.kubernikusClient.Operations.TerminateCluster(

@@ -81,6 +81,12 @@ spec:
             - --service-account-private-key-file=/etc/kubernetes/certs/apiserver-clients-ca-key.pem
             - --service-cluster-ip-range={{ .Values.serviceCIDR }}
             - --use-service-account-credentials
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 10252
+            initialDelaySeconds: 120
+            timeoutSeconds: 1
           volumeMounts:
             - mountPath: /etc/kubernetes/certs/
               name: certs

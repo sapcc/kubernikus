@@ -54,7 +54,7 @@ func main() {
 		log.Fatal(err)
 	}
 	if resp.StatusCode >= 400 {
-		log.Fatal("Failed to fetch Gopkg.lock: %s", resp.Status)
+		log.Fatalf("Failed to fetch Gopkg.lock: %s", resp.Status)
 	}
 
 	var deps Deps

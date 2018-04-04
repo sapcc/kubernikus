@@ -20,3 +20,4 @@ data:
     president:
       resync_period_minutes: {{ default 4 .Values.president.resync_period_minutes }}
       certificate_check_interval_minutes: {{ default 10 .Values.president.certificate_check_interval_minutes }}
+      rate_limit: {{ default 4 .Values.president.rate_limit }}
