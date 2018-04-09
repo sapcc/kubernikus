@@ -5,11 +5,11 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/databus23/guttle/group"
+	"github.com/oklog/run"
 )
 
-func Runner() *group.Group {
-	var g group.Group
+func Runner() *run.Group {
+	var g run.Group
 
 	sigs := make(chan os.Signal, 1)
 

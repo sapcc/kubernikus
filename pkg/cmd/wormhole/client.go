@@ -1,26 +1,13 @@
 package wormhole
 
 import (
-	"crypto/tls"
-	"crypto/x509"
-	"fmt"
-	"net"
-	"net/url"
-	"os"
-	"os/signal"
-	"strings"
-	"syscall"
-	"time"
-
-	"github.com/databus23/guttle"
 	"github.com/go-kit/kit/log"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
-	"k8s.io/client-go/tools/clientcmd"
-	"k8s.io/client-go/tools/clientcmd/api"
 
 	"github.com/sapcc/kubernikus/pkg/cmd"
 	logutil "github.com/sapcc/kubernikus/pkg/util/log"
+	"github.com/sapcc/kubernikus/pkg/wormhole/client"
 )
 
 func NewClientCommand() *cobra.Command {
@@ -42,15 +29,18 @@ func NewClientCommand() *cobra.Command {
 }
 
 type ClientOptions struct {
-	KubeConfig string
-	Server     string
-	Context    string
-	ListenAddr string
+	KubeConfig  string
+	Server      string
+	Context     string
+	ListenAddr  string
+	NodeName    string
+	HealthCheck bool
 }
 
 func NewClientOptions() *ClientOptions {
 	return &ClientOptions{
-		ListenAddr: "198.18.128.1:6443",
+		ListenAddr:  "198.18.128.1:6443",
+		HealthCheck: true,
 	}
 }
 
@@ -59,6 +49,8 @@ func (o *ClientOptions) BindFlags(flags *pflag.FlagSet) {
 	flags.StringVar(&o.Server, "server", o.Server, "Tunnel Server endpoint (host:port)")
 	flags.StringVar(&o.ListenAddr, "listen", o.ListenAddr, "Listen address for accepting tunnel requests")
 	flags.StringVar(&o.Context, "context", o.Context, "Kubeconfig context to use. (default: current-context)")
+	flags.StringVar(&o.NodeName, "node-name", o.NodeName, "Name of this node. (default: os.Hostname)")
+	flags.BoolVar(&o.HealthCheck, "health-check", o.HealthCheck, "Run the health checker (default: true)")
 }
 
 func (o *ClientOptions) Validate(c *cobra.Command, args []string) error {
@@ -73,95 +65,35 @@ func (o *ClientOptions) Run(c *cobra.Command) error {
 	logger := logutil.NewLogger(c.Flags())
 	logger = log.With(logger, "wormhole", "client")
 
-	sigs := make(chan os.Signal, 1)
-	signal.Notify(sigs, os.Interrupt, syscall.SIGTERM) // Push signals into channel
-
-	config, err := clientcmd.LoadFromFile(o.KubeConfig)
-	if err != nil {
-		return fmt.Errorf("Failed to load kubeconfig file %#v: %s", o.KubeConfig, err)
-	}
-	err = api.FlattenConfig(config)
+	guttleClient, err := client.New(o.KubeConfig, o.Context, o.Server, o.ListenAddr, logger)
 	if err != nil {
 		return err
 	}
-	contextName := config.CurrentContext
-	if contextName == "" {
-		contextName = o.Context
-	}
-	if contextName == "" {
-		return fmt.Errorf("No context given")
-	}
 
-	context, found := config.Contexts[contextName]
-	if !found {
-		return fmt.Errorf("Context %s not found", contextName)
-	}
+	group := cmd.Runner()
+	group.Add(
+		func() error {
+			return guttleClient.Start()
+		},
+		func(err error) {
+			guttleClient.Stop()
+		})
 
-	cluster, found := config.Clusters[context.Cluster]
-	if !found {
-		return fmt.Errorf("Cluster not found %s", context.Cluster)
-	}
-
-	authInfo, found := config.AuthInfos[context.AuthInfo]
-	if !found {
-		return fmt.Errorf("No auth info found for context %s", context.AuthInfo)
-	}
-	cert := authInfo.ClientCertificateData
-	key := authInfo.ClientKeyData
-
-	ca := cluster.CertificateAuthorityData
-
-	var rootCAs *x509.CertPool
-	if ca != nil {
-		rootCAs = x509.NewCertPool()
-		if !rootCAs.AppendCertsFromPEM(ca) {
-			return fmt.Errorf("Failed to load any certs from %s", ca)
-		}
-	}
-	certificate, err := tls.X509KeyPair(cert, key)
-	if err != nil {
-		return fmt.Errorf("Failed to load certificate/key: %s", err)
-	}
-
-	serverAddr := o.Server
-	if serverAddr == "" {
-		url, err := url.Parse(cluster.Server)
+	if o.HealthCheck {
+		healthChecker, err := client.NewHealthChecker(o.KubeConfig, o.Context, o.NodeName, logger)
 		if err != nil {
 			return err
 		}
-		c := strings.Split(url.Hostname(), ".")
-		//Add "-t" to first component of hostname
-		c[0] = fmt.Sprintf("%s-wormhole", c[0])
-		serverAddr = fmt.Sprintf("%s:%s", strings.Join(c, "."), "443")
-	}
+		closeCh := make(chan struct{}, 0)
 
-	opts := guttle.ClientOptions{
-		ServerAddr: serverAddr,
-		ListenAddr: o.ListenAddr,
-		Dial: func(network, address string) (net.Conn, error) {
-			dialer := &net.Dialer{Timeout: 10 * time.Second}
-			conn, err := tls.DialWithDialer(dialer, network, address, &tls.Config{
-				RootCAs:      rootCAs,
-				Certificates: []tls.Certificate{certificate},
+		group.Add(
+			func() error {
+				return healthChecker.Start(closeCh)
+			},
+			func(err error) {
+				close(closeCh)
 			})
-			if err != nil {
-				logger.Log(
-					"msg", "failed to open connection",
-					"address", address,
-					"err", err)
-			}
-			return conn, err
-		},
 	}
 
-	client := guttle.NewClient(&opts)
-
-	go func() {
-		<-sigs
-		logger.Log("msg", "Shutting down...")
-		client.Stop()
-	}()
-	return client.Start()
-
-	return nil
+	return group.Run()
 }
