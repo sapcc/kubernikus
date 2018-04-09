@@ -94,13 +94,13 @@ func (c *klusterClient) DeleteNode(id string) (err error) {
 }
 
 func (c *klusterClient) ListNodes(pool *models.NodePool) (nodes []Node, err error) {
-	obj, exists, err := c.NodeStore.Get(cachedNodesEntry{c.Kluster, pool, nil})
-	if err != nil {
-		return nil, err
-	}
-	if exists {
-		return obj.(cachedNodesEntry).Nodes, nil
-	}
+	//obj, exists, err := c.NodeStore.Get(cachedNodesEntry{c.Kluster, pool, nil})
+	//if err != nil {
+	//  return nil, err
+	//}
+	//if exists {
+	//  return obj.(cachedNodesEntry).Nodes, nil
+	//}
 
 	prefix := fmt.Sprintf("%v-%v-", c.Kluster.Spec.Name, pool.Name)
 	err = servers.List(c.ComputeClient, servers.ListOpts{Name: prefix}).EachPage(func(page pagination.Page) (bool, error) {
@@ -114,10 +114,10 @@ func (c *klusterClient) ListNodes(pool *models.NodePool) (nodes []Node, err erro
 		return nil, err
 	}
 
-	err = c.NodeStore.Add(cachedNodesEntry{c.Kluster, pool, nodes})
-	if err != nil {
-		return nil, err
-	}
+	//err = c.NodeStore.Add(cachedNodesEntry{c.Kluster, pool, nodes})
+	//if err != nil {
+	//  return nil, err
+	//}
 
 	return nodes, nil
 }
