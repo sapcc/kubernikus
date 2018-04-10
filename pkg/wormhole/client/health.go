@@ -104,7 +104,7 @@ func (hc *healthChecker) reconcile() error {
 		newCondition.Status = v1.ConditionTrue
 		newCondition.Reason = "RedirectFailed"
 		if !IsNodeRouteBroken(node) {
-			newCondition.LastHeartbeatTime = meta_v1.NewTime(time.Now())
+			newCondition.LastTransitionTime = meta_v1.NewTime(time.Now())
 		}
 	}
 
