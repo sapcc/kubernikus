@@ -220,6 +220,8 @@ imports:
   - pbutil
 - name: github.com/mitchellh/mapstructure
   version: 06020f85339e21b2478f756a78e295255ffa4d6a
+- name: github.com/oklog/run
+  version: 6934b124db28979da51d3470dadfa34d73d72652
 - name: github.com/peterbourgon/diskv
   version: 5f041e8faa004a95c88a202771f4cc3e991971e6
 - name: github.com/pkg/errors
@@ -288,14 +290,20 @@ imports:
 - name: golang.org/x/net
   version: 1c05540f6879653db88113bc4a2b70aec4bd491f
   subpackages:
+  - bpf
   - context
   - context/ctxhttp
   - html
   - html/atom
   - http2
   - http2/hpack
+  - icmp
   - idna
+  - internal/iana
+  - internal/socket
   - internal/timeseries
+  - ipv4
+  - ipv6
   - lex/httplex
   - trace
 - name: golang.org/x/sys
