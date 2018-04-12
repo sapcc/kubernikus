@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net"
-	"os"
 	"sync/atomic"
 	"time"
 
@@ -13,9 +12,10 @@ import (
 	"k8s.io/api/core/v1"
 	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
-	kubernetes_clientset "k8s.io/client-go/kubernetes"
+	typed_core_v1 "k8s.io/client-go/kubernetes/typed/core/v1"
 
 	"github.com/sapcc/kubernikus/pkg/client/kubernetes"
+	"github.com/sapcc/kubernikus/pkg/util"
 	"github.com/sapcc/kubernikus/pkg/util/icmp"
 	"github.com/sapcc/kubernikus/pkg/util/netutil"
 )
@@ -32,22 +32,19 @@ type healthChecker struct {
 	localIP  net.IP
 	listener *icmp.Listener
 	logger   kitlog.Logger
-	client   kubernetes_clientset.Interface
+	client   typed_core_v1.NodeInterface
 }
 
 func NewHealthChecker(kubeconfig, context, nodeNameOverride string, logger kitlog.Logger) (*healthChecker, error) {
 	var hc = healthChecker{logger: logger, nodeName: nodeNameOverride}
-	var err error
 
-	if hc.nodeName == "" {
-		if hc.nodeName, err = os.Hostname(); err != nil {
-			return nil, fmt.Errorf("node name not given and hostname unvailable")
-		}
-	}
-
-	if hc.client, err = kubernetes.NewClient(kubeconfig, context, logger); err != nil {
+	client, err := kubernetes.NewClient(kubeconfig, context, logger)
+	if err != nil {
 		return nil, fmt.Errorf("Failed to create kubernetes client: %s", err)
 	}
+	hc.client = client.CoreV1().Nodes()
+
+	hc.nodeName = nodeNameOverride
 
 	interfaceName, err := netutil.DefaultInterfaceName()
 	if err != nil {
@@ -87,14 +84,29 @@ func (hc *healthChecker) reconcile() error {
 		return fmt.Errorf("Interface cbr0 not found: %s", err)
 	}
 
-	node, err := hc.client.CoreV1().Nodes().Get(hc.nodeName, meta_v1.GetOptions{})
+	nodeName, err := hc.myNodeName()
 	if err != nil {
-		return fmt.Errorf("Couldn't get node %s from api: %s", hc.nodeName, err)
+		return fmt.Errorf("Failed to discover own node name: %s", err)
 	}
-	success := checkRedirect(hc.listener, hc.localIP, destinationIP)
+
+	node, err := hc.client.Get(nodeName, meta_v1.GetOptions{})
+	if err != nil {
+		return fmt.Errorf("Couldn't get node %s from api: %s", nodeName, err)
+	}
+
 	newCondition := v1.NodeCondition{Type: NodeRouteBroken}
 
-	if success {
+	backoff := wait.Backoff{Duration: 1 * time.Second, Jitter: 0.2, Steps: 1, Factor: 2}
+	//If the Node was previously working we retry a few times
+	if !IsNodeRouteBroken(node) {
+		backoff.Steps = 3
+	}
+
+	err = wait.ExponentialBackoff(backoff, func() (bool, error) {
+		return checkRedirect(hc.listener, hc.localIP, destinationIP), nil
+	})
+
+	if err == nil {
 		newCondition.Status = v1.ConditionFalse
 		newCondition.Reason = "RedirectOK"
 		if IsNodeRouteBroken(node) {
@@ -108,15 +120,15 @@ func (hc *healthChecker) reconcile() error {
 		}
 	}
 
-	if err := hc.SetConditions([]v1.NodeCondition{newCondition}); err != nil {
-		return fmt.Errorf("Failed to update node condition: %s", err)
+	if err := hc.SetConditions([]v1.NodeCondition{newCondition}, nodeName); err != nil {
+		return fmt.Errorf("Failed to update condition for node %s: %s", nodeName, err)
 	}
-	hc.logger.Log("check", newCondition.Type, "status", newCondition.Status, "v", 2)
+	hc.logger.Log("node", nodeName, "check", newCondition.Type, "status", newCondition.Status, "v", 2)
 
 	return nil
 }
 
-func (hc *healthChecker) SetConditions(newConditions []v1.NodeCondition) error {
+func (hc *healthChecker) SetConditions(newConditions []v1.NodeCondition, node string) error {
 	for i := range newConditions {
 		// Each time we update the conditions, we update the heart beat time
 		newConditions[i].LastHeartbeatTime = meta_v1.NewTime(time.Now())
@@ -125,8 +137,24 @@ func (hc *healthChecker) SetConditions(newConditions []v1.NodeCondition) error {
 	if err != nil {
 		return err
 	}
-	_, err = hc.client.CoreV1().Nodes().PatchStatus(hc.nodeName, patch)
+	_, err = hc.client.PatchStatus(node, patch)
 	return err
+}
+
+func (hc *healthChecker) myNodeName() (string, error) {
+	if hc.nodeName != "" {
+		return hc.nodeName, nil
+	}
+	list, err := hc.client.List(meta_v1.ListOptions{})
+	if err != nil {
+		return "", err
+	}
+	me, err := util.ThisNode(list.Items)
+	if err != nil {
+		return "", err
+	}
+	hc.nodeName = me.Name
+	return hc.nodeName, nil
 }
 
 func checkRedirect(listener *icmp.Listener, expectedNextHop, dest net.IP) bool {

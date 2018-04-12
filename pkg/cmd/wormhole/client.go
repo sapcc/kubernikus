@@ -49,7 +49,7 @@ func (o *ClientOptions) BindFlags(flags *pflag.FlagSet) {
 	flags.StringVar(&o.Server, "server", o.Server, "Tunnel Server endpoint (host:port)")
 	flags.StringVar(&o.ListenAddr, "listen", o.ListenAddr, "Listen address for accepting tunnel requests")
 	flags.StringVar(&o.Context, "context", o.Context, "Kubeconfig context to use. (default: current-context)")
-	flags.StringVar(&o.NodeName, "node-name", o.NodeName, "Name of this node. (default: os.Hostname)")
+	flags.StringVar(&o.NodeName, "node-name", o.NodeName, "Override the node name used for reporting health")
 	flags.BoolVar(&o.HealthCheck, "health-check", o.HealthCheck, "Run the health checker (default: true)")
 }
 
