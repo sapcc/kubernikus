@@ -47,8 +47,10 @@ systemd:
           --net=host \
           --volume var-lib-cni,kind=host,source=/var/lib/cni \
           --volume var-log,kind=host,source=/var/log \
+          --volume etc-machine-id,kind=host,source=/etc/machine-id,readOnly=true \
           --mount volume=var-lib-cni,target=/var/lib/cni \
-          --mount volume=var-log,target=/var/log"
+          --mount volume=var-log,target=/var/log" \
+          --mount volume=etc-machine-id,target=/etc/machine-id
         Environment="KUBELET_IMAGE_TAG=v1.8.5_coreos.0"
         Environment="KUBELET_IMAGE_URL=quay.io/coreos/hyperkube"
         ExecStartPre=/bin/mkdir -p /etc/kubernetes/manifests
