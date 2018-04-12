@@ -136,7 +136,7 @@ auth_e2e_qa-de-1: &auth_e2e_qa-de-1
   OS_USER_DOMAIN_NAME: ccadmin
   OS_PROJECT_NAME: kubernikus-e2e
   OS_PROJECT_DOMAIN_NAME: ccadmin
-  KUBERNIKUS_NAME: e2e_qa-de-1
+  KUBERNIKUS_NAME: e2e
   KUBERNIKUS_URL: https://kubernikus.qa-de-1.cloud.sap
 
 resources:
