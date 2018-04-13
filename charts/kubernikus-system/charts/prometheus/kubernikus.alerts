@@ -36,18 +36,6 @@ groups:
     annotations:
       description: "{{ $labels.instance }} is unavailable"
       summary: "{{ $labels.instance }} is unavailable"
-  
-  - alert: BackendUnavailable
-    expr: probe_success{kubernetes_name!="kubernikus-api"} != 1
-    for: 10m
-    labels:
-      tier: kubernikus
-      service: kubernikus
-      severity: info
-      context: undecided
-    annotations:
-      description: "{{ $labels.instance }} is unavailable"
-      summary: "{{ $labels.instance }} is unavailable"
 
 - name: operator.alerts
   rules:
