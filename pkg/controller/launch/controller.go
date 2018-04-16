@@ -72,6 +72,9 @@ func NewController(threadiness int, factories config.Factories, clients config.C
 }
 
 func (lr *LaunchReconciler) Reconcile(kluster *v1.Kluster) (requeue bool, err error) {
+	if kluster.Disabled() {
+		return false, nil
+	}
 	switch kluster.Status.Phase {
 	case models.KlusterPhaseCreating:
 		util.EnsureFinalizerCreated(lr.Kubernikus.Kubernikus(), lr.klusterInformer.Lister(), kluster, LaunchctlFinalizer)
