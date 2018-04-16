@@ -2,3 +2,4 @@ project=kubernikus
 user=sapcc
 exclude_tags_regex=v1.0.0+.+
 output=/host/CHANGELOG.md
+issue_line_body=true
