@@ -14,6 +14,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
+	keyring "github.com/zalando/go-keyring"
 )
 
 type OpenstackClient struct {
@@ -99,7 +100,20 @@ func (o *OpenstackClient) Setup() error {
 	var err error
 
 	if o.Password == "" {
-		o.Password = os.Getenv("OS_PASSWORD")
+		if os.Getenv("OS_PASSWORD") != "" {
+			o.Password = os.Getenv("OS_PASSWORD")
+		} else {
+			username := os.Getenv("USER")
+			if o.Username != "" {
+				username = o.Username
+			}
+
+			password, err := keyring.Get("kubernikus", username)
+			if err != nil && keyring.ErrNotFound != err {
+				return err
+			}
+			o.Password = password
+		}
 	}
 
 	if o.Provider, err = openstack.NewClient(o.IdentityEndpoint); err != nil {
