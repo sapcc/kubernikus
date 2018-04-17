@@ -11,6 +11,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
+	keyring "github.com/zalando/go-keyring"
 	"k8s.io/client-go/tools/clientcmd"
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
 
@@ -85,19 +86,21 @@ func (o *InitOptions) Complete(args []string) (err error) {
 		}
 	}
 
+	return nil
+}
+
+func (o *InitOptions) Run(c *cobra.Command) (err error) {
+	storePasswordInKeyRing := false
 	if o.openstack.Password == "" {
 		fmt.Printf("Password: ")
 		if password, err := gopass.GetPasswdMasked(); err != nil {
 			return err
 		} else {
 			o.openstack.Password = string(password)
+			storePasswordInKeyRing = true
 		}
 	}
 
-	return nil
-}
-
-func (o *InitOptions) Run(c *cobra.Command) (err error) {
 	if err := o.setup(); err != nil {
 		return err
 	}
@@ -115,6 +118,16 @@ func (o *InitOptions) Run(c *cobra.Command) (err error) {
 	kubeconfig, err := o.kubernikus.GetCredentials(o.name)
 	if err != nil {
 		return errors.Wrap(err, "Couldn't fetch credentials from Kubernikus API")
+	}
+
+	if storePasswordInKeyRing {
+		username := os.Getenv("USER")
+		if o.openstack.Username != "" {
+			username = o.openstack.Username
+		}
+
+		fmt.Println("Storing password in keyring")
+		keyring.Set("kubernikus", username, o.openstack.Password)
 	}
 
 	err = o.mergeAndPersist(kubeconfig)
