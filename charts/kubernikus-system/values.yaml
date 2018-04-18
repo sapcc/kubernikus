@@ -49,6 +49,7 @@ prometheus:
     configMapOverrideName: prometheus-server
     retention: 7d
     minReadySeconds: 20
+    terminationGracePeriodSeconds: 300
     strategy:
       type: Recreate
     persistentVolume:
