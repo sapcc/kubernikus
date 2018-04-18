@@ -1,0 +1,43 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+
+metadata:
+  name: prometheus-fusion
+
+spec:
+  replicas: {{ .Values.replicas }}
+  selector:
+    matchLabels:
+      app: prometheus
+      type: fusion
+  template:
+    metadata:
+      labels:
+        app: prometheus
+        type: fusion
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: {{ .Values.metricPort | quote }}
+    spec:
+      {{- if .Values.rbac.enabled }}
+      serviceAccountName: {{ .Values.rbac.serviceAccountName }}
+      {{- end }}
+      containers:
+        - name: fusion
+          image: "{{.Values.fusion.image}}:{{.Values.fusion.tag}}"
+          args:
+            - prometheus-fusion
+            - --cm-annotation={{ .Values.configmapAnnotation }}
+            - --metric-port={{ .Values.metricPort }}
+            - --recheck-period={{ .Values.recheckPeriod }}
+            - --resync-period={{ .Values.resyncPeriod }}
+            - --v={{ default 1 .Values.logLevel }}
+            {{- if .Values.prometheusConfigmapNamespace }}
+            - --prom-cm-namespace={{ .Values.prometheusConfigmapNamespace }}
+            {{- end }}
+            {{- if .Values.prometheusConfigmapNamespace }}
+            - --prom-cm-name={{ .Values.prometheusConfigmapName }}
+            {{- end }}
+          ports:
+            - name: metrics
+              containerPort: {{ .Values.metricPort }}

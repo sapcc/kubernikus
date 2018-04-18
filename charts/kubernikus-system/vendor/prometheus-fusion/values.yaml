@@ -1,0 +1,36 @@
+fusion:
+  image: sapcc/prometheus-fusion
+  tag: v201804161653
+
+# enable RBAC
+rbac:
+  enabled: false
+  serviceAccountName: configmap-crud
+
+# scaled down for now
+replicas: 1
+
+# operator will pickup configmaps with the following annotation
+configmapAnnotation: "prometheus.io/rule"
+
+# expose metrics on localhost:<metricPort>/metrics
+metricPort: 9091
+
+#operator recheck period in minutes
+recheckPeriod: 5
+
+# operator cache resync period in minutes
+resyncPeriod: 2
+
+# operator threadiness
+threadiness: 1
+
+# the following 2 optional values point the operator to the prometheus configmap.
+# in case they are not provided, the operator will attempt autodiscovery.
+# for this to work prometheus' configmap needs to be annotated with `prometheus.io/configmap: "true"`
+#
+# namespace of prometheus' configmap
+# prometheusConfigmapNamespace: ""
+#
+# name of prometheus' configmap
+# prometheusConfigmapName: ""

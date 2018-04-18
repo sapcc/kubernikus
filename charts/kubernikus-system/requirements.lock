@@ -2,14 +2,17 @@ dependencies:
 - name: vice-president
   repository: file://vendor/vice-president
   version: 0.1.2
-- name: kube-state-metrics
-  repository: file://vendor/kube-state-metrics
-  version: 1.1.0
 - name: grafana
   repository: https://raw.githubusercontent.com/BugRoger/charts/repo
   version: 0.6.2
 - name: nginx-ingress
   repository: https://kubernetes-charts.storage.googleapis.com/
   version: 0.9.4
-digest: sha256:4f26098899e9355a2eb126ccb6ce3da0cdf8bf770512f19dfeb32dea5bbfa49a
-generated: 2018-03-06T14:39:35.295728+01:00
+- name: prometheus
+  repository: https://kubernetes-charts.storage.googleapis.com/
+  version: 6.2.0
+- name: prometheus-fusion
+  repository: file://vendor/prometheus-fusion
+  version: 0.1.0
+digest: sha256:9882469ec5fa9ca9e3b212efb5f66f5884e7434f8de5391288bde78a3e6c9a0f
+generated: 2018-04-16T13:15:50.299528+02:00

@@ -12,6 +12,62 @@
 #global:
 #  region: eu-de-1
 
+prometheus:
+  # do not deploy alertmanager
+  alertmanager:
+    enabled: false
+
+  kubeStateMetrics:
+    resources:
+      requests:
+        cpu: 100m
+        memory: 30Mi
+      limits:
+        cpu: 200m
+        memory: 50Mi
+
+  nodeExporter:
+    updateStrategy:
+      type: RollingUpdate
+    extraArgs:
+      collector.filesystem.ignored-mount-points: "^/(sys|proc|dev|host|etc)($|/)"
+    extraHostPathMounts:
+      - name: rootfs
+        mountPath: /rootfs
+        hostPath: /
+        readOnly: true
+    resources:
+     requests:
+       memory: 30Mi
+       cpu: 100m
+     limits:
+       memory: 50Mi
+       cpu: 200m
+
+  server:
+    # see templates/prometheus-configmap and templates/_prometheus.yml.tpl
+    configMapOverrideName: prometheus-server
+    retention: 7d
+    minReadySeconds: 20
+    terminationGracePeriodSeconds: 300
+    strategy:
+      type: Recreate
+    persistentVolume:
+      size: 300Gi
+    resources:
+      limits:
+        cpu: 500m
+        memory: 512Mi
+      requests:
+        cpu: 500m
+        memory: 512Mi
+    # ingress defined in kubernikus-system/templates
+    ingress:
+      enabled: false
+
+  pushgateway:
+    enabled: false
+
 nginx-ingress:
   controller:
     name: controller
