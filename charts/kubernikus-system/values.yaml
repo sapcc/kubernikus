@@ -19,18 +19,18 @@ prometheus:
 
   kubeStateMetrics:
     resources:
-      limits:
-        cpu: 10m
-        memory: 16Mi
       requests:
-        cpu: 10m
-        memory: 16Mi
+        cpu: 100m
+        memory: 30Mi
+      limits:
+        cpu: 200m
+        memory: 50Mi
 
   nodeExporter:
     updateStrategy:
       type: RollingUpdate
     extraArgs:
-      collector.filesystem.ignored-mount-points: \"^/(sys|proc|dev|host|etc)($|/)\
+      collector.filesystem.ignored-mount-points: "^/(sys|proc|dev|host|etc)($|/)"
     extraHostPathMounts:
       - name: rootfs
         mountPath: /rootfs
