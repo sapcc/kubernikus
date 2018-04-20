@@ -63,20 +63,7 @@ groups:
       context: pod
       meta: "{{$labels.namespace}}/{{$labels.pod}}"
     annotations:
-      description: Pod is in a restart loop
-      summary: Pod {{ $labels.namespace }}/{{ $labels.pod }} is restarting constantly
-
-  - alert: KubernetesPodRestartingTooMuch
-    expr: rate(kube_pod_container_status_restarts[15m]) > 0
-    for: 1h
-    labels:
-      tier: kubernikus
-      service: resources
-      severity: info
-      context: pod
-      meta: "{{$labels.namespace}}/{{$labels.pod}}"
-    annotations:
-      description: Pod is in a restart loop
+      description: Pod {{ $labels.namespace }}/{{ $labels.pod }} is in a restart loop
       summary: Pod {{ $labels.namespace }}/{{ $labels.pod }} is restarting constantly
 
   - alert: KubernetesPVCPendingOrLost

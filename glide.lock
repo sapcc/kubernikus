@@ -1,5 +1,5 @@
 hash: e0de60b5a6bff8fecfdd8a8f8c08e5788a5346c107358963927fefa494890878
-updated: 2018-03-26T17:32:00.336884+02:00
+updated: 2018-04-17T17:03:01.489788+02:00
 imports:
 - name: github.com/ajeddeloh/yaml
   version: 1072abfea31191db507785e2e0c1b8d1440d35a5
@@ -43,6 +43,8 @@ imports:
   - config/v2_0/types
   - config/validate
   - config/validate/report
+- name: github.com/danieljoos/wincred
+  version: 412b574fb496839b312a75fba146bd32a89001cf
 - name: github.com/databus23/goslo.policy
   version: 3ae74dd07ebf48d1f2babbd1d2177cd1878a09ee
 - name: github.com/databus23/guttle
@@ -117,6 +119,8 @@ imports:
   - syntax/lexer
   - util/runes
   - util/strings
+- name: github.com/godbus/dbus
+  version: c7fdd8b5cd55e87b4e1f4e372cdb1db61dd6c66f
 - name: github.com/gogo/protobuf
   version: c0656edd0d9eab7c66d1eb0c568f9039345796f7
   subpackages:
@@ -220,6 +224,8 @@ imports:
   - pbutil
 - name: github.com/mitchellh/mapstructure
   version: 06020f85339e21b2478f756a78e295255ffa4d6a
+- name: github.com/oklog/run
+  version: 6934b124db28979da51d3470dadfa34d73d72652
 - name: github.com/peterbourgon/diskv
   version: 5f041e8faa004a95c88a202771f4cc3e991971e6
 - name: github.com/pkg/errors
@@ -279,6 +285,10 @@ imports:
   version: d72b0151351a13d0421b763b88f791469c4f5dc7
 - name: github.com/vincent-petithory/dataurl
   version: 9a301d65acbb728fcc3ace14f45f511a4cfeea9c
+- name: github.com/zalando/go-keyring
+  version: 6d81c293b3fbc8a9b1bcf4bc9c167c2e1d1f52cf
+  subpackages:
+  - secret_service
 - name: golang.org/x/crypto
   version: 81e90905daefcd6fd217b62423c0908922eadb30
   subpackages:
@@ -288,14 +298,20 @@ imports:
 - name: golang.org/x/net
   version: 1c05540f6879653db88113bc4a2b70aec4bd491f
   subpackages:
+  - bpf
   - context
   - context/ctxhttp
   - html
   - html/atom
   - http2
   - http2/hpack
+  - icmp
   - idna
+  - internal/iana
+  - internal/socket
   - internal/timeseries
+  - ipv4
+  - ipv6
   - lex/httplex
   - trace
 - name: golang.org/x/sys

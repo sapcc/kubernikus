@@ -454,6 +454,9 @@ func init() {
         "message": {
           "type": "string"
         },
+        "migrationsPending": {
+          "type": "boolean"
+        },
         "nodePools": {
           "type": "array",
           "items": {
@@ -462,6 +465,9 @@ func init() {
         },
         "phase": {
           "$ref": "#/definitions/KlusterPhase"
+        },
+        "specVersion": {
+          "type": "integer"
         },
         "version": {
           "type": "string"

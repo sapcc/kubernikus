@@ -23,6 +23,7 @@ import (
 	"github.com/sapcc/kubernikus/pkg/controller/deorbit"
 	"github.com/sapcc/kubernikus/pkg/controller/flight"
 	"github.com/sapcc/kubernikus/pkg/controller/launch"
+	"github.com/sapcc/kubernikus/pkg/controller/migration"
 	"github.com/sapcc/kubernikus/pkg/controller/nodeobservatory"
 	"github.com/sapcc/kubernikus/pkg/controller/routegc"
 	kubernikus_informers "github.com/sapcc/kubernikus/pkg/generated/informers/externalversions"
@@ -176,6 +177,8 @@ func NewKubernikusOperator(options *KubernikusOperatorOptions, logger log.Logger
 			o.Config.Kubernikus.Controllers["deorbiter"] = deorbit.NewController(10, o.Factories, o.Clients, recorder, logger)
 		case "flight":
 			o.Config.Kubernikus.Controllers["flight"] = flight.NewController(10, o.Factories, o.Clients, recorder, logger)
+		case "migration":
+			o.Config.Kubernikus.Controllers["migration"] = migration.NewController(10, o.Factories, o.Clients, recorder, logger)
 		}
 	}
 
@@ -197,8 +200,11 @@ func (o *KubernikusOperator) Run(stopCh <-chan struct{}, wg *sync.WaitGroup) {
 	o.Factories.Kubernikus.WaitForCacheSync(stopCh)
 	o.Factories.Kubernetes.WaitForCacheSync(stopCh)
 
-	o.Logger.Log("msg", "Cache primed. Ready for Action!")
-
+	o.Logger.Log("msg", "Cache primed")
+	if _, found := o.Config.Kubernikus.Controllers["migration"]; found {
+		migration.UpdateMigrationStatus(o.Clients.Kubernikus, o.Factories.Kubernikus.Kubernikus().V1().Klusters().Lister())
+	}
+	o.Logger.Log("msg", "Starting controllers")
 	for _, controller := range o.Config.Kubernikus.Controllers {
 		go controller.Run(stopCh, wg)
 	}
