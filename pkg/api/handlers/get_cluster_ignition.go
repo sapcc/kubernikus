@@ -20,9 +20,8 @@ type getClusterIgnition struct {
 	*api.Runtime
 }
 
-func (d *getClusterIgnition) Handle(params operations.GetClusterIgnitionParams, principal *models.Principal) middleware.Responder {
-	name := qualifiedName(params.Name, principal.Account)
-	kluster, err := d.Kubernikus.Kubernikus().Klusters(d.Namespace).Get(name, metav1.GetOptions{})
+func (d *getClusterIgnition) Handle(params operations.GetClusterIgnitionParams) middleware.Responder {
+	kluster, err := d.Kubernikus.Kubernikus().Klusters(d.Namespace).Get(params.Name, metav1.GetOptions{})
 
 	if err != nil {
 		if apierrors.IsNotFound(err) {
@@ -51,7 +50,7 @@ func (d *getClusterIgnition) Handle(params operations.GetClusterIgnitionParams, 
 		return NewErrorResponse(&operations.GetClusterIgnitionDefault{}, 404, "Not found")
 	}
 
-	secret, err := d.Kubernetes.CoreV1().Secrets(d.Namespace).Get(qualifiedName(params.Name, principal.Account), metav1.GetOptions{})
+	secret, err := d.Kubernetes.CoreV1().Secrets(d.Namespace).Get(params.Name, metav1.GetOptions{})
 	if err != nil {
 		if apierrors.IsNotFound(err) {
 			return NewErrorResponse(&operations.GetClusterIgnitionDefault{}, 404, "Not found")

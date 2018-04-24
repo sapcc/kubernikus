@@ -187,6 +187,7 @@ paths:
         required: true
         in: query 
     get:
+      security: []
       operationId: GetClusterIgnition
       summary: Get Ignition Config for Node in this Cluster 
       produces: 

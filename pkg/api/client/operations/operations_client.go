@@ -114,7 +114,7 @@ func (a *Client) GetClusterEvents(params *GetClusterEventsParams, authInfo runti
 /*
 GetClusterIgnition gets ignition config for node in this cluster
 */
-func (a *Client) GetClusterIgnition(params *GetClusterIgnitionParams, authInfo runtime.ClientAuthInfoWriter) (*GetClusterIgnitionOK, error) {
+func (a *Client) GetClusterIgnition(params *GetClusterIgnitionParams) (*GetClusterIgnitionOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewGetClusterIgnitionParams()
@@ -129,7 +129,6 @@ func (a *Client) GetClusterIgnition(params *GetClusterIgnitionParams, authInfo r
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &GetClusterIgnitionReader{formats: a.formats},
-		AuthInfo:           authInfo,
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	})

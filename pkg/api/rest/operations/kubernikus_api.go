@@ -47,7 +47,7 @@ func NewKubernikusAPI(spec *loads.Document) *KubernikusAPI {
 		GetClusterEventsHandler: GetClusterEventsHandlerFunc(func(params GetClusterEventsParams, principal *models.Principal) middleware.Responder {
 			return middleware.NotImplemented("operation GetClusterEvents has not yet been implemented")
 		}),
-		GetClusterIgnitionHandler: GetClusterIgnitionHandlerFunc(func(params GetClusterIgnitionParams, principal *models.Principal) middleware.Responder {
+		GetClusterIgnitionHandler: GetClusterIgnitionHandlerFunc(func(params GetClusterIgnitionParams) middleware.Responder {
 			return middleware.NotImplemented("operation GetClusterIgnition has not yet been implemented")
 		}),
 		GetClusterInfoHandler: GetClusterInfoHandlerFunc(func(params GetClusterInfoParams, principal *models.Principal) middleware.Responder {
