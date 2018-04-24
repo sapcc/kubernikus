@@ -167,7 +167,7 @@ func TestGenerateNodeBareMetal(t *testing.T) {
 		Data:       secretData,
 	}
 
-	for _, version := range []string{"1.9"} {
+	for _, version := range []string{"1.10"} {
 		kluster.Spec.Version = version
 		data, err := Ignition.GenerateNode(&kluster, "test", &secret, externalNode, log.NewNopLogger())
 		if assert.NoError(t, err, "Failed to generate node for version %s", version) {

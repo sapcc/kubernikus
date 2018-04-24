@@ -57,9 +57,9 @@ func (i *ignition) getIgnitionTemplate(kluster *kubernikusv1.Kluster) string {
 func (i *ignition) getIgnitionBareMetalTemplate(kluster *kubernikusv1.Kluster) string {
 	switch {
 	case strings.HasPrefix(kluster.Spec.Version, "1.10"):
-		return BareMetalNode_1_9
+		return BareMetalNode_1_10
 	default:
-		return BareMetalNode_1_9
+		return BareMetalNode_1_10
 	}
 }
 
