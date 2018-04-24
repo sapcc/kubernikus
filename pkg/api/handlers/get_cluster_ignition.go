@@ -59,7 +59,7 @@ func (d *getClusterIgnition) Handle(params operations.GetClusterIgnitionParams, 
 		return NewErrorResponse(&operations.GetClusterIgnitionDefault{}, 500, err.Error())
 	}
 
-	userdata, err := templates.Ignition.GenerateNode(kluster, secret, found, d.Logger)
+	userdata, err := templates.Ignition.GenerateNode(kluster, found.Name, secret, found, d.Logger)
 	if err != nil {
 		return NewErrorResponse(&operations.GetClusterIgnitionDefault{}, 500, err.Error())
 	}

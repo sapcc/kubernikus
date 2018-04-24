@@ -54,6 +54,14 @@ func (i *ignition) getIgnitionTemplate(kluster *kubernikusv1.Kluster) string {
 	}
 }
 
+func (i *ignition) getIgnitionBareMetalTemplate(kluster *kubernikusv1.Kluster) string {
+	switch {
+	case strings.HasPrefix(kluster.Spec.Version, "1.10"):
+		return BareMetalNode_1_9
+	default:
+		return BareMetalNode_1_9
+	}
+}
 
 func (i *ignition) GenerateNode(kluster *kubernikusv1.Kluster, nodeName string, secret *v1.Secret, externalNode *kubernikusv1.ExternalNode, logger log.Logger) ([]byte, error) {
 	for _, field := range i.requiredNodeSecrets {
@@ -62,12 +70,13 @@ func (i *ignition) GenerateNode(kluster *kubernikusv1.Kluster, nodeName string, 
 		}
 	}
 
-	ignition := i.getIgnitionTemplate(kluster)
+	ignition := ""
 
 	if externalNode == nil {
 		externalNode = &kubernikusv1.ExternalNode{}
+		ignition = i.getIgnitionTemplate(kluster)
 	} else {
-		ignition = BareMetalNode_1_9
+		ignition = i.getIgnitionBareMetalTemplate(kluster)
 	}
 
 	tmpl, err := template.New("node").Funcs(sprig.TxtFuncMap()).Parse(ignition)
@@ -118,11 +127,8 @@ func (i *ignition) GenerateNode(kluster *kubernikusv1.Kluster, nodeName string, 
 		KubernikusImageTag                 string
 		LoginPassword                      string
 		LoginPublicKey                     string
-<<<<<<< HEAD
 		NodeName                           string
-=======
 		ExternalNode                       *kubernikusv1.ExternalNode
->>>>>>> generate baremetal network config
 	}{
 		TLSCA:                              string(secret.Data["tls-ca.pem"]),
 		KubeletClientsCA:                   string(secret.Data["kubelet-clients-ca.pem"]),
@@ -146,11 +152,8 @@ func (i *ignition) GenerateNode(kluster *kubernikusv1.Kluster, nodeName string, 
 		KubernikusImageTag:                 version.GitCommit,
 		LoginPassword:                      passwordHash,
 		LoginPublicKey:                     kluster.Spec.SSHPublicKey,
-<<<<<<< HEAD
 		NodeName:                           nodeName,
-=======
 		ExternalNode:                       externalNode,
->>>>>>> generate baremetal network config
 	}
 
 	var dataOut []byte
