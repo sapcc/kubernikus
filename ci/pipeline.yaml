@@ -29,7 +29,13 @@ auth_feature: &auth_feature
   KUBERNIKUS_NAME: k-feature
   KUBERNIKUS_URL: https://k-feature.admin.cloud.sap
 
-auth_feature: &auth_infra
+auth_infra: &auth_infra
+  OS_AUTH_URL: https://identity-3.eu-nl-1.cloud.sap/v3
+  OS_USERNAME: {{kubernikus-prod-username}}
+  OS_PASSWORD: {{kubernikus-prod-password}}
+  OS_USER_DOMAIN_NAME: ccadmin
+  OS_PROJECT_NAME: kubernikus-infra
+  OS_PROJECT_DOMAIN_NAME: ccadmin
   KUBERNIKUS_NAME: k-infra
   KUBERNIKUS_URL: https://k-infra.admin.cloud.sap
 
