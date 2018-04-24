@@ -89,6 +89,7 @@ systemd:
           --insecure-options=image"
         Environment="KUBELET_IMAGE_TAG=v1.10.1"
         Environment="KUBELET_IMAGE_URL=docker://sapcc/hyperkube"
+        Environment="KUBELET_IMAGE_ARGS=--name=kubelet --exec=/kubelet"
         ExecStartPre=/bin/mkdir -p /etc/kubernetes/manifests
         ExecStartPre=/bin/mkdir -p /var/lib/cni
         ExecStartPre=-/usr/bin/rkt rm --uuid-file=/var/run/kubelet-pod.uuid
@@ -161,6 +162,7 @@ systemd:
           --stage1-from-dir=stage1-fly.aci \
           --insecure-options=image \
           docker://sapcc/hyperkube:v1.10.1 \
+          --name kube-proxy \
           --exec=/hyperkube \
           -- \
           proxy \
