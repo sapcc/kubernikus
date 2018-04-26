@@ -287,7 +287,7 @@ func (s *E2ETestSuite) waitForPVC(pvc *v1.PersistentVolumeClaim) (*v1.Persistent
 		return nil, err
 	}
 
-	_, err = watch.Until(5*time.Minute, w, isPVCBound)
+	_, err = watch.Until(10*time.Minute, w, isPVCBound)
 	if err != nil {
 		return nil, err
 	}
