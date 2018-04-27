@@ -215,6 +215,12 @@ networkd:
 
 storage:
   files:
+    - path: /etc/hostname
+      filesystem: root
+      mode: 0644
+      contents:
+        inline: |-
+          {{ .NodeName }}
     - path: /etc/kubernetes/environment
       filesystem: root
       mode: 0644
