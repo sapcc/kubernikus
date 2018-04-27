@@ -173,7 +173,9 @@ networkd:
     {{- if .Network.Gateway }}
         Gateway={{ .Network.Gateway }}{{ end }}
     {{- if .Network.DNS }}
-        DNS={{ .Network.DNS | join "," }}{{ end }}
+      {{ range $dns_server := .Network.DNS}}
+        DNS={{ $dns_server }}{{ end }}
+    {{- end }}
     {{- if .Network.Domains }}
         Domains={{ .Network.Domains }}{{ end }}
     {{- if .Network.LLDP }}
