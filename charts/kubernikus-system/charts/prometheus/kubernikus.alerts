@@ -34,8 +34,8 @@ groups:
       severity: warning
       context: kluster
     annotations:
-      description: "{{ $labels.instance }} is unavailable"
-      summary: "{{ $labels.instance }} is unavailable"
+      description: "{{ $labels.kubernetes_name }} is unavailable"
+      summary: "{{ $labels.kubernetes_name }} is unavailable"
 
 - name: operator.alerts
   rules:
