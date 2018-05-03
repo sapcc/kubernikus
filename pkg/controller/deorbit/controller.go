@@ -31,7 +31,7 @@ const (
 
 	// The longest time a single worker will be blocked, while waiting for the clean
 	// up of OpenStack resources. After this timeout, deorbiting will be queued again.
-	// It's a safeguard against having all workers hanging indefinetly and congesting
+	// It's a safeguard against having all workers hanging indefinitely and congesting
 	// the queue.
 	UnblockWorkerTimeout = 10 * time.Minute
 )
@@ -79,7 +79,7 @@ func (d *DeorbitReconciler) Reconcile(kluster *v1.Kluster) (bool, error) {
 
 func (d *DeorbitReconciler) deorbit(kluster *v1.Kluster) (err error) {
 	// The following channel is used to abort the deorbiting after a certain
-	// time. It is required because the deorbit wait-functions block indefinetly or
+	// time. It is required because the deorbit wait-functions block indefinitely or
 	// until the stop channel is closed. This is used to unblock the workqueue.
 	done := make(chan struct{})
 

@@ -50,7 +50,7 @@ func (k *KubernikusClient) GetCredentials(name string) (string, error) {
 		}
 		return "", errors.Errorf(result.Payload.Message)
 	case error:
-		return "", errors.Wrapf(err, "A generic error occured")
+		return "", errors.Wrapf(err, "A generic error occurred")
 	}
 
 	return ok.Payload.Kubeconfig, nil

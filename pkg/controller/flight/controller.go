@@ -23,7 +23,7 @@ import (
 // Delete Incompletely Spawned Instances:
 //
 // It deletes Nodes that didn't manage to register within 10m after
-// inital creation. This is a workaround for DHCP/DVS (latency) issues.  In effect
+// initial creation. This is a workaround for DHCP/DVS (latency) issues.  In effect
 // it will delete the incompletely spawned node and launch control will ramp it
 // back up.
 //
