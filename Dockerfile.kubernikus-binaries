@@ -1,7 +1,7 @@
 FROM golang:1.9.2-alpine3.6 as builder
 WORKDIR /go/src/github.com/sapcc/kubernikus/
-RUN apk add --no-cache make git
-RUN  go get golang.org/x/tools/cmd/goimports
+RUN apk add --no-cache make git curl
+RUN curl -Lf https://github.com/alecthomas/gometalinter/releases/download/v2.0.5/gometalinter-2.0.5-linux-amd64.tar.gz | tar --strip-components=1 -C /usr/local/bin -zxv
 COPY . .
 ARG VERSION
 RUN make all
