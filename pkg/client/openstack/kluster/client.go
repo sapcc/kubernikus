@@ -67,7 +67,7 @@ func (c *klusterClient) CreateNode(pool *models.NodePool, name string, userData 
 		Name:           name,
 		FlavorName:     pool.Flavor,
 		ImageName:      pool.Image,
-		Networks:       []servers.Network{servers.Network{UUID: c.Kluster.Spec.Openstack.NetworkID}},
+		Networks:       []servers.Network{{UUID: c.Kluster.Spec.Openstack.NetworkID}},
 		UserData:       userData,
 		ServiceClient:  c.ComputeClient,
 		SecurityGroups: []string{c.Kluster.Spec.Openstack.SecurityGroupName},

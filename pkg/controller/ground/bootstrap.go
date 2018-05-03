@@ -155,22 +155,22 @@ func SeedAllowCertificateControllerToDeleteCSRs(client clientset.Interface) erro
 			},
 		},
 		Rules: []rbac.PolicyRule{
-			rbac.PolicyRule{
+			{
 				Verbs:     []string{"delete", "get", "list", "watch"},
 				APIGroups: []string{"certificates.k8s.io"},
 				Resources: []string{"certificatesigningrequests"},
 			},
-			rbac.PolicyRule{
+			{
 				Verbs:     []string{"update"},
 				APIGroups: []string{"certificates.k8s.io"},
 				Resources: []string{"certificatesigningrequests/approval", "certificatesigningrequests/status"},
 			},
-			rbac.PolicyRule{
+			{
 				Verbs:     []string{"create"},
 				APIGroups: []string{"authorization.k8s.io"},
 				Resources: []string{"subjectaccessreviews"},
 			},
-			rbac.PolicyRule{
+			{
 				Verbs:     []string{"create", "patch", "update"},
 				APIGroups: []string{""}, //looks funny but is in the default rule ...
 				Resources: []string{"events"},
@@ -185,7 +185,7 @@ func SeedAutoApproveNodeBootstrapTokens(client clientset.Interface) error {
 			Name: "kubernikus:approve-node-client-csr",
 		},
 		Rules: []rbac.PolicyRule{
-			rbac.PolicyRule{
+			{
 				Verbs:     []string{"create"},
 				APIGroups: []string{"certificates.k8s.io"},
 				Resources: []string{"certificatesigningrequests/nodeclient"},
