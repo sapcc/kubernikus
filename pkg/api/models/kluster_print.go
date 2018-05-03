@@ -10,8 +10,8 @@ import (
 
 func (k Kluster) GetFormats() map[printers.PrintFormat]struct{} {
 	ret := map[printers.PrintFormat]struct{}{
-		printers.Table: struct{}{},
-		printers.Human: struct{}{},
+		printers.Table: {},
+		printers.Human: {},
 	}
 	return ret
 }
@@ -60,8 +60,8 @@ func (k *Kluster) printTable(options printers.PrintOptions) {
 
 func (p NodePool) GetFormats() map[printers.PrintFormat]struct{} {
 	ret := map[printers.PrintFormat]struct{}{
-		printers.Table: struct{}{},
-		printers.Human: struct{}{},
+		printers.Table: {},
+		printers.Human: {},
 	}
 	return ret
 }

@@ -19,9 +19,9 @@ func TestKubernikusctlDownloadLinks(t *testing.T) {
 	links, err := handler.getLinks()
 	assert.NoError(t, err)
 	expected := []models.Link{
-		models.Link{Platform: "darwin", Link: "https://github.com/sapcc/kubernikus/releases/download/v20171115131940/kubernikusctl_darwin_amd64"},
-		models.Link{Platform: "linux", Link: "https://github.com/sapcc/kubernikus/releases/download/v20171115131940/kubernikusctl_linux_amd64"},
-		models.Link{Platform: "windows", Link: "https://github.com/sapcc/kubernikus/releases/download/v20171115131940/kubernikusctl_windows_amd64.exe"},
+		{Platform: "darwin", Link: "https://github.com/sapcc/kubernikus/releases/download/v20171115131940/kubernikusctl_darwin_amd64"},
+		{Platform: "linux", Link: "https://github.com/sapcc/kubernikus/releases/download/v20171115131940/kubernikusctl_linux_amd64"},
+		{Platform: "windows", Link: "https://github.com/sapcc/kubernikus/releases/download/v20171115131940/kubernikusctl_windows_amd64.exe"},
 	}
 	assert.Equal(t, expected, links)
 
