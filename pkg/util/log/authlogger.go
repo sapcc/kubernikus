@@ -27,11 +27,9 @@ func getProject(authOptions *tokens.AuthOptions) string {
 		return authOptions.Scope.ProjectID
 	}
 
-	domain := ""
+	domain := authOptions.Scope.DomainName
 	if authOptions.Scope.DomainID != "" {
 		domain = authOptions.Scope.DomainID
-	} else {
-		domain = authOptions.Scope.DomainName
 	}
 
 	return fmt.Sprintf("%s/%s", domain, authOptions.Scope.ProjectName)
@@ -58,11 +56,9 @@ func getPrincipal(authOptions *tokens.AuthOptions) string {
 		return authOptions.UserID
 	}
 
-	domain := ""
+	domain := authOptions.DomainName
 	if authOptions.DomainID != "" {
 		domain = authOptions.DomainID
-	} else {
-		domain = authOptions.DomainName
 	}
 
 	return fmt.Sprintf("%s/%s", domain, authOptions.Username)

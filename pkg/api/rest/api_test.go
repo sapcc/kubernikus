@@ -156,7 +156,7 @@ func TestClusterShow(t *testing.T) {
 
 	//Test 404
 	req = createRequest("GET", "/api/v1/clusters/doesnotexit", "")
-	code, _, body = result(handler, req)
+	code, _, _ = result(handler, req)
 	assert.Equal(t, 404, code)
 }
 
