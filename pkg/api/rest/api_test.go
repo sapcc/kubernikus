@@ -182,7 +182,7 @@ func TestClusterUpdate(t *testing.T) {
 				RouterID:   "routerid",
 			},
 			NodePools: []models.NodePool{
-				models.NodePool{
+				{
 					Flavor: "flavour",
 					Image:  "image",
 					Name:   "poolname",
@@ -212,7 +212,7 @@ func TestClusterUpdate(t *testing.T) {
 				RouterID:   "changed",
 			},
 			NodePools: []models.NodePool{
-				models.NodePool{
+				{
 					Flavor: "newflavour",
 					Image:  "newimage",
 					Name:   "newpoolname",

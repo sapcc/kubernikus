@@ -122,12 +122,12 @@ func TestDeleteIncompletelySpawnedInstances(t *testing.T) {
 	}
 
 	nodes := []*core_v1.Node{
-		&core_v1.Node{
+		{
 			ObjectMeta: meta_v1.ObjectMeta{
 				Name: "e",
 			},
 		},
-		&core_v1.Node{
+		{
 			ObjectMeta: meta_v1.ObjectMeta{
 				Name: "f",
 			},

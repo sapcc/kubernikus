@@ -24,9 +24,9 @@ func TestThisNode(t *testing.T) {
 	myHostname, err := os.Hostname()
 	require.NoError(t, err)
 
-	nodeWithMatchingMachineID := v1.Node{Status: v1.NodeStatus{NodeInfo: v1.NodeSystemInfo{MachineID: "my-id"}, Addresses: []v1.NodeAddress{v1.NodeAddress{Type: v1.NodeInternalIP, Address: "1.2.3.4"}}}}
-	nodeWithMatchingIP := v1.Node{Status: v1.NodeStatus{NodeInfo: v1.NodeSystemInfo{MachineID: "something"}, Addresses: []v1.NodeAddress{v1.NodeAddress{Type: v1.NodeInternalIP, Address: myIP.String()}}}}
-	nodeWithMatchingHostname := v1.Node{Status: v1.NodeStatus{NodeInfo: v1.NodeSystemInfo{MachineID: "something"}, Addresses: []v1.NodeAddress{v1.NodeAddress{Type: v1.NodeHostName, Address: myHostname}}}}
+	nodeWithMatchingMachineID := v1.Node{Status: v1.NodeStatus{NodeInfo: v1.NodeSystemInfo{MachineID: "my-id"}, Addresses: []v1.NodeAddress{{Type: v1.NodeInternalIP, Address: "1.2.3.4"}}}}
+	nodeWithMatchingIP := v1.Node{Status: v1.NodeStatus{NodeInfo: v1.NodeSystemInfo{MachineID: "something"}, Addresses: []v1.NodeAddress{{Type: v1.NodeInternalIP, Address: myIP.String()}}}}
+	nodeWithMatchingHostname := v1.Node{Status: v1.NodeStatus{NodeInfo: v1.NodeSystemInfo{MachineID: "something"}, Addresses: []v1.NodeAddress{{Type: v1.NodeHostName, Address: myHostname}}}}
 
 	testCases := []struct {
 		test   string

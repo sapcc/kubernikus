@@ -93,7 +93,7 @@ func (c *Controller) Run(threadiness int, stopCh <-chan struct{}, wg *sync.WaitG
 				c.Logger.Log(
 					"msg", "Running periodic recheck. Queuing all known nodes...",
 					"v", 5)
-				for key, _ := range c.store {
+				for key := range c.store {
 					c.queue.Add(key)
 				}
 			case <-stopCh:
@@ -249,7 +249,7 @@ func (c *Controller) redoIPTablesSpratz() error {
 		writeLine(natChains, iptables.MakeChainLine(KUBERNIKUS_TUNNELS))
 	}
 
-	for key, _ := range c.store {
+	for key := range c.store {
 		err := c.writeTunnelRedirect(key, natRules)
 		if err != nil {
 			return err
