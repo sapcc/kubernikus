@@ -116,7 +116,11 @@ clean:
 
 .PHONY: test-e2e
 test-e2e:
-	./test/e2e/test.sh $@
+	@cd test/e2e && \
+	set -o pipefail && \
+	go test -v --kubernikus=kubernikus.eu-nl-1.cloud.sap | \
+	grep -v "CONT\|PAUSE"
+
 
 include code-generate.mk
 code-gen: client-gen informer-gen lister-gen deepcopy-gen
