@@ -50,13 +50,13 @@ func NewController(threadiness int, factories config.Factories, clients config.C
 
 	var reconciler base.Reconciler
 	reconciler = &DeorbitReconciler{clients, recorder, logger, factories.Kubernikus.Kubernikus().V1().Klusters()}
-	reconciler = &base.LoggingReconciler{reconciler, logger}
+	reconciler = &base.LoggingReconciler{Reconciler: reconciler, Logger: logger}
 	reconciler = &base.InstrumentingReconciler{
-		reconciler,
-		metrics.DeorbitOperationsLatency,
-		metrics.DeorbitOperationsTotal,
-		metrics.DeorbitSuccessfulOperationsTotal,
-		metrics.DeorbitFailedOperationsTotal,
+		Reconciler: reconciler,
+		Latency:    metrics.DeorbitOperationsLatency,
+		Total:      metrics.DeorbitOperationsTotal,
+		Successful: metrics.DeorbitSuccessfulOperationsTotal,
+		Failed:     metrics.DeorbitFailedOperationsTotal,
 	}
 	return base.NewController(threadiness, factories, reconciler, logger, nil)
 

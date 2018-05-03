@@ -128,7 +128,7 @@ func TestIsServiceCleanupFinished(testing *testing.T) {
 	} {
 
 		k := kluster.DeepCopy()
-		k.DeletionTimestamp = &meta_v1.Time{t.deletedAt}
+		k.DeletionTimestamp = &meta_v1.Time{Time: t.deletedAt}
 		done := make(chan struct{})
 		client := fake.NewSimpleClientset()
 		logger := log.NewNopLogger()

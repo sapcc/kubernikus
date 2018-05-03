@@ -220,8 +220,6 @@ func (c *adminClient) getUserByName(username, domainID string) (*users.User, err
 		default:
 			return false, errors.New("More then one user found")
 		}
-
-		return true, nil
 	})
 	if err != nil {
 		return nil, err
