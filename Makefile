@@ -35,7 +35,10 @@ bin/%: $(GOFILES) Makefile
 gofmt:
 	test/gofmt.sh pkg/ cmd/
 
-test: gofmt
+linters:
+	gometalinter --vendor -s generated --disable-all -E vet -E ineffassign -E misspell ./cmd/... ./pkg/...
+
+test: gofmt linters
 	set -o pipefail && go test -v github.com/sapcc/kubernikus/pkg... github.com/sapcc/kubernikus/cmd/... | grep -v 'no test files'
 
 build:
