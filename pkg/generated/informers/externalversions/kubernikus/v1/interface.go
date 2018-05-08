@@ -8,6 +8,8 @@ import (
 
 // Interface provides access to all the informers in this group version.
 type Interface interface {
+	// ExternalNodes returns a ExternalNodeInformer.
+	ExternalNodes() ExternalNodeInformer
 	// Klusters returns a KlusterInformer.
 	Klusters() KlusterInformer
 }
@@ -21,6 +23,11 @@ type version struct {
 // New returns a new Interface.
 func New(f internalinterfaces.SharedInformerFactory, namespace string, tweakListOptions internalinterfaces.TweakListOptionsFunc) Interface {
 	return &version{factory: f, namespace: namespace, tweakListOptions: tweakListOptions}
+}
+
+// ExternalNodes returns a ExternalNodeInformer.
+func (v *version) ExternalNodes() ExternalNodeInformer {
+	return &externalNodeInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
 }
 
 // Klusters returns a KlusterInformer.

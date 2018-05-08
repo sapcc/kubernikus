@@ -14,6 +14,7 @@ Package rest Kubernikus
 
     Produces:
     - application/json
+    - text/plain
 
 swagger:meta
 */

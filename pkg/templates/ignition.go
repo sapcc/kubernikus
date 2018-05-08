@@ -54,14 +54,31 @@ func (i *ignition) getIgnitionTemplate(kluster *kubernikusv1.Kluster) string {
 	}
 }
 
-func (i *ignition) GenerateNode(kluster *kubernikusv1.Kluster, nodeName string, secret *v1.Secret, logger log.Logger) ([]byte, error) {
+func (i *ignition) getIgnitionBareMetalTemplate(kluster *kubernikusv1.Kluster) string {
+	switch {
+	case strings.HasPrefix(kluster.Spec.Version, "1.10"):
+		return BareMetalNode_1_10
+	default:
+		return BareMetalNode_1_10
+	}
+}
+
+func (i *ignition) GenerateNode(kluster *kubernikusv1.Kluster, nodeName string, secret *v1.Secret, externalNode *kubernikusv1.ExternalNode, logger log.Logger) ([]byte, error) {
 	for _, field := range i.requiredNodeSecrets {
 		if _, ok := secret.Data[field]; !ok {
 			return nil, fmt.Errorf("Field %s missing in secret", field)
 		}
 	}
 
-	ignition := i.getIgnitionTemplate(kluster)
+	ignition := ""
+
+	if externalNode == nil {
+		externalNode = &kubernikusv1.ExternalNode{}
+		ignition = i.getIgnitionTemplate(kluster)
+	} else {
+		ignition = i.getIgnitionBareMetalTemplate(kluster)
+	}
+
 	tmpl, err := template.New("node").Funcs(sprig.TxtFuncMap()).Parse(ignition)
 	if err != nil {
 		return nil, err
@@ -111,6 +128,7 @@ func (i *ignition) GenerateNode(kluster *kubernikusv1.Kluster, nodeName string, 
 		LoginPassword                      string
 		LoginPublicKey                     string
 		NodeName                           string
+		ExternalNode                       *kubernikusv1.ExternalNode
 	}{
 		TLSCA:                              string(secret.Data["tls-ca.pem"]),
 		KubeletClientsCA:                   string(secret.Data["kubelet-clients-ca.pem"]),
@@ -135,6 +153,7 @@ func (i *ignition) GenerateNode(kluster *kubernikusv1.Kluster, nodeName string, 
 		LoginPassword:                      passwordHash,
 		LoginPublicKey:                     kluster.Spec.SSHPublicKey,
 		NodeName:                           nodeName,
+		ExternalNode:                       externalNode,
 	}
 
 	var dataOut []byte

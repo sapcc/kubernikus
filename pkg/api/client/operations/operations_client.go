@@ -112,6 +112,34 @@ func (a *Client) GetClusterEvents(params *GetClusterEventsParams, authInfo runti
 }
 
 /*
+GetClusterIgnition gets ignition config for node in this cluster
+*/
+func (a *Client) GetClusterIgnition(params *GetClusterIgnitionParams) (*GetClusterIgnitionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewGetClusterIgnitionParams()
+	}
+
+	result, err := a.transport.Submit(&runtime.ClientOperation{
+		ID:                 "GetClusterIgnition",
+		Method:             "GET",
+		PathPattern:        "/api/v1/clusters/{name}/ignition",
+		ProducesMediaTypes: []string{"text/plain"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &GetClusterIgnitionReader{formats: a.formats},
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return result.(*GetClusterIgnitionOK), nil
+
+}
+
+/*
 GetClusterInfo gets user specific info about the cluster
 */
 func (a *Client) GetClusterInfo(params *GetClusterInfoParams, authInfo runtime.ClientAuthInfoWriter) (*GetClusterInfoOK, error) {

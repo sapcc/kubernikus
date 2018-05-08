@@ -203,6 +203,42 @@ func init() {
         }
       ]
     },
+    "/api/v1/clusters/{name}/ignition": {
+      "get": {
+        "produces": [
+          "text/plain"
+        ],
+        "summary": "Get Ignition Config for Node in this Cluster",
+        "operationId": "GetClusterIgnition",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/Ignition"
+            }
+          },
+          "default": {
+            "$ref": "#/responses/errorResponse"
+          }
+        }
+      },
+      "parameters": [
+        {
+          "uniqueItems": true,
+          "type": "string",
+          "name": "name",
+          "in": "path",
+          "required": true
+        },
+        {
+          "uniqueItems": true,
+          "type": "string",
+          "name": "mac",
+          "in": "query",
+          "required": true
+        }
+      ]
+    },
     "/api/v1/clusters/{name}/info": {
       "get": {
         "summary": "Get user specific info about the cluster",
@@ -316,6 +352,9 @@ func init() {
           ]
         }
       }
+    },
+    "Ignition": {
+      "type": "string"
     },
     "Info": {
       "properties": {

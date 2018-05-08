@@ -9,12 +9,17 @@ import (
 
 type KubernikusV1Interface interface {
 	RESTClient() rest.Interface
+	ExternalNodesGetter
 	KlustersGetter
 }
 
 // KubernikusV1Client is used to interact with features provided by the kubernikus.sap.cc group.
 type KubernikusV1Client struct {
 	restClient rest.Interface
+}
+
+func (c *KubernikusV1Client) ExternalNodes(namespace string) ExternalNodeInterface {
+	return newExternalNodes(c, namespace)
 }
 
 func (c *KubernikusV1Client) Klusters(namespace string) KlusterInterface {
