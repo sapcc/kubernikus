@@ -291,11 +291,13 @@ jobs:
           trigger: true
       - task: e2e_tests
         file: kubernikus.builds/ci/task_e2e_tests.yaml
+        timeout: 2h
         params:
           <<: *auth_e2e_eu-nl-1
 
   - name: conformance 
     serial: true
+    build_logs_to_retain: 30
     plan:
       - aggregate:
         - get: kubernikus.builds
@@ -490,6 +492,7 @@ jobs:
 
   - name: soak_ap-au-1
     serial: true
+    build_logs_to_retain: 168
     plan:
       - aggregate:
         - get: secrets.git
@@ -500,11 +503,13 @@ jobs:
           trigger: true
       - task: e2e_tests
         file: kubernikus.builds/ci/task_e2e_tests.yaml
+        timeout: 45m
         params:
           <<: *auth_e2e_ap-au-1
 
   - name: soak_eu-de-1
     serial: true
+    build_logs_to_retain: 168
     plan:
       - aggregate:
         - get: secrets.git
@@ -515,11 +520,13 @@ jobs:
           trigger: true
       - task: e2e_tests
         file: kubernikus.builds/ci/task_e2e_tests.yaml
+        timeout: 45m
         params:
           <<: *auth_e2e_eu-de-1
 
   - name: soak_na-us-1
     serial: true
+    build_logs_to_retain: 168
     plan:
       - aggregate:
         - get: secrets.git
@@ -530,10 +537,12 @@ jobs:
           trigger: true
       - task: e2e_tests
         file: kubernikus.builds/ci/task_e2e_tests.yaml
+        timeout: 45m
         params:
           <<: *auth_e2e_na-us-1
 
   - name: soak_qa-de-1
+    build_logs_to_retain: 168
     serial: true
     plan:
       - aggregate:
@@ -545,5 +554,6 @@ jobs:
           trigger: true
       - task: e2e_tests
         file: kubernikus.builds/ci/task_e2e_tests.yaml
+        timeout: 45m
         params:
           <<: *auth_e2e_qa-de-1
