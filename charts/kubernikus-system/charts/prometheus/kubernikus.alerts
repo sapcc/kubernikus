@@ -14,7 +14,7 @@ groups:
       summary: Kluster stuck in phase {{ $labels.phase }}
 
   - alert: KubernikusAPIDown
-    expr: probe_success{kubernetes_name="kubernikus-api"} != 1
+    expr: count by (instance) (probe_success{kubernetes_name="kubernikus-api"} != 1) >= count by (instance) (probe_success{kubernetes_name="kubernikus-api"} == 1)
     for: 5m
     labels:
       tier: kubernikus
