@@ -116,10 +116,14 @@ clean:
 
 .PHONY: test-e2e
 test-e2e:
+ifndef KUBERNIKUS_URL
+	$(error set KUBERNIKUS_URL)
+else
 	@cd test/e2e && \
 	set -o pipefail && \
-	go test -v -timeout 55m --kubernikus=kubernikus.eu-nl-1.cloud.sap | \
+	go test -v -timeout 55m --kubernikus=$(KUBERNIKUS_URL) | \
 	grep -v "CONT\|PAUSE"
+endif
 
 
 include code-generate.mk

@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"net/url"
 	"os"
 	"testing"
 
@@ -14,15 +15,20 @@ import (
 )
 
 var (
-	kubernikusHost = flag.String("kubernikus", "", "Kubernikus API Hostname")
-	kluster        = flag.String("kluster", "", "Use existing Kluster")
-	reuse          = flag.Bool("reuse", false, "Reuse exisiting Kluster")
-	cleanup        = flag.Bool("cleanup", true, "Cleanup after tests have been run")
+	kubernikusURL = flag.String("kubernikus", "", "Kubernikus URL")
+	kluster       = flag.String("kluster", "", "Use existing Kluster")
+	reuse         = flag.Bool("reuse", false, "Reuse exisiting Kluster")
+	cleanup       = flag.Bool("cleanup", true, "Cleanup after tests have been run")
 )
 
 func validate() error {
-	if *kubernikusHost == "" {
+	if *kubernikusURL == "" {
 		return fmt.Errorf("You need to provide the --kubernikus flag")
+	}
+
+	_, err := url.Parse(*kubernikusURL)
+	if err != nil {
+		return fmt.Errorf("You need to provide an URL for --kubernikus: %v", err)
 	}
 
 	if reuse != nil && *reuse && (kluster == nil || *kluster == "") {
@@ -59,6 +65,9 @@ func TestRunner(t *testing.T) {
 		klusterName = *kluster
 	}
 
+	kurl, err := url.Parse(*kubernikusURL)
+	require.NoError(t, err, "Must be able to parse Kubernikus URL")
+
 	fmt.Printf("========================================================================\n")
 	fmt.Printf("Authentication\n")
 	fmt.Printf("========================================================================\n")
@@ -71,13 +80,13 @@ func TestRunner(t *testing.T) {
 	fmt.Printf("========================================================================\n")
 	fmt.Printf("Test Parameters\n")
 	fmt.Printf("========================================================================\n")
-	fmt.Printf("Kubernikus Host:        %v\n", *kubernikusHost)
+	fmt.Printf("Kubernikus:             %v\n", *kubernikusURL)
 	fmt.Printf("Kluster Name:           %v\n", klusterName)
 	fmt.Printf("Reuse:                  %v\n", *reuse)
 	fmt.Printf("Cleanup:                %v\n", *cleanup)
 	fmt.Printf("\n\n")
 
-	kubernikus, err := framework.NewKubernikusFramework(*kubernikusHost)
+	kubernikus, err := framework.NewKubernikusFramework(kurl)
 	require.NoError(t, err, "Must be able to connect to Kubernikus")
 
 	api := APITests{kubernikus, klusterName}

@@ -2,6 +2,7 @@ package framework
 
 import (
 	"fmt"
+	"net/url"
 	"os"
 
 	"github.com/go-openapi/runtime"
@@ -17,7 +18,7 @@ type Kubernikus struct {
 	AuthInfo runtime.ClientAuthInfoWriterFunc
 }
 
-func NewKubernikusFramework(host string) (*Kubernikus, error) {
+func NewKubernikusFramework(kubernikusURL *url.URL) (*Kubernikus, error) {
 	authOptions := &tokens.AuthOptions{
 		IdentityEndpoint: os.Getenv("OS_AUTH_URL"),
 		Username:         os.Getenv("OS_USERNAME"),
@@ -48,8 +49,8 @@ func NewKubernikusFramework(host string) (*Kubernikus, error) {
 	kubernikusClient := kubernikus.NewHTTPClientWithConfig(
 		nil,
 		&kubernikus.TransportConfig{
-			Host:    host,
-			Schemes: []string{"https"},
+			Host:    kubernikusURL.Host,
+			Schemes: []string{kubernikusURL.Scheme},
 		},
 	)
 
