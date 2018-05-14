@@ -25,8 +25,6 @@ type KlusterTests struct {
 }
 
 func (k *KlusterTests) KlusterPhaseBecomesPending(t *testing.T) {
-	t.Parallel()
-
 	phase, err := k.Kubernikus.WaitForKlusterPhase(k.KlusterName, models.KlusterPhasePending, KlusterPhaseBecomesPendingTimeout)
 
 	if assert.NoError(t, err, "There should be no error") {
@@ -35,8 +33,6 @@ func (k *KlusterTests) KlusterPhaseBecomesPending(t *testing.T) {
 }
 
 func (k *KlusterTests) KlusterPhaseBecomesCreating(t *testing.T) {
-	t.Parallel()
-
 	phase, err := k.Kubernikus.WaitForKlusterPhase(k.KlusterName, models.KlusterPhaseCreating, KlusterPhaseBecomesCreatingTimeout)
 
 	if assert.NoError(t, err, "There should be no error") {
@@ -45,8 +41,6 @@ func (k *KlusterTests) KlusterPhaseBecomesCreating(t *testing.T) {
 }
 
 func (k *KlusterTests) KlusterPhaseBecomesRunning(t *testing.T) {
-	t.Parallel()
-
 	phase, err := k.Kubernikus.WaitForKlusterPhase(k.KlusterName, models.KlusterPhaseRunning, KlusterPhaseBecomesRunningTimeout)
 
 	if assert.NoError(t, err, "There should be no error") {
@@ -55,8 +49,6 @@ func (k *KlusterTests) KlusterPhaseBecomesRunning(t *testing.T) {
 }
 
 func (k *KlusterTests) KlusterPhaseBecomesTerminating(t *testing.T) {
-	t.Parallel()
-
 	phase, err := k.Kubernikus.WaitForKlusterPhase(k.KlusterName, models.KlusterPhaseTerminating, KlusterPhaseBecomesTerminatingTimeout)
 
 	if assert.NoError(t, err, "There should be no error") {
