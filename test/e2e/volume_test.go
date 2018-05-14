@@ -16,7 +16,7 @@ import (
 )
 
 const (
-	TestWaitForPVCBoundTimeout = 10 * time.Minute
+	TestWaitForPVCBoundTimeout = 15 * time.Minute
 )
 
 type VolumeTests struct {

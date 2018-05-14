@@ -14,7 +14,7 @@ import (
 const (
 	KlusterPhaseBecomesPendingTimeout     = 1 * time.Minute
 	KlusterPhaseBecomesCreatingTimeout    = 1 * time.Minute
-	KlusterPhaseBecomesRunningTimeout     = 5 * time.Minute
+	KlusterPhaseBecomesRunningTimeout     = 15 * time.Minute
 	KlusterPhaseBecomesTerminatingTimeout = 1 * time.Minute
 	KlusterFinishedTerminationTermination = 5 * time.Minute
 )
