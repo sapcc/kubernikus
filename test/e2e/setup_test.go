@@ -123,8 +123,6 @@ func TestRunner(t *testing.T) {
 	require.NotEqual(t, len(nodes.Items), 1, "There must be at least 2 nodes")
 
 	t.Run("Network", func(t *testing.T) {
-		t.Parallel()
-
 		network := NetworkTests{kubernetes, nodes, namespaceNetwork}
 
 		defer t.Run("Cleanup", network.DeleteNamespace)
@@ -152,8 +150,6 @@ func TestRunner(t *testing.T) {
 	})
 
 	t.Run("Volumes", func(t *testing.T) {
-		t.Parallel()
-
 		volumes := VolumeTests{kubernetes, nodes, nil, namespaceVolumes}
 
 		defer t.Run("Cleanup", volumes.DeleteNamespace)
