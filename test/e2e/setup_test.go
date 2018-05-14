@@ -59,6 +59,24 @@ func TestRunner(t *testing.T) {
 		klusterName = *kluster
 	}
 
+	fmt.Printf("========================================================================\n")
+	fmt.Printf("Authentication\n")
+	fmt.Printf("========================================================================\n")
+	fmt.Printf("OS_AUTH_URL:            %v\n", os.Getenv("OS_AUTH_URL"))
+	fmt.Printf("OS_USERNAME:            %v\n", os.Getenv("OS_USERNAME"))
+	fmt.Printf("OS_USER_DOMAIN_NAME:    %v\n", os.Getenv("OS_USER_DOMAIN_NAME"))
+	fmt.Printf("OS_PROJECT_NAME:        %v\n", os.Getenv("OS_PROJECT_NAME"))
+	fmt.Printf("OS_PROJECT_DOMAIN_NAME: %v\n", os.Getenv("OS_PROJECT_DOMAIN_NAME"))
+	fmt.Printf("\n")
+	fmt.Printf("========================================================================\n")
+	fmt.Printf("Test Parameters\n")
+	fmt.Printf("========================================================================\n")
+	fmt.Printf("Kubernikus Host:        %v\n", *kubernikusHost)
+	fmt.Printf("Kluster Name:           %v\n", klusterName)
+	fmt.Printf("Reuse:                  %v\n", *reuse)
+	fmt.Printf("Cleanup:                %v\n", *cleanup)
+	fmt.Printf("\n\n")
+
 	kubernikus, err := framework.NewKubernikusFramework(*kubernikusHost)
 	require.NoError(t, err, "Must be able to connect to Kubernikus")
 
