@@ -118,7 +118,7 @@ clean:
 test-e2e:
 	@cd test/e2e && \
 	set -o pipefail && \
-	go test -v --kubernikus=kubernikus.eu-nl-1.cloud.sap | \
+	go test -v -timeout 20m --kubernikus=kubernikus.eu-nl-1.cloud.sap --kluster=e2e | \
 	grep -v "CONT\|PAUSE"
 
 
