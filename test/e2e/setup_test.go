@@ -94,9 +94,10 @@ func TestRunner(t *testing.T) {
 
 	if cleanup != nil && *cleanup == true {
 		defer t.Run("Cleanup", func(t *testing.T) {
-			t.Run("TerminateCluster", api.TerminateCluster)
-			t.Run("BecomesTerminating", kluster.KlusterPhaseBecomesTerminating)
-			t.Run("IsDeleted", api.WaitForKlusterToBeDeleted)
+			if t.Run("TerminateCluster", api.TerminateCluster) {
+				t.Run("BecomesTerminating", kluster.KlusterPhaseBecomesTerminating)
+				t.Run("IsDeleted", api.WaitForKlusterToBeDeleted)
+			}
 		})
 	}
 
