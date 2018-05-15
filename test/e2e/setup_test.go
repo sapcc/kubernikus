@@ -61,9 +61,6 @@ func TestMain(m *testing.M) {
 }
 
 func TestRunner(t *testing.T) {
-	var kubernetes *framework.Kubernetes
-	var kubernikus *framework.Kubernikus
-
 	namespaceNetwork := util.SimpleNameGenerator.GenerateName("e2e-network-")
 	namespaceVolumes := util.SimpleNameGenerator.GenerateName("e2e-volumes-")
 	klusterName := util.SimpleNameGenerator.GenerateName("e2e-")
@@ -94,7 +91,7 @@ func TestRunner(t *testing.T) {
 	fmt.Printf("Cleanup:                %v\n", *cleanup)
 	fmt.Printf("\n\n")
 
-	kubernikus, err = framework.NewKubernikusFramework(kurl)
+	kubernikus, err := framework.NewKubernikusFramework(kurl)
 	require.NoError(t, err, "Must be able to connect to Kubernikus")
 
 	api := APITests{kubernikus, klusterName}
@@ -120,11 +117,6 @@ func TestRunner(t *testing.T) {
 		running := t.Run("BecomesRunning", kluster.KlusterPhaseBecomesRunning)
 		require.True(t, running, "The Kluster must be Running")
 
-		kubernetes, err = framework.NewKubernetesFramework(kubernikus, klusterName)
-		require.NoError(t, err, "Must be able to create a kubernetes client")
-
-		ready := t.Run("NodesBecomeReady", api.WaitForNodesReady)
-		require.True(t, ready, "The Kluster must have Ready nodes")
 	})
 	require.True(t, setup, "Test setup must complete successfully")
 
@@ -135,6 +127,9 @@ func TestRunner(t *testing.T) {
 		t.Run("GetCredentials", api.GetCredentials)
 	})
 
+	kubernetes, err := framework.NewKubernetesFramework(kubernikus, klusterName)
+	require.NoError(t, err, "Must be able to create a kubernetes client")
+
 	nodes := t.Run("Nodes", func(t *testing.T) {
 		nodeTests := NodeTests{kubernetes, SmokeTestNodeCount}
 
@@ -142,6 +137,9 @@ func TestRunner(t *testing.T) {
 		t.Run("Condition/RouteBroken", nodeTests.RouteBroken)
 		t.Run("Condition/NetworkUnavailable", nodeTests.NetworkUnavailable)
 		t.Run("Condition/Ready", nodeTests.Ready)
+
+		ready := t.Run("NodesBecomeReady", api.WaitForNodesReady)
+		require.True(t, ready, "The Kluster must have Ready nodes")
 	})
 	require.True(t, nodes, "Node test must complete successfully")
 
