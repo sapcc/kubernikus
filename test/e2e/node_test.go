@@ -5,12 +5,13 @@ import (
 	"testing"
 	"time"
 
-	wormhole "github.com/sapcc/kubernikus/pkg/wormhole/client"
-	"github.com/sapcc/kubernikus/test/e2e/framework"
 	"github.com/stretchr/testify/assert"
 	"k8s.io/api/core/v1"
 	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
+
+	wormhole "github.com/sapcc/kubernikus/pkg/wormhole/client"
+	"github.com/sapcc/kubernikus/test/e2e/framework"
 )
 
 const (
