@@ -170,10 +170,11 @@ func TestRunner(t *testing.T) {
 					t.Run("WaitForKubeDNS", network.WaitForKubeDNSRunning)
 				})
 			})
-
-			t.Run("Connectivity/Pods", network.TestPods)
-			t.Run("Connectivity/Services", network.TestServices)
-			t.Run("ConnectivityServicesWithDNS", network.TestServicesWithDNS)
+			t.Run("Connectivity", func(t *testing.T) {
+				t.Run("Connectivity/Pods", network.TestPods)
+				t.Run("Connectivity/Services", network.TestServices)
+				t.Run("ConnectivityServicesWithDNS", network.TestServicesWithDNS)
+			})
 		})
 
 		t.Run("Volumes", func(t *testing.T) {
