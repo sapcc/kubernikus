@@ -27,18 +27,8 @@ func NewOpenstackClient() *OpenstackClient {
 	return &OpenstackClient{
 		&tokens.AuthOptions{
 			IdentityEndpoint: os.Getenv("OS_AUTH_URL"),
-			Username:         os.Getenv("OS_USERNAME"),
-			UserID:           os.Getenv("OS_USER_ID"),
 			Password:         os.Getenv("OS_PASSWORD"),
-			DomainID:         os.Getenv("OS_USER_DOMAIN_ID"),
-			DomainName:       os.Getenv("OS_USER_DOMAIN_NAME"),
 			AllowReauth:      true,
-			Scope: tokens.Scope{
-				ProjectID:   os.Getenv("OS_PROJECT_ID"),
-				ProjectName: os.Getenv("OS_PROJECT_NAME"),
-				DomainID:    os.Getenv("OS_PROJECT_DOMAIN_ID"),
-				DomainName:  os.Getenv("OS_PROJECT_DOMAIN_NAME"),
-			},
 		}, nil, nil,
 	}
 }
@@ -65,6 +55,20 @@ func (o *OpenstackClient) Validate(c *cobra.Command, args []string) error {
 		}
 	}
 
+	//Only use environment variables if nothing was given on the command line
+	if o.Username == "" && o.UserID == "" {
+		o.UserID = os.Getenv("OS_USERID")
+		if o.UserID == "" {
+			o.Username = os.Getenv("OS_USERNAME")
+			if o.DomainName == "" && o.DomainID == "" {
+				o.DomainID = os.Getenv("OS_USER_DOMAIN_ID")
+				if o.DomainID == "" {
+					o.DomainName = os.Getenv("OS_USER_DOMAIN_NAME")
+				}
+			}
+		}
+	}
+
 	if o.Username == "" {
 		if o.UserID == "" {
 			return errors.Errorf("You need to provide --username/--user-id or OS_USERNAME/OS_USER_ID")
@@ -72,6 +76,20 @@ func (o *OpenstackClient) Validate(c *cobra.Command, args []string) error {
 	} else {
 		if o.DomainName == "" && o.DomainID == "" {
 			return errors.Errorf("You need to provide --user-domain-name/--user-domain-id or OS_USER_DOMAIN_NAME/OS_USER_DOMAIN_ID")
+		}
+	}
+
+	//Only use environment variables of nothing was given on the command line
+	if o.Scope.ProjectName == "" && o.Scope.ProjectID == "" {
+		o.Scope.ProjectID = os.Getenv("OS_PROJECT_ID")
+		if o.Scope.ProjectID == "" {
+			o.Scope.ProjectName = os.Getenv("OS_PROJECT_NAME")
+			if o.Scope.DomainID == "" && o.Scope.DomainName == "" {
+				o.Scope.DomainID = os.Getenv("OS_PROJECT_DOMAIN_ID")
+				if o.Scope.DomainID == "" {
+					o.Scope.DomainName = os.Getenv("OS_PROJECT_DOMAIN_NAME")
+				}
+			}
 		}
 	}
 
