@@ -16,7 +16,8 @@ import (
 )
 
 const (
-	TestWaitForPVCBoundTimeout = 15 * time.Minute
+	TestWaitForPVCBoundTimeout = 5 * time.Minute
+	TestWaitForPVCPodsRunning  = 15 * time.Minute
 )
 
 type VolumeTests struct {
@@ -83,9 +84,9 @@ func (p *VolumeTests) CreatePod(t *testing.T) {
 	})
 }
 
-func (p *VolumeTests) WaitForPodsRunning(t *testing.T) {
+func (p *VolumeTests) WaitForPVCPodsRunning(t *testing.T) {
 	label := labels.SelectorFromSet(labels.Set(map[string]string{"app": "pvc-hostname"}))
-	_, err := p.Kubernetes.WaitForPodsWithLabelRunningReady(p.Namespace, label, 1, TestWaitForPodsRunningTimeout)
+	_, err := p.Kubernetes.WaitForPodsWithLabelRunningReady(p.Namespace, label, 1, TestWaitForPVCPodsRunning)
 	require.NoError(t, err, "There must be no error while waiting for the pod with mounted volume to become ready")
 }
 

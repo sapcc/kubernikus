@@ -26,9 +26,13 @@ func validate() error {
 		return fmt.Errorf("You need to provide the --kubernikus flag")
 	}
 
-	_, err := url.Parse(*kubernikusURL)
+	k, err := url.Parse(*kubernikusURL)
 	if err != nil {
 		return fmt.Errorf("You need to provide an URL for --kubernikus: %v", err)
+	}
+
+	if k.Host == "" {
+		return fmt.Errorf("You need to provide an URL for --kubernikus")
 	}
 
 	if reuse != nil && *reuse && (kluster == nil || *kluster == "") {
@@ -67,6 +71,7 @@ func TestRunner(t *testing.T) {
 
 	kurl, err := url.Parse(*kubernikusURL)
 	require.NoError(t, err, "Must be able to parse Kubernikus URL")
+	require.NotEmpty(t, kurl.Host, "There must be a host in the Kubernikus URL")
 
 	fmt.Printf("========================================================================\n")
 	fmt.Printf("Authentication\n")
@@ -80,7 +85,7 @@ func TestRunner(t *testing.T) {
 	fmt.Printf("========================================================================\n")
 	fmt.Printf("Test Parameters\n")
 	fmt.Printf("========================================================================\n")
-	fmt.Printf("Kubernikus:             %v\n", *kubernikusURL)
+	fmt.Printf("Kubernikus:             %v\n", kurl.Host)
 	fmt.Printf("Kluster Name:           %v\n", klusterName)
 	fmt.Printf("Reuse:                  %v\n", *reuse)
 	fmt.Printf("Cleanup:                %v\n", *cleanup)
@@ -132,50 +137,49 @@ func TestRunner(t *testing.T) {
 	require.NotEqual(t, len(nodes.Items), 0, "There must be at least 2 nodes")
 	require.NotEqual(t, len(nodes.Items), 1, "There must be at least 2 nodes")
 
-	t.Run("Network", func(t *testing.T) {
-		network := NetworkTests{kubernetes, nodes, namespaceNetwork}
+	t.Run("Smoke", func(t *testing.T) {
+		t.Run("Network", func(t *testing.T) {
+			t.Parallel()
+			network := NetworkTests{kubernetes, nodes, namespaceNetwork}
 
-		defer t.Run("Cleanup", network.DeleteNamespace)
-		t.Run("Setup", func(t *testing.T) {
-			t.Run("Namespace", func(t *testing.T) {
-				t.Run("Create", network.CreateNamespace)
-				t.Run("Wait", network.WaitForNamespace)
+			defer t.Run("Cleanup", network.DeleteNamespace)
+			t.Run("Setup", func(t *testing.T) {
+				t.Run("Namespace/Create", network.CreateNamespace)
+				t.Run("Namespace/Wait", network.WaitForNamespace)
+				t.Run("Pods", func(t *testing.T) {
+					t.Parallel()
+					t.Run("Create", network.CreatePods)
+					t.Run("Wait", network.WaitForPodsRunning)
+				})
+				t.Run("Services", func(t *testing.T) {
+					t.Parallel()
+					t.Run("Create", network.CreateServices)
+					t.Run("Wait", network.WaitForServiceEndpoints)
+				})
 			})
-			t.Run("Pods", func(t *testing.T) {
-				t.Parallel()
-				t.Run("Create", network.CreatePods)
-				t.Run("Wait", network.WaitForPodsRunning)
-			})
-			t.Run("Services", func(t *testing.T) {
-				t.Parallel()
-				t.Run("Create", network.CreateServices)
-				t.Run("Wait", network.WaitForServiceEndpoints)
-			})
+
+			t.Run("Connectivity/Pods", network.TestPods)
+			t.Run("Connectivity/Services", network.TestServices)
+			t.Run("ConnectivityServicesWithDNS", network.TestServicesWithDNS)
 		})
-		t.Run("Connectivity", func(t *testing.T) {
-			t.Run("Pods", network.TestPods)
-			t.Run("Services", network.TestServices)
-			t.Run("ServicesWithDNS", network.TestServicesWithDNS)
-		})
-	})
 
-	t.Run("Volumes", func(t *testing.T) {
-		volumes := VolumeTests{kubernetes, nodes, nil, namespaceVolumes}
+		t.Run("Volumes", func(t *testing.T) {
+			t.Parallel()
+			volumes := VolumeTests{kubernetes, nodes, nil, namespaceVolumes}
 
-		defer t.Run("Cleanup", volumes.DeleteNamespace)
-		t.Run("Setup", func(t *testing.T) {
-			t.Run("Namespace", func(t *testing.T) {
+			defer t.Run("Cleanup", volumes.DeleteNamespace)
+			t.Run("Setup/Namespace", func(t *testing.T) {
 				t.Run("Create", volumes.CreateNamespace)
 				t.Run("Wait", volumes.WaitForNamespace)
 			})
-		})
-		t.Run("PVC", func(t *testing.T) {
-			t.Run("Create", volumes.CreatePVC)
-			t.Run("Wait", volumes.WaitForPVCBound)
-		})
-		t.Run("Pods", func(t *testing.T) {
-			t.Run("Create", volumes.CreatePod)
-			t.Run("Wait", volumes.WaitForPodsRunning)
+			t.Run("PVC", func(t *testing.T) {
+				t.Run("Create", volumes.CreatePVC)
+				t.Run("Wait", volumes.WaitForPVCBound)
+			})
+			t.Run("Pods", func(t *testing.T) {
+				t.Run("Create", volumes.CreatePod)
+				t.Run("Wait", volumes.WaitForPVCPodsRunning)
+			})
 		})
 	})
 }
