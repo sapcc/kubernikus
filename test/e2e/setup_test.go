@@ -61,6 +61,9 @@ func TestMain(m *testing.M) {
 }
 
 func TestRunner(t *testing.T) {
+	var kubernetes *framework.Kubernetes
+	var kubernikus *framework.Kubernikus
+
 	namespaceNetwork := util.SimpleNameGenerator.GenerateName("e2e-network-")
 	namespaceVolumes := util.SimpleNameGenerator.GenerateName("e2e-volumes-")
 	klusterName := util.SimpleNameGenerator.GenerateName("e2e-")
@@ -91,7 +94,7 @@ func TestRunner(t *testing.T) {
 	fmt.Printf("Cleanup:                %v\n", *cleanup)
 	fmt.Printf("\n\n")
 
-	kubernikus, err := framework.NewKubernikusFramework(kurl)
+	kubernikus, err = framework.NewKubernikusFramework(kurl)
 	require.NoError(t, err, "Must be able to connect to Kubernikus")
 
 	api := APITests{kubernikus, klusterName}
@@ -117,6 +120,9 @@ func TestRunner(t *testing.T) {
 		running := t.Run("BecomesRunning", kluster.KlusterPhaseBecomesRunning)
 		require.True(t, running, "The Kluster must be Running")
 
+		kubernetes, err = framework.NewKubernetesFramework(kubernikus, klusterName)
+		require.NoError(t, err, "Must be able to create a kubernetes client")
+
 		ready := t.Run("NodesBecomeReady", api.WaitForNodesReady)
 		require.True(t, ready, "The Kluster must have Ready nodes")
 	})
@@ -129,18 +135,24 @@ func TestRunner(t *testing.T) {
 		t.Run("GetCredentials", api.GetCredentials)
 	})
 
-	kubernetes, err := framework.NewKubernetesFramework(kubernikus, klusterName)
-	require.NoError(t, err, "Must be able to create a kubernetes client")
+	nodes := t.Run("Nodes", func(t *testing.T) {
+		nodeTests := NodeTests{kubernetes, SmokeTestNodeCount}
 
-	nodes, err := kubernetes.ClientSet.CoreV1().Nodes().List(meta_v1.ListOptions{})
+		t.Run("Registered", nodeTests.Registered)
+		t.Run("Condition/RouteBroken", nodeTests.RouteBroken)
+		t.Run("Condition/NetworkUnavailable", nodeTests.NetworkUnavailable)
+		t.Run("Condition/Ready", nodeTests.Ready)
+	})
+	require.True(t, nodes, "Node test must complete successfully")
+
+	nodeList, err := kubernetes.ClientSet.CoreV1().Nodes().List(meta_v1.ListOptions{})
 	require.NoError(t, err, "There must be no error while listing the kluster's nodes")
-	require.NotEqual(t, len(nodes.Items), 0, "There must be at least 2 nodes")
-	require.NotEqual(t, len(nodes.Items), 1, "There must be at least 2 nodes")
+	require.Equal(t, len(nodeList.Items), SmokeTestNodeCount, "There must be at least %d nodes", SmokeTestNodeCount)
 
 	t.Run("Smoke", func(t *testing.T) {
 		t.Run("Network", func(t *testing.T) {
 			t.Parallel()
-			network := NetworkTests{kubernetes, nodes, namespaceNetwork}
+			network := NetworkTests{kubernetes, nodeList, namespaceNetwork}
 
 			defer t.Run("Cleanup", network.DeleteNamespace)
 			t.Run("Setup", func(t *testing.T) {
@@ -166,7 +178,7 @@ func TestRunner(t *testing.T) {
 
 		t.Run("Volumes", func(t *testing.T) {
 			t.Parallel()
-			volumes := VolumeTests{kubernetes, nodes, nil, namespaceVolumes}
+			volumes := VolumeTests{kubernetes, nodeList, nil, namespaceVolumes}
 
 			defer t.Run("Cleanup", volumes.DeleteNamespace)
 			t.Run("Setup/Namespace", func(t *testing.T) {

@@ -15,6 +15,8 @@ import (
 const (
 	TestKlusterDeletedTimeout    = 5 * time.Minute
 	TestKlusterNodesReadyTimeout = 10 * time.Minute
+
+	SmokeTestNodeCount = 2
 )
 
 type APITests struct {
@@ -32,7 +34,7 @@ func (a *APITests) CreateCluster(t *testing.T) {
 					Name:   "small",
 					Flavor: "m1.small",
 					Image:  "coreos-stable-amd64",
-					Size:   2,
+					Size:   SmokeTestNodeCount,
 				},
 			},
 		},
