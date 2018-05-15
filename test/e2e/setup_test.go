@@ -154,7 +154,8 @@ func TestRunner(t *testing.T) {
 				t.Run("Services", func(t *testing.T) {
 					t.Parallel()
 					t.Run("Create", network.CreateServices)
-					t.Run("Wait", network.WaitForServiceEndpoints)
+					t.Run("WaitForServiceEndpoints", network.WaitForServiceEndpoints)
+					t.Run("WaitForKubeDNS", network.WaitForKubeDNSRunning)
 				})
 			})
 

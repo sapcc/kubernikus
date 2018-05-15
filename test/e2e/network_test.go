@@ -20,6 +20,7 @@ import (
 
 const (
 	TestWaitForPodsRunningTimeout      = 5 * time.Minute
+	TestWaitForKubeDNSRunningTimeout   = 2 * time.Minute
 	TestWaitForServiceEndpointsTimeout = 5 * time.Minute
 
 	TestPodTimeout             = 1 * time.Minute
@@ -93,7 +94,13 @@ func (n *NetworkTests) CreatePods(t *testing.T) {
 func (n *NetworkTests) WaitForPodsRunning(t *testing.T) {
 	label := labels.SelectorFromSet(labels.Set(map[string]string{"app": "serve-hostname"}))
 	_, err := n.Kubernetes.WaitForPodsWithLabelRunningReady(n.Namespace, label, len(n.Nodes.Items), TestWaitForPodsRunningTimeout)
-	require.NoError(t, err, "Pods must become ready")
+	assert.NoError(t, err, "Pods must become ready")
+}
+
+func (n *NetworkTests) WaitForKubeDNSRunning(t *testing.T) {
+	label := labels.SelectorFromSet(labels.Set(map[string]string{"k8s-app": "kube-dns"}))
+	_, err := n.Kubernetes.WaitForPodsWithLabelRunningReady("kube-system", label, 1, TestWaitForKubeDNSRunningTimeout)
+	assert.NoError(t, err, "Kube-DNS must become ready")
 }
 
 func (n *NetworkTests) CreateServices(t *testing.T) {
