@@ -38,13 +38,13 @@ func NewController(threadiness int, factories config.Factories, clients config.C
 
 	var reconciler base.Reconciler
 	reconciler = &LaunchReconciler{clients, factories, recorder, logger, factories.Kubernikus.Kubernikus().V1().Klusters(), factories.NodesObservatory.NodeInformer()}
-	reconciler = &base.LoggingReconciler{reconciler, logger}
+	reconciler = &base.LoggingReconciler{Reconciler: reconciler, Logger: logger}
 	reconciler = &base.InstrumentingReconciler{
-		reconciler,
-		metrics.LaunchOperationsLatency,
-		metrics.LaunchOperationsTotal,
-		metrics.LaunchSuccessfulOperationsTotal,
-		metrics.LaunchFailedOperationsTotal,
+		Reconciler: reconciler,
+		Latency:    metrics.LaunchOperationsLatency,
+		Total:      metrics.LaunchOperationsTotal,
+		Successful: metrics.LaunchSuccessfulOperationsTotal,
+		Failed:     metrics.LaunchFailedOperationsTotal,
 	}
 
 	queue := workqueue.NewRateLimitingQueue(workqueue.NewItemExponentialFailureRateLimiter(base.BASE_DELAY, base.MAX_DELAY))

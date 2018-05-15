@@ -32,10 +32,15 @@ bin/$(GOOS)/swagger-%:
 bin/%: $(GOFILES) Makefile
 	GOOS=$(*D) GOARCH=amd64 go build $(GOFLAGS) -v -i -o $(@D)/$(@F) ./cmd/$(basename $(@F))
 
-gofmt:
-	test/gofmt.sh pkg/ cmd/
+test: gofmt linters gotest
 
-test: gofmt
+gofmt:
+	test/gofmt.sh pkg/ cmd/ deps/
+
+linters:
+	gometalinter --vendor -s generated --disable-all -E vet -E ineffassign -E misspell ./cmd/... ./pkg/...
+
+gotest:
 	set -o pipefail && go test -v github.com/sapcc/kubernikus/pkg... github.com/sapcc/kubernikus/cmd/... | grep -v 'no test files'
 
 build:

@@ -112,15 +112,12 @@ func NewBundle(key, cert []byte) (Bundle, error) {
 }
 
 func (b *Bundle) basename() string {
-	stem := ""
-	suffix := ""
+	stem := b.Certificate.Issuer.CommonName
+	suffix := b.Certificate.Subject.CommonName
 
 	if b.Certificate.IsCA {
 		stem = b.Certificate.Subject.CommonName
 		suffix = "ca"
-	} else {
-		stem = b.Certificate.Issuer.CommonName
-		suffix = b.Certificate.Subject.CommonName
 	}
 
 	return sanitize.BaseName(strings.ToLower(fmt.Sprintf("%s-%s", stem, suffix)))

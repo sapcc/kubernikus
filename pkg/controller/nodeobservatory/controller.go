@@ -215,7 +215,8 @@ func (n *NodeObservatory) createAndWatchNodeInformerForKluster(kluster *v1.Klust
 
 	if _, exists := n.nodeInformerMap.Load(key); !exists {
 		n.logger.Log(
-			"creating nodeInformer for kluster %s", key,
+			"msg", "creating nodeInformer",
+			"kluster", key,
 			"v", 2,
 		)
 		nodeInformer, err := newNodeInformerForKluster(n.clientFactory, kluster)

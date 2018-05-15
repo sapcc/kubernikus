@@ -35,9 +35,8 @@ func LoggingHandler(logger kitlog.Logger, next http.Handler) http.Handler {
 
 		inner_logger := kitlog.With(ingress_logger)
 
-		id := ""
 		if reqId := request.Context().Value(KubernikusRequestID); reqId != nil {
-			id = fmt.Sprintf("%s", reqId)
+			id := fmt.Sprintf("%s", reqId)
 			inner_logger = kitlog.With(inner_logger, "id", id)
 		}
 		request = request.WithContext(context.WithValue(request.Context(), "logger", inner_logger))

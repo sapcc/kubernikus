@@ -76,7 +76,7 @@ func (f *factory) AdminClient() (admin.AdminClient, error) {
 
 	var client admin.AdminClient
 	client = admin.NewAdminClient(network, compute, identity)
-	client = admin.LoggingClient{client, f.logger}
+	client = admin.LoggingClient{Client: client, Logger: f.logger}
 
 	f.adminClient = client
 
@@ -100,7 +100,7 @@ func (f *factory) KlusterClientFor(kluster *kubernikus_v1.Kluster) (openstack_kl
 
 	var client openstack_kluster.KlusterClient
 	client = openstack_kluster.NewKlusterClient(network, compute, identity, kluster)
-	client = &openstack_kluster.LoggingClient{client, log.With(f.logger, "kluster", kluster.GetName(), "project", kluster.Account())}
+	client = &openstack_kluster.LoggingClient{Client: client, Logger: log.With(f.logger, "kluster", kluster.GetName(), "project", kluster.Account())}
 
 	f.klusterClients.Store(kluster.GetUID(), client)
 
@@ -130,7 +130,7 @@ func (f *factory) projectClient(projectID string, authOptions *tokens.AuthOption
 
 	var client openstack_project.ProjectClient
 	client = openstack_project.NewProjectClient(projectID, network, compute, identity)
-	client = &openstack_project.LoggingClient{client, log.With(f.logger, "project_id", projectID)}
+	client = &openstack_project.LoggingClient{Client: client, Logger: log.With(f.logger, "project_id", projectID)}
 
 	f.projectClients.Store(projectID, client)
 	return client, nil
