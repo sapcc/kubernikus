@@ -108,8 +108,6 @@ func IsPVCBound(event watch.Event) (bool, error) {
 	switch pvc := event.Object.(type) {
 	case *v1.PersistentVolumeClaim:
 		return pvc.Status.Phase == v1.ClaimBound, nil
-	default:
-		return false, nil
 	}
 	return false, nil
 }

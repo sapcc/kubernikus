@@ -4,10 +4,11 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/sapcc/kubernikus/pkg/api/client/operations"
 	"k8s.io/client-go/kubernetes"
 	restclient "k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
+
+	"github.com/sapcc/kubernikus/pkg/api/client/operations"
 )
 
 const (

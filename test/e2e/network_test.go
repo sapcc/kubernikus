@@ -157,11 +157,11 @@ func (n *NetworkTests) TestPods(t *testing.T) {
 				t.Run(source.Status.PodIP, func(t *testing.T) {
 					t.Parallel()
 
-					var stdout, stderr string
+					var stdout string
 					cmd := strings.Split(fmt.Sprintf("wget -O - http://%v:%v", target.Status.PodIP, ServeHostnamePort), " ")
 					err = wait.PollImmediate(PollInterval, TestPodTimeout,
 						func() (bool, error) {
-							stdout, stderr, err = n.Kubernetes.ExecCommandInContainerWithFullOutput(n.Namespace, source.Name, source.Spec.Containers[0].Name, cmd...)
+							stdout, _, err = n.Kubernetes.ExecCommandInContainerWithFullOutput(n.Namespace, source.Name, source.Spec.Containers[0].Name, cmd...)
 							if err != nil {
 								return false, nil
 							}
@@ -196,11 +196,11 @@ func (n *NetworkTests) TestServices(t *testing.T) {
 				source := source
 				t.Run(source.Status.PodIP, func(t *testing.T) {
 					t.Parallel()
-					var stdout, stderr string
+					var stdout string
 					cmd := strings.Split(fmt.Sprintf("wget -O - http://%v:%v", target.Spec.ClusterIP, ServeHostnamePort), " ")
 					err = wait.PollImmediate(PollInterval, TestServicesTimeout,
 						func() (bool, error) {
-							stdout, stderr, err = n.Kubernetes.ExecCommandInContainerWithFullOutput(n.Namespace, source.Name, source.Spec.Containers[0].Name, cmd...)
+							stdout, _, err = n.Kubernetes.ExecCommandInContainerWithFullOutput(n.Namespace, source.Name, source.Spec.Containers[0].Name, cmd...)
 							if err != nil {
 								return false, nil
 							}
@@ -240,11 +240,11 @@ func (n *NetworkTests) TestServicesWithDNS(t *testing.T) {
 				t.Run(source.Status.PodIP, func(t *testing.T) {
 					t.Parallel()
 
-					var stdout, stderr string
+					var stdout string
 					cmd := strings.Split(fmt.Sprintf("wget -O - http://%v:%v", service, ServeHostnamePort), " ")
 					err = wait.PollImmediate(PollInterval, TestServicesWithDNSTimeout,
 						func() (bool, error) {
-							stdout, stderr, err = n.Kubernetes.ExecCommandInContainerWithFullOutput(n.Namespace, source.Name, source.Spec.Containers[0].Name, cmd...)
+							stdout, _, err = n.Kubernetes.ExecCommandInContainerWithFullOutput(n.Namespace, source.Name, source.Spec.Containers[0].Name, cmd...)
 							if err != nil {
 								return false, nil
 							}
