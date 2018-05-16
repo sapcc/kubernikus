@@ -134,7 +134,6 @@ func TestRunner(t *testing.T) {
 		nodeTests := NodeTests{kubernetes, SmokeTestNodeCount}
 
 		t.Run("Registered", nodeTests.Registered)
-		t.Run("Condition/RouteBroken", nodeTests.RouteBroken)
 		t.Run("Condition/NetworkUnavailable", nodeTests.NetworkUnavailable)
 		t.Run("Condition/Ready", nodeTests.Ready)
 
