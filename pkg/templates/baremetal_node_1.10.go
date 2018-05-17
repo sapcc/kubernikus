@@ -154,7 +154,7 @@ networkd:
         [Network]
         DHCP=no
         Address={{ .ApiserverIP }}/32
-{{ range $network := .ExternalNode.Spec.Networks }}
+{{ range $network := .ProviderConfig.Spec.Networks }}
     - name: {{ .Name }}.network
       contents: |
   {{- if .Match }}
@@ -182,7 +182,7 @@ networkd:
         Bond={{ .Network.Bond }}{{ end }}
   {{- end }}
 {{ end }}
-{{ range $netdev := .ExternalNode.Spec.Netdevs }}
+{{ range $netdev := .ProviderConfig.Spec.Netdevs }}
     - name: {{ .Name }}.netdev
       contents: |
   {{- if .NetDev }}

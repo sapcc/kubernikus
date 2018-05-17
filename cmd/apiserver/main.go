@@ -65,7 +65,7 @@ func main() {
 		Namespace: namespace,
 		Logger:    logger,
 	}
-	rt.Kubernikus, rt.Kubernetes, err = rest.NewKubeClients(logger)
+	rt.Kubernikus, rt.Kubernetes, rt.ClusterAPI, err = rest.NewKubeClients(logger)
 	if err != nil {
 		logger.Log(
 			"msg", "failed to create kubernetes clients",

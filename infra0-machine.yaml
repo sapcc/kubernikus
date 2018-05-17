@@ -1,0 +1,88 @@
+apiVersion: cluster.k8s.io/v1alpha1
+kind: Machine
+metadata:
+  name: infra0 
+
+spec:
+  roles:
+    - Node
+  versions:
+    kubelet: 1.10.2
+    containerRuntime:
+      name: docker
+      version: 18.03.1-ce
+
+  providerConfig:
+    value:
+      apiVersion: "kubernikus.sap.cc/v1"
+      kind: "SAPCCloudProviderConfig"
+      spec:
+        ipxe: 00:2c:c8:07:fa:bc
+        networks:
+          - name: eth0
+            match:
+              macAddress: 00:2c:c8:17:68:4c
+            network:
+              lldp: "yes"
+              dhcp: "no"
+              bond: bond1
+          - name: eth1
+            match:
+              macAddress: 00:2c:c8:17:68:4d
+            network:
+              lldp: "yes"
+              dhcp: "no"
+              bond: bond1
+          - name: eth2
+            match:
+              macAddress: 00:2c:c8:48:cc:95
+            network:
+              lldp: "yes"
+              dhcp: "no"
+              bond: bond2
+          - name: eth3
+            match:
+              macAddress: 00:2c:c8:48:cc:96
+            network:
+              lldp: "yes"
+              dhcp: "no"
+              bond: bond2
+          - name: bond1
+            match:
+              name: bond1
+            network:
+              dhcp: "no"
+          - name: bond2
+            match:
+              name: bond2
+            network:
+              dhcp: "no"
+              address: 10.46.102.28/29
+              gateway: 10.46.102.25
+              dns: [147.204.9.200, 147.204.9.201]
+              domains: cc.qa-de-1.cloud.sap 
+        netdevs:
+          - name: bond1
+            netdev:
+              name: bond1
+              kind: bond
+              mtuBytes: 9000
+            bond:
+              mode: 802.3ad 
+              mimMonitorSec: 1s
+              lacpTransmitRate: fast
+              upDelaySec: 3s
+              downDelaySec: 3s
+              minLinks: 1
+          - name: bond2
+            netdev:
+              name: bond2
+              kind: bond
+              mtuBytes: 9000
+            bond:
+              mode: 802.3ad 
+              mimMonitorSec: 1s
+              lacpTransmitRate: fast
+              upDelaySec: 3s
+              downDelaySec: 3s
+              minLinks: 1

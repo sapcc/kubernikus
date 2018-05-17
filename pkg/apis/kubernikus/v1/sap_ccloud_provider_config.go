@@ -7,21 +7,21 @@ import (
 // +genclient
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
-type ExternalNode struct {
+type SAPCCloudProviderConfig struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata"`
-	Spec              ExternalNodeSpec `json:"spec"`
+	Spec              SAPCCloudProviderConfigSpec `json:"spec"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
-type ExternalNodeList struct {
+type SAPCCloudProviderConfigList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata"`
-	Items           []ExternalNode `json:"items"`
+	Items           []SAPCCloudProviderConfig `json:"items"`
 }
 
-type ExternalNodeSpec struct {
+type SAPCCloudProviderConfigSpec struct {
 	IPXE     string               `json:"ipxe"`
 	Networks []SystemdNetworkSpec `json:"networks,omitempty"`
 	Netdevs  []SystemdNetDevSpec  `json:"netdevs,omitempty"`

@@ -103,7 +103,7 @@ func EnsureCRD(pluralName string, clientset apiextensionsclient.Interface, logge
 			Scope:   apiextensionsv1beta1.NamespaceScoped,
 			Names: apiextensionsv1beta1.CustomResourceDefinitionNames{
 				Plural: pluralName,
-				Kind:   reflect.TypeOf(kubernikus_v1.ExternalNode{}).Name(),
+				Kind:   reflect.TypeOf(kubernikus_v1.Kluster{}).Name(),
 			},
 		},
 	}

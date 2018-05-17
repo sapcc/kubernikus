@@ -15,6 +15,8 @@ import (
 	"github.com/go-kit/kit/log"
 	"github.com/tredoe/osutil/user/crypt/sha512_crypt"
 	"k8s.io/api/core/v1"
+	cluster "sigs.k8s.io/cluster-api/pkg/apis/cluster/v1alpha1"
+
 
 	kubernikusv1 "github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
 	"github.com/sapcc/kubernikus/pkg/version"
@@ -63,7 +65,7 @@ func (i *ignition) getIgnitionBareMetalTemplate(kluster *kubernikusv1.Kluster) s
 	}
 }
 
-func (i *ignition) GenerateNode(kluster *kubernikusv1.Kluster, nodeName string, secret *v1.Secret, externalNode *kubernikusv1.ExternalNode, logger log.Logger) ([]byte, error) {
+func (i *ignition) GenerateNode(kluster *kubernikusv1.Kluster, nodeName string, secret *v1.Secret, machine *cluster.Machine, providerConfig *kubernikusv1.SAPCCloudProviderConfig, logger log.Logger) ([]byte, error) {
 	for _, field := range i.requiredNodeSecrets {
 		if _, ok := secret.Data[field]; !ok {
 			return nil, fmt.Errorf("Field %s missing in secret", field)
@@ -72,8 +74,9 @@ func (i *ignition) GenerateNode(kluster *kubernikusv1.Kluster, nodeName string, 
 
 	ignition := ""
 
-	if externalNode == nil {
-		externalNode = &kubernikusv1.ExternalNode{}
+	if machine == nil {
+		machine = &cluster.Machine{}
+		providerConfig = &kubernikusv1.SAPCCloudProviderConfig{}
 		ignition = i.getIgnitionTemplate(kluster)
 	} else {
 		ignition = i.getIgnitionBareMetalTemplate(kluster)
@@ -128,7 +131,8 @@ func (i *ignition) GenerateNode(kluster *kubernikusv1.Kluster, nodeName string, 
 		LoginPassword                      string
 		LoginPublicKey                     string
 		NodeName                           string
-		ExternalNode                       *kubernikusv1.ExternalNode
+		Machine                            *cluster.Machine
+		ProviderConfig                     *kubernikusv1.SAPCCloudProviderConfig
 	}{
 		TLSCA:                              string(secret.Data["tls-ca.pem"]),
 		KubeletClientsCA:                   string(secret.Data["kubelet-clients-ca.pem"]),
@@ -153,7 +157,8 @@ func (i *ignition) GenerateNode(kluster *kubernikusv1.Kluster, nodeName string, 
 		LoginPassword:                      passwordHash,
 		LoginPublicKey:                     kluster.Spec.SSHPublicKey,
 		NodeName:                           nodeName,
-		ExternalNode:                       externalNode,
+		Machine:                            machine,
+		ProviderConfig:                     providerConfig,
 	}
 
 	var dataOut []byte

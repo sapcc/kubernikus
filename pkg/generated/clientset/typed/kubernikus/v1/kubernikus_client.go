@@ -9,8 +9,8 @@ import (
 
 type KubernikusV1Interface interface {
 	RESTClient() rest.Interface
-	ExternalNodesGetter
 	KlustersGetter
+	SAPCCloudProviderConfigsGetter
 }
 
 // KubernikusV1Client is used to interact with features provided by the kubernikus.sap.cc group.
@@ -18,12 +18,12 @@ type KubernikusV1Client struct {
 	restClient rest.Interface
 }
 
-func (c *KubernikusV1Client) ExternalNodes(namespace string) ExternalNodeInterface {
-	return newExternalNodes(c, namespace)
-}
-
 func (c *KubernikusV1Client) Klusters(namespace string) KlusterInterface {
 	return newKlusters(c, namespace)
+}
+
+func (c *KubernikusV1Client) SAPCCloudProviderConfigs(namespace string) SAPCCloudProviderConfigInterface {
+	return newSAPCCloudProviderConfigs(c, namespace)
 }
 
 // NewForConfig creates a new KubernikusV1Client for the given config.

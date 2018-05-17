@@ -2,14 +2,6 @@
 
 package v1
 
-// ExternalNodeListerExpansion allows custom methods to be added to
-// ExternalNodeLister.
-type ExternalNodeListerExpansion interface{}
-
-// ExternalNodeNamespaceListerExpansion allows custom methods to be added to
-// ExternalNodeNamespaceLister.
-type ExternalNodeNamespaceListerExpansion interface{}
-
 // KlusterListerExpansion allows custom methods to be added to
 // KlusterLister.
 type KlusterListerExpansion interface{}
@@ -17,3 +9,11 @@ type KlusterListerExpansion interface{}
 // KlusterNamespaceListerExpansion allows custom methods to be added to
 // KlusterNamespaceLister.
 type KlusterNamespaceListerExpansion interface{}
+
+// SAPCCloudProviderConfigListerExpansion allows custom methods to be added to
+// SAPCCloudProviderConfigLister.
+type SAPCCloudProviderConfigListerExpansion interface{}
+
+// SAPCCloudProviderConfigNamespaceListerExpansion allows custom methods to be added to
+// SAPCCloudProviderConfigNamespaceLister.
+type SAPCCloudProviderConfigNamespaceListerExpansion interface{}

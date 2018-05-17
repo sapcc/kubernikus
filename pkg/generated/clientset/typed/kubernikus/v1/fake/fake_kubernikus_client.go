@@ -10,12 +10,12 @@ type FakeKubernikusV1 struct {
 	*testing.Fake
 }
 
-func (c *FakeKubernikusV1) ExternalNodes(namespace string) v1.ExternalNodeInterface {
-	return &FakeExternalNodes{c, namespace}
-}
-
 func (c *FakeKubernikusV1) Klusters(namespace string) v1.KlusterInterface {
 	return &FakeKlusters{c, namespace}
+}
+
+func (c *FakeKubernikusV1) SAPCCloudProviderConfigs(namespace string) v1.SAPCCloudProviderConfigInterface {
+	return &FakeSAPCCloudProviderConfigs{c, namespace}
 }
 
 // RESTClient returns a RESTClient that is used to communicate

@@ -29,8 +29,8 @@ func addKnownTypes(scheme *runtime.Scheme) error {
 	scheme.AddKnownTypes(SchemeGroupVersion,
 		&Kluster{},
 		&KlusterList{},
-		&ExternalNode{},
-		&ExternalNodeList{},
+		&SAPCCloudProviderConfig{},
+		&SAPCCloudProviderConfigList{},
 	)
 	metav1.AddToGroupVersion(scheme, SchemeGroupVersion)
 	return nil

@@ -45,7 +45,6 @@ type KubernikusOperatorOptions struct {
 
 	KubernikusDomain    string
 	KubernikusProjectID string
-	KubernikusNetworkID string
 	Namespace           string
 	Controllers         []string
 	MetricPort          int
@@ -114,10 +113,6 @@ func NewKubernikusOperator(options *KubernikusOperatorOptions, logger log.Logger
 	}
 
 	if err := kube.EnsureCRD(v1.KlusterResourcePlural, apiextensionsclientset, logger); err != nil {
-		return nil, fmt.Errorf("Couldn't create CRD: %s", err)
-	}
-
-	if err := kube.EnsureCRD(v1.ExternalNodeResourcePlural, apiextensionsclientset, logger); err != nil {
 		return nil, fmt.Errorf("Couldn't create CRD: %s", err)
 	}
 
