@@ -122,8 +122,3 @@ func (a *APITests) WaitForKlusterToBeDeleted(t *testing.T) {
 	err := a.Kubernikus.WaitForKlusterToBeDeleted(a.KlusterName, TestKlusterDeletedTimeout)
 	require.NoError(t, err, "There should be no error while waiting %v for the kluster to be deleted", TestKlusterDeletedTimeout)
 }
-
-func (a *APITests) WaitForNodesReady(t *testing.T) {
-	err := a.Kubernikus.WaitForKlusterToHaveEnoughSchedulableNodes(a.KlusterName, TestKlusterNodesReadyTimeout)
-	require.NoError(t, err, "The should be no error while waiting %v for the nodes to become ready", TestKlusterNodesReadyTimeout)
-}

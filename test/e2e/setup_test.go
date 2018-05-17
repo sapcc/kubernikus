@@ -131,13 +131,21 @@ func TestRunner(t *testing.T) {
 	require.NoError(t, err, "Must be able to create a kubernetes client")
 
 	nodes := t.Run("Nodes", func(t *testing.T) {
-		nodeTests := NodeTests{kubernetes, SmokeTestNodeCount}
+		nodeTests := NodeTests{kubernetes, kubernikus, SmokeTestNodeCount, klusterName}
 
-		t.Run("Registered", nodeTests.Registered)
-		t.Run("Condition/NetworkUnavailable", nodeTests.NetworkUnavailable)
-		t.Run("Condition/Ready", nodeTests.Ready)
+		running := t.Run("Running", nodeTests.StateRunning)
+		require.True(t, running, "The Kluster must have Running nodes")
 
-		ready := t.Run("NodesBecomeReady", api.WaitForNodesReady)
+		registered := t.Run("Registered", nodeTests.Registered)
+		require.True(t, registered, "The Kluster must have Registered nodes")
+
+		t.Run("Conditions", func(t *testing.T) {
+			t.Run("NetworkUnavailable", nodeTests.ConditionNetworkUnavailable)
+			t.Run("Schedulable", nodeTests.StateSchedulable)
+			t.Run("Healthy", nodeTests.StateHealthy)
+		})
+
+		ready := t.Run("Ready", nodeTests.ConditionReady)
 		require.True(t, ready, "The Kluster must have Ready nodes")
 	})
 	require.True(t, nodes, "Node test must complete successfully")
