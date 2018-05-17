@@ -133,7 +133,7 @@ func TestRunner(t *testing.T) {
 	nodes := t.Run("Nodes", func(t *testing.T) {
 		nodeTests := NodeTests{kubernetes, kubernikus, SmokeTestNodeCount, klusterName}
 
-		running := t.Run("Running", nodeTests.StateRunning)
+		running := t.Run("Created", nodeTests.StateRunning)
 		require.True(t, running, "The Kluster must have Running nodes")
 
 		registered := t.Run("Registered", nodeTests.Registered)
