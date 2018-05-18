@@ -52,8 +52,8 @@ func (n *NetworkTests) Run(t *testing.T) {
 	defer t.Run("Cleanup", n.DeleteNamespace)
 	t.Run("CreateNamespace", n.CreateNamespace)
 	t.Run("WaitNamespace", n.WaitForNamespace)
-	t.Run("CreatePods", n.CreatePods)
-	t.Run("CreateService", n.CreateServices)
+	n.CreatePods(t)
+	n.CreateServices(t)
 	t.Run("Wait", func(t *testing.T) {
 		t.Run("Pods", n.WaitForPodsRunning)
 		t.Run("ServiceEndpoints", n.WaitForServiceEndpoints)
@@ -85,7 +85,7 @@ func (n *NetworkTests) CreatePods(t *testing.T) {
 	for _, node := range n.Nodes.Items {
 		node := node
 
-		t.Run(node.Name, func(t *testing.T) {
+		t.Run(fmt.Sprintf("CreatePodForNode-%v", node.Name), func(t *testing.T) {
 			_, err := n.Kubernetes.ClientSet.CoreV1().Pods(n.Namespace).Create(&v1.Pod{
 				ObjectMeta: meta_v1.ObjectMeta{
 					GenerateName: fmt.Sprintf("%s-", node.Name),
@@ -136,7 +136,7 @@ func (n *NetworkTests) CreateServices(t *testing.T) {
 	for _, node := range n.Nodes.Items {
 		node := node
 
-		t.Run(node.Name, func(t *testing.T) {
+		t.Run(fmt.Sprintf("CreateServiceForNode-%v", node.Name), func(t *testing.T) {
 			service := &v1.Service{
 				ObjectMeta: meta_v1.ObjectMeta{
 					Name:      node.Name,
