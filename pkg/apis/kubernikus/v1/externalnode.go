@@ -62,7 +62,7 @@ type SystemdNetDevNetDev struct {
 
 type SystemdNetDevBond struct {
 	Mode             string `json:"mode,omitempty"`
-	MIMMonitorSec    string `json:"mimMonitorSec,omitempty"`
+	MIIMonitorSec    string `json:"miiMonitorSec,omitempty"`
 	LACPTransmitRate string `json:"lacpTransmitRate,omitempty"`
 	UpDelaySec       string `json:"upDelaySec,omitempty"`
 	DownDelaySec     string `json:"downDelaySec,omitempty"`

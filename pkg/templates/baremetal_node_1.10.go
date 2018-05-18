@@ -200,8 +200,8 @@ networkd:
         [Bond]
     {{- if .Bond.Mode }}
         Mode={{ .Bond.Mode }}{{ end }}
-    {{- if .Bond.MIMMonitorSec }}
-        MIMMonitorSec={{ .Bond.MIMMonitorSec }}{{ end }}
+    {{- if .Bond.MIIMonitorSec }}
+        MIIMonitorSec={{ .Bond.MIIMonitorSec }}{{ end }}
     {{- if .Bond.LACPTransmitRate }}
         LACPTransmitRate={{ .Bond.LACPTransmitRate }}{{ end }}
     {{- if .Bond.UpDelaySec }}

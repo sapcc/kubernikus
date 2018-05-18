@@ -145,7 +145,7 @@ func TestGenerateNodeBareMetal(t *testing.T) {
 					},
 					Bond: &kubernikusv1.SystemdNetDevBond{
 						Mode:             "802.3ad",
-						MIMMonitorSec:    "1s",
+						MIIMonitorSec:    "1s",
 						LACPTransmitRate: "fast",
 						UpDelaySec:       "3s",
 						DownDelaySec:     "3s",
