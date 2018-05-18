@@ -4,14 +4,18 @@ import (
 	"fmt"
 	"net/url"
 	"os"
+	"time"
 
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/strfmt"
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack"
 	"github.com/gophercloud/gophercloud/openstack/identity/v3/tokens"
+	"k8s.io/apimachinery/pkg/util/wait"
 
 	kubernikus "github.com/sapcc/kubernikus/pkg/api/client"
+	"github.com/sapcc/kubernikus/pkg/api/client/operations"
+	"github.com/sapcc/kubernikus/pkg/api/models"
 )
 
 type Kubernikus struct {
@@ -84,8 +88,6 @@ func (f *Kubernikus) WaitForKlusterPhase(klusterName string, expectedPhase model
 
 	return finalPhase, err
 }
-
-
 
 // WaitForKlusterToHaveEnoughSchedulableNodes waits until the specified number of nodes equals the number of currently running, healthy, schedulable nodes
 func (k *Kubernikus) WaitForKlusterToHaveEnoughSchedulableNodes(klusterName string, timeout time.Duration) error {
