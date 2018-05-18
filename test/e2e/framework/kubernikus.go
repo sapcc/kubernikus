@@ -60,3 +60,65 @@ func NewKubernikusFramework(kubernikusURL *url.URL) (*Kubernikus, error) {
 		AuthInfo: authInfo,
 	}, nil
 }
+
+func (f *Kubernikus) WaitForKlusterPhase(klusterName string, expectedPhase models.KlusterPhase, timeout time.Duration) (finalPhase models.KlusterPhase, err error) {
+	err = wait.PollImmediate(Poll, timeout,
+		func() (bool, error) {
+			cluster, err := f.Client.Operations.ShowCluster(
+				operations.NewShowClusterParams().WithName(klusterName),
+				f.AuthInfo,
+			)
+
+			if err != nil {
+				return false, fmt.Errorf("Failed to show kluster: %v", err)
+			}
+
+			if cluster.Payload == nil {
+				return false, fmt.Errorf("API return empty response")
+			}
+
+			finalPhase = cluster.Payload.Status.Phase
+
+			return finalPhase == expectedPhase, nil
+		})
+
+	return finalPhase, err
+}
+
+
+
+// WaitForKlusterToHaveEnoughSchedulableNodes waits until the specified number of nodes equals the number of currently running, healthy, schedulable nodes
+func (k *Kubernikus) WaitForKlusterToHaveEnoughSchedulableNodes(klusterName string, timeout time.Duration) error {
+	return wait.PollImmediate(Poll, timeout,
+		func() (done bool, err error) {
+			cluster, err := k.Client.Operations.ShowCluster(
+				operations.NewShowClusterParams().WithName(klusterName),
+				k.AuthInfo,
+			)
+			if err != nil {
+				return false, err
+			}
+			return IsAllNodePoolsOfKlusterReady(cluster.Payload), nil
+		},
+	)
+}
+
+func (k *Kubernikus) WaitForKlusterToBeDeleted(klusterName string, timeout time.Duration) error {
+	return wait.PollImmediate(Poll, timeout,
+		func() (done bool, err error) {
+			_, err = k.Client.Operations.ShowCluster(
+				operations.NewShowClusterParams().WithName(klusterName),
+				k.AuthInfo,
+			)
+			if err != nil {
+				switch err.(type) {
+				case *operations.ShowClusterDefault:
+					result := err.(*operations.ShowClusterDefault)
+					return result.Code() == 404, nil
+				}
+				return false, err
+			}
+			return false, nil
+		},
+	)
+}

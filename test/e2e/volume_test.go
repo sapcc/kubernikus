@@ -12,6 +12,7 @@ import (
 	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 
+	"github.com/sapcc/kubernikus/pkg/util"
 	"github.com/sapcc/kubernikus/test/e2e/framework"
 )
 
@@ -22,9 +23,26 @@ const (
 
 type VolumeTests struct {
 	Kubernetes *framework.Kubernetes
-	Nodes      *v1.NodeList
-	Pods       *v1.PodList
 	Namespace  string
+	Nodes      *v1.NodeList
+}
+
+func (v *VolumeTests) Run(t *testing.T) {
+	t.Parallel()
+
+	v.Namespace = util.SimpleNameGenerator.GenerateName("e2e-volumes-")
+
+	var err error
+	v.Nodes, err = v.Kubernetes.ClientSet.CoreV1().Nodes().List(meta_v1.ListOptions{})
+	require.NoError(t, err, "There must be no error while listing the kluster's nodes")
+
+	defer t.Run("Cleanup", v.DeleteNamespace)
+	t.Run("CreateNamespace", v.CreateNamespace)
+	t.Run("WaitNamespace", v.WaitForNamespace)
+	t.Run("CreatePVC", v.CreatePVC)
+	t.Run("WaitPVCBound", v.WaitForPVCBound)
+	t.Run("CreatePod", v.CreatePod)
+	t.Run("WaitPodRunning", v.WaitForPVCPodsRunning)
 }
 
 func (p *VolumeTests) CreateNamespace(t *testing.T) {
@@ -44,44 +62,42 @@ func (p *VolumeTests) DeleteNamespace(t *testing.T) {
 
 func (p *VolumeTests) CreatePod(t *testing.T) {
 	nodeName := p.Nodes.Items[0].Name
-	t.Run(nodeName, func(t *testing.T) {
-		_, err := p.Kubernetes.ClientSet.CoreV1().Pods(p.Namespace).Create(&v1.Pod{
-			ObjectMeta: meta_v1.ObjectMeta{
-				GenerateName: fmt.Sprintf("%s-", nodeName),
-				Namespace:    p.Namespace,
-				Labels: map[string]string{
-					"app":  "pvc-hostname",
-					"node": nodeName,
-				},
+	_, err := p.Kubernetes.ClientSet.CoreV1().Pods(p.Namespace).Create(&v1.Pod{
+		ObjectMeta: meta_v1.ObjectMeta{
+			GenerateName: fmt.Sprintf("%s-", nodeName),
+			Namespace:    p.Namespace,
+			Labels: map[string]string{
+				"app":  "pvc-hostname",
+				"node": nodeName,
 			},
-			Spec: v1.PodSpec{
-				NodeName: nodeName,
-				Containers: []v1.Container{
-					{
-						Image: ServeHostnameImage,
-						Name:  "pvc-hostname",
-						VolumeMounts: []v1.VolumeMount{
-							{
-								Name:      "pvc-hostname",
-								MountPath: "/mymount",
-							},
-						},
-					},
-				},
-				Volumes: []v1.Volume{
-					{
-						Name: "pvc-hostname",
-						VolumeSource: v1.VolumeSource{
-							PersistentVolumeClaim: &v1.PersistentVolumeClaimVolumeSource{
-								ClaimName: "pvc-hostname",
-							},
+		},
+		Spec: v1.PodSpec{
+			NodeName: nodeName,
+			Containers: []v1.Container{
+				{
+					Image: ServeHostnameImage,
+					Name:  "pvc-hostname",
+					VolumeMounts: []v1.VolumeMount{
+						{
+							Name:      "pvc-hostname",
+							MountPath: "/mymount",
 						},
 					},
 				},
 			},
-		})
-		assert.NoError(t, err, "There should be no error while creating a pod with a volume")
+			Volumes: []v1.Volume{
+				{
+					Name: "pvc-hostname",
+					VolumeSource: v1.VolumeSource{
+						PersistentVolumeClaim: &v1.PersistentVolumeClaimVolumeSource{
+							ClaimName: "pvc-hostname",
+						},
+					},
+				},
+			},
+		},
 	})
+	assert.NoError(t, err, "There should be no error while creating a pod with a volume")
 }
 
 func (p *VolumeTests) WaitForPVCPodsRunning(t *testing.T) {

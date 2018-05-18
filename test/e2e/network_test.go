@@ -15,6 +15,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	"github.com/sapcc/kubernikus/pkg/util"
 	"github.com/sapcc/kubernikus/test/e2e/framework"
 )
 
@@ -35,8 +36,34 @@ const (
 
 type NetworkTests struct {
 	Kubernetes *framework.Kubernetes
-	Nodes      *v1.NodeList
 	Namespace  string
+	Nodes      *v1.NodeList
+}
+
+func (n *NetworkTests) Run(t *testing.T) {
+	t.Parallel()
+
+	n.Namespace = util.SimpleNameGenerator.GenerateName("e2e-network-")
+
+	var err error
+	n.Nodes, err = n.Kubernetes.ClientSet.CoreV1().Nodes().List(meta_v1.ListOptions{})
+	require.NoError(t, err, "There must be no error while listing the kluster's nodes")
+
+	defer t.Run("Cleanup", n.DeleteNamespace)
+	t.Run("CreateNamespace", n.CreateNamespace)
+	t.Run("WaitNamespace", n.WaitForNamespace)
+	t.Run("CreatePods", n.CreatePods)
+	t.Run("CreateService", n.CreateServices)
+	t.Run("Wait", func(t *testing.T) {
+		t.Run("Pods", n.WaitForPodsRunning)
+		t.Run("ServiceEndpoints", n.WaitForServiceEndpoints)
+		t.Run("KubeDNS", n.WaitForKubeDNSRunning)
+	})
+	t.Run("Connectivity", func(t *testing.T) {
+		t.Run("Pods", n.TestPods)
+		t.Run("Services", n.TestServices)
+		t.Run("ServicesWithDNS", n.TestServicesWithDNS)
+	})
 }
 
 func (n *NetworkTests) CreateNamespace(t *testing.T) {
@@ -59,8 +86,6 @@ func (n *NetworkTests) CreatePods(t *testing.T) {
 		node := node
 
 		t.Run(node.Name, func(t *testing.T) {
-			t.Parallel()
-
 			_, err := n.Kubernetes.ClientSet.CoreV1().Pods(n.Namespace).Create(&v1.Pod{
 				ObjectMeta: meta_v1.ObjectMeta{
 					GenerateName: fmt.Sprintf("%s-", node.Name),
@@ -92,12 +117,16 @@ func (n *NetworkTests) CreatePods(t *testing.T) {
 }
 
 func (n *NetworkTests) WaitForPodsRunning(t *testing.T) {
+	t.Parallel()
+
 	label := labels.SelectorFromSet(labels.Set(map[string]string{"app": "serve-hostname"}))
 	_, err := n.Kubernetes.WaitForPodsWithLabelRunningReady(n.Namespace, label, len(n.Nodes.Items), TestWaitForPodsRunningTimeout)
 	assert.NoError(t, err, "Pods must become ready")
 }
 
 func (n *NetworkTests) WaitForKubeDNSRunning(t *testing.T) {
+	t.Parallel()
+
 	label := labels.SelectorFromSet(labels.Set(map[string]string{"k8s-app": "kube-dns"}))
 	_, err := n.Kubernetes.WaitForPodsWithLabelRunningReady("kube-system", label, 1, TestWaitForKubeDNSRunningTimeout)
 	assert.NoError(t, err, "Kube-DNS must become ready")
@@ -108,8 +137,6 @@ func (n *NetworkTests) CreateServices(t *testing.T) {
 		node := node
 
 		t.Run(node.Name, func(t *testing.T) {
-			t.Parallel()
-
 			service := &v1.Service{
 				ObjectMeta: meta_v1.ObjectMeta{
 					Name:      node.Name,
@@ -140,6 +167,8 @@ func (n *NetworkTests) CreateServices(t *testing.T) {
 }
 
 func (n *NetworkTests) WaitForServiceEndpoints(t *testing.T) {
+	t.Parallel()
+
 	label := labels.SelectorFromSet(labels.Set(map[string]string{"service": "e2e"}))
 	_, err := n.Kubernetes.WaitForServiceEndpointsWithLabelNum(n.Namespace, label, 1, TestWaitForServiceEndpointsTimeout)
 	require.NoError(t, err, "Services must have 1 endpoint")
@@ -155,31 +184,26 @@ func (n *NetworkTests) TestPods(t *testing.T) {
 
 	for _, target := range pods.Items {
 		target := target
-		t.Run(target.Status.PodIP, func(t *testing.T) {
-			t.Parallel()
 
-			for _, source := range pods.Items {
-				source := source
+		for _, source := range pods.Items {
+			source := source
 
-				t.Run(source.Status.PodIP, func(t *testing.T) {
-					t.Parallel()
+			t.Run(fmt.Sprintf("%v->%v", source.Status.PodIP, target.Status.PodIP), func(t *testing.T) {
+				var stdout string
+				cmd := strings.Split(fmt.Sprintf("wget -O - http://%v:%v", target.Status.PodIP, ServeHostnamePort), " ")
+				err = wait.PollImmediate(PollInterval, TestPodTimeout,
+					func() (bool, error) {
+						stdout, _, err = n.Kubernetes.ExecCommandInContainerWithFullOutput(n.Namespace, source.Name, source.Spec.Containers[0].Name, cmd...)
+						if err != nil {
+							return false, nil
+						}
+						assert.Regexp(t, target.Name, stdout, "should respond with its hostname")
+						return true, nil
+					})
 
-					var stdout string
-					cmd := strings.Split(fmt.Sprintf("wget -O - http://%v:%v", target.Status.PodIP, ServeHostnamePort), " ")
-					err = wait.PollImmediate(PollInterval, TestPodTimeout,
-						func() (bool, error) {
-							stdout, _, err = n.Kubernetes.ExecCommandInContainerWithFullOutput(n.Namespace, source.Name, source.Spec.Containers[0].Name, cmd...)
-							if err != nil {
-								return false, nil
-							}
-							assert.Regexp(t, target.Name, stdout, "should respond with its hostname")
-							return true, nil
-						})
-
-					assert.NoError(t, err, "Pods should be able to communicate: %s", err)
-				})
-			}
-		})
+				assert.NoError(t, err, "Pods should be able to communicate: %s", err)
+			})
+		}
 	}
 }
 
@@ -196,29 +220,26 @@ func (n *NetworkTests) TestServices(t *testing.T) {
 
 	for _, target := range services.Items {
 		target := target
-		t.Run(target.Spec.ClusterIP, func(t *testing.T) {
-			t.Parallel()
 
-			for _, source := range pods.Items {
-				source := source
-				t.Run(source.Status.PodIP, func(t *testing.T) {
-					t.Parallel()
-					var stdout string
-					cmd := strings.Split(fmt.Sprintf("wget -O - http://%v:%v", target.Spec.ClusterIP, ServeHostnamePort), " ")
-					err = wait.PollImmediate(PollInterval, TestServicesTimeout,
-						func() (bool, error) {
-							stdout, _, err = n.Kubernetes.ExecCommandInContainerWithFullOutput(n.Namespace, source.Name, source.Spec.Containers[0].Name, cmd...)
-							if err != nil {
-								return false, nil
-							}
-							assert.Regexp(t, target.Name, stdout, "should respond with its hostname")
-							return true, nil
-						})
+		for _, source := range pods.Items {
+			source := source
 
-					assert.NoError(t, err, "Pods should be able to communicate: %s", err)
-				})
-			}
-		})
+			t.Run(fmt.Sprintf("%v->%v", source.Status.PodIP, target.Spec.ClusterIP), func(t *testing.T) {
+				var stdout string
+				cmd := strings.Split(fmt.Sprintf("wget -O - http://%v:%v", target.Spec.ClusterIP, ServeHostnamePort), " ")
+				err = wait.PollImmediate(PollInterval, TestServicesTimeout,
+					func() (bool, error) {
+						stdout, _, err = n.Kubernetes.ExecCommandInContainerWithFullOutput(n.Namespace, source.Name, source.Spec.Containers[0].Name, cmd...)
+						if err != nil {
+							return false, nil
+						}
+						assert.Regexp(t, target.Name, stdout, "should respond with its hostname")
+						return true, nil
+					})
+
+				assert.NoError(t, err, "Pods should be able to communicate: %s", err)
+			})
+		}
 	}
 
 }
@@ -238,30 +259,24 @@ func (n *NetworkTests) TestServicesWithDNS(t *testing.T) {
 		target := target
 		service := fmt.Sprintf("%s.%s.svc", target.GetName(), target.GetNamespace())
 
-		t.Run(service, func(t *testing.T) {
-			t.Parallel()
+		for _, source := range pods.Items {
+			source := source
 
-			for _, source := range pods.Items {
-				source := source
+			t.Run(fmt.Sprintf("%v->%v", source.Status.PodIP, service), func(t *testing.T) {
+				var stdout string
+				cmd := strings.Split(fmt.Sprintf("wget -O - http://%v:%v", service, ServeHostnamePort), " ")
+				err = wait.PollImmediate(PollInterval, TestServicesWithDNSTimeout,
+					func() (bool, error) {
+						stdout, _, err = n.Kubernetes.ExecCommandInContainerWithFullOutput(n.Namespace, source.Name, source.Spec.Containers[0].Name, cmd...)
+						if err != nil {
+							return false, nil
+						}
 
-				t.Run(source.Status.PodIP, func(t *testing.T) {
-					t.Parallel()
-
-					var stdout string
-					cmd := strings.Split(fmt.Sprintf("wget -O - http://%v:%v", service, ServeHostnamePort), " ")
-					err = wait.PollImmediate(PollInterval, TestServicesWithDNSTimeout,
-						func() (bool, error) {
-							stdout, _, err = n.Kubernetes.ExecCommandInContainerWithFullOutput(n.Namespace, source.Name, source.Spec.Containers[0].Name, cmd...)
-							if err != nil {
-								return false, nil
-							}
-
-							assert.Regexp(t, target.Name, stdout, "should respond with its hostname")
-							return true, nil
-						})
-					assert.NoError(t, err, "Pods should be able to communicate: %s", err)
-				})
-			}
-		})
+						assert.Regexp(t, target.Name, stdout, "should respond with its hostname")
+						return true, nil
+					})
+				assert.NoError(t, err, "Pods should be able to communicate: %s", err)
+			})
+		}
 	}
 }

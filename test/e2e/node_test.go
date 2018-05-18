@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"k8s.io/api/core/v1"
 	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
@@ -34,6 +35,16 @@ type NodeTests struct {
 	KlusterName       string
 }
 
+func (k *NodeTests) Run(t *testing.T) {
+	_ = t.Run("Created", k.StateRunning) &&
+		t.Run("Registered", k.Registered) &&
+		t.Run("Schedulable", k.StateSchedulable) &&
+		t.Run("NetworkUnavailable", k.ConditionNetworkUnavailable) &&
+		t.Run("Healthy", k.StateHealthy) &&
+		t.Run("Ready", k.ConditionReady) &&
+		t.Run("Sufficient", k.Sufficient)
+}
+
 func (k *NodeTests) StateRunning(t *testing.T) {
 	count, err := k.checkState(t, func(pool models.NodePoolInfo) int64 { return pool.Running }, StateRunningTimeout)
 	assert.NoError(t, err)
@@ -41,28 +52,24 @@ func (k *NodeTests) StateRunning(t *testing.T) {
 }
 
 func (k *NodeTests) StateSchedulable(t *testing.T) {
-	t.Parallel()
 	count, err := k.checkState(t, func(pool models.NodePoolInfo) int64 { return pool.Schedulable }, StateSchedulableTimeout)
 	assert.NoError(t, err)
 	assert.Equal(t, k.ExpectedNodeCount, count)
 }
 
 func (k *NodeTests) StateHealthy(t *testing.T) {
-	t.Parallel()
 	count, err := k.checkState(t, func(pool models.NodePoolInfo) int64 { return pool.Healthy }, StateHealthyTimeout)
 	assert.NoError(t, err)
 	assert.Equal(t, k.ExpectedNodeCount, count)
 }
 
 func (k *NodeTests) ConditionRouteBroken(t *testing.T) {
-	t.Parallel()
 	count, err := k.checkCondition(t, wormhole.NodeRouteBroken, v1.ConditionFalse, ConditionRouteBrokenTimeout)
 	assert.NoError(t, err)
 	assert.Equal(t, k.ExpectedNodeCount, count)
 }
 
 func (k *NodeTests) ConditionNetworkUnavailable(t *testing.T) {
-	t.Parallel()
 	count, err := k.checkCondition(t, v1.NodeNetworkUnavailable, v1.ConditionFalse, ConditionNetworkUnavailableTimeout)
 	assert.NoError(t, err)
 	assert.Equal(t, k.ExpectedNodeCount, count)
@@ -89,6 +96,12 @@ func (k *NodeTests) Registered(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.Equal(t, k.ExpectedNodeCount, count)
+}
+
+func (k *NodeTests) Sufficient(t *testing.T) {
+	nodeList, err := k.Kubernetes.ClientSet.CoreV1().Nodes().List(meta_v1.ListOptions{})
+	require.NoError(t, err, "There must be no error while listing the kluster's nodes")
+	require.Equal(t, len(nodeList.Items), SmokeTestNodeCount, "There must be exactly %d nodes", SmokeTestNodeCount)
 }
 
 type poolCount func(models.NodePoolInfo) int64

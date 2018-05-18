@@ -1,204 +1,79 @@
 package main
 
 import (
-	"flag"
-	"fmt"
-	"net/url"
-	"os"
 	"testing"
+	"time"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/sapcc/kubernikus/pkg/util"
+	"github.com/sapcc/kubernikus/pkg/api/client/operations"
+	"github.com/sapcc/kubernikus/pkg/api/models"
 	"github.com/sapcc/kubernikus/test/e2e/framework"
 )
 
-var (
-	kubernikusURL = flag.String("kubernikus", "", "Kubernikus URL")
-	kluster       = flag.String("kluster", "", "Use existing Kluster")
-	reuse         = flag.Bool("reuse", false, "Reuse exisiting Kluster")
-	cleanup       = flag.Bool("cleanup", true, "Cleanup after tests have been run")
+const (
+	KlusterPhaseBecomesCreatingTimeout = 1 * time.Minute
+	KlusterPhaseBecomesRunningTimeout  = 15 * time.Minute
 )
 
-func validate() error {
-	if *kubernikusURL == "" {
-		return fmt.Errorf("You need to provide the --kubernikus flag")
-	}
-
-	k, err := url.Parse(*kubernikusURL)
-	if err != nil {
-		return fmt.Errorf("You need to provide an URL for --kubernikus: %v", err)
-	}
-
-	if k.Host == "" {
-		return fmt.Errorf("You need to provide an URL for --kubernikus")
-	}
-
-	if reuse != nil && *reuse && (kluster == nil || *kluster == "") {
-		return fmt.Errorf("You need to provide the --kluster flag when --reuse is active")
-	}
-
-	for _, env := range []string{"OS_AUTH_URL", "OS_USERNAME", "OS_PASSWORD",
-		"OS_USER_DOMAIN_NAME", "OS_PROJECT_NAME", "OS_PROJECT_DOMAIN_NAME"} {
-		if os.Getenv(env) == "" {
-			return fmt.Errorf("You need to provide %s", env)
-		}
-	}
-
-	return nil
+type SetupTests struct {
+	Kubernikus  *framework.Kubernikus
+	KlusterName string
+	Reuse       bool
 }
 
-func TestMain(m *testing.M) {
-	flag.Parse()
+func (s *SetupTests) Run(t *testing.T) {
+	if s.Reuse == false {
+		created := t.Run("Cluster/Create", s.CreateCluster)
+		require.True(t, created, "The Kluster must have been created")
 
-	if err := validate(); err != nil {
-		fmt.Println(err)
-		os.Exit(2)
+		t.Run("Cluster/BecomesCreating", s.KlusterPhaseBecomesCreating)
 	}
 
-	os.Exit(m.Run())
+	running := t.Run("Cluster/BecomesRunning", s.KlusterPhaseBecomesRunning)
+	require.True(t, running, "The Kluster must be Running")
 }
 
-func TestRunner(t *testing.T) {
-	namespaceNetwork := util.SimpleNameGenerator.GenerateName("e2e-network-")
-	namespaceVolumes := util.SimpleNameGenerator.GenerateName("e2e-volumes-")
-	klusterName := util.SimpleNameGenerator.GenerateName("e2e-")
-
-	if kluster != nil && *kluster != "" {
-		klusterName = *kluster
+func (s *SetupTests) CreateCluster(t *testing.T) {
+	kluster := &models.Kluster{
+		Name: s.KlusterName,
+		Spec: models.KlusterSpec{
+			SSHPublicKey: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQCXIxVEUgtUVkvk2VM1hmIb8MxvxsmvYoiq9OBy3J8akTGNybqKsA2uhcwxSJX5Cn3si8kfMfka9EWiJT+e1ybvtsGILO5XRZPxyhYzexwb3TcALwc3LuzpF3Z/Dg2jYTRELTGhYmyca3mxzTlCjNXvYayLNedjJ8fIBzoCuSXNqDRToHru7h0Glz+wtuE74mNkOiXSvhtuJtJs7VCNVjobFQNfC1aeDsri2bPRHJJZJ0QF4LLYSayMEz3lVwIDyAviQR2Aa97WfuXiofiAemfGqiH47Kq6b8X7j3bOYGBvJKMUV7XeWhGsskAmTsvvnFxkc5PAD3Ct+liULjiQWlzDrmpTE8aMqLK4l0YQw7/8iRVz6gli42iEc2ZG56ob1ErpTLAKFWyCNOebZuGoygdEQaGTIIunAncXg5Rz07TdPl0Tf5ZZLpiAgR5ck0H1SETnjDTZ/S83CiVZWJgmCpu8YOKWyYRD4orWwdnA77L4+ixeojLIhEoNL8KlBgsP9Twx+fFMWLfxMmiuX+yksM6Hu+Lsm+Ao7Q284VPp36EB1rxP1JM7HCiEOEm50Jb6hNKjgN4aoLhG5yg+GnDhwCZqUwcRJo1bWtm3QvRA+rzrGZkId4EY3cyOK5QnYV5+24x93Ex0UspHMn7HGsHUESsVeV0fLqlfXyd2RbHTmDMP6w== Kubernikus Master Key",
+			NodePools: []models.NodePool{
+				{
+					Name:   "small",
+					Flavor: "m1.small",
+					Image:  "coreos-stable-amd64",
+					Size:   SmokeTestNodeCount,
+				},
+			},
+		},
 	}
 
-	kurl, err := url.Parse(*kubernikusURL)
-	require.NoError(t, err, "Must be able to parse Kubernikus URL")
-	require.NotEmpty(t, kurl.Host, "There must be a host in the Kubernikus URL")
+	cluster, err := s.Kubernikus.Client.Operations.CreateCluster(
+		operations.NewCreateClusterParams().WithBody(kluster),
+		s.Kubernikus.AuthInfo,
+	)
 
-	fmt.Printf("========================================================================\n")
-	fmt.Printf("Authentication\n")
-	fmt.Printf("========================================================================\n")
-	fmt.Printf("OS_AUTH_URL:            %v\n", os.Getenv("OS_AUTH_URL"))
-	fmt.Printf("OS_USERNAME:            %v\n", os.Getenv("OS_USERNAME"))
-	fmt.Printf("OS_USER_DOMAIN_NAME:    %v\n", os.Getenv("OS_USER_DOMAIN_NAME"))
-	fmt.Printf("OS_PROJECT_NAME:        %v\n", os.Getenv("OS_PROJECT_NAME"))
-	fmt.Printf("OS_PROJECT_DOMAIN_NAME: %v\n", os.Getenv("OS_PROJECT_DOMAIN_NAME"))
-	fmt.Printf("\n")
-	fmt.Printf("========================================================================\n")
-	fmt.Printf("Test Parameters\n")
-	fmt.Printf("========================================================================\n")
-	fmt.Printf("Kubernikus:             %v\n", kurl.Host)
-	fmt.Printf("Kluster Name:           %v\n", klusterName)
-	fmt.Printf("Reuse:                  %v\n", *reuse)
-	fmt.Printf("Cleanup:                %v\n", *cleanup)
-	fmt.Printf("\n\n")
+	require.NoError(t, err, "There should be no error")
+	require.NotNil(t, cluster.Payload, "There should be payload")
+	assert.Equalf(t, s.KlusterName, cluster.Payload.Name, "There should be a kluster with name: %v", s.KlusterName)
+	assert.Equal(t, cluster.Payload.Status.Phase, models.KlusterPhasePending, "Kluster should be in phase Pending")
+}
 
-	kubernikus, err := framework.NewKubernikusFramework(kurl)
-	require.NoError(t, err, "Must be able to connect to Kubernikus")
+func (s *SetupTests) KlusterPhaseBecomesCreating(t *testing.T) {
+	phase, err := s.Kubernikus.WaitForKlusterPhase(s.KlusterName, models.KlusterPhaseCreating, KlusterPhaseBecomesCreatingTimeout)
 
-	api := APITests{kubernikus, klusterName}
-	kluster := KlusterTests{kubernikus, klusterName}
-
-	if cleanup != nil && *cleanup == true {
-		defer t.Run("Cleanup", func(t *testing.T) {
-			if t.Run("TerminateCluster", api.TerminateCluster) {
-				t.Run("BecomesTerminating", kluster.KlusterPhaseBecomesTerminating)
-				t.Run("IsDeleted", api.WaitForKlusterToBeDeleted)
-			}
-		})
+	if assert.NoError(t, err, "There should be no error") {
+		assert.Equal(t, phase, models.KlusterPhaseCreating, "Kluster should become Creating")
 	}
+}
 
-	setup := t.Run("Setup", func(t *testing.T) {
-		if reuse == nil || *reuse == false {
-			created := t.Run("CreateCluster", api.CreateCluster)
-			require.True(t, created, "The Kluster must have been created")
+func (s *SetupTests) KlusterPhaseBecomesRunning(t *testing.T) {
+	phase, err := s.Kubernikus.WaitForKlusterPhase(s.KlusterName, models.KlusterPhaseRunning, KlusterPhaseBecomesRunningTimeout)
 
-			t.Run("BecomesCreating", kluster.KlusterPhaseBecomesCreating)
-		}
-
-		running := t.Run("BecomesRunning", kluster.KlusterPhaseBecomesRunning)
-		require.True(t, running, "The Kluster must be Running")
-
-	})
-	require.True(t, setup, "Test setup must complete successfully")
-
-	t.Run("API", func(t *testing.T) {
-		t.Run("ListCluster", api.ListClusters)
-		t.Run("ShowCluster", api.ShowCluster)
-		t.Run("GetClusterInfo", api.GetClusterInfo)
-		t.Run("GetCredentials", api.GetCredentials)
-	})
-
-	kubernetes, err := framework.NewKubernetesFramework(kubernikus, klusterName)
-	require.NoError(t, err, "Must be able to create a kubernetes client")
-
-	nodes := t.Run("Nodes", func(t *testing.T) {
-		nodeTests := NodeTests{kubernetes, kubernikus, SmokeTestNodeCount, klusterName}
-
-		running := t.Run("Created", nodeTests.StateRunning)
-		require.True(t, running, "The Kluster must have Running nodes")
-
-		registered := t.Run("Registered", nodeTests.Registered)
-		require.True(t, registered, "The Kluster must have Registered nodes")
-
-		t.Run("Conditions", func(t *testing.T) {
-			t.Run("NetworkUnavailable", nodeTests.ConditionNetworkUnavailable)
-			t.Run("Schedulable", nodeTests.StateSchedulable)
-			t.Run("Healthy", nodeTests.StateHealthy)
-		})
-
-		ready := t.Run("Ready", nodeTests.ConditionReady)
-		require.True(t, ready, "The Kluster must have Ready nodes")
-	})
-	require.True(t, nodes, "Node test must complete successfully")
-
-	nodeList, err := kubernetes.ClientSet.CoreV1().Nodes().List(meta_v1.ListOptions{})
-	require.NoError(t, err, "There must be no error while listing the kluster's nodes")
-	require.Equal(t, len(nodeList.Items), SmokeTestNodeCount, "There must be at least %d nodes", SmokeTestNodeCount)
-
-	t.Run("Smoke", func(t *testing.T) {
-		t.Run("Network", func(t *testing.T) {
-			t.Parallel()
-			network := NetworkTests{kubernetes, nodeList, namespaceNetwork}
-
-			defer t.Run("Cleanup", network.DeleteNamespace)
-			t.Run("Setup", func(t *testing.T) {
-				t.Run("Namespace/Create", network.CreateNamespace)
-				t.Run("Namespace/Wait", network.WaitForNamespace)
-				t.Run("Pods", func(t *testing.T) {
-					t.Parallel()
-					t.Run("Create", network.CreatePods)
-					t.Run("Wait", network.WaitForPodsRunning)
-				})
-				t.Run("Services", func(t *testing.T) {
-					t.Parallel()
-					t.Run("Create", network.CreateServices)
-					t.Run("WaitForServiceEndpoints", network.WaitForServiceEndpoints)
-					t.Run("WaitForKubeDNS", network.WaitForKubeDNSRunning)
-				})
-			})
-			t.Run("Connectivity", func(t *testing.T) {
-				t.Run("Connectivity/Pods", network.TestPods)
-				t.Run("Connectivity/Services", network.TestServices)
-				t.Run("ConnectivityServicesWithDNS", network.TestServicesWithDNS)
-			})
-		})
-
-		t.Run("Volumes", func(t *testing.T) {
-			t.Parallel()
-			volumes := VolumeTests{kubernetes, nodeList, nil, namespaceVolumes}
-
-			defer t.Run("Cleanup", volumes.DeleteNamespace)
-			t.Run("Setup/Namespace", func(t *testing.T) {
-				t.Run("Create", volumes.CreateNamespace)
-				t.Run("Wait", volumes.WaitForNamespace)
-			})
-			t.Run("PVC", func(t *testing.T) {
-				t.Run("Create", volumes.CreatePVC)
-				t.Run("Wait", volumes.WaitForPVCBound)
-			})
-			t.Run("Pods", func(t *testing.T) {
-				t.Run("Create", volumes.CreatePod)
-				t.Run("Wait", volumes.WaitForPVCPodsRunning)
-			})
-		})
-	})
+	if assert.NoError(t, err, "There should be no error") {
+		require.Equal(t, phase, models.KlusterPhaseRunning, "Kluster should become Running")
+	}
 }
