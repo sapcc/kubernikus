@@ -164,8 +164,8 @@ func (op *GroundControl) handler(key string) error {
 	if !exists {
 		// make sure to reset klusterStatusPhase metric if the kluster doesn't exist anymore
 		// get the name by splitting the key <ns>/<name>
-		if klusterKey := strings.SplitAfter(key, "/"); len(klusterKey) == 2 {
-			metrics.SetMetricKlusterTerminated(klusterKey[1])
+		if _, name, err := cache.SplitMetaNamespaceKey(key); err != nil {
+			metrics.SetMetricKlusterTerminated(name)
 		}
 		op.Logger.Log(
 			"msg", "kluster resource already deleted",
