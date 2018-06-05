@@ -55,6 +55,9 @@ func NewController(informer informers.NodeInformer, serviceCIDR string, tunnel *
 		Logger:      logger,
 	}
 
+	//Always forward requests to the serviceCIDR range
+	c.tunnel.AddRoute(serviceCIDR)
+
 	c.nodes.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
 		AddFunc: func(obj interface{}) {
 			key, err := cache.MetaNamespaceKeyFunc(obj)
