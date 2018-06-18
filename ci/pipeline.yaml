@@ -29,6 +29,16 @@ auth_feature: &auth_feature
   KUBERNIKUS_NAME: k-feature
   KUBERNIKUS_URL: https://k-feature.admin.cloud.sap
 
+auth_infra: &auth_infra
+  OS_AUTH_URL: https://identity-3.eu-nl-1.cloud.sap/v3
+  OS_USERNAME: {{kubernikus-prod-username}}
+  OS_PASSWORD: {{kubernikus-prod-password}}
+  OS_USER_DOMAIN_NAME: ccadmin
+  OS_PROJECT_NAME: kubernikus-infra
+  OS_PROJECT_DOMAIN_NAME: ccadmin
+  KUBERNIKUS_NAME: k-infra
+  KUBERNIKUS_URL: https://k-infra.admin.cloud.sap
+
 auth_staging: &auth_staging
   OS_AUTH_URL: https://identity-3.staging.cloud.sap/v3
   OS_USERNAME: {{kubernikus-staging-username}}
@@ -68,6 +78,16 @@ auth_eu-de-1: &auth_eu-de-1
   OS_PROJECT_DOMAIN_NAME: ccadmin
   KUBERNIKUS_NAME: k-eu-de-1 
   KUBERNIKUS_URL: https://k-eu-de-1.admin.cloud.sap
+
+auth_eu-de-1: &auth_eu-de-2
+  OS_AUTH_URL: https://identity-3.eu-de-2.cloud.sap/v3
+  OS_USERNAME: {{kubernikus-prod-username}}
+  OS_PASSWORD: {{kubernikus-prod-password}}
+  OS_USER_DOMAIN_NAME: ccadmin
+  OS_PROJECT_NAME: kubernikus
+  OS_PROJECT_DOMAIN_NAME: ccadmin
+  KUBERNIKUS_NAME: k-eu-de-2 
+  KUBERNIKUS_URL: https://k-eu-de-2.admin.cloud.sap
 
 auth_eu-nl-1: &auth_eu-nl-1
   OS_AUTH_URL: https://identity-3.eu-nl-1.cloud.sap/v3
@@ -119,6 +139,16 @@ auth_e2e_eu-de-1: &auth_e2e_eu-de-1
   KUBERNIKUS_NAME: e2e 
   KUBERNIKUS_URL: https://kubernikus.eu-de-1.cloud.sap
 
+auth_e2e_eu-de-1: &auth_e2e_eu-de-2
+  OS_AUTH_URL: https://identity-3.eu-de-2.cloud.sap/v3
+  OS_USERNAME: {{kubernikus-prod-username}}
+  OS_PASSWORD: {{kubernikus-prod-password}}
+  OS_USER_DOMAIN_NAME: ccadmin
+  OS_PROJECT_NAME: kubernikus-e2e
+  OS_PROJECT_DOMAIN_NAME: ccadmin
+  KUBERNIKUS_NAME: e2e 
+  KUBERNIKUS_URL: https://kubernikus.eu-de-2.cloud.sap
+
 auth_e2e_eu-nl-1: &auth_e2e_na-us-1
   OS_AUTH_URL: https://identity-3.na-us-1.cloud.sap/v3
   OS_USERNAME: {{kubernikus-prod-username}}
@@ -136,7 +166,7 @@ auth_e2e_qa-de-1: &auth_e2e_qa-de-1
   OS_USER_DOMAIN_NAME: ccadmin
   OS_PROJECT_NAME: kubernikus-e2e
   OS_PROJECT_DOMAIN_NAME: ccadmin
-  KUBERNIKUS_NAME: e2e_qa-de-1
+  KUBERNIKUS_NAME: e2e
   KUBERNIKUS_URL: https://kubernikus.qa-de-1.cloud.sap
 
 resources:
@@ -161,6 +191,17 @@ resources:
       repo:     kubernikus
       access_token: ((github-com-access-token))
       branch: feature 
+      depth: 1
+
+  - name: infra.builds
+    type: gh-status
+    source:
+      username: sapcc-bot
+      password: ((github-com-access-token))
+      owner:    sapcc
+      repo:     kubernikus
+      access_token: ((github-com-access-token))
+      branch: infra 
       depth: 1
 
   - name: secrets.git
@@ -233,6 +274,22 @@ jobs:
           params:
             <<: *auth_feature
 
+  - name: infra 
+    serial: true
+    plan:
+      - aggregate:
+        - get: secrets.git
+        - get: kubernikus.builds
+          resource: infra.builds
+          trigger: true
+      - aggregate:
+        - task: k-infra
+          file: kubernikus.builds/ci/task_helm-admin_kubernikus.yaml
+          params:
+            REGION: admin
+            KUBERNIKUS_NAME: k-infra
+            GITHUB_TOKEN: ((github-access-token))
+
   - name: e2e
     serial: true
     plan:
@@ -244,11 +301,13 @@ jobs:
           trigger: true
       - task: e2e_tests
         file: kubernikus.builds/ci/task_e2e_tests.yaml
+        timeout: 2h
         params:
           <<: *auth_e2e_eu-nl-1
 
   - name: conformance 
     serial: true
+    build_logs_to_retain: 30
     plan:
       - aggregate:
         - get: kubernikus.builds
@@ -278,6 +337,10 @@ jobs:
           file: kubernikus.builds/ci/task_helm_kubernikus.yaml
           params:
             <<: *auth_eu-de-1
+        - task: kubernikus_eu-de-2
+          file: kubernikus.builds/ci/task_helm_kubernikus.yaml
+          params:
+            <<: *auth_eu-de-2
         - task: kubernikus_eu-nl-1
           file: kubernikus.builds/ci/task_helm_kubernikus.yaml
           params:
@@ -286,6 +349,10 @@ jobs:
           file: kubernikus.builds/ci/task_helm_kubernikus-system.yaml
           params:
             <<: *auth_eu-de-1
+        - task: kubernikus-system_eu-de-2
+          file: kubernikus.builds/ci/task_helm_kubernikus-system.yaml
+          params:
+            <<: *auth_eu-de-2
         - task: kubernikus-system_eu-nl-1
           file: kubernikus.builds/ci/task_helm_kubernikus-system.yaml
           params:
@@ -363,6 +430,12 @@ jobs:
             REGION: admin
             KUBERNIKUS_NAME: k-eu-de-1
             GITHUB_TOKEN: ((github-access-token))
+        - task: k-eu-de-2
+          file: kubernikus.builds/ci/task_helm-admin_kubernikus.yaml
+          params:
+            REGION: admin
+            KUBERNIKUS_NAME: k-eu-de-2
+            GITHUB_TOKEN: ((github-access-token))
         - task: k-eu-nl-1
           file: kubernikus.builds/ci/task_helm-admin_kubernikus.yaml
           params:
@@ -429,6 +502,7 @@ jobs:
 
   - name: soak_ap-au-1
     serial: true
+    build_logs_to_retain: 168
     plan:
       - aggregate:
         - get: secrets.git
@@ -439,11 +513,13 @@ jobs:
           trigger: true
       - task: e2e_tests
         file: kubernikus.builds/ci/task_e2e_tests.yaml
+        timeout: 45m
         params:
           <<: *auth_e2e_ap-au-1
 
   - name: soak_eu-de-1
     serial: true
+    build_logs_to_retain: 168
     plan:
       - aggregate:
         - get: secrets.git
@@ -454,11 +530,13 @@ jobs:
           trigger: true
       - task: e2e_tests
         file: kubernikus.builds/ci/task_e2e_tests.yaml
+        timeout: 45m
         params:
           <<: *auth_e2e_eu-de-1
 
-  - name: soak_na-us-1
+  - name: soak_eu-de-2
     serial: true
+    build_logs_to_retain: 168
     plan:
       - aggregate:
         - get: secrets.git
@@ -469,10 +547,29 @@ jobs:
           trigger: true
       - task: e2e_tests
         file: kubernikus.builds/ci/task_e2e_tests.yaml
+        timeout: 45m
+        params:
+          <<: *auth_e2e_eu-de-2
+
+  - name: soak_na-us-1
+    serial: true
+    build_logs_to_retain: 168
+    plan:
+      - aggregate:
+        - get: secrets.git
+        - get: kubernikus.builds
+          resource: master.builds
+          passed: [e2e]
+        - get: hourly 
+          trigger: true
+      - task: e2e_tests
+        file: kubernikus.builds/ci/task_e2e_tests.yaml
+        timeout: 45m
         params:
           <<: *auth_e2e_na-us-1
 
   - name: soak_qa-de-1
+    build_logs_to_retain: 168
     serial: true
     plan:
       - aggregate:
@@ -484,5 +581,6 @@ jobs:
           trigger: true
       - task: e2e_tests
         file: kubernikus.builds/ci/task_e2e_tests.yaml
+        timeout: 45m
         params:
           <<: *auth_e2e_qa-de-1

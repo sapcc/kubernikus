@@ -62,7 +62,7 @@ func NewClientConfigV1(name, user, url string, key, cert, ca []byte) clientcmdap
 		Kind:           "Config",
 		CurrentContext: name,
 		Clusters: []clientcmdapiv1.NamedCluster{
-			clientcmdapiv1.NamedCluster{
+			{
 				Name: name,
 				Cluster: clientcmdapiv1.Cluster{
 					Server: url,
@@ -71,7 +71,7 @@ func NewClientConfigV1(name, user, url string, key, cert, ca []byte) clientcmdap
 			},
 		},
 		Contexts: []clientcmdapiv1.NamedContext{
-			clientcmdapiv1.NamedContext{
+			{
 				Name: name,
 				Context: clientcmdapiv1.Context{
 					Cluster:  name,
@@ -80,7 +80,7 @@ func NewClientConfigV1(name, user, url string, key, cert, ca []byte) clientcmdap
 			},
 		},
 		AuthInfos: []clientcmdapiv1.NamedAuthInfo{
-			clientcmdapiv1.NamedAuthInfo{
+			{
 				Name: user,
 				AuthInfo: clientcmdapiv1.AuthInfo{
 					ClientCertificateData: cert,

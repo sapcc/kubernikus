@@ -162,6 +162,11 @@ func (op *GroundControl) handler(key string) error {
 		return fmt.Errorf("Failed to fetch key %s from cache: %s", key, err)
 	}
 	if !exists {
+		// make sure to reset klusterStatusPhase metric if the kluster doesn't exist anymore
+		// get the name by splitting the key <ns>/<name>
+		if _, name, err := cache.SplitMetaNamespaceKey(key); err != nil {
+			metrics.SetMetricKlusterTerminated(name)
+		}
 		op.Logger.Log(
 			"msg", "kluster resource already deleted",
 			"kluster", key,
@@ -289,7 +294,6 @@ func (op *GroundControl) handler(key string) error {
 						"err", err)
 					return err
 				}
-				metrics.SetMetricKlusterTerminated(kluster.GetName())
 				op.Logger.Log(
 					"msg", "terminated kluster",
 					"kluster", kluster.GetName(),

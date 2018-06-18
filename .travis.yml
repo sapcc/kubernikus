@@ -5,6 +5,7 @@ branches:
   only:
     - master
     - feature
+    - infra
 
 env:
   - VERSION=$TRAVIS_COMMIT

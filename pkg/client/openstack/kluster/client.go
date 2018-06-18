@@ -18,7 +18,7 @@ import (
 )
 
 type KlusterClient interface {
-	CreateNode(*models.NodePool, []byte) (string, error)
+	CreateNode(*models.NodePool, string, []byte) (string, error)
 	DeleteNode(string) error
 	ListNodes(*models.NodePool) ([]Node, error)
 	SetSecurityGroup(nodeID string) error
@@ -61,16 +61,13 @@ func NewKlusterClient(network, compute, identity *gophercloud.ServiceClient, klu
 	return client
 }
 
-func (c *klusterClient) CreateNode(pool *models.NodePool, userData []byte) (string, error) {
-	var name string
-	name = SimpleNameGenerator.GenerateName(fmt.Sprintf("%v-%v-", c.Kluster.Spec.Name, pool.Name))
-
+func (c *klusterClient) CreateNode(pool *models.NodePool, name string, userData []byte) (string, error) {
 	configDrive := true
 	server, err := compute.Create(c.ComputeClient, servers.CreateOpts{
 		Name:           name,
 		FlavorName:     pool.Flavor,
 		ImageName:      pool.Image,
-		Networks:       []servers.Network{servers.Network{UUID: c.Kluster.Spec.Openstack.NetworkID}},
+		Networks:       []servers.Network{{UUID: c.Kluster.Spec.Openstack.NetworkID}},
 		UserData:       userData,
 		ServiceClient:  c.ComputeClient,
 		SecurityGroups: []string{c.Kluster.Spec.Openstack.SecurityGroupName},

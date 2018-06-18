@@ -22,7 +22,7 @@ const (
 	DeorbitHanging SelfDestructReason = "DeorbitHanging"
 
 	// If the customer's apiserver is unreachable for this duration, we assume it is
-	// already decomissioned, permanently damaged or was never created successfully
+	// already decommissioned, permanently damaged or was never created successfully
 	// in the first place.
 	APIUnavailableTimeout = 2 * time.Minute
 

@@ -723,7 +723,8 @@ func init() {
       "properties": {
         "code": {
           "description": "The error code",
-          "type": "integer"
+          "type": "integer",
+          "x-nullable": false
         },
         "helpUrl": {
           "description": "link to help page explaining the error in more detail",
@@ -732,7 +733,8 @@ func init() {
         },
         "message": {
           "description": "The error message",
-          "type": "string"
+          "type": "string",
+          "x-nullable": false
         }
       }
     }

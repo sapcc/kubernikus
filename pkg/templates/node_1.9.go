@@ -53,6 +53,7 @@ systemd:
           --mount volume=etc-machine-id,target=/etc/machine-id
         Environment="KUBELET_IMAGE_TAG=v1.9.0_coreos.0"
         Environment="KUBELET_IMAGE_URL=quay.io/coreos/hyperkube"
+        Environment="KUBELET_IMAGE_ARGS=--name=kubelet --exec=/kubelet"
         ExecStartPre=/bin/mkdir -p /etc/kubernetes/manifests
         ExecStartPre=/bin/mkdir -p /var/lib/cni
         ExecStartPre=-/usr/bin/rkt rm --uuid-file=/var/run/kubelet-pod.uuid
@@ -97,7 +98,7 @@ systemd:
           --volume etc-kubernetes-certs,kind=host,source=/etc/kubernetes/certs,readOnly=true \
           --mount volume=etc-kubernetes-certs,target=/etc/kubernetes/certs \
           docker://{{ .KubernikusImage }}:{{ .KubernikusImageTag }} \
-          --exec wormhole -- client --listen {{ .ApiserverIP }}:6443 --kubeconfig=/var/lib/kubelet/kubeconfig
+          --name wormhole --exec wormhole -- client --listen {{ .ApiserverIP }}:6443 --kubeconfig=/var/lib/kubelet/kubeconfig
         ExecStopPost=/usr/bin/rkt gc --mark-only
         KillMode=mixed
         Restart=always
@@ -129,6 +130,7 @@ systemd:
           --mount volume=lib-modules,target=/lib/modules \
           --stage1-from-dir=stage1-fly.aci \
           quay.io/coreos/hyperkube:v1.9.0_coreos.0 \
+          --name=kube-proxy \
           --exec=hyperkube \
           -- \
           proxy \

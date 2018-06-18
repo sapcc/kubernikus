@@ -21,8 +21,8 @@ func NewErrorResponse(resp ErrorResponse, code int, msg string, a ...interface{}
 	c := int64(code)
 
 	resp.SetPayload(&models.Error{
-		Message: &m,
-		Code:    &c,
+		Message: m,
+		Code:    c,
 	})
 	return resp
 }

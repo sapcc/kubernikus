@@ -145,7 +145,7 @@ func (r *RouteGarbageCollector) reconcile(kluster *v1.Kluster, logger log.Logger
 }
 
 func (r *RouteGarbageCollector) klusterAdd(obj interface{}) {
-	//TODO: Don't start routegc watchloop for 1.10+ klusters
+	//TODO: Don't start routegc watchloop for 1.11+ klusters
 	key, err := cache.MetaNamespaceKeyFunc(obj)
 	if err != nil {
 		return

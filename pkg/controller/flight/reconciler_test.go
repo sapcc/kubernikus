@@ -43,8 +43,8 @@ type MockKlusterClient struct {
 	mock.Mock
 }
 
-func (m *MockKlusterClient) CreateNode(pool *models.NodePool, data []byte) (string, error) {
-	args := m.Called(pool, data)
+func (m *MockKlusterClient) CreateNode(pool *models.NodePool, nodeName string, data []byte) (string, error) {
+	args := m.Called(pool, nodeName, data)
 	return args.String(0), args.Error(1)
 }
 
@@ -122,12 +122,12 @@ func TestDeleteIncompletelySpawnedInstances(t *testing.T) {
 	}
 
 	nodes := []*core_v1.Node{
-		&core_v1.Node{
+		{
 			ObjectMeta: meta_v1.ObjectMeta{
 				Name: "e",
 			},
 		},
-		&core_v1.Node{
+		{
 			ObjectMeta: meta_v1.ObjectMeta{
 				Name: "f",
 			},

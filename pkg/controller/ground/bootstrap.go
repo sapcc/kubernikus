@@ -32,11 +32,13 @@ func SeedKluster(client clientset.Interface, kluster *v1.Kluster) error {
 	if err := SeedAllowCertificateControllerToDeleteCSRs(client); err != nil {
 		return err
 	}
+	if err := SeedAllowApiserverToAccessKubeletAPI(client); err != nil {
+		return err
+	}
 	if err := dns.SeedKubeDNS(client, "", "", kluster.Spec.DNSDomain, kluster.Spec.DNSAddress); err != nil {
 		return err
 	}
 	return nil
-
 }
 
 func SeedCinderStorageClass(client clientset.Interface) error {
@@ -121,6 +123,25 @@ func SeedAllowBootstrapTokensToPostCSRs(client clientset.Interface) error {
 	})
 }
 
+func SeedAllowApiserverToAccessKubeletAPI(client clientset.Interface) error {
+	return CreateOrUpdateClusterRoleBinding(client, &rbac.ClusterRoleBinding{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "kubernikus:apiserver-kubeletapi",
+		},
+		RoleRef: rbac.RoleRef{
+			APIGroup: rbac.GroupName,
+			Kind:     "ClusterRole",
+			Name:     "system:kubelet-api-admin",
+		},
+		Subjects: []rbac.Subject{
+			{
+				Kind: rbac.UserKind,
+				Name: "apiserver",
+			},
+		},
+	})
+}
+
 // addresses https://github.com/kubernetes/kubernetes/issues/59351
 func SeedAllowCertificateControllerToDeleteCSRs(client clientset.Interface) error {
 	return CreateOrUpdateClusterRole(client, &rbac.ClusterRole{
@@ -134,22 +155,22 @@ func SeedAllowCertificateControllerToDeleteCSRs(client clientset.Interface) erro
 			},
 		},
 		Rules: []rbac.PolicyRule{
-			rbac.PolicyRule{
+			{
 				Verbs:     []string{"delete", "get", "list", "watch"},
 				APIGroups: []string{"certificates.k8s.io"},
 				Resources: []string{"certificatesigningrequests"},
 			},
-			rbac.PolicyRule{
+			{
 				Verbs:     []string{"update"},
 				APIGroups: []string{"certificates.k8s.io"},
 				Resources: []string{"certificatesigningrequests/approval", "certificatesigningrequests/status"},
 			},
-			rbac.PolicyRule{
+			{
 				Verbs:     []string{"create"},
 				APIGroups: []string{"authorization.k8s.io"},
 				Resources: []string{"subjectaccessreviews"},
 			},
-			rbac.PolicyRule{
+			{
 				Verbs:     []string{"create", "patch", "update"},
 				APIGroups: []string{""}, //looks funny but is in the default rule ...
 				Resources: []string{"events"},
@@ -164,7 +185,7 @@ func SeedAutoApproveNodeBootstrapTokens(client clientset.Interface) error {
 			Name: "kubernikus:approve-node-client-csr",
 		},
 		Rules: []rbac.PolicyRule{
-			rbac.PolicyRule{
+			{
 				Verbs:     []string{"create"},
 				APIGroups: []string{"certificates.k8s.io"},
 				Resources: []string{"certificatesigningrequests/nodeclient"},

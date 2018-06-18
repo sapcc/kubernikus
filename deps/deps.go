@@ -5,10 +5,12 @@ package extra_dependencies
 
 import (
 	_ "github.com/stretchr/testify/assert"
-	_ "github.com/stretchr/testify/require"
 	_ "github.com/stretchr/testify/mock"
+	_ "github.com/stretchr/testify/require"
+	_ "github.com/stretchr/testify/suite"
 	_ "k8s.io/client-go/kubernetes/fake"
 	_ "k8s.io/code-generator/cmd/client-gen"
+	_ "k8s.io/code-generator/cmd/deepcopy-gen"
 	_ "k8s.io/code-generator/cmd/informer-gen"
 	_ "k8s.io/code-generator/cmd/lister-gen"
 )

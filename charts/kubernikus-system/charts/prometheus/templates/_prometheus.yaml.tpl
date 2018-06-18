@@ -257,5 +257,3 @@ scrape_configs:
   metrics_path: /metrics
   static_configs:
     - targets: ['localhost:9090']
-
-

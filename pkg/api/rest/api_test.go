@@ -156,7 +156,7 @@ func TestClusterShow(t *testing.T) {
 
 	//Test 404
 	req = createRequest("GET", "/api/v1/clusters/doesnotexit", "")
-	code, _, body = result(handler, req)
+	code, _, _ = result(handler, req)
 	assert.Equal(t, 404, code)
 }
 
@@ -182,7 +182,7 @@ func TestClusterUpdate(t *testing.T) {
 				RouterID:   "routerid",
 			},
 			NodePools: []models.NodePool{
-				models.NodePool{
+				{
 					Flavor: "flavour",
 					Image:  "image",
 					Name:   "poolname",
@@ -212,7 +212,7 @@ func TestClusterUpdate(t *testing.T) {
 				RouterID:   "changed",
 			},
 			NodePools: []models.NodePool{
-				models.NodePool{
+				{
 					Flavor: "newflavour",
 					Image:  "newimage",
 					Name:   "newpoolname",

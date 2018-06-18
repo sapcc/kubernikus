@@ -70,6 +70,11 @@ type Certificates struct {
 		ApiServer Bundle
 		Wormhole  Bundle
 	}
+
+	Aggregation struct {
+		CA         Bundle
+		Aggregator Bundle
+	}
 }
 
 func (c *Certificates) toMap() map[string]string {
@@ -107,15 +112,12 @@ func NewBundle(key, cert []byte) (Bundle, error) {
 }
 
 func (b *Bundle) basename() string {
-	stem := ""
-	suffix := ""
+	stem := b.Certificate.Issuer.CommonName
+	suffix := b.Certificate.Subject.CommonName
 
 	if b.Certificate.IsCA {
 		stem = b.Certificate.Subject.CommonName
 		suffix = "ca"
-	} else {
-		stem = b.Certificate.Issuer.CommonName
-		suffix = b.Certificate.Subject.CommonName
 	}
 
 	return sanitize.BaseName(strings.ToLower(fmt.Sprintf("%s-%s", stem, suffix)))
@@ -163,6 +165,8 @@ func (c Certificates) all() []Bundle {
 		c.TLS.CA,
 		c.TLS.ApiServer,
 		c.TLS.Wormhole,
+		c.Aggregation.CA,
+		c.Aggregation.Aggregator,
 	}
 }
 
@@ -178,6 +182,7 @@ func CreateCertificates(kluster *v1.Kluster, apiURL, authURL, domain string) (ma
 	createCA(kluster.Name, "ApiServer Nodes", &certs.ApiServer.Nodes.CA)
 	createCA(kluster.Name, "Kubelet Clients", &certs.Kubelet.Clients.CA)
 	createCA(kluster.Name, "TLS", &certs.TLS.CA)
+	createCA(kluster.Name, "Aggregation", &certs.Aggregation.CA)
 
 	certs.Etcd.Clients.ApiServer = certs.signEtcdClient("apiserver")
 	certs.Etcd.Peers.Universal = certs.signEtcdPeer("universal")
@@ -193,6 +198,7 @@ func CreateCertificates(kluster *v1.Kluster, apiURL, authURL, domain string) (ma
 		[]net.IP{net.IPv4(127, 0, 0, 1), apiIP})
 	certs.TLS.Wormhole = certs.signTLS("wormhole",
 		[]string{fmt.Sprintf("%v-wormhole.%v", kluster.Name, domain)}, []net.IP{})
+	certs.Aggregation.Aggregator = certs.signAggregation("aggregator")
 
 	return certs.toMap(), nil
 }
@@ -231,10 +237,11 @@ func (c Certificates) signApiServerNode(name string) Bundle {
 	return c.ApiServer.Nodes.CA.Sign(config)
 }
 
-func (c Certificates) signKubeletClient(name string) Bundle {
+func (c Certificates) signKubeletClient(name string, groups ...string) Bundle {
 	config := Config{
-		Sign:   name,
-		Usages: []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth},
+		Sign:         name,
+		Organization: groups,
+		Usages:       []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth},
 	}
 	return c.Kubelet.Clients.CA.Sign(config)
 }
@@ -249,6 +256,14 @@ func (c Certificates) signTLS(name string, dnsNames []string, ips []net.IP) Bund
 		},
 	}
 	return c.TLS.CA.Sign(config)
+}
+
+func (c Certificates) signAggregation(name string) Bundle {
+	config := Config{
+		Sign:   name,
+		Usages: []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth},
+	}
+	return c.Aggregation.CA.Sign(config)
 }
 
 func createCA(klusterName, name string, bundle *Bundle) {

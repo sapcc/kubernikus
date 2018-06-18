@@ -1,7 +1,8 @@
-package kluster
+package util
 
 import (
 	"fmt"
+	"strings"
 
 	utilrand "k8s.io/apimachinery/pkg/util/rand"
 )
@@ -32,5 +33,5 @@ func (simpleNameGenerator) GenerateName(base string) string {
 	if len(base) > maxGeneratedNameLength {
 		base = base[:maxGeneratedNameLength]
 	}
-	return fmt.Sprintf("%s%s", base, utilrand.String(randomLength))
+	return strings.ToLower(fmt.Sprintf("%s%s", base, utilrand.String(randomLength)))
 }

@@ -503,9 +503,11 @@ definitions:
       code:
         type: integer
         description: The error code
+        x-nullable: false
       message:
         description: The error message
         type: string
+        x-nullable: false
       helpUrl:
         description: link to help page explaining the error in more detail
         type: string

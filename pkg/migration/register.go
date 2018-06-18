@@ -8,6 +8,7 @@ package migration
 func init() {
 	defaultRegistry.migrations = []Migration{
 		Init,
+		AddAggregationLayerCertificates,
 		// <-- Insert new migrations at the end only!
 	}
 }

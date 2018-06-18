@@ -32,7 +32,7 @@ func createFakeNodeObservatory(kluster *v1.Kluster, node *api_v1.Node) NodeObser
 
 	return NodeObservatory{
 		klusterInformer: kubernikusInformerFactory.Kubernikus().V1().Klusters(),
-		clientFactory:   &kubernetes.MockSharedClientFactory{fakeKubernetesClientset},
+		clientFactory:   &kubernetes.MockSharedClientFactory{Clientset: fakeKubernetesClientset},
 		logger:          log.NewNopLogger(),
 	}
 }

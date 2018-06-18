@@ -14,7 +14,7 @@ groups:
       summary: Kluster stuck in phase {{ $labels.phase }}
 
   - alert: KubernikusAPIDown
-    expr: probe_success{kubernetes_name="kubernikus-api"} != 1
+    expr: count by (instance) (probe_success{kubernetes_name="kubernikus-api"} != 1) >= count by (instance) (probe_success{kubernetes_name="kubernikus-api"} == 1)
     for: 5m
     labels:
       tier: kubernikus
@@ -34,8 +34,8 @@ groups:
       severity: warning
       context: kluster
     annotations:
-      description: "{{ $labels.instance }} is unavailable"
-      summary: "{{ $labels.instance }} is unavailable"
+      description: "{{ $labels.kubernetes_name }} is unavailable"
+      summary: "{{ $labels.kubernetes_name }} is unavailable"
 
 - name: operator.alerts
   rules:
