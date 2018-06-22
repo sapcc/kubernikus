@@ -19,7 +19,7 @@ import (
 
 const (
 	// Incremental Increasing TImeout
-	StateRunningTimeout                = 1 * time.Minute  // Time from cluster ready to nodes being created
+	StateRunningTimeout                = 5 * time.Minute  // Time from cluster ready to nodes being created
 	RegisteredTimeout                  = 15 * time.Minute // Time from node created to registered
 	StateSchedulableTimeout            = 1 * time.Minute  // Time from registered to schedulable
 	StateHealthyTimeout                = 1 * time.Minute
