@@ -208,7 +208,7 @@ resources:
   - name: hourly 
     type: time
     source: {interval: 1h}
-  - name: notify
+  - name: slack
     type: slack-alert
     source:
       url: ((slack-webhook-url))
@@ -248,6 +248,9 @@ jobs:
           file: kubernikus.builds/ci/task_helm_kubernikus-system.yaml
           params:
             <<: *auth_master
+    on_success: { put: slack, params: {alert_type: fixed } }
+    on_failure: { put: slack, params: {alert_type: broke } }
+    on_abort:   { put: slack, params: {alert_type: broke } }
 
   - name: feature 
     serial: true
@@ -297,9 +300,9 @@ jobs:
         timeout: 2h
         params:
           <<: *auth_e2e_eu-nl-1
-    on_success: { put: notify, params: {alert_type: fixed } }
-    on_failure: { put: notify, params: {alert_type: broke } }
-    on_abort:   { put: notify, params: {alert_type: broke } }
+    on_success: { put: slack, params: {alert_type: fixed } }
+    on_failure: { put: slack, params: {alert_type: broke } }
+    on_abort:   { put: slack, params: {alert_type: broke } }
 
   - name: conformance 
     serial: true
@@ -512,6 +515,9 @@ jobs:
         timeout: 45m
         params:
           <<: *auth_e2e_ap-au-1
+    on_success: { put: slack, params: {alert_type: fixed } }
+    on_failure: { put: slack, params: {alert_type: broke } }
+    on_abort:   { put: slack, params: {alert_type: broke } }
 
   - name: soak_eu-de-1
     serial: true
@@ -529,9 +535,9 @@ jobs:
         timeout: 45m
         params:
           <<: *auth_e2e_eu-de-1
-    on_success: { put: notify, params: {alert_type: fixed } }
-    on_failure: { put: notify, params: {alert_type: broke } }
-    on_abort:   { put: notify, params: {alert_type: broke } }
+    on_success: { put: slack, params: {alert_type: fixed } }
+    on_failure: { put: slack, params: {alert_type: broke } }
+    on_abort:   { put: slack, params: {alert_type: broke } }
 
   - name: soak_eu-de-2
     serial: true
@@ -549,9 +555,9 @@ jobs:
         timeout: 45m
         params:
           <<: *auth_e2e_eu-de-2
-    on_success: { put: notify, params: {alert_type: fixed } }
-    on_failure: { put: notify, params: {alert_type: broke } }
-    on_abort:   { put: notify, params: {alert_type: broke } }
+    on_success: { put: slack, params: {alert_type: fixed } }
+    on_failure: { put: slack, params: {alert_type: broke } }
+    on_abort:   { put: slack, params: {alert_type: broke } }
 
   - name: soak_na-us-1
     serial: true
@@ -569,9 +575,9 @@ jobs:
         timeout: 45m
         params:
           <<: *auth_e2e_na-us-1
-    on_success: { put: notify, params: {alert_type: fixed } }
-    on_failure: { put: notify, params: {alert_type: broke } }
-    on_abort:   { put: notify, params: {alert_type: broke } }
+    on_success: { put: slack, params: {alert_type: fixed } }
+    on_failure: { put: slack, params: {alert_type: broke } }
+    on_abort:   { put: slack, params: {alert_type: broke } }
 
   - name: soak_qa-de-1
     build_logs_to_retain: 168
@@ -589,6 +595,6 @@ jobs:
         timeout: 45m
         params:
           <<: *auth_e2e_qa-de-1
-    on_success: { put: notify, params: {alert_type: fixed } }
-    on_failure: { put: notify, params: {alert_type: broke } }
-    on_abort:   { put: notify, params: {alert_type: broke } }
+    on_success: { put: slack, params: {alert_type: fixed } }
+    on_failure: { put: slack, params: {alert_type: broke } }
+    on_abort:   { put: slack, params: {alert_type: broke } }
