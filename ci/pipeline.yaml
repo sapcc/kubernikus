@@ -1,18 +1,7 @@
-post_failure_to_slack: &post_failure_to_slack
-  put: slack-alert
-  params:
-    channel: '#kubernikus'
-    username: 'Concourse'
-    icon_emoji: ':airplane:'
-    silent: 'true'
-    text: |
-      :boom: <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|$BUILD_PIPELINE_NAME $BUILD_JOB_NAME job #$BUILD_NAME failed>
-      To debug run `fly hijack -j $BUILD_PIPELINE_NAME/$BUILD_JOB_NAME -b $BUILD_NAME`
-
 auth_master: &auth_master
   OS_AUTH_URL: https://identity-3.eu-nl-1.cloud.sap/v3
-  OS_USERNAME: {{kubernikus-prod-username}}
-  OS_PASSWORD: {{kubernikus-prod-password}}
+  OS_USERNAME: ((kubernikus-prod-username))
+  OS_PASSWORD: ((kubernikus-prod-password))
   OS_USER_DOMAIN_NAME: ccadmin
   OS_PROJECT_NAME: kubernikus-master
   OS_PROJECT_DOMAIN_NAME: ccadmin
@@ -21,8 +10,8 @@ auth_master: &auth_master
 
 auth_feature: &auth_feature
   OS_AUTH_URL: https://identity-3.eu-nl-1.cloud.sap/v3
-  OS_USERNAME: {{kubernikus-prod-username}}
-  OS_PASSWORD: {{kubernikus-prod-password}}
+  OS_USERNAME: ((kubernikus-prod-username))
+  OS_PASSWORD: ((kubernikus-prod-password))
   OS_USER_DOMAIN_NAME: ccadmin
   OS_PROJECT_NAME: kubernikus-feature
   OS_PROJECT_DOMAIN_NAME: ccadmin
@@ -31,8 +20,8 @@ auth_feature: &auth_feature
 
 auth_infra: &auth_infra
   OS_AUTH_URL: https://identity-3.eu-nl-1.cloud.sap/v3
-  OS_USERNAME: {{kubernikus-prod-username}}
-  OS_PASSWORD: {{kubernikus-prod-password}}
+  OS_USERNAME: ((kubernikus-prod-username))
+  OS_PASSWORD: ((kubernikus-prod-password))
   OS_USER_DOMAIN_NAME: ccadmin
   OS_PROJECT_NAME: kubernikus-infra
   OS_PROJECT_DOMAIN_NAME: ccadmin
@@ -41,8 +30,8 @@ auth_infra: &auth_infra
 
 auth_staging: &auth_staging
   OS_AUTH_URL: https://identity-3.staging.cloud.sap/v3
-  OS_USERNAME: {{kubernikus-staging-username}}
-  OS_PASSWORD: {{kubernikus-staging-password}}
+  OS_USERNAME: ((kubernikus-staging-username))
+  OS_PASSWORD: ((kubernikus-staging-password))
   OS_USER_DOMAIN_NAME: ccadmin
   OS_PROJECT_NAME: kubernikus
   OS_PROJECT_DOMAIN_NAME: ccadmin
@@ -51,8 +40,8 @@ auth_staging: &auth_staging
 
 auth_qa-de-1: &auth_qa-de-1
   OS_AUTH_URL: https://identity-3.qa-de-1.cloud.sap/v3
-  OS_USERNAME: {{kubernikus-qa-username}}
-  OS_PASSWORD: {{kubernikus-qa-password}}
+  OS_USERNAME: ((kubernikus-qa-username))
+  OS_PASSWORD: ((kubernikus-qa-password))
   OS_USER_DOMAIN_NAME: ccadmin
   OS_PROJECT_NAME: kubernikus
   OS_PROJECT_DOMAIN_NAME: ccadmin
@@ -61,8 +50,8 @@ auth_qa-de-1: &auth_qa-de-1
 
 auth_ap-au-1: &auth_ap-au-1
   OS_AUTH_URL: https://identity-3.ap-au-1.cloud.sap/v3
-  OS_USERNAME: {{kubernikus-prod-username}}
-  OS_PASSWORD: {{kubernikus-prod-password}}
+  OS_USERNAME: ((kubernikus-prod-username))
+  OS_PASSWORD: ((kubernikus-prod-password))
   OS_USER_DOMAIN_NAME: ccadmin
   OS_PROJECT_NAME: kubernikus
   OS_PROJECT_DOMAIN_NAME: ccadmin
@@ -71,8 +60,8 @@ auth_ap-au-1: &auth_ap-au-1
 
 auth_eu-de-1: &auth_eu-de-1
   OS_AUTH_URL: https://identity-3.eu-de-1.cloud.sap/v3
-  OS_USERNAME: {{kubernikus-prod-username}}
-  OS_PASSWORD: {{kubernikus-prod-password}}
+  OS_USERNAME: ((kubernikus-prod-username))
+  OS_PASSWORD: ((kubernikus-prod-password))
   OS_USER_DOMAIN_NAME: ccadmin
   OS_PROJECT_NAME: kubernikus
   OS_PROJECT_DOMAIN_NAME: ccadmin
@@ -81,8 +70,8 @@ auth_eu-de-1: &auth_eu-de-1
 
 auth_eu-de-1: &auth_eu-de-2
   OS_AUTH_URL: https://identity-3.eu-de-2.cloud.sap/v3
-  OS_USERNAME: {{kubernikus-prod-username}}
-  OS_PASSWORD: {{kubernikus-prod-password}}
+  OS_USERNAME: ((kubernikus-prod-username))
+  OS_PASSWORD: ((kubernikus-prod-password))
   OS_USER_DOMAIN_NAME: ccadmin
   OS_PROJECT_NAME: kubernikus
   OS_PROJECT_DOMAIN_NAME: ccadmin
@@ -91,8 +80,8 @@ auth_eu-de-1: &auth_eu-de-2
 
 auth_eu-nl-1: &auth_eu-nl-1
   OS_AUTH_URL: https://identity-3.eu-nl-1.cloud.sap/v3
-  OS_USERNAME: {{kubernikus-prod-username}}
-  OS_PASSWORD: {{kubernikus-prod-password}}
+  OS_USERNAME: ((kubernikus-prod-username))
+  OS_PASSWORD: ((kubernikus-prod-password))
   OS_USER_DOMAIN_NAME: ccadmin
   OS_PROJECT_NAME: kubernikus
   OS_PROJECT_DOMAIN_NAME: ccadmin
@@ -101,8 +90,8 @@ auth_eu-nl-1: &auth_eu-nl-1
 
 auth_na-us-1: &auth_na-us-1
   OS_AUTH_URL: https://identity-3.na-us-1.cloud.sap/v3
-  OS_USERNAME: {{kubernikus-prod-username}}
-  OS_PASSWORD: {{kubernikus-prod-password}}
+  OS_USERNAME: ((kubernikus-prod-username))
+  OS_PASSWORD: ((kubernikus-prod-password))
   OS_USER_DOMAIN_NAME: ccadmin
   OS_PROJECT_NAME: kubernikus
   OS_PROJECT_DOMAIN_NAME: ccadmin
@@ -111,8 +100,8 @@ auth_na-us-1: &auth_na-us-1
 
 auth_e2e_eu-de-1: &auth_e2e_ap-au-1
   OS_AUTH_URL: https://identity-3.ap-au-1.cloud.sap/v3
-  OS_USERNAME: {{kubernikus-prod-username}}
-  OS_PASSWORD: {{kubernikus-prod-password}}
+  OS_USERNAME: ((kubernikus-prod-username))
+  OS_PASSWORD: ((kubernikus-prod-password))
   OS_USER_DOMAIN_NAME: ccadmin
   OS_PROJECT_NAME: kubernikus-e2e
   OS_PROJECT_DOMAIN_NAME: ccadmin
@@ -121,8 +110,8 @@ auth_e2e_eu-de-1: &auth_e2e_ap-au-1
 
 auth_e2e_eu-nl-1: &auth_e2e_eu-nl-1
   OS_AUTH_URL: https://identity-3.eu-nl-1.cloud.sap/v3
-  OS_USERNAME: {{kubernikus-prod-username}}
-  OS_PASSWORD: {{kubernikus-prod-password}}
+  OS_USERNAME: ((kubernikus-prod-username))
+  OS_PASSWORD: ((kubernikus-prod-password))
   OS_USER_DOMAIN_NAME: ccadmin
   OS_PROJECT_NAME: kubernikus-e2e
   OS_PROJECT_DOMAIN_NAME: ccadmin
@@ -131,8 +120,8 @@ auth_e2e_eu-nl-1: &auth_e2e_eu-nl-1
 
 auth_e2e_eu-de-1: &auth_e2e_eu-de-1
   OS_AUTH_URL: https://identity-3.eu-de-1.cloud.sap/v3
-  OS_USERNAME: {{kubernikus-prod-username}}
-  OS_PASSWORD: {{kubernikus-prod-password}}
+  OS_USERNAME: ((kubernikus-prod-username))
+  OS_PASSWORD: ((kubernikus-prod-password))
   OS_USER_DOMAIN_NAME: ccadmin
   OS_PROJECT_NAME: kubernikus-e2e
   OS_PROJECT_DOMAIN_NAME: ccadmin
@@ -141,8 +130,8 @@ auth_e2e_eu-de-1: &auth_e2e_eu-de-1
 
 auth_e2e_eu-de-1: &auth_e2e_eu-de-2
   OS_AUTH_URL: https://identity-3.eu-de-2.cloud.sap/v3
-  OS_USERNAME: {{kubernikus-prod-username}}
-  OS_PASSWORD: {{kubernikus-prod-password}}
+  OS_USERNAME: ((kubernikus-prod-username))
+  OS_PASSWORD: ((kubernikus-prod-password))
   OS_USER_DOMAIN_NAME: ccadmin
   OS_PROJECT_NAME: kubernikus-e2e
   OS_PROJECT_DOMAIN_NAME: ccadmin
@@ -151,8 +140,8 @@ auth_e2e_eu-de-1: &auth_e2e_eu-de-2
 
 auth_e2e_eu-nl-1: &auth_e2e_na-us-1
   OS_AUTH_URL: https://identity-3.na-us-1.cloud.sap/v3
-  OS_USERNAME: {{kubernikus-prod-username}}
-  OS_PASSWORD: {{kubernikus-prod-password}}
+  OS_USERNAME: ((kubernikus-prod-username))
+  OS_PASSWORD: ((kubernikus-prod-password))
   OS_USER_DOMAIN_NAME: ccadmin
   OS_PROJECT_NAME: kubernikus-e2e
   OS_PROJECT_DOMAIN_NAME: ccadmin
@@ -161,8 +150,8 @@ auth_e2e_eu-nl-1: &auth_e2e_na-us-1
 
 auth_e2e_qa-de-1: &auth_e2e_qa-de-1
   OS_AUTH_URL: https://identity-3.qa-de-1.cloud.sap/v3
-  OS_USERNAME: {{kubernikus-qa-username}}
-  OS_PASSWORD: {{kubernikus-qa-password}}
+  OS_USERNAME: ((kubernikus-qa-username))
+  OS_PASSWORD: ((kubernikus-qa-password))
   OS_USER_DOMAIN_NAME: ccadmin
   OS_PROJECT_NAME: kubernikus-e2e
   OS_PROJECT_DOMAIN_NAME: ccadmin
@@ -219,6 +208,11 @@ resources:
   - name: hourly 
     type: time
     source: {interval: 1h}
+  - name: slack
+    type: slack-alert
+    source:
+      url: ((slack-webhook-url))
+      channel: '#kubernikus'
 
 resource_types:
   - name: time-version
@@ -226,11 +220,10 @@ resource_types:
     source:
       repository: hub.global.cloud.sap/concourse/time-version-resource
       tag: v2
-  - name: slack-notification
+  - name: slack-alert
     type: docker-image
     source:
-      repository: hub.global.cloud.sap/concourse/slack-notification-resource
-      tag: latest
+      repository: arbourd/concourse-slack-alert-resource
   - name: gh-status
     type: docker-image
     source:
@@ -255,6 +248,9 @@ jobs:
           file: kubernikus.builds/ci/task_helm_kubernikus-system.yaml
           params:
             <<: *auth_master
+    on_success: { put: slack, params: {alert_type: fixed } }
+    on_failure: { put: slack, params: {alert_type: broke } }
+    on_abort:   { put: slack, params: {alert_type: broke } }
 
   - name: feature 
     serial: true
@@ -304,6 +300,9 @@ jobs:
         timeout: 2h
         params:
           <<: *auth_e2e_eu-nl-1
+    on_success: { put: slack, params: {alert_type: fixed } }
+    on_failure: { put: slack, params: {alert_type: broke } }
+    on_abort:   { put: slack, params: {alert_type: broke } }
 
   - name: conformance 
     serial: true
@@ -516,6 +515,9 @@ jobs:
         timeout: 45m
         params:
           <<: *auth_e2e_ap-au-1
+    on_success: { put: slack, params: {alert_type: fixed } }
+    on_failure: { put: slack, params: {alert_type: broke } }
+    on_abort:   { put: slack, params: {alert_type: broke } }
 
   - name: soak_eu-de-1
     serial: true
@@ -533,6 +535,9 @@ jobs:
         timeout: 45m
         params:
           <<: *auth_e2e_eu-de-1
+    on_success: { put: slack, params: {alert_type: fixed } }
+    on_failure: { put: slack, params: {alert_type: broke } }
+    on_abort:   { put: slack, params: {alert_type: broke } }
 
   - name: soak_eu-de-2
     serial: true
@@ -550,6 +555,9 @@ jobs:
         timeout: 45m
         params:
           <<: *auth_e2e_eu-de-2
+    on_success: { put: slack, params: {alert_type: fixed } }
+    on_failure: { put: slack, params: {alert_type: broke } }
+    on_abort:   { put: slack, params: {alert_type: broke } }
 
   - name: soak_na-us-1
     serial: true
@@ -567,6 +575,9 @@ jobs:
         timeout: 45m
         params:
           <<: *auth_e2e_na-us-1
+    on_success: { put: slack, params: {alert_type: fixed } }
+    on_failure: { put: slack, params: {alert_type: broke } }
+    on_abort:   { put: slack, params: {alert_type: broke } }
 
   - name: soak_qa-de-1
     build_logs_to_retain: 168
@@ -584,3 +595,6 @@ jobs:
         timeout: 45m
         params:
           <<: *auth_e2e_qa-de-1
+    on_success: { put: slack, params: {alert_type: fixed } }
+    on_failure: { put: slack, params: {alert_type: broke } }
+    on_abort:   { put: slack, params: {alert_type: broke } }
