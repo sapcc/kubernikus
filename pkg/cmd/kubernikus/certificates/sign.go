@@ -42,6 +42,7 @@ type SignOptions struct {
 	CA           string
 	Organization string
 	ApiURL       string
+	LogLevel     int
 }
 
 func NewSignOptions() *SignOptions {
@@ -59,6 +60,7 @@ func (o *SignOptions) BindFlags(flags *pflag.FlagSet) {
 	flags.StringVar(&o.CN, "cn", o.CN, "Common name in the certificate")
 	flags.StringVar(&o.Organization, "organization", o.Organization, "Common name in the certificate")
 	flags.StringVar(&o.ApiURL, "api-url", o.ApiURL, "URL for the apiserver")
+	flags.IntVar(&o.LogLevel, "v", 0, "log level")
 }
 
 func (o *SignOptions) Validate(c *cobra.Command, args []string) error {
@@ -82,7 +84,7 @@ func (o *SignOptions) Complete(args []string) error {
 }
 
 func (o *SignOptions) Run(c *cobra.Command) error {
-	logger := logutil.NewLogger(c.Flags())
+	logger := logutil.NewLogger(o.LogLevel)
 	client, err := kubernetes.NewClient(o.KubeConfig, "", logger)
 	if err != nil {
 		return err

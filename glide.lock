@@ -1,5 +1,5 @@
-hash: e0de60b5a6bff8fecfdd8a8f8c08e5788a5346c107358963927fefa494890878
-updated: 2018-04-17T17:03:01.489788+02:00
+hash: 352e30da3ddf06d10db854ea30158196e2f0ecf808be67b8245b40611599ab7a
+updated: 2018-06-22T17:29:39.272784+02:00
 imports:
 - name: github.com/ajeddeloh/yaml
   version: 1072abfea31191db507785e2e0c1b8d1440d35a5
@@ -127,7 +127,8 @@ imports:
   - proto
   - sortkeys
 - name: github.com/golang/glog
-  version: 44145f04b68cf362d9c4df2182967c2275eaefed
+  version: f6914f72d1be734771e9b9020ac9084d7aa9c13b
+  repo: https://github.com/bugroger/glognomore
 - name: github.com/golang/groupcache
   version: 02826c3e79038b59d737d3b1c0a1d937f71a4433
   subpackages:
@@ -270,11 +271,12 @@ imports:
 - name: github.com/stretchr/objx
   version: 8a3f7159479fbc75b30357fbc48f380b7320f08e
 - name: github.com/stretchr/testify
-  version: 12b6f73e6084dad08a7c6e575284b177ecafbc71
+  version: f35b8ab0b5a2cef36673838d662e249dd9c94686
   subpackages:
   - assert
   - mock
   - require
+  - suite
 - name: github.com/tredoe/osutil
   version: 7d3ee1afa71c90fd1514c8f557ae6c5f414208eb
   subpackages:
@@ -438,6 +440,7 @@ imports:
   - pkg/util/mergepatch
   - pkg/util/net
   - pkg/util/rand
+  - pkg/util/remotecommand
   - pkg/util/runtime
   - pkg/util/sets
   - pkg/util/strategicpatch
@@ -593,10 +596,12 @@ imports:
   - tools/portforward
   - tools/record
   - tools/reference
+  - tools/remotecommand
   - transport
   - transport/spdy
   - util/buffer
   - util/cert
+  - util/exec
   - util/flowcontrol
   - util/homedir
   - util/integer
@@ -613,6 +618,7 @@ imports:
   - cmd/client-gen/generators/util
   - cmd/client-gen/path
   - cmd/client-gen/types
+  - cmd/deepcopy-gen
   - cmd/informer-gen
   - cmd/informer-gen/generators
   - cmd/lister-gen
@@ -621,6 +627,8 @@ imports:
   version: b58fc7edb82e0c6ffc9b8aef61813c7261b785d4
   subpackages:
   - args
+  - examples/deepcopy-gen/generators
+  - examples/set-gen/sets
   - generator
   - namer
   - parser

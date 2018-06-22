@@ -1,7 +1,6 @@
 package main
 
 import (
-	goflag "flag"
 	"fmt"
 	"net"
 	"net/http"
@@ -21,18 +20,16 @@ import (
 var (
 	namespace   string
 	metricsPort int
+	loglevel    int
 )
 
 func init() {
 	pflag.StringVar(&namespace, "namespace", "kubernikus", "Namespace the apiserver should work in")
 	pflag.IntVar(&metricsPort, "metrics-port", 9100, "Lister port for metric exposition")
+	pflag.IntVar(&loglevel, "v", 0, "log level")
 }
 
 func main() {
-	if f := goflag.Lookup("logtostderr"); f != nil {
-		f.Value.Set("true") // log to stderr by default
-	}
-
 	swaggerSpec, err := spec.Spec()
 	if err != nil {
 		fmt.Printf(`failed to parse swagger spec: %s`, err)
@@ -54,10 +51,9 @@ func main() {
 		fmt.Fprintln(os.Stderr, pflag.CommandLine.FlagUsages())
 	}
 	// parse the CLI flags
-	pflag.CommandLine.AddGoFlagSet(goflag.CommandLine) //slurp in glog flags
 	pflag.Parse()
 	//goflag.CommandLine.Parse([]string{}) //https://github.com/kubernetes/kubernetes/issues/17162
-	logger := logutil.NewLogger(pflag.CommandLine)
+	logger := logutil.NewLogger(loglevel)
 
 	api := operations.NewKubernikusAPI(swaggerSpec)
 
