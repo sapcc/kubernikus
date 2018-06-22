@@ -164,7 +164,7 @@ func (op *GroundControl) handler(key string) error {
 	if !exists {
 		// make sure to reset klusterStatusPhase metric if the kluster doesn't exist anymore
 		// get the name by splitting the key <ns>/<name>
-		if _, name, err := cache.SplitMetaNamespaceKey(key); err != nil {
+		if _, name, err := cache.SplitMetaNamespaceKey(key); err == nil {
 			metrics.SetMetricKlusterTerminated(name)
 		}
 		op.Logger.Log(
