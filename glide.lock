@@ -1,5 +1,5 @@
-hash: e0de60b5a6bff8fecfdd8a8f8c08e5788a5346c107358963927fefa494890878
-updated: 2018-04-17T17:03:01.489788+02:00
+hash: 7dd92b6a83b00ae93b02679868f8d13bb7282f20e26addc3fce049bea4043993
+updated: 2018-06-25T17:58:10.697227+02:00
 imports:
 - name: github.com/ajeddeloh/yaml
   version: 1072abfea31191db507785e2e0c1b8d1440d35a5
@@ -151,11 +151,13 @@ imports:
   - compiler
   - extensions
 - name: github.com/gophercloud/gophercloud
-  version: c7ca48da8eafab13e1835090a1147e64cfc10174
+  version: 1ad7a96d69a2e8105920431ee428843b6d1ee4c3
   subpackages:
   - internal
   - openstack
+  - openstack/blockstorage/extensions/quotasets
   - openstack/compute/v2/extensions/keypairs
+  - openstack/compute/v2/extensions/quotasets
   - openstack/compute/v2/extensions/secgroups
   - openstack/compute/v2/flavors
   - openstack/compute/v2/images
@@ -270,11 +272,12 @@ imports:
 - name: github.com/stretchr/objx
   version: 8a3f7159479fbc75b30357fbc48f380b7320f08e
 - name: github.com/stretchr/testify
-  version: 12b6f73e6084dad08a7c6e575284b177ecafbc71
+  version: f35b8ab0b5a2cef36673838d662e249dd9c94686
   subpackages:
   - assert
   - mock
   - require
+  - suite
 - name: github.com/tredoe/osutil
   version: 7d3ee1afa71c90fd1514c8f557ae6c5f414208eb
   subpackages:
@@ -438,6 +441,7 @@ imports:
   - pkg/util/mergepatch
   - pkg/util/net
   - pkg/util/rand
+  - pkg/util/remotecommand
   - pkg/util/runtime
   - pkg/util/sets
   - pkg/util/strategicpatch
@@ -593,10 +597,12 @@ imports:
   - tools/portforward
   - tools/record
   - tools/reference
+  - tools/remotecommand
   - transport
   - transport/spdy
   - util/buffer
   - util/cert
+  - util/exec
   - util/flowcontrol
   - util/homedir
   - util/integer
@@ -613,6 +619,7 @@ imports:
   - cmd/client-gen/generators/util
   - cmd/client-gen/path
   - cmd/client-gen/types
+  - cmd/deepcopy-gen
   - cmd/informer-gen
   - cmd/informer-gen/generators
   - cmd/lister-gen
@@ -621,6 +628,8 @@ imports:
   version: b58fc7edb82e0c6ffc9b8aef61813c7261b785d4
   subpackages:
   - args
+  - examples/deepcopy-gen/generators
+  - examples/set-gen/sets
   - generator
   - namer
   - parser
