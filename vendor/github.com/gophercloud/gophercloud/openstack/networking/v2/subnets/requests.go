@@ -80,7 +80,7 @@ type CreateOpts struct {
 	NetworkID string `json:"network_id" required:"true"`
 
 	// CIDR is the address CIDR of the subnet.
-	CIDR string `json:"cidr" required:"true"`
+	CIDR string `json:"cidr,omitempty"`
 
 	// Name is a human-readable name of the subnet.
 	Name string `json:"name,omitempty"`
@@ -176,7 +176,7 @@ type UpdateOpts struct {
 	DNSNameservers []string `json:"dns_nameservers,omitempty"`
 
 	// HostRoutes are any static host routes to be set via DHCP.
-	HostRoutes []HostRoute `json:"host_routes,omitempty"`
+	HostRoutes *[]HostRoute `json:"host_routes,omitempty"`
 
 	// EnableDHCP will either enable to disable the DHCP service.
 	EnableDHCP *bool `json:"enable_dhcp,omitempty"`
