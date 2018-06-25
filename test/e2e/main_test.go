@@ -95,12 +95,15 @@ func TestRunner(t *testing.T) {
 	kubernikus, err := framework.NewKubernikusFramework(kurl)
 	require.NoError(t, err, "Must be able to connect to Kubernikus")
 
+	openstack, err := framework.NewOpenStackFramework()
+	require.NoError(t, err, "Must be able to connect to OpenStack")
+
 	if cleanup != nil && *cleanup == true {
-		cleanupTests := &CleanupTests{kubernikus, klusterName}
+		cleanupTests := &CleanupTests{kubernikus, openstack, klusterName, *reuse}
 		defer t.Run("Cleanup", cleanupTests.Run)
 	}
 
-	setupTests := &SetupTests{kubernikus, klusterName, *reuse}
+	setupTests := &SetupTests{kubernikus, openstack, klusterName, *reuse}
 	if !t.Run("Setup", setupTests.Run) {
 		return
 	}
