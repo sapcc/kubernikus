@@ -69,7 +69,7 @@ func (s *CleanupTests) QuotaPostFlightCheck(t *testing.T) {
 	storage, err := blockstorage_quota.GetUsage(s.OpenStack.BlockStorage, project.ID).Extract()
 	require.NoError(t, err, "There should be no error while getting storage quota details")
 
-	assert.True(t, quota.Cores.InUse == 0, "There should be at no cores left in use")
+	assert.True(t, quota.Cores.InUse == 0, "There should be no cores left in use")
 	assert.True(t, quota.Instances.InUse == 0, "There should be no instances left in use")
 	assert.True(t, quota.RAM.InUse == 0, "There should be no RAM left in use")
 	assert.True(t, storage.Volumes.InUse == 0, "There should be no Volume left in use")
