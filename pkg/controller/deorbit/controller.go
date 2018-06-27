@@ -103,12 +103,12 @@ func (d *DeorbitReconciler) deorbit(kluster *v1.Kluster) (err error) {
 }
 
 func (d *DeorbitReconciler) doDeorbit(deorbiter Deorbiter) (err error) {
-	deletedPVCs, err := deorbiter.DeletePersistentVolumeClaims()
+	_, err = deorbiter.DeletePersistentVolumeClaims()
 	if err != nil {
 		return err
 	}
 
-	deletedServices, err := deorbiter.DeleteServices()
+	_, err = deorbiter.DeleteServices()
 	if err != nil {
 		return err
 	}
