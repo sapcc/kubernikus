@@ -35,6 +35,18 @@ func (f *LoggingFlightReconciler) DeleteIncompletelySpawnedInstances() []string 
 	return ids
 }
 
+func (f *LoggingFlightReconciler) DeleteErroredInstances() []string {
+	ids := f.Reconciler.DeleteErroredInstances()
+	if len(ids) > 0 {
+		f.Logger.Log(
+			"msg", "deleted errored instances",
+			"nodes", strings.Join(ids, ","),
+			"v", 2,
+		)
+	}
+	return ids
+}
+
 func (f *LoggingFlightReconciler) EnsureKubernikusRuleInSecurityGroup() bool {
 	ensured := f.Reconciler.EnsureKubernikusRuleInSecurityGroup()
 	if ensured {
