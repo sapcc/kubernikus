@@ -7,4 +7,5 @@ type Instance interface {
 	GetName() string
 	GetSecurityGroupNames() []string
 	GetCreated() time.Time
+	Erroring() bool
 }
