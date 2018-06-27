@@ -113,16 +113,12 @@ func (d *DeorbitReconciler) doDeorbit(deorbiter Deorbiter) (err error) {
 		return err
 	}
 
-	if len(deletedPVCs) > 0 {
-		if err := deorbiter.WaitForPersistentVolumeCleanup(); err != nil {
-			return err
-		}
+	if err := deorbiter.WaitForPersistentVolumeCleanup(); err != nil {
+		return err
 	}
 
-	if len(deletedServices) > 0 {
-		if err := deorbiter.WaitForServiceCleanup(); err != nil {
-			return err
-		}
+	if err := deorbiter.WaitForServiceCleanup(); err != nil {
+		return err
 	}
 
 	return nil
