@@ -17,7 +17,7 @@ import (
 
 const (
 	KlusterPhaseBecomesTerminatingTimeout = 1 * time.Minute
-	WaitForKlusterToBeDeletedTimeout      = 5 * time.Minute
+	WaitForKlusterToBeDeletedTimeout      = 10 * time.Minute
 )
 
 type CleanupTests struct {
