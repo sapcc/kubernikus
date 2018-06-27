@@ -38,8 +38,8 @@ func TestDeborit(testing *testing.T) {
 	err = reconciler.doSelfDestruct(deorbiter, err)
 	assert.Equal(testing, true, deorbiter.HasCalledDeletePersistentVolumeClaims)
 	assert.Equal(testing, true, deorbiter.HasCalledDeleteServices)
-	assert.Equal(testing, false, deorbiter.HasCalledWaitForPersistentVolumeCleanup)
-	assert.Equal(testing, false, deorbiter.HasCalledWaitForServiceCleanup)
+	assert.Equal(testing, true, deorbiter.HasCalledWaitForPersistentVolumeCleanup)
+	assert.Equal(testing, true, deorbiter.HasCalledWaitForServiceCleanup)
 	assert.Equal(testing, false, deorbiter.HasCalledSeldDestruct)
 	assert.NoError(testing, err)
 
