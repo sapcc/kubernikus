@@ -21,6 +21,7 @@ type fakeInstance struct {
 	Name               string
 	Created            time.Time
 	SecurityGroupNames []string
+	Errored            bool
 }
 
 func (f *fakeInstance) GetID() string {
@@ -37,6 +38,10 @@ func (f *fakeInstance) GetSecurityGroupNames() []string {
 
 func (f *fakeInstance) GetCreated() time.Time {
 	return f.Created
+}
+
+func (f *fakeInstance) Erroring() bool {
+	return f.Errored
 }
 
 type MockKlusterClient struct {
@@ -158,6 +163,39 @@ func TestDeleteIncompletelySpawnedInstances(t *testing.T) {
 	client.AssertNotCalled(t, "DeleteNode", "e")
 	client.AssertNotCalled(t, "DeleteNode", "f")
 	assert.ElementsMatch(t, ids, []string{"a", "c"})
+}
+
+func TestDeleteErroredInstances(t *testing.T) {
+	kluster := &v1.Kluster{}
+	nodes := []*core_v1.Node{}
+
+	instances := []Instance{
+		&fakeInstance{ID: "a", Name: "a", Errored: true},
+		&fakeInstance{ID: "b", Name: "b", Errored: false},
+		&fakeInstance{ID: "c", Name: "c", Errored: true},
+		&fakeInstance{ID: "d", Name: "d", Errored: true},
+	}
+
+	client := &MockKlusterClient{}
+	client.On("DeleteNode", "a").Return(nil)
+	client.On("DeleteNode", "b").Return(nil)
+	client.On("DeleteNode", "c").Return(fmt.Errorf("Boom"))
+	client.On("DeleteNode", "d").Return(nil)
+
+	reconciler := flightReconciler{
+		kluster,
+		instances,
+		nodes,
+		client,
+		log.NewNopLogger(),
+	}
+
+	ids := reconciler.DeleteErroredInstances()
+	client.AssertCalled(t, "DeleteNode", "a")
+	client.AssertCalled(t, "DeleteNode", "c")
+	client.AssertCalled(t, "DeleteNode", "d")
+	client.AssertNotCalled(t, "DeleteNode", "b")
+	assert.ElementsMatch(t, ids, []string{"a", "d"})
 }
 
 func TestEnsureKubernikusRuleInSecurityGroup(t *testing.T) {

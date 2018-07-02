@@ -74,6 +74,14 @@ func (n *Node) Running() bool {
 	return false
 }
 
+func (n *Node) Erroring() bool {
+	if n.TaskState == "deleting" {
+		return false
+	}
+
+	return n.VMState == "error"
+}
+
 func (n *Node) GetID() string {
 	return n.ID
 }

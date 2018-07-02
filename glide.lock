@@ -152,11 +152,13 @@ imports:
   - compiler
   - extensions
 - name: github.com/gophercloud/gophercloud
-  version: c7ca48da8eafab13e1835090a1147e64cfc10174
+  version: 1ad7a96d69a2e8105920431ee428843b6d1ee4c3
   subpackages:
   - internal
   - openstack
+  - openstack/blockstorage/extensions/quotasets
   - openstack/compute/v2/extensions/keypairs
+  - openstack/compute/v2/extensions/quotasets
   - openstack/compute/v2/extensions/secgroups
   - openstack/compute/v2/flavors
   - openstack/compute/v2/images

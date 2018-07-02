@@ -17,6 +17,7 @@ const (
 type FlightReconciler interface {
 	EnsureInstanceSecurityGroupAssignment() []string
 	DeleteIncompletelySpawnedInstances() []string
+	DeleteErroredInstances() []string
 	EnsureKubernikusRuleInSecurityGroup() bool
 }
 
@@ -92,6 +93,34 @@ func (f *flightReconciler) DeleteIncompletelySpawnedInstances() []string {
 	}
 
 	return deletedInstanceIDs
+}
+
+func (f *flightReconciler) DeleteErroredInstances() []string {
+	deletedInstanceIDs := []string{}
+	erroredInstances := f.getErroredInstances()
+
+	for _, errored := range erroredInstances {
+		if err := f.Client.DeleteNode(errored.GetID()); err != nil {
+			f.Logger.Log(
+				"msg", "couldn't delete errored instance",
+				"instance", errored.GetID(),
+				"err", err)
+			continue
+		}
+		deletedInstanceIDs = append(deletedInstanceIDs, errored.GetID())
+	}
+
+	return deletedInstanceIDs
+}
+
+func (f *flightReconciler) getErroredInstances() []Instance {
+	errored := []Instance{}
+	for _, instance := range f.Instances {
+		if instance.Erroring() {
+			errored = append(errored, instance)
+		}
+	}
+	return errored
 }
 
 func (f *flightReconciler) getTimedOutInstances() []Instance {

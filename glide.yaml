@@ -31,7 +31,7 @@ import:
   - log
 # overwrite gophercloud version given in k8s deps
 - package: github.com/gophercloud/gophercloud
-  version: c7ca48da8eafab13e1835090a1147e64cfc10174
+  version: 1ad7a96d69a2e8105920431ee428843b6d1ee4c3
 # Dependencies extracted from go-swagger 0.13.0
 - package: github.com/go-openapi/errors
   version: 03cfca65330da08a5a440053faf994a3c682b5bf
