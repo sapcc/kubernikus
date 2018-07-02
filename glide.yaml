@@ -2,7 +2,7 @@ package: github.com/sapcc/kubernikus
 import:
 - package: github.com/golang/glog
   repo: https://github.com/bugroger/glognomore
-  version: f6914f72d1be734771e9b9020ac9084d7aa9c13b 
+  version: abbb4165c64123c8932f94a4de5ef6f36db7b66b 
 - package: github.com/stretchr/testify
   version: ^1.1.0
   subpackages:

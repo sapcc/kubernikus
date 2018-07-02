@@ -1,5 +1,5 @@
-hash: 352e30da3ddf06d10db854ea30158196e2f0ecf808be67b8245b40611599ab7a
-updated: 2018-06-22T17:29:39.272784+02:00
+hash: 07cc9e3255d7038648bbca48108a7255761b9fb1f8645dcc834331730a4fc01b
+updated: 2018-07-02T11:51:43.74903+02:00
 imports:
 - name: github.com/ajeddeloh/yaml
   version: 1072abfea31191db507785e2e0c1b8d1440d35a5
@@ -127,7 +127,7 @@ imports:
   - proto
   - sortkeys
 - name: github.com/golang/glog
-  version: f6914f72d1be734771e9b9020ac9084d7aa9c13b
+  version: abbb4165c64123c8932f94a4de5ef6f36db7b66b
   repo: https://github.com/bugroger/glognomore
 - name: github.com/golang/groupcache
   version: 02826c3e79038b59d737d3b1c0a1d937f71a4433

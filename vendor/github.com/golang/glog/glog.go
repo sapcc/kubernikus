@@ -33,31 +33,35 @@ func V(level Level) Verbose {
 
 func (v Verbose) Info(args ...interface{}) {
 	var pairs []interface{}
+	pairs = append(pairs, "v", c)
+	pairs = append(pairs, "glog", "Info")
 	for key, value := range args {
 		pairs = append(pairs, key, value)
 	}
-	pairs = append(pairs, "v", c)
 	logger.Log(pairs...)
 }
 
 func (v Verbose) Infoln(args ...interface{}) {
 	var pairs []interface{}
+	pairs = append(pairs, "v", c)
+	pairs = append(pairs, "glog", "Infoln")
 	for key, value := range args {
 		pairs = append(pairs, key, value)
 	}
-	pairs = append(pairs, "v", c)
 	logger.Log(pairs...)
 }
 
 func (v Verbose) Infof(format string, args ...interface{}) {
 	logger.Log(
 		"v", c,
+		"glog", "Infof",
 		"msg", fmt.Sprintf(format, args...),
 	)
 }
 
 func Info(args ...interface{}) {
 	var pairs []interface{}
+	pairs = append(pairs, "glog", "Info")
 	for key, value := range args {
 		pairs = append(pairs, key, value)
 	}
@@ -66,6 +70,7 @@ func Info(args ...interface{}) {
 
 func InfoDepth(depth int, args ...interface{}) {
 	var pairs []interface{}
+	pairs = append(pairs, "glog", "InfoDepth")
 	for key, value := range args {
 		pairs = append(pairs, key, value)
 	}
@@ -74,6 +79,7 @@ func InfoDepth(depth int, args ...interface{}) {
 
 func Infoln(args ...interface{}) {
 	var pairs []interface{}
+	pairs = append(pairs, "glog", "Infoln")
 	for key, value := range args {
 		pairs = append(pairs, key, value)
 	}
@@ -81,11 +87,15 @@ func Infoln(args ...interface{}) {
 }
 
 func Infof(format string, args ...interface{}) {
-	logger.Log("msg", fmt.Sprintf(format, args...))
+	logger.Log(
+		"glog", "Infof",
+		"msg", fmt.Sprintf(format, args...),
+	)
 }
 
 func Warning(args ...interface{}) {
 	var pairs []interface{}
+	pairs = append(pairs, "glog", "Warning")
 	for key, value := range args {
 		pairs = append(pairs, key, value)
 	}
@@ -94,6 +104,7 @@ func Warning(args ...interface{}) {
 
 func WarningDepth(depth int, args ...interface{}) {
 	var pairs []interface{}
+	pairs = append(pairs, "glog", "WarningDepth")
 	for key, value := range args {
 		pairs = append(pairs, key, value)
 	}
@@ -102,6 +113,7 @@ func WarningDepth(depth int, args ...interface{}) {
 
 func Warningln(args ...interface{}) {
 	var pairs []interface{}
+	pairs = append(pairs, "glog", "Warningln")
 	for key, value := range args {
 		pairs = append(pairs, key, value)
 	}
@@ -109,7 +121,10 @@ func Warningln(args ...interface{}) {
 }
 
 func Warningf(format string, args ...interface{}) {
-	logger.Log("msg", fmt.Sprintf(format, args...))
+	logger.Log(
+		"glog", "Warningf",
+		"msg", fmt.Sprintf(format, args...),
+	)
 }
 
 func Error(args ...interface{}) {
@@ -122,6 +137,7 @@ func Error(args ...interface{}) {
 
 func ErrorDepth(depth int, args ...interface{}) {
 	var pairs []interface{}
+	pairs = append(pairs, "glog", "ErrorDepth")
 	for key, value := range args {
 		pairs = append(pairs, key, value)
 	}
@@ -130,6 +146,7 @@ func ErrorDepth(depth int, args ...interface{}) {
 
 func Errorln(args ...interface{}) {
 	var pairs []interface{}
+	pairs = append(pairs, "glog", "Errorln")
 	for key, value := range args {
 		pairs = append(pairs, key, value)
 	}
@@ -137,11 +154,15 @@ func Errorln(args ...interface{}) {
 }
 
 func Errorf(format string, args ...interface{}) {
-	logger.Log("msg", fmt.Sprintf(format, args...))
+	logger.Log(
+		"glog", "Errorf",
+		"msg", fmt.Sprintf(format, args...),
+	)
 }
 
 func Fatal(args ...interface{}) {
 	var pairs []interface{}
+	pairs = append(pairs, "glog", "Fatal")
 	for key, value := range args {
 		pairs = append(pairs, key, value)
 	}
@@ -150,6 +171,7 @@ func Fatal(args ...interface{}) {
 
 func FatalDepth(depth int, args ...interface{}) {
 	var pairs []interface{}
+	pairs = append(pairs, "glog", "FatalDepth")
 	for key, value := range args {
 		pairs = append(pairs, key, value)
 	}
@@ -158,6 +180,7 @@ func FatalDepth(depth int, args ...interface{}) {
 
 func Fatalln(args ...interface{}) {
 	var pairs []interface{}
+	pairs = append(pairs, "glog", "Fatalln")
 	for key, value := range args {
 		pairs = append(pairs, key, value)
 	}
@@ -165,11 +188,15 @@ func Fatalln(args ...interface{}) {
 }
 
 func Fatalf(format string, args ...interface{}) {
-	logger.Log("msg", fmt.Sprintf(format, args...))
+	logger.Log(
+		"glog", "Fatalf",
+		"msg", fmt.Sprintf(format, args...),
+	)
 }
 
 func Exit(args ...interface{}) {
 	var pairs []interface{}
+	pairs = append(pairs, "glog", "Exit")
 	for key, value := range args {
 		pairs = append(pairs, key, value)
 	}
@@ -178,6 +205,7 @@ func Exit(args ...interface{}) {
 
 func ExitDepth(depth int, args ...interface{}) {
 	var pairs []interface{}
+	pairs = append(pairs, "glog", "ExitDepth")
 	for key, value := range args {
 		pairs = append(pairs, key, value)
 	}
@@ -186,6 +214,7 @@ func ExitDepth(depth int, args ...interface{}) {
 
 func Exitln(args ...interface{}) {
 	var pairs []interface{}
+	pairs = append(pairs, "glog", "Exitln")
 	for key, value := range args {
 		pairs = append(pairs, key, value)
 	}
@@ -193,5 +222,8 @@ func Exitln(args ...interface{}) {
 }
 
 func Exitf(format string, args ...interface{}) {
-	logger.Log("msg", fmt.Sprintf(format, args...))
+	logger.Log(
+		"glog", "Exitf",
+		"msg", fmt.Sprintf(format, args...),
+	)
 }
