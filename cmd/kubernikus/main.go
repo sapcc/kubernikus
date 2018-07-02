@@ -1,7 +1,6 @@
 package main
 
 import (
-	goflag "flag"
 	"os"
 	"path/filepath"
 
@@ -10,12 +9,7 @@ import (
 )
 
 func main() {
-	if f := goflag.Lookup("logtostderr"); f != nil {
-		f.Value.Set("true") // log to stderr by default
-	}
-
 	baseName := filepath.Base(os.Args[0])
-
 	err := kubernikus.NewCommand(baseName).Execute()
 	cmd.CheckError(err)
 }

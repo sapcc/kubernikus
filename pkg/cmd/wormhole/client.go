@@ -35,6 +35,7 @@ type ClientOptions struct {
 	ListenAddr  string
 	NodeName    string
 	HealthCheck bool
+	LogLevel    int
 }
 
 func NewClientOptions() *ClientOptions {
@@ -51,6 +52,7 @@ func (o *ClientOptions) BindFlags(flags *pflag.FlagSet) {
 	flags.StringVar(&o.Context, "context", o.Context, "Kubeconfig context to use. (default: current-context)")
 	flags.StringVar(&o.NodeName, "node-name", o.NodeName, "Override the node name used for reporting health")
 	flags.BoolVar(&o.HealthCheck, "health-check", o.HealthCheck, "Run the health checker (default: true)")
+	flags.IntVar(&o.LogLevel, "v", 0, "log level")
 }
 
 func (o *ClientOptions) Validate(c *cobra.Command, args []string) error {
@@ -62,7 +64,7 @@ func (o *ClientOptions) Complete(args []string) error {
 }
 
 func (o *ClientOptions) Run(c *cobra.Command) error {
-	logger := logutil.NewLogger(c.Flags())
+	logger := logutil.NewLogger(o.LogLevel)
 	logger = log.With(logger, "wormhole", "client")
 
 	guttleClient, err := client.New(o.KubeConfig, o.Context, o.Server, o.ListenAddr, logger)
