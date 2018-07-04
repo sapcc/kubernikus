@@ -376,7 +376,7 @@ jobs:
           params:
             <<: *auth_ap-au-1
 
-  - name: americas 
+  - name: americas
     serial: true
     plan:
       - aggregate:
@@ -598,3 +598,15 @@ jobs:
     on_success: { put: slack, params: {alert_type: fixed } }
     on_failure: { put: slack, params: {alert_type: broke } }
     on_abort:   { put: slack, params: {alert_type: broke } }
+
+
+  - name: tiller
+    plan:
+      - get: secrets.git
+      - aggregate:
+        - task: qa-de-1
+          file: kubernikus.builds/ci/task_tiller.yaml
+          timeout: 10m
+          params:
+            <<: *auth_qa-de-1
+
