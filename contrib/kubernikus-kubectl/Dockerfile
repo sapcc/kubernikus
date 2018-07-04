@@ -4,7 +4,7 @@ FROM sapcc/kubernikus-binaries:$VERSION as kubernikus-binaries
 FROM alpine:3.6
 
 ARG KUBERNETES_VERSION=v1.7.7
-ARG HELM_VERSION=v2.7.0
+ARG HELM_VERSION=v2.9.1
 
 RUN apk add --no-cache --virtual=build-dependencies bash jq curl ca-certificates make
 
@@ -16,7 +16,8 @@ RUN curl http://storage.googleapis.com/kubernetes-helm/helm-${HELM_VERSION}-linu
       && mv linux-amd64/helm /usr/bin/ \
       && rm -rf linux-amd64 \
       && helm version -c \
-      && helm init -c
+      && helm init -c \
+      && curl -L https://github.com/databus23/helm-diff/releases/download/v2.9.0%2B2/helm-diff-linux.tgz | tar -xz -C ~/.helm/plugins
 
 ADD kubectl helm /usr/local/bin/
 COPY --from=kubernikus-binaries /kubernikusctl /usr/local/bin/
