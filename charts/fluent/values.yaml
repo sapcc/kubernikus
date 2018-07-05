@@ -1,4 +1,14 @@
 log-router:
+  fluentdResources:
+    limits:
+      memory: 200Mi
+    requests:
+      memory: 100Mi
+  reloaderResources:
+    limits:
+      memory: 100Mi
+    requests:
+      memory: 50Mi
   image:
     repository: jvassev/kube-fluentd-operator
     tag: v1.4.0-5-g58d1869
