@@ -1,0 +1,14 @@
+log-router:
+  image:
+    repository: jvassev/kube-fluentd-operator
+    tag: v1.4.0-5-g58d1869
+  rbac:
+    create: true
+  meta:
+    key: metadata
+elasticsearch:
+  scheme: https
+  # host:
+  port: 443
+  user: admin
+  # password:
