@@ -1,64 +1,51 @@
 package server
 
 import (
-	"sync"
-	"time"
+	"crypto/tls"
+	"fmt"
+	"net"
 
+	"github.com/databus23/guttle"
 	"github.com/go-kit/kit/log"
-	"k8s.io/client-go/informers"
-	"k8s.io/client-go/kubernetes"
 
-	kube "github.com/sapcc/kubernikus/pkg/client/kubernetes"
-	"github.com/sapcc/kubernikus/pkg/version"
+	"github.com/sapcc/kubernikus/pkg/wormhole"
 )
 
-const (
-	DEFAULT_RECONCILIATION = 5 * time.Minute
-)
-
-type Server struct {
-	factory    informers.SharedInformerFactory
-	client     kubernetes.Interface
-	controller *Controller
-	tunnel     *Tunnel
-
-	logger log.Logger
+type Options struct {
+	Logger      log.Logger
+	KubeConfig  string
+	Context     string
+	ClientCA    string
+	Certificate string
+	PrivateKey  string
+	ServiceCIDR string
 }
 
-func New(options *Options) (*Server, error) {
-	s := &Server{logger: log.With(options.Logger, "wormhole", "server")}
+func New(options *Options) (*guttle.Server, error) {
+	var listener net.Listener
+	var err error
 
-	client, err := kube.NewClient(options.KubeConfig, options.Context, options.Logger)
+	// Configure TLS
+	tlsConfig, err := wormhole.NewTLSConfig(options.Certificate, options.PrivateKey)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("Failed to load cert or key: %s", err)
+	}
+	tlsConfig.ClientCAs, err = wormhole.LoadCAFile(options.ClientCA)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to load ca file %s: %s", options.ClientCA, err)
+	}
+	tlsConfig.ClientAuth = tls.RequireAndVerifyClientCert
+
+	listener, err = tls.Listen("tcp", "0.0.0.0:9090", tlsConfig)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to listen to 0.0.0.0:9090: %s", err)
+	}
+	fmt.Printf("Listenning on 0.0.0.0:9090 with TLS")
+
+	opts := guttle.ServerOptions{
+		Listener:  listener,
+		ProxyFunc: guttle.SourceRoutedProxy(),
 	}
 
-	s.client = client
-	s.factory = informers.NewSharedInformerFactory(s.client, DEFAULT_RECONCILIATION)
-	s.tunnel, err = NewTunnel(options)
-	if err != nil {
-		return nil, err
-	}
-	s.controller = NewController(s.factory.Core().V1().Nodes(), options.ServiceCIDR, s.tunnel.Server, options.Logger)
-
-	return s, nil
-}
-
-func (s *Server) Run(stopCh <-chan struct{}, wg *sync.WaitGroup) {
-	s.logger.Log(
-		"msg", "Starting wormhole server",
-		"version", version.GitCommit,
-	)
-
-	kube.WaitForServer(s.client, stopCh, s.logger)
-
-	s.factory.Start(stopCh)
-	s.factory.WaitForCacheSync(stopCh)
-
-	s.logger.Log(
-		"msg", "Cache primed. Ready for Action!",
-	)
-
-	go s.controller.Run(1, stopCh, wg)
-	go s.tunnel.Run(stopCh, wg)
+	return guttle.NewServer(&opts), nil
 }

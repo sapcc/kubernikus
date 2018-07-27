@@ -1,4 +1,4 @@
-package client
+package server
 
 import (
 	"encoding/json"
@@ -28,14 +28,15 @@ const intervalJitter = 0.5
 const NodeRouteBroken v1.NodeConditionType = "RouteBroken"
 
 type healthChecker struct {
-	nodeName string
-	localIP  net.IP
-	listener *icmp.Listener
-	logger   kitlog.Logger
-	client   typed_core_v1.NodeInterface
+	nodeName               string
+	containerInterfaceName string
+	localIP                net.IP
+	listener               *icmp.Listener
+	logger                 kitlog.Logger
+	client                 typed_core_v1.NodeInterface
 }
 
-func NewHealthChecker(kubeconfig, context, nodeNameOverride string, logger kitlog.Logger) (*healthChecker, error) {
+func NewHealthChecker(kubeconfig, context, nodeNameOverride string, containerInterfaceName string, logger kitlog.Logger) (*healthChecker, error) {
 	var hc = healthChecker{logger: logger, nodeName: nodeNameOverride}
 
 	client, err := kubernetes.NewClient(kubeconfig, context, logger)
@@ -45,6 +46,7 @@ func NewHealthChecker(kubeconfig, context, nodeNameOverride string, logger kitlo
 	hc.client = client.CoreV1().Nodes()
 
 	hc.nodeName = nodeNameOverride
+	hc.containerInterfaceName = containerInterfaceName
 
 	interfaceName, err := netutil.DefaultInterfaceName()
 	if err != nil {
@@ -72,6 +74,7 @@ func (hc *healthChecker) Start(stopCh <-chan struct{}) error {
 }
 
 func (hc *healthChecker) Reconcile() {
+	hc.logger.Log("msg", "Running healthchecks")
 	if err := hc.reconcile(); err != nil {
 		hc.logger.Log("msg", "healthcheck", "err", err)
 	}
@@ -79,9 +82,9 @@ func (hc *healthChecker) Reconcile() {
 
 func (hc *healthChecker) reconcile() error {
 
-	destinationIP, err := netutil.InterfaceAddress("cbr0")
+	destinationIP, err := netutil.InterfaceAddress(hc.containerInterfaceName)
 	if err != nil {
-		return fmt.Errorf("Interface cbr0 not found: %s", err)
+		return fmt.Errorf("Interface %s not found: %s", hc.containerInterfaceName, err)
 	}
 
 	nodeName, err := hc.myNodeName()
@@ -103,6 +106,7 @@ func (hc *healthChecker) reconcile() error {
 	}
 
 	err = wait.ExponentialBackoff(backoff, func() (bool, error) {
+		hc.logger.Log("msg", "Checking Redirect")
 		return checkRedirect(hc.listener, hc.localIP, destinationIP), nil
 	})
 

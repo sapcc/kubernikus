@@ -1,7 +1,8 @@
-package server
+package client
 
 import (
 	"bytes"
+	"crypto/tls"
 	"fmt"
 	"net"
 	"strconv"
@@ -19,6 +20,7 @@ import (
 	utilexec "k8s.io/utils/exec"
 
 	"github.com/sapcc/kubernikus/pkg/util/iptables"
+	"github.com/sapcc/kubernikus/pkg/wormhole"
 )
 
 const (
@@ -27,36 +29,35 @@ const (
 
 type Controller struct {
 	nodes       informers.NodeInformer
-	tunnel      *guttle.Server
 	queue       workqueue.RateLimitingInterface
-	store       map[string][]route
+	store       map[string]route
 	iptables    iptables.Interface
-	hijackPort  int
 	serviceCIDR string
-
-	Logger log.Logger
+	Logger      log.Logger
+	ClientCA    string
+	Certificate string
+	PrivateKey  string
 }
 
 type route struct {
-	cidr       string
+	port       int
+	client     *guttle.Client
 	identifier string
 }
 
-func NewController(informer informers.NodeInformer, serviceCIDR string, tunnel *guttle.Server, logger log.Logger) *Controller {
+func NewController(informer informers.NodeInformer, serviceCIDR string, logger log.Logger, clientCA string, certificate string, privateKey string) *Controller {
 	logger = log.With(logger, "controller", "tunnel")
 	c := &Controller{
 		nodes:       informer,
-		tunnel:      tunnel,
 		queue:       workqueue.NewRateLimitingQueue(workqueue.NewItemExponentialFailureRateLimiter(5*time.Second, 300*time.Second)),
-		store:       make(map[string][]route),
+		store:       make(map[string]route),
 		iptables:    iptables.New(utilexec.New(), iptables.ProtocolIpv4, logger),
-		hijackPort:  9191,
 		serviceCIDR: serviceCIDR,
 		Logger:      logger,
+		ClientCA:    clientCA,
+		Certificate: certificate,
+		PrivateKey:  privateKey,
 	}
-
-	//Always forward requests to the serviceCIDR range
-	c.tunnel.AddRoute(serviceCIDR)
 
 	c.nodes.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
 		AddFunc: func(obj interface{}) {
@@ -168,44 +169,78 @@ func (c *Controller) reconcile(key string) error {
 }
 
 func (c *Controller) addNode(key string, node *v1.Node) error {
+	_, found := c.store[key]
+	if !found {
+		identifier := fmt.Sprintf("system:node:%v", node.GetName())
+		c.Logger.Log(
+			"msg", "adding tunnel routes",
+			"node", identifier)
 
-	identifier := fmt.Sprintf("system:node:%v", node.GetName())
-	c.Logger.Log(
-		"msg", "adding tunnel routes",
-		"node", identifier)
+		ip, err := GetNodeHostIP(node)
+		if err != nil {
+			return err
+		}
 
-	podCIDR := node.Spec.PodCIDR
+		port, err := GetFreePort()
+		if err != nil {
+			return err
+		}
 
-	ip, err := GetNodeHostIP(node)
-	if err != nil {
-		return err
-	}
-	nodeCIDR := ip.String() + "/32"
+		nodeClientOps := guttle.ClientOptions{
+			ServerAddr: ip.String() + ":9090",
+			ListenAddr: fmt.Sprintf("0.0.0.0:%d", port),
+		}
 
-	if err := c.tunnel.AddClientRoute(podCIDR, identifier); err != nil {
-		return err
-	}
-	c.store[key] = append(c.store[key], route{cidr: podCIDR, identifier: identifier})
-	if err := c.tunnel.AddRoute(podCIDR); err != nil {
-		return err
-	}
-	if err := c.tunnel.AddClientRoute(nodeCIDR, identifier); err != nil {
-		return err
-	}
-	c.store[key] = append(c.store[key], route{cidr: nodeCIDR, identifier: identifier})
-	if err := c.tunnel.AddRoute(nodeCIDR); err != nil {
-		return err
+		tlsConfig, err := wormhole.NewTLSConfig(c.Certificate, c.PrivateKey)
+		if err != nil {
+			c.Logger.Log(
+				"msg", "Failed to load cert or key",
+				"err", err,
+			)
+			return err
+		}
+		caPool, err := wormhole.LoadCAFile(c.ClientCA)
+		if err != nil {
+			c.Logger.Log(
+				"msg", "Failed to load ca file",
+				"file", c.ClientCA,
+				"err", err,
+			)
+			return err
+		}
+		tlsConfig.RootCAs = caPool
+		dialFunc := func(network, address string) (net.Conn, error) {
+			dialer := &net.Dialer{Timeout: 10 * time.Second}
+			conn, err := tls.DialWithDialer(dialer, network, address, tlsConfig)
+			if err != nil {
+				c.Logger.Log(
+					"msg", "failed to open connection",
+					"address", address,
+					"err", err)
+			}
+			return conn, err
+		}
+		nodeClientOps.Dial = dialFunc
+		c.Logger.Log("msg", "Configured with tls dialer")
+
+		nodeClient := guttle.NewClient(&nodeClientOps)
+
+		//TODO use wg to properly clean goroutine at stop
+		go nodeClient.Start()
+
+		c.store[key] = route{
+			client:     nodeClient,
+			port:       port,
+			identifier: identifier,
+		}
 	}
 
 	return c.redoIPTablesSpratz()
 }
 
 func (c *Controller) delNode(key string) error {
-	routes := c.store[key]
-	for _, route := range routes {
-		c.tunnel.DeleteClientRoute(route.cidr, route.identifier)
-		c.tunnel.DeleteRoute(route.cidr)
-	}
+	route := c.store[key]
+	route.client.Stop()
 	return c.redoIPTablesSpratz()
 }
 
@@ -252,21 +287,14 @@ func (c *Controller) redoIPTablesSpratz() error {
 		writeLine(natChains, iptables.MakeChainLine(KUBERNIKUS_TUNNELS))
 	}
 
-	for key := range c.store {
-		err := c.writeTunnelRedirect(key, natRules)
+	c.Logger.Log(
+		"msg", "iterating on store")
+	for key, route := range c.store {
+		err := c.writeTunnelRedirect(key, route.port, natRules)
 		if err != nil {
 			return err
 		}
 	}
-
-	writeLine(natRules,
-		"-A", string(KUBERNIKUS_TUNNELS),
-		"-m", "comment", "--comment", `"cluster service CIDR tunnel redirect"`,
-		"--dst", c.serviceCIDR,
-		"-p", "tcp",
-		"-j", "REDIRECT",
-		"--to-ports", strconv.Itoa(c.hijackPort),
-	)
 
 	writeLine(natRules, "COMMIT")
 
@@ -287,13 +315,18 @@ func (c *Controller) redoIPTablesSpratz() error {
 	return nil
 }
 
-func (c *Controller) writeTunnelRedirect(key string, filterRules *bytes.Buffer) error {
+func (c *Controller) writeTunnelRedirect(key string, clientPort int, natRules *bytes.Buffer) error {
+	c.Logger.Log(
+		"msg", "writing tunnel redirect",
+		"key", key)
 	obj, exists, err := c.nodes.Informer().GetIndexer().GetByKey(key)
 	if err != nil {
 		return err
 	}
 
 	if !exists {
+		c.Logger.Log(
+			"msg", "node does not exist")
 		return nil
 	}
 
@@ -303,9 +336,9 @@ func (c *Controller) writeTunnelRedirect(key string, filterRules *bytes.Buffer) 
 		return err
 	}
 
-	port := strconv.Itoa(c.hijackPort)
+	port := strconv.Itoa(clientPort)
 
-	writeLine(filterRules,
+	writeLine(natRules,
 		"-A", string(KUBERNIKUS_TUNNELS),
 		"-m", "comment", "--comment", fmt.Sprintf(`"node ip tunnel redirect for %s"`, key),
 		"--dst", ip.String(),
@@ -314,10 +347,21 @@ func (c *Controller) writeTunnelRedirect(key string, filterRules *bytes.Buffer) 
 		"--to-ports", port,
 	)
 
-	writeLine(filterRules,
+	writeLine(natRules,
 		"-A", string(KUBERNIKUS_TUNNELS),
 		"-m", "comment", "--comment", fmt.Sprintf(`"pod cidr tunnel redirect for %s"`, key),
 		"--dst", node.Spec.PodCIDR,
+		"-p", "tcp",
+		"-j", "REDIRECT",
+		"--to-ports", port,
+	)
+
+	// Write one service CIDR iptable for each node.
+	// Only the first one will be used though, so the first node will take all service traffic.
+	writeLine(natRules,
+		"-A", string(KUBERNIKUS_TUNNELS),
+		"-m", "comment", "--comment", `"cluster service CIDR tunnel redirect"`,
+		"--dst", c.serviceCIDR,
 		"-p", "tcp",
 		"-j", "REDIRECT",
 		"--to-ports", port,
@@ -337,10 +381,27 @@ func GetNodeHostIP(node *v1.Node) (net.IP, error) {
 		addressMap[addresses[i].Type] = append(addressMap[addresses[i].Type], addresses[i])
 	}
 	if addresses, ok := addressMap[v1.NodeInternalIP]; ok {
+		fmt.Printf("node ip is : %s", addresses[0].Address)
 		return net.ParseIP(addresses[0].Address), nil
 	}
 	if addresses, ok := addressMap[v1.NodeExternalIP]; ok {
+		fmt.Printf("node ip is : %s", addresses[0].Address)
 		return net.ParseIP(addresses[0].Address), nil
 	}
 	return nil, fmt.Errorf("host IP unknown; known addresses: %v", addresses)
+}
+
+// GetFreePort asks the kernel for a free open port that is ready to use.
+func GetFreePort() (int, error) {
+	addr, err := net.ResolveTCPAddr("tcp", "localhost:0")
+	if err != nil {
+		return 0, err
+	}
+
+	l, err := net.ListenTCP("tcp", addr)
+	if err != nil {
+		return 0, err
+	}
+	defer l.Close()
+	return l.Addr().(*net.TCPAddr).Port, nil
 }

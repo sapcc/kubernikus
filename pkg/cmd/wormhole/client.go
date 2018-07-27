@@ -1,7 +1,13 @@
 package wormhole
 
 import (
-	"github.com/go-kit/kit/log"
+	"errors"
+	"fmt"
+	"os"
+	"os/signal"
+	"sync"
+	"syscall"
+
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 
@@ -29,33 +35,33 @@ func NewClientCommand() *cobra.Command {
 }
 
 type ClientOptions struct {
-	KubeConfig  string
-	Server      string
-	Context     string
-	ListenAddr  string
-	NodeName    string
+	client.Options
 	HealthCheck bool
+	NodeName    string
 	LogLevel    int
 }
 
 func NewClientOptions() *ClientOptions {
-	return &ClientOptions{
-		ListenAddr:  "198.18.128.1:6443",
-		HealthCheck: true,
-	}
+	o := &ClientOptions{}
+	return o
 }
 
 func (o *ClientOptions) BindFlags(flags *pflag.FlagSet) {
-	flags.StringVar(&o.KubeConfig, "kubeconfig", o.KubeConfig, "Path to the kubeconfig file to use to talk to the Tunnel Server. If unset, try the environment variable KUBECONFIG, as well as in-cluster configuration")
-	flags.StringVar(&o.Server, "server", o.Server, "Tunnel Server endpoint (host:port)")
-	flags.StringVar(&o.ListenAddr, "listen", o.ListenAddr, "Listen address for accepting tunnel requests")
-	flags.StringVar(&o.Context, "context", o.Context, "Kubeconfig context to use. (default: current-context)")
-	flags.StringVar(&o.NodeName, "node-name", o.NodeName, "Override the node name used for reporting health")
+	flags.StringVar(&o.KubeConfig, "kubeconfig", o.KubeConfig, "Path to the kubeconfig file to use to talk to the Kubernetes apiserver. If unset, try the environment variable KUBECONFIG, as well as in-cluster configuration")
 	flags.BoolVar(&o.HealthCheck, "health-check", o.HealthCheck, "Run the health checker (default: true)")
+	flags.StringVar(&o.NodeName, "node-name", o.NodeName, "Override the node name used for reporting health")
+	flags.StringVar(&o.Context, "context", "", "Override context")
+	flags.StringVar(&o.ClientCA, "ca", o.ClientCA, "CA to use for validating tunnel clients")
+	flags.StringVar(&o.Certificate, "cert", o.Certificate, "Certificate for the tunnel server")
+	flags.StringVar(&o.PrivateKey, "key", o.PrivateKey, "Key for the tunnel server")
+	flags.StringVar(&o.ServiceCIDR, "service-cidr", "", "Cluster service IP range")
 	flags.IntVar(&o.LogLevel, "v", 0, "log level")
 }
 
 func (o *ClientOptions) Validate(c *cobra.Command, args []string) error {
+	if o.ServiceCIDR == "" {
+		return errors.New("You must specify service-cidr")
+	}
 	return nil
 }
 
@@ -64,38 +70,23 @@ func (o *ClientOptions) Complete(args []string) error {
 }
 
 func (o *ClientOptions) Run(c *cobra.Command) error {
-	logger := logutil.NewLogger(o.LogLevel)
-	logger = log.With(logger, "wormhole", "client")
+	o.Logger = logutil.NewLogger(o.LogLevel)
+	sigs := make(chan os.Signal, 1)
+	stop := make(chan struct{})
+	signal.Notify(sigs, os.Interrupt, syscall.SIGTERM) // Push signals into channel
+	wg := &sync.WaitGroup{}                            // Goroutines can add themselves to this to be waited on
 
-	guttleClient, err := client.New(o.KubeConfig, o.Context, o.Server, o.ListenAddr, logger)
+	client, err := client.New(&o.Options)
 	if err != nil {
-		return err
+		return fmt.Errorf("Failed to initialize client: %s", err)
 	}
 
-	group := cmd.Runner()
-	group.Add(
-		func() error {
-			return guttleClient.Start()
-		},
-		func(err error) {
-			guttleClient.Stop()
-		})
+	go client.Run(stop, wg)
 
-	if o.HealthCheck {
-		healthChecker, err := client.NewHealthChecker(o.KubeConfig, o.Context, o.NodeName, logger)
-		if err != nil {
-			return err
-		}
-		closeCh := make(chan struct{}, 0)
+	<-sigs // Wait for signals (this hangs until a signal arrives)
+	o.Logger.Log("msg", "Shutting down...")
+	close(stop) // Tell goroutines to stop themselves
+	wg.Wait()   // Wait for all to be stopped
 
-		group.Add(
-			func() error {
-				return healthChecker.Start(closeCh)
-			},
-			func(err error) {
-				close(closeCh)
-			})
-	}
-
-	return group.Run()
+	return nil
 }
