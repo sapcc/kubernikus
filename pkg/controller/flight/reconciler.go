@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	INSTANCE_SPAWNING_TIMEOUT = 25 * time.Minute
+	INSTANCE_SPAWNING_TIMEOUT = 45 * time.Minute
 )
 
 type FlightReconciler interface {
