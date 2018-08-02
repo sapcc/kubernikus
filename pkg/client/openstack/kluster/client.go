@@ -2,6 +2,7 @@ package kluster
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/gophercloud/gophercloud"
@@ -63,11 +64,30 @@ func NewKlusterClient(network, compute, identity *gophercloud.ServiceClient, klu
 
 func (c *klusterClient) CreateNode(pool *models.NodePool, name string, userData []byte) (string, error) {
 	configDrive := true
+
+	networks := []servers.Network{{UUID: c.Kluster.Spec.Openstack.NetworkID}}
+
+	if strings.HasPrefix(pool.Flavor, "zh") {
+		networks = []servers.Network{
+			{UUID: c.Kluster.Spec.Openstack.NetworkID},
+			{UUID: c.Kluster.Spec.Openstack.NetworkID},
+			{UUID: c.Kluster.Spec.Openstack.NetworkID},
+			{UUID: c.Kluster.Spec.Openstack.NetworkID},
+		}
+	}
+
+	if strings.HasPrefix(pool.Flavor, "zg") {
+		networks = []servers.Network{
+			{UUID: c.Kluster.Spec.Openstack.NetworkID},
+			{UUID: c.Kluster.Spec.Openstack.NetworkID},
+		}
+	}
+
 	server, err := compute.Create(c.ComputeClient, servers.CreateOpts{
 		Name:           name,
 		FlavorName:     pool.Flavor,
 		ImageName:      pool.Image,
-		Networks:       []servers.Network{{UUID: c.Kluster.Spec.Openstack.NetworkID}},
+		Networks:       networks,
 		UserData:       userData,
 		ServiceClient:  c.ComputeClient,
 		SecurityGroups: []string{c.Kluster.Spec.Openstack.SecurityGroupName},
