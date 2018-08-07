@@ -16,6 +16,7 @@ import (
 	"github.com/tredoe/osutil/user/crypt/sha512_crypt"
 	"k8s.io/api/core/v1"
 
+	"github.com/sapcc/kubernikus/pkg/api/models"
 	kubernikusv1 "github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
 	"github.com/sapcc/kubernikus/pkg/version"
 )
@@ -54,7 +55,7 @@ func (i *ignition) getIgnitionTemplate(kluster *kubernikusv1.Kluster) string {
 	}
 }
 
-func (i *ignition) GenerateNode(kluster *kubernikusv1.Kluster, nodeName string, secret *v1.Secret, logger log.Logger) ([]byte, error) {
+func (i *ignition) GenerateNode(kluster *kubernikusv1.Kluster, pool *models.NodePool, nodeName string, secret *v1.Secret, logger log.Logger) ([]byte, error) {
 	for _, field := range i.requiredNodeSecrets {
 		if _, ok := secret.Data[field]; !ok {
 			return nil, fmt.Errorf("Field %s missing in secret", field)
@@ -86,6 +87,13 @@ func (i *ignition) GenerateNode(kluster *kubernikusv1.Kluster, nodeName string, 
 			return nil, fmt.Errorf("Faied to generate salted password: %s", err)
 		}
 	}
+	var nodeLabels []string
+	if pool != nil {
+		nodeLabels = append(nodeLabels, "ccloud.sap.com/nodepool="+pool.Name)
+		if strings.HasPrefix(pool.Flavor, "zg") {
+			nodeLabels = append(nodeLabels, "ccloud.sap.com/nvidia-gpu=nvidia-tesla-v100")
+		}
+	}
 
 	data := struct {
 		TLSCA                              string
@@ -110,6 +118,7 @@ func (i *ignition) GenerateNode(kluster *kubernikusv1.Kluster, nodeName string, 
 		KubernikusImageTag                 string
 		LoginPassword                      string
 		LoginPublicKey                     string
+		NodeLabels                         []string
 		NodeName                           string
 	}{
 		TLSCA:                              string(secret.Data["tls-ca.pem"]),
@@ -134,6 +143,7 @@ func (i *ignition) GenerateNode(kluster *kubernikusv1.Kluster, nodeName string, 
 		KubernikusImageTag:                 version.GitCommit,
 		LoginPassword:                      passwordHash,
 		LoginPublicKey:                     kluster.Spec.SSHPublicKey,
+		NodeLabels:                         nodeLabels,
 		NodeName:                           nodeName,
 	}
 

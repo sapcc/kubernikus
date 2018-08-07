@@ -104,7 +104,10 @@ systemd:
           --network-plugin=kubenet \
           --non-masquerade-cidr=0.0.0.0/0 \
           --lock-file=/var/run/lock/kubelet.lock \
-          --exit-on-lock-contention 
+{{- if .NodeLabels }}
+          --node-labels={{ .NodeLabels | join "," }} \
+{{- end }}
+          --exit-on-lock-contention
         ExecStop=-/usr/bin/rkt stop --uuid-file=/var/run/kubelet-pod.uuid
         Restart=always
         RestartSec=10
