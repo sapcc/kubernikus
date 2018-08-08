@@ -603,10 +603,48 @@ jobs:
   - name: tiller
     plan:
       - get: secrets.git
+      - get: kubernikus.builds
+        resource: master.builds
       - aggregate:
-        - task: qa-de-1
+        - task: k-ap-au-1
+          file: kubernikus.builds/ci/task_tiller.yaml
+          timeout: 10m
+          params:
+            <<: *auth_ap-au-1
+        - task: k-eu-de-1
+          file: kubernikus.builds/ci/task_tiller.yaml
+          timeout: 10m
+          params:
+            <<: *auth_eu-de-1
+        - task: k-eu-de-2
+          file: kubernikus.builds/ci/task_tiller.yaml
+          timeout: 10m
+          params:
+            <<: *auth_eu-de-2
+        - task: k-eu-nl-1
+          file: kubernikus.builds/ci/task_tiller.yaml
+          timeout: 10m
+          params:
+            <<: *auth_eu-nl-1
+        - task: k-feature
+          file: kubernikus.builds/ci/task_tiller.yaml
+          timeout: 10m
+          params:
+            <<: *auth_feature
+        - task: k-master
+          file: kubernikus.builds/ci/task_tiller.yaml
+          timeout: 10m
+          params:
+            <<: *auth_master
+        - task: k-na-us-1
+          file: kubernikus.builds/ci/task_tiller.yaml
+          timeout: 10m
+          params:
+            <<: *auth_na-us-1
+        - task: k-qa-de-1
           file: kubernikus.builds/ci/task_tiller.yaml
           timeout: 10m
           params:
             <<: *auth_qa-de-1
+
 
