@@ -6,11 +6,11 @@ import (
 	"html/template"
 
 	"k8s.io/api/core/v1"
+	extensions "k8s.io/api/extensions/v1beta1"
 	rbac "k8s.io/api/rbac/v1beta1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	clientset "k8s.io/client-go/kubernetes"
-	extensions "k8s.io/api/extensions/v1beta1"
 )
 
 func RenderManifest(strtmpl string, obj interface{}) ([]byte, error) {
