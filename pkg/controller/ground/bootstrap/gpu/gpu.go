@@ -1,10 +1,10 @@
 package gpu
 
 import (
+	apps "k8s.io/api/apps/v1"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
 	clientset "k8s.io/client-go/kubernetes"
 	clientsetscheme "k8s.io/client-go/kubernetes/scheme"
-	apps "k8s.io/api/apps/v1"
 
 	"github.com/sapcc/kubernikus/pkg/controller/ground/bootstrap"
 )
