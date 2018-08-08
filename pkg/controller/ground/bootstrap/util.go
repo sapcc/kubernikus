@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"html/template"
 
+	apps "k8s.io/api/apps/v1"
 	"k8s.io/api/core/v1"
 	extensions "k8s.io/api/extensions/v1beta1"
 	rbac "k8s.io/api/rbac/v1beta1"
@@ -74,13 +75,13 @@ func CreateOrUpdateConfigMap(client clientset.Interface, configmap *v1.ConfigMap
 	return nil
 }
 
-func CreateOrUpdateDaemonset(client clientset.Interface, daemonset *extensions.DaemonSet) error {
-	if _, err := client.ExtensionsV1beta1().DaemonSets(daemonset.ObjectMeta.Namespace).Create(daemonset); err != nil {
+func CreateOrUpdateDaemonset(client clientset.Interface, daemonset *apps.DaemonSet) error {
+	if _, err := client.Apps().DaemonSets(daemonset.ObjectMeta.Namespace).Create(daemonset); err != nil {
 		if !apierrors.IsAlreadyExists(err) {
 			return fmt.Errorf("unable to create deployment: %v", err)
 		}
 
-		if _, err := client.ExtensionsV1beta1().DaemonSets(daemonset.ObjectMeta.Namespace).Update(daemonset); err != nil {
+		if _, err := client.Apps().DaemonSets(daemonset.ObjectMeta.Namespace).Update(daemonset); err != nil {
 			return fmt.Errorf("unable to update deployment: %v", err)
 		}
 	}

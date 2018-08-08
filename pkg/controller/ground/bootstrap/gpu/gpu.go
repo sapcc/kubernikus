@@ -1,10 +1,10 @@
 package gpu
 
 import (
-	extensions "k8s.io/api/extensions/v1beta1"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
 	clientset "k8s.io/client-go/kubernetes"
 	clientsetscheme "k8s.io/client-go/kubernetes/scheme"
+	apps "k8s.io/api/apps/v1"
 
 	"github.com/sapcc/kubernikus/pkg/controller/ground/bootstrap"
 )
@@ -25,12 +25,12 @@ func createDaemonSet(client clientset.Interface, manifest string) error {
 		return err
 	}
 
-	daemonset, _, err := serializer.NewCodecFactory(clientsetscheme.Scheme).UniversalDeserializer().Decode(template, nil, &extensions.DaemonSet{})
+	daemonset, _, err := serializer.NewCodecFactory(clientsetscheme.Scheme).UniversalDeserializer().Decode(template, nil, &apps.DaemonSet{})
 	if err != nil {
 		return err
 	}
 
-	if err := bootstrap.CreateOrUpdateDaemonset(client, daemonset.(*extensions.DaemonSet)); err != nil {
+	if err := bootstrap.CreateOrUpdateDaemonset(client, daemonset.(*apps.DaemonSet)); err != nil {
 		return err
 	}
 	return nil
