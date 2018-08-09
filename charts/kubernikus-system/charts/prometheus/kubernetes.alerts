@@ -10,6 +10,7 @@ groups:
       severity: critical
       context: node
       meta: "{{ $labels.instance }}"
+      playbook: docs/support/playbook/kubernikus/k8s_node_not_ready.html
     annotations:
       description: Many Nodes are NotReady
       summary: Many ({{$value}}) nodes are NotReady for more than an hour
@@ -23,7 +24,7 @@ groups:
       severity: critical
       context: node
       meta: "{{ $labels.instance }}"
-      playbook: docs/support/playbook/k8s_node_not_ready.html
+      playbook: docs/support/playbook/kubernikus/k8s_node_not_ready.html
     annotations:
       description: Node status is NotReady
       summary: Node {{$labels.node}} is NotReady for more than an hour
@@ -49,6 +50,7 @@ groups:
       service: k8s
       severity: critical
       context: node
+      playbook: docs/support/playbook/kubernetes/k8s_node_scrape_missing.html
     annotations:
       description: Node status cannot be scraped
       summary: Node status failed to be scraped
