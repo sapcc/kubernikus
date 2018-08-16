@@ -195,6 +195,8 @@ resources:
 
   - name: secrets.git
     type: git
+    webhook_token: aldhjalkdhahdjkahdjkhjadhjadhkjadlkjhAAdd
+    check_every: 1h
     source:
       uri:         git@github.wdf.sap.corp:cc/secrets.git
       private_key: ((secrets-ssh-key))
