@@ -6,7 +6,9 @@ import (
 	"time"
 
 	"github.com/gophercloud/gophercloud"
+	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/schedulerhints"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/secgroups"
+	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/servergroups"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/servers"
 	securitygroups "github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/security/groups"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/security/rules"
@@ -24,6 +26,8 @@ type KlusterClient interface {
 	ListNodes(*models.NodePool) ([]Node, error)
 	SetSecurityGroup(nodeID string) error
 	EnsureKubernikusRuleInSecurityGroup() (bool, error)
+	EnsureServerGroup(name string) (string, error)
+	DeleteServerGroup(name string) error
 }
 
 type klusterClient struct {
@@ -83,15 +87,23 @@ func (c *klusterClient) CreateNode(pool *models.NodePool, name string, userData 
 		}
 	}
 
-	server, err := compute.Create(c.ComputeClient, servers.CreateOpts{
-		Name:           name,
-		FlavorName:     pool.Flavor,
-		ImageName:      pool.Image,
-		Networks:       networks,
-		UserData:       userData,
-		ServiceClient:  c.ComputeClient,
-		SecurityGroups: []string{c.Kluster.Spec.Openstack.SecurityGroupName},
-		ConfigDrive:    &configDrive,
+	serverGroupID, err := c.EnsureServerGroup(c.Kluster.Name + "/" + pool.Name)
+	if err != nil {
+		return "", err
+	}
+
+	server, err := compute.Create(c.ComputeClient, schedulerhints.CreateOptsExt{
+		CreateOptsBuilder: servers.CreateOpts{
+			Name:           name,
+			FlavorName:     pool.Flavor,
+			ImageName:      pool.Image,
+			Networks:       networks,
+			UserData:       userData,
+			ServiceClient:  c.ComputeClient,
+			SecurityGroups: []string{c.Kluster.Spec.Openstack.SecurityGroupName},
+			ConfigDrive:    &configDrive,
+		},
+		SchedulerHints: schedulerhints.SchedulerHints{Group: serverGroupID},
 	}).Extract()
 
 	if err != nil {
@@ -226,6 +238,52 @@ func (c *klusterClient) EnsureKubernikusRuleInSecurityGroup() (created bool, err
 	}
 
 	return !udp || !tcp || !icmp, nil
+}
+
+func (c *klusterClient) EnsureServerGroup(name string) (id string, err error) {
+	sg, err := c.serverGroupByName(name)
+	if err != nil {
+		return "", err
+	}
+	if sg != nil {
+		return sg.ID, nil
+	}
+	sg, err = servergroups.Create(c.ComputeClient, servergroups.CreateOpts{
+		Name:     name,
+		Policies: []string{"soft-affinity"},
+	}).Extract()
+	if err != nil {
+		return "", err
+	}
+	return sg.ID, nil
+}
+
+func (c *klusterClient) DeleteServerGroup(name string) error {
+	sg, err := c.serverGroupByName(name)
+	if err != nil {
+		return err
+	}
+	if sg != nil {
+		return servergroups.Delete(c.ComputeClient, sg.ID).ExtractErr()
+	}
+	return nil
+}
+
+func (c *klusterClient) serverGroupByName(name string) (*servergroups.ServerGroup, error) {
+	page, err := servergroups.List(c.ComputeClient).AllPages()
+	if err != nil {
+		return nil, err
+	}
+	sgs, err := servergroups.ExtractServerGroups(page)
+	if err != nil {
+		return nil, err
+	}
+	for _, sg := range sgs {
+		if sg.Name == name {
+			return &sg, nil
+		}
+	}
+	return nil, nil
 }
 
 func ExtractServers(r pagination.Page) ([]Node, error) {
