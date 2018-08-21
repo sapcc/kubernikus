@@ -34,6 +34,7 @@ spec:
             - --web.console.templates=/etc/prometheus/consoles
             - --web.external-url=https://prometheus.{{ required "domain missing" .Values.global.domain }}
             - --log.level={{ default "info" .Values.log_level }}
+            - --web.enable-lifecycle
           ports:
             - name: http 
               containerPort: 9090
@@ -42,6 +43,15 @@ spec:
               mountPath: /prometheus
             - name: config
               mountPath: /etc/prometheus
+        - name: prometheus-configmap-reloader
+          image: "{{ .Values.configmap_reload.image.repository }}:{{ .Values.configmap_reload.image.tag }}"
+          args:
+            - --volume-dir=/etc/prometheus
+            - --webhook-url=http://localhost:9090/-/reload
+          volumeMounts:
+            - name: config
+              mountPath: /etc/prometheus
+              readOnly: true
       volumes:
         - name: data
           persistentVolumeClaim:
@@ -49,4 +59,5 @@ spec:
         - name: config
           configMap:
             name: kubernikus-prometheus
+
 
