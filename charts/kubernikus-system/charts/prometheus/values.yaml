@@ -5,6 +5,11 @@ prometheus:
   image: prom/prometheus
   tag: v2.3.2
 
+configmap_reload:
+  image:
+    repository: jimmidyson/configmap-reload
+    tag: v0.2.2
+
 retention: 7d
 use_alertmanager: true
 
@@ -18,4 +23,3 @@ persistence:
 #    scheme: https
 #    scrape_interval: 30s
 #    ...
-
