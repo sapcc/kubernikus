@@ -2,6 +2,7 @@ package kluster
 
 import (
 	"fmt"
+	"os"
 	"strings"
 	"time"
 
@@ -87,24 +88,30 @@ func (c *klusterClient) CreateNode(pool *models.NodePool, name string, userData 
 		}
 	}
 
-	serverGroupID, err := c.EnsureServerGroup(c.Kluster.Name + "/" + pool.Name)
-	if err != nil {
-		return "", err
+	var createOpts servers.CreateOptsBuilder = servers.CreateOpts{
+		Name:           name,
+		FlavorName:     pool.Flavor,
+		ImageName:      pool.Image,
+		Networks:       networks,
+		UserData:       userData,
+		ServiceClient:  c.ComputeClient,
+		SecurityGroups: []string{c.Kluster.Spec.Openstack.SecurityGroupName},
+		ConfigDrive:    &configDrive,
 	}
 
-	server, err := compute.Create(c.ComputeClient, schedulerhints.CreateOptsExt{
-		CreateOptsBuilder: servers.CreateOpts{
-			Name:           name,
-			FlavorName:     pool.Flavor,
-			ImageName:      pool.Image,
-			Networks:       networks,
-			UserData:       userData,
-			ServiceClient:  c.ComputeClient,
-			SecurityGroups: []string{c.Kluster.Spec.Openstack.SecurityGroupName},
-			ConfigDrive:    &configDrive,
-		},
-		SchedulerHints: schedulerhints.SchedulerHints{Group: serverGroupID},
-	}).Extract()
+	if os.Getenv("NODEPOOL_AFFINITY") != "" {
+		serverGroupID, err := c.EnsureServerGroup(c.Kluster.Name + "/" + pool.Name)
+		if err != nil {
+			return "", err
+		}
+
+		createOpts = schedulerhints.CreateOptsExt{
+			CreateOptsBuilder: createOpts,
+			SchedulerHints:    schedulerhints.SchedulerHints{Group: serverGroupID},
+		}
+	}
+
+	server, err := compute.Create(c.ComputeClient, createOpts).Extract()
 
 	if err != nil {
 		return "", err
