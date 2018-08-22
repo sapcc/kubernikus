@@ -128,6 +128,9 @@ func (lr *LaunchReconciler) terminatePool(kluster *v1.Kluster, pool *models.Node
 			return
 		}
 	}
+	if err = pm.DeletePool(); err != nil {
+		return
+	}
 
 	err = pm.SetStatus(status)
 	return

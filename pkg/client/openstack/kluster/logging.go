@@ -83,3 +83,31 @@ func (c LoggingClient) EnsureKubernikusRuleInSecurityGroup() (created bool, err 
 
 	return c.Client.EnsureKubernikusRuleInSecurityGroup()
 }
+
+func (c LoggingClient) DeleteServerGroup(name string) (err error) {
+	defer func(begin time.Time) {
+		c.Logger.Log(
+			"msg", "deleted servergroup",
+			"name", name,
+			"took", time.Since(begin),
+			"v", 2,
+			"err", err,
+		)
+	}(time.Now())
+
+	return c.Client.DeleteServerGroup(name)
+}
+
+func (c LoggingClient) EnsureServerGroup(name string) (id string, err error) {
+	defer func(begin time.Time) {
+		c.Logger.Log(
+			"msg", "ensure servergroup",
+			"name", name,
+			"took", time.Since(begin),
+			"v", 2,
+			"err", err,
+		)
+	}(time.Now())
+
+	return c.Client.EnsureServerGroup(name)
+}

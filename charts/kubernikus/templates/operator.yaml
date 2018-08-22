@@ -36,6 +36,9 @@ spec:
             - --namespace={{ default "kubernikus" .Values.namespace }}
             - --metric-port={{ default 9091 .Values.operator.metrics_port }}
             - --v={{ default 1 .Values.groundctl.log_level }}
+          env:
+            - name: NODEPOOL_AFFINITY
+              value: "true"
           ports:
             - name: metrics
               containerPort: {{ .Values.operator.metrics_port }}

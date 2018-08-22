@@ -73,6 +73,16 @@ func (m *MockKlusterClient) EnsureKubernikusRuleInSecurityGroup() (created bool,
 	return args.Bool(0), args.Error(1)
 }
 
+func (m *MockKlusterClient) EnsureServerGroup(name string) (id string, err error) {
+	args := m.Called(name)
+	return args.String(0), args.Error(1)
+}
+
+func (m *MockKlusterClient) DeleteServerGroup(name string) (err error) {
+	args := m.Called(name)
+	return args.Error(0)
+}
+
 func TestEnsureInstanceSecurityGroupAssignment(t *testing.T) {
 	kluster := &v1.Kluster{
 		Spec: models.KlusterSpec{
