@@ -126,5 +126,5 @@ func (pm *InstrumentingPoolManager) DeleteNode(id string) (err error) {
 }
 
 func (pm *InstrumentingPoolManager) DeletePool() (err error) {
-	return pm.DeletePool()
+	return pm.PoolManager.DeletePool()
 }
