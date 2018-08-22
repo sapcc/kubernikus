@@ -200,6 +200,7 @@ func (f *factory) serviceClientsFor(authOptions *tokens.AuthOptions, logger log.
 	}
 
 	compute, err := openstack.NewComputeV2(providerClient, gophercloud.EndpointOpts{})
+	compute.Microversion = "2.25" // 2.25 is the maximum in mitaka. we need at least 2.15 to create `soft-affinity` server groups
 	if err != nil {
 		return nil, nil, nil, err
 	}

@@ -68,3 +68,14 @@ func (npm *LoggingPoolManager) DeleteNode(id string) (err error) {
 	}(time.Now())
 	return npm.PoolManager.DeleteNode(id)
 }
+
+func (npm *LoggingPoolManager) DeletePool() (err error) {
+	defer func(begin time.Time) {
+		npm.Logger.Log(
+			"msg", "deleted pool",
+			"took", time.Since(begin),
+			"err", err,
+		)
+	}(time.Now())
+	return npm.PoolManager.DeletePool()
+}

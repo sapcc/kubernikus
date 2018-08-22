@@ -24,6 +24,7 @@ type PoolManager interface {
 	SetStatus(*PoolStatus) error
 	CreateNode() (string, error)
 	DeleteNode(string) error
+	DeletePool() error
 }
 
 type PoolStatus struct {
@@ -208,6 +209,10 @@ func (cpm *ConcretePoolManager) DeleteNode(id string) (err error) {
 		return err
 	}
 	return nil
+}
+
+func (cpm *ConcretePoolManager) DeletePool() error {
+	return cpm.klusterClient.DeleteServerGroup(cpm.Kluster.Name + "/" + cpm.Pool.Name)
 }
 
 func (cpm *ConcretePoolManager) nodeIDs(nodes []openstack_kluster.Node) []string {
