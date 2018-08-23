@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/url"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/go-openapi/runtime"
@@ -120,6 +121,34 @@ func (k *Kubernikus) WaitForKlusterToBeDeleted(klusterName string, timeout time.
 				}
 				return false, err
 			}
+			return false, nil
+		},
+	)
+}
+
+func (k *Kubernikus) WaitForKlusters(prefix string, count int, timeout time.Duration) error {
+	return wait.PollImmediate(Poll, timeout,
+		func() (done bool, err error) {
+			res, err := k.Client.Operations.ListClusters(
+				operations.NewListClustersParams(),
+				k.AuthInfo,
+			)
+
+			if err != nil {
+				return true, err
+			}
+
+			k := 0
+			for _, kluster := range res.Payload {
+				if strings.HasPrefix(kluster.Name, prefix) {
+					k++
+				}
+			}
+
+			if k == count {
+				return true, nil
+			}
+
 			return false, nil
 		},
 	)
