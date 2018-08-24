@@ -42,7 +42,7 @@ terraform {
 }
 
 data "openstack_identity_project_v3" "kubernikus_domain" {
-  name      = "${var.domain_name}"
+  name      = "ccadmin"
   is_domain = true
 }
 
