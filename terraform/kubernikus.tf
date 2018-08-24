@@ -31,6 +31,15 @@ provider "ccloud" {
   tenant_id        = "${openstack_identity_project_v3.kubernikus.id}"
 }
 
+terraform {
+  backend "swift" {
+    tenant_name       = "master"
+    domain_name       = "ccadmin"
+    container         = "kubernikus_terraform_state"
+    archive_container = "kubernikus_terraform_archive"
+    expire_after      = "365d"
+  }
+}
 
 data "openstack_identity_project_v3" "kubernikus_domain" {
   name      = "${var.domain_name}"
@@ -201,6 +210,34 @@ resource "openstack_networking_secgroup_rule_v2" "secgroup_rule_1" {
   security_group_id = "${openstack_networking_secgroup_v2.kubernikus.id}"
 }
 
+resource "openstack_identity_service_v3" "kubernikus" {
+  name        = "kubernikus"
+  type        = "kubernikus"
+  description = "End-User Kubernikus Service"
+}
+
+resource "openstack_identity_service_v3" "kubernikus-kubernikus" {
+  name        = "kubernikus"
+  type        = "kubernikus-kubernikus"
+  description = "Admin Kubernikus Service"
+}
+
+resource "openstack_identity_endpoint_v3" "kubernikus" {
+  service_id = "${openstack_identity_service_v3.kubernikus.id}"
+  name       = "kubernikus"
+  interface  = "public"
+  region     = "${var.region}"
+  url        = "https://kubernikus.${var.region}.cloud.sap"
+}
+
+resource "openstack_identity_endpoint_v3" "kubernikus-kubernikus" {
+  service_id = "${openstack_identity_service_v3.kubernikus-kubernikus.id}"
+  name       = "kubernikus-kubernikus"
+  interface  = "public"
+  region     = "${var.region}"
+  url        = "https://k-${var.region}.admin.cloud.sap"
+}
+
 resource "ccloud_kubernetes" "kluster" {
   provider = "ccloud.kubernikus" 
 
@@ -212,5 +249,8 @@ resource "ccloud_kubernetes" "kluster" {
     { name = "payload1", flavor = "m1.xlarge_cpu", size = 1 }
   ]
 
-  depends_on = ["openstack_networking_router_v2.router"]
+  depends_on = [
+    "openstack_identity_endpoint_v3.kubernikus", 
+    "openstack_networking_router_v2.router"
+  ]
 }
