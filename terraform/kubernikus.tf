@@ -8,6 +8,30 @@ provider "openstack" {
   domain_name      = "ccadmin"
 }
 
+provider "openstack" {
+  alias            = "master"
+
+  auth_url         = "https://identity-3.${var.region}.cloud.sap/v3"
+  region           = "${var.region}"
+  user_name        = "${var.user_name}"
+  user_domain_name = "${var.user_domain_name}"
+  password         = "${var.password}"
+  tenant_name      = "master"
+  domain_name      = "ccadmin"
+}
+
+provider "openstack" {
+  alias            = "master.na-us-1"
+
+  auth_url         = "https://identity-3.na-us-1.cloud.sap/v3"
+  region           = "na-us-1"
+  user_name        = "${var.user_name}"
+  user_domain_name = "${var.user_domain_name}"
+  password         = "${var.password}"
+  tenant_name      = "master"
+  domain_name      = "ccadmin"
+}
+
 provider "ccloud" {
   alias            = "cloud_admin"
 
@@ -254,3 +278,87 @@ resource "ccloud_kubernetes" "kluster" {
     "openstack_networking_router_v2.router"
   ]
 }
+
+data "openstack_dns_zone_v2" "region_cloud_sap" {
+  provider = "openstack.master"
+  name     = "${var.region}.cloud.sap."
+}
+
+data "openstack_dns_zone_v2" "admin_cloud_sap" {
+  provider = "openstack.master.na-us-1"
+  name     = "admin.cloud.sap."
+}
+
+resource "openstack_dns_recordset_v2" "kubernikus-ingress" {
+  provider = "openstack.master"
+  zone_id = "${data.openstack_dns_zone_v2.region_cloud_sap.id}"
+  name    = "kubernikus-ingress.${var.region}.cloud.sap."
+  type    = "A"
+  ttl     = 1800
+  records = ["${var.lb-kubernikus-ingress-fip}"]
+}
+
+resource "openstack_dns_recordset_v2" "kubernikus-k8sniff" {
+  provider = "openstack.master"
+  zone_id = "${data.openstack_dns_zone_v2.region_cloud_sap.id}"
+  name    = "kubernikus-k8sniff.${var.region}.cloud.sap."
+  type    = "A"
+  ttl     = 1800
+  records = ["${var.lb-kubernikus-k8sniff-fip}"]
+}
+
+resource "openstack_dns_recordset_v2" "wildcard-kubernikus" {
+  provider = "openstack.master"
+  zone_id = "${data.openstack_dns_zone_v2.region_cloud_sap.id}"
+  name    = "*.kubernikus.${var.region}.cloud.sap."
+  type    = "CNAME"
+  ttl     = 1800
+  records = ["kubernikus-k8sniff.${var.region}.cloud.sap."]
+}
+
+resource "openstack_dns_recordset_v2" "kubernikus" {
+  provider = "openstack.master"
+  zone_id = "${data.openstack_dns_zone_v2.region_cloud_sap.id}"
+  name    = "kubernikus.${var.region}.cloud.sap."
+  type    = "CNAME"
+  ttl     = 1800
+  records = ["kubernikus-ingress.${var.region}.cloud.sap."]
+}
+
+resource "openstack_dns_recordset_v2" "prometheus" {
+  provider = "openstack.master"
+  zone_id = "${data.openstack_dns_zone_v2.region_cloud_sap.id}"
+  name    = "prometheus.kubernikus.${var.region}.cloud.sap."
+  type    = "CNAME"
+  ttl     = 1800
+  records = ["kubernikus-ingress.${var.region}.cloud.sap."]
+}
+
+resource "openstack_dns_recordset_v2" "grafana" {
+  provider = "openstack.master"
+  zone_id = "${data.openstack_dns_zone_v2.region_cloud_sap.id}"
+  name    = "grafana.kubernikus.${var.region}.cloud.sap."
+  type    = "CNAME"
+  ttl     = 1800
+  records = ["kubernikus-ingress.${var.region}.cloud.sap."]
+}
+
+resource "openstack_dns_recordset_v2" "k-region" {
+  provider = "openstack.master.na-us-1"
+  zone_id = "${data.openstack_dns_zone_v2.admin_cloud_sap.id}"
+  name    = "k-${var.region}.admin.cloud.sap."
+  type    = "CNAME"
+  ttl     = 1800
+  records = ["ingress.admin.cloud.sap."]
+}
+
+resource "openstack_dns_recordset_v2" "wildcard-k-region" {
+  provider = "openstack.master.na-us-1"
+  zone_id = "${data.openstack_dns_zone_v2.admin_cloud_sap.id}"
+  name    = "*.k-${var.region}.admin.cloud.sap."
+  type    = "CNAME"
+  ttl     = 1800
+  records = ["kubernikus.admin.cloud.sap."]
+}
+
+

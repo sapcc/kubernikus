@@ -48,6 +48,7 @@ plan: validate
 		-var password=$(TF_PASSWORD) \
 		-var domain_name=$(TF_DOMAIN_NAME) \
 		-var tenant_name=$(TF_TENANT) \
+		-var-file="${TF_REGION}.tfvars" \
 		-parallelism=0
 
 apply: validate
@@ -60,4 +61,5 @@ apply: validate
 		-var password=$(TF_PASSWORD) \
 		-var domain_name=$(TF_DOMAIN_NAME) \
 		-var tenant_name=$(TF_TENANT) \
+		-var-file="${TF_REGION}.tfvars" \
 		-parallelism=0
