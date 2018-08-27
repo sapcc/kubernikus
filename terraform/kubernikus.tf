@@ -99,6 +99,9 @@ data "openstack_networking_network_v2" "external_network" {
   name = "FloatingIP-external-ccadmin"
 }
 
+data "openstack_identity_user_v3" "pipeline" {
+  name = "T175B19A704E280EC"
+}
 
 resource "openstack_identity_project_v3" "kubernikus" {
   name        = "kubernikus"
@@ -145,6 +148,13 @@ resource "openstack_identity_role_assignment_v3" "kubernetes_admin" {
   project_id = "${openstack_identity_project_v3.kubernikus.id}"
   role_id    = "${openstack_identity_role_v3.kubernetes_admin.id}"
 }
+
+resource "openstack_identity_role_assignment_v3" "pipeline" {
+  user_id    = "${data.openstack_identity_user_v3.pipeline.id}"
+  project_id = "${openstack_identity_project_v3.kubernikus.id}"
+  role_id    = "${openstack_identity_role_v3.kubernetes_admin.id}"
+}
+
 
 resource "ccloud_quota" "kubernikus" {
   provider = "ccloud.cloud_admin" 
