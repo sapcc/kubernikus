@@ -24,5 +24,8 @@ k8sniff:
   enabled: true
   #external_service_ip: ""
 
+# Multiple Kubernikus Installations in the same cluster?
+standalone: true
+
 operator:
   metrics_port: 9091
