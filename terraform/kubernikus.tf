@@ -65,9 +65,19 @@ terraform {
   }
 }
 
-data "openstack_identity_project_v3" "kubernikus_domain" {
+data "openstack_identity_project_v3" "ccadmin" {
   name      = "ccadmin"
   is_domain = true
+}
+
+data "openstack_identity_project_v3" "default" {
+  name      = "Default"
+  is_domain = true
+}
+
+data "openstack_identity_project_v3" "cloud_admin" {
+  name      = "cloud_admin"
+  domain_id = "${data.openstack_identity_project_v3.ccadmin.id}"
 }
 
 data "ccloud_identity_group_v3" "ccadmin_domain_admins" {
@@ -95,17 +105,51 @@ data "openstack_identity_role_v3" "volume_admin" {
   name = "volume_admin"
 }
 
+data "openstack_identity_role_v3" "cloud_compute_admin" {
+  name = "cloud_compute_admin"
+}
+
+data "openstack_identity_role_v3" "cloud_dns_admin" {
+  name = "cloud_dns_admin"
+}
+
+data "openstack_identity_role_v3" "cloud_image_admin" {
+  name = "cloud_image_admin"
+}
+
+data "openstack_identity_role_v3" "cloud_keymanager_admin" {
+  name = "cloud_keymanager_admin"
+}
+
+data "openstack_identity_role_v3" "cloud_network_admin" {
+  name = "cloud_network_admin"
+}
+
+data "openstack_identity_role_v3" "cloud_resource_admin" {
+  name = "cloud_resource_admin"
+}
+
+data "openstack_identity_role_v3" "cloud_sharedfilesystem_admin" {
+  name = "cloud_sharedfilesystem_admin"
+}
+
+data "openstack_identity_role_v3" "cloud_volume_admin" {
+  name = "cloud_volume_admin"
+}
+
 data "openstack_networking_network_v2" "external_network" {
   name = "FloatingIP-external-ccadmin"
 }
 
 data "openstack_identity_user_v3" "pipeline" {
-  name = "T175B19A704E280EC"
+  name = "${var.kubernikus-pipeline-user}"
 }
+
+
 
 resource "openstack_identity_project_v3" "kubernikus" {
   name        = "kubernikus"
-  domain_id   = "${data.openstack_identity_project_v3.kubernikus_domain.id}"
+  domain_id   = "${data.openstack_identity_project_v3.ccadmin.id}"
   description = "Kubernikus Control-Plane"
 }
 
@@ -156,15 +200,84 @@ resource "openstack_identity_role_assignment_v3" "pipeline" {
 }
 
 
+
+resource "openstack_identity_user_v3" "kubernikus" {
+  domain_id    = "${data.openstack_identity_project_v3.default.id}"
+  name         = "kubernikus"
+  description  = "Kubernikus Service User"
+  password     = "${var.kubernikus-openstack-password}"
+
+  ignore_change_password_upon_first_use = true
+  ignore_password_expiry = true
+}
+
+resource "openstack_identity_role_assignment_v3" "kubernikus-admin" {
+  user_id    = "${openstack_identity_user_v3.kubernikus.id}"
+  project_id = "${data.openstack_identity_project_v3.cloud_admin.id}"
+  role_id    = "${data.openstack_identity_role_v3.admin.id}"
+}
+
+resource "openstack_identity_role_assignment_v3" "kubernikus-cloud_compute_admin" {
+  user_id    = "${openstack_identity_user_v3.kubernikus.id}"
+  project_id = "${data.openstack_identity_project_v3.cloud_admin.id}"
+  role_id    = "${data.openstack_identity_role_v3.cloud_compute_admin.id}"
+}
+
+resource "openstack_identity_role_assignment_v3" "kubernikus-cloud_dns_admin" {
+  user_id    = "${openstack_identity_user_v3.kubernikus.id}"
+  project_id = "${data.openstack_identity_project_v3.cloud_admin.id}"
+  role_id    = "${data.openstack_identity_role_v3.cloud_dns_admin.id}"
+}
+
+resource "openstack_identity_role_assignment_v3" "kubernikus-cloud_image_admin" {
+  user_id    = "${openstack_identity_user_v3.kubernikus.id}"
+  project_id = "${data.openstack_identity_project_v3.cloud_admin.id}"
+  role_id    = "${data.openstack_identity_role_v3.cloud_image_admin.id}"
+}
+
+resource "openstack_identity_role_assignment_v3" "kubernikus-cloud_keymanager_admin" {
+  user_id    = "${openstack_identity_user_v3.kubernikus.id}"
+  project_id = "${data.openstack_identity_project_v3.cloud_admin.id}"
+  role_id    = "${data.openstack_identity_role_v3.cloud_keymanager_admin.id}"
+}
+
+resource "openstack_identity_role_assignment_v3" "kubernikus-cloud_network_admin" {
+  user_id    = "${openstack_identity_user_v3.kubernikus.id}"
+  project_id = "${data.openstack_identity_project_v3.cloud_admin.id}"
+  role_id    = "${data.openstack_identity_role_v3.cloud_network_admin.id}"
+}
+
+resource "openstack_identity_role_assignment_v3" "kubernikus-cloud_resource_admin" {
+  user_id    = "${openstack_identity_user_v3.kubernikus.id}"
+  project_id = "${data.openstack_identity_project_v3.cloud_admin.id}"
+  role_id    = "${data.openstack_identity_role_v3.cloud_resource_admin.id}"
+}
+
+resource "openstack_identity_role_assignment_v3" "kubernikus-cloud_sharedfilesystem_admin" {
+  user_id    = "${openstack_identity_user_v3.kubernikus.id}"
+  project_id = "${data.openstack_identity_project_v3.cloud_admin.id}"
+  role_id    = "${data.openstack_identity_role_v3.cloud_sharedfilesystem_admin.id}"
+}
+
+resource "openstack_identity_role_assignment_v3" "kubernikus-cloud_volume_admin" {
+  user_id    = "${openstack_identity_user_v3.kubernikus.id}"
+  project_id = "${data.openstack_identity_project_v3.cloud_admin.id}"
+  role_id    = "${data.openstack_identity_role_v3.cloud_volume_admin.id}"
+}
+
+
+
+
+
 resource "ccloud_quota" "kubernikus" {
   provider = "ccloud.cloud_admin" 
 
-  domain_id  = "${data.openstack_identity_project_v3.kubernikus_domain.id}"
+  domain_id  = "${data.openstack_identity_project_v3.ccadmin.id}"
   project_id = "${openstack_identity_project_v3.kubernikus.id}"
 
   compute {
     instances = 10
-    cores     = 32
+    cores     = 48 
     ram       = 81920 
   }
 
@@ -275,12 +388,12 @@ resource "openstack_identity_endpoint_v3" "kubernikus-kubernikus" {
 resource "ccloud_kubernetes" "kluster" {
   provider = "ccloud.kubernikus" 
 
+  is_admin       = true
   name           = "k-${var.region}"
   ssh_public_key = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQCXIxVEUgtUVkvk2VM1hmIb8MxvxsmvYoiq9OBy3J8akTGNybqKsA2uhcwxSJX5Cn3si8kfMfka9EWiJT+e1ybvtsGILO5XRZPxyhYzexwb3TcALwc3LuzpF3Z/Dg2jYTRELTGhYmyca3mxzTlCjNXvYayLNedjJ8fIBzoCuSXNqDRToHru7h0Glz+wtuE74mNkOiXSvhtuJtJs7VCNVjobFQNfC1aeDsri2bPRHJJZJ0QF4LLYSayMEz3lVwIDyAviQR2Aa97WfuXiofiAemfGqiH47Kq6b8X7j3bOYGBvJKMUV7XeWhGsskAmTsvvnFxkc5PAD3Ct+liULjiQWlzDrmpTE8aMqLK4l0YQw7/8iRVz6gli42iEc2ZG56ob1ErpTLAKFWyCNOebZuGoygdEQaGTIIunAncXg5Rz07TdPl0Tf5ZZLpiAgR5ck0H1SETnjDTZ/S83CiVZWJgmCpu8YOKWyYRD4orWwdnA77L4+ixeojLIhEoNL8KlBgsP9Twx+fFMWLfxMmiuX+yksM6Hu+Lsm+Ao7Q284VPp36EB1rxP1JM7HCiEOEm50Jb6hNKjgN4aoLhG5yg+GnDhwCZqUwcRJo1bWtm3QvRA+rzrGZkId4EY3cyOK5QnYV5+24x93Ex0UspHMn7HGsHUESsVeV0fLqlfXyd2RbHTmDMP6w=="
 
   node_pools = [
-    { name = "payload0", flavor = "m1.xlarge_cpu", size = 2 },
-    { name = "payload1", flavor = "m1.xlarge_cpu", size = 1 }
+    { name = "payload", flavor = "m1.xlarge_cpu", size = 3 },
   ]
 
   depends_on = [
