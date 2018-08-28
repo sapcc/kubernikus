@@ -139,7 +139,7 @@ The LB with one pool is the sniffer. Mental mark.
 
 ### Add DNS
 
-  * kubernikus-ingress.$REGION.cloud.sap. A	$LB_SNIGGER_IP 1800
+  * kubernikus-ingress.$REGION.cloud.sap. A	$LB_SNIFFER_IP 1800
   * kubernikus-k8sniff.$REGION.cloud.sap. A $LP_INGRESS_IP 1800	
   * *.kubernikus.$REGION.cloud.sap.	CNAME	kubernikus-k8sniff.$REGION.cloud.sap.	1800	
   * kubernikus.$REGION.cloud.sap. CNAME	kubernikus-ingress.$REGION.cloud.sap.	1800	

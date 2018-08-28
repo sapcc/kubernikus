@@ -58,6 +58,16 @@ auth_ap-au-1: &auth_ap-au-1
   KUBERNIKUS_NAME: k-ap-au-1
   KUBERNIKUS_URL: https://k-ap-au-1.admin.cloud.sap
 
+auth_ap-au-1: &auth_ap-jp-1
+  OS_AUTH_URL: https://identity-3.ap-jp-1.cloud.sap/v3
+  OS_USERNAME: ((kubernikus-prod-username))
+  OS_PASSWORD: ((kubernikus-prod-password))
+  OS_USER_DOMAIN_NAME: ccadmin
+  OS_PROJECT_NAME: kubernikus
+  OS_PROJECT_DOMAIN_NAME: ccadmin
+  KUBERNIKUS_NAME: k-ap-jp-1
+  KUBERNIKUS_URL: https://k-ap-jp-1.admin.cloud.sap
+
 auth_eu-de-1: &auth_eu-de-1
   OS_AUTH_URL: https://identity-3.eu-de-1.cloud.sap/v3
   OS_USERNAME: ((kubernikus-prod-username))
@@ -377,6 +387,14 @@ jobs:
           file: kubernikus.builds/ci/task_helm_kubernikus-system.yaml
           params:
             <<: *auth_ap-au-1
+        - task: kubernikus_ap-jp-1
+          file: kubernikus.builds/ci/task_helm_kubernikus.yaml
+          params:
+            <<: *auth_ap-jp-1
+        - task: kubernikus-system_ap-jp-1
+          file: kubernikus.builds/ci/task_helm_kubernikus-system.yaml
+          params:
+            <<: *auth_ap-jp-1
 
   - name: americas
     serial: true
@@ -424,6 +442,12 @@ jobs:
           params:
             REGION: admin
             KUBERNIKUS_NAME: k-ap-au-1
+            GITHUB_TOKEN: ((github-access-token))
+        - task: k-ap-jp-1
+          file: kubernikus.builds/ci/task_helm-admin_kubernikus.yaml
+          params:
+            REGION: admin
+            KUBERNIKUS_NAME: k-ap-jp-1
             GITHUB_TOKEN: ((github-access-token))
         - task: k-eu-de-1
           file: kubernikus.builds/ci/task_helm-admin_kubernikus.yaml
@@ -613,6 +637,11 @@ jobs:
           timeout: 10m
           params:
             <<: *auth_ap-au-1
+        - task: k-ap-jp-1
+          file: kubernikus.builds/ci/task_tiller.yaml
+          timeout: 10m
+          params:
+            <<: *auth_ap-jp-1
         - task: k-eu-de-1
           file: kubernikus.builds/ci/task_tiller.yaml
           timeout: 10m
