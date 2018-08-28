@@ -18,9 +18,7 @@ run:
       set -exo pipefail
       tag=$(cat secrets.git/kubernikus/tiller.version)
       kubernikusctl auth init
-      helm version
-      kubectl set image --namespace=kube-system deployment/tiller-deploy tiller=sapcc/tiller:$tag
-      kubectl rollout status deployment/tiller-deploy --namespace=kube-system
+      helm init --service-account tiller --history-max 5 --tiller-image sapcc/tiller:$tag --upgrade --wait
 
 params:
   OS_AUTH_URL:
