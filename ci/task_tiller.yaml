@@ -18,7 +18,7 @@ run:
       set -exo pipefail
       tag=$(cat secrets.git/kubernikus/tiller.version)
       kubernikusctl auth init
-      kubectl -n kube-system create sa tiller || true
+      kubectl create sa tiller --namespace kube-system || true
       kubectl create clusterrolebinding tiller --clusterrole cluster-admin --serviceaccount=kube-system:tiller || true
       helm init --service-account tiller --history-max 5 --tiller-image sapcc/tiller:$tag --upgrade --wait
 
