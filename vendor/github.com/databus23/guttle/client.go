@@ -148,7 +148,7 @@ func (c *Client) serveTunnel(close <-chan struct{}) error {
 
 func (c *Client) handleConnection(conn net.Conn) {
 
-	logger := log.With(c.logger, "src", conn.RemoteAddr())
+	logger := log.With(c.logger, "from", conn.RemoteAddr())
 
 	defer func() {
 		//don't check the error, connection might alrady by closed
@@ -160,7 +160,7 @@ func (c *Client) handleConnection(conn net.Conn) {
 		c.logger.Log("msg", "failed to get original destination", "err", err)
 		return
 	}
-	logger = log.With(logger, "destination", fmt.Sprintf("%s:%d", originalIP, orginalPort))
+	logger = log.With(logger, "for", fmt.Sprintf("%s:%d", originalIP, orginalPort))
 
 	if c.session == nil {
 		logger.Log("err", "No active tunnel. Rejecting")
@@ -245,7 +245,7 @@ func (c *Client) connect() error {
 
 func (c *Client) handleStream(stream *yamux.Stream) {
 
-	logger := log.With(c.logger, "src", "tunnel", "stream_id", stream.StreamID())
+	logger := log.With(c.logger, "from", "tunnel", "stream_id", stream.StreamID())
 
 	c.requestWg.Add(1)
 	defer func() {

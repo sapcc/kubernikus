@@ -260,12 +260,12 @@ func (s *Server) handleClient(conn net.Conn) {
 			logger.Log("msg", "failed accept new stream", "err", err)
 			return
 		}
-		go s.handleIncomingStream(stream, log.With(logger, "src", "tunnel", "stream_id", stream.StreamID()))
+		go s.handleIncomingStream(stream, log.With(logger, "from", "tunnel", "stream_id", stream.StreamID()))
 	}
 }
 
 func (s *Server) handleHijackedConnection(conn net.Conn) {
-	logger := log.With(s.logger, "src", conn.RemoteAddr())
+	logger := log.With(s.logger, "from", conn.RemoteAddr())
 	s.requestWg.Add(1)
 	defer func() {
 		//Might already be closed by Join, ignore error
@@ -277,7 +277,7 @@ func (s *Server) handleHijackedConnection(conn net.Conn) {
 		logger.Log("msg", "failed to get original destination", "err", err)
 		return
 	}
-	logger = log.With(logger, "destination", fmt.Sprintf("%s:%d", originalIP, orginalPort))
+	logger = log.With(logger, "for", fmt.Sprintf("%s:%d", originalIP, orginalPort))
 
 	logger.Log("msg", "accepted connection")
 
