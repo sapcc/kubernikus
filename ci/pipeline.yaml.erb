@@ -1,0 +1,445 @@
+<%
+  ASIA     = ["ap-ae-1", "ap-au-1", "ap-cn-1", "ap-jp-1", "ap-jp-2", "ap-sa-1"]
+  EMEA     = ["eu-de-1", "eu-de-2", "eu-nl-1", "eu-ru-1", "la-br-1"]
+  AMERICAS = ["na-ca-1", "na-us-1", "na-us-3"]
+  INFRA    = ["qa-de-1", "staging"]
+  INTERNAL = ["master", "feature", "infra"]
+
+  ADMIN    = (ASIA + EMEA + AMERICAS + INFRA).map { |r| "k-#{r}" }
+%>
+
+<% INTERNAL.each do |region| %>
+auth_<%= region %>: &auth_<%= region %>
+  OS_AUTH_URL: https://identity-3.eu-nl-1.cloud.sap/v3
+  OS_USERNAME: ((kubernikus-prod-username))
+  OS_PASSWORD: ((kubernikus-prod-password))
+  OS_USER_DOMAIN_NAME: ccadmin
+  OS_PROJECT_NAME: kubernikus-<%= region %>
+  OS_PROJECT_DOMAIN_NAME: ccadmin
+  KUBERNIKUS_NAME: k-<%= region %>
+  KUBERNIKUS_URL: https://k-<%= region %>.admin.cloud.sap
+<% end %>
+
+auth_staging: &auth_staging
+  OS_AUTH_URL: https://identity-3.staging.cloud.sap/v3
+  OS_USERNAME: ((kubernikus-staging-username))
+  OS_PASSWORD: ((kubernikus-staging-password))
+  OS_USER_DOMAIN_NAME: ccadmin
+  OS_PROJECT_NAME: kubernikus
+  OS_PROJECT_DOMAIN_NAME: ccadmin
+  KUBERNIKUS_NAME: k-staging
+  KUBERNIKUS_URL: https://k-staging.admin.cloud.sap
+
+auth_qa-de-1: &auth_qa-de-1
+  OS_AUTH_URL: https://identity-3.qa-de-1.cloud.sap/v3
+  OS_USERNAME: ((kubernikus-qa-username))
+  OS_PASSWORD: ((kubernikus-qa-password))
+  OS_USER_DOMAIN_NAME: ccadmin
+  OS_PROJECT_NAME: kubernikus
+  OS_PROJECT_DOMAIN_NAME: ccadmin
+  KUBERNIKUS_NAME: k-qa-de-1 
+  KUBERNIKUS_URL: https://k-qa-de-1.admin.cloud.sap
+
+<% (ASIA + EMEA + AMERICAS).each do |region| %>
+auth_<%= region %>: &auth_<%= region %>
+  OS_AUTH_URL: https://identity-3.<%= region %>.cloud.sap/v3
+  OS_USERNAME: ((kubernikus-prod-username))
+  OS_PASSWORD: ((kubernikus-prod-password))
+  OS_USER_DOMAIN_NAME: ccadmin
+  OS_PROJECT_NAME: kubernikus
+  OS_PROJECT_DOMAIN_NAME: ccadmin
+  KUBERNIKUS_NAME: k-<%= region %>
+  KUBERNIKUS_URL: https://k-<%= region %>.admin.cloud.sap
+<% end %>
+
+auth_e2e_eu-nl-1_master: &auth_e2e_eu-nl-1_master
+  OS_AUTH_URL: https://identity-3.eu-nl-1.cloud.sap/v3
+  OS_USERNAME: ((kubernikus-prod-username))
+  OS_PASSWORD: ((kubernikus-prod-password))
+  OS_USER_DOMAIN_NAME: ccadmin
+  OS_PROJECT_NAME: kubernikus-e2e
+  OS_PROJECT_DOMAIN_NAME: ccadmin
+  KUBERNIKUS_NAME: e2e 
+  KUBERNIKUS_URL: https://kubernikus-master.eu-nl-1.cloud.sap
+
+auth_e2e_qa-de-1: &auth_e2e_qa-de-1
+  OS_AUTH_URL: https://identity-3.qa-de-1.cloud.sap/v3
+  OS_USERNAME: ((kubernikus-qa-username))
+  OS_PASSWORD: ((kubernikus-qa-password))
+  OS_USER_DOMAIN_NAME: ccadmin
+  OS_PROJECT_NAME: kubernikus-e2e
+  OS_PROJECT_DOMAIN_NAME: ccadmin
+  KUBERNIKUS_NAME: e2e
+  KUBERNIKUS_URL: https://kubernikus.qa-de-1.cloud.sap
+
+<% (ASIA + EMEA + AMERICAS).each do |region| %>
+auth_e2e_<%= region %>: &auth_e2e_<%= region %>
+  OS_AUTH_URL: https://identity-3.<%= region %>.cloud.sap/v3
+  OS_USERNAME: ((kubernikus-prod-username))
+  OS_PASSWORD: ((kubernikus-prod-password))
+  OS_USER_DOMAIN_NAME: ccadmin
+  OS_PROJECT_NAME: kubernikus-e2e
+  OS_PROJECT_DOMAIN_NAME: ccadmin
+  KUBERNIKUS_NAME: e2e 
+  KUBERNIKUS_URL: https://kubernikus.<%= region %>.cloud.sap
+<% end %>
+
+
+resources:
+
+  - name: master.builds
+    type: gh-status
+    source:
+      username: sapcc-bot
+      password: ((github-com-access-token))
+      owner:    sapcc
+      repo:     kubernikus
+      access_token: ((github-com-access-token))
+      branch: master
+      depth: 1
+
+  - name: feature.builds
+    type: gh-status
+    source:
+      username: sapcc-bot
+      password: ((github-com-access-token))
+      owner:    sapcc
+      repo:     kubernikus
+      access_token: ((github-com-access-token))
+      branch: feature 
+      depth: 1
+
+  - name: infra.builds
+    type: gh-status
+    source:
+      username: sapcc-bot
+      password: ((github-com-access-token))
+      owner:    sapcc
+      repo:     kubernikus
+      access_token: ((github-com-access-token))
+      branch: infra 
+      depth: 1
+
+  - name: secrets.git
+    type: git
+    webhook_token: aldhjalkdhahdjkahdjkhjadhjadhkjadlkjhAAdd
+    check_every: 1h
+    source:
+      uri:         git@github.wdf.sap.corp:cc/secrets.git
+      private_key: ((secrets-ssh-key))
+      branch:      master
+      depth: 1
+
+  - name: daily
+    type: time
+    source: {interval: 24h}
+
+  - name: hourly 
+    type: time
+    source: {interval: 1h}
+  - name: slack
+    type: slack-alert
+    source:
+      url: ((slack-webhook-url))
+      channel: '#kubernikus'
+
+resource_types:
+  - name: time-version
+    type: docker-image
+    source:
+      repository: hub.global.cloud.sap/concourse/time-version-resource
+      tag: v2
+  - name: slack-alert
+    type: docker-image
+    source:
+      repository: arbourd/concourse-slack-alert-resource
+  - name: gh-status
+    type: docker-image
+    source:
+      repository: hub.global.cloud.sap/concourse/ghstatus-resource
+      tag: latest
+
+jobs:
+  - name: master 
+    serial: true
+    plan:
+      - aggregate:
+        - get: secrets.git
+        - get: kubernikus.builds
+          resource: master.builds
+          trigger: true
+      - aggregate:
+        - task: kubernikus 
+          file: kubernikus.builds/ci/task_helm_kubernikus.yaml
+          params:
+            <<: *auth_master
+        - task: kubernikus-system 
+          file: kubernikus.builds/ci/task_helm_kubernikus-system.yaml
+          params:
+            <<: *auth_master
+    on_success: { put: slack, params: {alert_type: fixed } }
+    on_failure: { put: slack, params: {alert_type: broke } }
+    on_abort:   { put: slack, params: {alert_type: broke } }
+
+  - name: feature 
+    serial: true
+    plan:
+      - aggregate:
+        - get: secrets.git
+        - get: kubernikus.builds
+          resource: feature.builds
+          trigger: true
+      - aggregate:
+        - task: kubernikus 
+          file: kubernikus.builds/ci/task_helm_kubernikus.yaml
+          params:
+            <<: *auth_feature
+        - task: kubernikus-system 
+          file: kubernikus.builds/ci/task_helm_kubernikus-system.yaml
+          params:
+            <<: *auth_feature
+
+  - name: infra 
+    serial: true
+    plan:
+      - aggregate:
+        - get: secrets.git
+        - get: kubernikus.builds
+          resource: infra.builds
+          trigger: true
+      - aggregate:
+        - task: k-infra
+          file: kubernikus.builds/ci/task_helm-admin_kubernikus.yaml
+          params:
+            REGION: admin
+            KUBERNIKUS_NAME: k-infra
+            GITHUB_TOKEN: ((github-access-token))
+
+  - name: e2e
+    serial: true
+    plan:
+      - aggregate:
+        - get: secrets.git
+        - get: kubernikus.builds
+          resource: master.builds
+          passed: [master]
+          trigger: true
+      - task: e2e_tests
+        file: kubernikus.builds/ci/task_e2e_tests.yaml
+        timeout: 2h
+        params:
+          <<: *auth_e2e_eu-nl-1_master
+    on_success: { put: slack, params: {alert_type: fixed } }
+    on_failure: { put: slack, params: {alert_type: broke } }
+    on_abort:   { put: slack, params: {alert_type: broke } }
+
+  - name: conformance 
+    serial: true
+    build_logs_to_retain: 30
+    plan:
+      - aggregate:
+        - get: kubernikus.builds
+          resource: master.builds
+          passed: [e2e]
+        - get: daily
+          trigger: true
+
+  - name: prod 
+    serial: true
+    plan:
+      - get: kubernikus.builds
+        resource: master.builds
+        passed: [e2e]
+
+  - name: emea 
+    serial: true
+    plan:
+      - aggregate:
+        - get: secrets.git
+        - get: kubernikus.builds
+          resource: master.builds
+          passed: [prod]
+          trigger: true
+      - aggregate:
+<% EMEA.each do |region| %>
+        - task: kubernikus_<%= region %>
+          file: kubernikus.builds/ci/task_helm_kubernikus.yaml
+          params:
+            <<: *auth_<%= region %>
+        - task: kubernikus-system_<%= region %>
+          file: kubernikus.builds/ci/task_helm_kubernikus-system.yaml
+          params:
+            <<: *auth_<%= region %>
+<% end %>
+
+  - name: asia
+    serial: true
+    plan:
+      - aggregate:
+        - get: secrets.git
+        - get: kubernikus.builds
+          resource: master.builds
+          passed: [prod]
+          trigger: true
+      - aggregate:
+<% ASIA.each do |region| %>
+        - task: kubernikus_<%= region %>
+          file: kubernikus.builds/ci/task_helm_kubernikus.yaml
+          params:
+            <<: *auth_<%= region %>
+        - task: kubernikus-system_<%= region %>
+          file: kubernikus.builds/ci/task_helm_kubernikus-system.yaml
+          params:
+            <<: *auth_<%= region %>
+<% end %>
+
+  - name: americas
+    serial: true
+    plan:
+      - aggregate:
+        - get: secrets.git
+        - get: kubernikus.builds
+          resource: master.builds
+          passed: [prod]
+          trigger: true
+      - aggregate:
+<% AMERICAS.each do |region| %>
+        - task: kubernikus_<%= region %>
+          file: kubernikus.builds/ci/task_helm_kubernikus.yaml
+          params:
+            <<: *auth_<%= region %>
+        - task: kubernikus-system_<%= region %>
+          file: kubernikus.builds/ci/task_helm_kubernikus-system.yaml
+          params:
+            <<: *auth_<%= region %>
+<% end %>
+
+  - name: admin 
+    serial: true
+    plan:
+      - aggregate:
+        - get: secrets.git
+        - get: kubernikus.builds
+          resource: master.builds
+          passed: [prod]
+          trigger: true
+      - aggregate:
+<% (ASIA + EMEA + AMERICAS + INTERNAL - ["infra"]).each do |region| %>
+        - task: k-<%= region %>
+          file: kubernikus.builds/ci/task_helm-admin_kubernikus.yaml
+          params:
+            REGION: admin
+            KUBERNIKUS_NAME: k-<%= region %>
+            GITHUB_TOKEN: ((github-access-token))
+<% end %>
+
+
+  - name: staging 
+    serial: true
+    plan:
+      - aggregate:
+        - get: secrets.git
+        - get: kubernikus.builds
+          resource: feature.builds
+          passed: [feature]
+          trigger: true
+      - aggregate:
+        - task: k-staging
+          file: kubernikus.builds/ci/task_helm-admin_kubernikus.yaml
+          params:
+            REGION: admin
+            KUBERNIKUS_NAME: k-staging
+            GITHUB_TOKEN: ((github-access-token))
+        - task: kubernikus
+          file: kubernikus.builds/ci/task_helm_kubernikus.yaml
+          params:
+            <<: *auth_staging
+        - task: kubernikus-system
+          file: kubernikus.builds/ci/task_helm_kubernikus-system.yaml
+          params:
+            <<: *auth_staging
+
+  - name: qa-de-1
+    serial: true
+    plan:
+      - aggregate:
+        - get: secrets.git
+        - get: kubernikus.builds
+          resource: feature.builds
+          passed: [feature]
+          trigger: true
+      - aggregate:
+        - task: k-qa-de-1
+          file: kubernikus.builds/ci/task_helm-admin_kubernikus.yaml
+          params:
+            REGION: admin
+            KUBERNIKUS_NAME: k-qa-de-1
+            GITHUB_TOKEN: ((github-access-token))
+        - task: kubernikus
+          file: kubernikus.builds/ci/task_helm_kubernikus.yaml
+          params:
+            <<: *auth_qa-de-1
+        - task: kubernikus-system
+          file: kubernikus.builds/ci/task_helm_kubernikus-system.yaml
+          params:
+            <<: *auth_qa-de-1
+
+<% (ASIA + EMEA + AMERICAS + ["qa-de-1"]).each do |region| %>
+  - name: soak_<%= region %>
+    serial: true
+    build_logs_to_retain: 168
+    plan:
+      - aggregate:
+        - get: secrets.git
+        - get: kubernikus.builds
+          resource: master.builds
+          passed: [e2e]
+        - get: hourly 
+          trigger: true
+      - task: e2e_tests
+        file: kubernikus.builds/ci/task_e2e_tests.yaml
+        timeout: 45m
+        params:
+          <<: *auth_e2e_<%= region %>
+    on_success: { put: slack, params: {alert_type: fixed } }
+    on_failure: { put: slack, params: {alert_type: broke } }
+    on_abort:   { put: slack, params: {alert_type: broke } }
+<% end %>
+
+  - name: tiller
+    plan:
+      - get: secrets.git
+      - get: kubernikus.builds
+        resource: master.builds
+      - aggregate:
+<% (ASIA + EMEA + AMERICAS + INFRA + INTERNAL).each do |region| %>
+        - task: k-<%= region %>
+          file: kubernikus.builds/ci/task_tiller.yaml
+          timeout: 10m
+          params:
+            <<: *auth_<%= region %>
+<% end %>
+
+groups:
+  - name: deploy
+    jobs:
+<% (INFRA + INTERNAL).each do |region| %>
+      - <%= region %>
+<% end %>
+      - e2e 
+      - conformance
+      - prod
+      - feature
+      - admin
+      - americas
+      - asia
+      - emea
+  - name: e2e 
+    jobs:
+<% (ASIA + EMEA + AMERICAS + ["qa-de-1"]).each do |region| %>
+      - soak_<%= region %>
+<% end %>
+  - name: misc
+    jobs:
+      - tiller
+

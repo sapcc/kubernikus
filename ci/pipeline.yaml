@@ -1,3 +1,6 @@
+
+
+
 auth_master: &auth_master
   OS_AUTH_URL: https://identity-3.eu-nl-1.cloud.sap/v3
   OS_USERNAME: ((kubernikus-prod-username))
@@ -28,6 +31,7 @@ auth_infra: &auth_infra
   KUBERNIKUS_NAME: k-infra
   KUBERNIKUS_URL: https://k-infra.admin.cloud.sap
 
+
 auth_staging: &auth_staging
   OS_AUTH_URL: https://identity-3.staging.cloud.sap/v3
   OS_USERNAME: ((kubernikus-staging-username))
@@ -48,6 +52,17 @@ auth_qa-de-1: &auth_qa-de-1
   KUBERNIKUS_NAME: k-qa-de-1 
   KUBERNIKUS_URL: https://k-qa-de-1.admin.cloud.sap
 
+
+auth_ap-ae-1: &auth_ap-ae-1
+  OS_AUTH_URL: https://identity-3.ap-ae-1.cloud.sap/v3
+  OS_USERNAME: ((kubernikus-prod-username))
+  OS_PASSWORD: ((kubernikus-prod-password))
+  OS_USER_DOMAIN_NAME: ccadmin
+  OS_PROJECT_NAME: kubernikus
+  OS_PROJECT_DOMAIN_NAME: ccadmin
+  KUBERNIKUS_NAME: k-ap-ae-1
+  KUBERNIKUS_URL: https://k-ap-ae-1.admin.cloud.sap
+
 auth_ap-au-1: &auth_ap-au-1
   OS_AUTH_URL: https://identity-3.ap-au-1.cloud.sap/v3
   OS_USERNAME: ((kubernikus-prod-username))
@@ -58,7 +73,17 @@ auth_ap-au-1: &auth_ap-au-1
   KUBERNIKUS_NAME: k-ap-au-1
   KUBERNIKUS_URL: https://k-ap-au-1.admin.cloud.sap
 
-auth_ap-au-1: &auth_ap-jp-1
+auth_ap-cn-1: &auth_ap-cn-1
+  OS_AUTH_URL: https://identity-3.ap-cn-1.cloud.sap/v3
+  OS_USERNAME: ((kubernikus-prod-username))
+  OS_PASSWORD: ((kubernikus-prod-password))
+  OS_USER_DOMAIN_NAME: ccadmin
+  OS_PROJECT_NAME: kubernikus
+  OS_PROJECT_DOMAIN_NAME: ccadmin
+  KUBERNIKUS_NAME: k-ap-cn-1
+  KUBERNIKUS_URL: https://k-ap-cn-1.admin.cloud.sap
+
+auth_ap-jp-1: &auth_ap-jp-1
   OS_AUTH_URL: https://identity-3.ap-jp-1.cloud.sap/v3
   OS_USERNAME: ((kubernikus-prod-username))
   OS_PASSWORD: ((kubernikus-prod-password))
@@ -68,6 +93,26 @@ auth_ap-au-1: &auth_ap-jp-1
   KUBERNIKUS_NAME: k-ap-jp-1
   KUBERNIKUS_URL: https://k-ap-jp-1.admin.cloud.sap
 
+auth_ap-jp-2: &auth_ap-jp-2
+  OS_AUTH_URL: https://identity-3.ap-jp-2.cloud.sap/v3
+  OS_USERNAME: ((kubernikus-prod-username))
+  OS_PASSWORD: ((kubernikus-prod-password))
+  OS_USER_DOMAIN_NAME: ccadmin
+  OS_PROJECT_NAME: kubernikus
+  OS_PROJECT_DOMAIN_NAME: ccadmin
+  KUBERNIKUS_NAME: k-ap-jp-2
+  KUBERNIKUS_URL: https://k-ap-jp-2.admin.cloud.sap
+
+auth_ap-sa-1: &auth_ap-sa-1
+  OS_AUTH_URL: https://identity-3.ap-sa-1.cloud.sap/v3
+  OS_USERNAME: ((kubernikus-prod-username))
+  OS_PASSWORD: ((kubernikus-prod-password))
+  OS_USER_DOMAIN_NAME: ccadmin
+  OS_PROJECT_NAME: kubernikus
+  OS_PROJECT_DOMAIN_NAME: ccadmin
+  KUBERNIKUS_NAME: k-ap-sa-1
+  KUBERNIKUS_URL: https://k-ap-sa-1.admin.cloud.sap
+
 auth_eu-de-1: &auth_eu-de-1
   OS_AUTH_URL: https://identity-3.eu-de-1.cloud.sap/v3
   OS_USERNAME: ((kubernikus-prod-username))
@@ -75,17 +120,17 @@ auth_eu-de-1: &auth_eu-de-1
   OS_USER_DOMAIN_NAME: ccadmin
   OS_PROJECT_NAME: kubernikus
   OS_PROJECT_DOMAIN_NAME: ccadmin
-  KUBERNIKUS_NAME: k-eu-de-1 
+  KUBERNIKUS_NAME: k-eu-de-1
   KUBERNIKUS_URL: https://k-eu-de-1.admin.cloud.sap
 
-auth_eu-de-1: &auth_eu-de-2
+auth_eu-de-2: &auth_eu-de-2
   OS_AUTH_URL: https://identity-3.eu-de-2.cloud.sap/v3
   OS_USERNAME: ((kubernikus-prod-username))
   OS_PASSWORD: ((kubernikus-prod-password))
   OS_USER_DOMAIN_NAME: ccadmin
   OS_PROJECT_NAME: kubernikus
   OS_PROJECT_DOMAIN_NAME: ccadmin
-  KUBERNIKUS_NAME: k-eu-de-2 
+  KUBERNIKUS_NAME: k-eu-de-2
   KUBERNIKUS_URL: https://k-eu-de-2.admin.cloud.sap
 
 auth_eu-nl-1: &auth_eu-nl-1
@@ -95,8 +140,38 @@ auth_eu-nl-1: &auth_eu-nl-1
   OS_USER_DOMAIN_NAME: ccadmin
   OS_PROJECT_NAME: kubernikus
   OS_PROJECT_DOMAIN_NAME: ccadmin
-  KUBERNIKUS_NAME: k-eu-nl-1 
+  KUBERNIKUS_NAME: k-eu-nl-1
   KUBERNIKUS_URL: https://k-eu-nl-1.admin.cloud.sap
+
+auth_eu-ru-1: &auth_eu-ru-1
+  OS_AUTH_URL: https://identity-3.eu-ru-1.cloud.sap/v3
+  OS_USERNAME: ((kubernikus-prod-username))
+  OS_PASSWORD: ((kubernikus-prod-password))
+  OS_USER_DOMAIN_NAME: ccadmin
+  OS_PROJECT_NAME: kubernikus
+  OS_PROJECT_DOMAIN_NAME: ccadmin
+  KUBERNIKUS_NAME: k-eu-ru-1
+  KUBERNIKUS_URL: https://k-eu-ru-1.admin.cloud.sap
+
+auth_la-br-1: &auth_la-br-1
+  OS_AUTH_URL: https://identity-3.la-br-1.cloud.sap/v3
+  OS_USERNAME: ((kubernikus-prod-username))
+  OS_PASSWORD: ((kubernikus-prod-password))
+  OS_USER_DOMAIN_NAME: ccadmin
+  OS_PROJECT_NAME: kubernikus
+  OS_PROJECT_DOMAIN_NAME: ccadmin
+  KUBERNIKUS_NAME: k-la-br-1
+  KUBERNIKUS_URL: https://k-la-br-1.admin.cloud.sap
+
+auth_na-ca-1: &auth_na-ca-1
+  OS_AUTH_URL: https://identity-3.na-ca-1.cloud.sap/v3
+  OS_USERNAME: ((kubernikus-prod-username))
+  OS_PASSWORD: ((kubernikus-prod-password))
+  OS_USER_DOMAIN_NAME: ccadmin
+  OS_PROJECT_NAME: kubernikus
+  OS_PROJECT_DOMAIN_NAME: ccadmin
+  KUBERNIKUS_NAME: k-na-ca-1
+  KUBERNIKUS_URL: https://k-na-ca-1.admin.cloud.sap
 
 auth_na-us-1: &auth_na-us-1
   OS_AUTH_URL: https://identity-3.na-us-1.cloud.sap/v3
@@ -108,7 +183,49 @@ auth_na-us-1: &auth_na-us-1
   KUBERNIKUS_NAME: k-na-us-1
   KUBERNIKUS_URL: https://k-na-us-1.admin.cloud.sap
 
-auth_e2e_eu-de-1: &auth_e2e_ap-au-1
+auth_na-us-3: &auth_na-us-3
+  OS_AUTH_URL: https://identity-3.na-us-3.cloud.sap/v3
+  OS_USERNAME: ((kubernikus-prod-username))
+  OS_PASSWORD: ((kubernikus-prod-password))
+  OS_USER_DOMAIN_NAME: ccadmin
+  OS_PROJECT_NAME: kubernikus
+  OS_PROJECT_DOMAIN_NAME: ccadmin
+  KUBERNIKUS_NAME: k-na-us-3
+  KUBERNIKUS_URL: https://k-na-us-3.admin.cloud.sap
+
+
+auth_e2e_eu-nl-1_master: &auth_e2e_eu-nl-1_master
+  OS_AUTH_URL: https://identity-3.eu-nl-1.cloud.sap/v3
+  OS_USERNAME: ((kubernikus-prod-username))
+  OS_PASSWORD: ((kubernikus-prod-password))
+  OS_USER_DOMAIN_NAME: ccadmin
+  OS_PROJECT_NAME: kubernikus-e2e
+  OS_PROJECT_DOMAIN_NAME: ccadmin
+  KUBERNIKUS_NAME: e2e 
+  KUBERNIKUS_URL: https://kubernikus-master.eu-nl-1.cloud.sap
+
+auth_e2e_qa-de-1: &auth_e2e_qa-de-1
+  OS_AUTH_URL: https://identity-3.qa-de-1.cloud.sap/v3
+  OS_USERNAME: ((kubernikus-qa-username))
+  OS_PASSWORD: ((kubernikus-qa-password))
+  OS_USER_DOMAIN_NAME: ccadmin
+  OS_PROJECT_NAME: kubernikus-e2e
+  OS_PROJECT_DOMAIN_NAME: ccadmin
+  KUBERNIKUS_NAME: e2e
+  KUBERNIKUS_URL: https://kubernikus.qa-de-1.cloud.sap
+
+
+auth_e2e_ap-ae-1: &auth_e2e_ap-ae-1
+  OS_AUTH_URL: https://identity-3.ap-ae-1.cloud.sap/v3
+  OS_USERNAME: ((kubernikus-prod-username))
+  OS_PASSWORD: ((kubernikus-prod-password))
+  OS_USER_DOMAIN_NAME: ccadmin
+  OS_PROJECT_NAME: kubernikus-e2e
+  OS_PROJECT_DOMAIN_NAME: ccadmin
+  KUBERNIKUS_NAME: e2e 
+  KUBERNIKUS_URL: https://kubernikus.ap-ae-1.cloud.sap
+
+auth_e2e_ap-au-1: &auth_e2e_ap-au-1
   OS_AUTH_URL: https://identity-3.ap-au-1.cloud.sap/v3
   OS_USERNAME: ((kubernikus-prod-username))
   OS_PASSWORD: ((kubernikus-prod-password))
@@ -118,15 +235,45 @@ auth_e2e_eu-de-1: &auth_e2e_ap-au-1
   KUBERNIKUS_NAME: e2e 
   KUBERNIKUS_URL: https://kubernikus.ap-au-1.cloud.sap
 
-auth_e2e_eu-nl-1: &auth_e2e_eu-nl-1
-  OS_AUTH_URL: https://identity-3.eu-nl-1.cloud.sap/v3
+auth_e2e_ap-cn-1: &auth_e2e_ap-cn-1
+  OS_AUTH_URL: https://identity-3.ap-cn-1.cloud.sap/v3
   OS_USERNAME: ((kubernikus-prod-username))
   OS_PASSWORD: ((kubernikus-prod-password))
   OS_USER_DOMAIN_NAME: ccadmin
   OS_PROJECT_NAME: kubernikus-e2e
   OS_PROJECT_DOMAIN_NAME: ccadmin
   KUBERNIKUS_NAME: e2e 
-  KUBERNIKUS_URL: https://kubernikus-master.eu-nl-1.cloud.sap
+  KUBERNIKUS_URL: https://kubernikus.ap-cn-1.cloud.sap
+
+auth_e2e_ap-jp-1: &auth_e2e_ap-jp-1
+  OS_AUTH_URL: https://identity-3.ap-jp-1.cloud.sap/v3
+  OS_USERNAME: ((kubernikus-prod-username))
+  OS_PASSWORD: ((kubernikus-prod-password))
+  OS_USER_DOMAIN_NAME: ccadmin
+  OS_PROJECT_NAME: kubernikus-e2e
+  OS_PROJECT_DOMAIN_NAME: ccadmin
+  KUBERNIKUS_NAME: e2e 
+  KUBERNIKUS_URL: https://kubernikus.ap-jp-1.cloud.sap
+
+auth_e2e_ap-jp-2: &auth_e2e_ap-jp-2
+  OS_AUTH_URL: https://identity-3.ap-jp-2.cloud.sap/v3
+  OS_USERNAME: ((kubernikus-prod-username))
+  OS_PASSWORD: ((kubernikus-prod-password))
+  OS_USER_DOMAIN_NAME: ccadmin
+  OS_PROJECT_NAME: kubernikus-e2e
+  OS_PROJECT_DOMAIN_NAME: ccadmin
+  KUBERNIKUS_NAME: e2e 
+  KUBERNIKUS_URL: https://kubernikus.ap-jp-2.cloud.sap
+
+auth_e2e_ap-sa-1: &auth_e2e_ap-sa-1
+  OS_AUTH_URL: https://identity-3.ap-sa-1.cloud.sap/v3
+  OS_USERNAME: ((kubernikus-prod-username))
+  OS_PASSWORD: ((kubernikus-prod-password))
+  OS_USER_DOMAIN_NAME: ccadmin
+  OS_PROJECT_NAME: kubernikus-e2e
+  OS_PROJECT_DOMAIN_NAME: ccadmin
+  KUBERNIKUS_NAME: e2e 
+  KUBERNIKUS_URL: https://kubernikus.ap-sa-1.cloud.sap
 
 auth_e2e_eu-de-1: &auth_e2e_eu-de-1
   OS_AUTH_URL: https://identity-3.eu-de-1.cloud.sap/v3
@@ -138,7 +285,7 @@ auth_e2e_eu-de-1: &auth_e2e_eu-de-1
   KUBERNIKUS_NAME: e2e 
   KUBERNIKUS_URL: https://kubernikus.eu-de-1.cloud.sap
 
-auth_e2e_eu-de-1: &auth_e2e_eu-de-2
+auth_e2e_eu-de-2: &auth_e2e_eu-de-2
   OS_AUTH_URL: https://identity-3.eu-de-2.cloud.sap/v3
   OS_USERNAME: ((kubernikus-prod-username))
   OS_PASSWORD: ((kubernikus-prod-password))
@@ -148,7 +295,47 @@ auth_e2e_eu-de-1: &auth_e2e_eu-de-2
   KUBERNIKUS_NAME: e2e 
   KUBERNIKUS_URL: https://kubernikus.eu-de-2.cloud.sap
 
-auth_e2e_eu-nl-1: &auth_e2e_na-us-1
+auth_e2e_eu-nl-1: &auth_e2e_eu-nl-1
+  OS_AUTH_URL: https://identity-3.eu-nl-1.cloud.sap/v3
+  OS_USERNAME: ((kubernikus-prod-username))
+  OS_PASSWORD: ((kubernikus-prod-password))
+  OS_USER_DOMAIN_NAME: ccadmin
+  OS_PROJECT_NAME: kubernikus-e2e
+  OS_PROJECT_DOMAIN_NAME: ccadmin
+  KUBERNIKUS_NAME: e2e 
+  KUBERNIKUS_URL: https://kubernikus.eu-nl-1.cloud.sap
+
+auth_e2e_eu-ru-1: &auth_e2e_eu-ru-1
+  OS_AUTH_URL: https://identity-3.eu-ru-1.cloud.sap/v3
+  OS_USERNAME: ((kubernikus-prod-username))
+  OS_PASSWORD: ((kubernikus-prod-password))
+  OS_USER_DOMAIN_NAME: ccadmin
+  OS_PROJECT_NAME: kubernikus-e2e
+  OS_PROJECT_DOMAIN_NAME: ccadmin
+  KUBERNIKUS_NAME: e2e 
+  KUBERNIKUS_URL: https://kubernikus.eu-ru-1.cloud.sap
+
+auth_e2e_la-br-1: &auth_e2e_la-br-1
+  OS_AUTH_URL: https://identity-3.la-br-1.cloud.sap/v3
+  OS_USERNAME: ((kubernikus-prod-username))
+  OS_PASSWORD: ((kubernikus-prod-password))
+  OS_USER_DOMAIN_NAME: ccadmin
+  OS_PROJECT_NAME: kubernikus-e2e
+  OS_PROJECT_DOMAIN_NAME: ccadmin
+  KUBERNIKUS_NAME: e2e 
+  KUBERNIKUS_URL: https://kubernikus.la-br-1.cloud.sap
+
+auth_e2e_na-ca-1: &auth_e2e_na-ca-1
+  OS_AUTH_URL: https://identity-3.na-ca-1.cloud.sap/v3
+  OS_USERNAME: ((kubernikus-prod-username))
+  OS_PASSWORD: ((kubernikus-prod-password))
+  OS_USER_DOMAIN_NAME: ccadmin
+  OS_PROJECT_NAME: kubernikus-e2e
+  OS_PROJECT_DOMAIN_NAME: ccadmin
+  KUBERNIKUS_NAME: e2e 
+  KUBERNIKUS_URL: https://kubernikus.na-ca-1.cloud.sap
+
+auth_e2e_na-us-1: &auth_e2e_na-us-1
   OS_AUTH_URL: https://identity-3.na-us-1.cloud.sap/v3
   OS_USERNAME: ((kubernikus-prod-username))
   OS_PASSWORD: ((kubernikus-prod-password))
@@ -158,15 +345,17 @@ auth_e2e_eu-nl-1: &auth_e2e_na-us-1
   KUBERNIKUS_NAME: e2e 
   KUBERNIKUS_URL: https://kubernikus.na-us-1.cloud.sap
 
-auth_e2e_qa-de-1: &auth_e2e_qa-de-1
-  OS_AUTH_URL: https://identity-3.qa-de-1.cloud.sap/v3
-  OS_USERNAME: ((kubernikus-qa-username))
-  OS_PASSWORD: ((kubernikus-qa-password))
+auth_e2e_na-us-3: &auth_e2e_na-us-3
+  OS_AUTH_URL: https://identity-3.na-us-3.cloud.sap/v3
+  OS_USERNAME: ((kubernikus-prod-username))
+  OS_PASSWORD: ((kubernikus-prod-password))
   OS_USER_DOMAIN_NAME: ccadmin
   OS_PROJECT_NAME: kubernikus-e2e
   OS_PROJECT_DOMAIN_NAME: ccadmin
-  KUBERNIKUS_NAME: e2e
-  KUBERNIKUS_URL: https://kubernikus.qa-de-1.cloud.sap
+  KUBERNIKUS_NAME: e2e 
+  KUBERNIKUS_URL: https://kubernikus.na-us-3.cloud.sap
+
+
 
 resources:
 
@@ -311,7 +500,7 @@ jobs:
         file: kubernikus.builds/ci/task_e2e_tests.yaml
         timeout: 2h
         params:
-          <<: *auth_e2e_eu-nl-1
+          <<: *auth_e2e_eu-nl-1_master
     on_success: { put: slack, params: {alert_type: fixed } }
     on_failure: { put: slack, params: {alert_type: broke } }
     on_abort:   { put: slack, params: {alert_type: broke } }
@@ -344,30 +533,52 @@ jobs:
           passed: [prod]
           trigger: true
       - aggregate:
+
         - task: kubernikus_eu-de-1
           file: kubernikus.builds/ci/task_helm_kubernikus.yaml
           params:
             <<: *auth_eu-de-1
-        - task: kubernikus_eu-de-2
-          file: kubernikus.builds/ci/task_helm_kubernikus.yaml
-          params:
-            <<: *auth_eu-de-2
-        - task: kubernikus_eu-nl-1
-          file: kubernikus.builds/ci/task_helm_kubernikus.yaml
-          params:
-            <<: *auth_eu-nl-1
         - task: kubernikus-system_eu-de-1
           file: kubernikus.builds/ci/task_helm_kubernikus-system.yaml
           params:
             <<: *auth_eu-de-1
+
+        - task: kubernikus_eu-de-2
+          file: kubernikus.builds/ci/task_helm_kubernikus.yaml
+          params:
+            <<: *auth_eu-de-2
         - task: kubernikus-system_eu-de-2
           file: kubernikus.builds/ci/task_helm_kubernikus-system.yaml
           params:
             <<: *auth_eu-de-2
+
+        - task: kubernikus_eu-nl-1
+          file: kubernikus.builds/ci/task_helm_kubernikus.yaml
+          params:
+            <<: *auth_eu-nl-1
         - task: kubernikus-system_eu-nl-1
           file: kubernikus.builds/ci/task_helm_kubernikus-system.yaml
           params:
             <<: *auth_eu-nl-1
+
+        - task: kubernikus_eu-ru-1
+          file: kubernikus.builds/ci/task_helm_kubernikus.yaml
+          params:
+            <<: *auth_eu-ru-1
+        - task: kubernikus-system_eu-ru-1
+          file: kubernikus.builds/ci/task_helm_kubernikus-system.yaml
+          params:
+            <<: *auth_eu-ru-1
+
+        - task: kubernikus_la-br-1
+          file: kubernikus.builds/ci/task_helm_kubernikus.yaml
+          params:
+            <<: *auth_la-br-1
+        - task: kubernikus-system_la-br-1
+          file: kubernikus.builds/ci/task_helm_kubernikus-system.yaml
+          params:
+            <<: *auth_la-br-1
+
 
   - name: asia
     serial: true
@@ -379,6 +590,16 @@ jobs:
           passed: [prod]
           trigger: true
       - aggregate:
+
+        - task: kubernikus_ap-ae-1
+          file: kubernikus.builds/ci/task_helm_kubernikus.yaml
+          params:
+            <<: *auth_ap-ae-1
+        - task: kubernikus-system_ap-ae-1
+          file: kubernikus.builds/ci/task_helm_kubernikus-system.yaml
+          params:
+            <<: *auth_ap-ae-1
+
         - task: kubernikus_ap-au-1
           file: kubernikus.builds/ci/task_helm_kubernikus.yaml
           params:
@@ -387,6 +608,16 @@ jobs:
           file: kubernikus.builds/ci/task_helm_kubernikus-system.yaml
           params:
             <<: *auth_ap-au-1
+
+        - task: kubernikus_ap-cn-1
+          file: kubernikus.builds/ci/task_helm_kubernikus.yaml
+          params:
+            <<: *auth_ap-cn-1
+        - task: kubernikus-system_ap-cn-1
+          file: kubernikus.builds/ci/task_helm_kubernikus-system.yaml
+          params:
+            <<: *auth_ap-cn-1
+
         - task: kubernikus_ap-jp-1
           file: kubernikus.builds/ci/task_helm_kubernikus.yaml
           params:
@@ -395,6 +626,25 @@ jobs:
           file: kubernikus.builds/ci/task_helm_kubernikus-system.yaml
           params:
             <<: *auth_ap-jp-1
+
+        - task: kubernikus_ap-jp-2
+          file: kubernikus.builds/ci/task_helm_kubernikus.yaml
+          params:
+            <<: *auth_ap-jp-2
+        - task: kubernikus-system_ap-jp-2
+          file: kubernikus.builds/ci/task_helm_kubernikus-system.yaml
+          params:
+            <<: *auth_ap-jp-2
+
+        - task: kubernikus_ap-sa-1
+          file: kubernikus.builds/ci/task_helm_kubernikus.yaml
+          params:
+            <<: *auth_ap-sa-1
+        - task: kubernikus-system_ap-sa-1
+          file: kubernikus.builds/ci/task_helm_kubernikus-system.yaml
+          params:
+            <<: *auth_ap-sa-1
+
 
   - name: americas
     serial: true
@@ -406,6 +656,16 @@ jobs:
           passed: [prod]
           trigger: true
       - aggregate:
+
+        - task: kubernikus_na-ca-1
+          file: kubernikus.builds/ci/task_helm_kubernikus.yaml
+          params:
+            <<: *auth_na-ca-1
+        - task: kubernikus-system_na-ca-1
+          file: kubernikus.builds/ci/task_helm_kubernikus-system.yaml
+          params:
+            <<: *auth_na-ca-1
+
         - task: kubernikus_na-us-1
           file: kubernikus.builds/ci/task_helm_kubernikus.yaml
           params:
@@ -414,6 +674,16 @@ jobs:
           file: kubernikus.builds/ci/task_helm_kubernikus-system.yaml
           params:
             <<: *auth_na-us-1
+
+        - task: kubernikus_na-us-3
+          file: kubernikus.builds/ci/task_helm_kubernikus.yaml
+          params:
+            <<: *auth_na-us-3
+        - task: kubernikus-system_na-us-3
+          file: kubernikus.builds/ci/task_helm_kubernikus-system.yaml
+          params:
+            <<: *auth_na-us-3
+
 
   - name: admin 
     serial: true
@@ -425,54 +695,120 @@ jobs:
           passed: [prod]
           trigger: true
       - aggregate:
-        - task: k-master 
+
+        - task: k-ap-ae-1
           file: kubernikus.builds/ci/task_helm-admin_kubernikus.yaml
           params:
             REGION: admin
-            KUBERNIKUS_NAME: k-master
+            KUBERNIKUS_NAME: k-ap-ae-1
             GITHUB_TOKEN: ((github-access-token))
-        - task: k-feature
-          file: kubernikus.builds/ci/task_helm-admin_kubernikus.yaml
-          params:
-            REGION: admin
-            KUBERNIKUS_NAME: k-feature
-            GITHUB_TOKEN: ((github-access-token))
+
         - task: k-ap-au-1
           file: kubernikus.builds/ci/task_helm-admin_kubernikus.yaml
           params:
             REGION: admin
             KUBERNIKUS_NAME: k-ap-au-1
             GITHUB_TOKEN: ((github-access-token))
+
+        - task: k-ap-cn-1
+          file: kubernikus.builds/ci/task_helm-admin_kubernikus.yaml
+          params:
+            REGION: admin
+            KUBERNIKUS_NAME: k-ap-cn-1
+            GITHUB_TOKEN: ((github-access-token))
+
         - task: k-ap-jp-1
           file: kubernikus.builds/ci/task_helm-admin_kubernikus.yaml
           params:
             REGION: admin
             KUBERNIKUS_NAME: k-ap-jp-1
             GITHUB_TOKEN: ((github-access-token))
+
+        - task: k-ap-jp-2
+          file: kubernikus.builds/ci/task_helm-admin_kubernikus.yaml
+          params:
+            REGION: admin
+            KUBERNIKUS_NAME: k-ap-jp-2
+            GITHUB_TOKEN: ((github-access-token))
+
+        - task: k-ap-sa-1
+          file: kubernikus.builds/ci/task_helm-admin_kubernikus.yaml
+          params:
+            REGION: admin
+            KUBERNIKUS_NAME: k-ap-sa-1
+            GITHUB_TOKEN: ((github-access-token))
+
         - task: k-eu-de-1
           file: kubernikus.builds/ci/task_helm-admin_kubernikus.yaml
           params:
             REGION: admin
             KUBERNIKUS_NAME: k-eu-de-1
             GITHUB_TOKEN: ((github-access-token))
+
         - task: k-eu-de-2
           file: kubernikus.builds/ci/task_helm-admin_kubernikus.yaml
           params:
             REGION: admin
             KUBERNIKUS_NAME: k-eu-de-2
             GITHUB_TOKEN: ((github-access-token))
+
         - task: k-eu-nl-1
           file: kubernikus.builds/ci/task_helm-admin_kubernikus.yaml
           params:
             REGION: admin
             KUBERNIKUS_NAME: k-eu-nl-1
             GITHUB_TOKEN: ((github-access-token))
+
+        - task: k-eu-ru-1
+          file: kubernikus.builds/ci/task_helm-admin_kubernikus.yaml
+          params:
+            REGION: admin
+            KUBERNIKUS_NAME: k-eu-ru-1
+            GITHUB_TOKEN: ((github-access-token))
+
+        - task: k-la-br-1
+          file: kubernikus.builds/ci/task_helm-admin_kubernikus.yaml
+          params:
+            REGION: admin
+            KUBERNIKUS_NAME: k-la-br-1
+            GITHUB_TOKEN: ((github-access-token))
+
+        - task: k-na-ca-1
+          file: kubernikus.builds/ci/task_helm-admin_kubernikus.yaml
+          params:
+            REGION: admin
+            KUBERNIKUS_NAME: k-na-ca-1
+            GITHUB_TOKEN: ((github-access-token))
+
         - task: k-na-us-1
           file: kubernikus.builds/ci/task_helm-admin_kubernikus.yaml
           params:
             REGION: admin
             KUBERNIKUS_NAME: k-na-us-1
             GITHUB_TOKEN: ((github-access-token))
+
+        - task: k-na-us-3
+          file: kubernikus.builds/ci/task_helm-admin_kubernikus.yaml
+          params:
+            REGION: admin
+            KUBERNIKUS_NAME: k-na-us-3
+            GITHUB_TOKEN: ((github-access-token))
+
+        - task: k-master
+          file: kubernikus.builds/ci/task_helm-admin_kubernikus.yaml
+          params:
+            REGION: admin
+            KUBERNIKUS_NAME: k-master
+            GITHUB_TOKEN: ((github-access-token))
+
+        - task: k-feature
+          file: kubernikus.builds/ci/task_helm-admin_kubernikus.yaml
+          params:
+            REGION: admin
+            KUBERNIKUS_NAME: k-feature
+            GITHUB_TOKEN: ((github-access-token))
+
+
 
   - name: staging 
     serial: true
@@ -499,7 +835,7 @@ jobs:
           params:
             <<: *auth_staging
 
-  - name: qa
+  - name: qa-de-1
     serial: true
     plan:
       - aggregate:
@@ -525,6 +861,26 @@ jobs:
             <<: *auth_qa-de-1
 
 
+  - name: soak_ap-ae-1
+    serial: true
+    build_logs_to_retain: 168
+    plan:
+      - aggregate:
+        - get: secrets.git
+        - get: kubernikus.builds
+          resource: master.builds
+          passed: [e2e]
+        - get: hourly 
+          trigger: true
+      - task: e2e_tests
+        file: kubernikus.builds/ci/task_e2e_tests.yaml
+        timeout: 45m
+        params:
+          <<: *auth_e2e_ap-ae-1
+    on_success: { put: slack, params: {alert_type: fixed } }
+    on_failure: { put: slack, params: {alert_type: broke } }
+    on_abort:   { put: slack, params: {alert_type: broke } }
+
   - name: soak_ap-au-1
     serial: true
     build_logs_to_retain: 168
@@ -541,6 +897,86 @@ jobs:
         timeout: 45m
         params:
           <<: *auth_e2e_ap-au-1
+    on_success: { put: slack, params: {alert_type: fixed } }
+    on_failure: { put: slack, params: {alert_type: broke } }
+    on_abort:   { put: slack, params: {alert_type: broke } }
+
+  - name: soak_ap-cn-1
+    serial: true
+    build_logs_to_retain: 168
+    plan:
+      - aggregate:
+        - get: secrets.git
+        - get: kubernikus.builds
+          resource: master.builds
+          passed: [e2e]
+        - get: hourly 
+          trigger: true
+      - task: e2e_tests
+        file: kubernikus.builds/ci/task_e2e_tests.yaml
+        timeout: 45m
+        params:
+          <<: *auth_e2e_ap-cn-1
+    on_success: { put: slack, params: {alert_type: fixed } }
+    on_failure: { put: slack, params: {alert_type: broke } }
+    on_abort:   { put: slack, params: {alert_type: broke } }
+
+  - name: soak_ap-jp-1
+    serial: true
+    build_logs_to_retain: 168
+    plan:
+      - aggregate:
+        - get: secrets.git
+        - get: kubernikus.builds
+          resource: master.builds
+          passed: [e2e]
+        - get: hourly 
+          trigger: true
+      - task: e2e_tests
+        file: kubernikus.builds/ci/task_e2e_tests.yaml
+        timeout: 45m
+        params:
+          <<: *auth_e2e_ap-jp-1
+    on_success: { put: slack, params: {alert_type: fixed } }
+    on_failure: { put: slack, params: {alert_type: broke } }
+    on_abort:   { put: slack, params: {alert_type: broke } }
+
+  - name: soak_ap-jp-2
+    serial: true
+    build_logs_to_retain: 168
+    plan:
+      - aggregate:
+        - get: secrets.git
+        - get: kubernikus.builds
+          resource: master.builds
+          passed: [e2e]
+        - get: hourly 
+          trigger: true
+      - task: e2e_tests
+        file: kubernikus.builds/ci/task_e2e_tests.yaml
+        timeout: 45m
+        params:
+          <<: *auth_e2e_ap-jp-2
+    on_success: { put: slack, params: {alert_type: fixed } }
+    on_failure: { put: slack, params: {alert_type: broke } }
+    on_abort:   { put: slack, params: {alert_type: broke } }
+
+  - name: soak_ap-sa-1
+    serial: true
+    build_logs_to_retain: 168
+    plan:
+      - aggregate:
+        - get: secrets.git
+        - get: kubernikus.builds
+          resource: master.builds
+          passed: [e2e]
+        - get: hourly 
+          trigger: true
+      - task: e2e_tests
+        file: kubernikus.builds/ci/task_e2e_tests.yaml
+        timeout: 45m
+        params:
+          <<: *auth_e2e_ap-sa-1
     on_success: { put: slack, params: {alert_type: fixed } }
     on_failure: { put: slack, params: {alert_type: broke } }
     on_abort:   { put: slack, params: {alert_type: broke } }
@@ -585,6 +1021,86 @@ jobs:
     on_failure: { put: slack, params: {alert_type: broke } }
     on_abort:   { put: slack, params: {alert_type: broke } }
 
+  - name: soak_eu-nl-1
+    serial: true
+    build_logs_to_retain: 168
+    plan:
+      - aggregate:
+        - get: secrets.git
+        - get: kubernikus.builds
+          resource: master.builds
+          passed: [e2e]
+        - get: hourly 
+          trigger: true
+      - task: e2e_tests
+        file: kubernikus.builds/ci/task_e2e_tests.yaml
+        timeout: 45m
+        params:
+          <<: *auth_e2e_eu-nl-1
+    on_success: { put: slack, params: {alert_type: fixed } }
+    on_failure: { put: slack, params: {alert_type: broke } }
+    on_abort:   { put: slack, params: {alert_type: broke } }
+
+  - name: soak_eu-ru-1
+    serial: true
+    build_logs_to_retain: 168
+    plan:
+      - aggregate:
+        - get: secrets.git
+        - get: kubernikus.builds
+          resource: master.builds
+          passed: [e2e]
+        - get: hourly 
+          trigger: true
+      - task: e2e_tests
+        file: kubernikus.builds/ci/task_e2e_tests.yaml
+        timeout: 45m
+        params:
+          <<: *auth_e2e_eu-ru-1
+    on_success: { put: slack, params: {alert_type: fixed } }
+    on_failure: { put: slack, params: {alert_type: broke } }
+    on_abort:   { put: slack, params: {alert_type: broke } }
+
+  - name: soak_la-br-1
+    serial: true
+    build_logs_to_retain: 168
+    plan:
+      - aggregate:
+        - get: secrets.git
+        - get: kubernikus.builds
+          resource: master.builds
+          passed: [e2e]
+        - get: hourly 
+          trigger: true
+      - task: e2e_tests
+        file: kubernikus.builds/ci/task_e2e_tests.yaml
+        timeout: 45m
+        params:
+          <<: *auth_e2e_la-br-1
+    on_success: { put: slack, params: {alert_type: fixed } }
+    on_failure: { put: slack, params: {alert_type: broke } }
+    on_abort:   { put: slack, params: {alert_type: broke } }
+
+  - name: soak_na-ca-1
+    serial: true
+    build_logs_to_retain: 168
+    plan:
+      - aggregate:
+        - get: secrets.git
+        - get: kubernikus.builds
+          resource: master.builds
+          passed: [e2e]
+        - get: hourly 
+          trigger: true
+      - task: e2e_tests
+        file: kubernikus.builds/ci/task_e2e_tests.yaml
+        timeout: 45m
+        params:
+          <<: *auth_e2e_na-ca-1
+    on_success: { put: slack, params: {alert_type: fixed } }
+    on_failure: { put: slack, params: {alert_type: broke } }
+    on_abort:   { put: slack, params: {alert_type: broke } }
+
   - name: soak_na-us-1
     serial: true
     build_logs_to_retain: 168
@@ -605,9 +1121,29 @@ jobs:
     on_failure: { put: slack, params: {alert_type: broke } }
     on_abort:   { put: slack, params: {alert_type: broke } }
 
-  - name: soak_qa-de-1
-    build_logs_to_retain: 168
+  - name: soak_na-us-3
     serial: true
+    build_logs_to_retain: 168
+    plan:
+      - aggregate:
+        - get: secrets.git
+        - get: kubernikus.builds
+          resource: master.builds
+          passed: [e2e]
+        - get: hourly 
+          trigger: true
+      - task: e2e_tests
+        file: kubernikus.builds/ci/task_e2e_tests.yaml
+        timeout: 45m
+        params:
+          <<: *auth_e2e_na-us-3
+    on_success: { put: slack, params: {alert_type: fixed } }
+    on_failure: { put: slack, params: {alert_type: broke } }
+    on_abort:   { put: slack, params: {alert_type: broke } }
+
+  - name: soak_qa-de-1
+    serial: true
+    build_logs_to_retain: 168
     plan:
       - aggregate:
         - get: secrets.git
@@ -632,50 +1168,178 @@ jobs:
       - get: kubernikus.builds
         resource: master.builds
       - aggregate:
+
+        - task: k-ap-ae-1
+          file: kubernikus.builds/ci/task_tiller.yaml
+          timeout: 10m
+          params:
+            <<: *auth_ap-ae-1
+
         - task: k-ap-au-1
           file: kubernikus.builds/ci/task_tiller.yaml
           timeout: 10m
           params:
             <<: *auth_ap-au-1
+
+        - task: k-ap-cn-1
+          file: kubernikus.builds/ci/task_tiller.yaml
+          timeout: 10m
+          params:
+            <<: *auth_ap-cn-1
+
         - task: k-ap-jp-1
           file: kubernikus.builds/ci/task_tiller.yaml
           timeout: 10m
           params:
             <<: *auth_ap-jp-1
+
+        - task: k-ap-jp-2
+          file: kubernikus.builds/ci/task_tiller.yaml
+          timeout: 10m
+          params:
+            <<: *auth_ap-jp-2
+
+        - task: k-ap-sa-1
+          file: kubernikus.builds/ci/task_tiller.yaml
+          timeout: 10m
+          params:
+            <<: *auth_ap-sa-1
+
         - task: k-eu-de-1
           file: kubernikus.builds/ci/task_tiller.yaml
           timeout: 10m
           params:
             <<: *auth_eu-de-1
+
         - task: k-eu-de-2
           file: kubernikus.builds/ci/task_tiller.yaml
           timeout: 10m
           params:
             <<: *auth_eu-de-2
+
         - task: k-eu-nl-1
           file: kubernikus.builds/ci/task_tiller.yaml
           timeout: 10m
           params:
             <<: *auth_eu-nl-1
-        - task: k-feature
+
+        - task: k-eu-ru-1
           file: kubernikus.builds/ci/task_tiller.yaml
           timeout: 10m
           params:
-            <<: *auth_feature
-        - task: k-master
+            <<: *auth_eu-ru-1
+
+        - task: k-la-br-1
           file: kubernikus.builds/ci/task_tiller.yaml
           timeout: 10m
           params:
-            <<: *auth_master
+            <<: *auth_la-br-1
+
+        - task: k-na-ca-1
+          file: kubernikus.builds/ci/task_tiller.yaml
+          timeout: 10m
+          params:
+            <<: *auth_na-ca-1
+
         - task: k-na-us-1
           file: kubernikus.builds/ci/task_tiller.yaml
           timeout: 10m
           params:
             <<: *auth_na-us-1
+
+        - task: k-na-us-3
+          file: kubernikus.builds/ci/task_tiller.yaml
+          timeout: 10m
+          params:
+            <<: *auth_na-us-3
+
         - task: k-qa-de-1
           file: kubernikus.builds/ci/task_tiller.yaml
           timeout: 10m
           params:
             <<: *auth_qa-de-1
 
+        - task: k-staging
+          file: kubernikus.builds/ci/task_tiller.yaml
+          timeout: 10m
+          params:
+            <<: *auth_staging
+
+        - task: k-master
+          file: kubernikus.builds/ci/task_tiller.yaml
+          timeout: 10m
+          params:
+            <<: *auth_master
+
+        - task: k-feature
+          file: kubernikus.builds/ci/task_tiller.yaml
+          timeout: 10m
+          params:
+            <<: *auth_feature
+
+        - task: k-infra
+          file: kubernikus.builds/ci/task_tiller.yaml
+          timeout: 10m
+          params:
+            <<: *auth_infra
+
+
+groups:
+  - name: deploy
+    jobs:
+
+      - qa-de-1
+
+      - staging
+
+      - master
+
+      - feature
+
+      - infra
+
+      - e2e 
+      - conformance
+      - prod
+      - feature
+      - admin
+      - americas
+      - asia
+      - emea
+  - name: e2e 
+    jobs:
+
+      - soak_ap-ae-1
+
+      - soak_ap-au-1
+
+      - soak_ap-cn-1
+
+      - soak_ap-jp-1
+
+      - soak_ap-jp-2
+
+      - soak_ap-sa-1
+
+      - soak_eu-de-1
+
+      - soak_eu-de-2
+
+      - soak_eu-nl-1
+
+      - soak_eu-ru-1
+
+      - soak_la-br-1
+
+      - soak_na-ca-1
+
+      - soak_na-us-1
+
+      - soak_na-us-3
+
+      - soak_qa-de-1
+
+  - name: misc
+    jobs:
+      - tiller
 
