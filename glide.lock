@@ -48,7 +48,7 @@ imports:
 - name: github.com/databus23/goslo.policy
   version: 3ae74dd07ebf48d1f2babbd1d2177cd1878a09ee
 - name: github.com/databus23/guttle
-  version: eac0bce93a303d28db60fb9608fd5c24fda6d9e1
+  version: e5ef8f5c87cb56f815570051a3c092004d225de5
 - name: github.com/databus23/keystone
   version: 350fd0e663cd9a825f2684f8a30e84bbb2a26419
   subpackages:
