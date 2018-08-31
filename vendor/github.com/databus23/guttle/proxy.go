@@ -23,12 +23,12 @@ func NoProxy() ProxyFunc {
 func SourceRoutedProxy() ProxyFunc {
 	return func(src net.Conn, hdr Header, logger log.Logger) {
 		destination := hdr.Destination()
-		conn, err := net.DialTimeout("tcp", dest, 5*time.Second)
+		conn, err := net.DialTimeout("tcp", destination, 5*time.Second)
 		if err != nil {
 			logger.Log("msg", "connection failed", "dest", destination, "err", err)
 			return
 		}
-		logger = log.With(logger, "src", conn.LocalAddr(), "dest", dest)
+		logger = log.With(logger, "src", conn.LocalAddr(), "dest", destination)
 		//Note: Join closes the connection
 		Join(src, conn, logger)
 	}
