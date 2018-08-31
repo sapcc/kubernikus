@@ -1,5 +1,5 @@
-hash: 07cc9e3255d7038648bbca48108a7255761b9fb1f8645dcc834331730a4fc01b
-updated: 2018-07-02T11:51:43.74903+02:00
+hash: b5352f4065108401065414f6627d608e24ede20945bfa73ceae444e839662136
+updated: 2018-08-31T10:21:40.690495+02:00
 imports:
 - name: github.com/ajeddeloh/yaml
   version: 1072abfea31191db507785e2e0c1b8d1440d35a5
@@ -16,7 +16,7 @@ imports:
 - name: github.com/BurntSushi/toml
   version: a368813c5e648fee92e5f6c30e3944ff9d5e8895
 - name: github.com/cenkalti/backoff
-  version: 2ea60e5f094469f9e65adb9cd103795b73ae743e
+  version: 80e08cb804a3eb3e576876c777e957e874609a9a
 - name: github.com/coreos/container-linux-config-transpiler
   version: d42f09a1374bc318d853b53e5a31148db68a4e2a
   subpackages:
@@ -48,9 +48,7 @@ imports:
 - name: github.com/databus23/goslo.policy
   version: 3ae74dd07ebf48d1f2babbd1d2177cd1878a09ee
 - name: github.com/databus23/guttle
-  version: 5ca1a11cdc48b026a723b2e9bd114f0f3da1cc9c
-  subpackages:
-  - group
+  version: eac0bce93a303d28db60fb9608fd5c24fda6d9e1
 - name: github.com/databus23/keystone
   version: 350fd0e663cd9a825f2684f8a30e84bbb2a26419
   subpackages:
@@ -159,7 +157,9 @@ imports:
   - openstack/blockstorage/extensions/quotasets
   - openstack/compute/v2/extensions/keypairs
   - openstack/compute/v2/extensions/quotasets
+  - openstack/compute/v2/extensions/schedulerhints
   - openstack/compute/v2/extensions/secgroups
+  - openstack/compute/v2/extensions/servergroups
   - openstack/compute/v2/flavors
   - openstack/compute/v2/images
   - openstack/compute/v2/servers
@@ -188,7 +188,7 @@ imports:
   subpackages:
   - simplelru
 - name: github.com/hashicorp/yamux
-  version: 683f49123a33db61abfb241b7ac5e4af4dc54d55
+  version: cc6d2ea263b2471faabce371255777a365bf8306
 - name: github.com/howeyc/gopass
   version: bf9dde6d0d2c004a008c27aaee91170c786f6db8
 - name: github.com/huandu/xstrings

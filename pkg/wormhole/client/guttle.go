@@ -76,6 +76,7 @@ func New(kubeconfig, context, serverAddr, listenAddr string, logger log.Logger) 
 	}
 
 	opts := guttle.ClientOptions{
+		Logger:     logger,
 		ServerAddr: serverAddr,
 		ListenAddr: listenAddr,
 		Dial: func(network, address string) (net.Conn, error) {

@@ -2,12 +2,11 @@ package guttle
 
 import (
 	"io"
-	"log"
 	"net"
 	"sync"
 	"time"
 
-	"github.com/hashicorp/yamux"
+	"github.com/go-kit/kit/log"
 )
 
 func serveListener(listener net.Listener, handler func(conn net.Conn)) error {
@@ -23,43 +22,44 @@ func serveListener(listener net.Listener, handler func(conn net.Conn)) error {
 // Join copies data between local and remote connections.
 // It reads from one connection and writes to the other.
 // It's a building block for ProxyFunc implementations.
-func Join(local, remote net.Conn) {
+func Join(local, remote net.Conn, logger log.Logger) {
 	var wg sync.WaitGroup
 	wg.Add(2)
 
 	var sendBytes, receivedBytes int64
 
 	transfer := func(side string, dst, src net.Conn, transferedBytes *int64) {
-		//log.Printf("proxing %s %s -> %s", side, src.RemoteAddr(), dst.RemoteAddr())
 		var err error
 
 		*transferedBytes, err = io.Copy(dst, src)
 		if err != nil {
-			log.Printf("%s: copy error: %s", side, err)
+			logger.Log("msg", "copy error", "side", side, "err", err)
 		}
-
-		if err := src.Close(); err != nil {
-			log.Printf("%s: close error: %s", side, err)
-		}
-		if d, ok := dst.(*yamux.Stream); ok {
-			d.Close()
-		}
-
-		// not for yamux streams, but for client to local server connections
 		if d, ok := dst.(*net.TCPConn); ok {
 			if err := d.CloseWrite(); err != nil {
-				log.Printf("%s: closeWrite error: %#v", side, err)
+				logger.Log("msg", "failed to closeWrite dst", "side", side, "err", err)
+			}
+		} else {
+			if err := dst.Close(); err != nil {
+				logger.Log("msg", "failed to dst", "side", side, "err", err)
 			}
 		}
+		//logger.Log("msg", "done", "side", side)
+
 		wg.Done()
-		//log.Printf("done proxing %s %s -> %s: %d bytes", side, src.RemoteAddr(), dst.RemoteAddr(), n)
 	}
 
-	log.Printf("proxing %s <-> %s", local.RemoteAddr(), remote.RemoteAddr())
+	logger.Log("msg", "start proxying")
 	start := time.Now()
 	go transfer("remote to local", local, remote, &receivedBytes)
 	go transfer("local to remote", remote, local, &sendBytes)
 	wg.Wait()
+
+	if r, ok := remote.(*net.TCPConn); ok {
+		if err := r.Close(); err != nil {
+			logger.Log("msg", "closing tcp connection failed", "err", err)
+		}
+	}
 	elapsed := time.Since(start)
-	log.Printf("done proxing %s <-> %s: send %d bytes, received %d bytes, elapsed %s", local.RemoteAddr(), remote.RemoteAddr(), sendBytes, receivedBytes, elapsed)
+	logger.Log("msg", "end proxying", "bytes_send", sendBytes, "bytes_received", receivedBytes, "duration", elapsed)
 }
