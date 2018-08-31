@@ -137,7 +137,7 @@ data "openstack_identity_role_v3" "cloud_volume_admin" {
   name = "cloud_volume_admin"
 }
 
-data "openstack_networking_network_v2" "external_network" {
+data "openstack_networking_network_v2" "external" {
   name = "FloatingIP-external-ccadmin"
 }
 
@@ -303,6 +303,13 @@ resource "ccloud_quota" "kubernikus" {
   }
 }
 
+resource "openstack_networking_rbacpolicies_v2" "external" {
+  action        = "access_as_shared"
+  object_id     = "${data.openstack_networking_network_v2.external.id}"
+  object_type   = "network"
+  target_tenant = "${openstack_identity_project_v3.kubernikus.id}"
+}
+
 resource "openstack_networking_network_v2" "network" {
   tenant_id      = "${openstack_identity_project_v3.kubernikus.id}"
   name           = "kubernikus"
@@ -323,7 +330,7 @@ resource "openstack_networking_router_v2" "router" {
   tenant_id           = "${openstack_identity_project_v3.kubernikus.id}"
   name                = "kubernikus"
   admin_state_up      = true
-  external_network_id = "${data.openstack_networking_network_v2.external_network.id}"
+  external_network_id = "${data.openstack_networking_network_v2.external.id}"
   depends_on          = ["ccloud_quota.kubernikus"]
 }
 
@@ -332,11 +339,10 @@ resource "openstack_networking_router_interface_v2" "router_interface" {
   subnet_id = "${openstack_networking_subnet_v2.subnet.id}"
 }
 
-resource "openstack_networking_secgroup_v2" "kubernikus" {
+
+data "openstack_networking_secgroup_v2" "kubernikus_default" {
+  name        = "default"
   tenant_id   = "${openstack_identity_project_v3.kubernikus.id}"
-  name        = "kubernikus"
-  description = "Kubernikus"
-  depends_on  = ["ccloud_quota.kubernikus"]
 }
 
 resource "openstack_networking_secgroup_rule_v2" "secgroup_rule_0" {
@@ -345,7 +351,9 @@ resource "openstack_networking_secgroup_rule_v2" "secgroup_rule_0" {
   ethertype = "IPv4"
   protocol = "tcp"
   remote_ip_prefix  = "198.18.0.0/15"
-  security_group_id = "${openstack_networking_secgroup_v2.kubernikus.id}"
+  security_group_id = "${data.openstack_networking_secgroup_v2.kubernikus_default.id}"
+
+  depends_on          = ["ccloud_quota.kubernikus"]
 }
 
 resource "openstack_networking_secgroup_rule_v2" "secgroup_rule_1" {
@@ -354,7 +362,9 @@ resource "openstack_networking_secgroup_rule_v2" "secgroup_rule_1" {
   ethertype = "IPv4"
   protocol = "udp"
   remote_ip_prefix  = "198.18.0.0/15"
-  security_group_id = "${openstack_networking_secgroup_v2.kubernikus.id}"
+  security_group_id = "${data.openstack_networking_secgroup_v2.kubernikus_default.id}"
+
+  depends_on          = ["ccloud_quota.kubernikus"]
 }
 
 resource "openstack_identity_service_v3" "kubernikus" {
