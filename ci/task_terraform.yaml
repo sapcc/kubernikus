@@ -19,12 +19,18 @@ run:
     - |
       set -exo pipefail
       cd kubernikus.git/terraform
-      TF_USER=$OS_USERNAME TF_PASSWORD=$OS_PASSWORD make plan
+      ls
+      TF_USER=$OS_USERNAME \
+      TF_PASSWORD=$OS_PASSWORD \
+      TF_VARS_DIR=../../secrets.git/$TF_REGION/terraform \
+        make init plan apply
 
 params:
-  TF_REGION
-  OS_USERNAME
-  OS_PASSWORD
+  TF_REGION:
+  TF_PLUGIN_DIR: /usr/local/bin
+  TF_VARS_DIR:
+  OS_USERNAME:
+  OS_PASSWORD:
 
 
 

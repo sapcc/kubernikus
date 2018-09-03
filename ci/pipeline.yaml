@@ -402,6 +402,14 @@ resources:
       branch:      master
       depth: 1
 
+  - name: kubernikus.git
+    type: git
+    check_every: 1h
+    source:
+      uri:         https://github.com/sapcc/kubernikus.git
+      branch:      master
+      depth: 1
+
   - name: daily
     type: time
     source: {interval: 24h}
@@ -1284,6 +1292,19 @@ jobs:
             <<: *auth_infra
 
 
+  - name: terraform_ap-jp-1
+    serial: true
+    plan:
+      - aggregate:
+        - get: secrets.git
+        - get: kubernikus.git
+      - task: terraform
+        file: kubernikus.git/ci/task_terraform.yaml
+        timeout: 45m
+        params:
+          TF_REGION: ap-jp-1
+          <<: *auth_ap-jp-1
+
 groups:
   - name: deploy
     jobs:
@@ -1339,6 +1360,9 @@ groups:
 
       - soak_qa-de-1
 
+  - name: terraform
+    jobs:
+      - terraform_ap-jp-1
   - name: misc
     jobs:
       - tiller
