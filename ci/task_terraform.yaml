@@ -1,0 +1,30 @@
+---
+platform: 'linux'
+
+image_resource:
+  type: docker-image
+  source:
+    repository: sapcc/kubernikus-terraform
+    tag: 'latest'
+
+inputs:
+  - name: secrets.git
+  - name: kubernikus.git
+
+
+run:
+  path: /bin/sh
+  args:
+    - -c
+    - |
+      set -exo pipefail
+      cd kubernikus.git/terraform
+      TF_USER=$OS_USERNAME TF_PASSWORD=$OS_PASSWORD make plan
+
+params:
+  TF_REGION
+  OS_USERNAME
+  OS_PASSWORD
+
+
+
