@@ -1,5 +1,5 @@
 SHELL    := /bin/sh
-IMAGE    := sapcc/kubernikus-terrraform
+IMAGE    := sapcc/kubernikus-terraform
 DATE     := $(shell date +%Y%m%d%H%M%S)
 VERSION  ?= v$(DATE)
 

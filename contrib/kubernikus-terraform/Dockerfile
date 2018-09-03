@@ -19,5 +19,5 @@ FROM alpine:3.8
 
 ARG TERRAFORM_VERSION
 
-RUN apk add --update make terraform=${TERRAFORM_VERSION}
+RUN apk add --update make ca-certificates terraform=${TERRAFORM_VERSION}
 COPY --from=builder /go/bin/* /usr/local/bin/
