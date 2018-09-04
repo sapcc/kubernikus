@@ -1,4 +1,5 @@
 TF_PLUGIN_DIR          ?= "$(GOPATH)/bin"
+TF_VARS_DIR            ?= .
 
 TF_AUTH_URL            ?= "https://identity-3.$(TF_REGION).cloud.sap/v3"
 TF_USER_DOMAIN         := ccadmin
@@ -48,7 +49,7 @@ plan: validate
 		-var password=$(TF_PASSWORD) \
 		-var domain_name=$(TF_DOMAIN_NAME) \
 		-var tenant_name=$(TF_TENANT) \
-		-var-file="${TF_REGION}.tfvars" \
+		-var-file="${TF_VARS_DIR}/kubernikus.tfvars" \
 		-parallelism=10
 
 apply: validate
@@ -61,5 +62,5 @@ apply: validate
 		-var password=$(TF_PASSWORD) \
 		-var domain_name=$(TF_DOMAIN_NAME) \
 		-var tenant_name=$(TF_TENANT) \
-		-var-file="${TF_REGION}.tfvars" \
+		-var-file="${TF_VARS_DIR}/kubernikus.tfvars" \
 		-parallelism=10
