@@ -147,14 +147,40 @@ data "openstack_identity_user_v3" "pipeline" {
 
 
 
+resource "openstack_identity_role_v3" "kubernetes_admin" {
+  name = "kubernetes_admin"
+}
+
+resource "openstack_identity_role_v3" "kubernetes_member" {
+  name = "kubernetes_member"
+}
+
+resource "openstack_identity_user_v3" "kubernikus_pipeline" {
+  domain_id    = "${data.openstack_identity_project_v3.default.id}"
+  name         = "kubernikus-pipeline"
+  description  = "Kubernikus Pipeline User"
+  password     = "${var.kubernikus-pipeline-password}"
+
+  ignore_change_password_upon_first_use = true
+  ignore_password_expiry = true
+}
+
+resource "openstack_identity_user_v3" "kubernikus_service" {
+  domain_id    = "${data.openstack_identity_project_v3.default.id}"
+  name         = "kubernikus"
+  description  = "Kubernikus Service User"
+  password     = "${var.kubernikus-service-password}"
+
+  ignore_change_password_upon_first_use = true
+  ignore_password_expiry = true
+}
+
+
+
 resource "openstack_identity_project_v3" "kubernikus" {
   name        = "kubernikus"
   domain_id   = "${data.openstack_identity_project_v3.ccadmin.id}"
   description = "Kubernikus Control-Plane"
-}
-
-resource "openstack_identity_role_v3" "kubernetes_admin" {
-  name = "kubernetes_admin"
 }
 
 resource "openstack_identity_role_assignment_v3" "admin" {
@@ -193,74 +219,64 @@ resource "openstack_identity_role_assignment_v3" "kubernetes_admin" {
   role_id    = "${openstack_identity_role_v3.kubernetes_admin.id}"
 }
 
-resource "openstack_identity_role_assignment_v3" "pipeline" {
-  user_id    = "${data.openstack_identity_user_v3.pipeline.id}"
+resource "openstack_identity_role_assignment_v3" "pipeline_kubernetes_admin" {
+  user_id    = "${data.openstack_identity_user_v3.kubernikus_pipeline.id}"
   project_id = "${openstack_identity_project_v3.kubernikus.id}"
   role_id    = "${openstack_identity_role_v3.kubernetes_admin.id}"
 }
 
 
 
-resource "openstack_identity_user_v3" "kubernikus" {
-  domain_id    = "${data.openstack_identity_project_v3.default.id}"
-  name         = "kubernikus"
-  description  = "Kubernikus Service User"
-  password     = "${var.kubernikus-openstack-password}"
-
-  ignore_change_password_upon_first_use = true
-  ignore_password_expiry = true
-}
-
 resource "openstack_identity_role_assignment_v3" "kubernikus-admin" {
-  user_id    = "${openstack_identity_user_v3.kubernikus.id}"
+  user_id    = "${openstack_identity_user_v3.kubernikus_service.id}"
   project_id = "${data.openstack_identity_project_v3.cloud_admin.id}"
   role_id    = "${data.openstack_identity_role_v3.admin.id}"
 }
 
 resource "openstack_identity_role_assignment_v3" "kubernikus-cloud_compute_admin" {
-  user_id    = "${openstack_identity_user_v3.kubernikus.id}"
+  user_id    = "${openstack_identity_user_v3.kubernikus_service.id}"
   project_id = "${data.openstack_identity_project_v3.cloud_admin.id}"
   role_id    = "${data.openstack_identity_role_v3.cloud_compute_admin.id}"
 }
 
 resource "openstack_identity_role_assignment_v3" "kubernikus-cloud_dns_admin" {
-  user_id    = "${openstack_identity_user_v3.kubernikus.id}"
+  user_id    = "${openstack_identity_user_v3.kubernikus_service.id}"
   project_id = "${data.openstack_identity_project_v3.cloud_admin.id}"
   role_id    = "${data.openstack_identity_role_v3.cloud_dns_admin.id}"
 }
 
 resource "openstack_identity_role_assignment_v3" "kubernikus-cloud_image_admin" {
-  user_id    = "${openstack_identity_user_v3.kubernikus.id}"
+  user_id    = "${openstack_identity_user_v3.kubernikus_service.id}"
   project_id = "${data.openstack_identity_project_v3.cloud_admin.id}"
   role_id    = "${data.openstack_identity_role_v3.cloud_image_admin.id}"
 }
 
 resource "openstack_identity_role_assignment_v3" "kubernikus-cloud_keymanager_admin" {
-  user_id    = "${openstack_identity_user_v3.kubernikus.id}"
+  user_id    = "${openstack_identity_user_v3.kubernikus_service.id}"
   project_id = "${data.openstack_identity_project_v3.cloud_admin.id}"
   role_id    = "${data.openstack_identity_role_v3.cloud_keymanager_admin.id}"
 }
 
 resource "openstack_identity_role_assignment_v3" "kubernikus-cloud_network_admin" {
-  user_id    = "${openstack_identity_user_v3.kubernikus.id}"
+  user_id    = "${openstack_identity_user_v3.kubernikus_service.id}"
   project_id = "${data.openstack_identity_project_v3.cloud_admin.id}"
   role_id    = "${data.openstack_identity_role_v3.cloud_network_admin.id}"
 }
 
 resource "openstack_identity_role_assignment_v3" "kubernikus-cloud_resource_admin" {
-  user_id    = "${openstack_identity_user_v3.kubernikus.id}"
+  user_id    = "${openstack_identity_user_v3.kubernikus_service.id}"
   project_id = "${data.openstack_identity_project_v3.cloud_admin.id}"
   role_id    = "${data.openstack_identity_role_v3.cloud_resource_admin.id}"
 }
 
 resource "openstack_identity_role_assignment_v3" "kubernikus-cloud_sharedfilesystem_admin" {
-  user_id    = "${openstack_identity_user_v3.kubernikus.id}"
+  user_id    = "${openstack_identity_user_v3.kubernikus_service.id}"
   project_id = "${data.openstack_identity_project_v3.cloud_admin.id}"
   role_id    = "${data.openstack_identity_role_v3.cloud_sharedfilesystem_admin.id}"
 }
 
 resource "openstack_identity_role_assignment_v3" "kubernikus-cloud_volume_admin" {
-  user_id    = "${openstack_identity_user_v3.kubernikus.id}"
+  user_id    = "${openstack_identity_user_v3.kubernikus_service.id}"
   project_id = "${data.openstack_identity_project_v3.cloud_admin.id}"
   role_id    = "${data.openstack_identity_role_v3.cloud_volume_admin.id}"
 }
