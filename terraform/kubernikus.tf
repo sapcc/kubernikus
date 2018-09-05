@@ -141,10 +141,6 @@ data "openstack_networking_network_v2" "external" {
   name = "FloatingIP-external-ccadmin"
 }
 
-data "openstack_identity_user_v3" "pipeline" {
-  name = "${var.kubernikus-pipeline-user}"
-}
-
 
 
 resource "openstack_identity_role_v3" "kubernetes_admin" {
@@ -220,7 +216,7 @@ resource "openstack_identity_role_assignment_v3" "kubernetes_admin" {
 }
 
 resource "openstack_identity_role_assignment_v3" "pipeline_kubernetes_admin" {
-  user_id    = "${data.openstack_identity_user_v3.kubernikus_pipeline.id}"
+  user_id    = "${openstack_identity_user_v3.kubernikus_pipeline.id}"
   project_id = "${openstack_identity_project_v3.kubernikus.id}"
   role_id    = "${openstack_identity_role_v3.kubernetes_admin.id}"
 }
