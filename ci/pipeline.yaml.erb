@@ -459,7 +459,8 @@ jobs:
           TF_PASSWORD: ((kubernikus-terraform-password))
 
 
-  - name: seed_ap-jp-1
+<% (ASIA + EMEA + AMERICAS + INFRA).each do |region| %>
+  - name: seed_<%= region %>
     serial: true
     plan:
       - aggregate:
@@ -467,12 +468,13 @@ jobs:
         - get: secrets.git
         - get: kubernikus-ci.git
       - task: seed
-        file: kubernikus-ci.git/ci/task_seed.yaml
+        file: kubernikus-ci.git/ci/task_helm_seed.yaml
         input_mapping: 
           charts.git: helm-charts-openstack-kubernikus.git
         params:
-          REGION:       ap-jp-1
+          REGION:       <%= region %>
           GITHUB_TOKEN: ((github-access-token))
+<% end %>
 
 groups:
   - name: deploy
@@ -498,7 +500,9 @@ groups:
       - terraform_ap-jp-1
   - name: seed
     jobs:
-      - seed_ap-jp-1
+<% (ASIA + EMEA + AMERICAS + INFRA).each do |region| %>
+      - seed_<%= region %>
+<% end %>
   - name: misc
     jobs:
       - tiller

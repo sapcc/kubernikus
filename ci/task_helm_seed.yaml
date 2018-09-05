@@ -16,7 +16,7 @@ run:
     - -exc
     - |
       set -o pipefail
-      helm upgrade $RELEASE helm-charts-openstack-kubernikus.git/openstack/kubernikus --namespace $NAMESPACE --values secrets.git/$REGION/values/kubernikus.yaml --install --debug
+      helm upgrade $RELEASE helm-charts-openstack-kubernikus.git/openstack/kubernikus --namespace $NAMESPACE --values secrets.git/global/values/kubernikus-seed.yaml --install --debug
 
 params:
   REGION:

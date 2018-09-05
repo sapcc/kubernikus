@@ -1323,6 +1323,52 @@ jobs:
           TF_PASSWORD: ((kubernikus-terraform-password))
 
 
+
+  - name: seed_ap-ae-1
+    serial: true
+    plan:
+      - aggregate:
+        - get: helm-charts-openstack-kubernikus.git
+        - get: secrets.git
+        - get: kubernikus-ci.git
+      - task: seed
+        file: kubernikus-ci.git/ci/task_helm_seed.yaml
+        input_mapping: 
+          charts.git: helm-charts-openstack-kubernikus.git
+        params:
+          REGION:       ap-ae-1
+          GITHUB_TOKEN: ((github-access-token))
+
+  - name: seed_ap-au-1
+    serial: true
+    plan:
+      - aggregate:
+        - get: helm-charts-openstack-kubernikus.git
+        - get: secrets.git
+        - get: kubernikus-ci.git
+      - task: seed
+        file: kubernikus-ci.git/ci/task_helm_seed.yaml
+        input_mapping: 
+          charts.git: helm-charts-openstack-kubernikus.git
+        params:
+          REGION:       ap-au-1
+          GITHUB_TOKEN: ((github-access-token))
+
+  - name: seed_ap-cn-1
+    serial: true
+    plan:
+      - aggregate:
+        - get: helm-charts-openstack-kubernikus.git
+        - get: secrets.git
+        - get: kubernikus-ci.git
+      - task: seed
+        file: kubernikus-ci.git/ci/task_helm_seed.yaml
+        input_mapping: 
+          charts.git: helm-charts-openstack-kubernikus.git
+        params:
+          REGION:       ap-cn-1
+          GITHUB_TOKEN: ((github-access-token))
+
   - name: seed_ap-jp-1
     serial: true
     plan:
@@ -1331,12 +1377,193 @@ jobs:
         - get: secrets.git
         - get: kubernikus-ci.git
       - task: seed
-        file: kubernikus-ci.git/ci/task_seed.yaml
+        file: kubernikus-ci.git/ci/task_helm_seed.yaml
         input_mapping: 
           charts.git: helm-charts-openstack-kubernikus.git
         params:
           REGION:       ap-jp-1
           GITHUB_TOKEN: ((github-access-token))
+
+  - name: seed_ap-jp-2
+    serial: true
+    plan:
+      - aggregate:
+        - get: helm-charts-openstack-kubernikus.git
+        - get: secrets.git
+        - get: kubernikus-ci.git
+      - task: seed
+        file: kubernikus-ci.git/ci/task_helm_seed.yaml
+        input_mapping: 
+          charts.git: helm-charts-openstack-kubernikus.git
+        params:
+          REGION:       ap-jp-2
+          GITHUB_TOKEN: ((github-access-token))
+
+  - name: seed_ap-sa-1
+    serial: true
+    plan:
+      - aggregate:
+        - get: helm-charts-openstack-kubernikus.git
+        - get: secrets.git
+        - get: kubernikus-ci.git
+      - task: seed
+        file: kubernikus-ci.git/ci/task_helm_seed.yaml
+        input_mapping: 
+          charts.git: helm-charts-openstack-kubernikus.git
+        params:
+          REGION:       ap-sa-1
+          GITHUB_TOKEN: ((github-access-token))
+
+  - name: seed_eu-de-1
+    serial: true
+    plan:
+      - aggregate:
+        - get: helm-charts-openstack-kubernikus.git
+        - get: secrets.git
+        - get: kubernikus-ci.git
+      - task: seed
+        file: kubernikus-ci.git/ci/task_helm_seed.yaml
+        input_mapping: 
+          charts.git: helm-charts-openstack-kubernikus.git
+        params:
+          REGION:       eu-de-1
+          GITHUB_TOKEN: ((github-access-token))
+
+  - name: seed_eu-de-2
+    serial: true
+    plan:
+      - aggregate:
+        - get: helm-charts-openstack-kubernikus.git
+        - get: secrets.git
+        - get: kubernikus-ci.git
+      - task: seed
+        file: kubernikus-ci.git/ci/task_helm_seed.yaml
+        input_mapping: 
+          charts.git: helm-charts-openstack-kubernikus.git
+        params:
+          REGION:       eu-de-2
+          GITHUB_TOKEN: ((github-access-token))
+
+  - name: seed_eu-nl-1
+    serial: true
+    plan:
+      - aggregate:
+        - get: helm-charts-openstack-kubernikus.git
+        - get: secrets.git
+        - get: kubernikus-ci.git
+      - task: seed
+        file: kubernikus-ci.git/ci/task_helm_seed.yaml
+        input_mapping: 
+          charts.git: helm-charts-openstack-kubernikus.git
+        params:
+          REGION:       eu-nl-1
+          GITHUB_TOKEN: ((github-access-token))
+
+  - name: seed_eu-ru-1
+    serial: true
+    plan:
+      - aggregate:
+        - get: helm-charts-openstack-kubernikus.git
+        - get: secrets.git
+        - get: kubernikus-ci.git
+      - task: seed
+        file: kubernikus-ci.git/ci/task_helm_seed.yaml
+        input_mapping: 
+          charts.git: helm-charts-openstack-kubernikus.git
+        params:
+          REGION:       eu-ru-1
+          GITHUB_TOKEN: ((github-access-token))
+
+  - name: seed_la-br-1
+    serial: true
+    plan:
+      - aggregate:
+        - get: helm-charts-openstack-kubernikus.git
+        - get: secrets.git
+        - get: kubernikus-ci.git
+      - task: seed
+        file: kubernikus-ci.git/ci/task_helm_seed.yaml
+        input_mapping: 
+          charts.git: helm-charts-openstack-kubernikus.git
+        params:
+          REGION:       la-br-1
+          GITHUB_TOKEN: ((github-access-token))
+
+  - name: seed_na-ca-1
+    serial: true
+    plan:
+      - aggregate:
+        - get: helm-charts-openstack-kubernikus.git
+        - get: secrets.git
+        - get: kubernikus-ci.git
+      - task: seed
+        file: kubernikus-ci.git/ci/task_helm_seed.yaml
+        input_mapping: 
+          charts.git: helm-charts-openstack-kubernikus.git
+        params:
+          REGION:       na-ca-1
+          GITHUB_TOKEN: ((github-access-token))
+
+  - name: seed_na-us-1
+    serial: true
+    plan:
+      - aggregate:
+        - get: helm-charts-openstack-kubernikus.git
+        - get: secrets.git
+        - get: kubernikus-ci.git
+      - task: seed
+        file: kubernikus-ci.git/ci/task_helm_seed.yaml
+        input_mapping: 
+          charts.git: helm-charts-openstack-kubernikus.git
+        params:
+          REGION:       na-us-1
+          GITHUB_TOKEN: ((github-access-token))
+
+  - name: seed_na-us-3
+    serial: true
+    plan:
+      - aggregate:
+        - get: helm-charts-openstack-kubernikus.git
+        - get: secrets.git
+        - get: kubernikus-ci.git
+      - task: seed
+        file: kubernikus-ci.git/ci/task_helm_seed.yaml
+        input_mapping: 
+          charts.git: helm-charts-openstack-kubernikus.git
+        params:
+          REGION:       na-us-3
+          GITHUB_TOKEN: ((github-access-token))
+
+  - name: seed_qa-de-1
+    serial: true
+    plan:
+      - aggregate:
+        - get: helm-charts-openstack-kubernikus.git
+        - get: secrets.git
+        - get: kubernikus-ci.git
+      - task: seed
+        file: kubernikus-ci.git/ci/task_helm_seed.yaml
+        input_mapping: 
+          charts.git: helm-charts-openstack-kubernikus.git
+        params:
+          REGION:       qa-de-1
+          GITHUB_TOKEN: ((github-access-token))
+
+  - name: seed_staging
+    serial: true
+    plan:
+      - aggregate:
+        - get: helm-charts-openstack-kubernikus.git
+        - get: secrets.git
+        - get: kubernikus-ci.git
+      - task: seed
+        file: kubernikus-ci.git/ci/task_helm_seed.yaml
+        input_mapping: 
+          charts.git: helm-charts-openstack-kubernikus.git
+        params:
+          REGION:       staging
+          GITHUB_TOKEN: ((github-access-token))
+
 
 groups:
   - name: deploy
@@ -1398,7 +1625,39 @@ groups:
       - terraform_ap-jp-1
   - name: seed
     jobs:
+
+      - seed_ap-ae-1
+
+      - seed_ap-au-1
+
+      - seed_ap-cn-1
+
       - seed_ap-jp-1
+
+      - seed_ap-jp-2
+
+      - seed_ap-sa-1
+
+      - seed_eu-de-1
+
+      - seed_eu-de-2
+
+      - seed_eu-nl-1
+
+      - seed_eu-ru-1
+
+      - seed_la-br-1
+
+      - seed_na-ca-1
+
+      - seed_na-us-1
+
+      - seed_na-us-3
+
+      - seed_qa-de-1
+
+      - seed_staging
+
   - name: misc
     jobs:
       - tiller
