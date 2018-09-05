@@ -26,11 +26,9 @@ endif
 
 all: validate init plan apply
 
-validate:
-	env | grep "TF_\|OS_"
 
-init: validate
-	terraform init \
+init:
+	@terraform init \
 		-plugin-dir=$(TF_PLUGIN_DIR) \
 		-backend-config="auth_url=$(TF_BACKEND_AUTH_URL)" \
 		-backend-config="region_name=$(TF_BACKEND_REGION)" \
@@ -38,8 +36,8 @@ init: validate
 		-backend-config="user_domain_name=$(TF_BACKEND_USER_DOMAIN)" \
 		-backend-config="password=$(TF_BACKEND_PASSWORD)"
 
-plan: validate
-	terraform plan \
+plan:
+	@terraform plan \
 		-var region=$(TF_REGION) \
 		-var user_name=$(TF_USER) \
 		-var user_domain_name=$(TF_USER_DOMAIN) \
@@ -49,8 +47,8 @@ plan: validate
 		-var-file="${TF_VARS_DIR}/kubernikus.tfvars" \
 		-parallelism=10
 
-apply: validate
-	terraform apply \
+apply:
+	@terraform apply \
 		-input=false \
 		-auto-approve \
 		-var region=$(TF_REGION) \
