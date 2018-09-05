@@ -44,17 +44,6 @@ provider "ccloud" {
   domain_name      = "ccadmin"
 }
 
-provider "ccloud" {
-  alias            = "kubernikus"
-
-  auth_url         = "https://identity-3.${var.region}.cloud.sap/v3"
-  region           = "${var.region}"
-  user_name        = "${var.user_name}"
-  user_domain_name = "${var.user_domain_name}"
-  password         = "${var.password}"
-  tenant_id        = "${openstack_identity_project_v3.kubernikus.id}"
-}
-
 terraform {
   backend "swift" {
     tenant_name       = "master"
@@ -84,6 +73,7 @@ data "ccloud_identity_group_v3" "ccadmin_domain_admins" {
   provider = "ccloud.cloud_admin"
   name = "CCADMIN_DOMAIN_ADMINS"
 }
+
 
 data "openstack_identity_role_v3" "admin" {
   name = "admin"
@@ -220,8 +210,6 @@ resource "openstack_identity_role_assignment_v3" "pipeline_kubernetes_admin" {
   project_id = "${openstack_identity_project_v3.kubernikus.id}"
   role_id    = "${openstack_identity_role_v3.kubernetes_admin.id}"
 }
-
-
 
 resource "openstack_identity_role_assignment_v3" "kubernikus-admin" {
   user_id    = "${openstack_identity_user_v3.kubernikus_service.id}"
@@ -407,22 +395,8 @@ resource "openstack_identity_endpoint_v3" "kubernikus-kubernikus" {
   url        = "https://k-${var.region}.admin.cloud.sap"
 }
 
-resource "ccloud_kubernetes" "kluster" {
-  provider = "ccloud.kubernikus" 
 
-  is_admin       = true
-  name           = "k-${var.region}"
-  ssh_public_key = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQCXIxVEUgtUVkvk2VM1hmIb8MxvxsmvYoiq9OBy3J8akTGNybqKsA2uhcwxSJX5Cn3si8kfMfka9EWiJT+e1ybvtsGILO5XRZPxyhYzexwb3TcALwc3LuzpF3Z/Dg2jYTRELTGhYmyca3mxzTlCjNXvYayLNedjJ8fIBzoCuSXNqDRToHru7h0Glz+wtuE74mNkOiXSvhtuJtJs7VCNVjobFQNfC1aeDsri2bPRHJJZJ0QF4LLYSayMEz3lVwIDyAviQR2Aa97WfuXiofiAemfGqiH47Kq6b8X7j3bOYGBvJKMUV7XeWhGsskAmTsvvnFxkc5PAD3Ct+liULjiQWlzDrmpTE8aMqLK4l0YQw7/8iRVz6gli42iEc2ZG56ob1ErpTLAKFWyCNOebZuGoygdEQaGTIIunAncXg5Rz07TdPl0Tf5ZZLpiAgR5ck0H1SETnjDTZ/S83CiVZWJgmCpu8YOKWyYRD4orWwdnA77L4+ixeojLIhEoNL8KlBgsP9Twx+fFMWLfxMmiuX+yksM6Hu+Lsm+Ao7Q284VPp36EB1rxP1JM7HCiEOEm50Jb6hNKjgN4aoLhG5yg+GnDhwCZqUwcRJo1bWtm3QvRA+rzrGZkId4EY3cyOK5QnYV5+24x93Ex0UspHMn7HGsHUESsVeV0fLqlfXyd2RbHTmDMP6w=="
 
-  node_pools = [
-    { name = "payload", flavor = "m1.xlarge_cpu", size = 3 },
-  ]
-
-  depends_on = [
-    "openstack_identity_endpoint_v3.kubernikus", 
-    "openstack_networking_router_v2.router"
-  ]
-}
 
 data "openstack_dns_zone_v2" "region_cloud_sap" {
   provider = "openstack.master"
@@ -504,6 +478,37 @@ resource "openstack_dns_recordset_v2" "wildcard-k-region" {
   type    = "CNAME"
   ttl     = 1800
   records = ["kubernikus.admin.cloud.sap."]
+}
+
+
+
+
+provider "ccloud" {
+  alias            = "kubernikus"
+
+  auth_url         = "https://identity-3.${var.region}.cloud.sap/v3"
+  region           = "${var.region}"
+  user_name        = "kubernikus-terraform"
+  user_domain_name = "Default"
+  password         = "${var.password}"
+  tenant_id        = "${openstack_identity_project_v3.kubernikus.id}"
+}
+
+resource "ccloud_kubernetes" "kluster" {
+  provider = "ccloud.kubernikus" 
+
+  is_admin       = true
+  name           = "k-${var.region}"
+  ssh_public_key = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQCXIxVEUgtUVkvk2VM1hmIb8MxvxsmvYoiq9OBy3J8akTGNybqKsA2uhcwxSJX5Cn3si8kfMfka9EWiJT+e1ybvtsGILO5XRZPxyhYzexwb3TcALwc3LuzpF3Z/Dg2jYTRELTGhYmyca3mxzTlCjNXvYayLNedjJ8fIBzoCuSXNqDRToHru7h0Glz+wtuE74mNkOiXSvhtuJtJs7VCNVjobFQNfC1aeDsri2bPRHJJZJ0QF4LLYSayMEz3lVwIDyAviQR2Aa97WfuXiofiAemfGqiH47Kq6b8X7j3bOYGBvJKMUV7XeWhGsskAmTsvvnFxkc5PAD3Ct+liULjiQWlzDrmpTE8aMqLK4l0YQw7/8iRVz6gli42iEc2ZG56ob1ErpTLAKFWyCNOebZuGoygdEQaGTIIunAncXg5Rz07TdPl0Tf5ZZLpiAgR5ck0H1SETnjDTZ/S83CiVZWJgmCpu8YOKWyYRD4orWwdnA77L4+ixeojLIhEoNL8KlBgsP9Twx+fFMWLfxMmiuX+yksM6Hu+Lsm+Ao7Q284VPp36EB1rxP1JM7HCiEOEm50Jb6hNKjgN4aoLhG5yg+GnDhwCZqUwcRJo1bWtm3QvRA+rzrGZkId4EY3cyOK5QnYV5+24x93Ex0UspHMn7HGsHUESsVeV0fLqlfXyd2RbHTmDMP6w=="
+
+  node_pools = [
+    { name = "payload", flavor = "m1.xlarge_cpu", size = 3 },
+  ]
+
+  depends_on = [
+    "openstack_identity_endpoint_v3.kubernikus", 
+    "openstack_networking_router_v2.router"
+  ]
 }
 
 
