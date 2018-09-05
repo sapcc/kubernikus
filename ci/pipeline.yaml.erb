@@ -130,6 +130,15 @@ resources:
       branch:      master
       depth: 1
 
+  - name: kubernikus-ci.git
+    type: git
+    check_every: 1h
+    source:
+      uri:    https://github.com/sapcc/kubernikus.git
+      branch: master
+      depth:  1
+      paths:  [ ci ]
+
   - name: kubernikus.git
     type: git
     check_every: 1h
@@ -137,6 +146,14 @@ resources:
       uri:         https://github.com/sapcc/kubernikus.git
       branch:      master
       depth: 1
+
+  - name: helm-charts-openstack-kubernikus.git
+    type: git
+    source:
+      uri:    https://github.com/sapcc/helm-charts.git
+      branch: master
+      paths:  [ openstack/kubernikus/ ]
+
 
   - name: daily
     type: time
@@ -442,6 +459,21 @@ jobs:
           TF_PASSWORD: ((kubernikus-terraform-password))
 
 
+  - name: seed_ap-jp-1
+    serial: true
+    plan:
+      - aggregate:
+        - get: helm-charts-openstack-kubernikus.git
+        - get: secrets.git
+        - get: kubernikus-ci.git
+      - task: seed
+        file: kubernikus-ci.git/ci/task_seed.yaml
+        input_mapping: 
+          charts.git: helm-charts-openstack-kubernikus.git
+        params:
+          REGION:       ap-jp-1
+          GITHUB_TOKEN: ((github-access-token))
+
 groups:
   - name: deploy
     jobs:
@@ -464,6 +496,9 @@ groups:
   - name: terraform
     jobs:
       - terraform_ap-jp-1
+  - name: seed
+    jobs:
+      - seed_ap-jp-1
   - name: misc
     jobs:
       - tiller
