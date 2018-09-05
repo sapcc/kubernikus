@@ -74,6 +74,10 @@ data "ccloud_identity_group_v3" "ccadmin_domain_admins" {
   name = "CCADMIN_DOMAIN_ADMINS"
 }
 
+data "openstack_identity_user_v3" "kubernikus_terraform" {
+  name      = "kubernikus-terraform"
+  domain_id = "${data.openstack_identity_project_v3.default.id}"
+}
 
 data "openstack_identity_role_v3" "admin" {
   name = "admin"
@@ -201,6 +205,13 @@ resource "openstack_identity_role_assignment_v3" "volume_admin" {
 
 resource "openstack_identity_role_assignment_v3" "kubernetes_admin" {
   group_id   = "${data.ccloud_identity_group_v3.ccadmin_domain_admins.id}"
+  project_id = "${openstack_identity_project_v3.kubernikus.id}"
+  role_id    = "${openstack_identity_role_v3.kubernetes_admin.id}"
+}
+
+
+resource "openstack_identity_role_assignment_v3" "terraform_kubernetes_admin" {
+  user_id    = "${data.openstack_identity_user_v3.kubernikus_terraform.id}"
   project_id = "${openstack_identity_project_v3.kubernikus.id}"
   role_id    = "${openstack_identity_role_v3.kubernetes_admin.id}"
 }
