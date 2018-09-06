@@ -104,6 +104,7 @@ systemd:
           --network-plugin=kubenet \
           --non-masquerade-cidr=0.0.0.0/0 \
           --lock-file=/var/run/lock/kubelet.lock \
+          --pod-infra-container-image=sapcc/pause-amd64:3.1 \
 {{- if .NodeLabels }}
           --node-labels={{ .NodeLabels | join "," }} \
 {{- end }}
