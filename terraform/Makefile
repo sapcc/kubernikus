@@ -45,7 +45,7 @@ plan:
 		-var domain_name=$(TF_PROJECT_DOMAIN) \
 		-var tenant_name=$(TF_PROJECT) \
 		-var-file="${TF_VARS_DIR}/kubernikus.tfvars" \
-		-parallelism=10
+		-parallelism=1
 
 apply:
 	@terraform apply \
@@ -58,4 +58,4 @@ apply:
 		-var domain_name=$(TF_PROJECT_DOMAIN) \
 		-var tenant_name=$(TF_PROJECT) \
 		-var-file="${TF_VARS_DIR}/kubernikus.tfvars" \
-		-parallelism=10 \
+		-parallelism=1
