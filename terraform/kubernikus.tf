@@ -135,7 +135,9 @@ data "openstack_networking_network_v2" "external" {
   name = "FloatingIP-external-ccadmin"
 }
 
-
+data "openstack_networking_network_v2" "external_e2e" {
+  name = "FloatingIP-external-monsoon3-01"
+}
 
 resource "openstack_identity_role_v3" "kubernetes_admin" {
   name = "kubernetes_admin"
@@ -522,4 +524,118 @@ resource "ccloud_kubernetes" "kluster" {
   ]
 }
 
+
+
+resource "openstack_identity_project_v3" "kubernikus_e2e" {
+  name        = "kubernikus_e2e"
+  domain_id   = "${data.openstack_identity_project_v3.ccadmin.id}"
+  description = "Kubernikus E2E Tests"
+}
+
+resource "openstack_identity_role_assignment_v3" "admin_e2e" {
+  group_id   = "${data.ccloud_identity_group_v3.ccadmin_domain_admins.id}"
+  project_id = "${openstack_identity_project_v3.kubernikus_e2e.id}"
+  role_id    = "${data.openstack_identity_role_v3.admin.id}"
+}
+
+resource "openstack_identity_role_assignment_v3" "compute_admin_e2e" {
+  group_id   = "${data.ccloud_identity_group_v3.ccadmin_domain_admins.id}"
+  project_id = "${openstack_identity_project_v3.kubernikus_e2e.id}"
+  role_id    = "${data.openstack_identity_role_v3.compute_admin.id}"
+}
+
+resource "openstack_identity_role_assignment_v3" "network_admin_e2e" {
+  group_id   = "${data.ccloud_identity_group_v3.ccadmin_domain_admins.id}"
+  project_id = "${openstack_identity_project_v3.kubernikus_e2e.id}"
+  role_id    = "${data.openstack_identity_role_v3.network_admin.id}"
+}
+
+resource "openstack_identity_role_assignment_v3" "resource_admin_e2e" {
+  group_id   = "${data.ccloud_identity_group_v3.ccadmin_domain_admins.id}"
+  project_id = "${openstack_identity_project_v3.kubernikus_e2e.id}"
+  role_id    = "${data.openstack_identity_role_v3.resource_admin.id}"
+}
+
+resource "openstack_identity_role_assignment_v3" "volume_admin_e2e" {
+  group_id   = "${data.ccloud_identity_group_v3.ccadmin_domain_admins.id}"
+  project_id = "${openstack_identity_project_v3.kubernikus_e2e.id}"
+  role_id    = "${data.openstack_identity_role_v3.volume_admin.id}"
+}
+
+resource "openstack_identity_role_assignment_v3" "kubernetes_admin_e2e" {
+  group_id   = "${data.ccloud_identity_group_v3.ccadmin_domain_admins.id}"
+  project_id = "${openstack_identity_project_v3.kubernikus_e2e.id}"
+  role_id    = "${openstack_identity_role_v3.kubernetes_admin.id}"
+}
+
+resource "ccloud_quota" "kubernikus_e2e" {
+  provider = "ccloud.cloud_admin" 
+
+  domain_id  = "${data.openstack_identity_project_v3.ccadmin.id}"
+  project_id = "${openstack_identity_project_v3.kubernikus_e2e.id}"
+
+  compute {
+    instances = 5 
+    cores     = 32 
+    ram       = 8192
+  }
+
+  volumev2 {
+    capacity  = 16 
+    snapshots = 2
+    volumes   = 2 
+  }
+
+  network {
+		floating_ips         = 2
+		networks             = 1
+		ports                = 500
+		routers              = 1
+		security_group_rules = 64
+		security_groups      = 4
+		subnets              = 1
+		healthmonitors       = 0
+		l7policies           = 0
+		listeners            = 0
+		loadbalancers        = 0
+		pools                = 0
+  }
+}
+
+
+resource "openstack_networking_rbacpolicies_v2" "external_e2e" {
+  action        = "access_as_shared"
+  object_id     = "${data.openstack_networking_network_v2.external_e2e.id}"
+  object_type   = "network"
+  target_tenant = "${openstack_identity_project_v3.kubernikus_e2e.id}"
+}
+
+resource "openstack_networking_network_v2" "network_e2e" {
+  tenant_id      = "${openstack_identity_project_v3.kubernikus_e2e.id}"
+  name           = "kubernikus_e2e"
+  admin_state_up = "true"
+  depends_on     = ["ccloud_quota.kubernikus_e2e"]
+}
+
+resource "openstack_networking_subnet_v2" "subnet_e2e" {
+  tenant_id  = "${openstack_identity_project_v3.kubernikus_e2e.id}"
+  name       = "default"
+  network_id = "${openstack_networking_network_v2.network_e2e.id}"
+  cidr       = "10.180.0.0/16"
+  ip_version = 4
+  depends_on = ["ccloud_quota.kubernikus_e2e"]
+}
+
+resource "openstack_networking_router_v2" "router_e2e" {
+  tenant_id           = "${openstack_identity_project_v3.kubernikus_e2e.id}"
+  name                = "default"
+  admin_state_up      = true
+  external_network_id = "${data.openstack_networking_network_v2.external_e2e.id}"
+  depends_on          = ["ccloud_quota.kubernikus_e2e"]
+}
+
+resource "openstack_networking_router_interface_v2" "router_interface_e2e" {
+  router_id = "${openstack_networking_router_v2.router_e2e.id}"
+  subnet_id = "${openstack_networking_subnet_v2.subnet_e2e.id}"
+}
 
