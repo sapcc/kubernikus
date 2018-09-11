@@ -83,6 +83,10 @@ data "openstack_identity_role_v3" "admin" {
   name = "admin"
 }
 
+data "openstack_identity_role_v3" "member" {
+  name = "member"
+}
+
 data "openstack_identity_role_v3" "compute_admin" {
   name = "compute_admin"
 }
@@ -336,7 +340,6 @@ resource "openstack_networking_subnet_v2" "subnet" {
   network_id = "${openstack_networking_network_v2.network.id}"
   cidr       = "198.18.0.0/24"
   ip_version = 4
-  depends_on = ["ccloud_quota.kubernikus"]
 }
 
 resource "openstack_networking_router_v2" "router" {
@@ -512,6 +515,8 @@ resource "ccloud_kubernetes" "kluster" {
 
   is_admin       = true
   name           = "k-${var.region}"
+  cluster_cidr   = "198.19.0.0/16"
+  service_cidr   = "192.168.128.0/17"
   ssh_public_key = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQCXIxVEUgtUVkvk2VM1hmIb8MxvxsmvYoiq9OBy3J8akTGNybqKsA2uhcwxSJX5Cn3si8kfMfka9EWiJT+e1ybvtsGILO5XRZPxyhYzexwb3TcALwc3LuzpF3Z/Dg2jYTRELTGhYmyca3mxzTlCjNXvYayLNedjJ8fIBzoCuSXNqDRToHru7h0Glz+wtuE74mNkOiXSvhtuJtJs7VCNVjobFQNfC1aeDsri2bPRHJJZJ0QF4LLYSayMEz3lVwIDyAviQR2Aa97WfuXiofiAemfGqiH47Kq6b8X7j3bOYGBvJKMUV7XeWhGsskAmTsvvnFxkc5PAD3Ct+liULjiQWlzDrmpTE8aMqLK4l0YQw7/8iRVz6gli42iEc2ZG56ob1ErpTLAKFWyCNOebZuGoygdEQaGTIIunAncXg5Rz07TdPl0Tf5ZZLpiAgR5ck0H1SETnjDTZ/S83CiVZWJgmCpu8YOKWyYRD4orWwdnA77L4+ixeojLIhEoNL8KlBgsP9Twx+fFMWLfxMmiuX+yksM6Hu+Lsm+Ao7Q284VPp36EB1rxP1JM7HCiEOEm50Jb6hNKjgN4aoLhG5yg+GnDhwCZqUwcRJo1bWtm3QvRA+rzrGZkId4EY3cyOK5QnYV5+24x93Ex0UspHMn7HGsHUESsVeV0fLqlfXyd2RbHTmDMP6w=="
 
   node_pools = [
@@ -566,6 +571,18 @@ resource "openstack_identity_role_assignment_v3" "kubernetes_admin_e2e" {
   group_id   = "${data.ccloud_identity_group_v3.ccadmin_domain_admins.id}"
   project_id = "${openstack_identity_project_v3.kubernikus_e2e.id}"
   role_id    = "${openstack_identity_role_v3.kubernetes_admin.id}"
+}
+
+resource "openstack_identity_role_assignment_v3" "pipeline_kubernetes_admin_e2e" {
+  user_id    = "${openstack_identity_user_v3.kubernikus_pipeline.id}"
+  project_id = "${openstack_identity_project_v3.kubernikus_e2e.id}"
+  role_id    = "${openstack_identity_role_v3.kubernetes_admin.id}"
+}
+
+resource "openstack_identity_role_assignment_v3" "pipeline_kubernetes_member_e2e" {
+  user_id    = "${openstack_identity_user_v3.kubernikus_pipeline.id}"
+  project_id = "${openstack_identity_project_v3.kubernikus_e2e.id}"
+  role_id    = "${data.openstack_identity_role_v3.member.id}"
 }
 
 resource "ccloud_quota" "kubernikus_e2e" {
