@@ -13,6 +13,12 @@ TF_BACKEND_USER           ?= $(TF_USER)
 TF_BACKEND_USER_DOMAIN    ?= $(TF_USER_DOMAIN)
 TF_BACKEND_PASSWORD       ?= $(TF_PASSWORD)
 
+TERRAFORM_BIN := terraform
+ifdef USE_DOCKER
+TF_PLUGIN_DIR = /usr/local/bin
+TERRAFORM_BIN = docker run -it --rm -v$(HOME):$(HOME) -w $(PWD) sapcc/kubernikus-terraform terraform
+endif
+
 .PHONY: all validate init plan apply
 
 ifndef TF_REGION
@@ -28,7 +34,7 @@ all: validate init plan apply
 
 
 init:
-	@terraform init \
+	@$(TERRAFORM_BIN) init \
 		-plugin-dir=$(TF_PLUGIN_DIR) \
 		-backend-config="auth_url=$(TF_BACKEND_AUTH_URL)" \
 		-backend-config="region_name=$(TF_BACKEND_REGION)" \
@@ -37,7 +43,7 @@ init:
 		-backend-config="password=$(TF_BACKEND_PASSWORD)"
 
 plan:
-	@terraform plan \
+	@$(TERRAFORM_BIN) plan \
 		-var region=$(TF_REGION) \
 		-var user_name=$(TF_USER) \
 		-var user_domain_name=$(TF_USER_DOMAIN) \
@@ -48,7 +54,7 @@ plan:
 		-parallelism=1
 
 apply:
-	@terraform apply \
+	@$(TERRAFORM_BIN) apply \
 		-input=false \
 		-auto-approve \
 		-var region=$(TF_REGION) \
