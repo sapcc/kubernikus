@@ -91,7 +91,7 @@ func (i *ignition) GenerateNode(kluster *kubernikusv1.Kluster, pool *models.Node
 	if pool != nil {
 		nodeLabels = append(nodeLabels, "ccloud.sap.com/nodepool="+pool.Name)
 		if strings.HasPrefix(pool.Flavor, "zg") {
-			nodeLabels = append(nodeLabels, "ccloud.sap.com/nvidia-gpu=nvidia-tesla-v100")
+			nodeLabels = append(nodeLabels, "gpu=nvidia-tesla-v100")
 		}
 	}
 
