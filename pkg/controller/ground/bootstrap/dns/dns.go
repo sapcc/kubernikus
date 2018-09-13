@@ -17,7 +17,7 @@ import (
 const (
 	SERVICE_ACCOUNT    = "kube-dns"
 	CONFIGMAP          = "kube-dns"
-	DEFAULT_REPOSITORY = "gcr.io/google_containers"
+	DEFAULT_REPOSITORY = "sapcc" // Used to be gcr.io/google_containers but that is not working in china
 	DEFAULT_VERSION    = "1.14.9"
 )
 
