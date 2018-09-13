@@ -1,5 +1,3 @@
-
----
 platform: linux
 
 image_resource:
@@ -8,7 +6,7 @@ image_resource:
 
 inputs:
   - name: secrets.git
-  - name: helm-charts-openstack-kubernikus.git
+  - name: helm-charts.git
 
 run:
   path: sh
@@ -16,7 +14,7 @@ run:
     - -exc
     - |
       set -o pipefail
-      helm upgrade $RELEASE helm-charts-openstack-kubernikus.git/openstack/kubernikus --namespace $NAMESPACE --values secrets.git/global/values/kubernikus-seed.yaml --install --debug
+      helm upgrade $RELEASE helm-charts.git/openstack/kubernikus --namespace $NAMESPACE --values secrets.git/global/values/kubernikus-seed.yaml --install --debug
 
 params:
   REGION:

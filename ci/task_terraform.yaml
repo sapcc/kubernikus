@@ -1,4 +1,3 @@
----
 platform: 'linux'
 
 image_resource:
@@ -9,7 +8,7 @@ image_resource:
 
 inputs:
   - name: secrets.git
-  - name: kubernikus.git
+  - name: terraform.git
 
 
 run:
@@ -18,7 +17,7 @@ run:
     - -c
     - |
       set -exo pipefail
-      cd kubernikus.git/terraform
+      cd terraform.git/terraform
       TF_VARS_DIR=../../secrets.git/$TF_REGION/terraform \
         make init plan apply
 

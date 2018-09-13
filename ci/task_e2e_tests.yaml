@@ -1,4 +1,3 @@
----
 platform: 'linux'
 
 image_resource:
