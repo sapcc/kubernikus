@@ -89,6 +89,6 @@ func TestNodeLabels(t *testing.T) {
 	data, err = Ignition.GenerateNode(kluster, gpuPool, "test", &testKlusterSecret, log.NewNopLogger())
 	if assert.NoError(t, err, "Failed to generate node") {
 		//Ensure we rendered the expected template
-		assert.Contains(t, string(data), fmt.Sprintf("--node-labels=ccloud.sap.com/nodepool=%s,ccloud.sap.com/nvidia-gpu=nvidia-tesla-v100", pool.Name))
+		assert.Contains(t, string(data), fmt.Sprintf("--node-labels=ccloud.sap.com/nodepool=%s,gpu=nvidia-tesla-v100", pool.Name))
 	}
 }

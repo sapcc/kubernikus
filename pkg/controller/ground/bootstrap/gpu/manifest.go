@@ -27,7 +27,7 @@ spec:
           requiredDuringSchedulingIgnoredDuringExecution:
             nodeSelectorTerms:
             - matchExpressions:
-              - key: ccloud.sap.com/nvidia-gpu
+              - key: gpu
                 operator: Exists
       tolerations:
       - operator: "Exists"
@@ -92,7 +92,7 @@ spec:
           requiredDuringSchedulingIgnoredDuringExecution:
             nodeSelectorTerms:
             - matchExpressions:
-              - key: ccloud.sap.com/nvidia-gpu
+              - key: gpu
                 operator: Exists
       tolerations:
       - key: "nvidia.com/gpu"
