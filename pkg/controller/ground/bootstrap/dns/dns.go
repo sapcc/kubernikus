@@ -18,7 +18,18 @@ const (
 	SERVICE_ACCOUNT    = "kube-dns"
 	CONFIGMAP          = "kube-dns"
 	DEFAULT_REPOSITORY = "sapcc" // Used to be gcr.io/google_containers but that is not working in china
-	DEFAULT_VERSION    = "1.14.9"
+
+	// If you change this version you need to republish the images:
+	//   * k8s-dns-kube-dns-amd64
+	//   * k8s-dns-sidecar-amd64
+	//   * k8s-dns-dnsmasq-nanny-amd64
+	//
+	// Workflow:
+	//   docker pull gcr.io/google_containers/k8s-dns-kube-dns-amd64:1.14.9
+	//   docker tag gcr.io/google_containers/k8s-dns-kube-dns-amd64:1.14.9 sapcc/k8s-dns-kube-dns-amd64:1.14.9
+	//   docker push sapcc/k8s-dns-kube-dns-amd64:1.14.9
+	//
+	DEFAULT_VERSION = "1.14.9"
 )
 
 var (
