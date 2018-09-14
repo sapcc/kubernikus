@@ -90,5 +90,6 @@ func TestNodeLabels(t *testing.T) {
 	if assert.NoError(t, err, "Failed to generate node") {
 		//Ensure we rendered the expected template
 		assert.Contains(t, string(data), fmt.Sprintf("--node-labels=ccloud.sap.com/nodepool=%s,gpu=nvidia-tesla-v100", pool.Name))
+		assert.Contains(t, string(data), fmt.Sprintf("--register-with-taints=nvidia.com/gpu=present:NoSchedule"))
 	}
 }

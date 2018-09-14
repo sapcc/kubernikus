@@ -108,6 +108,9 @@ systemd:
 {{- if .NodeLabels }}
           --node-labels={{ .NodeLabels | join "," }} \
 {{- end }}
+{{- if .NodeTaints }}
+          --register-with-taints={{ .NodeTaints | join "," }} \
+{{- end }}
           --exit-on-lock-contention
         ExecStop=-/usr/bin/rkt stop --uuid-file=/var/run/kubelet-pod.uuid
         Restart=always
