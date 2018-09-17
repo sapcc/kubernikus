@@ -71,6 +71,21 @@ nginx-ingress:
         cpu: 10m
         memory: 20Mi
 
+prometheus-node-exporter:
+  image:
+    repository: quay.io/prometheus/node-exporter
+    tag: v0.16.0
+
+  serviceAccount:
+    create: false
+    name: default
+
+  rbac:
+    create: false
+
+  extraArgs:
+    - --collector.filesystem.ignored-mount-points=\"^/(sys|proc|dev|host|etc)($|/)\"
+
 grafana:
   server:
     image: "grafana/grafana:master"

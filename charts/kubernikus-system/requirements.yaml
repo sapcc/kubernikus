@@ -11,3 +11,6 @@ dependencies:
   - name: nginx-ingress
     repository: https://kubernetes-charts.storage.googleapis.com/
     version: 0.9.4
+  - name: prometheus-node-exporter
+    repository: https://kubernetes-charts.storage.googleapis.com/
+    version: 0.3.0
