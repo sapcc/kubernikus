@@ -1,3 +1,0 @@
-image: 
-  repository: sapcc/kube-state-metrics
-  tag: v1.1.0

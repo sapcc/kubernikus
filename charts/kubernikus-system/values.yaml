@@ -86,6 +86,15 @@ prometheus-node-exporter:
   extraArgs:
     - --collector.filesystem.ignored-mount-points=\"^/(sys|proc|dev|host|etc)($|/)\"
 
+kube-state-metrics:
+  podAnnotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "8080"
+
+  rbac:
+    create: false
+    serviceAccountName: default
+
 grafana:
   server:
     image: "grafana/grafana:master"
