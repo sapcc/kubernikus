@@ -60,7 +60,7 @@ nginx-ingress:
     enabled: true
     custom_http_errors: 502,503,504
     image:
-      repository: sapcc/custombackend
+      repository: quay.io/kubernetes-ingress-controller/custom-error-pages
       tag: "0.3"
       pullPolicy: IfNotPresent
     resources:
