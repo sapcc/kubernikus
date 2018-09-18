@@ -1,21 +1,21 @@
 <%
 REGIONS = {
-  "ap-ae-1": { continent: 'ASIA',     install: 'terraform' },
-  "ap-au-1": { continent: 'ASIA',     install: 'manual'    },
-  "ap-cn-1": { continent: 'ASIA',     install: 'terraform' },
-  "ap-jp-1": { continent: 'ASIA',     install: 'terraform' },
-  "ap-jp-2": { continent: 'ASIA',     install: 'terraform' },
-  "ap-sa-1": { continent: 'ASIA',     install: 'terraform' },
-  "eu-de-1": { continent: 'EMEA',     install: 'manual'    },
-  "eu-de-2": { continent: 'EMEA',     install: 'manual'    },
-  "eu-nl-1": { continent: 'EMEA',     install: 'manual'    },
-  "eu-ru-1": { continent: 'EMEA',     install: 'terraform' },
-  "la-br-1": { continent: 'AMERICAS', install: 'terraform' },
-  "na-ca-1": { continent: 'AMERICAS', install: 'terraform' },
-  "na-us-1": { continent: 'AMERICAS', install: 'manual'    },
-  "na-us-3": { continent: 'AMERICAS', install: 'terraform' },
-  "qa-de-1": { continent: 'INFRA',    install: 'terraform' },
-  "master":  { continent: "INFRA",    install: 'virtual'   }
+  "ap-ae-1": { continent: 'ASIA',     install: 'terraform', e2e: 'terraform' },
+  "ap-au-1": { continent: 'ASIA',     install: 'manual'   , e2e: 'manual'    },
+  "ap-cn-1": { continent: 'ASIA',     install: 'terraform', e2e: 'terraform' },
+  "ap-jp-1": { continent: 'ASIA',     install: 'terraform', e2e: 'terraform' },
+  "ap-jp-2": { continent: 'ASIA',     install: 'terraform', e2e: 'terraform' },
+  "ap-sa-1": { continent: 'ASIA',     install: 'terraform', e2e: 'terraform' },
+  "eu-de-1": { continent: 'EMEA',     install: 'manual'   , e2e: 'manual'    },
+  "eu-de-2": { continent: 'EMEA',     install: 'manual'   , e2e: 'manual'    },
+  "eu-nl-1": { continent: 'EMEA',     install: 'manual'   , e2e: 'terraform' },
+  "eu-ru-1": { continent: 'EMEA',     install: 'terraform', e2e: 'terraform' },
+  "la-br-1": { continent: 'AMERICAS', install: 'terraform', e2e: 'terraform' },
+  "na-ca-1": { continent: 'AMERICAS', install: 'terraform', e2e: 'terraform' },
+  "na-us-1": { continent: 'AMERICAS', install: 'manual'   , e2e: 'manual'    },
+  "na-us-3": { continent: 'AMERICAS', install: 'terraform', e2e: 'terraform' },
+  "qa-de-1": { continent: 'INFRA',    install: 'terraform', e2e: 'terraform' },
+  "master":  { continent: "INFRA",    install: 'virtual'  , e2e: 'virtual'   }
 }
 
 GROUPS             = REGIONS.values.map{ |v| v[:continent]}.uniq
@@ -33,18 +33,9 @@ auth_<%= region %>: &auth_<%= region %>
   OS_PROJECT_DOMAIN_NAME: ccadmin
   KUBERNIKUS_NAME: k-<%= region %>
   KUBERNIKUS_URL: https://k-<%= region %>.admin.cloud.sap
+<% end %>
 
-auth_e2e_<%= region %>: &auth_e2e_<%= region %>
-  OS_AUTH_URL: https://identity-3.<%= region %>.cloud.sap/v3
-  OS_USERNAME: ((kubernikus-prod-username))
-  OS_PASSWORD: ((kubernikus-prod-password))
-  OS_USER_DOMAIN_NAME: ccadmin
-  OS_PROJECT_NAME: kubernikus-e2e
-  OS_PROJECT_DOMAIN_NAME: ccadmin
-  KUBERNIKUS_NAME: e2e 
-  KUBERNIKUS_URL: https://kubernikus.<%= region %>.cloud.sap
-
-<% elsif meta[:install] == "terraform" %>
+<% if meta[:install] == "terraform" %>
   OS_AUTH_URL: https://identity-3.<%= region %>.cloud.sap/v3
   OS_USERNAME: kubernikus-pipeline 
   OS_PASSWORD: ((kubernikus-pipeline-password))
@@ -53,7 +44,20 @@ auth_e2e_<%= region %>: &auth_e2e_<%= region %>
   OS_PROJECT_DOMAIN_NAME: ccadmin
   KUBERNIKUS_NAME: k-<%= region %>
   KUBERNIKUS_URL: https://k-<%= region %>.admin.cloud.sap
+<% end %>
 
+<% if meta[:install] == "virtual" %>
+  OS_AUTH_URL: https://identity-3.eu-nl-1.cloud.sap/v3
+  OS_USERNAME: ((kubernikus-prod-username))
+  OS_PASSWORD: ((kubernikus-prod-password))
+  OS_USER_DOMAIN_NAME: ccadmin
+  OS_PROJECT_NAME: kubernikus-<%= region %>
+  OS_PROJECT_DOMAIN_NAME: ccadmin
+  KUBERNIKUS_NAME: k-<%= region %>
+  KUBERNIKUS_URL: https://k-<%= region %>.admin.cloud.sap
+<% end %>
+
+<% if meta[:e2e] == "terraform" %>
 auth_e2e_<%= region %>: &auth_e2e_<%= region %>
   OS_AUTH_URL: https://identity-3.<%= region %>.cloud.sap/v3
   OS_USERNAME: kubernikus-pipeline
@@ -63,17 +67,21 @@ auth_e2e_<%= region %>: &auth_e2e_<%= region %>
   OS_PROJECT_DOMAIN_NAME: ccadmin
   KUBERNIKUS_NAME: e2e 
   KUBERNIKUS_URL: https://kubernikus.<%= region %>.cloud.sap
+<% end %>
 
-<% elsif meta[:install] == "virtual" %>
-  OS_AUTH_URL: https://identity-3.eu-nl-1.cloud.sap/v3
+<% if meta[:e2e] == "manual" %>
+auth_e2e_<%= region %>: &auth_e2e_<%= region %>
+  OS_AUTH_URL: https://identity-3.<%= region %>.cloud.sap/v3
   OS_USERNAME: ((kubernikus-prod-username))
   OS_PASSWORD: ((kubernikus-prod-password))
   OS_USER_DOMAIN_NAME: ccadmin
-  OS_PROJECT_NAME: kubernikus-<%= region %>
+  OS_PROJECT_NAME: kubernikus-e2e
   OS_PROJECT_DOMAIN_NAME: ccadmin
-  KUBERNIKUS_NAME: k-<%= region %>
-  KUBERNIKUS_URL: https://k-<%= region %>.admin.cloud.sap
+  KUBERNIKUS_NAME: e2e 
+  KUBERNIKUS_URL: https://kubernikus.<%= region %>.cloud.sap
+<% end %>
 
+<% if meta[:e2e] == "virtual" %>
 auth_e2e_<%= region %>: &auth_e2e_<%= region %>
   OS_AUTH_URL: https://identity-3.eu-nl-1.cloud.sap/v3
   OS_USERNAME: ((kubernikus-prod-username))
