@@ -86,6 +86,9 @@ prometheus-node-exporter:
   extraArgs:
     - --collector.filesystem.ignored-mount-points=\"^/(sys|proc|dev|host|etc)($|/)\"
 
+  # set manually to empty
+  tolerations: []
+
 kube-state-metrics:
   podAnnotations:
     prometheus.io/scrape: "true"
