@@ -383,6 +383,19 @@ resource "openstack_networking_secgroup_rule_v2" "secgroup_rule_1" {
   depends_on          = ["ccloud_quota.kubernikus"]
 }
 
+resource "openstack_networking_secgroup_rule_v2" "secgroup_rule_ssh" {
+  tenant_id = "${openstack_identity_project_v3.kubernikus.id}"
+  direction = "ingress"
+  ethertype = "IPv4"
+  protocol = "tcp"
+  remote_ip_prefix  = "198.18.0.0/24"
+  port_range_min    = 22
+  port_range_max    = 22
+  security_group_id = "${data.openstack_networking_secgroup_v2.kubernikus_default.id}"
+
+  depends_on          = ["ccloud_quota.kubernikus"]
+}
+
 resource "openstack_identity_service_v3" "kubernikus" {
   name        = "kubernikus"
   type        = "kubernikus"
@@ -656,3 +669,20 @@ resource "openstack_networking_router_interface_v2" "router_interface_e2e" {
   subnet_id = "${openstack_networking_subnet_v2.subnet_e2e.id}"
 }
 
+data "openstack_networking_secgroup_v2" "kubernikus_e2e_default" {
+  name        = "default"
+  tenant_id   = "${openstack_identity_project_v3.kubernikus_e2e.id}"
+}
+
+resource "openstack_networking_secgroup_rule_v2" "secgroup_rule_e2e_ssh" {
+  tenant_id = "${openstack_identity_project_v3.kubernikus_e2e.id}"
+  direction = "ingress"
+  ethertype = "IPv4"
+  protocol = "tcp"
+  remote_ip_prefix  = "10.180.0.0/16"
+  port_range_min    = 22
+  port_range_max    = 22
+  security_group_id = "${data.openstack_networking_secgroup_v2.kubernikus_e2e_default.id}"
+
+  depends_on          = ["ccloud_quota.kubernikus_e2e"]
+}
