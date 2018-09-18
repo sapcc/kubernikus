@@ -43,7 +43,7 @@ groups:
       summary: Node {{$labels.node}} is flapping between Ready and NotReady
 
   - alert: KubernetesNodeScrapeMissing
-    expr: absent(up{job="endpoints",kubernetes_name="kube-state-metrics"})
+    expr: absent(up{app="kube-state-metrics"})
     for: 1h
     labels:
       tier: kubernikus
