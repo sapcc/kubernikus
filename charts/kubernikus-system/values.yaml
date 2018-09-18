@@ -178,7 +178,7 @@ grafana:
       enabled = true
       header_name = X-REMOTE-USER
       header_property = username
-      auto_sign_up = false
+      auto_sign_up = true 
 
       [auth.basic]
       enabled = false 
