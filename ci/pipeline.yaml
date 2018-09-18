@@ -1197,6 +1197,7 @@ jobs:
         - get: kubernikus.builds
           resource: master.builds
           passed: [admin]
+          trigger: true
         - put: ASIA.tag
 
 
@@ -1872,6 +1873,7 @@ jobs:
         - get: kubernikus.builds
           resource: master.builds
           passed: [admin]
+          trigger: true
         - put: EMEA.tag
 
 
@@ -2309,6 +2311,7 @@ jobs:
         - get: kubernikus.builds
           resource: master.builds
           passed: [admin]
+          trigger: true
         - put: AMERICAS.tag
 
 
@@ -2762,6 +2765,7 @@ jobs:
         - get: kubernikus.builds
           resource: master.builds
           passed: [admin]
+          trigger: true
         - put: INFRA.tag
 
 

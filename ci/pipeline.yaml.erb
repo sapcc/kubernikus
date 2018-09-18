@@ -260,6 +260,7 @@ jobs:
         - get: kubernikus.builds
           resource: master.builds
           passed: [admin]
+          trigger: true
         - put: <%= group %>.tag
 
 <% REGIONS.select{ |k, v| v[:continent] == group }.each do |region, meta| %>
