@@ -1,4 +1,3 @@
----
 platform: 'linux'
 
 image_resource:
@@ -19,8 +18,19 @@ run:
       export GOPATH=$PWD/gopath
       cd gopath/src/github.com/sapcc/kubernikus
 
-      apk add --no-progress --no-cache make git
-      make test-e2e
+      apk add --no-progress --no-cache make git curl
+      make test-e2e | tee test.output
+      rc=$?
+      if [ "$SENTRY_DSN" != "" ] && [ $rc -ne 0 ] ; then
+        #Get the longest uniq (!) whitespace prefix of --- FAIL: lines
+        ws_count=$(grep -- '--- FAIL:' test.output| grep -v -- '->'| awk '{ match($0, /^ */); printf("%d\n", RLENGTH, substr($0,RLENGTH+1)) }' | sort|uniq -u |tail -1)
+        test_name=$(sed -n -E  "s/^ {$ws_count}--- FAIL: (.*) \([.0-9]*s\)$/\1/p" test.output)
+        curl -Lo sentry-cli -z sentry-cli https://github.com/getsentry/sentry-cli/releases/download/1.35.6/sentry-cli-Linux-x86_64
+        chmod +x sentry-cli
+        unset http_proxy https_proxy no_proxy
+        ./sentry-cli send-event -m "Failed to run $test_name" -E $OS_REGION_NAME --no-environ --logfile test.output
+      fi
+      exit $rc
 
 params:
   OS_AUTH_URL:
@@ -30,3 +40,4 @@ params:
   OS_PROJECT_NAME:
   OS_PROJECT_DOMAIN_NAME:
   OS_REGION_NAME:
+  SENTRY_DSN:

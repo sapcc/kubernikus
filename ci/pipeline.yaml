@@ -1,54 +1,40 @@
-auth_master: &auth_master
-  OS_AUTH_URL: https://identity-3.eu-nl-1.cloud.sap/v3
-  OS_USERNAME: ((kubernikus-prod-username))
-  OS_PASSWORD: ((kubernikus-prod-password))
-  OS_USER_DOMAIN_NAME: ccadmin
-  OS_PROJECT_NAME: kubernikus-master
-  OS_PROJECT_DOMAIN_NAME: ccadmin
-  KUBERNIKUS_NAME: k-master
-  KUBERNIKUS_URL: https://k-master.admin.cloud.sap
 
-auth_feature: &auth_feature
-  OS_AUTH_URL: https://identity-3.eu-nl-1.cloud.sap/v3
-  OS_USERNAME: ((kubernikus-prod-username))
-  OS_PASSWORD: ((kubernikus-prod-password))
-  OS_USER_DOMAIN_NAME: ccadmin
-  OS_PROJECT_NAME: kubernikus-feature
-  OS_PROJECT_DOMAIN_NAME: ccadmin
-  KUBERNIKUS_NAME: k-feature
-  KUBERNIKUS_URL: https://k-feature.admin.cloud.sap
 
-auth_infra: &auth_infra
-  OS_AUTH_URL: https://identity-3.eu-nl-1.cloud.sap/v3
-  OS_USERNAME: ((kubernikus-prod-username))
-  OS_PASSWORD: ((kubernikus-prod-password))
-  OS_USER_DOMAIN_NAME: ccadmin
-  OS_PROJECT_NAME: kubernikus-infra
-  OS_PROJECT_DOMAIN_NAME: ccadmin
-  KUBERNIKUS_NAME: k-infra
-  KUBERNIKUS_URL: https://k-infra.admin.cloud.sap
 
-auth_staging: &auth_staging
-  OS_AUTH_URL: https://identity-3.staging.cloud.sap/v3
-  OS_USERNAME: ((kubernikus-staging-username))
-  OS_PASSWORD: ((kubernikus-staging-password))
-  OS_USER_DOMAIN_NAME: ccadmin
+auth_ap-ae-1: &auth_ap-ae-1
+
+
+
+  OS_AUTH_URL: https://identity-3.ap-ae-1.cloud.sap/v3
+  OS_USERNAME: kubernikus-pipeline 
+  OS_PASSWORD: ((kubernikus-pipeline-password))
+  OS_USER_DOMAIN_NAME: Default
   OS_PROJECT_NAME: kubernikus
   OS_PROJECT_DOMAIN_NAME: ccadmin
-  KUBERNIKUS_NAME: k-staging
-  KUBERNIKUS_URL: https://k-staging.admin.cloud.sap
+  KUBERNIKUS_NAME: k-ap-ae-1
+  KUBERNIKUS_URL: https://k-ap-ae-1.admin.cloud.sap
 
-auth_qa-de-1: &auth_qa-de-1
-  OS_AUTH_URL: https://identity-3.qa-de-1.cloud.sap/v3
-  OS_USERNAME: ((kubernikus-qa-username))
-  OS_PASSWORD: ((kubernikus-qa-password))
-  OS_USER_DOMAIN_NAME: ccadmin
-  OS_PROJECT_NAME: kubernikus
+
+
+
+
+auth_e2e_ap-ae-1: &auth_e2e_ap-ae-1
+  OS_AUTH_URL: https://identity-3.ap-ae-1.cloud.sap/v3
+  OS_USERNAME: kubernikus-pipeline
+  OS_PASSWORD: ((kubernikus-pipeline-password))
+  OS_USER_DOMAIN_NAME: Default 
+  OS_PROJECT_NAME: kubernikus_e2e
   OS_PROJECT_DOMAIN_NAME: ccadmin
-  KUBERNIKUS_NAME: k-qa-de-1 
-  KUBERNIKUS_URL: https://k-qa-de-1.admin.cloud.sap
+  KUBERNIKUS_NAME: e2e 
+  KUBERNIKUS_URL: https://kubernikus.ap-ae-1.cloud.sap
+
+
+
+
+
 
 auth_ap-au-1: &auth_ap-au-1
+
   OS_AUTH_URL: https://identity-3.ap-au-1.cloud.sap/v3
   OS_USERNAME: ((kubernikus-prod-username))
   OS_PASSWORD: ((kubernikus-prod-password))
@@ -58,47 +44,15 @@ auth_ap-au-1: &auth_ap-au-1
   KUBERNIKUS_NAME: k-ap-au-1
   KUBERNIKUS_URL: https://k-ap-au-1.admin.cloud.sap
 
-auth_eu-de-1: &auth_eu-de-1
-  OS_AUTH_URL: https://identity-3.eu-de-1.cloud.sap/v3
-  OS_USERNAME: ((kubernikus-prod-username))
-  OS_PASSWORD: ((kubernikus-prod-password))
-  OS_USER_DOMAIN_NAME: ccadmin
-  OS_PROJECT_NAME: kubernikus
-  OS_PROJECT_DOMAIN_NAME: ccadmin
-  KUBERNIKUS_NAME: k-eu-de-1 
-  KUBERNIKUS_URL: https://k-eu-de-1.admin.cloud.sap
 
-auth_eu-de-1: &auth_eu-de-2
-  OS_AUTH_URL: https://identity-3.eu-de-2.cloud.sap/v3
-  OS_USERNAME: ((kubernikus-prod-username))
-  OS_PASSWORD: ((kubernikus-prod-password))
-  OS_USER_DOMAIN_NAME: ccadmin
-  OS_PROJECT_NAME: kubernikus
-  OS_PROJECT_DOMAIN_NAME: ccadmin
-  KUBERNIKUS_NAME: k-eu-de-2 
-  KUBERNIKUS_URL: https://k-eu-de-2.admin.cloud.sap
 
-auth_eu-nl-1: &auth_eu-nl-1
-  OS_AUTH_URL: https://identity-3.eu-nl-1.cloud.sap/v3
-  OS_USERNAME: ((kubernikus-prod-username))
-  OS_PASSWORD: ((kubernikus-prod-password))
-  OS_USER_DOMAIN_NAME: ccadmin
-  OS_PROJECT_NAME: kubernikus
-  OS_PROJECT_DOMAIN_NAME: ccadmin
-  KUBERNIKUS_NAME: k-eu-nl-1 
-  KUBERNIKUS_URL: https://k-eu-nl-1.admin.cloud.sap
 
-auth_na-us-1: &auth_na-us-1
-  OS_AUTH_URL: https://identity-3.na-us-1.cloud.sap/v3
-  OS_USERNAME: ((kubernikus-prod-username))
-  OS_PASSWORD: ((kubernikus-prod-password))
-  OS_USER_DOMAIN_NAME: ccadmin
-  OS_PROJECT_NAME: kubernikus
-  OS_PROJECT_DOMAIN_NAME: ccadmin
-  KUBERNIKUS_NAME: k-na-us-1
-  KUBERNIKUS_URL: https://k-na-us-1.admin.cloud.sap
 
-auth_e2e_eu-de-1: &auth_e2e_ap-au-1
+
+
+
+
+auth_e2e_ap-au-1: &auth_e2e_ap-au-1
   OS_AUTH_URL: https://identity-3.ap-au-1.cloud.sap/v3
   OS_USERNAME: ((kubernikus-prod-username))
   OS_PASSWORD: ((kubernikus-prod-password))
@@ -108,15 +62,155 @@ auth_e2e_eu-de-1: &auth_e2e_ap-au-1
   KUBERNIKUS_NAME: e2e 
   KUBERNIKUS_URL: https://kubernikus.ap-au-1.cloud.sap
 
-auth_e2e_eu-nl-1: &auth_e2e_eu-nl-1
-  OS_AUTH_URL: https://identity-3.eu-nl-1.cloud.sap/v3
+
+
+
+auth_ap-cn-1: &auth_ap-cn-1
+
+
+
+  OS_AUTH_URL: https://identity-3.ap-cn-1.cloud.sap/v3
+  OS_USERNAME: kubernikus-pipeline 
+  OS_PASSWORD: ((kubernikus-pipeline-password))
+  OS_USER_DOMAIN_NAME: Default
+  OS_PROJECT_NAME: kubernikus
+  OS_PROJECT_DOMAIN_NAME: ccadmin
+  KUBERNIKUS_NAME: k-ap-cn-1
+  KUBERNIKUS_URL: https://k-ap-cn-1.admin.cloud.sap
+
+
+
+
+
+auth_e2e_ap-cn-1: &auth_e2e_ap-cn-1
+  OS_AUTH_URL: https://identity-3.ap-cn-1.cloud.sap/v3
+  OS_USERNAME: kubernikus-pipeline
+  OS_PASSWORD: ((kubernikus-pipeline-password))
+  OS_USER_DOMAIN_NAME: Default 
+  OS_PROJECT_NAME: kubernikus_e2e
+  OS_PROJECT_DOMAIN_NAME: ccadmin
+  KUBERNIKUS_NAME: e2e 
+  KUBERNIKUS_URL: https://kubernikus.ap-cn-1.cloud.sap
+
+
+
+
+
+
+auth_ap-jp-1: &auth_ap-jp-1
+
+
+
+  OS_AUTH_URL: https://identity-3.ap-jp-1.cloud.sap/v3
+  OS_USERNAME: kubernikus-pipeline 
+  OS_PASSWORD: ((kubernikus-pipeline-password))
+  OS_USER_DOMAIN_NAME: Default
+  OS_PROJECT_NAME: kubernikus
+  OS_PROJECT_DOMAIN_NAME: ccadmin
+  KUBERNIKUS_NAME: k-ap-jp-1
+  KUBERNIKUS_URL: https://k-ap-jp-1.admin.cloud.sap
+
+
+
+
+
+auth_e2e_ap-jp-1: &auth_e2e_ap-jp-1
+  OS_AUTH_URL: https://identity-3.ap-jp-1.cloud.sap/v3
+  OS_USERNAME: kubernikus-pipeline
+  OS_PASSWORD: ((kubernikus-pipeline-password))
+  OS_USER_DOMAIN_NAME: Default 
+  OS_PROJECT_NAME: kubernikus_e2e
+  OS_PROJECT_DOMAIN_NAME: ccadmin
+  KUBERNIKUS_NAME: e2e 
+  KUBERNIKUS_URL: https://kubernikus.ap-jp-1.cloud.sap
+
+
+
+
+
+
+auth_ap-jp-2: &auth_ap-jp-2
+
+
+
+  OS_AUTH_URL: https://identity-3.ap-jp-2.cloud.sap/v3
+  OS_USERNAME: kubernikus-pipeline 
+  OS_PASSWORD: ((kubernikus-pipeline-password))
+  OS_USER_DOMAIN_NAME: Default
+  OS_PROJECT_NAME: kubernikus
+  OS_PROJECT_DOMAIN_NAME: ccadmin
+  KUBERNIKUS_NAME: k-ap-jp-2
+  KUBERNIKUS_URL: https://k-ap-jp-2.admin.cloud.sap
+
+
+
+
+
+auth_e2e_ap-jp-2: &auth_e2e_ap-jp-2
+  OS_AUTH_URL: https://identity-3.ap-jp-2.cloud.sap/v3
+  OS_USERNAME: kubernikus-pipeline
+  OS_PASSWORD: ((kubernikus-pipeline-password))
+  OS_USER_DOMAIN_NAME: Default 
+  OS_PROJECT_NAME: kubernikus_e2e
+  OS_PROJECT_DOMAIN_NAME: ccadmin
+  KUBERNIKUS_NAME: e2e 
+  KUBERNIKUS_URL: https://kubernikus.ap-jp-2.cloud.sap
+
+
+
+
+
+
+auth_ap-sa-1: &auth_ap-sa-1
+
+
+
+  OS_AUTH_URL: https://identity-3.ap-sa-1.cloud.sap/v3
+  OS_USERNAME: kubernikus-pipeline 
+  OS_PASSWORD: ((kubernikus-pipeline-password))
+  OS_USER_DOMAIN_NAME: Default
+  OS_PROJECT_NAME: kubernikus
+  OS_PROJECT_DOMAIN_NAME: ccadmin
+  KUBERNIKUS_NAME: k-ap-sa-1
+  KUBERNIKUS_URL: https://k-ap-sa-1.admin.cloud.sap
+
+
+
+
+
+auth_e2e_ap-sa-1: &auth_e2e_ap-sa-1
+  OS_AUTH_URL: https://identity-3.ap-sa-1.cloud.sap/v3
+  OS_USERNAME: kubernikus-pipeline
+  OS_PASSWORD: ((kubernikus-pipeline-password))
+  OS_USER_DOMAIN_NAME: Default 
+  OS_PROJECT_NAME: kubernikus_e2e
+  OS_PROJECT_DOMAIN_NAME: ccadmin
+  KUBERNIKUS_NAME: e2e 
+  KUBERNIKUS_URL: https://kubernikus.ap-sa-1.cloud.sap
+
+
+
+
+
+
+auth_eu-de-1: &auth_eu-de-1
+
+  OS_AUTH_URL: https://identity-3.eu-de-1.cloud.sap/v3
   OS_USERNAME: ((kubernikus-prod-username))
   OS_PASSWORD: ((kubernikus-prod-password))
   OS_USER_DOMAIN_NAME: ccadmin
-  OS_PROJECT_NAME: kubernikus-e2e
+  OS_PROJECT_NAME: kubernikus
   OS_PROJECT_DOMAIN_NAME: ccadmin
-  KUBERNIKUS_NAME: e2e 
-  KUBERNIKUS_URL: https://kubernikus-master.eu-nl-1.cloud.sap
+  KUBERNIKUS_NAME: k-eu-de-1
+  KUBERNIKUS_URL: https://k-eu-de-1.admin.cloud.sap
+
+
+
+
+
+
+
+
 
 auth_e2e_eu-de-1: &auth_e2e_eu-de-1
   OS_AUTH_URL: https://identity-3.eu-de-1.cloud.sap/v3
@@ -128,7 +222,29 @@ auth_e2e_eu-de-1: &auth_e2e_eu-de-1
   KUBERNIKUS_NAME: e2e 
   KUBERNIKUS_URL: https://kubernikus.eu-de-1.cloud.sap
 
-auth_e2e_eu-de-1: &auth_e2e_eu-de-2
+
+
+
+auth_eu-de-2: &auth_eu-de-2
+
+  OS_AUTH_URL: https://identity-3.eu-de-2.cloud.sap/v3
+  OS_USERNAME: ((kubernikus-prod-username))
+  OS_PASSWORD: ((kubernikus-prod-password))
+  OS_USER_DOMAIN_NAME: ccadmin
+  OS_PROJECT_NAME: kubernikus
+  OS_PROJECT_DOMAIN_NAME: ccadmin
+  KUBERNIKUS_NAME: k-eu-de-2
+  KUBERNIKUS_URL: https://k-eu-de-2.admin.cloud.sap
+
+
+
+
+
+
+
+
+
+auth_e2e_eu-de-2: &auth_e2e_eu-de-2
   OS_AUTH_URL: https://identity-3.eu-de-2.cloud.sap/v3
   OS_USERNAME: ((kubernikus-prod-username))
   OS_PASSWORD: ((kubernikus-prod-password))
@@ -138,7 +254,157 @@ auth_e2e_eu-de-1: &auth_e2e_eu-de-2
   KUBERNIKUS_NAME: e2e 
   KUBERNIKUS_URL: https://kubernikus.eu-de-2.cloud.sap
 
-auth_e2e_eu-nl-1: &auth_e2e_na-us-1
+
+
+
+auth_eu-nl-1: &auth_eu-nl-1
+
+  OS_AUTH_URL: https://identity-3.eu-nl-1.cloud.sap/v3
+  OS_USERNAME: ((kubernikus-prod-username))
+  OS_PASSWORD: ((kubernikus-prod-password))
+  OS_USER_DOMAIN_NAME: ccadmin
+  OS_PROJECT_NAME: kubernikus
+  OS_PROJECT_DOMAIN_NAME: ccadmin
+  KUBERNIKUS_NAME: k-eu-nl-1
+  KUBERNIKUS_URL: https://k-eu-nl-1.admin.cloud.sap
+
+
+
+
+
+
+
+auth_e2e_eu-nl-1: &auth_e2e_eu-nl-1
+  OS_AUTH_URL: https://identity-3.eu-nl-1.cloud.sap/v3
+  OS_USERNAME: kubernikus-pipeline
+  OS_PASSWORD: ((kubernikus-pipeline-password))
+  OS_USER_DOMAIN_NAME: Default 
+  OS_PROJECT_NAME: kubernikus_e2e
+  OS_PROJECT_DOMAIN_NAME: ccadmin
+  KUBERNIKUS_NAME: e2e 
+  KUBERNIKUS_URL: https://kubernikus.eu-nl-1.cloud.sap
+
+
+
+
+
+
+auth_eu-ru-1: &auth_eu-ru-1
+
+
+
+  OS_AUTH_URL: https://identity-3.eu-ru-1.cloud.sap/v3
+  OS_USERNAME: kubernikus-pipeline 
+  OS_PASSWORD: ((kubernikus-pipeline-password))
+  OS_USER_DOMAIN_NAME: Default
+  OS_PROJECT_NAME: kubernikus
+  OS_PROJECT_DOMAIN_NAME: ccadmin
+  KUBERNIKUS_NAME: k-eu-ru-1
+  KUBERNIKUS_URL: https://k-eu-ru-1.admin.cloud.sap
+
+
+
+
+
+auth_e2e_eu-ru-1: &auth_e2e_eu-ru-1
+  OS_AUTH_URL: https://identity-3.eu-ru-1.cloud.sap/v3
+  OS_USERNAME: kubernikus-pipeline
+  OS_PASSWORD: ((kubernikus-pipeline-password))
+  OS_USER_DOMAIN_NAME: Default 
+  OS_PROJECT_NAME: kubernikus_e2e
+  OS_PROJECT_DOMAIN_NAME: ccadmin
+  KUBERNIKUS_NAME: e2e 
+  KUBERNIKUS_URL: https://kubernikus.eu-ru-1.cloud.sap
+
+
+
+
+
+
+auth_la-br-1: &auth_la-br-1
+
+
+
+  OS_AUTH_URL: https://identity-3.la-br-1.cloud.sap/v3
+  OS_USERNAME: kubernikus-pipeline 
+  OS_PASSWORD: ((kubernikus-pipeline-password))
+  OS_USER_DOMAIN_NAME: Default
+  OS_PROJECT_NAME: kubernikus
+  OS_PROJECT_DOMAIN_NAME: ccadmin
+  KUBERNIKUS_NAME: k-la-br-1
+  KUBERNIKUS_URL: https://k-la-br-1.admin.cloud.sap
+
+
+
+
+
+auth_e2e_la-br-1: &auth_e2e_la-br-1
+  OS_AUTH_URL: https://identity-3.la-br-1.cloud.sap/v3
+  OS_USERNAME: kubernikus-pipeline
+  OS_PASSWORD: ((kubernikus-pipeline-password))
+  OS_USER_DOMAIN_NAME: Default 
+  OS_PROJECT_NAME: kubernikus_e2e
+  OS_PROJECT_DOMAIN_NAME: ccadmin
+  KUBERNIKUS_NAME: e2e 
+  KUBERNIKUS_URL: https://kubernikus.la-br-1.cloud.sap
+
+
+
+
+
+
+auth_na-ca-1: &auth_na-ca-1
+
+
+
+  OS_AUTH_URL: https://identity-3.na-ca-1.cloud.sap/v3
+  OS_USERNAME: kubernikus-pipeline 
+  OS_PASSWORD: ((kubernikus-pipeline-password))
+  OS_USER_DOMAIN_NAME: Default
+  OS_PROJECT_NAME: kubernikus
+  OS_PROJECT_DOMAIN_NAME: ccadmin
+  KUBERNIKUS_NAME: k-na-ca-1
+  KUBERNIKUS_URL: https://k-na-ca-1.admin.cloud.sap
+
+
+
+
+
+auth_e2e_na-ca-1: &auth_e2e_na-ca-1
+  OS_AUTH_URL: https://identity-3.na-ca-1.cloud.sap/v3
+  OS_USERNAME: kubernikus-pipeline
+  OS_PASSWORD: ((kubernikus-pipeline-password))
+  OS_USER_DOMAIN_NAME: Default 
+  OS_PROJECT_NAME: kubernikus_e2e
+  OS_PROJECT_DOMAIN_NAME: ccadmin
+  KUBERNIKUS_NAME: e2e 
+  KUBERNIKUS_URL: https://kubernikus.na-ca-1.cloud.sap
+
+
+
+
+
+
+auth_na-us-1: &auth_na-us-1
+
+  OS_AUTH_URL: https://identity-3.na-us-1.cloud.sap/v3
+  OS_USERNAME: ((kubernikus-prod-username))
+  OS_PASSWORD: ((kubernikus-prod-password))
+  OS_USER_DOMAIN_NAME: ccadmin
+  OS_PROJECT_NAME: kubernikus
+  OS_PROJECT_DOMAIN_NAME: ccadmin
+  KUBERNIKUS_NAME: k-na-us-1
+  KUBERNIKUS_URL: https://k-na-us-1.admin.cloud.sap
+
+
+
+
+
+
+
+
+
+auth_e2e_na-us-1: &auth_e2e_na-us-1
   OS_AUTH_URL: https://identity-3.na-us-1.cloud.sap/v3
   OS_USERNAME: ((kubernikus-prod-username))
   OS_PASSWORD: ((kubernikus-prod-password))
@@ -148,18 +414,515 @@ auth_e2e_eu-nl-1: &auth_e2e_na-us-1
   KUBERNIKUS_NAME: e2e 
   KUBERNIKUS_URL: https://kubernikus.na-us-1.cloud.sap
 
+
+
+
+auth_na-us-3: &auth_na-us-3
+
+
+
+  OS_AUTH_URL: https://identity-3.na-us-3.cloud.sap/v3
+  OS_USERNAME: kubernikus-pipeline 
+  OS_PASSWORD: ((kubernikus-pipeline-password))
+  OS_USER_DOMAIN_NAME: Default
+  OS_PROJECT_NAME: kubernikus
+  OS_PROJECT_DOMAIN_NAME: ccadmin
+  KUBERNIKUS_NAME: k-na-us-3
+  KUBERNIKUS_URL: https://k-na-us-3.admin.cloud.sap
+
+
+
+
+
+auth_e2e_na-us-3: &auth_e2e_na-us-3
+  OS_AUTH_URL: https://identity-3.na-us-3.cloud.sap/v3
+  OS_USERNAME: kubernikus-pipeline
+  OS_PASSWORD: ((kubernikus-pipeline-password))
+  OS_USER_DOMAIN_NAME: Default 
+  OS_PROJECT_NAME: kubernikus_e2e
+  OS_PROJECT_DOMAIN_NAME: ccadmin
+  KUBERNIKUS_NAME: e2e 
+  KUBERNIKUS_URL: https://kubernikus.na-us-3.cloud.sap
+
+
+
+
+
+
+auth_qa-de-1: &auth_qa-de-1
+
+
+
+  OS_AUTH_URL: https://identity-3.qa-de-1.cloud.sap/v3
+  OS_USERNAME: kubernikus-pipeline 
+  OS_PASSWORD: ((kubernikus-pipeline-password))
+  OS_USER_DOMAIN_NAME: Default
+  OS_PROJECT_NAME: kubernikus
+  OS_PROJECT_DOMAIN_NAME: ccadmin
+  KUBERNIKUS_NAME: k-qa-de-1
+  KUBERNIKUS_URL: https://k-qa-de-1.admin.cloud.sap
+
+
+
+
+
 auth_e2e_qa-de-1: &auth_e2e_qa-de-1
   OS_AUTH_URL: https://identity-3.qa-de-1.cloud.sap/v3
-  OS_USERNAME: ((kubernikus-qa-username))
-  OS_PASSWORD: ((kubernikus-qa-password))
+  OS_USERNAME: kubernikus-pipeline
+  OS_PASSWORD: ((kubernikus-pipeline-password))
+  OS_USER_DOMAIN_NAME: Default 
+  OS_PROJECT_NAME: kubernikus_e2e
+  OS_PROJECT_DOMAIN_NAME: ccadmin
+  KUBERNIKUS_NAME: e2e 
+  KUBERNIKUS_URL: https://kubernikus.qa-de-1.cloud.sap
+
+
+
+
+
+
+auth_master: &auth_master
+
+
+
+
+
+  OS_AUTH_URL: https://identity-3.eu-nl-1.cloud.sap/v3
+  OS_USERNAME: ((kubernikus-prod-username))
+  OS_PASSWORD: ((kubernikus-prod-password))
+  OS_USER_DOMAIN_NAME: ccadmin
+  OS_PROJECT_NAME: kubernikus-master
+  OS_PROJECT_DOMAIN_NAME: ccadmin
+  KUBERNIKUS_NAME: k-master
+  KUBERNIKUS_URL: https://k-master.admin.cloud.sap
+
+
+
+
+
+
+
+auth_e2e_master: &auth_e2e_master
+  OS_AUTH_URL: https://identity-3.eu-nl-1.cloud.sap/v3
+  OS_USERNAME: ((kubernikus-prod-username))
+  OS_PASSWORD: ((kubernikus-prod-password))
   OS_USER_DOMAIN_NAME: ccadmin
   OS_PROJECT_NAME: kubernikus-e2e
   OS_PROJECT_DOMAIN_NAME: ccadmin
-  KUBERNIKUS_NAME: e2e
-  KUBERNIKUS_URL: https://kubernikus.qa-de-1.cloud.sap
+  KUBERNIKUS_NAME: e2e 
+  KUBERNIKUS_URL: https://kubernikus-master.eu-nl-1.cloud.sap
+
+
+
+
+task_tiller: &task_tiller
+  platform: 'linux'
+  
+  image_resource:
+    type: docker-image
+    source:
+      repository: sapcc/kubernikus-kubectl
+      tag: 'latest'
+  
+  inputs:
+    - name: secrets.git
+  
+  run:
+    path: /bin/sh
+    args:
+      - -c
+      - |
+        set -exo pipefail
+        tag=$(cat secrets.git/kubernikus/tiller.version)
+        kubernikusctl auth init
+        kubectl create sa tiller --namespace kube-system || true
+        kubectl create clusterrolebinding tiller --clusterrole cluster-admin --serviceaccount=kube-system:tiller || true
+        helm init --service-account tiller --history-max 5 --tiller-image sapcc/tiller:$tag --upgrade --wait
+  
+  params:
+    OS_AUTH_URL:
+    OS_USERNAME:
+    OS_PASSWORD:
+    OS_USER_DOMAIN_NAME:
+    OS_PROJECT_NAME:
+    OS_PROJECT_DOMAIN_NAME:
+    KUBERNIKUS_NAME:
+    KUBERNIKUS_URL:
+  
+
+task_checksum: &task_checksum
+  platform: 'linux'
+  
+  image_resource:
+    type: docker-image
+    source:
+      repository: golang
+      tag: 1.9.2-alpine3.6
+  
+  inputs:
+    - name: kubernikus.builds
+      path: gopath/src/github.com/sapcc/kubernikus
+  outputs:
+    - name: checksum
+  
+  run:
+    path: /bin/sh
+    args:
+      - -c
+      - |
+        set -exo pipefail
+        if [ -z "$TARGET" ]; then
+          echo TARGET not set
+          exit 1
+        fi
+        export GOPATH=$PWD/gopath
+        OUTPUT=$PWD/checksum
+        cd gopath/src/github.com/sapcc/kubernikus
+        apk add --no-cache make
+        make $TARGET VERSION=latest
+        CHECKSUM=$(sha256sum $TARGET | cut -f1 -d ' ')
+        echo checksum=$CHECKSUM > $OUTPUT/properties
+  params:
+    TARGET:
+  
+
+task_helm_kubernikus: &task_helm_kubernikus
+  platform: 'linux'
+  
+  image_resource:
+    type: docker-image
+    source:
+      repository: sapcc/kubernikus-kubectl
+      tag: 'latest'
+  
+  inputs:
+    - name: kubernikus.builds
+    - name: secrets.git
+  
+  run:
+    path: /bin/sh
+    args:
+      - -c
+      - |
+        set -exo pipefail
+        VERSION=$(cat kubernikus.builds/.git/HEAD)
+        kubernikusctl auth init 
+        helm dep up --skip-refresh kubernikus.builds/charts/kubernikus/
+        helm upgrade kubernikus kubernikus.builds/charts/kubernikus/ \
+          --namespace=kubernikus-system \
+          --values secrets.git/global/values/kubernikus.yaml \
+          --values secrets.git/kubernikus/$KUBERNIKUS_NAME/values/kubernikus.yaml \
+          --set imageTag=$VERSION \
+          --install 
+        kubectl rollout status deployment/kubernikus-api --namespace=kubernikus-system
+        kubectl rollout status deployment/kubernikus-operator --namespace=kubernikus-system
+  
+  params:
+    OS_AUTH_URL:
+    OS_USERNAME:
+    OS_PASSWORD:
+    OS_USER_DOMAIN_NAME:
+    OS_PROJECT_NAME:
+    OS_PROJECT_DOMAIN_NAME:
+    KUBERNIKUS_NAME:
+    KUBERNIKUS_URL:
+  
+
+task_cli: &task_cli
+  platform: 'darwin'
+  
+  inputs:
+    - name: kubernikus.builds
+      path: gopath/src/github.com/sapcc/kubernikus
+  outputs:
+    - name: binaries
+  
+  run:
+    path: /bin/sh
+    args:
+      - -exc
+      - |
+        export BINARIES=$(pwd -P)/binaries
+        export GOPATH=$PWD/gopath
+  
+        cd gopath/src/github.com/sapcc/kubernikus
+  
+        make bin/darwin/kubernikusctl
+        make bin/linux/kubernikusctl
+        make bin/windows/kubernikusctl.exe
+        upx bin/*/*
+        SHA=$(git rev-parse HEAD)
+        echo $SHA > $BINARIES/commitish
+        echo "1.0.0+$SHA" > $BINARIES/tag
+  
+        cp bin/darwin/kubernikusctl $BINARIES/kubernikusctl_darwin_amd64
+        cp bin/linux/kubernikusctl $BINARIES/kubernikusctl_linux_amd64
+        cp bin/windows/kubernikusctl.exe $BINARIES/kubernikusctl_windows_amd64.exe
+  
+  params:
+  
+
+task_terraform: &task_terraform
+  platform: 'linux'
+  
+  image_resource:
+    type: docker-image
+    source:
+      repository: sapcc/kubernikus-terraform
+      tag: 'latest'
+  
+  inputs:
+    - name: secrets.git
+    - name: terraform.git
+  
+  
+  run:
+    path: /bin/sh
+    args:
+      - -c
+      - |
+        set -exo pipefail
+        cd terraform.git/terraform
+        TF_VARS_DIR=../../secrets.git/$TF_REGION/terraform \
+          make init plan apply
+  
+  params:
+    TF_REGION:
+    TF_PLUGIN_DIR: /usr/local/bin
+    TF_VARS_DIR:
+    TF_PASSWORD:
+  
+
+task_e2e_tests: &task_e2e_tests
+  platform: 'linux'
+  
+  image_resource:
+    type: docker-image
+    source:
+      repository: golang
+      tag: 1.9.2-alpine3.6
+  
+  inputs:
+    - name: kubernikus.builds
+      path: gopath/src/github.com/sapcc/kubernikus
+  
+  run:
+    path: /bin/sh
+    args:
+      - -c
+      - |
+        export GOPATH=$PWD/gopath
+        cd gopath/src/github.com/sapcc/kubernikus
+  
+        apk add --no-progress --no-cache make git curl
+        make test-e2e | tee test.output
+        rc=$?
+        if [ "$SENTRY_DSN" != "" ] && [ $rc -ne 0 ] ; then
+          #Get the longest uniq (!) whitespace prefix of --- FAIL: lines
+          ws_count=$(grep -- '--- FAIL:' test.output| grep -v -- '->'| awk '{ match($0, /^ */); printf("%d\n", RLENGTH, substr($0,RLENGTH+1)) }' | sort|uniq -u |tail -1)
+          test_name=$(sed -n -E  "s/^ {$ws_count}--- FAIL: (.*) \([.0-9]*s\)$/\1/p" test.output)
+          curl -Lo sentry-cli -z sentry-cli https://github.com/getsentry/sentry-cli/releases/download/1.35.6/sentry-cli-Linux-x86_64
+          chmod +x sentry-cli
+          unset http_proxy https_proxy no_proxy
+          ./sentry-cli send-event -m "Failed to run $test_name" -E $OS_REGION_NAME --no-environ --logfile test.output
+        fi
+        exit $rc
+  
+  params:
+    OS_AUTH_URL:
+    OS_USERNAME:
+    OS_PASSWORD:
+    OS_USER_DOMAIN_NAME:
+    OS_PROJECT_NAME:
+    OS_PROJECT_DOMAIN_NAME:
+    OS_REGION_NAME:
+    SENTRY_DSN:
+  
+
+task_build_args: &task_build_args
+  platform: linux
+  image_resource:
+    type: docker-image
+    source:
+      repository: alpine
+  inputs:
+    - name: kubernikus.builds
+  outputs:
+    - name: args
+  run:
+    path: sh
+    args:
+      - -exc
+      - |
+        SHA=$(cat kubernikus.builds/.git/ref)
+        echo '{"VERSION":"'$SHA'"}' > args/build_args.json
+  
+
+task_reload_prometheus_config: &task_reload_prometheus_config
+  platform: 'linux'
+  
+  image_resource:
+    type: docker-image
+    source:
+      repository: sapcc/kubernikus-kubectl
+      tag: 'latest'
+  
+  inputs:
+    - name: charts.git
+    - name: secrets.git
+  
+  run:
+    path: /bin/sh
+    args:
+      - -c
+      - |
+        set -exo pipefail
+  
+        k() {
+          local OPERATION="$1"
+          shift
+          kubectl "${OPERATION}" --namespace="${NAMESPACE}" "$@"
+        }
+  
+        echo ">> Waiting ${DELAY_SECONDS} seconds before reloading prometheus configuration"
+        sleep "${DELAY_SECONDS}"
+  
+        kubernikusctl auth init
+  
+        k get pods -o jsonpath='{.items[*].metadata.name}'| tr ' ' '\n' | grep prometheus | while read POD ; do
+          echo "Reloading configuration for ${POD}..."
+          k exec "${POD}" -- kill -HUP 1
+        done
+  
+  params:
+    NAMESPACE:
+    DELAY_SECONDS:
+    OS_AUTH_URL:
+    OS_USERNAME:
+    OS_PASSWORD:
+    OS_USER_DOMAIN_NAME:
+    OS_PROJECT_NAME:
+    OS_PROJECT_DOMAIN_NAME:
+    KUBERNIKUS_NAME:
+    KUBERNIKUS_URL:
+  
+
+task_helm_seed: &task_helm_seed
+  platform: linux
+  
+  image_resource:
+    type: docker-image
+    source: { repository: hub.global.cloud.sap/monsoon/kubectl, tag: 'v1.7.7'}
+  
+  inputs:
+    - name: secrets.git
+    - name: helm-charts.git
+  
+  run:
+    path: sh
+    args:
+      - -exc
+      - |
+        set -o pipefail
+        helm upgrade $RELEASE helm-charts.git/openstack/kubernikus --namespace $NAMESPACE --values secrets.git/global/values/kubernikus-seed.yaml --install --debug
+  
+  params:
+    REGION:
+    GITHUB_TOKEN:
+    NAMESPACE: monsoon3 
+    RELEASE: kubernikus 
+  
+
+task_helm-admin_kubernikus: &task_helm-admin_kubernikus
+  platform: 'linux'
+  
+  image_resource:
+    type: docker-image
+    source:
+      repository: hub.global.cloud.sap/monsoon/kubectl
+      tag: 'v1.7.7'
+  
+  inputs:
+    - name: kubernikus.builds
+    - name: secrets.git
+  
+  run:
+    path: /bin/sh
+    args:
+      - -c
+      - |
+        set -exo pipefail
+        VERSION=$(cat kubernikus.builds/.git/HEAD)
+        helm dep up --skip-refresh kubernikus.builds/charts/kubernikus/
+        helm upgrade $KUBERNIKUS_NAME kubernikus.builds/charts/kubernikus/ \
+          --namespace=$KUBERNIKUS_NAME \
+          --values secrets.git/global/values/kubernikus.yaml \
+          --values secrets.git/kubernikus/$KUBERNIKUS_NAME/values/kubernikus.yaml \
+          --values secrets.git/admin/values/$KUBERNIKUS_NAME.yaml \
+          --set imageTag=$VERSION \
+          --install
+        kubectl rollout status deployment/kubernikus-api --namespace=$KUBERNIKUS_NAME
+        kubectl rollout status deployment/kubernikus-operator --namespace=$KUBERNIKUS_NAME
+  
+  params:
+    REGION:
+    KUBERNIKUS_NAME:
+    GITHUB_TOKEN:
+  
+
+task_helm_kubernikus-system: &task_helm_kubernikus-system
+  platform: 'linux'
+  
+  image_resource:
+    type: docker-image
+    source:
+      repository: sapcc/kubernikus-kubectl
+      tag: 'latest'
+  
+  inputs:
+    - name: kubernikus.builds
+    - name: secrets.git
+  
+  run:
+    path: /bin/sh
+    args:
+      - -c
+      - |
+        set -exo pipefail
+        kubernikusctl auth init
+  
+        # recent helm versions fails with `invalid cross-device link` when trying to rename charts.git
+        # rename(2) for a directory is allowed only when both the source and the destination path are on the top layer
+        # https://github.com/kubernetes/helm/issues/2998
+        cp -a kubernikus.builds kubernikus-copy.builds
+  
+        helm repo add forked https://raw.githubusercontent.com/BugRoger/charts/repo
+        helm dep up kubernikus-copy.builds/charts/kubernikus-system/
+        helm upgrade kubernikus-system kubernikus-copy.builds/charts/kubernikus-system/ \
+          --namespace=kubernikus-system \
+          --values secrets.git/global/values/kubernikus-system.yaml \
+          --values secrets.git/kubernikus/$KUBERNIKUS_NAME/values/kubernikus-system.yaml \
+          --install 
+  
+  params:
+    OS_AUTH_URL:
+    OS_USERNAME:
+    OS_PASSWORD:
+    OS_USER_DOMAIN_NAME:
+    OS_PROJECT_NAME:
+    OS_PROJECT_DOMAIN_NAME:
+    KUBERNIKUS_NAME:
+    KUBERNIKUS_URL:
+  
+
+  
+slack: &slack
+  on_success: { put: slack, params: {alert_type: fixed } }
+  on_failure: { put: slack, params: {alert_type: broke } }
+  on_abort:   { put: slack, params: {alert_type: broke } }
+
 
 resources:
-
   - name: master.builds
     type: gh-status
     source:
@@ -171,48 +934,58 @@ resources:
       branch: master
       depth: 1
 
-  - name: feature.builds
-    type: gh-status
-    source:
-      username: sapcc-bot
-      password: ((github-com-access-token))
-      owner:    sapcc
-      repo:     kubernikus
-      access_token: ((github-com-access-token))
-      branch: feature 
-      depth: 1
-
-  - name: infra.builds
-    type: gh-status
-    source:
-      username: sapcc-bot
-      password: ((github-com-access-token))
-      owner:    sapcc
-      repo:     kubernikus
-      access_token: ((github-com-access-token))
-      branch: infra 
-      depth: 1
-
   - name: secrets.git
     type: git
+    webhook_token: aldhjalkdhahdjkahdjkhjadhjadhkjadlkjhAAdd
+    check_every: 1h
     source:
       uri:         git@github.wdf.sap.corp:cc/secrets.git
       private_key: ((secrets-ssh-key))
       branch:      master
       depth: 1
 
-  - name: daily
-    type: time
-    source: {interval: 24h}
+  - name: terraform.git
+    type: git
+    source:
+      uri: https://github.com/sapcc/kubernikus.git
+      branch: master
+      depth: 1
+      paths: [ terraform ]
 
-  - name: hourly 
-    type: time
-    source: {interval: 1h}
+  - name: helm-charts.git
+    type: git
+    source:
+      uri:    https://github.com/sapcc/helm-charts.git
+      branch: master
+      paths:  [ openstack/kubernikus/ ]
+
   - name: slack
     type: slack-alert
     source:
       url: ((slack-webhook-url))
-      channel: '#kubernikus'
+      channel: '#kubernikus-ci'
+
+
+  - name: ASIA.tag
+    type: time-version-resource
+    check_every: 525600h # basically never (only when triggered by a job)
+
+  - name: EMEA.tag
+    type: time-version-resource
+    check_every: 525600h # basically never (only when triggered by a job)
+
+  - name: AMERICAS.tag
+    type: time-version-resource
+    check_every: 525600h # basically never (only when triggered by a job)
+
+  - name: INFRA.tag
+    type: time-version-resource
+    check_every: 525600h # basically never (only when triggered by a job)
+
+
+  - name: hourly 
+    type: time
+    source: {interval: 1h}
 
 resource_types:
   - name: time-version
@@ -229,6 +1002,11 @@ resource_types:
     source:
       repository: hub.global.cloud.sap/concourse/ghstatus-resource
       tag: latest
+  - name: time-version-resource
+    type: docker-image
+    source:
+      repository: hub.global.cloud.sap/concourse/time-version-resource
+      tag: v2
 
 jobs:
   - name: master 
@@ -241,50 +1019,16 @@ jobs:
           trigger: true
       - aggregate:
         - task: kubernikus 
-          file: kubernikus.builds/ci/task_helm_kubernikus.yaml
+          config:
+            <<: *task_helm_kubernikus
           params:
             <<: *auth_master
         - task: kubernikus-system 
-          file: kubernikus.builds/ci/task_helm_kubernikus-system.yaml
+          config:
+            <<: *task_helm_kubernikus-system
           params:
             <<: *auth_master
-    on_success: { put: slack, params: {alert_type: fixed } }
-    on_failure: { put: slack, params: {alert_type: broke } }
-    on_abort:   { put: slack, params: {alert_type: broke } }
-
-  - name: feature 
-    serial: true
-    plan:
-      - aggregate:
-        - get: secrets.git
-        - get: kubernikus.builds
-          resource: feature.builds
-          trigger: true
-      - aggregate:
-        - task: kubernikus 
-          file: kubernikus.builds/ci/task_helm_kubernikus.yaml
-          params:
-            <<: *auth_feature
-        - task: kubernikus-system 
-          file: kubernikus.builds/ci/task_helm_kubernikus-system.yaml
-          params:
-            <<: *auth_feature
-
-  - name: infra 
-    serial: true
-    plan:
-      - aggregate:
-        - get: secrets.git
-        - get: kubernikus.builds
-          resource: infra.builds
-          trigger: true
-      - aggregate:
-        - task: k-infra
-          file: kubernikus.builds/ci/task_helm-admin_kubernikus.yaml
-          params:
-            REGION: admin
-            KUBERNIKUS_NAME: k-infra
-            GITHUB_TOKEN: ((github-access-token))
+    <<: *slack
 
   - name: e2e
     serial: true
@@ -296,24 +1040,12 @@ jobs:
           passed: [master]
           trigger: true
       - task: e2e_tests
-        file: kubernikus.builds/ci/task_e2e_tests.yaml
+        config:
+          <<: *task_e2e_tests
         timeout: 2h
         params:
-          <<: *auth_e2e_eu-nl-1
-    on_success: { put: slack, params: {alert_type: fixed } }
-    on_failure: { put: slack, params: {alert_type: broke } }
-    on_abort:   { put: slack, params: {alert_type: broke } }
-
-  - name: conformance 
-    serial: true
-    build_logs_to_retain: 30
-    plan:
-      - aggregate:
-        - get: kubernikus.builds
-          resource: master.builds
-          passed: [e2e]
-        - get: daily
-          trigger: true
+          <<: *auth_e2e_master
+    <<: *slack
 
   - name: prod 
     serial: true
@@ -321,79 +1053,6 @@ jobs:
       - get: kubernikus.builds
         resource: master.builds
         passed: [e2e]
-
-  - name: emea 
-    serial: true
-    plan:
-      - aggregate:
-        - get: secrets.git
-        - get: kubernikus.builds
-          resource: master.builds
-          passed: [prod]
-          trigger: true
-      - aggregate:
-        - task: kubernikus_eu-de-1
-          file: kubernikus.builds/ci/task_helm_kubernikus.yaml
-          params:
-            <<: *auth_eu-de-1
-        - task: kubernikus_eu-de-2
-          file: kubernikus.builds/ci/task_helm_kubernikus.yaml
-          params:
-            <<: *auth_eu-de-2
-        - task: kubernikus_eu-nl-1
-          file: kubernikus.builds/ci/task_helm_kubernikus.yaml
-          params:
-            <<: *auth_eu-nl-1
-        - task: kubernikus-system_eu-de-1
-          file: kubernikus.builds/ci/task_helm_kubernikus-system.yaml
-          params:
-            <<: *auth_eu-de-1
-        - task: kubernikus-system_eu-de-2
-          file: kubernikus.builds/ci/task_helm_kubernikus-system.yaml
-          params:
-            <<: *auth_eu-de-2
-        - task: kubernikus-system_eu-nl-1
-          file: kubernikus.builds/ci/task_helm_kubernikus-system.yaml
-          params:
-            <<: *auth_eu-nl-1
-
-  - name: asia
-    serial: true
-    plan:
-      - aggregate:
-        - get: secrets.git
-        - get: kubernikus.builds
-          resource: master.builds
-          passed: [prod]
-          trigger: true
-      - aggregate:
-        - task: kubernikus_ap-au-1
-          file: kubernikus.builds/ci/task_helm_kubernikus.yaml
-          params:
-            <<: *auth_ap-au-1
-        - task: kubernikus-system_ap-au-1
-          file: kubernikus.builds/ci/task_helm_kubernikus-system.yaml
-          params:
-            <<: *auth_ap-au-1
-
-  - name: americas 
-    serial: true
-    plan:
-      - aggregate:
-        - get: secrets.git
-        - get: kubernikus.builds
-          resource: master.builds
-          passed: [prod]
-          trigger: true
-      - aggregate:
-        - task: kubernikus_na-us-1
-          file: kubernikus.builds/ci/task_helm_kubernikus.yaml
-          params:
-            <<: *auth_na-us-1
-        - task: kubernikus-system_na-us-1
-          file: kubernikus.builds/ci/task_helm_kubernikus-system.yaml
-          params:
-            <<: *auth_na-us-1
 
   - name: admin 
     serial: true
@@ -405,196 +1064,2095 @@ jobs:
           passed: [prod]
           trigger: true
       - aggregate:
-        - task: k-master 
-          file: kubernikus.builds/ci/task_helm-admin_kubernikus.yaml
+
+        - task: k-ap-ae-1
+          config:
+            <<: *task_helm-admin_kubernikus
           params:
             REGION: admin
-            KUBERNIKUS_NAME: k-master
+            KUBERNIKUS_NAME: k-ap-ae-1
             GITHUB_TOKEN: ((github-access-token))
-        - task: k-feature
-          file: kubernikus.builds/ci/task_helm-admin_kubernikus.yaml
-          params:
-            REGION: admin
-            KUBERNIKUS_NAME: k-feature
-            GITHUB_TOKEN: ((github-access-token))
+
         - task: k-ap-au-1
-          file: kubernikus.builds/ci/task_helm-admin_kubernikus.yaml
+          config:
+            <<: *task_helm-admin_kubernikus
           params:
             REGION: admin
             KUBERNIKUS_NAME: k-ap-au-1
             GITHUB_TOKEN: ((github-access-token))
+
+        - task: k-ap-cn-1
+          config:
+            <<: *task_helm-admin_kubernikus
+          params:
+            REGION: admin
+            KUBERNIKUS_NAME: k-ap-cn-1
+            GITHUB_TOKEN: ((github-access-token))
+
+        - task: k-ap-jp-1
+          config:
+            <<: *task_helm-admin_kubernikus
+          params:
+            REGION: admin
+            KUBERNIKUS_NAME: k-ap-jp-1
+            GITHUB_TOKEN: ((github-access-token))
+
+        - task: k-ap-jp-2
+          config:
+            <<: *task_helm-admin_kubernikus
+          params:
+            REGION: admin
+            KUBERNIKUS_NAME: k-ap-jp-2
+            GITHUB_TOKEN: ((github-access-token))
+
+        - task: k-ap-sa-1
+          config:
+            <<: *task_helm-admin_kubernikus
+          params:
+            REGION: admin
+            KUBERNIKUS_NAME: k-ap-sa-1
+            GITHUB_TOKEN: ((github-access-token))
+
         - task: k-eu-de-1
-          file: kubernikus.builds/ci/task_helm-admin_kubernikus.yaml
+          config:
+            <<: *task_helm-admin_kubernikus
           params:
             REGION: admin
             KUBERNIKUS_NAME: k-eu-de-1
             GITHUB_TOKEN: ((github-access-token))
+
         - task: k-eu-de-2
-          file: kubernikus.builds/ci/task_helm-admin_kubernikus.yaml
+          config:
+            <<: *task_helm-admin_kubernikus
           params:
             REGION: admin
             KUBERNIKUS_NAME: k-eu-de-2
             GITHUB_TOKEN: ((github-access-token))
+
         - task: k-eu-nl-1
-          file: kubernikus.builds/ci/task_helm-admin_kubernikus.yaml
+          config:
+            <<: *task_helm-admin_kubernikus
           params:
             REGION: admin
             KUBERNIKUS_NAME: k-eu-nl-1
             GITHUB_TOKEN: ((github-access-token))
+
+        - task: k-eu-ru-1
+          config:
+            <<: *task_helm-admin_kubernikus
+          params:
+            REGION: admin
+            KUBERNIKUS_NAME: k-eu-ru-1
+            GITHUB_TOKEN: ((github-access-token))
+
+        - task: k-la-br-1
+          config:
+            <<: *task_helm-admin_kubernikus
+          params:
+            REGION: admin
+            KUBERNIKUS_NAME: k-la-br-1
+            GITHUB_TOKEN: ((github-access-token))
+
+        - task: k-na-ca-1
+          config:
+            <<: *task_helm-admin_kubernikus
+          params:
+            REGION: admin
+            KUBERNIKUS_NAME: k-na-ca-1
+            GITHUB_TOKEN: ((github-access-token))
+
         - task: k-na-us-1
-          file: kubernikus.builds/ci/task_helm-admin_kubernikus.yaml
+          config:
+            <<: *task_helm-admin_kubernikus
           params:
             REGION: admin
             KUBERNIKUS_NAME: k-na-us-1
             GITHUB_TOKEN: ((github-access-token))
 
-  - name: staging 
-    serial: true
-    plan:
-      - aggregate:
-        - get: secrets.git
-        - get: kubernikus.builds
-          resource: feature.builds
-          passed: [feature]
-          trigger: true
-      - aggregate:
-        - task: k-staging
-          file: kubernikus.builds/ci/task_helm-admin_kubernikus.yaml
+        - task: k-na-us-3
+          config:
+            <<: *task_helm-admin_kubernikus
           params:
             REGION: admin
-            KUBERNIKUS_NAME: k-staging
+            KUBERNIKUS_NAME: k-na-us-3
             GITHUB_TOKEN: ((github-access-token))
-        - task: kubernikus
-          file: kubernikus.builds/ci/task_helm_kubernikus.yaml
-          params:
-            <<: *auth_staging
-        - task: kubernikus-system
-          file: kubernikus.builds/ci/task_helm_kubernikus-system.yaml
-          params:
-            <<: *auth_staging
 
-  - name: qa
-    serial: true
-    plan:
-      - aggregate:
-        - get: secrets.git
-        - get: kubernikus.builds
-          resource: feature.builds
-          passed: [feature]
-          trigger: true
-      - aggregate:
         - task: k-qa-de-1
-          file: kubernikus.builds/ci/task_helm-admin_kubernikus.yaml
+          config:
+            <<: *task_helm-admin_kubernikus
           params:
             REGION: admin
             KUBERNIKUS_NAME: k-qa-de-1
             GITHUB_TOKEN: ((github-access-token))
-        - task: kubernikus
-          file: kubernikus.builds/ci/task_helm_kubernikus.yaml
-          params:
-            <<: *auth_qa-de-1
-        - task: kubernikus-system
-          file: kubernikus.builds/ci/task_helm_kubernikus-system.yaml
-          params:
-            <<: *auth_qa-de-1
 
+        - task: k-master
+          config:
+            <<: *task_helm-admin_kubernikus
+          params:
+            REGION: admin
+            KUBERNIKUS_NAME: k-master
+            GITHUB_TOKEN: ((github-access-token))
+
+    <<: *slack
+
+
+  - name: ASIA 
+    serial: true
+    plan:
+      - aggregate:
+        - get: helm-charts.git
+          trigger: true
+        - get: terraform.git
+          trigger: true
+        - get: secrets.git
+          passed: [admin]
+        - get: kubernikus.builds
+          resource: master.builds
+          passed: [admin]
+          trigger: true
+        - put: ASIA.tag
+
+
+
+
+  - name: seed_ap-ae-1
+    serial: true
+    plan:
+      - aggregate:      
+        - get: ASIA.tag
+          passed: [ASIA]
+          trigger: true
+        - get: secrets.git
+          passed: [ASIA]
+        - get: helm-charts.git
+          passed: [ASIA]
+      - task: seed
+        config: 
+          <<: *task_helm_seed
+        input_mapping: 
+          charts.git: helm-charts.git
+        params:
+          REGION:       ap-ae-1
+          GITHUB_TOKEN: ((github-access-token))
+    <<: *slack
+
+
+  - name: terraform_ap-ae-1
+    serial: true
+    plan:
+      - aggregate:            
+        - get: ASIA.tag
+          trigger: true
+          passed: [seed_ap-ae-1]
+        - get: secrets.git
+          passed: [seed_ap-ae-1]
+        - get: terraform.git 
+          passed: [ASIA]
+      - task: terraform
+        config: 
+          <<: *task_terraform
+        timeout: 45m
+        attempts: 5
+        params:
+          TF_REGION: ap-ae-1
+          TF_PASSWORD: ((kubernikus-terraform-password))
+    <<: *slack
+
+
+  - name: tiller_ap-ae-1
+    plan:
+      - aggregate:                  
+        - get: ASIA.tag
+          trigger: true
+          passed: [terraform_ap-ae-1]
+        - get: secrets.git
+          passed: [terraform_ap-ae-1]
+      - aggregate:
+        - task: k-ap-ae-1
+          config: 
+            <<: *task_tiller
+          timeout: 10m
+          params:
+            <<: *auth_ap-ae-1
+    <<: *slack
+
+  - name: deploy_ap-ae-1
+    serial: true
+    plan:
+      - aggregate:
+        - get: ASIA.tag
+          trigger: true
+          passed: [tiller_ap-ae-1]
+        - get: secrets.git
+          passed: [tiller_ap-ae-1]
+        - get: kubernikus.builds
+          resource: master.builds
+          passed: [ASIA]
+      - aggregate:
+        - task: kubernikus_ap-ae-1
+          config: 
+            <<: *task_helm_kubernikus
+          params:
+            <<: *auth_ap-ae-1
+        - task: kubernikus-system_ap-ae-1
+          config: 
+            <<: *task_helm_kubernikus-system
+          params:
+            <<: *auth_ap-ae-1
+    <<: *slack
+
+  - name: soak_ap-ae-1
+    serial: true
+    build_logs_to_retain: 168
+    plan:
+      - aggregate:
+        - get: ASIA.tag
+          trigger: true
+          passed: [deploy_ap-ae-1]
+        - get: kubernikus.builds
+          resource: master.builds
+          passed: [deploy_ap-ae-1]
+        - get: hourly 
+          trigger: true
+      - task: e2e_tests
+        config: 
+          <<: *task_e2e_tests
+        timeout: 45m
+        params:
+          <<: *auth_e2e_ap-ae-1
+          SENTRY_DSN: ((sentry-soak-tests))
+    <<: *slack
+
+
+
+
+
+  - name: seed_ap-au-1
+    serial: true
+    plan:
+      - aggregate:      
+        - get: ASIA.tag
+          passed: [ASIA]
+          trigger: true
+        - get: secrets.git
+          passed: [ASIA]
+        - get: helm-charts.git
+          passed: [ASIA]
+      - task: seed
+        config: 
+          <<: *task_helm_seed
+        input_mapping: 
+          charts.git: helm-charts.git
+        params:
+          REGION:       ap-au-1
+          GITHUB_TOKEN: ((github-access-token))
+    <<: *slack
+
+
+  - name: terraform_ap-au-1
+    serial: true
+    plan:
+      - aggregate:            
+        - get: ASIA.tag
+          trigger: true
+          passed: [seed_ap-au-1]
+        - get: secrets.git
+          passed: [seed_ap-au-1]
+        - get: terraform.git 
+          passed: [ASIA]
+    <<: *slack
+
+
+  - name: tiller_ap-au-1
+    plan:
+      - aggregate:                  
+        - get: ASIA.tag
+          trigger: true
+          passed: [terraform_ap-au-1]
+        - get: secrets.git
+          passed: [terraform_ap-au-1]
+      - aggregate:
+        - task: k-ap-au-1
+          config: 
+            <<: *task_tiller
+          timeout: 10m
+          params:
+            <<: *auth_ap-au-1
+    <<: *slack
+
+  - name: deploy_ap-au-1
+    serial: true
+    plan:
+      - aggregate:
+        - get: ASIA.tag
+          trigger: true
+          passed: [tiller_ap-au-1]
+        - get: secrets.git
+          passed: [tiller_ap-au-1]
+        - get: kubernikus.builds
+          resource: master.builds
+          passed: [ASIA]
+      - aggregate:
+        - task: kubernikus_ap-au-1
+          config: 
+            <<: *task_helm_kubernikus
+          params:
+            <<: *auth_ap-au-1
+        - task: kubernikus-system_ap-au-1
+          config: 
+            <<: *task_helm_kubernikus-system
+          params:
+            <<: *auth_ap-au-1
+    <<: *slack
 
   - name: soak_ap-au-1
     serial: true
     build_logs_to_retain: 168
     plan:
       - aggregate:
-        - get: secrets.git
+        - get: ASIA.tag
+          trigger: true
+          passed: [deploy_ap-au-1]
         - get: kubernikus.builds
           resource: master.builds
-          passed: [e2e]
+          passed: [deploy_ap-au-1]
         - get: hourly 
           trigger: true
       - task: e2e_tests
-        file: kubernikus.builds/ci/task_e2e_tests.yaml
+        config: 
+          <<: *task_e2e_tests
         timeout: 45m
         params:
           <<: *auth_e2e_ap-au-1
-    on_success: { put: slack, params: {alert_type: fixed } }
-    on_failure: { put: slack, params: {alert_type: broke } }
-    on_abort:   { put: slack, params: {alert_type: broke } }
+          SENTRY_DSN: ((sentry-soak-tests))
+    <<: *slack
+
+
+
+
+
+  - name: seed_ap-cn-1
+    serial: true
+    plan:
+      - aggregate:      
+        - get: ASIA.tag
+          passed: [ASIA]
+          trigger: true
+        - get: secrets.git
+          passed: [ASIA]
+        - get: helm-charts.git
+          passed: [ASIA]
+      - task: seed
+        config: 
+          <<: *task_helm_seed
+        input_mapping: 
+          charts.git: helm-charts.git
+        params:
+          REGION:       ap-cn-1
+          GITHUB_TOKEN: ((github-access-token))
+    <<: *slack
+
+
+  - name: terraform_ap-cn-1
+    serial: true
+    plan:
+      - aggregate:            
+        - get: ASIA.tag
+          trigger: true
+          passed: [seed_ap-cn-1]
+        - get: secrets.git
+          passed: [seed_ap-cn-1]
+        - get: terraform.git 
+          passed: [ASIA]
+      - task: terraform
+        config: 
+          <<: *task_terraform
+        timeout: 45m
+        attempts: 5
+        params:
+          TF_REGION: ap-cn-1
+          TF_PASSWORD: ((kubernikus-terraform-password))
+    <<: *slack
+
+
+  - name: tiller_ap-cn-1
+    plan:
+      - aggregate:                  
+        - get: ASIA.tag
+          trigger: true
+          passed: [terraform_ap-cn-1]
+        - get: secrets.git
+          passed: [terraform_ap-cn-1]
+      - aggregate:
+        - task: k-ap-cn-1
+          config: 
+            <<: *task_tiller
+          timeout: 10m
+          params:
+            <<: *auth_ap-cn-1
+    <<: *slack
+
+  - name: deploy_ap-cn-1
+    serial: true
+    plan:
+      - aggregate:
+        - get: ASIA.tag
+          trigger: true
+          passed: [tiller_ap-cn-1]
+        - get: secrets.git
+          passed: [tiller_ap-cn-1]
+        - get: kubernikus.builds
+          resource: master.builds
+          passed: [ASIA]
+      - aggregate:
+        - task: kubernikus_ap-cn-1
+          config: 
+            <<: *task_helm_kubernikus
+          params:
+            <<: *auth_ap-cn-1
+        - task: kubernikus-system_ap-cn-1
+          config: 
+            <<: *task_helm_kubernikus-system
+          params:
+            <<: *auth_ap-cn-1
+    <<: *slack
+
+  - name: soak_ap-cn-1
+    serial: true
+    build_logs_to_retain: 168
+    plan:
+      - aggregate:
+        - get: ASIA.tag
+          trigger: true
+          passed: [deploy_ap-cn-1]
+        - get: kubernikus.builds
+          resource: master.builds
+          passed: [deploy_ap-cn-1]
+        - get: hourly 
+          trigger: true
+      - task: e2e_tests
+        config: 
+          <<: *task_e2e_tests
+        timeout: 45m
+        params:
+          <<: *auth_e2e_ap-cn-1
+          SENTRY_DSN: ((sentry-soak-tests))
+    <<: *slack
+
+
+
+
+
+  - name: seed_ap-jp-1
+    serial: true
+    plan:
+      - aggregate:      
+        - get: ASIA.tag
+          passed: [ASIA]
+          trigger: true
+        - get: secrets.git
+          passed: [ASIA]
+        - get: helm-charts.git
+          passed: [ASIA]
+      - task: seed
+        config: 
+          <<: *task_helm_seed
+        input_mapping: 
+          charts.git: helm-charts.git
+        params:
+          REGION:       ap-jp-1
+          GITHUB_TOKEN: ((github-access-token))
+    <<: *slack
+
+
+  - name: terraform_ap-jp-1
+    serial: true
+    plan:
+      - aggregate:            
+        - get: ASIA.tag
+          trigger: true
+          passed: [seed_ap-jp-1]
+        - get: secrets.git
+          passed: [seed_ap-jp-1]
+        - get: terraform.git 
+          passed: [ASIA]
+      - task: terraform
+        config: 
+          <<: *task_terraform
+        timeout: 45m
+        attempts: 5
+        params:
+          TF_REGION: ap-jp-1
+          TF_PASSWORD: ((kubernikus-terraform-password))
+    <<: *slack
+
+
+  - name: tiller_ap-jp-1
+    plan:
+      - aggregate:                  
+        - get: ASIA.tag
+          trigger: true
+          passed: [terraform_ap-jp-1]
+        - get: secrets.git
+          passed: [terraform_ap-jp-1]
+      - aggregate:
+        - task: k-ap-jp-1
+          config: 
+            <<: *task_tiller
+          timeout: 10m
+          params:
+            <<: *auth_ap-jp-1
+    <<: *slack
+
+  - name: deploy_ap-jp-1
+    serial: true
+    plan:
+      - aggregate:
+        - get: ASIA.tag
+          trigger: true
+          passed: [tiller_ap-jp-1]
+        - get: secrets.git
+          passed: [tiller_ap-jp-1]
+        - get: kubernikus.builds
+          resource: master.builds
+          passed: [ASIA]
+      - aggregate:
+        - task: kubernikus_ap-jp-1
+          config: 
+            <<: *task_helm_kubernikus
+          params:
+            <<: *auth_ap-jp-1
+        - task: kubernikus-system_ap-jp-1
+          config: 
+            <<: *task_helm_kubernikus-system
+          params:
+            <<: *auth_ap-jp-1
+    <<: *slack
+
+  - name: soak_ap-jp-1
+    serial: true
+    build_logs_to_retain: 168
+    plan:
+      - aggregate:
+        - get: ASIA.tag
+          trigger: true
+          passed: [deploy_ap-jp-1]
+        - get: kubernikus.builds
+          resource: master.builds
+          passed: [deploy_ap-jp-1]
+        - get: hourly 
+          trigger: true
+      - task: e2e_tests
+        config: 
+          <<: *task_e2e_tests
+        timeout: 45m
+        params:
+          <<: *auth_e2e_ap-jp-1
+          SENTRY_DSN: ((sentry-soak-tests))
+    <<: *slack
+
+
+
+
+
+  - name: seed_ap-jp-2
+    serial: true
+    plan:
+      - aggregate:      
+        - get: ASIA.tag
+          passed: [ASIA]
+          trigger: true
+        - get: secrets.git
+          passed: [ASIA]
+        - get: helm-charts.git
+          passed: [ASIA]
+      - task: seed
+        config: 
+          <<: *task_helm_seed
+        input_mapping: 
+          charts.git: helm-charts.git
+        params:
+          REGION:       ap-jp-2
+          GITHUB_TOKEN: ((github-access-token))
+    <<: *slack
+
+
+  - name: terraform_ap-jp-2
+    serial: true
+    plan:
+      - aggregate:            
+        - get: ASIA.tag
+          trigger: true
+          passed: [seed_ap-jp-2]
+        - get: secrets.git
+          passed: [seed_ap-jp-2]
+        - get: terraform.git 
+          passed: [ASIA]
+      - task: terraform
+        config: 
+          <<: *task_terraform
+        timeout: 45m
+        attempts: 5
+        params:
+          TF_REGION: ap-jp-2
+          TF_PASSWORD: ((kubernikus-terraform-password))
+    <<: *slack
+
+
+  - name: tiller_ap-jp-2
+    plan:
+      - aggregate:                  
+        - get: ASIA.tag
+          trigger: true
+          passed: [terraform_ap-jp-2]
+        - get: secrets.git
+          passed: [terraform_ap-jp-2]
+      - aggregate:
+        - task: k-ap-jp-2
+          config: 
+            <<: *task_tiller
+          timeout: 10m
+          params:
+            <<: *auth_ap-jp-2
+    <<: *slack
+
+  - name: deploy_ap-jp-2
+    serial: true
+    plan:
+      - aggregate:
+        - get: ASIA.tag
+          trigger: true
+          passed: [tiller_ap-jp-2]
+        - get: secrets.git
+          passed: [tiller_ap-jp-2]
+        - get: kubernikus.builds
+          resource: master.builds
+          passed: [ASIA]
+      - aggregate:
+        - task: kubernikus_ap-jp-2
+          config: 
+            <<: *task_helm_kubernikus
+          params:
+            <<: *auth_ap-jp-2
+        - task: kubernikus-system_ap-jp-2
+          config: 
+            <<: *task_helm_kubernikus-system
+          params:
+            <<: *auth_ap-jp-2
+    <<: *slack
+
+  - name: soak_ap-jp-2
+    serial: true
+    build_logs_to_retain: 168
+    plan:
+      - aggregate:
+        - get: ASIA.tag
+          trigger: true
+          passed: [deploy_ap-jp-2]
+        - get: kubernikus.builds
+          resource: master.builds
+          passed: [deploy_ap-jp-2]
+        - get: hourly 
+          trigger: true
+      - task: e2e_tests
+        config: 
+          <<: *task_e2e_tests
+        timeout: 45m
+        params:
+          <<: *auth_e2e_ap-jp-2
+          SENTRY_DSN: ((sentry-soak-tests))
+    <<: *slack
+
+
+
+
+
+  - name: seed_ap-sa-1
+    serial: true
+    plan:
+      - aggregate:      
+        - get: ASIA.tag
+          passed: [ASIA]
+          trigger: true
+        - get: secrets.git
+          passed: [ASIA]
+        - get: helm-charts.git
+          passed: [ASIA]
+      - task: seed
+        config: 
+          <<: *task_helm_seed
+        input_mapping: 
+          charts.git: helm-charts.git
+        params:
+          REGION:       ap-sa-1
+          GITHUB_TOKEN: ((github-access-token))
+    <<: *slack
+
+
+  - name: terraform_ap-sa-1
+    serial: true
+    plan:
+      - aggregate:            
+        - get: ASIA.tag
+          trigger: true
+          passed: [seed_ap-sa-1]
+        - get: secrets.git
+          passed: [seed_ap-sa-1]
+        - get: terraform.git 
+          passed: [ASIA]
+      - task: terraform
+        config: 
+          <<: *task_terraform
+        timeout: 45m
+        attempts: 5
+        params:
+          TF_REGION: ap-sa-1
+          TF_PASSWORD: ((kubernikus-terraform-password))
+    <<: *slack
+
+
+  - name: tiller_ap-sa-1
+    plan:
+      - aggregate:                  
+        - get: ASIA.tag
+          trigger: true
+          passed: [terraform_ap-sa-1]
+        - get: secrets.git
+          passed: [terraform_ap-sa-1]
+      - aggregate:
+        - task: k-ap-sa-1
+          config: 
+            <<: *task_tiller
+          timeout: 10m
+          params:
+            <<: *auth_ap-sa-1
+    <<: *slack
+
+  - name: deploy_ap-sa-1
+    serial: true
+    plan:
+      - aggregate:
+        - get: ASIA.tag
+          trigger: true
+          passed: [tiller_ap-sa-1]
+        - get: secrets.git
+          passed: [tiller_ap-sa-1]
+        - get: kubernikus.builds
+          resource: master.builds
+          passed: [ASIA]
+      - aggregate:
+        - task: kubernikus_ap-sa-1
+          config: 
+            <<: *task_helm_kubernikus
+          params:
+            <<: *auth_ap-sa-1
+        - task: kubernikus-system_ap-sa-1
+          config: 
+            <<: *task_helm_kubernikus-system
+          params:
+            <<: *auth_ap-sa-1
+    <<: *slack
+
+  - name: soak_ap-sa-1
+    serial: true
+    build_logs_to_retain: 168
+    plan:
+      - aggregate:
+        - get: ASIA.tag
+          trigger: true
+          passed: [deploy_ap-sa-1]
+        - get: kubernikus.builds
+          resource: master.builds
+          passed: [deploy_ap-sa-1]
+        - get: hourly 
+          trigger: true
+      - task: e2e_tests
+        config: 
+          <<: *task_e2e_tests
+        timeout: 45m
+        params:
+          <<: *auth_e2e_ap-sa-1
+          SENTRY_DSN: ((sentry-soak-tests))
+    <<: *slack
+
+
+
+
+  - name: EMEA 
+    serial: true
+    plan:
+      - aggregate:
+        - get: helm-charts.git
+          trigger: true
+        - get: terraform.git
+          trigger: true
+        - get: secrets.git
+          passed: [admin]
+        - get: kubernikus.builds
+          resource: master.builds
+          passed: [admin]
+          trigger: true
+        - put: EMEA.tag
+
+
+
+
+  - name: seed_eu-de-1
+    serial: true
+    plan:
+      - aggregate:      
+        - get: EMEA.tag
+          passed: [EMEA]
+          trigger: true
+        - get: secrets.git
+          passed: [EMEA]
+        - get: helm-charts.git
+          passed: [EMEA]
+      - task: seed
+        config: 
+          <<: *task_helm_seed
+        input_mapping: 
+          charts.git: helm-charts.git
+        params:
+          REGION:       eu-de-1
+          GITHUB_TOKEN: ((github-access-token))
+    <<: *slack
+
+
+  - name: terraform_eu-de-1
+    serial: true
+    plan:
+      - aggregate:            
+        - get: EMEA.tag
+          trigger: true
+          passed: [seed_eu-de-1]
+        - get: secrets.git
+          passed: [seed_eu-de-1]
+        - get: terraform.git 
+          passed: [EMEA]
+    <<: *slack
+
+
+  - name: tiller_eu-de-1
+    plan:
+      - aggregate:                  
+        - get: EMEA.tag
+          trigger: true
+          passed: [terraform_eu-de-1]
+        - get: secrets.git
+          passed: [terraform_eu-de-1]
+      - aggregate:
+        - task: k-eu-de-1
+          config: 
+            <<: *task_tiller
+          timeout: 10m
+          params:
+            <<: *auth_eu-de-1
+    <<: *slack
+
+  - name: deploy_eu-de-1
+    serial: true
+    plan:
+      - aggregate:
+        - get: EMEA.tag
+          trigger: true
+          passed: [tiller_eu-de-1]
+        - get: secrets.git
+          passed: [tiller_eu-de-1]
+        - get: kubernikus.builds
+          resource: master.builds
+          passed: [EMEA]
+      - aggregate:
+        - task: kubernikus_eu-de-1
+          config: 
+            <<: *task_helm_kubernikus
+          params:
+            <<: *auth_eu-de-1
+        - task: kubernikus-system_eu-de-1
+          config: 
+            <<: *task_helm_kubernikus-system
+          params:
+            <<: *auth_eu-de-1
+    <<: *slack
 
   - name: soak_eu-de-1
     serial: true
     build_logs_to_retain: 168
     plan:
       - aggregate:
-        - get: secrets.git
+        - get: EMEA.tag
+          trigger: true
+          passed: [deploy_eu-de-1]
         - get: kubernikus.builds
           resource: master.builds
-          passed: [e2e]
+          passed: [deploy_eu-de-1]
         - get: hourly 
           trigger: true
       - task: e2e_tests
-        file: kubernikus.builds/ci/task_e2e_tests.yaml
+        config: 
+          <<: *task_e2e_tests
         timeout: 45m
         params:
           <<: *auth_e2e_eu-de-1
-    on_success: { put: slack, params: {alert_type: fixed } }
-    on_failure: { put: slack, params: {alert_type: broke } }
-    on_abort:   { put: slack, params: {alert_type: broke } }
+          SENTRY_DSN: ((sentry-soak-tests))
+    <<: *slack
+
+
+
+
+
+  - name: seed_eu-de-2
+    serial: true
+    plan:
+      - aggregate:      
+        - get: EMEA.tag
+          passed: [EMEA]
+          trigger: true
+        - get: secrets.git
+          passed: [EMEA]
+        - get: helm-charts.git
+          passed: [EMEA]
+      - task: seed
+        config: 
+          <<: *task_helm_seed
+        input_mapping: 
+          charts.git: helm-charts.git
+        params:
+          REGION:       eu-de-2
+          GITHUB_TOKEN: ((github-access-token))
+    <<: *slack
+
+
+  - name: terraform_eu-de-2
+    serial: true
+    plan:
+      - aggregate:            
+        - get: EMEA.tag
+          trigger: true
+          passed: [seed_eu-de-2]
+        - get: secrets.git
+          passed: [seed_eu-de-2]
+        - get: terraform.git 
+          passed: [EMEA]
+    <<: *slack
+
+
+  - name: tiller_eu-de-2
+    plan:
+      - aggregate:                  
+        - get: EMEA.tag
+          trigger: true
+          passed: [terraform_eu-de-2]
+        - get: secrets.git
+          passed: [terraform_eu-de-2]
+      - aggregate:
+        - task: k-eu-de-2
+          config: 
+            <<: *task_tiller
+          timeout: 10m
+          params:
+            <<: *auth_eu-de-2
+    <<: *slack
+
+  - name: deploy_eu-de-2
+    serial: true
+    plan:
+      - aggregate:
+        - get: EMEA.tag
+          trigger: true
+          passed: [tiller_eu-de-2]
+        - get: secrets.git
+          passed: [tiller_eu-de-2]
+        - get: kubernikus.builds
+          resource: master.builds
+          passed: [EMEA]
+      - aggregate:
+        - task: kubernikus_eu-de-2
+          config: 
+            <<: *task_helm_kubernikus
+          params:
+            <<: *auth_eu-de-2
+        - task: kubernikus-system_eu-de-2
+          config: 
+            <<: *task_helm_kubernikus-system
+          params:
+            <<: *auth_eu-de-2
+    <<: *slack
 
   - name: soak_eu-de-2
     serial: true
     build_logs_to_retain: 168
     plan:
       - aggregate:
-        - get: secrets.git
+        - get: EMEA.tag
+          trigger: true
+          passed: [deploy_eu-de-2]
         - get: kubernikus.builds
           resource: master.builds
-          passed: [e2e]
+          passed: [deploy_eu-de-2]
         - get: hourly 
           trigger: true
       - task: e2e_tests
-        file: kubernikus.builds/ci/task_e2e_tests.yaml
+        config: 
+          <<: *task_e2e_tests
         timeout: 45m
         params:
           <<: *auth_e2e_eu-de-2
-    on_success: { put: slack, params: {alert_type: fixed } }
-    on_failure: { put: slack, params: {alert_type: broke } }
-    on_abort:   { put: slack, params: {alert_type: broke } }
+          SENTRY_DSN: ((sentry-soak-tests))
+    <<: *slack
+
+
+
+
+
+  - name: seed_eu-nl-1
+    serial: true
+    plan:
+      - aggregate:      
+        - get: EMEA.tag
+          passed: [EMEA]
+          trigger: true
+        - get: secrets.git
+          passed: [EMEA]
+        - get: helm-charts.git
+          passed: [EMEA]
+      - task: seed
+        config: 
+          <<: *task_helm_seed
+        input_mapping: 
+          charts.git: helm-charts.git
+        params:
+          REGION:       eu-nl-1
+          GITHUB_TOKEN: ((github-access-token))
+    <<: *slack
+
+
+  - name: terraform_eu-nl-1
+    serial: true
+    plan:
+      - aggregate:            
+        - get: EMEA.tag
+          trigger: true
+          passed: [seed_eu-nl-1]
+        - get: secrets.git
+          passed: [seed_eu-nl-1]
+        - get: terraform.git 
+          passed: [EMEA]
+    <<: *slack
+
+
+  - name: tiller_eu-nl-1
+    plan:
+      - aggregate:                  
+        - get: EMEA.tag
+          trigger: true
+          passed: [terraform_eu-nl-1]
+        - get: secrets.git
+          passed: [terraform_eu-nl-1]
+      - aggregate:
+        - task: k-eu-nl-1
+          config: 
+            <<: *task_tiller
+          timeout: 10m
+          params:
+            <<: *auth_eu-nl-1
+    <<: *slack
+
+  - name: deploy_eu-nl-1
+    serial: true
+    plan:
+      - aggregate:
+        - get: EMEA.tag
+          trigger: true
+          passed: [tiller_eu-nl-1]
+        - get: secrets.git
+          passed: [tiller_eu-nl-1]
+        - get: kubernikus.builds
+          resource: master.builds
+          passed: [EMEA]
+      - aggregate:
+        - task: kubernikus_eu-nl-1
+          config: 
+            <<: *task_helm_kubernikus
+          params:
+            <<: *auth_eu-nl-1
+        - task: kubernikus-system_eu-nl-1
+          config: 
+            <<: *task_helm_kubernikus-system
+          params:
+            <<: *auth_eu-nl-1
+    <<: *slack
+
+  - name: soak_eu-nl-1
+    serial: true
+    build_logs_to_retain: 168
+    plan:
+      - aggregate:
+        - get: EMEA.tag
+          trigger: true
+          passed: [deploy_eu-nl-1]
+        - get: kubernikus.builds
+          resource: master.builds
+          passed: [deploy_eu-nl-1]
+        - get: hourly 
+          trigger: true
+      - task: e2e_tests
+        config: 
+          <<: *task_e2e_tests
+        timeout: 45m
+        params:
+          <<: *auth_e2e_eu-nl-1
+          SENTRY_DSN: ((sentry-soak-tests))
+    <<: *slack
+
+
+
+
+
+  - name: seed_eu-ru-1
+    serial: true
+    plan:
+      - aggregate:      
+        - get: EMEA.tag
+          passed: [EMEA]
+          trigger: true
+        - get: secrets.git
+          passed: [EMEA]
+        - get: helm-charts.git
+          passed: [EMEA]
+      - task: seed
+        config: 
+          <<: *task_helm_seed
+        input_mapping: 
+          charts.git: helm-charts.git
+        params:
+          REGION:       eu-ru-1
+          GITHUB_TOKEN: ((github-access-token))
+    <<: *slack
+
+
+  - name: terraform_eu-ru-1
+    serial: true
+    plan:
+      - aggregate:            
+        - get: EMEA.tag
+          trigger: true
+          passed: [seed_eu-ru-1]
+        - get: secrets.git
+          passed: [seed_eu-ru-1]
+        - get: terraform.git 
+          passed: [EMEA]
+      - task: terraform
+        config: 
+          <<: *task_terraform
+        timeout: 45m
+        attempts: 5
+        params:
+          TF_REGION: eu-ru-1
+          TF_PASSWORD: ((kubernikus-terraform-password))
+    <<: *slack
+
+
+  - name: tiller_eu-ru-1
+    plan:
+      - aggregate:                  
+        - get: EMEA.tag
+          trigger: true
+          passed: [terraform_eu-ru-1]
+        - get: secrets.git
+          passed: [terraform_eu-ru-1]
+      - aggregate:
+        - task: k-eu-ru-1
+          config: 
+            <<: *task_tiller
+          timeout: 10m
+          params:
+            <<: *auth_eu-ru-1
+    <<: *slack
+
+  - name: deploy_eu-ru-1
+    serial: true
+    plan:
+      - aggregate:
+        - get: EMEA.tag
+          trigger: true
+          passed: [tiller_eu-ru-1]
+        - get: secrets.git
+          passed: [tiller_eu-ru-1]
+        - get: kubernikus.builds
+          resource: master.builds
+          passed: [EMEA]
+      - aggregate:
+        - task: kubernikus_eu-ru-1
+          config: 
+            <<: *task_helm_kubernikus
+          params:
+            <<: *auth_eu-ru-1
+        - task: kubernikus-system_eu-ru-1
+          config: 
+            <<: *task_helm_kubernikus-system
+          params:
+            <<: *auth_eu-ru-1
+    <<: *slack
+
+  - name: soak_eu-ru-1
+    serial: true
+    build_logs_to_retain: 168
+    plan:
+      - aggregate:
+        - get: EMEA.tag
+          trigger: true
+          passed: [deploy_eu-ru-1]
+        - get: kubernikus.builds
+          resource: master.builds
+          passed: [deploy_eu-ru-1]
+        - get: hourly 
+          trigger: true
+      - task: e2e_tests
+        config: 
+          <<: *task_e2e_tests
+        timeout: 45m
+        params:
+          <<: *auth_e2e_eu-ru-1
+          SENTRY_DSN: ((sentry-soak-tests))
+    <<: *slack
+
+
+
+
+  - name: AMERICAS 
+    serial: true
+    plan:
+      - aggregate:
+        - get: helm-charts.git
+          trigger: true
+        - get: terraform.git
+          trigger: true
+        - get: secrets.git
+          passed: [admin]
+        - get: kubernikus.builds
+          resource: master.builds
+          passed: [admin]
+          trigger: true
+        - put: AMERICAS.tag
+
+
+
+
+  - name: seed_la-br-1
+    serial: true
+    plan:
+      - aggregate:      
+        - get: AMERICAS.tag
+          passed: [AMERICAS]
+          trigger: true
+        - get: secrets.git
+          passed: [AMERICAS]
+        - get: helm-charts.git
+          passed: [AMERICAS]
+      - task: seed
+        config: 
+          <<: *task_helm_seed
+        input_mapping: 
+          charts.git: helm-charts.git
+        params:
+          REGION:       la-br-1
+          GITHUB_TOKEN: ((github-access-token))
+    <<: *slack
+
+
+  - name: terraform_la-br-1
+    serial: true
+    plan:
+      - aggregate:            
+        - get: AMERICAS.tag
+          trigger: true
+          passed: [seed_la-br-1]
+        - get: secrets.git
+          passed: [seed_la-br-1]
+        - get: terraform.git 
+          passed: [AMERICAS]
+      - task: terraform
+        config: 
+          <<: *task_terraform
+        timeout: 45m
+        attempts: 5
+        params:
+          TF_REGION: la-br-1
+          TF_PASSWORD: ((kubernikus-terraform-password))
+    <<: *slack
+
+
+  - name: tiller_la-br-1
+    plan:
+      - aggregate:                  
+        - get: AMERICAS.tag
+          trigger: true
+          passed: [terraform_la-br-1]
+        - get: secrets.git
+          passed: [terraform_la-br-1]
+      - aggregate:
+        - task: k-la-br-1
+          config: 
+            <<: *task_tiller
+          timeout: 10m
+          params:
+            <<: *auth_la-br-1
+    <<: *slack
+
+  - name: deploy_la-br-1
+    serial: true
+    plan:
+      - aggregate:
+        - get: AMERICAS.tag
+          trigger: true
+          passed: [tiller_la-br-1]
+        - get: secrets.git
+          passed: [tiller_la-br-1]
+        - get: kubernikus.builds
+          resource: master.builds
+          passed: [AMERICAS]
+      - aggregate:
+        - task: kubernikus_la-br-1
+          config: 
+            <<: *task_helm_kubernikus
+          params:
+            <<: *auth_la-br-1
+        - task: kubernikus-system_la-br-1
+          config: 
+            <<: *task_helm_kubernikus-system
+          params:
+            <<: *auth_la-br-1
+    <<: *slack
+
+  - name: soak_la-br-1
+    serial: true
+    build_logs_to_retain: 168
+    plan:
+      - aggregate:
+        - get: AMERICAS.tag
+          trigger: true
+          passed: [deploy_la-br-1]
+        - get: kubernikus.builds
+          resource: master.builds
+          passed: [deploy_la-br-1]
+        - get: hourly 
+          trigger: true
+      - task: e2e_tests
+        config: 
+          <<: *task_e2e_tests
+        timeout: 45m
+        params:
+          <<: *auth_e2e_la-br-1
+          SENTRY_DSN: ((sentry-soak-tests))
+    <<: *slack
+
+
+
+
+
+  - name: seed_na-ca-1
+    serial: true
+    plan:
+      - aggregate:      
+        - get: AMERICAS.tag
+          passed: [AMERICAS]
+          trigger: true
+        - get: secrets.git
+          passed: [AMERICAS]
+        - get: helm-charts.git
+          passed: [AMERICAS]
+      - task: seed
+        config: 
+          <<: *task_helm_seed
+        input_mapping: 
+          charts.git: helm-charts.git
+        params:
+          REGION:       na-ca-1
+          GITHUB_TOKEN: ((github-access-token))
+    <<: *slack
+
+
+  - name: terraform_na-ca-1
+    serial: true
+    plan:
+      - aggregate:            
+        - get: AMERICAS.tag
+          trigger: true
+          passed: [seed_na-ca-1]
+        - get: secrets.git
+          passed: [seed_na-ca-1]
+        - get: terraform.git 
+          passed: [AMERICAS]
+      - task: terraform
+        config: 
+          <<: *task_terraform
+        timeout: 45m
+        attempts: 5
+        params:
+          TF_REGION: na-ca-1
+          TF_PASSWORD: ((kubernikus-terraform-password))
+    <<: *slack
+
+
+  - name: tiller_na-ca-1
+    plan:
+      - aggregate:                  
+        - get: AMERICAS.tag
+          trigger: true
+          passed: [terraform_na-ca-1]
+        - get: secrets.git
+          passed: [terraform_na-ca-1]
+      - aggregate:
+        - task: k-na-ca-1
+          config: 
+            <<: *task_tiller
+          timeout: 10m
+          params:
+            <<: *auth_na-ca-1
+    <<: *slack
+
+  - name: deploy_na-ca-1
+    serial: true
+    plan:
+      - aggregate:
+        - get: AMERICAS.tag
+          trigger: true
+          passed: [tiller_na-ca-1]
+        - get: secrets.git
+          passed: [tiller_na-ca-1]
+        - get: kubernikus.builds
+          resource: master.builds
+          passed: [AMERICAS]
+      - aggregate:
+        - task: kubernikus_na-ca-1
+          config: 
+            <<: *task_helm_kubernikus
+          params:
+            <<: *auth_na-ca-1
+        - task: kubernikus-system_na-ca-1
+          config: 
+            <<: *task_helm_kubernikus-system
+          params:
+            <<: *auth_na-ca-1
+    <<: *slack
+
+  - name: soak_na-ca-1
+    serial: true
+    build_logs_to_retain: 168
+    plan:
+      - aggregate:
+        - get: AMERICAS.tag
+          trigger: true
+          passed: [deploy_na-ca-1]
+        - get: kubernikus.builds
+          resource: master.builds
+          passed: [deploy_na-ca-1]
+        - get: hourly 
+          trigger: true
+      - task: e2e_tests
+        config: 
+          <<: *task_e2e_tests
+        timeout: 45m
+        params:
+          <<: *auth_e2e_na-ca-1
+          SENTRY_DSN: ((sentry-soak-tests))
+    <<: *slack
+
+
+
+
+
+  - name: seed_na-us-1
+    serial: true
+    plan:
+      - aggregate:      
+        - get: AMERICAS.tag
+          passed: [AMERICAS]
+          trigger: true
+        - get: secrets.git
+          passed: [AMERICAS]
+        - get: helm-charts.git
+          passed: [AMERICAS]
+      - task: seed
+        config: 
+          <<: *task_helm_seed
+        input_mapping: 
+          charts.git: helm-charts.git
+        params:
+          REGION:       na-us-1
+          GITHUB_TOKEN: ((github-access-token))
+    <<: *slack
+
+
+  - name: terraform_na-us-1
+    serial: true
+    plan:
+      - aggregate:            
+        - get: AMERICAS.tag
+          trigger: true
+          passed: [seed_na-us-1]
+        - get: secrets.git
+          passed: [seed_na-us-1]
+        - get: terraform.git 
+          passed: [AMERICAS]
+    <<: *slack
+
+
+  - name: tiller_na-us-1
+    plan:
+      - aggregate:                  
+        - get: AMERICAS.tag
+          trigger: true
+          passed: [terraform_na-us-1]
+        - get: secrets.git
+          passed: [terraform_na-us-1]
+      - aggregate:
+        - task: k-na-us-1
+          config: 
+            <<: *task_tiller
+          timeout: 10m
+          params:
+            <<: *auth_na-us-1
+    <<: *slack
+
+  - name: deploy_na-us-1
+    serial: true
+    plan:
+      - aggregate:
+        - get: AMERICAS.tag
+          trigger: true
+          passed: [tiller_na-us-1]
+        - get: secrets.git
+          passed: [tiller_na-us-1]
+        - get: kubernikus.builds
+          resource: master.builds
+          passed: [AMERICAS]
+      - aggregate:
+        - task: kubernikus_na-us-1
+          config: 
+            <<: *task_helm_kubernikus
+          params:
+            <<: *auth_na-us-1
+        - task: kubernikus-system_na-us-1
+          config: 
+            <<: *task_helm_kubernikus-system
+          params:
+            <<: *auth_na-us-1
+    <<: *slack
 
   - name: soak_na-us-1
     serial: true
     build_logs_to_retain: 168
     plan:
       - aggregate:
-        - get: secrets.git
+        - get: AMERICAS.tag
+          trigger: true
+          passed: [deploy_na-us-1]
         - get: kubernikus.builds
           resource: master.builds
-          passed: [e2e]
+          passed: [deploy_na-us-1]
         - get: hourly 
           trigger: true
       - task: e2e_tests
-        file: kubernikus.builds/ci/task_e2e_tests.yaml
+        config: 
+          <<: *task_e2e_tests
         timeout: 45m
         params:
           <<: *auth_e2e_na-us-1
-    on_success: { put: slack, params: {alert_type: fixed } }
-    on_failure: { put: slack, params: {alert_type: broke } }
-    on_abort:   { put: slack, params: {alert_type: broke } }
+          SENTRY_DSN: ((sentry-soak-tests))
+    <<: *slack
 
-  - name: soak_qa-de-1
-    build_logs_to_retain: 168
+
+
+
+
+  - name: seed_na-us-3
+    serial: true
+    plan:
+      - aggregate:      
+        - get: AMERICAS.tag
+          passed: [AMERICAS]
+          trigger: true
+        - get: secrets.git
+          passed: [AMERICAS]
+        - get: helm-charts.git
+          passed: [AMERICAS]
+      - task: seed
+        config: 
+          <<: *task_helm_seed
+        input_mapping: 
+          charts.git: helm-charts.git
+        params:
+          REGION:       na-us-3
+          GITHUB_TOKEN: ((github-access-token))
+    <<: *slack
+
+
+  - name: terraform_na-us-3
+    serial: true
+    plan:
+      - aggregate:            
+        - get: AMERICAS.tag
+          trigger: true
+          passed: [seed_na-us-3]
+        - get: secrets.git
+          passed: [seed_na-us-3]
+        - get: terraform.git 
+          passed: [AMERICAS]
+      - task: terraform
+        config: 
+          <<: *task_terraform
+        timeout: 45m
+        attempts: 5
+        params:
+          TF_REGION: na-us-3
+          TF_PASSWORD: ((kubernikus-terraform-password))
+    <<: *slack
+
+
+  - name: tiller_na-us-3
+    plan:
+      - aggregate:                  
+        - get: AMERICAS.tag
+          trigger: true
+          passed: [terraform_na-us-3]
+        - get: secrets.git
+          passed: [terraform_na-us-3]
+      - aggregate:
+        - task: k-na-us-3
+          config: 
+            <<: *task_tiller
+          timeout: 10m
+          params:
+            <<: *auth_na-us-3
+    <<: *slack
+
+  - name: deploy_na-us-3
     serial: true
     plan:
       - aggregate:
+        - get: AMERICAS.tag
+          trigger: true
+          passed: [tiller_na-us-3]
         - get: secrets.git
+          passed: [tiller_na-us-3]
         - get: kubernikus.builds
           resource: master.builds
-          passed: [e2e]
+          passed: [AMERICAS]
+      - aggregate:
+        - task: kubernikus_na-us-3
+          config: 
+            <<: *task_helm_kubernikus
+          params:
+            <<: *auth_na-us-3
+        - task: kubernikus-system_na-us-3
+          config: 
+            <<: *task_helm_kubernikus-system
+          params:
+            <<: *auth_na-us-3
+    <<: *slack
+
+  - name: soak_na-us-3
+    serial: true
+    build_logs_to_retain: 168
+    plan:
+      - aggregate:
+        - get: AMERICAS.tag
+          trigger: true
+          passed: [deploy_na-us-3]
+        - get: kubernikus.builds
+          resource: master.builds
+          passed: [deploy_na-us-3]
         - get: hourly 
           trigger: true
       - task: e2e_tests
-        file: kubernikus.builds/ci/task_e2e_tests.yaml
+        config: 
+          <<: *task_e2e_tests
+        timeout: 45m
+        params:
+          <<: *auth_e2e_na-us-3
+          SENTRY_DSN: ((sentry-soak-tests))
+    <<: *slack
+
+
+
+
+  - name: INFRA 
+    serial: true
+    plan:
+      - aggregate:
+        - get: helm-charts.git
+          trigger: true
+        - get: terraform.git
+          trigger: true
+        - get: secrets.git
+          passed: [admin]
+        - get: kubernikus.builds
+          resource: master.builds
+          passed: [admin]
+          trigger: true
+        - put: INFRA.tag
+
+
+
+
+  - name: seed_qa-de-1
+    serial: true
+    plan:
+      - aggregate:      
+        - get: INFRA.tag
+          passed: [INFRA]
+          trigger: true
+        - get: secrets.git
+          passed: [INFRA]
+        - get: helm-charts.git
+          passed: [INFRA]
+      - task: seed
+        config: 
+          <<: *task_helm_seed
+        input_mapping: 
+          charts.git: helm-charts.git
+        params:
+          REGION:       qa-de-1
+          GITHUB_TOKEN: ((github-access-token))
+    <<: *slack
+
+
+  - name: terraform_qa-de-1
+    serial: true
+    plan:
+      - aggregate:            
+        - get: INFRA.tag
+          trigger: true
+          passed: [seed_qa-de-1]
+        - get: secrets.git
+          passed: [seed_qa-de-1]
+        - get: terraform.git 
+          passed: [INFRA]
+      - task: terraform
+        config: 
+          <<: *task_terraform
+        timeout: 45m
+        attempts: 5
+        params:
+          TF_REGION: qa-de-1
+          TF_PASSWORD: ((kubernikus-terraform-password))
+    <<: *slack
+
+
+  - name: tiller_qa-de-1
+    plan:
+      - aggregate:                  
+        - get: INFRA.tag
+          trigger: true
+          passed: [terraform_qa-de-1]
+        - get: secrets.git
+          passed: [terraform_qa-de-1]
+      - aggregate:
+        - task: k-qa-de-1
+          config: 
+            <<: *task_tiller
+          timeout: 10m
+          params:
+            <<: *auth_qa-de-1
+    <<: *slack
+
+  - name: deploy_qa-de-1
+    serial: true
+    plan:
+      - aggregate:
+        - get: INFRA.tag
+          trigger: true
+          passed: [tiller_qa-de-1]
+        - get: secrets.git
+          passed: [tiller_qa-de-1]
+        - get: kubernikus.builds
+          resource: master.builds
+          passed: [INFRA]
+      - aggregate:
+        - task: kubernikus_qa-de-1
+          config: 
+            <<: *task_helm_kubernikus
+          params:
+            <<: *auth_qa-de-1
+        - task: kubernikus-system_qa-de-1
+          config: 
+            <<: *task_helm_kubernikus-system
+          params:
+            <<: *auth_qa-de-1
+    <<: *slack
+
+  - name: soak_qa-de-1
+    serial: true
+    build_logs_to_retain: 168
+    plan:
+      - aggregate:
+        - get: INFRA.tag
+          trigger: true
+          passed: [deploy_qa-de-1]
+        - get: kubernikus.builds
+          resource: master.builds
+          passed: [deploy_qa-de-1]
+        - get: hourly 
+          trigger: true
+      - task: e2e_tests
+        config: 
+          <<: *task_e2e_tests
         timeout: 45m
         params:
           <<: *auth_e2e_qa-de-1
-    on_success: { put: slack, params: {alert_type: fixed } }
-    on_failure: { put: slack, params: {alert_type: broke } }
-    on_abort:   { put: slack, params: {alert_type: broke } }
+          SENTRY_DSN: ((sentry-soak-tests))
+    <<: *slack
+
+
+
+
+
+
+
+groups:
+  - name: deploy
+    jobs:
+      - master
+      - e2e 
+      - prod
+      - admin
+
+      - ASIA
+
+      - EMEA
+
+      - AMERICAS
+
+      - INFRA
+
+
+
+  - name: ap-ae-1 
+    jobs:
+      - seed_ap-ae-1
+      - terraform_ap-ae-1
+      - tiller_ap-ae-1
+      - deploy_ap-ae-1
+      - soak_ap-ae-1
+
+  - name: ap-au-1 
+    jobs:
+      - seed_ap-au-1
+      - terraform_ap-au-1
+      - tiller_ap-au-1
+      - deploy_ap-au-1
+      - soak_ap-au-1
+
+  - name: ap-cn-1 
+    jobs:
+      - seed_ap-cn-1
+      - terraform_ap-cn-1
+      - tiller_ap-cn-1
+      - deploy_ap-cn-1
+      - soak_ap-cn-1
+
+  - name: ap-jp-1 
+    jobs:
+      - seed_ap-jp-1
+      - terraform_ap-jp-1
+      - tiller_ap-jp-1
+      - deploy_ap-jp-1
+      - soak_ap-jp-1
+
+  - name: ap-jp-2 
+    jobs:
+      - seed_ap-jp-2
+      - terraform_ap-jp-2
+      - tiller_ap-jp-2
+      - deploy_ap-jp-2
+      - soak_ap-jp-2
+
+  - name: ap-sa-1 
+    jobs:
+      - seed_ap-sa-1
+      - terraform_ap-sa-1
+      - tiller_ap-sa-1
+      - deploy_ap-sa-1
+      - soak_ap-sa-1
+
+  - name: eu-de-1 
+    jobs:
+      - seed_eu-de-1
+      - terraform_eu-de-1
+      - tiller_eu-de-1
+      - deploy_eu-de-1
+      - soak_eu-de-1
+
+  - name: eu-de-2 
+    jobs:
+      - seed_eu-de-2
+      - terraform_eu-de-2
+      - tiller_eu-de-2
+      - deploy_eu-de-2
+      - soak_eu-de-2
+
+  - name: eu-nl-1 
+    jobs:
+      - seed_eu-nl-1
+      - terraform_eu-nl-1
+      - tiller_eu-nl-1
+      - deploy_eu-nl-1
+      - soak_eu-nl-1
+
+  - name: eu-ru-1 
+    jobs:
+      - seed_eu-ru-1
+      - terraform_eu-ru-1
+      - tiller_eu-ru-1
+      - deploy_eu-ru-1
+      - soak_eu-ru-1
+
+  - name: la-br-1 
+    jobs:
+      - seed_la-br-1
+      - terraform_la-br-1
+      - tiller_la-br-1
+      - deploy_la-br-1
+      - soak_la-br-1
+
+  - name: na-ca-1 
+    jobs:
+      - seed_na-ca-1
+      - terraform_na-ca-1
+      - tiller_na-ca-1
+      - deploy_na-ca-1
+      - soak_na-ca-1
+
+  - name: na-us-1 
+    jobs:
+      - seed_na-us-1
+      - terraform_na-us-1
+      - tiller_na-us-1
+      - deploy_na-us-1
+      - soak_na-us-1
+
+  - name: na-us-3 
+    jobs:
+      - seed_na-us-3
+      - terraform_na-us-3
+      - tiller_na-us-3
+      - deploy_na-us-3
+      - soak_na-us-3
+
+  - name: qa-de-1 
+    jobs:
+      - seed_qa-de-1
+      - terraform_qa-de-1
+      - tiller_qa-de-1
+      - deploy_qa-de-1
+      - soak_qa-de-1
+
+
+  - name: WORLD 
+    jobs:
+      - master
+      - e2e 
+      - prod
+      - admin
+
+      - ASIA
+
+      - EMEA
+
+      - AMERICAS
+
+      - INFRA
+
+
+      - seed_ap-ae-1
+      - terraform_ap-ae-1
+      - tiller_ap-ae-1
+      - deploy_ap-ae-1
+      - soak_ap-ae-1
+
+      - seed_ap-au-1
+      - terraform_ap-au-1
+      - tiller_ap-au-1
+      - deploy_ap-au-1
+      - soak_ap-au-1
+
+      - seed_ap-cn-1
+      - terraform_ap-cn-1
+      - tiller_ap-cn-1
+      - deploy_ap-cn-1
+      - soak_ap-cn-1
+
+      - seed_ap-jp-1
+      - terraform_ap-jp-1
+      - tiller_ap-jp-1
+      - deploy_ap-jp-1
+      - soak_ap-jp-1
+
+      - seed_ap-jp-2
+      - terraform_ap-jp-2
+      - tiller_ap-jp-2
+      - deploy_ap-jp-2
+      - soak_ap-jp-2
+
+      - seed_ap-sa-1
+      - terraform_ap-sa-1
+      - tiller_ap-sa-1
+      - deploy_ap-sa-1
+      - soak_ap-sa-1
+
+      - seed_eu-de-1
+      - terraform_eu-de-1
+      - tiller_eu-de-1
+      - deploy_eu-de-1
+      - soak_eu-de-1
+
+      - seed_eu-de-2
+      - terraform_eu-de-2
+      - tiller_eu-de-2
+      - deploy_eu-de-2
+      - soak_eu-de-2
+
+      - seed_eu-nl-1
+      - terraform_eu-nl-1
+      - tiller_eu-nl-1
+      - deploy_eu-nl-1
+      - soak_eu-nl-1
+
+      - seed_eu-ru-1
+      - terraform_eu-ru-1
+      - tiller_eu-ru-1
+      - deploy_eu-ru-1
+      - soak_eu-ru-1
+
+      - seed_la-br-1
+      - terraform_la-br-1
+      - tiller_la-br-1
+      - deploy_la-br-1
+      - soak_la-br-1
+
+      - seed_na-ca-1
+      - terraform_na-ca-1
+      - tiller_na-ca-1
+      - deploy_na-ca-1
+      - soak_na-ca-1
+
+      - seed_na-us-1
+      - terraform_na-us-1
+      - tiller_na-us-1
+      - deploy_na-us-1
+      - soak_na-us-1
+
+      - seed_na-us-3
+      - terraform_na-us-3
+      - tiller_na-us-3
+      - deploy_na-us-3
+      - soak_na-us-3
+
+      - seed_qa-de-1
+      - terraform_qa-de-1
+      - tiller_qa-de-1
+      - deploy_qa-de-1
+      - soak_qa-de-1
+ 

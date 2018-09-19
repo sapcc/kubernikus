@@ -6,7 +6,7 @@ global:
   scrape_timeout: 55s
 
   external_labels:
-    region: {{ .Values.global.region }}
+    region: k-{{ .Values.global.region }}
 
 {{- if .Values.use_alertmanager }}
 alerting:

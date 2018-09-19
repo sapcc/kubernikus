@@ -10,6 +10,7 @@ groups:
       severity: critical
       context: node
       meta: "{{ $labels.instance }}"
+      playbook: docs/support/playbook/kubernikus/k8s_node_not_ready.html
     annotations:
       description: Many Nodes are NotReady
       summary: Many ({{$value}}) nodes are NotReady for more than an hour
@@ -23,7 +24,7 @@ groups:
       severity: critical
       context: node
       meta: "{{ $labels.instance }}"
-      playbook: docs/support/playbook/k8s_node_not_ready.html
+      playbook: docs/support/playbook/kubernikus/k8s_node_not_ready.html
     annotations:
       description: Node status is NotReady
       summary: Node {{$labels.node}} is NotReady for more than an hour
@@ -42,13 +43,14 @@ groups:
       summary: Node {{$labels.node}} is flapping between Ready and NotReady
 
   - alert: KubernetesNodeScrapeMissing
-    expr: absent(up{job="endpoints",kubernetes_name="kube-state-metrics"})
+    expr: absent(up{app="kube-state-metrics"})
     for: 1h
     labels:
       tier: kubernikus
       service: k8s
       severity: critical
       context: node
+      playbook: docs/support/playbook/kubernetes/k8s_node_scrape_missing.html
     annotations:
       description: Node status cannot be scraped
       summary: Node status failed to be scraped
@@ -77,3 +79,14 @@ groups:
     annotations:
       description: "PVC {{ $labels.namespace }}/{{ $labels.persistentvolumeclaim }} stuck in phase {{ $labels.phase }}"
       summary: "PVC stuck in phase {{ $labels.phase }}"
+
+  - alert: KubernetesNodeContainerOOMKilled
+    expr: sum by (kubernetes_io_hostname) (increase(node_vmstat_oom_kill[10m])) > 0
+    labels:
+      tier: kubernetes
+      service: node
+      severity: info
+      context: memory
+    annotations:
+      description: Container was OOM
+      summary:  A container on {{ $labels.kubernetes_io_hostname }} was killed after being out of memory

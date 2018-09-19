@@ -70,6 +70,7 @@ func (o *Options) BindFlags(flags *pflag.FlagSet) {
 	flags.StringVar(&o.Namespace, "namespace", o.Namespace, "Restrict operator to resources in the given namespace")
 	flags.IntVar(&o.MetricPort, "metric-port", o.MetricPort, "Port on which metrics are exposed")
 	flags.StringSliceVar(&o.Controllers, "controllers", o.Controllers, fmt.Sprintf("A list of controllers to enable.  Default is to enable all. controllers: %s", strings.Join(o.Controllers, ", ")))
+	flags.IntVar(&o.LogLevel, "v", 0, "log level")
 }
 
 func (o *Options) Validate(c *cobra.Command, args []string) error {
@@ -86,7 +87,7 @@ func (o *Options) Complete(args []string) error {
 
 func (o *Options) Run(c *cobra.Command) error {
 
-	logger := logutil.NewLogger(c.Flags())
+	logger := logutil.NewLogger(o.LogLevel)
 
 	sigs := make(chan os.Signal, 1)
 	stop := make(chan struct{})

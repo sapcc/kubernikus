@@ -1,6 +1,6 @@
 image:
   repository: sapcc/vice-president
-  tag: v201802041527
+  tag: v201808161913
   pullPolicy: IfNotPresent
 
 # config

@@ -18,3 +18,7 @@ spec:
   externalIPs:
     - {{ .Values.external_service_ip }}
 {{- end }}
+{{- if .Values.loadBalancerIP }}
+  loadBalancerIP: {{ .Values.loadBalancerIP }}
+{{- end }}
+

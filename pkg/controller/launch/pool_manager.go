@@ -24,6 +24,7 @@ type PoolManager interface {
 	SetStatus(*PoolStatus) error
 	CreateNode() (string, error)
 	DeleteNode(string) error
+	DeletePool() error
 }
 
 type PoolStatus struct {
@@ -190,7 +191,7 @@ func (cpm *ConcretePoolManager) CreateNode() (id string, err error) {
 
 	nodeName := util.SimpleNameGenerator.GenerateName(fmt.Sprintf("%v-%v-", cpm.Kluster.Spec.Name, cpm.Pool.Name))
 
-	userdata, err := templates.Ignition.GenerateNode(cpm.Kluster, nodeName, secret, cpm.Logger)
+	userdata, err := templates.Ignition.GenerateNode(cpm.Kluster, cpm.Pool, nodeName, secret, cpm.Logger)
 	if err != nil {
 		return "", err
 	}
@@ -209,6 +210,10 @@ func (cpm *ConcretePoolManager) DeleteNode(id string) (err error) {
 		return err
 	}
 	return nil
+}
+
+func (cpm *ConcretePoolManager) DeletePool() error {
+	return cpm.klusterClient.DeleteServerGroup(cpm.Kluster.Name + "/" + cpm.Pool.Name)
 }
 
 func (cpm *ConcretePoolManager) nodeIDs(nodes []openstack_kluster.Node) []string {

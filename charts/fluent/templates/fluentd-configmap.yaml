@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: fluentd-config
+  namespace: kube-system
+data:
+  fluent.conf: |2
+    <filter kube.kubernikus-system.kubernikus-{operator,api}**>
+      @type parser
+      format logfmt
+      key_name log
+      reserve_data true
+    </filter>
+
+    <match **>
+      @type elasticsearch
+      scheme  {{ required ".Values.elasticsearch.scheme missing" .Values.elasticsearch.scheme }}
+      host {{ required ".Values.elasticsearch.host missing" .Values.elasticsearch.host }}
+      port  {{ required ".Values.elasticsearch.port missing" .Values.elasticsearch.port }}
+      ssl_version TLSv1_2
+      logstash_prefix kubernikus
+      logstash_format true
+      user {{ required ".Values.elasticsearch.user missing" .Values.elasticsearch.user }}
+      password {{ required ".Values.elasticsearch.password missing" .Values.elasticsearch.password }}
+    </match>

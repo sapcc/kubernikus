@@ -1,0 +1,32 @@
+platform: 'linux'
+
+image_resource:
+  type: docker-image
+  source:
+    repository: sapcc/kubernikus-kubectl
+    tag: 'latest'
+
+inputs:
+  - name: secrets.git
+
+run:
+  path: /bin/sh
+  args:
+    - -c
+    - |
+      set -exo pipefail
+      tag=$(cat secrets.git/kubernikus/tiller.version)
+      kubernikusctl auth init
+      kubectl create sa tiller --namespace kube-system || true
+      kubectl create clusterrolebinding tiller --clusterrole cluster-admin --serviceaccount=kube-system:tiller || true
+      helm init --service-account tiller --history-max 5 --tiller-image sapcc/tiller:$tag --upgrade --wait
+
+params:
+  OS_AUTH_URL:
+  OS_USERNAME:
+  OS_PASSWORD:
+  OS_USER_DOMAIN_NAME:
+  OS_PROJECT_NAME:
+  OS_PROJECT_DOMAIN_NAME:
+  KUBERNIKUS_NAME:
+  KUBERNIKUS_URL:

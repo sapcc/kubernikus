@@ -87,7 +87,7 @@ systemd:
           --mount volume=var-log,target=/var/log \
           --mount volume=etc-machine-id,target=/etc/machine-id \
           --insecure-options=image"
-        Environment="KUBELET_IMAGE_TAG=v1.10.1"
+        Environment="KUBELET_IMAGE_TAG=v1.10.7"
         Environment="KUBELET_IMAGE_URL=docker://sapcc/hyperkube"
         Environment="KUBELET_IMAGE_ARGS=--name=kubelet --exec=/kubelet"
         ExecStartPre=/bin/mkdir -p /etc/kubernetes/manifests
@@ -104,7 +104,11 @@ systemd:
           --network-plugin=kubenet \
           --non-masquerade-cidr=0.0.0.0/0 \
           --lock-file=/var/run/lock/kubelet.lock \
-          --exit-on-lock-contention 
+          --pod-infra-container-image=sapcc/pause-amd64:3.1 \
+{{- if .NodeLabels }}
+          --node-labels={{ .NodeLabels | join "," }} \
+{{- end }}
+          --exit-on-lock-contention
         ExecStop=-/usr/bin/rkt stop --uuid-file=/var/run/kubelet-pod.uuid
         Restart=always
         RestartSec=10
@@ -161,7 +165,7 @@ systemd:
           --mount volume=lib-modules,target=/lib/modules \
           --stage1-from-dir=stage1-fly.aci \
           --insecure-options=image \
-          docker://sapcc/hyperkube:v1.10.1 \
+          docker://sapcc/hyperkube:v1.10.7 \
           --name kube-proxy \
           --exec=/hyperkube \
           -- \

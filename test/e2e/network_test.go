@@ -30,7 +30,7 @@ const (
 
 	PollInterval = 6 * time.Second // DNS Timeout is 5s
 
-	ServeHostnameImage = "gcr.io/kubernetes-e2e-test-images/serve-hostname-amd64:1.1"
+	ServeHostnameImage = "sapcc/serve-hostname-amd64:1.1"
 	ServeHostnamePort  = 9376
 )
 

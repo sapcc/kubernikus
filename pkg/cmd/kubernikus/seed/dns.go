@@ -37,6 +37,7 @@ type KubeDNSOptions struct {
 	version    string
 	domain     string
 	clusterIP  string
+	LogLevel   int
 }
 
 func NewKubeDNSOptions() *KubeDNSOptions {
@@ -54,6 +55,7 @@ func (o *KubeDNSOptions) BindFlags(flags *pflag.FlagSet) {
 	flags.StringVar(&o.version, "version", o.version, "Version tag for kube-dns containers")
 	flags.StringVar(&o.domain, "domain", o.domain, "Cluster Domain")
 	flags.StringVar(&o.clusterIP, "cluster-ip", o.clusterIP, "ClusterIP for kube-dns service")
+	flags.IntVar(&o.LogLevel, "v", 0, "log level")
 }
 
 func (o *KubeDNSOptions) Validate(c *cobra.Command, args []string) error {
@@ -68,7 +70,7 @@ func (o *KubeDNSOptions) Complete(args []string) error {
 }
 
 func (o *KubeDNSOptions) Run(c *cobra.Command) error {
-	logger := logutil.NewLogger(c.Flags())
+	logger := logutil.NewLogger(o.LogLevel)
 	client, err := kubernetes.NewClient(o.kubeConfig, o.context, logger)
 	if err != nil {
 		return err

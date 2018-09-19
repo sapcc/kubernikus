@@ -36,6 +36,7 @@ func NewServerCommand() *cobra.Command {
 
 type ServerOptions struct {
 	server.Options
+	LogLevel int
 }
 
 func NewServerOptions() *ServerOptions {
@@ -50,6 +51,7 @@ func (o *ServerOptions) BindFlags(flags *pflag.FlagSet) {
 	flags.StringVar(&o.Certificate, "cert", o.Certificate, "Certificate for the tunnel server")
 	flags.StringVar(&o.PrivateKey, "key", o.PrivateKey, "Key for the tunnel server")
 	flags.StringVar(&o.ServiceCIDR, "service-cidr", "", "Cluster service IP range")
+	flags.IntVar(&o.LogLevel, "v", 0, "log level")
 }
 
 func (o *ServerOptions) Validate(c *cobra.Command, args []string) error {
@@ -64,7 +66,7 @@ func (o *ServerOptions) Complete(args []string) error {
 }
 
 func (o *ServerOptions) Run(c *cobra.Command) error {
-	o.Logger = logutil.NewLogger(c.Flags())
+	o.Logger = logutil.NewLogger(o.LogLevel)
 	sigs := make(chan os.Signal, 1)
 	stop := make(chan struct{})
 	signal.Notify(sigs, os.Interrupt, syscall.SIGTERM) // Push signals into channel

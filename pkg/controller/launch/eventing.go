@@ -45,3 +45,6 @@ func (epm *EventingPoolManager) DeleteNode(id string) (err error) {
 
 	return
 }
+func (epm *EventingPoolManager) DeletePool() error {
+	return epm.PoolManager.DeletePool()
+}

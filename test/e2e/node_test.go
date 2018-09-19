@@ -42,6 +42,7 @@ func (k *NodeTests) Run(t *testing.T) {
 		t.Run("NetworkUnavailable", k.ConditionNetworkUnavailable) &&
 		t.Run("Healthy", k.StateHealthy) &&
 		t.Run("Ready", k.ConditionReady) &&
+		t.Run("Labeled", k.Labeled) &&
 		t.Run("Sufficient", k.Sufficient)
 }
 
@@ -79,6 +80,16 @@ func (k *NodeTests) ConditionReady(t *testing.T) {
 	count, err := k.checkCondition(t, v1.NodeReady, v1.ConditionTrue, ConditionReadyTimeout)
 	assert.NoError(t, err)
 	assert.Equal(t, k.ExpectedNodeCount, count)
+}
+
+func (k *NodeTests) Labeled(t *testing.T) {
+	nodeList, err := k.Kubernetes.ClientSet.CoreV1().Nodes().List(meta_v1.ListOptions{})
+	require.NoError(t, err, "There must be no error while listing the kluster's nodes")
+
+	for _, node := range nodeList.Items {
+		assert.Contains(t, node.Labels, "ccloud.sap.com/nodepool", "node %s is missing the ccloud.sap.com/nodepool label", node.Name)
+	}
+
 }
 
 func (k *NodeTests) Registered(t *testing.T) {

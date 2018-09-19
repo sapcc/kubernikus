@@ -102,6 +102,12 @@ func (o *InitOptions) Run(c *cobra.Command) (err error) {
 	}
 
 	if err := o.setup(); err != nil {
+
+		if o.openstack.Username != "" {
+			fmt.Println("Deleting password from keyring")
+			keyring.Delete("kubernikus", o.openstack.Username)
+		}
+
 		return err
 	}
 

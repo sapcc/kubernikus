@@ -49,6 +49,7 @@ type KubernikusOperatorOptions struct {
 	Namespace           string
 	Controllers         []string
 	MetricPort          int
+	LogLevel            int
 }
 
 type KubernikusOperator struct {

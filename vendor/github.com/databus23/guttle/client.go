@@ -2,13 +2,15 @@ package guttle
 
 import (
 	"errors"
-	"log"
+	"fmt"
 	"net"
+	"os"
 	"sync"
 	"time"
 
-	"github.com/databus23/guttle/group"
+	"github.com/go-kit/kit/log"
 	"github.com/hashicorp/yamux"
+	"github.com/oklog/run"
 )
 
 //ErrRedialAborted is returned by Client.Start when the configured
@@ -39,6 +41,9 @@ type ClientOptions struct {
 	// with ClientClosed event when no more reconnection atttemps should
 	// be made.
 	Backoff Backoff
+
+	//Logger used by this service instance
+	Logger log.Logger
 }
 
 // Client is responsible for connecting to a tunnel server.
@@ -47,6 +52,7 @@ type Client struct {
 	session   *yamux.Session
 	requestWg sync.WaitGroup
 	stop      func()
+	logger    log.Logger
 }
 
 // NewClient create a new Client
@@ -57,21 +63,28 @@ func NewClient(opts *ClientOptions) *Client {
 	if opts.ProxyFunc == nil {
 		opts.ProxyFunc = SourceRoutedProxy()
 	}
-	return &Client{options: opts}
+	logger := opts.Logger
+	if logger == nil {
+		logger = log.NewLogfmtLogger(log.NewSyncWriter(os.Stderr))
+		logger = log.With(logger, "ts", log.DefaultTimestampUTC, "caller", log.DefaultCaller)
+	}
+
+	return &Client{options: opts, logger: logger}
 }
 
 // Start the client and connects to the server
 func (c *Client) Start() error {
 
-	var g group.Group
+	var g run.Group
 	if c.options.ListenAddr != "" {
 		listener, err := net.Listen("tcp", c.options.ListenAddr)
 		if err != nil {
 			return err
 		}
 		g.Add(func() error {
+			c.logger.Log("msg", "listening for connections", "addr", listener.Addr())
 			err := serveListener(listener, c.handleConnection)
-			log.Printf("Stopped listener %s", listener.Addr())
+			c.logger.Log("msg", "stopped", "listener", listener.Addr())
 			return err
 		}, func(error) {
 			listener.Close()
@@ -94,7 +107,6 @@ func (c *Client) Start() error {
 	}
 	g.Add(func() error {
 		<-stopCh
-		log.Print("Stop channel closed")
 		return nil
 	}, func(error) {
 		c.stop()
@@ -117,14 +129,14 @@ func (c *Client) serveTunnel(close <-chan struct{}) error {
 	for {
 		err := c.connect()
 		if err == nil {
-			log.Print("Shutdown detected")
+			c.logger.Log("msg", "shutdown")
 			return nil
 		}
 		dur := c.options.Backoff.NextBackOff()
 		if dur < 0 {
 			return ErrRedialAborted
 		}
-		log.Printf("Connection failure: %s. Backing off for %s", err, dur)
+		c.logger.Log("msg", "connection failure", "backoff", dur, "err", err)
 		select {
 		case <-time.NewTimer(dur).C:
 		case <-close:
@@ -135,36 +147,42 @@ func (c *Client) serveTunnel(close <-chan struct{}) error {
 }
 
 func (c *Client) handleConnection(conn net.Conn) {
+
+	logger := log.With(c.logger, "from", conn.RemoteAddr())
+
 	defer func() {
-		log.Printf("Closing connection %s", conn.RemoteAddr())
-		if err := conn.Close(); err != nil {
-			log.Printf("Close error: %s", err)
-		}
+		//don't check the error, connection might alrady by closed
+		conn.Close()
 	}()
 
 	originalIP, orginalPort, err := originalDestination(&conn)
 	if err != nil {
-		log.Printf("Failed to get original destination address: %s", err)
+		c.logger.Log("msg", "failed to get original destination", "err", err)
 		return
 	}
-
-	log.Printf("Accepted connection %s -> %s:%d", conn.RemoteAddr(), originalIP, orginalPort)
+	logger = log.With(logger, "for", fmt.Sprintf("%s:%d", originalIP, orginalPort))
 
 	if c.session == nil {
-		log.Print("No active tunnel. Rejecting")
+		logger.Log("err", "No active tunnel. Rejecting")
 		return
 	}
 	stream, err := c.session.OpenStream()
 	if err != nil {
-		log.Printf("Failed to open stream: %s", err)
+		logger.Log("msg", "failed to open stream", "err", err)
 		return
 	}
+	defer func() {
+		if err := stream.Close(); err != nil {
+			logger.Log("msg", "failed to close stream", "err", err)
+		}
+	}()
+	logger = log.With(logger, "stream_id", stream.StreamID())
 	err = writeHeader(stream, originalIP, orginalPort)
 	if err != nil {
-		log.Printf("Failed to send preamble: %s", err)
+		logger.Log("msg", "Failed to send preamble", "err", err)
 	}
 
-	Join(stream, conn)
+	Join(stream, conn, logger)
 }
 
 func (c *Client) closeTunnel() {
@@ -175,7 +193,7 @@ func (c *Client) closeTunnel() {
 	waitCh := make(chan struct{})
 	go func() {
 		if err := c.session.GoAway(); err != nil {
-			log.Printf("Session go away failed: %s", err)
+			c.logger.Log("msg", "Session go away failed", "err", err)
 		}
 
 		c.requestWg.Wait()
@@ -185,27 +203,28 @@ func (c *Client) closeTunnel() {
 	case <-waitCh:
 		// ok
 	case <-time.After(time.Second * 10):
-		log.Print("Timeout waiting for connections to finish")
+		c.logger.Log("err", "Timeout waiting for connections to finish")
 	}
 
-	if err := c.session.Close(); err != nil {
-		log.Printf("Error closing session: %s", err)
-	}
+	c.logger.Log("msg", "closing session", "err", c.session.Close())
 
 }
 
 func (c *Client) connect() error {
-	log.Printf("Connecting to %s", c.options.ServerAddr)
+	c.logger.Log("msg", "connecting", "remote", c.options.ServerAddr)
 	conn, err := c.dial(c.options.ServerAddr)
 	if err != nil {
 		return err
 	}
-
 	// Setup client side of yamux
-	session, err := yamux.Client(conn, nil)
+	config := yamux.DefaultConfig()
+	config.LogOutput = &StdlibAdapter{c.logger}
+	session, err := yamux.Client(conn, config)
 	if err != nil {
-		log.Fatal(err)
+		c.logger.Log("msg", "failed to create client", "err", err)
+		os.Exit(1)
 	}
+	c.logger.Log("msg", "connected")
 	c.session = session
 	defer func() { c.session = nil }()
 
@@ -225,7 +244,8 @@ func (c *Client) connect() error {
 }
 
 func (c *Client) handleStream(stream *yamux.Stream) {
-	log.Printf("Handeling stream %d from %s", stream.StreamID(), stream.RemoteAddr())
+
+	logger := log.With(c.logger, "from", "tunnel", "stream_id", stream.StreamID())
 
 	c.requestWg.Add(1)
 	defer func() {
@@ -234,10 +254,10 @@ func (c *Client) handleStream(stream *yamux.Stream) {
 	}()
 	header, err := readHeader(stream)
 	if err != nil {
-		log.Printf("Failed to parse header: %s", err)
+		logger.Log("msg", "Failed to parse header", "msg", err)
 		return
 	}
-	c.options.ProxyFunc(stream, header)
+	c.options.ProxyFunc(stream, header, logger)
 }
 
 func (c *Client) dial(serverAddr string) (net.Conn, error) {

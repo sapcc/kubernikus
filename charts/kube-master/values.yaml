@@ -3,7 +3,7 @@
 # Declare variables to be passed into your templates.
 image:
   repository: sapcc/hyperkube
-  tag: v1.10.1
+  tag: v1.10.7
   pullPolicy: IfNotPresent
 
 # Settings for the openstack cloudprovider
@@ -36,7 +36,7 @@ advertiseAddress: 198.18.128.1
 
 version:
 # kubernikus:
-  kubernetes: 1.10.1
+  kubernetes: 1.10.7
 
 api:
   replicaCount: 1
@@ -45,10 +45,10 @@ api:
   resources:
     requests:
       cpu: 100m
-      memory: 256Mi
+      memory: 512Mi
     limits:
       cpu: 500m
-      memory: 512Mi
+      memory: 1024Mi
 
 controllerManager:
   replicaCount: 1

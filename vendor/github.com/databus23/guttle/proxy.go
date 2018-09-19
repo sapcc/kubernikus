@@ -1,18 +1,19 @@
 package guttle
 
 import (
-	"log"
 	"net"
 	"time"
+
+	"github.com/go-kit/kit/log"
 )
 
 // ProxyFunc is responsible for forwarding a tunneled connection to a local destination and writing the response back.
-type ProxyFunc func(remote net.Conn, hdr Header)
+type ProxyFunc func(remote net.Conn, hdr Header, logger log.Logger)
 
 // NoProxy returns a ProxyFunc that does nothing
 func NoProxy() ProxyFunc {
-	return func(src net.Conn, _ Header) {
-		log.Print("Rejecting connection")
+	return func(src net.Conn, _ Header, logger log.Logger) {
+		logger.Log("msg", "rejecting connection")
 		src.Close()
 	}
 }
@@ -20,35 +21,29 @@ func NoProxy() ProxyFunc {
 // SourceRoutedProxy returns a ProxyFunc that honors the header information
 // of the proxied request and forwards traffic to the given header information.
 func SourceRoutedProxy() ProxyFunc {
-	return func(src net.Conn, hdr Header) {
-		dest := hdr.Destination()
-		conn, err := net.DialTimeout("tcp", dest, 5*time.Second)
+	return func(src net.Conn, hdr Header, logger log.Logger) {
+		destination := hdr.Destination()
+		conn, err := net.DialTimeout("tcp", destination, 5*time.Second)
 		if err != nil {
-			log.Printf("Failed to connect to %s: %s", dest, err)
+			logger.Log("msg", "connection failed", "dest", destination, "err", err)
 			return
 		}
-		defer func() {
-			if err := conn.Close(); err != nil {
-				log.Printf("Error closing connection: %s", err)
-			}
-		}()
-		Join(src, conn)
+		logger = log.With(logger, "src", conn.LocalAddr(), "dest", destination)
+		//Note: Join closes the connection
+		Join(src, conn, logger)
 	}
 }
 
 // StaticProxy ignores the request header and forwards traffic to a static destination
 func StaticProxy(destination string) ProxyFunc {
-	return func(src net.Conn, _ Header) {
+	return func(src net.Conn, _ Header, logger log.Logger) {
 		conn, err := net.DialTimeout("tcp", destination, 5*time.Second)
 		if err != nil {
-			log.Printf("Failed to connect to %s: %s", destination, err)
+			logger.Log("msg", "connection failed", "dest", destination, "err", err)
 			return
 		}
-		defer func() {
-			if err := conn.Close(); err != nil {
-				log.Printf("Error closing connection: %s", err)
-			}
-		}()
-		Join(src, conn)
+		logger = log.With(logger, "src", conn.LocalAddr(), "dest", destination)
+		//Note: Join closes the connection
+		Join(src, conn, logger)
 	}
 }

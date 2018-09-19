@@ -194,7 +194,7 @@ func CreateCertificates(kluster *v1.Kluster, apiURL, authURL, domain string) (ma
 	certs.ApiServer.Nodes.Universal = certs.signApiServerNode("universal")
 	certs.Kubelet.Clients.ApiServer = certs.signKubeletClient("apiserver")
 	certs.TLS.ApiServer = certs.signTLS("apiserver",
-		[]string{"kubernetes", "kubernetes.default", "apiserver", kluster.Name, fmt.Sprintf("%v.%v", kluster.Name, domain)},
+		[]string{"kubernetes", "kubernetes.default", "kubernetes.default.svc", "apiserver", kluster.Name, fmt.Sprintf("%v.%v", kluster.Name, domain)},
 		[]net.IP{net.IPv4(127, 0, 0, 1), apiIP})
 	certs.TLS.Wormhole = certs.signTLS("wormhole",
 		[]string{fmt.Sprintf("%v-wormhole.%v", kluster.Name, domain)}, []net.IP{})

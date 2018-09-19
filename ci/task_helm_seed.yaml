@@ -1,0 +1,23 @@
+platform: linux
+
+image_resource:
+  type: docker-image
+  source: { repository: hub.global.cloud.sap/monsoon/kubectl, tag: 'v1.7.7'}
+
+inputs:
+  - name: secrets.git
+  - name: helm-charts.git
+
+run:
+  path: sh
+  args:
+    - -exc
+    - |
+      set -o pipefail
+      helm upgrade $RELEASE helm-charts.git/openstack/kubernikus --namespace $NAMESPACE --values secrets.git/global/values/kubernikus-seed.yaml --install --debug
+
+params:
+  REGION:
+  GITHUB_TOKEN:
+  NAMESPACE: monsoon3 
+  RELEASE: kubernikus 

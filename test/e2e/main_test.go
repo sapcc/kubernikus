@@ -98,6 +98,12 @@ func TestRunner(t *testing.T) {
 	openstack, err := framework.NewOpenStackFramework()
 	require.NoError(t, err, "Must be able to connect to OpenStack")
 
+	// Pyrolize garbage left from previous e2e runs
+	pyrolisisTests := &PyrolisisTests{kubernikus, *reuse}
+	if !t.Run("Pyrolisis", pyrolisisTests.Run) {
+		return
+	}
+
 	if cleanup != nil && *cleanup == true {
 		cleanupTests := &CleanupTests{kubernikus, openstack, klusterName, *reuse}
 		defer t.Run("Cleanup", cleanupTests.Run)
