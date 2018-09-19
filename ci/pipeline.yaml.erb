@@ -384,6 +384,7 @@ jobs:
         timeout: 45m
         params:
           <<: *auth_e2e_<%= region %>
+          SENTRY_DSN: ((sentry-soak-tests))
     <<: *slack
 
 <% end %>
