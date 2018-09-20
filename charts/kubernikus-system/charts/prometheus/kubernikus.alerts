@@ -2,7 +2,7 @@ groups:
 - name: kubernikus.alerts
   rules:
   - alert: KubernikusKlusterStuck
-    expr: kubernikus_kluster_status_phase{phase!="Running"} == 1
+    expr: kubernikus_kluster_status_phase{phase!~"Running|Pending"} == 1
     for: 1h
     labels:
       tier: kubernikus
@@ -12,6 +12,18 @@ groups:
     annotations:
       description: Kluster {{ $labels.kluster_id }} is stuck in {{ $labels.phase }} for 1h
       summary: Kluster stuck in phase {{ $labels.phase }}
+
+  - alert: KubernikusManyKlusterStuckInPending
+    expr: round((count(kubernikus_kluster_status_phase{phase="Pending"} == 1)) / count(kubernikus_kluster_info) * 100) >= 20
+    for: 1h
+    labels:
+      tier: kubernikus
+      service: k8s
+      severity: warning
+      context: kluster
+    annotations:
+      description: More than {{ $labels.value }} percent of klusters are stuck in pending for at least 1h
+      summary: Many klusters stuck in pending
 
   - alert: KubernikusAPIDown
     expr: count by (instance) (probe_success{kubernetes_name="kubernikus-api"} != 1) >= count by (instance) (probe_success{kubernetes_name="kubernikus-api"} == 1)
