@@ -9,6 +9,7 @@ groups:
       service: k8s
       severity: warning
       context: kluster
+      meta: "{{ $labels.kluster_id }} stuck in {{ $labels.phase }}"
     annotations:
       description: Kluster {{ $labels.kluster_id }} is stuck in {{ $labels.phase }} for 1h
       summary: Kluster stuck in phase {{ $labels.phase }}
@@ -33,6 +34,7 @@ groups:
       service: kubernikus
       severity: warning
       context: kluster
+      meta: "{{ $labels.kubernetes_name }} is unavailable"
     annotations:
       description: "{{ $labels.kubernetes_name }} is unavailable"
       summary: "{{ $labels.kubernetes_name }} is unavailable"
