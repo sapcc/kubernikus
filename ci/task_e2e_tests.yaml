@@ -15,6 +15,7 @@ run:
   args:
     - -c
     - |
+      set -o pipefail
       export GOPATH=$PWD/gopath
       cd gopath/src/github.com/sapcc/kubernikus
 

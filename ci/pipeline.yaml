@@ -711,6 +711,7 @@ task_e2e_tests: &task_e2e_tests
     args:
       - -c
       - |
+        set -o pipefail
         export GOPATH=$PWD/gopath
         cd gopath/src/github.com/sapcc/kubernikus
   
