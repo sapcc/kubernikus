@@ -104,6 +104,11 @@ func TestRunner(t *testing.T) {
 		return
 	}
 
+	preflightTests := &PreFlightTests{kubernikus, openstack, *reuse}
+	if !t.Run("PreflightCheck", preflightTests.Run) {
+		return
+	}
+
 	if cleanup != nil && *cleanup == true {
 		cleanupTests := &CleanupTests{kubernikus, openstack, klusterName, *reuse}
 		defer t.Run("Cleanup", cleanupTests.Run)
