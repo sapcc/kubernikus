@@ -62,10 +62,11 @@ auth_e2e_<%= region %>: &auth_e2e_<%= region %>
   OS_AUTH_URL: https://identity-3.<%= region %>.cloud.sap/v3
   OS_USERNAME: kubernikus-pipeline
   OS_PASSWORD: ((kubernikus-pipeline-password))
-  OS_USER_DOMAIN_NAME: Default 
+  OS_USER_DOMAIN_NAME: Default
   OS_PROJECT_NAME: kubernikus_e2e
   OS_PROJECT_DOMAIN_NAME: ccadmin
-  KUBERNIKUS_NAME: e2e 
+  OS_REGION_NAME: <%= region %>
+  KUBERNIKUS_NAME: e2e
   KUBERNIKUS_URL: https://kubernikus.<%= region %>.cloud.sap
 <% end %>
 
@@ -77,6 +78,7 @@ auth_e2e_<%= region %>: &auth_e2e_<%= region %>
   OS_USER_DOMAIN_NAME: ccadmin
   OS_PROJECT_NAME: kubernikus-e2e
   OS_PROJECT_DOMAIN_NAME: ccadmin
+  OS_REGION_NAME: <%= region %>
   KUBERNIKUS_NAME: e2e 
   KUBERNIKUS_URL: https://kubernikus.<%= region %>.cloud.sap
 <% end %>

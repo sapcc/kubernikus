@@ -22,10 +22,11 @@ auth_e2e_ap-ae-1: &auth_e2e_ap-ae-1
   OS_AUTH_URL: https://identity-3.ap-ae-1.cloud.sap/v3
   OS_USERNAME: kubernikus-pipeline
   OS_PASSWORD: ((kubernikus-pipeline-password))
-  OS_USER_DOMAIN_NAME: Default 
+  OS_USER_DOMAIN_NAME: Default
   OS_PROJECT_NAME: kubernikus_e2e
   OS_PROJECT_DOMAIN_NAME: ccadmin
-  KUBERNIKUS_NAME: e2e 
+  OS_REGION_NAME: ap-ae-1
+  KUBERNIKUS_NAME: e2e
   KUBERNIKUS_URL: https://kubernikus.ap-ae-1.cloud.sap
 
 
@@ -59,6 +60,7 @@ auth_e2e_ap-au-1: &auth_e2e_ap-au-1
   OS_USER_DOMAIN_NAME: ccadmin
   OS_PROJECT_NAME: kubernikus-e2e
   OS_PROJECT_DOMAIN_NAME: ccadmin
+  OS_REGION_NAME: ap-au-1
   KUBERNIKUS_NAME: e2e 
   KUBERNIKUS_URL: https://kubernikus.ap-au-1.cloud.sap
 
@@ -86,10 +88,11 @@ auth_e2e_ap-cn-1: &auth_e2e_ap-cn-1
   OS_AUTH_URL: https://identity-3.ap-cn-1.cloud.sap/v3
   OS_USERNAME: kubernikus-pipeline
   OS_PASSWORD: ((kubernikus-pipeline-password))
-  OS_USER_DOMAIN_NAME: Default 
+  OS_USER_DOMAIN_NAME: Default
   OS_PROJECT_NAME: kubernikus_e2e
   OS_PROJECT_DOMAIN_NAME: ccadmin
-  KUBERNIKUS_NAME: e2e 
+  OS_REGION_NAME: ap-cn-1
+  KUBERNIKUS_NAME: e2e
   KUBERNIKUS_URL: https://kubernikus.ap-cn-1.cloud.sap
 
 
@@ -118,10 +121,11 @@ auth_e2e_ap-jp-1: &auth_e2e_ap-jp-1
   OS_AUTH_URL: https://identity-3.ap-jp-1.cloud.sap/v3
   OS_USERNAME: kubernikus-pipeline
   OS_PASSWORD: ((kubernikus-pipeline-password))
-  OS_USER_DOMAIN_NAME: Default 
+  OS_USER_DOMAIN_NAME: Default
   OS_PROJECT_NAME: kubernikus_e2e
   OS_PROJECT_DOMAIN_NAME: ccadmin
-  KUBERNIKUS_NAME: e2e 
+  OS_REGION_NAME: ap-jp-1
+  KUBERNIKUS_NAME: e2e
   KUBERNIKUS_URL: https://kubernikus.ap-jp-1.cloud.sap
 
 
@@ -150,10 +154,11 @@ auth_e2e_ap-jp-2: &auth_e2e_ap-jp-2
   OS_AUTH_URL: https://identity-3.ap-jp-2.cloud.sap/v3
   OS_USERNAME: kubernikus-pipeline
   OS_PASSWORD: ((kubernikus-pipeline-password))
-  OS_USER_DOMAIN_NAME: Default 
+  OS_USER_DOMAIN_NAME: Default
   OS_PROJECT_NAME: kubernikus_e2e
   OS_PROJECT_DOMAIN_NAME: ccadmin
-  KUBERNIKUS_NAME: e2e 
+  OS_REGION_NAME: ap-jp-2
+  KUBERNIKUS_NAME: e2e
   KUBERNIKUS_URL: https://kubernikus.ap-jp-2.cloud.sap
 
 
@@ -182,10 +187,11 @@ auth_e2e_ap-sa-1: &auth_e2e_ap-sa-1
   OS_AUTH_URL: https://identity-3.ap-sa-1.cloud.sap/v3
   OS_USERNAME: kubernikus-pipeline
   OS_PASSWORD: ((kubernikus-pipeline-password))
-  OS_USER_DOMAIN_NAME: Default 
+  OS_USER_DOMAIN_NAME: Default
   OS_PROJECT_NAME: kubernikus_e2e
   OS_PROJECT_DOMAIN_NAME: ccadmin
-  KUBERNIKUS_NAME: e2e 
+  OS_REGION_NAME: ap-sa-1
+  KUBERNIKUS_NAME: e2e
   KUBERNIKUS_URL: https://kubernikus.ap-sa-1.cloud.sap
 
 
@@ -219,6 +225,7 @@ auth_e2e_eu-de-1: &auth_e2e_eu-de-1
   OS_USER_DOMAIN_NAME: ccadmin
   OS_PROJECT_NAME: kubernikus-e2e
   OS_PROJECT_DOMAIN_NAME: ccadmin
+  OS_REGION_NAME: eu-de-1
   KUBERNIKUS_NAME: e2e 
   KUBERNIKUS_URL: https://kubernikus.eu-de-1.cloud.sap
 
@@ -251,6 +258,7 @@ auth_e2e_eu-de-2: &auth_e2e_eu-de-2
   OS_USER_DOMAIN_NAME: ccadmin
   OS_PROJECT_NAME: kubernikus-e2e
   OS_PROJECT_DOMAIN_NAME: ccadmin
+  OS_REGION_NAME: eu-de-2
   KUBERNIKUS_NAME: e2e 
   KUBERNIKUS_URL: https://kubernikus.eu-de-2.cloud.sap
 
@@ -278,10 +286,11 @@ auth_e2e_eu-nl-1: &auth_e2e_eu-nl-1
   OS_AUTH_URL: https://identity-3.eu-nl-1.cloud.sap/v3
   OS_USERNAME: kubernikus-pipeline
   OS_PASSWORD: ((kubernikus-pipeline-password))
-  OS_USER_DOMAIN_NAME: Default 
+  OS_USER_DOMAIN_NAME: Default
   OS_PROJECT_NAME: kubernikus_e2e
   OS_PROJECT_DOMAIN_NAME: ccadmin
-  KUBERNIKUS_NAME: e2e 
+  OS_REGION_NAME: eu-nl-1
+  KUBERNIKUS_NAME: e2e
   KUBERNIKUS_URL: https://kubernikus.eu-nl-1.cloud.sap
 
 
@@ -310,10 +319,11 @@ auth_e2e_eu-ru-1: &auth_e2e_eu-ru-1
   OS_AUTH_URL: https://identity-3.eu-ru-1.cloud.sap/v3
   OS_USERNAME: kubernikus-pipeline
   OS_PASSWORD: ((kubernikus-pipeline-password))
-  OS_USER_DOMAIN_NAME: Default 
+  OS_USER_DOMAIN_NAME: Default
   OS_PROJECT_NAME: kubernikus_e2e
   OS_PROJECT_DOMAIN_NAME: ccadmin
-  KUBERNIKUS_NAME: e2e 
+  OS_REGION_NAME: eu-ru-1
+  KUBERNIKUS_NAME: e2e
   KUBERNIKUS_URL: https://kubernikus.eu-ru-1.cloud.sap
 
 
@@ -342,10 +352,11 @@ auth_e2e_la-br-1: &auth_e2e_la-br-1
   OS_AUTH_URL: https://identity-3.la-br-1.cloud.sap/v3
   OS_USERNAME: kubernikus-pipeline
   OS_PASSWORD: ((kubernikus-pipeline-password))
-  OS_USER_DOMAIN_NAME: Default 
+  OS_USER_DOMAIN_NAME: Default
   OS_PROJECT_NAME: kubernikus_e2e
   OS_PROJECT_DOMAIN_NAME: ccadmin
-  KUBERNIKUS_NAME: e2e 
+  OS_REGION_NAME: la-br-1
+  KUBERNIKUS_NAME: e2e
   KUBERNIKUS_URL: https://kubernikus.la-br-1.cloud.sap
 
 
@@ -374,10 +385,11 @@ auth_e2e_na-ca-1: &auth_e2e_na-ca-1
   OS_AUTH_URL: https://identity-3.na-ca-1.cloud.sap/v3
   OS_USERNAME: kubernikus-pipeline
   OS_PASSWORD: ((kubernikus-pipeline-password))
-  OS_USER_DOMAIN_NAME: Default 
+  OS_USER_DOMAIN_NAME: Default
   OS_PROJECT_NAME: kubernikus_e2e
   OS_PROJECT_DOMAIN_NAME: ccadmin
-  KUBERNIKUS_NAME: e2e 
+  OS_REGION_NAME: na-ca-1
+  KUBERNIKUS_NAME: e2e
   KUBERNIKUS_URL: https://kubernikus.na-ca-1.cloud.sap
 
 
@@ -411,6 +423,7 @@ auth_e2e_na-us-1: &auth_e2e_na-us-1
   OS_USER_DOMAIN_NAME: ccadmin
   OS_PROJECT_NAME: kubernikus-e2e
   OS_PROJECT_DOMAIN_NAME: ccadmin
+  OS_REGION_NAME: na-us-1
   KUBERNIKUS_NAME: e2e 
   KUBERNIKUS_URL: https://kubernikus.na-us-1.cloud.sap
 
@@ -438,10 +451,11 @@ auth_e2e_na-us-3: &auth_e2e_na-us-3
   OS_AUTH_URL: https://identity-3.na-us-3.cloud.sap/v3
   OS_USERNAME: kubernikus-pipeline
   OS_PASSWORD: ((kubernikus-pipeline-password))
-  OS_USER_DOMAIN_NAME: Default 
+  OS_USER_DOMAIN_NAME: Default
   OS_PROJECT_NAME: kubernikus_e2e
   OS_PROJECT_DOMAIN_NAME: ccadmin
-  KUBERNIKUS_NAME: e2e 
+  OS_REGION_NAME: na-us-3
+  KUBERNIKUS_NAME: e2e
   KUBERNIKUS_URL: https://kubernikus.na-us-3.cloud.sap
 
 
@@ -470,10 +484,11 @@ auth_e2e_qa-de-1: &auth_e2e_qa-de-1
   OS_AUTH_URL: https://identity-3.qa-de-1.cloud.sap/v3
   OS_USERNAME: kubernikus-pipeline
   OS_PASSWORD: ((kubernikus-pipeline-password))
-  OS_USER_DOMAIN_NAME: Default 
+  OS_USER_DOMAIN_NAME: Default
   OS_PROJECT_NAME: kubernikus_e2e
   OS_PROJECT_DOMAIN_NAME: ccadmin
-  KUBERNIKUS_NAME: e2e 
+  OS_REGION_NAME: qa-de-1
+  KUBERNIKUS_NAME: e2e
   KUBERNIKUS_URL: https://kubernikus.qa-de-1.cloud.sap
 
 
@@ -705,12 +720,15 @@ task_e2e_tests: &task_e2e_tests
   inputs:
     - name: kubernikus.builds
       path: gopath/src/github.com/sapcc/kubernikus
-  
+  caches:
+    - path: cache
   run:
     path: /bin/sh
     args:
       - -c
       - |
+        set -o pipefail
+        SENTRY_CLI=$PWD/cache/sentry-cli
         export GOPATH=$PWD/gopath
         cd gopath/src/github.com/sapcc/kubernikus
   
@@ -721,10 +739,10 @@ task_e2e_tests: &task_e2e_tests
           #Get the longest uniq (!) whitespace prefix of --- FAIL: lines
           ws_count=$(grep -- '--- FAIL:' test.output| grep -v -- '->'| awk '{ match($0, /^ */); printf("%d\n", RLENGTH, substr($0,RLENGTH+1)) }' | sort|uniq -u |tail -1)
           test_name=$(sed -n -E  "s/^ {$ws_count}--- FAIL: (.*) \([.0-9]*s\)$/\1/p" test.output)
-          curl -Lo sentry-cli -z sentry-cli https://github.com/getsentry/sentry-cli/releases/download/1.35.6/sentry-cli-Linux-x86_64
-          chmod +x sentry-cli
+          curl -Lo $SENTRY_CLI -z $SENTRY_CLI https://github.com/getsentry/sentry-cli/releases/download/1.35.6/sentry-cli-Linux-x86_64
+          chmod +x $SENTRY_CLI
           unset http_proxy https_proxy no_proxy
-          ./sentry-cli send-event -m "Failed to run $test_name" -E $OS_REGION_NAME --no-environ --logfile test.output
+          $SENTRY_CLI send-event -m "Failed to run $test_name" -E $OS_REGION_NAME --no-environ --logfile test.output
         fi
         exit $rc
   
