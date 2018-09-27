@@ -975,7 +975,7 @@ resources:
       private_key: ((secrets-ssh-key))
       branch:      master
       depth: 1
-      path: [ kubernikus/tiller.version ]
+      paths: [ kubernikus/tiller.version ]
 
   - name: terraform.git
     type: git
