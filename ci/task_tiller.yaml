@@ -7,7 +7,7 @@ image_resource:
     tag: 'latest'
 
 inputs:
-  - name: secrets.git
+  - name: tiller-version.git
 
 run:
   path: /bin/sh
@@ -15,11 +15,15 @@ run:
     - -c
     - |
       set -exo pipefail
-      tag=$(cat secrets.git/kubernikus/tiller.version)
+      tag=$(cat tiller-version.git/kubernikus/tiller.version)
       kubernikusctl auth init
-      kubectl create sa tiller --namespace kube-system || true
-      kubectl create clusterrolebinding tiller --clusterrole cluster-admin --serviceaccount=kube-system:tiller || true
-      helm init --service-account tiller --history-max 5 --tiller-image sapcc/tiller:$tag --upgrade --wait
+      if kubectl get deployment tiller-deploy --namespace=kube-system >/dev/null ; then
+        kubectl set image --namespace=kube-system deployment/tiller-deploy tiller=sapcc/tiller:$tag
+      else
+        kubectl create sa tiller --namespace kube-system
+        kubectl create clusterrolebinding tiller --clusterrole cluster-admin --serviceaccount=kube-system:tiller
+        helm init --service-account tiller --history-max 5 --tiller-image sapcc/tiller:$tag --upgrade --wait
+      fi
 
 params:
   OS_AUTH_URL:
