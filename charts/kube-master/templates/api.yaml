@@ -112,6 +112,7 @@ spec:
             - --authorization-mode=Node,RBAC
             - --cloud-config=/etc/kubernetes/cloudprovider/openstack.config
             - --cloud-provider=openstack
+            - --enable-admission-plugins=ExtendedResourceToleration
             - --enable-bootstrap-token-auth=true
             - --external-hostname={{ required "missing .api.apiserverHost" .Values.api.apiserverHost }}
             - --token-auth-file=/etc/kubernetes/bootstrap/token.csv
