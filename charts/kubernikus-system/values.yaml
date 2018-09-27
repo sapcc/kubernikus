@@ -60,7 +60,7 @@ nginx-ingress:
     enabled: true
     custom_http_errors: 502,503,504
     image:
-      repository: sapcc/custombackend
+      repository: quay.io/kubernetes-ingress-controller/custom-error-pages
       tag: "0.3"
       pullPolicy: IfNotPresent
     resources:
@@ -70,6 +70,33 @@ nginx-ingress:
       requests:
         cpu: 10m
         memory: 20Mi
+
+prometheus-node-exporter:
+  image:
+    repository: quay.io/prometheus/node-exporter
+    tag: v0.16.0
+
+  serviceAccount:
+    create: false
+    name: default
+
+  rbac:
+    create: false
+
+  extraArgs:
+    - --collector.filesystem.ignored-mount-points=\"^/(sys|proc|dev|host|etc)($|/)\"
+
+  # set manually to empty
+  tolerations: []
+
+kube-state-metrics:
+  podAnnotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "8080"
+
+  rbac:
+    create: false
+    serviceAccountName: default
 
 grafana:
   server:
@@ -154,7 +181,7 @@ grafana:
       enabled = true
       header_name = X-REMOTE-USER
       header_property = username
-      auto_sign_up = false
+      auto_sign_up = true 
 
       [auth.basic]
       enabled = false 
