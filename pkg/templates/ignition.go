@@ -95,6 +95,11 @@ func (i *ignition) GenerateNode(kluster *kubernikusv1.Kluster, pool *models.Node
 		}
 	}
 
+	var nodeTaints []string
+	if pool != nil && strings.HasPrefix(pool.Flavor, "zg") {
+		nodeTaints = append(nodeTaints, "nvidia.com/gpu=present:NoSchedule")
+	}
+
 	data := struct {
 		TLSCA                              string
 		KubeletClientsCA                   string
@@ -119,6 +124,7 @@ func (i *ignition) GenerateNode(kluster *kubernikusv1.Kluster, pool *models.Node
 		LoginPassword                      string
 		LoginPublicKey                     string
 		NodeLabels                         []string
+		NodeTaints                         []string
 		NodeName                           string
 	}{
 		TLSCA:                              string(secret.Data["tls-ca.pem"]),
@@ -144,6 +150,7 @@ func (i *ignition) GenerateNode(kluster *kubernikusv1.Kluster, pool *models.Node
 		LoginPassword:                      passwordHash,
 		LoginPublicKey:                     kluster.Spec.SSHPublicKey,
 		NodeLabels:                         nodeLabels,
+		NodeTaints:                         nodeTaints,
 		NodeName:                           nodeName,
 	}
 

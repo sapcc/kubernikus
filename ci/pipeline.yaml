@@ -540,7 +540,7 @@ task_tiller: &task_tiller
       tag: 'latest'
   
   inputs:
-    - name: secrets.git
+    - name: tiller-version.git
   
   run:
     path: /bin/sh
@@ -548,11 +548,15 @@ task_tiller: &task_tiller
       - -c
       - |
         set -exo pipefail
-        tag=$(cat secrets.git/kubernikus/tiller.version)
+        tag=$(cat tiller-version.git/kubernikus/tiller.version)
         kubernikusctl auth init
-        kubectl create sa tiller --namespace kube-system || true
-        kubectl create clusterrolebinding tiller --clusterrole cluster-admin --serviceaccount=kube-system:tiller || true
-        helm init --service-account tiller --history-max 5 --tiller-image sapcc/tiller:$tag --upgrade --wait
+        if kubectl get deployment tiller-deploy --namespace=kube-system >/dev/null ; then
+          kubectl set image --namespace=kube-system deployment/tiller-deploy tiller=sapcc/tiller:$tag
+        else
+          kubectl create sa tiller --namespace kube-system
+          kubectl create clusterrolebinding tiller --clusterrole cluster-admin --serviceaccount=kube-system:tiller
+          helm init --service-account tiller --history-max 5 --tiller-image sapcc/tiller:$tag --upgrade --wait
+        fi
   
   params:
     OS_AUTH_URL:
@@ -739,7 +743,7 @@ task_e2e_tests: &task_e2e_tests
           #Get the longest uniq (!) whitespace prefix of --- FAIL: lines
           ws_count=$(grep -- '--- FAIL:' test.output| grep -v -- '->'| awk '{ match($0, /^ */); printf("%d\n", RLENGTH, substr($0,RLENGTH+1)) }' | sort|uniq -u |tail -1)
           test_name=$(sed -n -E  "s/^ {$ws_count}--- FAIL: (.*) \([.0-9]*s\)$/\1/p" test.output)
-          curl -Lo $SENTRY_CLI -z $SENTRY_CLI https://github.com/getsentry/sentry-cli/releases/download/1.35.6/sentry-cli-Linux-x86_64
+          curl -sLo $SENTRY_CLI -z $SENTRY_CLI https://github.com/getsentry/sentry-cli/releases/download/1.35.6/sentry-cli-Linux-x86_64
           chmod +x $SENTRY_CLI
           unset http_proxy https_proxy no_proxy
           $SENTRY_CLI send-event -m "Failed to run $test_name" -E $OS_REGION_NAME --no-environ --logfile test.output
@@ -961,6 +965,17 @@ resources:
       private_key: ((secrets-ssh-key))
       branch:      master
       depth: 1
+
+  - name: tiller-version.git
+    type: git
+    webhook_token: aldhjalkdhahdjkahdjkhjadhjadhkjadlkjhAAdd
+    check_every: 1h
+    source:
+      uri:         git@github.wdf.sap.corp:cc/secrets.git
+      private_key: ((secrets-ssh-key))
+      branch:      master
+      depth: 1
+      paths: [ kubernikus/tiller.version ]
 
   - name: terraform.git
     type: git
@@ -1283,8 +1298,8 @@ jobs:
         - get: ASIA.tag
           trigger: true
           passed: [terraform_ap-ae-1]
-        - get: secrets.git
-          passed: [terraform_ap-ae-1]
+        - get: tiller-version.git
+          trigger: true
       - aggregate:
         - task: k-ap-ae-1
           config: 
@@ -1302,7 +1317,7 @@ jobs:
           trigger: true
           passed: [tiller_ap-ae-1]
         - get: secrets.git
-          passed: [tiller_ap-ae-1]
+          passed: [terraform_ap-ae-1]
         - get: kubernikus.builds
           resource: master.builds
           passed: [ASIA]
@@ -1387,8 +1402,8 @@ jobs:
         - get: ASIA.tag
           trigger: true
           passed: [terraform_ap-au-1]
-        - get: secrets.git
-          passed: [terraform_ap-au-1]
+        - get: tiller-version.git
+          trigger: true
       - aggregate:
         - task: k-ap-au-1
           config: 
@@ -1406,7 +1421,7 @@ jobs:
           trigger: true
           passed: [tiller_ap-au-1]
         - get: secrets.git
-          passed: [tiller_ap-au-1]
+          passed: [terraform_ap-au-1]
         - get: kubernikus.builds
           resource: master.builds
           passed: [ASIA]
@@ -1499,8 +1514,8 @@ jobs:
         - get: ASIA.tag
           trigger: true
           passed: [terraform_ap-cn-1]
-        - get: secrets.git
-          passed: [terraform_ap-cn-1]
+        - get: tiller-version.git
+          trigger: true
       - aggregate:
         - task: k-ap-cn-1
           config: 
@@ -1518,7 +1533,7 @@ jobs:
           trigger: true
           passed: [tiller_ap-cn-1]
         - get: secrets.git
-          passed: [tiller_ap-cn-1]
+          passed: [terraform_ap-cn-1]
         - get: kubernikus.builds
           resource: master.builds
           passed: [ASIA]
@@ -1611,8 +1626,8 @@ jobs:
         - get: ASIA.tag
           trigger: true
           passed: [terraform_ap-jp-1]
-        - get: secrets.git
-          passed: [terraform_ap-jp-1]
+        - get: tiller-version.git
+          trigger: true
       - aggregate:
         - task: k-ap-jp-1
           config: 
@@ -1630,7 +1645,7 @@ jobs:
           trigger: true
           passed: [tiller_ap-jp-1]
         - get: secrets.git
-          passed: [tiller_ap-jp-1]
+          passed: [terraform_ap-jp-1]
         - get: kubernikus.builds
           resource: master.builds
           passed: [ASIA]
@@ -1723,8 +1738,8 @@ jobs:
         - get: ASIA.tag
           trigger: true
           passed: [terraform_ap-jp-2]
-        - get: secrets.git
-          passed: [terraform_ap-jp-2]
+        - get: tiller-version.git
+          trigger: true
       - aggregate:
         - task: k-ap-jp-2
           config: 
@@ -1742,7 +1757,7 @@ jobs:
           trigger: true
           passed: [tiller_ap-jp-2]
         - get: secrets.git
-          passed: [tiller_ap-jp-2]
+          passed: [terraform_ap-jp-2]
         - get: kubernikus.builds
           resource: master.builds
           passed: [ASIA]
@@ -1835,8 +1850,8 @@ jobs:
         - get: ASIA.tag
           trigger: true
           passed: [terraform_ap-sa-1]
-        - get: secrets.git
-          passed: [terraform_ap-sa-1]
+        - get: tiller-version.git
+          trigger: true
       - aggregate:
         - task: k-ap-sa-1
           config: 
@@ -1854,7 +1869,7 @@ jobs:
           trigger: true
           passed: [tiller_ap-sa-1]
         - get: secrets.git
-          passed: [tiller_ap-sa-1]
+          passed: [terraform_ap-sa-1]
         - get: kubernikus.builds
           resource: master.builds
           passed: [ASIA]
@@ -1957,8 +1972,8 @@ jobs:
         - get: EMEA.tag
           trigger: true
           passed: [terraform_eu-de-1]
-        - get: secrets.git
-          passed: [terraform_eu-de-1]
+        - get: tiller-version.git
+          trigger: true
       - aggregate:
         - task: k-eu-de-1
           config: 
@@ -1976,7 +1991,7 @@ jobs:
           trigger: true
           passed: [tiller_eu-de-1]
         - get: secrets.git
-          passed: [tiller_eu-de-1]
+          passed: [terraform_eu-de-1]
         - get: kubernikus.builds
           resource: master.builds
           passed: [EMEA]
@@ -2061,8 +2076,8 @@ jobs:
         - get: EMEA.tag
           trigger: true
           passed: [terraform_eu-de-2]
-        - get: secrets.git
-          passed: [terraform_eu-de-2]
+        - get: tiller-version.git
+          trigger: true
       - aggregate:
         - task: k-eu-de-2
           config: 
@@ -2080,7 +2095,7 @@ jobs:
           trigger: true
           passed: [tiller_eu-de-2]
         - get: secrets.git
-          passed: [tiller_eu-de-2]
+          passed: [terraform_eu-de-2]
         - get: kubernikus.builds
           resource: master.builds
           passed: [EMEA]
@@ -2165,8 +2180,8 @@ jobs:
         - get: EMEA.tag
           trigger: true
           passed: [terraform_eu-nl-1]
-        - get: secrets.git
-          passed: [terraform_eu-nl-1]
+        - get: tiller-version.git
+          trigger: true
       - aggregate:
         - task: k-eu-nl-1
           config: 
@@ -2184,7 +2199,7 @@ jobs:
           trigger: true
           passed: [tiller_eu-nl-1]
         - get: secrets.git
-          passed: [tiller_eu-nl-1]
+          passed: [terraform_eu-nl-1]
         - get: kubernikus.builds
           resource: master.builds
           passed: [EMEA]
@@ -2277,8 +2292,8 @@ jobs:
         - get: EMEA.tag
           trigger: true
           passed: [terraform_eu-ru-1]
-        - get: secrets.git
-          passed: [terraform_eu-ru-1]
+        - get: tiller-version.git
+          trigger: true
       - aggregate:
         - task: k-eu-ru-1
           config: 
@@ -2296,7 +2311,7 @@ jobs:
           trigger: true
           passed: [tiller_eu-ru-1]
         - get: secrets.git
-          passed: [tiller_eu-ru-1]
+          passed: [terraform_eu-ru-1]
         - get: kubernikus.builds
           resource: master.builds
           passed: [EMEA]
@@ -2407,8 +2422,8 @@ jobs:
         - get: AMERICAS.tag
           trigger: true
           passed: [terraform_la-br-1]
-        - get: secrets.git
-          passed: [terraform_la-br-1]
+        - get: tiller-version.git
+          trigger: true
       - aggregate:
         - task: k-la-br-1
           config: 
@@ -2426,7 +2441,7 @@ jobs:
           trigger: true
           passed: [tiller_la-br-1]
         - get: secrets.git
-          passed: [tiller_la-br-1]
+          passed: [terraform_la-br-1]
         - get: kubernikus.builds
           resource: master.builds
           passed: [AMERICAS]
@@ -2519,8 +2534,8 @@ jobs:
         - get: AMERICAS.tag
           trigger: true
           passed: [terraform_na-ca-1]
-        - get: secrets.git
-          passed: [terraform_na-ca-1]
+        - get: tiller-version.git
+          trigger: true
       - aggregate:
         - task: k-na-ca-1
           config: 
@@ -2538,7 +2553,7 @@ jobs:
           trigger: true
           passed: [tiller_na-ca-1]
         - get: secrets.git
-          passed: [tiller_na-ca-1]
+          passed: [terraform_na-ca-1]
         - get: kubernikus.builds
           resource: master.builds
           passed: [AMERICAS]
@@ -2623,8 +2638,8 @@ jobs:
         - get: AMERICAS.tag
           trigger: true
           passed: [terraform_na-us-1]
-        - get: secrets.git
-          passed: [terraform_na-us-1]
+        - get: tiller-version.git
+          trigger: true
       - aggregate:
         - task: k-na-us-1
           config: 
@@ -2642,7 +2657,7 @@ jobs:
           trigger: true
           passed: [tiller_na-us-1]
         - get: secrets.git
-          passed: [tiller_na-us-1]
+          passed: [terraform_na-us-1]
         - get: kubernikus.builds
           resource: master.builds
           passed: [AMERICAS]
@@ -2735,8 +2750,8 @@ jobs:
         - get: AMERICAS.tag
           trigger: true
           passed: [terraform_na-us-3]
-        - get: secrets.git
-          passed: [terraform_na-us-3]
+        - get: tiller-version.git
+          trigger: true
       - aggregate:
         - task: k-na-us-3
           config: 
@@ -2754,7 +2769,7 @@ jobs:
           trigger: true
           passed: [tiller_na-us-3]
         - get: secrets.git
-          passed: [tiller_na-us-3]
+          passed: [terraform_na-us-3]
         - get: kubernikus.builds
           resource: master.builds
           passed: [AMERICAS]
@@ -2865,8 +2880,8 @@ jobs:
         - get: INFRA.tag
           trigger: true
           passed: [terraform_qa-de-1]
-        - get: secrets.git
-          passed: [terraform_qa-de-1]
+        - get: tiller-version.git
+          trigger: true
       - aggregate:
         - task: k-qa-de-1
           config: 
@@ -2884,7 +2899,7 @@ jobs:
           trigger: true
           passed: [tiller_qa-de-1]
         - get: secrets.git
-          passed: [tiller_qa-de-1]
+          passed: [terraform_qa-de-1]
         - get: kubernikus.builds
           resource: master.builds
           passed: [INFRA]

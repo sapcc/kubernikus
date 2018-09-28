@@ -129,6 +129,17 @@ resources:
       branch:      master
       depth: 1
 
+  - name: tiller-version.git
+    type: git
+    webhook_token: aldhjalkdhahdjkahdjkhjadhjadhkjadlkjhAAdd
+    check_every: 1h
+    source:
+      uri:         git@github.wdf.sap.corp:cc/secrets.git
+      private_key: ((secrets-ssh-key))
+      branch:      master
+      depth: 1
+      paths: [ kubernikus/tiller.version ]
+
   - name: terraform.git
     type: git
     source:
@@ -331,8 +342,8 @@ jobs:
         - get: <%= group %>.tag
           trigger: true
           passed: [terraform_<%= region %>]
-        - get: secrets.git
-          passed: [terraform_<%= region %>]
+        - get: tiller-version.git
+          trigger: true
       - aggregate:
         - task: k-<%= region %>
           config: 
@@ -350,7 +361,7 @@ jobs:
           trigger: true
           passed: [tiller_<%= region %>]
         - get: secrets.git
-          passed: [tiller_<%= region %>]
+          passed: [terraform_<%= region %>]
         - get: kubernikus.builds
           resource: master.builds
           passed: [<%= group %>]
