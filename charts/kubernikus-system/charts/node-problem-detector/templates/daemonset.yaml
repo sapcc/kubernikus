@@ -10,10 +10,6 @@ spec:
       labels:
         app: node-problem-detector
     spec:
-      tolerations:
-      - key: "species"
-        operator: "Exists"
-        effect: "NoSchedule"
       containers:
       - name: node-problem-detector
         command:
