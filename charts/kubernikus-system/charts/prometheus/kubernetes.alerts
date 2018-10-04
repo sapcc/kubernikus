@@ -81,12 +81,12 @@ groups:
       summary: "PVC stuck in phase {{ $labels.phase }}"
 
   - alert: KubernetesNodeContainerOOMKilled
-    expr: sum by (instance) (increase(node_vmstat_oom_kill[10m])) > 0
+    expr: sum by (instance) (changes(node_vmstat_oom_kill[24h])) > 3
     labels:
       tier: kubernikus
       service: node
       severity: info
       context: memory
     annotations:
-      summary: Container was OOM
-      description: A container on {{ $labels.instance }} was killed after being out of memory
+      summary: More than 3 OOM killed pods on a node within 24h
+      description: More than 3 OOM killed pods on node {{ $labels.instance }} within 24h
