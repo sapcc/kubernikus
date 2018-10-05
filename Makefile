@@ -26,7 +26,7 @@ SWAGGER_BIN        := bin/$(GOOS)/swagger-$(GO_SWAGGER_VERSION)
 all: $(BINARIES:%=bin/$(GOOS)/%)
 
 bin/$(GOOS)/swagger-%:
-	curl -f -z $@ -o $@ -L'#' https://github.com/go-swagger/go-swagger/releases/download/$*/swagger_$(GOOS)_amd64
+	curl -f --create-dirs -o $@ -L'#' https://github.com/go-swagger/go-swagger/releases/download/$*/swagger_$(GOOS)_amd64
 	chmod +x $@
 
 bin/%: $(GOFILES) Makefile
@@ -143,8 +143,13 @@ endif
 
 bootstrap: $(SWAGGER_BIN)
 ifndef HAS_GLIDE
-	brew install glide
+	go get -u github.com/Masterminds/glide
 endif
 ifndef HAS_GLIDE_VC
 	go get -u github.com/sgotti/glide-vc
 endif
+	go get -u github.com/go-openapi/runtime
+	go get -u github.com/tylerb/graceful
+	go get -u github.com/spf13/pflag
+	go get -u golang.org/x/net/context
+	go get -u golang.org/x/net/context/ctxhttp
