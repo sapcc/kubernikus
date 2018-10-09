@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/golang/glog"
+	"github.com/gophercloud/gophercloud"
 	"github.com/howeyc/gopass"
 	"github.com/imdario/mergo"
 	"github.com/pkg/errors"
@@ -103,7 +104,7 @@ func (o *InitOptions) Run(c *cobra.Command) (err error) {
 
 	if err := o.setup(); err != nil {
 
-		if o.openstack.Username != "" {
+		if _, ok := errors.Cause(err).(gophercloud.ErrDefault401); o.openstack.Username != "" && ok {
 			fmt.Println("Deleting password from keyring")
 			keyring.Delete("kubernikus", o.openstack.Username)
 		}
