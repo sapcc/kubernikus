@@ -90,3 +90,17 @@ groups:
     annotations:
       summary: More than 3 OOM killed pods on a node within 24h
       description: More than 3 OOM killed pods on node {{ $labels.instance }} within 24h
+
+  - alert: KubernetesAPIServerContainerOOMKilled
+    expr: delta(kube_pod_container_status_restarts_total{container="apiserver",namespace="kubernikus",pod!~"e2e.*"}[1h]) > 1
+    for: 1h
+    labels:
+      tier: kubernikus
+      service: node
+      severity: warning 
+      context: memory
+    annotations:
+      summary: An APIServer is OOM. Increase Limits.
+      description: APIServer {{ $labels.pod }} is OOM. Increase Limits.
+
+
