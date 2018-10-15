@@ -3225,3 +3225,60 @@ grafana:
         "uid": "5XtTRCqkk",
         "version": 5
       }
+
+fluent-bit:
+  image:
+    fluent_bit:
+      repository: fluent/fluent-bit
+      tag: "0.14.9"
+    pullPolicy: IfNotPresent
+
+  metrics:
+    enabled: false
+
+  trackOffsets: false
+
+  backend:
+    es:
+      # host:
+      # http_user:
+      # http_passwd:
+      tls_ca: ""
+
+  # filter:
+  # list of additional static values added to each log entry
+  #  additionalValues:
+  #  - key: some-key
+  #    value: some-value
+
+  parsers:
+    enabled: false
+
+  env: []
+
+  podAnnotations: {}
+
+  existingConfigMap: fluent-bit-config
+
+  extraVolumes: []
+
+  extraVolumeMounts: []
+
+  resources:
+    limits:
+      cpu: 500m
+      memory: 100Mi
+    requests:
+      cpu: 100m
+      memory: 50Mi
+
+  tolerations: []
+
+  nodeSelector: {}
+
+  rbac:
+    create: true
+
+  serviceAccount:
+    create: true
+    name:

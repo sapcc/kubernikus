@@ -1,0 +1,84 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: fluent-bit-config
+  labels:
+    app: fluent-bit-fluent-bit
+    chart: fluent-bit-0.12.0
+    release: fluent-bit
+data:
+  fluent-bit.conf: |-
+      [SERVICE]
+          Flush        1
+          Daemon       Off
+          Log_Level    info
+          Parsers_File parsers.conf
+
+      [INPUT]
+          Name             tail
+          Path             /var/log/containers/*.log
+          Parser           docker
+          Tag              kube.*
+          Refresh_Interval 5
+          Mem_Buf_Limit    5MB
+          Skip_Long_Lines  On
+
+      [INPUT]
+          Name          systemd
+          Path          /var/log/journal
+          Tag           systemd.*
+          Mem_Buf_Limit 5MB
+
+      [FILTER]
+          Name          record_modifier
+          Match         systemd.*
+          Whitelist_key _SYSTEMD_UNIT
+          Whitelist_key MESSAGE
+          Whitelist_key _PID
+          Whitelist_key _PRIORITY
+          Whitelist_key _COMM
+          Whitelist_key _HOSTNAME
+
+      [FILTER]
+          Name   modify
+          Match  systemd.*
+          Rename _SYSTEMD_UNIT unit
+          Rename MESSAGE log
+          Rename _PID pid
+          Rename _PRIORITY priority
+          Rename _COMM cmd
+          Rename _HOSTNAME hostname
+
+      [FILTER]
+          Name               kubernetes
+          Match              kube.*
+          Kube_URL           https://kubernetes.default.svc:443
+          Kube_CA_File       /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+          Kube_Token_File    /var/run/secrets/kubernetes.io/serviceaccount/token
+          K8S-Logging.Parser On
+
+{{ if .Values.filter.additionalValues }}
+      [FILTER]
+          Name record_modifier
+          Match *
+{{- range .Values.filter.additionalValues }}
+          Record {{ .key }} {{ .value }}
+{{- end }}
+{{- end }}
+
+      [OUTPUT]
+          Name  es
+          Match *
+          Host  {{ .Values.backend.es.host }}
+          Port  443
+          Logstash_Format On
+          Retry_Limit False
+          Type  flb_type
+          Time_Key @timestamp
+          Logstash_Prefix kubernikus
+          HTTP_User {{ .Values.backend.es.http_user }}
+          HTTP_Passwd {{ .Values.backend.es.http_passwd }}
+          tls on
+          tls.verify on
+          tls.debug 1
+  parsers.conf: ""
