@@ -60,6 +60,21 @@ spec:
         - name: openstack-hacks
           configMap:
             name: {{ include "master.fullname" . }}-os-hacks
+      initContainers:
+        - name: apiserver-wait
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          command:
+          - sh
+          - -c
+          args:
+          - until kubectl cluster-info --kubeconfig /etc/kubernetes/config/kubeconfig; do sleep 5; done;
+            volumeMounts:
+            - mountPath: /etc/kubernetes/certs/
+              name: certs
+              readOnly: true
+            - mountPath: /etc/kubernetes/config
+              name: config
+              readOnly: true
       containers:
         - name: controller-manager
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
