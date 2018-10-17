@@ -4,7 +4,6 @@ metadata:
   name: fluent-bit-config
   labels:
     app: fluent-bit-fluent-bit
-    chart: fluent-bit-0.12.0
     release: fluent-bit
 data:
   fluent-bit.conf: |-
@@ -57,11 +56,11 @@ data:
           Kube_Token_File    /var/run/secrets/kubernetes.io/serviceaccount/token
           K8S-Logging.Parser On
 
-{{ if .Values.filter.additionalValues }}
+{{ if index .Values "fluent-bit" "filter" "additionalValues" }}
       [FILTER]
           Name record_modifier
           Match *
-{{- range .Values.filter.additionalValues }}
+{{- range index .Values "fluent-bit" "filter" "additionalValues" }}
           Record {{ .key }} {{ .value }}
 {{- end }}
 {{- end }}
@@ -69,15 +68,15 @@ data:
       [OUTPUT]
           Name  es
           Match *
-          Host  {{ .Values.backend.es.host }}
+          Host  {{ index .Values "fluent-bit" "backend" "es" "host" }}
           Port  443
           Logstash_Format On
           Retry_Limit False
           Type  flb_type
           Time_Key @timestamp
           Logstash_Prefix kubernikus
-          HTTP_User {{ .Values.backend.es.http_user }}
-          HTTP_Passwd {{ .Values.backend.es.http_passwd }}
+          HTTP_User {{ index .Values "fluent-bit" "backend" "es" "http_user" }}
+          HTTP_Passwd {{ index .Values "fluent-bit" "backend" "es" "http_passwd" }}
           tls on
           tls.verify on
           tls.debug 1
