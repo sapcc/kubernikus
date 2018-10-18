@@ -103,7 +103,7 @@ spec:
               protocol: TCP
           env:
             - name: STORAGE_CONTAINER
-              value: etcd-backup
+              value: etcd-backup-{{ .Values.klustername }}-{{ uuidv4 }}
             - name: OS_AUTH_URL
               valueFrom:
                 secretKeyRef:
