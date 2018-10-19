@@ -2,7 +2,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ include "fullname" . }}-bootstrap
+  name: {{ include "fullname" . }}
   labels:
     app: {{ include "fullname" . }}
 data:
@@ -60,13 +60,13 @@ spec:
           {{- else }}
           emptyDir: {}
           {{- end }}
-        - name: {{ include "fullname" . }}-bootstrap
+        - name: bootstrap
           configMap:
-            name: {{ include "fullname" . }}-bootstrap
+            name: {{ include "fullname" . }}
             defaultMode: 0356
-        - name: {{ include "fullname" . }}
+        - name: secret-openstack
           secret:
-            secretName: secret-openstack
+            secretName: {{ include "fullname" . }}
             defaultMode: 0420
       containers:
         - name: etcd
@@ -82,21 +82,22 @@ spec:
             - mountPath: /var/lib/etcd
               name: data
             - mountPath: /bootstrap
-              name: {{ include "fullname" . }}-bootstrap
+              name: bootstrap
           resources:
+{{ toYaml .Values.resources | indent 12 }}
         - name: backup
           command:
             - etcdbrctl
             - server
-            - --schedule=*/5 * * * *
-            - --max-backups=10
+            - --schedule={{ .Values.backup.config.schedule }}
+            - --max-backups={{ .Values.backup.config.maxBackups }}
             - --data-dir=/var/lib/etcd
             - --insecure-transport=true
             - --storage-provider=Swift
-            - --delta-snapshot-period-seconds=10
-            - --garbage-collection-period-seconds=60
-          image: eu.gcr.io/gardener-project/gardener/etcdbrctl:0.3.0
-          imagePullPolicy: Always
+            - --delta-snapshot-period-seconds={{ .Values.backup.config.deltaSnapshotPeriod }}
+            - --garbage-collection-period-seconds={{ .Values.backup.config.garbageCollectionPeriod }}
+          image: "{{ .Values.backup.image.repository }}:{{ .Values.backup.image.tag }}"
+          imagePullPolicy: {{ .Values.backup.image.pullPolicy }}
           ports:
             - containerPort: 8080
               name: server
@@ -132,4 +133,5 @@ spec:
           volumeMounts:
             - mountPath: /var/lib/etcd
               name: data
-{{ toYaml .Values.resources | indent 12 }}
+          resources:
+{{ toYaml .Values.backup.resources | indent 12 }}

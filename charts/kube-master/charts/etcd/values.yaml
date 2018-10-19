@@ -19,4 +19,20 @@ resources:
   limits:
     cpu: 500m
     memory: 512Mi
-
+backup:
+  image:
+    repository: eu.gcr.io/gardener-project/gardener/etcdbrctl
+    tag: 0.3.0
+    pullPolicy: IfNotPresent
+  config:
+    schedule: "*/5 * * * *"
+    maxBackups: 10
+    deltaSnapshotPeriod: 10
+    garbageCollectionPeriod: 60
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
