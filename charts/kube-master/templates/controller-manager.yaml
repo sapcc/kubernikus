@@ -64,11 +64,11 @@ spec:
         - name: apiserver-wait
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           command:
-          - sh
-          - -c
+            - sh
+            - -c
           args:
-          - until kubectl cluster-info --kubeconfig /etc/kubernetes/config/kubeconfig; do sleep 5; done;
-            volumeMounts:
+            - until kubectl cluster-info --kubeconfig /etc/kubernetes/config/kubeconfig; do sleep 5; done;
+          volumeMounts:
             - mountPath: /etc/kubernetes/certs/
               name: certs
               readOnly: true

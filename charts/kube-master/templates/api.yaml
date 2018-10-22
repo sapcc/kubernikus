@@ -103,10 +103,10 @@ spec:
         - name: etcd-wait
           image: sapcc/etcd:3.1.12
           command:
-          - sh
-          - -c
+            - sh
+            - -c
           args:
-          - until etcdctl --endpoints http://{{ include "etcd.fullname" . }}:2379 cluster-health; do sleep 5; done;
+            - until etcdctl --endpoints http://{{ include "etcd.fullname" . }}:2379 cluster-health; do sleep 5; done;
       containers:
         - name: apiserver
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
