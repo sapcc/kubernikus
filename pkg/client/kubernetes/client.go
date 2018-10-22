@@ -65,7 +65,7 @@ func NewClientConfigV1(name, user, url string, key, cert, ca []byte) clientcmdap
 			{
 				Name: name,
 				Cluster: clientcmdapiv1.Cluster{
-					Server:                   url,
+					Server: url,
 					CertificateAuthorityData: ca,
 				},
 			},
