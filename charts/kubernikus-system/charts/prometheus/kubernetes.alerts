@@ -92,8 +92,7 @@ groups:
       description: More than 3 OOM killed pods on node {{ $labels.instance }} within 24h
 
   - alert: KubernetesAPIServerContainerOOMKilled
-    expr: (label_replace(delta(kube_pod_container_status_restarts_total{container="apiserver",namespace="kubernikus",pod!~"e2e.*"}[1h])
-  , "kluster_id", "$1", "pod", "(.*)-api.*") > 1) and on(kluster_id) (kubernikus_kluster_status_phase{phase="Running"} == 1)
+    expr: (label_replace(delta(kube_pod_container_status_restarts_total{container="apiserver",namespace="kubernikus",pod!~"e2e.*"}[1h]) , "kluster_id", "$1", "pod", "(.*)-api.*") > 1) and on(kluster_id) (kubernikus_kluster_status_phase{phase="Running"} == 1)
     for: 1h
     labels:
       tier: kubernikus
