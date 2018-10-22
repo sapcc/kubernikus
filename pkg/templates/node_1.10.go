@@ -217,7 +217,7 @@ storage:
       filesystem: root
       mode: 0644
       contents:
-        inline: |-
+        inline: |
           -----BEGIN CERTIFICATE-----
           MIIGPTCCBCWgAwIBAgIKYQ4GNwAAAAAADDANBgkqhkiG9w0BAQsFADBOMQswCQYD
           VQQGEwJERTERMA8GA1UEBwwIV2FsbGRvcmYxDzANBgNVBAoMBlNBUCBBRzEbMBkG
