@@ -106,7 +106,7 @@ spec:
             - sh
             - -c
           args:
-            - until etcdctl --endpoints http://{{ include "etcd.fullname" . }}:2379 cluster-health; do sleep 5; done;
+            - until etcdctl --total-timeout=4s --endpoints http://{{ include "etcd.fullname" . }}:2379 cluster-health; do sleep 5; done;
       containers:
         - name: apiserver
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
