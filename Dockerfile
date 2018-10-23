@@ -3,7 +3,7 @@ ARG VERSION=latest
 FROM sapcc/kubernikus-binaries:$VERSION as kubernikus-binaries
 FROM sapcc/kubernikus-docs:$VERSION as kubernikus-docs
 
-FROM alpine:3.6 as kubernikus
+FROM alpine:3.8 as kubernikus
 MAINTAINER "Fabian Ruff <fabian.ruff@sap.com>"
 RUN apk add --no-cache curl iptables
 RUN curl -Lo /bin/dumb-init https://github.com/Yelp/dumb-init/releases/download/v1.2.1/dumb-init_1.2.1_amd64 \

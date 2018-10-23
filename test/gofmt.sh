@@ -17,4 +17,5 @@ if [ -n "$VIOLATING_FILES" ]; then
   echo "$VIOLATING_FILES"
   echo "Offending lines:"
   gofmt -s -d $VIOLATING_FILES
+  exit 1
 fi

@@ -41,7 +41,8 @@ linters:
 	gometalinter --vendor -s generated --disable-all -E vet -E ineffassign -E misspell ./cmd/... ./pkg/... ./test/...
 
 gotest:
-	set -o pipefail && go test -v github.com/sapcc/kubernikus/pkg... github.com/sapcc/kubernikus/cmd/... | grep -v 'no test files'
+	# go 1.11 requires gcc for go test because of reasons: https://github.com/golang/go/issues/28065 (CGO_ENABLED=0 fixes this)
+	set -o pipefail && CGO_ENABLED=0 go test -v github.com/sapcc/kubernikus/pkg... github.com/sapcc/kubernikus/cmd/... | grep -v 'no test files'
 
 build:
 	docker build $(BUILD_ARGS) -t sapcc/kubernikus-binaries:$(VERSION)     -f Dockerfile.kubernikus-binaries .
