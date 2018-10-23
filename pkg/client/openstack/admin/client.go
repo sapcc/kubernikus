@@ -10,36 +10,40 @@ import (
 	"github.com/gophercloud/gophercloud/openstack/identity/v3/services"
 	"github.com/gophercloud/gophercloud/openstack/identity/v3/tokens"
 	"github.com/gophercloud/gophercloud/openstack/identity/v3/users"
+	"github.com/gophercloud/gophercloud/openstack/objectstorage/v1/containers"
 	"github.com/gophercloud/gophercloud/pagination"
 
 	"github.com/sapcc/kubernikus/pkg/client/openstack/domains"
 	"github.com/sapcc/kubernikus/pkg/client/openstack/roles"
 )
 
-var serviceUserRoles = []string{"network_admin", "member"}
+var serviceUserRoles = []string{"network_admin", "member", "swiftoperator"}
 
 type AdminClient interface {
 	CreateKlusterServiceUser(username, password, domainName, projectID string) error
 	DeleteUser(username, domainName string) error
 	GetKubernikusCatalogEntry() (string, error)
 	GetRegion() (string, error)
+	CreateContainer(name string, opts containers.CreateOpts) error
 }
 
 type adminClient struct {
 	NetworkClient  *gophercloud.ServiceClient
 	ComputeClient  *gophercloud.ServiceClient
 	IdentityClient *gophercloud.ServiceClient
+	StorageClient  *gophercloud.ServiceClient
 
 	domainNameToID sync.Map
 	roleNameToID   sync.Map
 }
 
-func NewAdminClient(network, compute, identity *gophercloud.ServiceClient) AdminClient {
+func NewAdminClient(network, compute, identity, storage *gophercloud.ServiceClient) AdminClient {
 	var client AdminClient
 	client = &adminClient{
 		NetworkClient:  network,
 		ComputeClient:  compute,
 		IdentityClient: identity,
+		StorageClient:  storage,
 	}
 	return client
 }
@@ -250,4 +254,14 @@ func (c *adminClient) getRoleID(roleName string) (string, error) {
 
 	return "", fmt.Errorf("Role %s not found", roleName)
 
+}
+
+func (c *adminClient) CreateContainer(name string, opts containers.CreateOpts) error {
+	res := containers.Create(c.StorageClient, name, opts)
+
+	if res.Err != nil {
+		return res.Err
+	}
+
+	return nil
 }

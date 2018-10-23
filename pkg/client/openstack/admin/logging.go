@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/go-kit/kit/log"
+	"github.com/gophercloud/gophercloud/openstack/objectstorage/v1/containers"
 )
 
 type LoggingClient struct {
@@ -64,4 +65,18 @@ func (c LoggingClient) GetRegion() (region string, err error) {
 		)
 	}(time.Now())
 	return c.Client.GetRegion()
+}
+
+func (c LoggingClient) CreateContainer(name string, opts containers.CreateOpts) (err error) {
+	defer func(begin time.Time) {
+		c.Logger.Log(
+			"msg", "create storage container",
+			"name", name,
+			"opts", opts,
+			"took", time.Since(begin),
+			"v", 2,
+			"err", err,
+		)
+	}(time.Now())
+	return c.Client.CreateContainer(name, opts)
 }

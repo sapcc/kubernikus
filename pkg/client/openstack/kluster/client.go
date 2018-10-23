@@ -35,6 +35,7 @@ type klusterClient struct {
 	NetworkClient  *gophercloud.ServiceClient
 	ComputeClient  *gophercloud.ServiceClient
 	IdentityClient *gophercloud.ServiceClient
+	StorageClient  *gophercloud.ServiceClient
 
 	Kluster   *v1.Kluster
 	NodeStore cache.Store
@@ -54,12 +55,13 @@ func CachedNodesKeyFunc(obj interface{}) (string, error) {
 	return fmt.Sprintf("%v-%v", entry.Kluster.Spec.Name, entry.Pool.Name), nil
 }
 
-func NewKlusterClient(network, compute, identity *gophercloud.ServiceClient, kluster *v1.Kluster) KlusterClient {
+func NewKlusterClient(network, compute, identity, storage *gophercloud.ServiceClient, kluster *v1.Kluster) KlusterClient {
 	var client KlusterClient
 	client = &klusterClient{
 		NetworkClient:  network,
 		ComputeClient:  compute,
 		IdentityClient: identity,
+		StorageClient:  storage,
 		Kluster:        kluster,
 		NodeStore:      cache.NewTTLStore(CachedNodesKeyFunc, 1*time.Minute),
 	}

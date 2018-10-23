@@ -10,6 +10,7 @@ import (
 
 	"github.com/Masterminds/goutils"
 	"github.com/go-kit/kit/log"
+	"github.com/gophercloud/gophercloud/openstack/objectstorage/v1/containers"
 	"google.golang.org/grpc"
 	api_v1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
@@ -30,6 +31,7 @@ import (
 	"github.com/sapcc/kubernikus/pkg/controller/metrics"
 	informers_kubernikus "github.com/sapcc/kubernikus/pkg/generated/informers/externalversions/kubernikus/v1"
 	"github.com/sapcc/kubernikus/pkg/util"
+	etcd_util "github.com/sapcc/kubernikus/pkg/util/etcd"
 	helm_util "github.com/sapcc/kubernikus/pkg/util/helm"
 	waitutil "github.com/sapcc/kubernikus/pkg/util/wait"
 )
@@ -417,6 +419,11 @@ func (op *GroundControl) createKluster(kluster *v1.Kluster) error {
 		DomainName: domain,
 		Region:     region,
 	}
+
+	op.Clients.OpenstackAdmin.CreateContainer(
+		fmt.Sprintf(etcd_util.EtcdBackupStorageContainer, kluster.GetName(), kluster.GetUID()),
+		containers.CreateOpts{},
+	)
 
 	rawValues, err := helm_util.KlusterToHelmValues(kluster, options, certificates, bootstrapToken, accessMode)
 	if err != nil {
