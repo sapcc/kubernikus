@@ -549,6 +549,9 @@ task_tiller: &task_tiller
       - |
         set -exo pipefail
         tag=$(cat tiller-version.git/kubernikus/tiller.version)
+        if [ -f tiller-version.git/kubernikus/$KUBERNIKUS_NAME/tiller.version ]; then
+          tag=$(cat tiller-version.git/kubernikus/$KUBERNIKUS_NAME/tiller.version )
+        fi
         kubernikusctl auth init
         if kubectl get deployment tiller-deploy --namespace=kube-system >/dev/null ; then
           kubectl set image --namespace=kube-system deployment/tiller-deploy tiller=sapcc/tiller:$tag
@@ -612,7 +615,8 @@ task_helm_kubernikus: &task_helm_kubernikus
     type: docker-image
     source:
       repository: sapcc/kubernikus-kubectl
-      tag: 'latest'
+      tag: 'v1.10.9'
+  
   
   inputs:
     - name: kubernikus.builds
@@ -625,14 +629,20 @@ task_helm_kubernikus: &task_helm_kubernikus
       - |
         set -exo pipefail
         VERSION=$(cat kubernikus.builds/.git/HEAD)
-        kubernikusctl auth init 
         helm dep up --skip-refresh kubernikus.builds/charts/kubernikus/
+  
+        helm diff upgrade kubernikus kubernikus.builds/charts/kubernikus/ \
+          --suppress-secrets --allow-unreleased --context 5 \
+          --values secrets.git/global/values/kubernikus.yaml \
+          --values secrets.git/kubernikus/$KUBERNIKUS_NAME/values/kubernikus.yaml \
+          --set imageTag=$VERSION
+  
         helm upgrade kubernikus kubernikus.builds/charts/kubernikus/ \
           --namespace=kubernikus-system \
           --values secrets.git/global/values/kubernikus.yaml \
           --values secrets.git/kubernikus/$KUBERNIKUS_NAME/values/kubernikus.yaml \
           --set imageTag=$VERSION \
-          --install 
+          --install
         kubectl rollout status deployment/kubernikus-api --namespace=kubernikus-system
         kubectl rollout status deployment/kubernikus-operator --namespace=kubernikus-system
   
@@ -899,7 +909,7 @@ task_helm_kubernikus-system: &task_helm_kubernikus-system
     type: docker-image
     source:
       repository: sapcc/kubernikus-kubectl
-      tag: 'latest'
+      tag: 'v1.10.9'
   
   inputs:
     - name: kubernikus.builds
@@ -911,7 +921,6 @@ task_helm_kubernikus-system: &task_helm_kubernikus-system
       - -c
       - |
         set -exo pipefail
-        kubernikusctl auth init
   
         # recent helm versions fails with `invalid cross-device link` when trying to rename charts.git
         # rename(2) for a directory is allowed only when both the source and the destination path are on the top layer
@@ -920,11 +929,17 @@ task_helm_kubernikus-system: &task_helm_kubernikus-system
   
         helm repo add forked https://raw.githubusercontent.com/BugRoger/charts/repo
         helm dep up kubernikus-copy.builds/charts/kubernikus-system/
+  
+        helm diff upgrade kubernikus-system kubernikus-copy.builds/charts/kubernikus-system/ \
+          --suppress-secrets --allow-unreleased --context 5 \
+          --values secrets.git/global/values/kubernikus-system.yaml \
+          --values secrets.git/kubernikus/$KUBERNIKUS_NAME/values/kubernikus-system.yaml
+  
         helm upgrade kubernikus-system kubernikus-copy.builds/charts/kubernikus-system/ \
           --namespace=kubernikus-system \
           --values secrets.git/global/values/kubernikus-system.yaml \
           --values secrets.git/kubernikus/$KUBERNIKUS_NAME/values/kubernikus-system.yaml \
-          --install 
+          --install
   
   params:
     OS_AUTH_URL:
@@ -975,7 +990,7 @@ resources:
       private_key: ((secrets-ssh-key))
       branch:      master
       depth: 1
-      paths: [ kubernikus/tiller.version ]
+      paths: [ kubernikus/tiller.version, kubernikus/*/tiller.version ]
 
   - name: terraform.git
     type: git
@@ -1042,7 +1057,21 @@ resource_types:
       tag: v2
 
 jobs:
-  - name: master 
+  - name: tiller_master
+    plan:
+      - aggregate:
+        - get: tiller-version.git
+          trigger: true
+      - aggregate:
+        - task: master
+          config:
+            <<: *task_tiller
+          timeout: 10m
+          params:
+            <<: *auth_master
+    <<: *slack
+
+  - name: master
     serial: true
     plan:
       - aggregate:
@@ -2948,7 +2977,8 @@ groups:
   - name: deploy
     jobs:
       - master
-      - e2e 
+      - tiller_master
+      - e2e
       - prod
       - admin
 

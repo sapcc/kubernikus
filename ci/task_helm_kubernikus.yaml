@@ -4,7 +4,8 @@ image_resource:
   type: docker-image
   source:
     repository: sapcc/kubernikus-kubectl
-    tag: 'latest'
+    tag: 'v1.10.9'
+
 
 inputs:
   - name: kubernikus.builds
@@ -17,14 +18,20 @@ run:
     - |
       set -exo pipefail
       VERSION=$(cat kubernikus.builds/.git/HEAD)
-      kubernikusctl auth init 
       helm dep up --skip-refresh kubernikus.builds/charts/kubernikus/
+
+      helm diff upgrade kubernikus kubernikus.builds/charts/kubernikus/ \
+        --suppress-secrets --allow-unreleased --context 5 \
+        --values secrets.git/global/values/kubernikus.yaml \
+        --values secrets.git/kubernikus/$KUBERNIKUS_NAME/values/kubernikus.yaml \
+        --set imageTag=$VERSION
+
       helm upgrade kubernikus kubernikus.builds/charts/kubernikus/ \
         --namespace=kubernikus-system \
         --values secrets.git/global/values/kubernikus.yaml \
         --values secrets.git/kubernikus/$KUBERNIKUS_NAME/values/kubernikus.yaml \
         --set imageTag=$VERSION \
-        --install 
+        --install
       kubectl rollout status deployment/kubernikus-api --namespace=kubernikus-system
       kubectl rollout status deployment/kubernikus-operator --namespace=kubernikus-system
 

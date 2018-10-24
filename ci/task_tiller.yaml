@@ -16,6 +16,9 @@ run:
     - |
       set -exo pipefail
       tag=$(cat tiller-version.git/kubernikus/tiller.version)
+      if [ -f tiller-version.git/kubernikus/$KUBERNIKUS_NAME/tiller.version ]; then
+        tag=$(cat tiller-version.git/kubernikus/$KUBERNIKUS_NAME/tiller.version )
+      fi
       kubernikusctl auth init
       if kubectl get deployment tiller-deploy --namespace=kube-system >/dev/null ; then
         kubectl set image --namespace=kube-system deployment/tiller-deploy tiller=sapcc/tiller:$tag

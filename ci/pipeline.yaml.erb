@@ -138,7 +138,7 @@ resources:
       private_key: ((secrets-ssh-key))
       branch:      master
       depth: 1
-      paths: [ kubernikus/tiller.version ]
+      paths: [ kubernikus/tiller.version, kubernikus/*/tiller.version ]
 
   - name: terraform.git
     type: git
@@ -193,7 +193,21 @@ resource_types:
       tag: v2
 
 jobs:
-  - name: master 
+  - name: tiller_master
+    plan:
+      - aggregate:
+        - get: tiller-version.git
+          trigger: true
+      - aggregate:
+        - task: master
+          config:
+            <<: *task_tiller
+          timeout: 10m
+          params:
+            <<: *auth_master
+    <<: *slack
+
+  - name: master
     serial: true
     plan:
       - aggregate:
@@ -408,7 +422,8 @@ groups:
   - name: deploy
     jobs:
       - master
-      - e2e 
+      - tiller_master
+      - e2e
       - prod
       - admin
 <% GROUPS.each do |group| %>
