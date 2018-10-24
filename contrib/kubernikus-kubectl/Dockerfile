@@ -17,7 +17,7 @@ RUN curl http://storage.googleapis.com/kubernetes-helm/helm-${HELM_VERSION}-linu
       && rm -rf linux-amd64 \
       && helm version -c \
       && helm init -c \
-      && curl -L https://github.com/databus23/helm-diff/releases/download/v2.11.0%2B2/helm-diff-linux.tgz | tar -xz -C ~/.helm/plugins
+      && curl -L https://github.com/databus23/helm-diff/releases/download/v2.10.0%2B1/helm-diff-linux.tgz | tar -xz -C ~/.helm/plugins
 
 ADD kubectl helm /usr/local/bin/
 COPY --from=kubernikus-binaries /kubernikusctl /usr/local/bin/
