@@ -113,7 +113,7 @@ func KlusterToHelmValues(kluster *v1.Kluster, openstack *OpenstackOptions, certi
 			Persistence: persistenceValues{
 				AccessMode: accessMode,
 			},
-			StorageContainer: fmt.Sprintf(etcd_util.EtcdBackupStorageContainer, kluster.GetName(), kluster.GetUID()),
+			StorageContainer: etcd_util.DefaultStorageContainer(kluster),
 		},
 		Api: apiValues{
 			ApiserverHost: apiserverURL.Hostname(),

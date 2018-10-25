@@ -66,18 +66,18 @@ func (c LoggingClient) GetRegion() (region string, err error) {
 	return c.Client.GetRegion()
 }
 
-func (c LoggingClient) CreateContainer(containerName, serviceUserName, serviceUserDomainName, serviceUserProjectID string) (err error) {
+func (c LoggingClient) CreateStorageContainer(projectID, containerName, serviceUserName, serviceUserDomainName string) (err error) {
 	defer func(begin time.Time) {
 		c.Logger.Log(
 			"msg", "create storage container",
+			"project_id", projectID,
 			"container_name", containerName,
 			"service_user_name", serviceUserName,
 			"service_user_domain", serviceUserDomainName,
-			"service_user_project_id", serviceUserProjectID,
 			"took", time.Since(begin),
 			"v", 2,
 			"err", err,
 		)
 	}(time.Now())
-	return c.Client.CreateContainer(containerName, serviceUserName, serviceUserDomainName, serviceUserProjectID)
+	return c.Client.CreateStorageContainer(projectID, containerName, serviceUserName, serviceUserDomainName)
 }

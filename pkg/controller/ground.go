@@ -419,11 +419,11 @@ func (op *GroundControl) createKluster(kluster *v1.Kluster) error {
 		Region:     region,
 	}
 
-	if err := op.Clients.OpenstackAdmin.CreateContainer(
-		fmt.Sprintf(etcd_util.EtcdBackupStorageContainer, kluster.GetName(), kluster.GetUID()),
+	if err := op.Clients.OpenstackAdmin.CreateStorageContainer(
+		kluster.Spec.Openstack.ProjectID,
+		etcd_util.DefaultStorageContainer(kluster),
 		username,
 		domain,
-		kluster.Spec.Openstack.ProjectID,
 	); err != nil {
 		return err
 	}

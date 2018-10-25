@@ -26,7 +26,7 @@ type AdminClient interface {
 	DeleteUser(username, domainName string) error
 	GetKubernikusCatalogEntry() (string, error)
 	GetRegion() (string, error)
-	CreateContainer(containerName, serviceUserName, serviceUserDomainName, serviceUserProjectID string) error
+	CreateStorageContainer(projectID, containerName, serviceUserName, serviceUserDomainName string) error
 }
 
 type adminClient struct {
@@ -261,9 +261,9 @@ func (c *adminClient) getRoleID(roleName string) (string, error) {
 
 }
 
-func (c *adminClient) CreateContainer(containerName, serviceUserName, serviceUserDomainName, serviceUserProjectID string) error {
+func (c *adminClient) CreateStorageContainer(projectID, containerName, serviceUserName, serviceUserDomainName string) error {
 	listOpts := endpoints.ListOpts{
-		Availability: "public",
+		Availability: gophercloud.AvailabilityPublic,
 	}
 
 	allPages, err := endpoints.List(c.IdentityClient, listOpts).AllPages()
@@ -283,7 +283,7 @@ func (c *adminClient) CreateContainer(containerName, serviceUserName, serviceUse
 			break
 		}
 	}
-	endpointURL := strings.Replace(swiftEndpoint.URL, "%(tenant_id)s", serviceUserProjectID, 1)
+	endpointURL := strings.Replace(swiftEndpoint.URL, "%(tenant_id)s", projectID, 1)
 
 	storageClient, err := openstack.NewObjectStorageV1(c.ProviderClient, gophercloud.EndpointOpts{})
 	if err != nil {
@@ -301,13 +301,13 @@ func (c *adminClient) CreateContainer(containerName, serviceUserName, serviceUse
 		return err
 	}
 
-	acl := fmt.Sprintf("%s:%s", serviceUserProjectID, serviceUser.ID)
+	acl := fmt.Sprintf("%s:%s", projectID, serviceUser.ID)
 	createOpts := containers.CreateOpts{
 		ContainerRead:  acl,
 		ContainerWrite: acl,
 	}
 
-	res := containers.Create(storageClient, containerName, createOpts)
+	_, err = containers.Create(storageClient, containerName, createOpts).Extract()
 
-	return res.Err
+	return err
 }
