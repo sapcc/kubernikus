@@ -27,14 +27,13 @@ type projectClient struct {
 	StorageClient  *gophercloud.ServiceClient
 }
 
-func NewProjectClient(projectID string, network, compute, identity, storage *gophercloud.ServiceClient) ProjectClient {
+func NewProjectClient(projectID string, network, compute, identity *gophercloud.ServiceClient) ProjectClient {
 	var client ProjectClient
 	client = &projectClient{
 		projectID:      projectID,
 		NetworkClient:  network,
 		ComputeClient:  compute,
 		IdentityClient: identity,
-		StorageClient:  storage,
 	}
 	return client
 }

@@ -3,9 +3,11 @@ package admin
 import (
 	"errors"
 	"fmt"
+	"strings"
 	"sync"
 
 	"github.com/gophercloud/gophercloud"
+	"github.com/gophercloud/gophercloud/openstack"
 	"github.com/gophercloud/gophercloud/openstack/identity/v3/endpoints"
 	"github.com/gophercloud/gophercloud/openstack/identity/v3/services"
 	"github.com/gophercloud/gophercloud/openstack/identity/v3/tokens"
@@ -17,35 +19,38 @@ import (
 	"github.com/sapcc/kubernikus/pkg/client/openstack/roles"
 )
 
-var serviceUserRoles = []string{"network_admin", "member", "swiftoperator"}
+var serviceUserRoles = []string{"network_admin", "member"}
 
 type AdminClient interface {
 	CreateKlusterServiceUser(username, password, domainName, projectID string) error
 	DeleteUser(username, domainName string) error
 	GetKubernikusCatalogEntry() (string, error)
 	GetRegion() (string, error)
-	CreateContainer(name string, opts containers.CreateOpts) error
+	CreateContainer(containerName, serviceUserName, serviceUserDomainName, serviceUserProjectID string) error
 }
 
 type adminClient struct {
-	NetworkClient  *gophercloud.ServiceClient
-	ComputeClient  *gophercloud.ServiceClient
+	ProviderClient *gophercloud.ProviderClient
 	IdentityClient *gophercloud.ServiceClient
-	StorageClient  *gophercloud.ServiceClient
 
 	domainNameToID sync.Map
 	roleNameToID   sync.Map
 }
 
-func NewAdminClient(network, compute, identity, storage *gophercloud.ServiceClient) AdminClient {
+func NewAdminClient(providerClient *gophercloud.ProviderClient) (AdminClient, error) {
 	var client AdminClient
-	client = &adminClient{
-		NetworkClient:  network,
-		ComputeClient:  compute,
-		IdentityClient: identity,
-		StorageClient:  storage,
+
+	identity, err := openstack.NewIdentityV3(providerClient, gophercloud.EndpointOpts{})
+	if err != nil {
+		return nil, err
 	}
-	return client
+
+	client = &adminClient{
+		ProviderClient: providerClient,
+		IdentityClient: identity,
+	}
+
+	return client, nil
 }
 
 func (c *adminClient) CreateKlusterServiceUser(username, password, domainName, projectID string) error {
@@ -256,8 +261,53 @@ func (c *adminClient) getRoleID(roleName string) (string, error) {
 
 }
 
-func (c *adminClient) CreateContainer(name string, opts containers.CreateOpts) error {
-	res := containers.Create(c.StorageClient, name, opts)
+func (c *adminClient) CreateContainer(containerName, serviceUserName, serviceUserDomainName, serviceUserProjectID string) error {
+	listOpts := endpoints.ListOpts{
+		Availability: "public",
+	}
+
+	allPages, err := endpoints.List(c.IdentityClient, listOpts).AllPages()
+	if err != nil {
+		return err
+	}
+
+	allEndpoints, err := endpoints.ExtractEndpoints(allPages)
+	if err != nil {
+		return err
+	}
+
+	var swiftEndpoint endpoints.Endpoint
+	for _, endpoint := range allEndpoints {
+		if endpoint.Name == "swift" {
+			swiftEndpoint = endpoint
+			break
+		}
+	}
+	endpointURL := strings.Replace(swiftEndpoint.URL, "%(tenant_id)s", serviceUserProjectID, 1)
+
+	storageClient, err := openstack.NewObjectStorageV1(c.ProviderClient, gophercloud.EndpointOpts{})
+	if err != nil {
+		return err
+	}
+	storageClient.Endpoint = endpointURL
+
+	domainID, err := c.getDomainID(serviceUserDomainName)
+	if err != nil {
+		return err
+	}
+
+	serviceUser, err := c.getUserByName(serviceUserName, domainID)
+	if err != nil {
+		return err
+	}
+
+	acl := fmt.Sprintf("%s:%s", serviceUserProjectID, serviceUser.ID)
+	createOpts := containers.CreateOpts{
+		ContainerRead:  acl,
+		ContainerWrite: acl,
+	}
+
+	res := containers.Create(storageClient, containerName, createOpts)
 
 	return res.Err
 }

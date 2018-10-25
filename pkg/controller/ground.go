@@ -10,7 +10,6 @@ import (
 
 	"github.com/Masterminds/goutils"
 	"github.com/go-kit/kit/log"
-	"github.com/gophercloud/gophercloud/openstack/objectstorage/v1/containers"
 	"google.golang.org/grpc"
 	api_v1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
@@ -422,7 +421,9 @@ func (op *GroundControl) createKluster(kluster *v1.Kluster) error {
 
 	if err := op.Clients.OpenstackAdmin.CreateContainer(
 		fmt.Sprintf(etcd_util.EtcdBackupStorageContainer, kluster.GetName(), kluster.GetUID()),
-		containers.CreateOpts{},
+		username,
+		domain,
+		kluster.Spec.Openstack.ProjectID,
 	); err != nil {
 		return err
 	}
