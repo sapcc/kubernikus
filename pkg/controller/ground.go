@@ -420,10 +420,12 @@ func (op *GroundControl) createKluster(kluster *v1.Kluster) error {
 		Region:     region,
 	}
 
-	op.Clients.OpenstackAdmin.CreateContainer(
+	if err := op.Clients.OpenstackAdmin.CreateContainer(
 		fmt.Sprintf(etcd_util.EtcdBackupStorageContainer, kluster.GetName(), kluster.GetUID()),
 		containers.CreateOpts{},
-	)
+	); err != nil {
+		return err
+	}
 
 	rawValues, err := helm_util.KlusterToHelmValues(kluster, options, certificates, bootstrapToken, accessMode)
 	if err != nil {

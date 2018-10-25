@@ -259,9 +259,5 @@ func (c *adminClient) getRoleID(roleName string) (string, error) {
 func (c *adminClient) CreateContainer(name string, opts containers.CreateOpts) error {
 	res := containers.Create(c.StorageClient, name, opts)
 
-	if res.Err != nil {
-		return res.Err
-	}
-
-	return nil
+	return res.Err
 }
