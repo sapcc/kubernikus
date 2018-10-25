@@ -262,28 +262,41 @@ func (c *adminClient) getRoleID(roleName string) (string, error) {
 }
 
 func (c *adminClient) CreateStorageContainer(projectID, containerName, serviceUserName, serviceUserDomainName string) error {
-	listOpts := endpoints.ListOpts{
+	serviceListOpts := services.ListOpts{
+		ServiceType: "object-store",
+	}
+
+	allServicesPages, err := services.List(c.IdentityClient, serviceListOpts).AllPages()
+	if err != nil {
+		return err
+	}
+
+	allServices, err := services.ExtractServices(allServicesPages)
+	if err != nil {
+		return err
+	}
+	if len(allServices) != 1 {
+		return errors.New("only one service expected")
+	}
+
+	endpointListOpts := endpoints.ListOpts{
+		ServiceID:    allServices[0].ID,
 		Availability: gophercloud.AvailabilityPublic,
 	}
 
-	allPages, err := endpoints.List(c.IdentityClient, listOpts).AllPages()
+	allEndpointPages, err := endpoints.List(c.IdentityClient, endpointListOpts).AllPages()
 	if err != nil {
 		return err
 	}
 
-	allEndpoints, err := endpoints.ExtractEndpoints(allPages)
+	allEndpoints, err := endpoints.ExtractEndpoints(allEndpointPages)
 	if err != nil {
 		return err
 	}
-
-	var swiftEndpoint endpoints.Endpoint
-	for _, endpoint := range allEndpoints {
-		if endpoint.Name == "swift" {
-			swiftEndpoint = endpoint
-			break
-		}
+	if len(allEndpoints) != 1 {
+		return errors.New("only one endpoint expected")
 	}
-	endpointURL := strings.Replace(swiftEndpoint.URL, "%(tenant_id)s", projectID, 1)
+	endpointURL := strings.Replace(allEndpoints[0].URL, "%(tenant_id)s", projectID, 1)
 
 	storageClient, err := openstack.NewObjectStorageV1(c.ProviderClient, gophercloud.EndpointOpts{})
 	if err != nil {
