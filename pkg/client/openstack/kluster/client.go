@@ -35,7 +35,6 @@ type klusterClient struct {
 	NetworkClient  *gophercloud.ServiceClient
 	ComputeClient  *gophercloud.ServiceClient
 	IdentityClient *gophercloud.ServiceClient
-	StorageClient  *gophercloud.ServiceClient
 
 	Kluster   *v1.Kluster
 	NodeStore cache.Store
