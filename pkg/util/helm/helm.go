@@ -41,6 +41,7 @@ type persistenceValues struct {
 type etcdValues struct {
 	Persistence      persistenceValues `yaml:"persistence,omitempty"`
 	StorageContainer string            `yaml:"storageContainer,omitempty"`
+	Openstack        openstackValues   `yaml:"openstack,omitempty"`
 }
 
 type apiValues struct {
@@ -114,6 +115,17 @@ func KlusterToHelmValues(kluster *v1.Kluster, openstack *OpenstackOptions, certi
 				AccessMode: accessMode,
 			},
 			StorageContainer: etcd_util.DefaultStorageContainer(kluster),
+			Openstack: openstackValues{
+				AuthURL:             openstack.AuthURL,
+				Username:            openstack.Username,
+				Password:            openstack.Password,
+				DomainName:          openstack.DomainName,
+				Region:              openstack.Region,
+				ProjectID:           kluster.Spec.Openstack.ProjectID,
+				LbSubnetID:          kluster.Spec.Openstack.LBSubnetID,
+				LbFloatingNetworkID: kluster.Spec.Openstack.LBFloatingNetworkID,
+				RouterID:            kluster.Spec.Openstack.RouterID,
+			},
 		},
 		Api: apiValues{
 			ApiserverHost: apiserverURL.Hostname(),
