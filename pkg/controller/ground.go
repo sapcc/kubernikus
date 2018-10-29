@@ -11,6 +11,7 @@ import (
 	"github.com/Masterminds/goutils"
 	"github.com/go-kit/kit/log"
 	"google.golang.org/grpc"
+	batch_v1 "k8s.io/api/batch/v1"
 	api_v1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -467,6 +468,10 @@ func (op *GroundControl) terminateKluster(kluster *v1.Kluster) error {
 		}
 	}
 
+	if err := op.createJobBackupDeleteDeferred(kluster); err != nil {
+		return err
+	}
+
 	op.Logger.Log(
 		"msg", "Deleting helm release",
 		"kluster", kluster.GetName(),
@@ -503,6 +508,138 @@ func (op *GroundControl) terminateKluster(kluster *v1.Kluster) error {
 
 	waitutil.WaitForKlusterDeletion(kluster, op.klusterInformer.Informer().GetIndexer())
 	return nil
+}
+
+func (op *GroundControl) createJobBackupDeleteDeferred(kluster *v1.Kluster) error {
+	secretName := "kubernikus-operator"
+	jobName := fmt.Sprintf("etcd-backup-cleanup-%s", kluster.GetUID())
+	runAfter := time.Now().Unix() + etcd_util.EtcdBackupDeleteAfterSeconds
+	storageURL, err := op.OpenstackAdmin.GetPublicObjectStoreEndpointURL(kluster.Spec.Openstack.ProjectID)
+	if err != nil {
+		return nil
+	}
+	deleteCmd := fmt.Sprintf(
+		"while (($(date +%%s) <= %d)); do sleep 1m; done && "+
+			"source <(swift auth) &&"+
+			"export OS_STORAGE_URL='%s' &&"+
+			"swift delete '%s'",
+		runAfter,
+		storageURL,
+		etcd_util.DefaultStorageContainer(kluster),
+	)
+
+	jobSpec := &batch_v1.Job{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "Job",
+			APIVersion: "batch/v1",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name: jobName,
+		},
+		Spec: batch_v1.JobSpec{
+			Completions: int32Ptr(1),
+			Template: api_v1.PodTemplateSpec{
+				Spec: api_v1.PodSpec{
+					Containers: []api_v1.Container{
+						{
+							Name:  jobName,
+							Image: "hub.global.cloud.sap/monsoon/swift-cli",
+							Command: []string{
+								"/bin/bash",
+								"-c",
+								deleteCmd,
+							},
+							Env: []api_v1.EnvVar{
+								{
+									Name:  "OS_IDENTITY_API_VERSION",
+									Value: "3",
+								},
+								{
+									Name: "OS_AUTH_URL",
+									ValueFrom: &api_v1.EnvVarSource{
+										SecretKeyRef: &api_v1.SecretKeySelector{
+											LocalObjectReference: api_v1.LocalObjectReference{
+												Name: secretName,
+											},
+											Key: "authURL",
+										},
+									},
+								},
+								{
+									Name: "OS_USERNAME",
+									ValueFrom: &api_v1.EnvVarSource{
+										SecretKeyRef: &api_v1.SecretKeySelector{
+											LocalObjectReference: api_v1.LocalObjectReference{
+												Name: secretName,
+											},
+											Key: "username",
+										},
+									},
+								},
+								{
+									Name: "OS_PASSWORD",
+									ValueFrom: &api_v1.EnvVarSource{
+										SecretKeyRef: &api_v1.SecretKeySelector{
+											LocalObjectReference: api_v1.LocalObjectReference{
+												Name: secretName,
+											},
+											Key: "password",
+										},
+									},
+								},
+								{
+									Name: "OS_USER_DOMAIN_NAME",
+									ValueFrom: &api_v1.EnvVarSource{
+										SecretKeyRef: &api_v1.SecretKeySelector{
+											LocalObjectReference: api_v1.LocalObjectReference{
+												Name: secretName,
+											},
+											Key: "userDomain",
+										},
+									},
+								},
+								{
+									Name: "OS_PROJECT_NAME",
+									ValueFrom: &api_v1.EnvVarSource{
+										SecretKeyRef: &api_v1.SecretKeySelector{
+											LocalObjectReference: api_v1.LocalObjectReference{
+												Name: secretName,
+											},
+											Key: "project",
+										},
+									},
+								},
+								{
+									Name: "OS_PROJECT_DOMAIN_NAME",
+									ValueFrom: &api_v1.EnvVarSource{
+										SecretKeyRef: &api_v1.SecretKeySelector{
+											LocalObjectReference: api_v1.LocalObjectReference{
+												Name: secretName,
+											},
+											Key: "projectDomain",
+										},
+									},
+								},
+								{
+									Name:  "OS_PROJECT_ID",
+									Value: kluster.Spec.Openstack.ProjectID,
+								},
+							},
+						},
+					},
+					RestartPolicy: api_v1.RestartPolicyOnFailure,
+				},
+			},
+		},
+	}
+
+	_, err = op.Clients.Kubernetes.BatchV1().Jobs("kubernikus-system").Create(jobSpec)
+
+	return err
+}
+
+func int32Ptr(i int32) *int32 {
+	return &i
 }
 
 func (op *GroundControl) requiresOpenstackInfo(kluster *v1.Kluster) bool {

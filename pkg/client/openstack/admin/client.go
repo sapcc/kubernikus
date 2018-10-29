@@ -27,6 +27,7 @@ type AdminClient interface {
 	GetKubernikusCatalogEntry() (string, error)
 	GetRegion() (string, error)
 	CreateStorageContainer(projectID, containerName, serviceUserName, serviceUserDomainName string) error
+	GetPublicObjectStoreEndpointURL(projectID string) (string, error)
 }
 
 type adminClient struct {
@@ -262,41 +263,10 @@ func (c *adminClient) getRoleID(roleName string) (string, error) {
 }
 
 func (c *adminClient) CreateStorageContainer(projectID, containerName, serviceUserName, serviceUserDomainName string) error {
-	serviceListOpts := services.ListOpts{
-		ServiceType: "object-store",
-	}
-
-	allServicesPages, err := services.List(c.IdentityClient, serviceListOpts).AllPages()
+	endpointURL, err := c.GetPublicObjectStoreEndpointURL(projectID)
 	if err != nil {
 		return err
 	}
-
-	allServices, err := services.ExtractServices(allServicesPages)
-	if err != nil {
-		return err
-	}
-	if len(allServices) != 1 {
-		return errors.New("only one service expected")
-	}
-
-	endpointListOpts := endpoints.ListOpts{
-		ServiceID:    allServices[0].ID,
-		Availability: gophercloud.AvailabilityPublic,
-	}
-
-	allEndpointPages, err := endpoints.List(c.IdentityClient, endpointListOpts).AllPages()
-	if err != nil {
-		return err
-	}
-
-	allEndpoints, err := endpoints.ExtractEndpoints(allEndpointPages)
-	if err != nil {
-		return err
-	}
-	if len(allEndpoints) != 1 {
-		return errors.New("only one endpoint expected")
-	}
-	endpointURL := strings.Replace(allEndpoints[0].URL, "%(tenant_id)s", projectID, 1)
 
 	storageClient, err := openstack.NewObjectStorageV1(c.ProviderClient, gophercloud.EndpointOpts{})
 	if err != nil {
@@ -323,4 +293,44 @@ func (c *adminClient) CreateStorageContainer(projectID, containerName, serviceUs
 	_, err = containers.Create(storageClient, containerName, createOpts).Extract()
 
 	return err
+}
+
+func (c *adminClient) GetPublicObjectStoreEndpointURL(projectID string) (string, error) {
+	serviceListOpts := services.ListOpts{
+		ServiceType: "object-store",
+	}
+
+	allServicesPages, err := services.List(c.IdentityClient, serviceListOpts).AllPages()
+	if err != nil {
+		return "", err
+	}
+
+	allServices, err := services.ExtractServices(allServicesPages)
+	if err != nil {
+		return "", err
+	}
+	if len(allServices) != 1 {
+		return "", errors.New("only one service expected")
+	}
+
+	endpointListOpts := endpoints.ListOpts{
+		ServiceID:    allServices[0].ID,
+		Availability: gophercloud.AvailabilityPublic,
+	}
+
+	allEndpointPages, err := endpoints.List(c.IdentityClient, endpointListOpts).AllPages()
+	if err != nil {
+		return "", err
+	}
+
+	allEndpoints, err := endpoints.ExtractEndpoints(allEndpointPages)
+	if err != nil {
+		return "", err
+	}
+	if len(allEndpoints) != 1 {
+		return "", errors.New("only one endpoint expected")
+	}
+
+	endpointURL := strings.Replace(allEndpoints[0].URL, "%(tenant_id)s", projectID, 1)
+	return gophercloud.NormalizeURL(endpointURL), nil
 }

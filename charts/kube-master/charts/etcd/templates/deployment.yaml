@@ -24,11 +24,11 @@ data:
             exec etcd \
               --name=kubernikus \
               --data-dir=/var/lib/etcd \
-              --advertise-client-urls=http://$(ETCD_IP):2379 \
-              --initial-advertise-peer-urls=http://$(ETCD_IP):2380 \
-              --initial-cluster=kubernikus=http://$(ETCD_IP):2380 \
+              --advertise-client-urls=http://${ETCD_IP}:2379 \
+              --initial-advertise-peer-urls=http://${ETCD_IP}:2380 \
+              --initial-cluster=kubernikus=http://${ETCD_IP}:2380 \
               --listen-client-urls=http://0.0.0.0:2379 \
-              --listen-peer-urls=http://$(ETCD_IP):2380
+              --listen-peer-urls=http://${ETCD_IP}:2380
             ;;
       esac;
     done
@@ -117,11 +117,8 @@ spec:
                   name: {{ include "fullname" . }}
                   key: openstack-password
             - name: OS_DOMAIN_NAME
-              valueFrom:
-                secretKeyRef:
-                  name: {{ include "fullname" . }}
-                  key: openstack-domain-name
-            - name: OS_TENANT_NAME
+              value: kubernikus
+            - name: OS_TENANT_ID
               valueFrom:
                 secretKeyRef:
                   name: {{ include "fullname" . }}
