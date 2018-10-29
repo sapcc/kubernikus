@@ -7,8 +7,7 @@ import (
 )
 
 const (
-	EtcdBackupStorageContainer   = "etcd-backup-%s-%s"
-	EtcdBackupDeleteAfterSeconds = 604800
+	EtcdBackupStorageContainer = "etcd-backup-%s-%s"
 )
 
 func DefaultStorageContainer(kluster *v1.Kluster) string {
