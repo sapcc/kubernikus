@@ -27,7 +27,6 @@ type AdminClient interface {
 	GetKubernikusCatalogEntry() (string, error)
 	GetRegion() (string, error)
 	CreateStorageContainer(projectID, containerName, serviceUserName, serviceUserDomainName string) error
-	GetPublicObjectStoreEndpointURL(projectID string) (string, error)
 }
 
 type adminClient struct {
@@ -263,7 +262,7 @@ func (c *adminClient) getRoleID(roleName string) (string, error) {
 }
 
 func (c *adminClient) CreateStorageContainer(projectID, containerName, serviceUserName, serviceUserDomainName string) error {
-	endpointURL, err := c.GetPublicObjectStoreEndpointURL(projectID)
+	endpointURL, err := c.getPublicObjectStoreEndpointURL(projectID)
 	if err != nil {
 		return err
 	}
@@ -295,7 +294,7 @@ func (c *adminClient) CreateStorageContainer(projectID, containerName, serviceUs
 	return err
 }
 
-func (c *adminClient) GetPublicObjectStoreEndpointURL(projectID string) (string, error) {
+func (c *adminClient) getPublicObjectStoreEndpointURL(projectID string) (string, error) {
 	serviceListOpts := services.ListOpts{
 		ServiceType: "object-store",
 	}

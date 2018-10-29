@@ -11,5 +11,5 @@ const (
 )
 
 func DefaultStorageContainer(kluster *v1.Kluster) string {
-	return fmt.Sprintf(EtcdBackupStorageContainer, kluster.GetName(), kluster.GetUID())
+	return fmt.Sprintf(EtcdBackupStorageContainer, kluster.Spec.Name, kluster.GetUID())
 }
