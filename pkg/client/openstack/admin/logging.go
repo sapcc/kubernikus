@@ -81,17 +81,3 @@ func (c LoggingClient) CreateStorageContainer(projectID, containerName, serviceU
 	}(time.Now())
 	return c.Client.CreateStorageContainer(projectID, containerName, serviceUserName, serviceUserDomainName)
 }
-
-func (c LoggingClient) GetPublicObjectStoreEndpointURL(projectID string) (url string, err error) {
-	defer func(begin time.Time) {
-		c.Logger.Log(
-			"msg", "get public object-store endpoint url",
-			"project_id", projectID,
-			"url", url,
-			"took", time.Since(begin),
-			"v", 2,
-			"err", err,
-		)
-	}(time.Now())
-	return c.Client.GetPublicObjectStoreEndpointURL(projectID)
-}
