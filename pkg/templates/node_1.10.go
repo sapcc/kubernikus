@@ -441,7 +441,7 @@ storage:
           enableProfiling: false
           featureGates: {}
           healthzBindAddress: 0.0.0.0:10256
-          hostnameOverride: ""
+          hostnameOverride: {{ .NodeName }}
           iptables:
             masqueradeAll: false
             masqueradeBit: 14
