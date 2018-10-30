@@ -46,7 +46,7 @@ func (mr *MigrationReconciler) Reconcile(kluster *v1.Kluster) (bool, error) {
 		return false, err
 	}
 
-	err := migration.Migrate(kluster, mr.Kubernetes, mr.Kubernikus)
+	err := migration.Migrate(kluster, mr.Kubernetes, mr.Kubernikus, mr.OpenstackAdmin)
 	mr.Logger.Log(
 		"msg", "Migrating spec",
 		"kluster", kluster.Name,
