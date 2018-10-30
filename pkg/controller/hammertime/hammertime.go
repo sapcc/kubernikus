@@ -15,6 +15,7 @@ import (
 	"github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
 	"github.com/sapcc/kubernikus/pkg/controller/base"
 	"github.com/sapcc/kubernikus/pkg/controller/config"
+	"github.com/sapcc/kubernikus/pkg/controller/metrics"
 	"github.com/sapcc/kubernikus/pkg/controller/nodeobservatory"
 )
 
@@ -69,6 +70,11 @@ func (hc *hammertimeController) Reconcile(kluster *v1.Kluster) error {
 	}
 
 	timeout_exeeded := time.Now().Sub(newestHearbeat) > hc.timeout
+	if timeout_exeeded {
+		metrics.HammertimeStatus.WithLabelValues(kluster.Name).Set(1)
+	} else {
+		metrics.HammertimeStatus.WithLabelValues(kluster.Name).Set(0)
+	}
 
 	return hc.scaleDeployment(kluster, timeout_exeeded, logger)
 
