@@ -259,7 +259,7 @@ storage:
     - path: /var/lib/iptables/rules-save
       filesystem: root
       mode: 0644
-      contents: 
+      contents:
         inline: |
           *nat
           :PREROUTING ACCEPT [0:0]
@@ -279,21 +279,21 @@ storage:
     - path: /etc/kubernetes/certs/kubelet-clients-ca.pem
       filesystem: root
       mode: 0644
-      contents: 
+      contents:
         inline: |-
 {{ .KubeletClientsCA | indent 10 }}
     - path: /etc/kubernetes/certs/apiserver-clients-system-kube-proxy-key.pem
       filesystem: root
       mode: 0644
-      contents: 
+      contents:
         inline: |-
 {{ .ApiserverClientsSystemKubeProxyKey | indent 10 }}
     - path: /etc/kubernetes/certs/apiserver-clients-system-kube-proxy.pem
       filesystem: root
       mode: 0644
-      contents: 
+      contents:
         inline: |-
-{{ .ApiserverClientsSystemKubeProxy | indent 10 }}    
+{{ .ApiserverClientsSystemKubeProxy | indent 10 }}
     - path: /etc/kubernetes/certs/tls-ca.pem
       filesystem: root
       mode: 0644
@@ -303,7 +303,7 @@ storage:
     - path: /etc/kubernetes/bootstrap/kubeconfig
       filesystem: root
       mode: 0644
-      contents: 
+      contents:
         inline: |-
           apiVersion: v1
           kind: Config
@@ -313,19 +313,19 @@ storage:
                  certificate-authority: /etc/kubernetes/certs/tls-ca.pem
                  server: {{ .ApiserverURL }}
           contexts:
-            - name: local 
+            - name: local
               context:
                 cluster: local
-                user: local 
+                user: local
           current-context: local
           users:
             - name: local
               user:
-                token: {{ .BootstrapToken }} 
+                token: {{ .BootstrapToken }}
     - path: /etc/kubernetes/kube-proxy/kubeconfig
       filesystem: root
       mode: 0644
-      contents: 
+      contents:
         inline: |-
           apiVersion: v1
           kind: Config
@@ -335,20 +335,20 @@ storage:
                  certificate-authority: /etc/kubernetes/certs/tls-ca.pem
                  server: {{ .ApiserverURL }}
           contexts:
-            - name: local 
+            - name: local
               context:
                 cluster: local
-                user: local 
+                user: local
           current-context: local
           users:
             - name: local
               user:
-                client-certificate: /etc/kubernetes/certs/apiserver-clients-system-kube-proxy.pem 
-                client-key: /etc/kubernetes/certs/apiserver-clients-system-kube-proxy-key.pem 
+                client-certificate: /etc/kubernetes/certs/apiserver-clients-system-kube-proxy.pem
+                client-key: /etc/kubernetes/certs/apiserver-clients-system-kube-proxy-key.pem
     - path: /etc/kubernetes/kube-proxy/config
       filesystem: root
       mode: 0644
-      contents: 
+      contents:
         inline: |-
           apiVersion: componentconfig/v1alpha1
           kind: KubeProxyConfiguration
@@ -385,7 +385,7 @@ storage:
     - path: /etc/kubernetes/openstack/openstack.config
       filesystem: root
       mode: 0644
-      contents: 
+      contents:
         inline: |-
           [Global]
           auth-url = {{ .OpenstackAuthURL }}
@@ -397,7 +397,7 @@ storage:
           [LoadBalancer]
           lb-version=v2
           subnet-id = {{ .OpenstackLBSubnetID }}
-          floating-network-id = {{ .OpenstackLBFloatingNetworkID }} 
+          floating-network-id = {{ .OpenstackLBFloatingNetworkID }}
           create-monitor = yes
           monitor-delay = 1m
           monitor-timeout = 30s
