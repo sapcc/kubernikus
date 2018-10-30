@@ -7,7 +7,7 @@ import (
 )
 
 const (
-	EtcdBackupStorageContainer = "etcd-backup-%s-%s"
+	EtcdBackupStorageContainer = "kubernikus-etcd-backup-%s-%s"
 )
 
 func DefaultStorageContainer(kluster *v1.Kluster) string {
