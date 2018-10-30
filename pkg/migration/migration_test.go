@@ -11,7 +11,7 @@ import (
 
 	"github.com/sapcc/kubernikus/pkg/api/models"
 	"github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
-	"github.com/sapcc/kubernikus/pkg/client/openstack/admin"
+	"github.com/sapcc/kubernikus/pkg/client/openstack"
 	kubernikusfake "github.com/sapcc/kubernikus/pkg/generated/clientset/fake"
 )
 
@@ -29,7 +29,7 @@ func TestInitialMigration(t *testing.T) {
 	kcs := kubernikusfake.NewSimpleClientset(kluster)
 
 	var registry Registry
-	registry.AddMigration(func(_ []byte, kluster *v1.Kluster, _ kubernetes.Interface, _ admin.AdminClient) error {
+	registry.AddMigration(func(_ []byte, kluster *v1.Kluster, _ kubernetes.Interface, _ openstack.SharedOpenstackClientFactory) error {
 		kluster.Spec.Name = "executed"
 		return nil
 	})
@@ -56,17 +56,17 @@ func TestMigration(t *testing.T) {
 	kcs := kubernikusfake.NewSimpleClientset(kluster)
 
 	var registry Registry
-	registry.AddMigration(func(_ []byte, kluster *v1.Kluster, _ kubernetes.Interface, _ admin.AdminClient) error {
+	registry.AddMigration(func(_ []byte, kluster *v1.Kluster, _ kubernetes.Interface, _ openstack.SharedOpenstackClientFactory) error {
 		t.Error("First migration should be skipped")
 		return nil
 	})
 
-	registry.AddMigration(func(_ []byte, kluster *v1.Kluster, _ kubernetes.Interface, _ admin.AdminClient) error {
+	registry.AddMigration(func(_ []byte, kluster *v1.Kluster, _ kubernetes.Interface, _ openstack.SharedOpenstackClientFactory) error {
 		kluster.Spec.Name = kluster.Spec.Name + "2"
 		return nil
 	})
 
-	registry.AddMigration(func(_ []byte, kluster *v1.Kluster, _ kubernetes.Interface, _ admin.AdminClient) error {
+	registry.AddMigration(func(_ []byte, kluster *v1.Kluster, _ kubernetes.Interface, _ openstack.SharedOpenstackClientFactory) error {
 		kluster.Spec.Name = kluster.Spec.Name + "3"
 		return nil
 	})
@@ -92,7 +92,7 @@ func TestMigrationError(t *testing.T) {
 	kcs := kubernikusfake.NewSimpleClientset(kluster)
 
 	var registry Registry
-	registry.AddMigration(func(_ []byte, kluster *v1.Kluster, _ kubernetes.Interface, _ admin.AdminClient) error {
+	registry.AddMigration(func(_ []byte, kluster *v1.Kluster, _ kubernetes.Interface, _ openstack.SharedOpenstackClientFactory) error {
 		kluster.Spec.Name = "After"
 		return errors.New("migration failed")
 	})
