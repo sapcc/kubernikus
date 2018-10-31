@@ -109,6 +109,7 @@ func TestRunner(t *testing.T) {
 	require.NoError(t, err, "Must be able to connect to Kubernikus")
 
 	kcpurl, err := url.Parse(os.Getenv("CP_KUBERNIKUS_URL"))
+	require.NoError(t, err, "Must be able to parse Kubernikus control plane URL")
 	authOptionsControlPlane := &tokens.AuthOptions{
 		IdentityEndpoint: os.Getenv("OS_AUTH_URL"),
 		Username:         os.Getenv("OS_USERNAME"),
