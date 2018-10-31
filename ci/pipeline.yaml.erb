@@ -68,6 +68,9 @@ auth_e2e_<%= region %>: &auth_e2e_<%= region %>
   OS_REGION_NAME: <%= region %>
   KUBERNIKUS_NAME: e2e
   KUBERNIKUS_URL: https://kubernikus.<%= region %>.cloud.sap
+  CP_OS_PROJECT_NAME: kubernikus
+  CP_OS_PROJECT_DOMAIN_NAME: ccadmin
+  CP_KUBERNIKUS_URL: https://k-<%= region %>.admin.cloud.sap
 <% end %>
 
 <% if meta[:e2e] == "manual" %>
@@ -81,6 +84,9 @@ auth_e2e_<%= region %>: &auth_e2e_<%= region %>
   OS_REGION_NAME: <%= region %>
   KUBERNIKUS_NAME: e2e 
   KUBERNIKUS_URL: https://kubernikus.<%= region %>.cloud.sap
+  CP_OS_PROJECT_NAME: kubernikus
+  CP_OS_PROJECT_DOMAIN_NAME: ccadmin
+  CP_KUBERNIKUS_URL: https://k-<%= region %>.admin.cloud.sap
 <% end %>
 
 <% if meta[:e2e] == "virtual" %>
@@ -93,10 +99,13 @@ auth_e2e_<%= region %>: &auth_e2e_<%= region %>
   OS_PROJECT_DOMAIN_NAME: ccadmin
   KUBERNIKUS_NAME: e2e 
   KUBERNIKUS_URL: https://kubernikus-master.eu-nl-1.cloud.sap
+  CP_OS_PROJECT_NAME: kubernikus-<%= region %>
+  CP_OS_PROJECT_DOMAIN_NAME: ccadmin
+  CP_KUBERNIKUS_URL: https://k-<%= region %>.admin.cloud.sap
 <% end %>
 <% end %>
 
-<% Dir.glob(File.join(File.dirname(__FILE__), "task*.yaml")).map{|f| File.basename(f, ".yaml")}.each do |task| %>
+<% Dir.glob(File.join(File.dirname(__FILE__), "task*.yaml")).sort.map{|f| File.basename(f, ".yaml")}.each do |task| %>
 <%= task %>: &<%= task%>
   <%= File.read(File.join(File.dirname(__FILE__), "#{task}.yaml")).gsub("\n", "\n  ") %>
 <% end %>

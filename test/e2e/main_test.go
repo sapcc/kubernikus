@@ -7,6 +7,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/gophercloud/gophercloud/openstack/identity/v3/tokens"
 	"github.com/stretchr/testify/require"
 
 	"github.com/sapcc/kubernikus/pkg/util"
@@ -43,7 +44,8 @@ func validate() error {
 	}
 
 	for _, env := range []string{"OS_AUTH_URL", "OS_USERNAME", "OS_PASSWORD",
-		"OS_USER_DOMAIN_NAME", "OS_PROJECT_NAME", "OS_PROJECT_DOMAIN_NAME"} {
+		"OS_USER_DOMAIN_NAME", "OS_PROJECT_NAME", "OS_PROJECT_DOMAIN_NAME",
+		"CP_KUBERNIKUS_URL", "CP_OS_PROJECT_NAME", "CP_OS_PROJECT_DOMAIN_NAME"} {
 		if os.Getenv(env) == "" {
 			return fmt.Errorf("You need to provide %s", env)
 		}
@@ -92,14 +94,40 @@ func TestRunner(t *testing.T) {
 	fmt.Printf("Cleanup:                %v\n", *cleanup)
 	fmt.Printf("\n\n")
 
-	kubernikus, err := framework.NewKubernikusFramework(kurl)
+	authOptions := &tokens.AuthOptions{
+		IdentityEndpoint: os.Getenv("OS_AUTH_URL"),
+		Username:         os.Getenv("OS_USERNAME"),
+		Password:         os.Getenv("OS_PASSWORD"),
+		DomainName:       os.Getenv("OS_USER_DOMAIN_NAME"),
+		AllowReauth:      true,
+		Scope: tokens.Scope{
+			ProjectName: os.Getenv("OS_PROJECT_NAME"),
+			DomainName:  os.Getenv("OS_PROJECT_DOMAIN_NAME"),
+		},
+	}
+	kubernikus, err := framework.NewKubernikusFramework(kurl, authOptions)
 	require.NoError(t, err, "Must be able to connect to Kubernikus")
+
+	kcpurl, err := url.Parse(os.Getenv("CP_KUBERNIKUS_URL"))
+	authOptionsControlPlane := &tokens.AuthOptions{
+		IdentityEndpoint: os.Getenv("OS_AUTH_URL"),
+		Username:         os.Getenv("OS_USERNAME"),
+		Password:         os.Getenv("OS_PASSWORD"),
+		DomainName:       os.Getenv("OS_USER_DOMAIN_NAME"),
+		AllowReauth:      true,
+		Scope: tokens.Scope{
+			ProjectName: os.Getenv("CP_OS_PROJECT_NAME"),
+			DomainName:  os.Getenv("CP_OS_PROJECT_DOMAIN_NAME"),
+		},
+	}
+	kubernikusControlPlane, err := framework.NewKubernikusFramework(kcpurl, authOptionsControlPlane)
+	require.NoError(t, err, "Must be able to connect to Kubernikus Control Plane")
 
 	openstack, err := framework.NewOpenStackFramework()
 	require.NoError(t, err, "Must be able to connect to OpenStack")
 
 	// Pyrolize garbage left from previous e2e runs
-	pyrolisisTests := &PyrolisisTests{kubernikus, *reuse}
+	pyrolisisTests := &PyrolisisTests{kubernikus, openstack, *reuse}
 	if !t.Run("Pyrolisis", pyrolisisTests.Run) {
 		return
 	}
@@ -122,6 +150,9 @@ func TestRunner(t *testing.T) {
 	kubernetes, err := framework.NewKubernetesFramework(kubernikus, klusterName)
 	require.NoError(t, err, "Must be able to create a kubernetes client")
 
+	kubernetesControlPlane, err := framework.NewKubernetesFramework(kubernikusControlPlane, klusterName)
+	require.NoError(t, err, "Must be able to create a kubernetes client")
+
 	apiTests := &APITests{kubernikus, klusterName}
 	t.Run("API", apiTests.Run)
 
@@ -136,5 +167,13 @@ func TestRunner(t *testing.T) {
 
 		networkTests := &NetworkTests{Kubernetes: kubernetes}
 		t.Run("Network", networkTests.Run)
+
+		etcdBackupTests := &EtcdBackupTests{
+			KubernikusControlPlane: kubernikusControlPlane,
+			KubernetesControlPlane: kubernetesControlPlane,
+			KlusterName:            klusterName,
+			Namespace:              "kubernikus",
+		}
+		t.Run("EtcdBackupTests", etcdBackupTests.Run)
 	})
 }

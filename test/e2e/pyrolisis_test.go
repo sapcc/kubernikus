@@ -5,15 +5,18 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/gophercloud/gophercloud/openstack/objectstorage/v1/containers"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
 	"github.com/sapcc/kubernikus/pkg/api/client/operations"
+	etcd_util "github.com/sapcc/kubernikus/pkg/util/etcd"
 	"github.com/sapcc/kubernikus/test/e2e/framework"
 )
 
 type PyrolisisTests struct {
 	Kubernikus *framework.Kubernikus
+	OpenStack  *framework.OpenStack
 	Reuse      bool
 }
 
@@ -26,6 +29,9 @@ func (p *PyrolisisTests) Run(t *testing.T) {
 			t.Run("Klusters", p.WaitForE2EKlustersTerminated)
 		})
 	}
+
+	cleanup := t.Run("CleanupBackupStorageContainers", p.CleanupBackupStorageContainers)
+	require.True(t, cleanup, "Etcd backup storage container cleanup failed")
 }
 
 func (p *PyrolisisTests) SettingKlustersOnFire(t *testing.T) {
@@ -51,4 +57,24 @@ func (p *PyrolisisTests) SettingKlustersOnFire(t *testing.T) {
 func (p *PyrolisisTests) WaitForE2EKlustersTerminated(t *testing.T) {
 	err := p.Kubernikus.WaitForKlusters("e2e-", 0, WaitForKlusterToBeDeletedTimeout)
 	assert.NoError(t, err, "E2E Klusters didn't burn down in time")
+}
+
+func (p *PyrolisisTests) CleanupBackupStorageContainers(t *testing.T) {
+	listOpts := containers.ListOpts{
+		Full: true,
+	}
+
+	allPages, err := containers.List(p.OpenStack.Identity, listOpts).AllPages()
+	require.NoError(t, err, "There should be no error while listing storage containers")
+
+	allContainers, err := containers.ExtractInfo(allPages)
+	require.NoError(t, err, "There should be no error while extracting storage containers")
+
+	namePattern := etcd_util.EtcdBackupStorageContainer
+	for _, container := range allContainers {
+		if strings.HasPrefix(container.Name, namePattern[0:len(namePattern)-5]) {
+			_, err := containers.Delete(p.OpenStack.Identity, container.Name).Extract()
+			require.NoError(t, err, "There should be no error while deleting storage container: %s", container.Name)
+		}
+	}
 }

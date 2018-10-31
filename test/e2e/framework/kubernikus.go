@@ -24,19 +24,7 @@ type Kubernikus struct {
 	AuthInfo runtime.ClientAuthInfoWriterFunc
 }
 
-func NewKubernikusFramework(kubernikusURL *url.URL) (*Kubernikus, error) {
-	authOptions := &tokens.AuthOptions{
-		IdentityEndpoint: os.Getenv("OS_AUTH_URL"),
-		Username:         os.Getenv("OS_USERNAME"),
-		Password:         os.Getenv("OS_PASSWORD"),
-		DomainName:       os.Getenv("OS_USER_DOMAIN_NAME"),
-		AllowReauth:      true,
-		Scope: tokens.Scope{
-			ProjectName: os.Getenv("OS_PROJECT_NAME"),
-			DomainName:  os.Getenv("OS_PROJECT_DOMAIN_NAME"),
-		},
-	}
-
+func NewKubernikusFramework(kubernikusURL *url.URL, authOptions *tokens.AuthOptions) (*Kubernikus, error) {
 	provider, err := openstack.NewClient(os.Getenv("OS_AUTH_URL"))
 	if err != nil {
 		return nil, fmt.Errorf("could not initialize openstack client: %v", err)
