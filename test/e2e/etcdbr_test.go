@@ -45,7 +45,7 @@ func (e *EtcdBackupTests) WaitForBackupRestore(t *testing.T) {
 	assert.NotEqual(t, 1, len(pods.Items), "There should only be one etcd pod")
 
 	cmd := fmt.Sprintf("rm -rf %s/*", EtcdDataDir)
-	_, _, err = e.KubernetesControlPlane.ExecShellInPodWithFullOutput(e.Namespace, pods.Items[0].Name, cmd)
+	_, _, err = e.KubernetesControlPlane.ExecCommandInContainerWithFullOutput(e.Namespace, pods.Items[0].GetName(), "backup", "/bin/sh", "-c", cmd)
 	assert.NoError(t, err, "Deletion of etcd data failed: %s", err)
 
 	var newUID string
