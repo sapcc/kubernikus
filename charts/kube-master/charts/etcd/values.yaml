@@ -19,4 +19,26 @@ resources:
   limits:
     cpu: 500m
     memory: 512Mi
-
+backup:
+  image:
+    repository: sapcc/etcdbrctl
+    tag: 0.3.0
+    pullPolicy: IfNotPresent
+  config:
+    # do a full-backup every hour
+    schedule: "15 * * * *"
+    # keep backups for one week
+    maxBackups: 168
+    # delta-snapshot every 10 seconds
+    deltaSnapshotPeriod: 10
+    # clean-up old backups every 5 minutes
+    garbageCollectionPeriod: 300
+    # keep maxBackups
+    garbageCollectionPolicy: "LimitBased"
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi

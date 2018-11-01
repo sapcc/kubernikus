@@ -1,4 +1,38 @@
 {{/* vim: set filetype=gotexttmpl: */ -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "fullname" . }}
+  labels:
+    app: {{ include "fullname" . }}
+data:
+  bootstrap.sh: |-
+    #!/bin/sh
+    while true;
+    do
+      wget http://localhost:8080/initialization/status -S -O status;
+      STATUS=`cat status`;
+      case $STATUS in
+      "New")
+            wget http://localhost:8080/initialization/start -S -O - ;;
+      "Progress")
+            sleep 1;
+            continue;;
+      "Failed")
+            continue;;
+      "Successful")
+            exec etcd \
+              --name=kubernikus \
+              --data-dir=/var/lib/etcd \
+              --advertise-client-urls=http://${ETCD_IP}:2379 \
+              --initial-advertise-peer-urls=http://${ETCD_IP}:2380 \
+              --initial-cluster=kubernikus=http://${ETCD_IP}:2380 \
+              --listen-client-urls=http://0.0.0.0:2379 \
+              --listen-peer-urls=http://${ETCD_IP}:2380
+            ;;
+      esac;
+    done
+---
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
@@ -19,14 +53,6 @@ spec:
         release: {{ .Release.Name }}
     spec:
       volumes:
-        {{- if false }}
-        - name: etcd-clients
-          secret:
-            secretName: etcd-clients
-        - name: etcd-peers
-          secret:
-            secretName: etcd-peers
-        {{- end }}
         - name: data
           {{- if .Values.persistence.enabled }}
           persistentVolumeClaim:
@@ -34,6 +60,10 @@ spec:
           {{- else }}
           emptyDir: {}
           {{- end }}
+        - name: bootstrap
+          configMap:
+            name: {{ include "fullname" . }}
+            defaultMode: 0356
       containers:
         - name: etcd
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
@@ -42,33 +72,60 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: status.podIP
-          command: [ etcd ]
-          args:
-            - --name=kubernikus
-            - --data-dir=/var/lib/etcd
-            - --advertise-client-urls=http://$(ETCD_IP):2379
-            - --initial-advertise-peer-urls=http://$(ETCD_IP):2380
-            - --initial-cluster=kubernikus=http://$(ETCD_IP):2380
-            - --listen-client-urls=http://0.0.0.0:2379
-            - --listen-peer-urls=http://$(ETCD_IP):2380
-            {{- if false }}
-            - --trusted-ca-file=/etc/etcd/certs/etcd-clients/ca.pem
-            - --cert-file=/etc/etcd/certs/etcd-clients/etcd-server.pem
-            - --key-file=/etc/etcd/certs/etcd-clients/etcd-server-key.pem
-            - --peer-ca-file=/etc/etcd/certs/etcd-peers/ca.pem
-            - --peer-cert-file=/etc/etcd/certs/etcd-peers/etcd-0.pem
-            - --peer-key-file=/etc/etcd/certs/etcd-peers/etcd-0-key.pem
-            {{- end }}
+          command:
+            - /bootstrap/bootstrap.sh
           volumeMounts:
-            {{- if false }}
-            - mountPath: /etc/etcd/certs/etcd-clients
-              name: etcd-clients
-              readOnly: true
-            - mountPath: /etc/etcd/certs/etcd-peers
-              name: etcd-peers
-              readOnly: true
-            {{- end }}
+            - mountPath: /var/lib/etcd
+              name: data
+            - mountPath: /bootstrap
+              name: bootstrap
+          resources:
+{{ toYaml .Values.resources | indent 12 }}
+        - name: backup
+          command:
+            - etcdbrctl
+            - server
+            - --schedule={{ .Values.backup.config.schedule }}
+            - --max-backups={{ .Values.backup.config.maxBackups }}
+            - --data-dir=/var/lib/etcd
+            - --insecure-transport=true
+            - --storage-provider=Swift
+            - --delta-snapshot-period-seconds={{ .Values.backup.config.deltaSnapshotPeriod }}
+            - --garbage-collection-period-seconds={{ .Values.backup.config.garbageCollectionPeriod }}
+            - --garbage-collection-policy={{ .Values.backup.config.garbageCollectionPolicy }}
+          image: "{{ .Values.backup.image.repository }}:{{ .Values.backup.image.tag }}"
+          imagePullPolicy: {{ .Values.backup.image.pullPolicy }}
+          ports:
+            - containerPort: 8080
+              name: server
+              protocol: TCP
+          env:
+            - name: STORAGE_CONTAINER
+              value: {{ .Values.storageContainer }}
+            - name: OS_AUTH_URL
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "fullname" . }}
+                  key: openstack-auth-url
+            - name: OS_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "fullname" . }}
+                  key: openstack-username
+            - name: OS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "fullname" . }}
+                  key: openstack-password
+            - name: OS_DOMAIN_NAME
+              value: kubernikus
+            - name: OS_TENANT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "fullname" . }}
+                  key: openstack-project-id
+          volumeMounts:
             - mountPath: /var/lib/etcd
               name: data
           resources:
-{{ toYaml .Values.resources | indent 12 }}
+{{ toYaml .Values.backup.resources | indent 12 }}

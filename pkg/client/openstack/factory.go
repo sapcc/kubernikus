@@ -69,13 +69,16 @@ func (f *factory) AdminClient() (admin.AdminClient, error) {
 		return f.adminClient, nil
 	}
 
-	identity, compute, network, err := f.serviceClientsFor(f.adminAuthOptions, f.logger)
+	providerClient, err := f.ProviderClientFor(f.adminAuthOptions, f.logger)
 	if err != nil {
 		return nil, err
 	}
 
 	var client admin.AdminClient
-	client = admin.NewAdminClient(network, compute, identity)
+	client, err = admin.NewAdminClient(providerClient)
+	if err != nil {
+		return nil, err
+	}
 	client = admin.LoggingClient{Client: client, Logger: f.logger}
 
 	f.adminClient = client

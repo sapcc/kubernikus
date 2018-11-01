@@ -19,8 +19,9 @@ const (
 type MigrationReconciler struct {
 	config.Clients
 
-	Recorder record.EventRecorder
-	Logger   log.Logger
+	Factories config.Factories
+	Recorder  record.EventRecorder
+	Logger    log.Logger
 }
 
 func NewController(threadiness int, factories config.Factories, clients config.Clients, recorder record.EventRecorder, logger log.Logger) base.Controller {
@@ -28,7 +29,7 @@ func NewController(threadiness int, factories config.Factories, clients config.C
 		"controller", "migration")
 
 	var reconciler base.Reconciler
-	reconciler = &MigrationReconciler{clients, recorder, logger}
+	reconciler = &MigrationReconciler{clients, factories, recorder, logger}
 
 	return base.NewController(threadiness, factories, reconciler, logger, nil)
 }
@@ -46,7 +47,7 @@ func (mr *MigrationReconciler) Reconcile(kluster *v1.Kluster) (bool, error) {
 		return false, err
 	}
 
-	err := migration.Migrate(kluster, mr.Kubernetes, mr.Kubernikus)
+	err := migration.Migrate(kluster, mr.Kubernetes, mr.Kubernikus, mr.Factories.Openstack)
 	mr.Logger.Log(
 		"msg", "Migrating spec",
 		"kluster", kluster.Name,

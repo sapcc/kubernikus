@@ -11,6 +11,7 @@ import (
 
 	"github.com/sapcc/kubernikus/pkg/api/models"
 	"github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
+	"github.com/sapcc/kubernikus/pkg/client/openstack"
 	kubernikusfake "github.com/sapcc/kubernikus/pkg/generated/clientset/fake"
 )
 
@@ -28,12 +29,12 @@ func TestInitialMigration(t *testing.T) {
 	kcs := kubernikusfake.NewSimpleClientset(kluster)
 
 	var registry Registry
-	registry.AddMigration(func(_ []byte, kluster *v1.Kluster, _ kubernetes.Interface) error {
+	registry.AddMigration(func(_ []byte, kluster *v1.Kluster, _ kubernetes.Interface, _ openstack.SharedOpenstackClientFactory) error {
 		kluster.Spec.Name = "executed"
 		return nil
 	})
 
-	if assert.NoError(t, registry.Migrate(kluster, cs, kcs)) {
+	if assert.NoError(t, registry.Migrate(kluster, cs, kcs, nil)) {
 		kluster, _ = kcs.Kubernikus().Klusters(NAMESPACE).Get("test", metav1.GetOptions{})
 		assert.Equal(t, 1, int(kluster.Status.SpecVersion))
 		assert.Equal(t, "executed", kluster.Spec.Name)
@@ -55,22 +56,22 @@ func TestMigration(t *testing.T) {
 	kcs := kubernikusfake.NewSimpleClientset(kluster)
 
 	var registry Registry
-	registry.AddMigration(func(_ []byte, kluster *v1.Kluster, _ kubernetes.Interface) error {
+	registry.AddMigration(func(_ []byte, kluster *v1.Kluster, _ kubernetes.Interface, _ openstack.SharedOpenstackClientFactory) error {
 		t.Error("First migration should be skipped")
 		return nil
 	})
 
-	registry.AddMigration(func(_ []byte, kluster *v1.Kluster, _ kubernetes.Interface) error {
+	registry.AddMigration(func(_ []byte, kluster *v1.Kluster, _ kubernetes.Interface, _ openstack.SharedOpenstackClientFactory) error {
 		kluster.Spec.Name = kluster.Spec.Name + "2"
 		return nil
 	})
 
-	registry.AddMigration(func(_ []byte, kluster *v1.Kluster, _ kubernetes.Interface) error {
+	registry.AddMigration(func(_ []byte, kluster *v1.Kluster, _ kubernetes.Interface, _ openstack.SharedOpenstackClientFactory) error {
 		kluster.Spec.Name = kluster.Spec.Name + "3"
 		return nil
 	})
 
-	if assert.NoError(t, registry.Migrate(kluster, cs, kcs)) {
+	if assert.NoError(t, registry.Migrate(kluster, cs, kcs, nil)) {
 		kluster, _ = kcs.Kubernikus().Klusters(NAMESPACE).Get("test", metav1.GetOptions{})
 		assert.Equal(t, 3, int(kluster.Status.SpecVersion))
 		assert.Equal(t, "23", kluster.Spec.Name)
@@ -91,12 +92,12 @@ func TestMigrationError(t *testing.T) {
 	kcs := kubernikusfake.NewSimpleClientset(kluster)
 
 	var registry Registry
-	registry.AddMigration(func(_ []byte, kluster *v1.Kluster, _ kubernetes.Interface) error {
+	registry.AddMigration(func(_ []byte, kluster *v1.Kluster, _ kubernetes.Interface, _ openstack.SharedOpenstackClientFactory) error {
 		kluster.Spec.Name = "After"
 		return errors.New("migration failed")
 	})
 
-	if assert.Error(t, registry.Migrate(kluster, cs, kcs)) {
+	if assert.Error(t, registry.Migrate(kluster, cs, kcs, nil)) {
 		kluster, _ = kcs.Kubernikus().Klusters(NAMESPACE).Get("test", metav1.GetOptions{})
 		assert.Equal(t, 0, int(kluster.Status.SpecVersion))
 		assert.Equal(t, "Before", kluster.Spec.Name)
