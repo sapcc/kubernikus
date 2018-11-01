@@ -12,6 +12,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/record"
 
+	"github.com/sapcc/kubernikus/pkg/api/models"
 	"github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
 	"github.com/sapcc/kubernikus/pkg/controller/base"
 	"github.com/sapcc/kubernikus/pkg/controller/config"
@@ -54,9 +55,12 @@ func (hc *hammertimeController) Reconcile(kluster *v1.Kluster) error {
 		return fmt.Errorf("listing nodes failed: %s", err)
 	}
 
-	if len(nodes) < 2 {
-		return nil
+	// No Hammertime if kluster is not in state Running and has at least 2 nodes
+	if len(nodes) < 2 || kluster.Status.Phase != models.KlusterPhaseRunning {
+		metrics.HammertimeStatus.WithLabelValues(kluster.Name).Set(0)
+		return hc.scaleDeployment(kluster, false, logger)
 	}
+
 	//var oldestHeartbeat time.Time = time.Now()
 	var newestHearbeat time.Time = time.Time{}
 	for _, node := range nodes {
