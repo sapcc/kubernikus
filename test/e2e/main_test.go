@@ -131,6 +131,7 @@ func TestRunner(t *testing.T) {
 	require.NoError(t, err, "Must be able to connect to OpenStack")
 
 	project, err := tokens.Get(openstack.Identity, openstack.Provider.Token()).ExtractProject()
+	require.NoError(t, err, "Cannot extract project from token")
 	fullKlusterName := fmt.Sprintf("%s-%s", klusterName, project.ID)
 
 	// Pyrolize garbage left from previous e2e runs
