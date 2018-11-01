@@ -130,6 +130,9 @@ func TestRunner(t *testing.T) {
 	openstack, err := framework.NewOpenStackFramework()
 	require.NoError(t, err, "Must be able to connect to OpenStack")
 
+	project, err := tokens.Get(openstack.Identity, openstack.Provider.Token()).ExtractProject()
+	fullKlusterName := fmt.Sprintf("%s-%s", klusterName, project.ID)
+
 	// Pyrolize garbage left from previous e2e runs
 	pyrolisisTests := &PyrolisisTests{kubernikus, openstack, *reuse}
 	if !t.Run("Pyrolisis", pyrolisisTests.Run) {
@@ -179,7 +182,7 @@ func TestRunner(t *testing.T) {
 			etcdBackupTests := &EtcdBackupTests{
 				KubernikusControlPlane: kubernikusControlPlane,
 				KubernetesControlPlane: kubernetesControlPlane,
-				KlusterName:            klusterName,
+				FullKlusterName:        fullKlusterName,
 				Namespace:              namespace,
 			}
 			t.Run("EtcdBackupTests", etcdBackupTests.Run)

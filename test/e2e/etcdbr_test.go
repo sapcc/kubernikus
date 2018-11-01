@@ -21,7 +21,7 @@ const (
 type EtcdBackupTests struct {
 	KubernikusControlPlane *framework.Kubernikus
 	KubernetesControlPlane *framework.Kubernetes
-	KlusterName            string
+	FullKlusterName        string
 	Namespace              string
 }
 
@@ -37,8 +37,9 @@ func (e *EtcdBackupTests) WaitForBackupRestore(t *testing.T) {
 	assert.NoError(t, err, "Error retrieving secret: %s", err)
 	assert.NotEmpty(t, UID, "ServiceAccount UID is empty")
 
+	labelSelector := fmt.Sprintf("app=%s-etcd", e.FullKlusterName)
 	opts := meta_v1.ListOptions{
-		LabelSelector: fmt.Sprintf("app=%s-etcd", e.KlusterName),
+		LabelSelector: labelSelector,
 	}
 	pods, err := e.KubernetesControlPlane.ClientSet.CoreV1().Pods(e.Namespace).List(opts)
 	assert.NoError(t, err, "Error retrieving etcd pod: %s", err)
