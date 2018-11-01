@@ -44,8 +44,7 @@ func validate() error {
 	}
 
 	for _, env := range []string{"OS_AUTH_URL", "OS_USERNAME", "OS_PASSWORD",
-		"OS_USER_DOMAIN_NAME", "OS_PROJECT_NAME", "OS_PROJECT_DOMAIN_NAME",
-		"CP_KUBERNIKUS_URL", "CP_OS_PROJECT_NAME", "CP_OS_PROJECT_DOMAIN_NAME"} {
+		"OS_USER_DOMAIN_NAME", "OS_PROJECT_NAME", "OS_PROJECT_DOMAIN_NAME"} {
 		if os.Getenv(env) == "" {
 			return fmt.Errorf("You need to provide %s", env)
 		}
