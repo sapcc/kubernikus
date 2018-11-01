@@ -103,6 +103,10 @@ data "openstack_identity_role_v3" "volume_admin" {
   name = "volume_admin"
 }
 
+data "openstack_identity_role_v3" "swiftoperator" {
+  name = "swiftoperator"
+}
+
 data "openstack_identity_role_v3" "cloud_compute_admin" {
   name = "cloud_compute_admin"
 }
@@ -596,6 +600,12 @@ resource "openstack_identity_role_assignment_v3" "pipeline_kubernetes_member_e2e
   user_id    = "${openstack_identity_user_v3.kubernikus_pipeline.id}"
   project_id = "${openstack_identity_project_v3.kubernikus_e2e.id}"
   role_id    = "${data.openstack_identity_role_v3.member.id}"
+}
+
+resource "openstack_identity_role_assignment_v3" "pipeline_swiftoperator_e2e" {
+  user_id    = "${openstack_identity_user_v3.kubernikus_pipeline.id}"
+  project_id = "${openstack_identity_project_v3.kubernikus_e2e.id}"
+  role_id    = "${data.openstack_identity_role_v3.swiftoperator.id}"
 }
 
 resource "ccloud_quota" "kubernikus_e2e" {
