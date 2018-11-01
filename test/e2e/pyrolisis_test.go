@@ -70,9 +70,8 @@ func (p *PyrolisisTests) CleanupBackupStorageContainers(t *testing.T) {
 	allContainers, err := containers.ExtractInfo(allPages)
 	require.NoError(t, err, "There should be no error while extracting storage containers")
 
-	namePattern := etcd_util.EtcdBackupStorageContainer
 	for _, container := range allContainers {
-		if strings.HasPrefix(container.Name, namePattern[0:len(namePattern)-5]) {
+		if strings.HasPrefix(container.Name, etcd_util.BackupStorageContainerBase) {
 			_, err := containers.Delete(p.OpenStack.Identity, container.Name).Extract()
 			require.NoError(t, err, "There should be no error while deleting storage container: %s", container.Name)
 		}
