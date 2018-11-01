@@ -108,21 +108,24 @@ func TestRunner(t *testing.T) {
 	kubernikus, err := framework.NewKubernikusFramework(kurl, authOptions)
 	require.NoError(t, err, "Must be able to connect to Kubernikus")
 
-	kcpurl, err := url.Parse(os.Getenv("CP_KUBERNIKUS_URL"))
-	require.NoError(t, err, "Must be able to parse Kubernikus control plane URL")
-	authOptionsControlPlane := &tokens.AuthOptions{
-		IdentityEndpoint: os.Getenv("OS_AUTH_URL"),
-		Username:         os.Getenv("OS_USERNAME"),
-		Password:         os.Getenv("OS_PASSWORD"),
-		DomainName:       os.Getenv("OS_USER_DOMAIN_NAME"),
-		AllowReauth:      true,
-		Scope: tokens.Scope{
-			ProjectName: os.Getenv("CP_OS_PROJECT_NAME"),
-			DomainName:  os.Getenv("CP_OS_PROJECT_DOMAIN_NAME"),
-		},
+	var kubernikusControlPlane *framework.Kubernikus
+	if os.Getenv("CP_KUBERNIKUS_URL") != "" {
+		kcpurl, err := url.Parse(os.Getenv("CP_KUBERNIKUS_URL"))
+		require.NoError(t, err, "Must be able to parse Kubernikus control plane URL")
+		authOptionsControlPlane := &tokens.AuthOptions{
+			IdentityEndpoint: os.Getenv("OS_AUTH_URL"),
+			Username:         os.Getenv("OS_USERNAME"),
+			Password:         os.Getenv("OS_PASSWORD"),
+			DomainName:       os.Getenv("OS_USER_DOMAIN_NAME"),
+			AllowReauth:      true,
+			Scope: tokens.Scope{
+				ProjectName: os.Getenv("CP_OS_PROJECT_NAME"),
+				DomainName:  os.Getenv("CP_OS_PROJECT_DOMAIN_NAME"),
+			},
+		}
+		kubernikusControlPlane, err = framework.NewKubernikusFramework(kcpurl, authOptionsControlPlane)
+		require.NoError(t, err, "Must be able to connect to Kubernikus Control Plane")
 	}
-	kubernikusControlPlane, err := framework.NewKubernikusFramework(kcpurl, authOptionsControlPlane)
-	require.NoError(t, err, "Must be able to connect to Kubernikus Control Plane")
 
 	openstack, err := framework.NewOpenStackFramework()
 	require.NoError(t, err, "Must be able to connect to OpenStack")
@@ -151,9 +154,6 @@ func TestRunner(t *testing.T) {
 	kubernetes, err := framework.NewKubernetesFramework(kubernikus, klusterName)
 	require.NoError(t, err, "Must be able to create a kubernetes client")
 
-	kubernetesControlPlane, err := framework.NewKubernetesFramework(kubernikusControlPlane, klusterName)
-	require.NoError(t, err, "Must be able to create a kubernetes client")
-
 	apiTests := &APITests{kubernikus, klusterName}
 	t.Run("API", apiTests.Run)
 
@@ -169,12 +169,20 @@ func TestRunner(t *testing.T) {
 		networkTests := &NetworkTests{Kubernetes: kubernetes}
 		t.Run("Network", networkTests.Run)
 
-		etcdBackupTests := &EtcdBackupTests{
-			KubernikusControlPlane: kubernikusControlPlane,
-			KubernetesControlPlane: kubernetesControlPlane,
-			KlusterName:            klusterName,
-			Namespace:              "kubernikus",
+		if os.Getenv("CP_KUBERNIKUS_URL") != "" {
+			kubernetesControlPlane, err := framework.NewKubernetesFramework(kubernikusControlPlane, klusterName)
+			require.NoError(t, err, "Must be able to create a kubernetes client")
+			namespace := "kubernikus"
+			if os.Getenv("CP_NAMESPACE") != "" {
+				namespace = os.Getenv("CP_NAMESPACE")
+			}
+			etcdBackupTests := &EtcdBackupTests{
+				KubernikusControlPlane: kubernikusControlPlane,
+				KubernetesControlPlane: kubernetesControlPlane,
+				KlusterName:            klusterName,
+				Namespace:              namespace,
+			}
+			t.Run("EtcdBackupTests", etcdBackupTests.Run)
 		}
-		t.Run("EtcdBackupTests", etcdBackupTests.Run)
 	})
 }
