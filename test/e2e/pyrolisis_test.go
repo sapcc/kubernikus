@@ -5,7 +5,10 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/gophercloud/gophercloud"
+	"github.com/gophercloud/gophercloud/openstack"
 	"github.com/gophercloud/gophercloud/openstack/objectstorage/v1/containers"
+	"github.com/gophercloud/gophercloud/openstack/objectstorage/v1/objects"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
@@ -60,20 +63,36 @@ func (p *PyrolisisTests) WaitForE2EKlustersTerminated(t *testing.T) {
 }
 
 func (p *PyrolisisTests) CleanupBackupStorageContainers(t *testing.T) {
-	listOpts := containers.ListOpts{
-		Full: true,
-	}
+	storageClient, err := openstack.NewObjectStorageV1(p.OpenStack.Provider, gophercloud.EndpointOpts{})
+	require.NoError(t, err, "Could not create object storage client")
 
-	allPages, err := containers.List(p.OpenStack.Identity, listOpts).AllPages()
+	containersListOpts := containers.ListOpts{
+		Full: false,
+	}
+	allPages, err := containers.List(storageClient, containersListOpts).AllPages()
 	require.NoError(t, err, "There should be no error while listing storage containers")
 
-	allContainers, err := containers.ExtractInfo(allPages)
+	allContainers, err := containers.ExtractNames(allPages)
 	require.NoError(t, err, "There should be no error while extracting storage containers")
 
+	objectsListOpts := objects.ListOpts{
+		Full: false,
+	}
 	for _, container := range allContainers {
-		if strings.HasPrefix(container.Name, etcd_util.BackupStorageContainerBase) {
-			_, err := containers.Delete(p.OpenStack.Identity, container.Name).Extract()
-			require.NoError(t, err, "There should be no error while deleting storage container: %s", container.Name)
+		if strings.HasPrefix(container, etcd_util.BackupStorageContainerBase) {
+			allPages, err := objects.List(storageClient, container, objectsListOpts).AllPages()
+			require.NoError(t, err, "There should be no error while lising objetcs in container %s", container)
+
+			allObjects, err := objects.ExtractNames(allPages)
+			require.NoError(t, err, "There should be no error while extracting objetcs names for container %s", container)
+
+			for _, object := range allObjects {
+				_, err := objects.Delete(storageClient, container, object, objects.DeleteOpts{}).Extract()
+				require.NoError(t, err, "There should be no error while deleting object %s/%s", container, object)
+			}
+
+			_, err = containers.Delete(storageClient, container).Extract()
+			require.NoError(t, err, "There should be no error while deleting storage container: %s", container)
 		}
 	}
 }

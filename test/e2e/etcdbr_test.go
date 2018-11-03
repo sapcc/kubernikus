@@ -13,8 +13,10 @@ import (
 )
 
 const (
-	EtcdRestorePollInterval = 5 * time.Second
-	EtcdRestoreTimeout      = 1 * time.Minute
+	EtcdFailPollInterval    = 1 * time.Second
+	EtcdFailTimeout         = 60 * time.Second
+	EtcdRestorePollInterval = 2 * time.Second
+	EtcdRestoreTimeout      = 60 * time.Second
 	EtcdDataDir             = "/var/lib/etcd"
 )
 
@@ -26,41 +28,46 @@ type EtcdBackupTests struct {
 }
 
 func (e *EtcdBackupTests) Run(t *testing.T) {
-	t.Parallel()
 	t.Run("WaitForBackupRestore", e.WaitForBackupRestore)
 }
 
 func (e *EtcdBackupTests) WaitForBackupRestore(t *testing.T) {
-	t.Parallel()
-
 	UID, err := e.getServiceAccountUID("default")
 	assert.NoError(t, err, "Error retrieving secret: %s", err)
 	assert.NotEmpty(t, UID, "ServiceAccount UID is empty")
 
-	labelSelector := fmt.Sprintf("app=%s-etcd", e.FullKlusterName)
 	opts := meta_v1.ListOptions{
-		LabelSelector: labelSelector,
+		LabelSelector: fmt.Sprintf("app=%s-etcd", e.FullKlusterName),
 	}
 	pods, err := e.KubernetesControlPlane.ClientSet.CoreV1().Pods(e.Namespace).List(opts)
 	assert.NoError(t, err, "Error retrieving etcd pod: %s", err)
-	assert.NotEqual(t, 1, len(pods.Items), "There should only be one etcd pod")
+	assert.EqualValues(t, 1, len(pods.Items), "There should be exactly one etcd pod, %d found", len(pods.Items))
+	podName := pods.Items[0].GetName()
+
+	pod, err := e.KubernetesControlPlane.ClientSet.CoreV1().Pods(e.Namespace).Get(podName, meta_v1.GetOptions{})
+	rv := pod.GetResourceVersion()
 
 	cmd := fmt.Sprintf("rm -rf %s/*", EtcdDataDir)
-	_, _, err = e.KubernetesControlPlane.ExecCommandInContainerWithFullOutput(e.Namespace, pods.Items[0].GetName(), "backup", "/bin/sh", "-c", cmd)
+	_, _, err = e.KubernetesControlPlane.ExecCommandInContainerWithFullOutput(e.Namespace, podName, "backup", "/bin/sh", "-c", cmd)
 	assert.NoError(t, err, "Deletion of etcd data failed: %s", err)
+
+	newRv := string(rv)
+	wait.PollImmediate(EtcdFailPollInterval, EtcdFailTimeout,
+		func() (bool, error) {
+			pod, _ := e.KubernetesControlPlane.ClientSet.CoreV1().Pods(e.Namespace).Get(podName, meta_v1.GetOptions{})
+			newRv = pod.GetResourceVersion()
+			return (newRv != rv), nil
+		})
+	assert.NotEqual(t, rv, newRv, "Etcd is still up, can't test recovery")
 
 	var newUID string
 	wait.PollImmediate(EtcdRestorePollInterval, EtcdRestoreTimeout,
 		func() (bool, error) {
 			newUID, _ = e.getServiceAccountUID("default")
-			if UID == newUID {
-				return true, nil
-			}
-
-			return false, nil
+			return (UID == newUID), nil
 		})
 
-	assert.EqualValues(t, UID, newUID, "Recovery of etcd backup failed: %s != %s", UID, newUID)
+	assert.EqualValues(t, UID, newUID, "Recovery of etcd backup failed")
 }
 
 func (e *EtcdBackupTests) getServiceAccountUID(serviceAccountName string) (string, error) {
