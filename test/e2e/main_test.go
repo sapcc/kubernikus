@@ -78,19 +78,25 @@ func TestRunner(t *testing.T) {
 	fmt.Printf("========================================================================\n")
 	fmt.Printf("Authentication\n")
 	fmt.Printf("========================================================================\n")
-	fmt.Printf("OS_AUTH_URL:            %v\n", os.Getenv("OS_AUTH_URL"))
-	fmt.Printf("OS_USERNAME:            %v\n", os.Getenv("OS_USERNAME"))
-	fmt.Printf("OS_USER_DOMAIN_NAME:    %v\n", os.Getenv("OS_USER_DOMAIN_NAME"))
-	fmt.Printf("OS_PROJECT_NAME:        %v\n", os.Getenv("OS_PROJECT_NAME"))
-	fmt.Printf("OS_PROJECT_DOMAIN_NAME: %v\n", os.Getenv("OS_PROJECT_DOMAIN_NAME"))
+	fmt.Printf("OS_AUTH_URL:               %v\n", os.Getenv("OS_AUTH_URL"))
+	fmt.Printf("OS_USERNAME:               %v\n", os.Getenv("OS_USERNAME"))
+	fmt.Printf("OS_USER_DOMAIN_NAME:       %v\n", os.Getenv("OS_USER_DOMAIN_NAME"))
+	fmt.Printf("OS_PROJECT_NAME:           %v\n", os.Getenv("OS_PROJECT_NAME"))
+	fmt.Printf("OS_PROJECT_DOMAIN_NAME:    %v\n", os.Getenv("OS_PROJECT_DOMAIN_NAME"))
+	fmt.Printf("\n")
+	if os.Getenv("CP_KUBERNIKUS_URL") != "" {
+		fmt.Printf("CP_KUBERNIKUS_URL:         %v\n", os.Getenv("CP_KUBERNIKUS_URL"))
+		fmt.Printf("CP_OS_PROJECT_NAME:        %v\n", os.Getenv("CP_OS_PROJECT_NAME"))
+		fmt.Printf("CP_OS_PROJECT_DOMAIN_NAME: %v\n", os.Getenv("CP_OS_PROJECT_DOMAIN_NAME"))
+	}
 	fmt.Printf("\n")
 	fmt.Printf("========================================================================\n")
 	fmt.Printf("Test Parameters\n")
 	fmt.Printf("========================================================================\n")
-	fmt.Printf("Kubernikus:             %v\n", kurl.Host)
-	fmt.Printf("Kluster Name:           %v\n", klusterName)
-	fmt.Printf("Reuse:                  %v\n", *reuse)
-	fmt.Printf("Cleanup:                %v\n", *cleanup)
+	fmt.Printf("Kubernikus:                %v\n", kurl.Host)
+	fmt.Printf("Kluster Name:              %v\n", klusterName)
+	fmt.Printf("Reuse:                     %v\n", *reuse)
+	fmt.Printf("Cleanup:                   %v\n", *cleanup)
 	fmt.Printf("\n\n")
 
 	authOptions := &tokens.AuthOptions{
@@ -166,19 +172,16 @@ func TestRunner(t *testing.T) {
 	}
 
 	t.Run("Smoke", func(t *testing.T) {
-		volumeTests := &VolumeTests{Kubernetes: kubernetes}
-		t.Run("Volumes", volumeTests.Run)
-
-		networkTests := &NetworkTests{Kubernetes: kubernetes}
-		t.Run("Network", networkTests.Run)
-
 		if os.Getenv("CP_KUBERNIKUS_URL") != "" {
-			kubernetesControlPlane, err := framework.NewKubernetesFramework(kubernikusControlPlane, klusterName)
-			require.NoError(t, err, "Must be able to create a kubernetes client")
+			// TODO: get k8s cp namespace from env
+			kubernetesControlPlane, err := framework.NewKubernetesFramework(kubernikusControlPlane, "k-master")
+			require.NoError(t, err, "Must be able to create a control plane kubernetes client")
+
 			namespace := "kubernikus"
 			if os.Getenv("CP_NAMESPACE") != "" {
 				namespace = os.Getenv("CP_NAMESPACE")
 			}
+
 			etcdBackupTests := &EtcdBackupTests{
 				KubernikusControlPlane: kubernikusControlPlane,
 				KubernetesControlPlane: kubernetesControlPlane,
@@ -187,5 +190,11 @@ func TestRunner(t *testing.T) {
 			}
 			t.Run("EtcdBackupTests", etcdBackupTests.Run)
 		}
+
+		volumeTests := &VolumeTests{Kubernetes: kubernetes}
+		t.Run("Volumes", volumeTests.Run)
+
+		networkTests := &NetworkTests{Kubernetes: kubernetes}
+		t.Run("Network", networkTests.Run)
 	})
 }
