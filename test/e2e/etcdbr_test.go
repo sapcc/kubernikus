@@ -45,6 +45,7 @@ func (e *EtcdBackupTests) WaitForBackupRestore(t *testing.T) {
 	podName := pods.Items[0].GetName()
 
 	pod, err := e.KubernetesControlPlane.ClientSet.CoreV1().Pods(e.Namespace).Get(podName, meta_v1.GetOptions{})
+	assert.NoError(t, err, "Error retrieving resource version")
 	rv := pod.GetResourceVersion()
 
 	cmd := fmt.Sprintf("rm -rf %s/*", EtcdDataDir)
