@@ -106,6 +106,9 @@ data "openstack_identity_role_v3" "volume_admin" {
 data "openstack_identity_role_v3" "swiftoperator" {
   name = "swiftoperator"
 }
+data "openstack_identity_role_v3" "swiftreseller" {
+  name = "swiftreseller"
+}
 
 data "openstack_identity_role_v3" "cloud_compute_admin" {
   name = "cloud_compute_admin"
@@ -284,6 +287,12 @@ resource "openstack_identity_role_assignment_v3" "kubernikus-cloud_volume_admin"
   user_id    = "${openstack_identity_user_v3.kubernikus_service.id}"
   project_id = "${data.openstack_identity_project_v3.cloud_admin.id}"
   role_id    = "${data.openstack_identity_role_v3.cloud_volume_admin.id}"
+}
+
+resource "openstack_identity_role_assignment_v3" "kubernikus-swiftreseller" {
+  user_id    = "${openstack_identity_user_v3.kubernikus_service.id}"
+  project_id = "${data.openstack_identity_project_v3.cloud_admin.id}"
+  role_id    = "${data.openstack_identity_role_v3.swiftreseller.id}"
 }
 
 
