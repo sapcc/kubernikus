@@ -31,6 +31,7 @@ auth_e2e_ap-ae-1: &auth_e2e_ap-ae-1
   CP_OS_PROJECT_NAME: kubernikus
   CP_OS_PROJECT_DOMAIN_NAME: ccadmin
   CP_KUBERNIKUS_URL: https://k-ap-ae-1.admin.cloud.sap
+  CP_KLUSTER: k-ap-ae-1
 
 
 
@@ -69,6 +70,7 @@ auth_e2e_ap-au-1: &auth_e2e_ap-au-1
   CP_OS_PROJECT_NAME: kubernikus
   CP_OS_PROJECT_DOMAIN_NAME: ccadmin
   CP_KUBERNIKUS_URL: https://k-ap-au-1.admin.cloud.sap
+  CP_KLUSTER: k-ap-au-1
 
 
 
@@ -103,6 +105,7 @@ auth_e2e_ap-cn-1: &auth_e2e_ap-cn-1
   CP_OS_PROJECT_NAME: kubernikus
   CP_OS_PROJECT_DOMAIN_NAME: ccadmin
   CP_KUBERNIKUS_URL: https://k-ap-cn-1.admin.cloud.sap
+  CP_KLUSTER: k-ap-cn-1
 
 
 
@@ -139,6 +142,7 @@ auth_e2e_ap-jp-1: &auth_e2e_ap-jp-1
   CP_OS_PROJECT_NAME: kubernikus
   CP_OS_PROJECT_DOMAIN_NAME: ccadmin
   CP_KUBERNIKUS_URL: https://k-ap-jp-1.admin.cloud.sap
+  CP_KLUSTER: k-ap-jp-1
 
 
 
@@ -175,6 +179,7 @@ auth_e2e_ap-jp-2: &auth_e2e_ap-jp-2
   CP_OS_PROJECT_NAME: kubernikus
   CP_OS_PROJECT_DOMAIN_NAME: ccadmin
   CP_KUBERNIKUS_URL: https://k-ap-jp-2.admin.cloud.sap
+  CP_KLUSTER: k-ap-jp-2
 
 
 
@@ -211,6 +216,7 @@ auth_e2e_ap-sa-1: &auth_e2e_ap-sa-1
   CP_OS_PROJECT_NAME: kubernikus
   CP_OS_PROJECT_DOMAIN_NAME: ccadmin
   CP_KUBERNIKUS_URL: https://k-ap-sa-1.admin.cloud.sap
+  CP_KLUSTER: k-ap-sa-1
 
 
 
@@ -249,6 +255,7 @@ auth_e2e_eu-de-1: &auth_e2e_eu-de-1
   CP_OS_PROJECT_NAME: kubernikus
   CP_OS_PROJECT_DOMAIN_NAME: ccadmin
   CP_KUBERNIKUS_URL: https://k-eu-de-1.admin.cloud.sap
+  CP_KLUSTER: k-eu-de-1
 
 
 
@@ -285,6 +292,7 @@ auth_e2e_eu-de-2: &auth_e2e_eu-de-2
   CP_OS_PROJECT_NAME: kubernikus
   CP_OS_PROJECT_DOMAIN_NAME: ccadmin
   CP_KUBERNIKUS_URL: https://k-eu-de-2.admin.cloud.sap
+  CP_KLUSTER: k-eu-de-2
 
 
 
@@ -319,6 +327,7 @@ auth_e2e_eu-nl-1: &auth_e2e_eu-nl-1
   CP_OS_PROJECT_NAME: kubernikus
   CP_OS_PROJECT_DOMAIN_NAME: ccadmin
   CP_KUBERNIKUS_URL: https://k-eu-nl-1.admin.cloud.sap
+  CP_KLUSTER: k-eu-nl-1
 
 
 
@@ -355,6 +364,7 @@ auth_e2e_eu-ru-1: &auth_e2e_eu-ru-1
   CP_OS_PROJECT_NAME: kubernikus
   CP_OS_PROJECT_DOMAIN_NAME: ccadmin
   CP_KUBERNIKUS_URL: https://k-eu-ru-1.admin.cloud.sap
+  CP_KLUSTER: k-eu-ru-1
 
 
 
@@ -391,6 +401,7 @@ auth_e2e_la-br-1: &auth_e2e_la-br-1
   CP_OS_PROJECT_NAME: kubernikus
   CP_OS_PROJECT_DOMAIN_NAME: ccadmin
   CP_KUBERNIKUS_URL: https://k-la-br-1.admin.cloud.sap
+  CP_KLUSTER: k-la-br-1
 
 
 
@@ -427,6 +438,7 @@ auth_e2e_na-ca-1: &auth_e2e_na-ca-1
   CP_OS_PROJECT_NAME: kubernikus
   CP_OS_PROJECT_DOMAIN_NAME: ccadmin
   CP_KUBERNIKUS_URL: https://k-na-ca-1.admin.cloud.sap
+  CP_KLUSTER: k-na-ca-1
 
 
 
@@ -465,6 +477,7 @@ auth_e2e_na-us-1: &auth_e2e_na-us-1
   CP_OS_PROJECT_NAME: kubernikus
   CP_OS_PROJECT_DOMAIN_NAME: ccadmin
   CP_KUBERNIKUS_URL: https://k-na-us-1.admin.cloud.sap
+  CP_KLUSTER: k-na-us-1
 
 
 
@@ -499,6 +512,7 @@ auth_e2e_na-us-3: &auth_e2e_na-us-3
   CP_OS_PROJECT_NAME: kubernikus
   CP_OS_PROJECT_DOMAIN_NAME: ccadmin
   CP_KUBERNIKUS_URL: https://k-na-us-3.admin.cloud.sap
+  CP_KLUSTER: k-na-us-3
 
 
 
@@ -535,6 +549,7 @@ auth_e2e_qa-de-1: &auth_e2e_qa-de-1
   CP_OS_PROJECT_NAME: kubernikus
   CP_OS_PROJECT_DOMAIN_NAME: ccadmin
   CP_KUBERNIKUS_URL: https://k-qa-de-1.admin.cloud.sap
+  CP_KLUSTER: k-qa-de-1
 
 
 
@@ -574,6 +589,7 @@ auth_e2e_master: &auth_e2e_master
   CP_OS_PROJECT_NAME: kubernikus-master
   CP_OS_PROJECT_DOMAIN_NAME: ccadmin
   CP_KUBERNIKUS_URL: https://k-master.admin.cloud.sap
+  CP_KLUSTER: k-master
 
 
 
@@ -714,6 +730,10 @@ task_e2e_tests: &task_e2e_tests
     OS_PROJECT_DOMAIN_NAME:
     OS_REGION_NAME:
     SENTRY_DSN:
+    CP_OS_PROJECT_NAME:
+    CP_OS_PROJECT_DOMAIN_NAME:
+    CP_KUBERNIKUS_URL:
+    CP_KLUSTER:
   
 
 task_helm-admin_kubernikus: &task_helm-admin_kubernikus

@@ -97,6 +97,9 @@ func TestRunner(t *testing.T) {
 	fmt.Printf("Kluster Name:              %v\n", klusterName)
 	fmt.Printf("Reuse:                     %v\n", *reuse)
 	fmt.Printf("Cleanup:                   %v\n", *cleanup)
+	if os.Getenv("CP_KUBERNIKUS_URL") != "" {
+		fmt.Printf("CP Kluster Name:           %v\n", os.Getenv("CP_KLUSTER"))
+	}
 	fmt.Printf("\n\n")
 
 	authOptions := &tokens.AuthOptions{
@@ -173,8 +176,7 @@ func TestRunner(t *testing.T) {
 
 	t.Run("Smoke", func(t *testing.T) {
 		if os.Getenv("CP_KUBERNIKUS_URL") != "" {
-			// TODO: get k8s cp namespace from env
-			kubernetesControlPlane, err := framework.NewKubernetesFramework(kubernikusControlPlane, "k-master")
+			kubernetesControlPlane, err := framework.NewKubernetesFramework(kubernikusControlPlane, os.Getenv("CP_KLUSTER"))
 			require.NoError(t, err, "Must be able to create a control plane kubernetes client")
 
 			namespace := "kubernikus"

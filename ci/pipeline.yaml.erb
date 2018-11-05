@@ -71,6 +71,7 @@ auth_e2e_<%= region %>: &auth_e2e_<%= region %>
   CP_OS_PROJECT_NAME: kubernikus
   CP_OS_PROJECT_DOMAIN_NAME: ccadmin
   CP_KUBERNIKUS_URL: https://k-<%= region %>.admin.cloud.sap
+  CP_KLUSTER: k-<%= region %>
 <% end %>
 
 <% if meta[:e2e] == "manual" %>
@@ -87,6 +88,7 @@ auth_e2e_<%= region %>: &auth_e2e_<%= region %>
   CP_OS_PROJECT_NAME: kubernikus
   CP_OS_PROJECT_DOMAIN_NAME: ccadmin
   CP_KUBERNIKUS_URL: https://k-<%= region %>.admin.cloud.sap
+  CP_KLUSTER: k-<%= region %>
 <% end %>
 
 <% if meta[:e2e] == "virtual" %>
@@ -102,6 +104,7 @@ auth_e2e_<%= region %>: &auth_e2e_<%= region %>
   CP_OS_PROJECT_NAME: kubernikus-<%= region %>
   CP_OS_PROJECT_DOMAIN_NAME: ccadmin
   CP_KUBERNIKUS_URL: https://k-<%= region %>.admin.cloud.sap
+  CP_KLUSTER: k-<%= region %>
 <% end %>
 <% end %>
 
