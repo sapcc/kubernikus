@@ -40,7 +40,6 @@ metadata:
   labels:
     chart: "{{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}"
     release: {{ .Release.Name }}
-
 spec:
   replicas: 1
   selector:
@@ -79,6 +78,20 @@ spec:
               name: data
             - mountPath: /bootstrap
               name: bootstrap
+          livenessProbe:
+            exec:
+              command:
+                - /bin/sh
+                - -ec
+                - ETCDCTL_API=3 etcdctl get foo
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 10
           resources:
 {{ toYaml .Values.resources | indent 12 }}
         - name: backup
