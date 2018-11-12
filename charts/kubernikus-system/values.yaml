@@ -100,7 +100,7 @@ kube-state-metrics:
 
 grafana:
   server:
-    image: "grafana/grafana:master"
+    image: "grafana/grafana:5.0.4"
     imagePullPolicy: IfNotPresent
     name: grafana
 
