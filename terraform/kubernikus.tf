@@ -331,6 +331,10 @@ resource "ccloud_quota" "kubernikus" {
 		loadbalancers        = 10
 		pools                = 10
   }
+
+  object-store {
+    capacity = 1073741824
+  }
 }
 
 resource "openstack_networking_rbacpolicies_v2" "external" {
@@ -648,6 +652,10 @@ resource "ccloud_quota" "kubernikus_e2e" {
 		listeners            = 0
 		loadbalancers        = 0
 		pools                = 0
+  }
+
+  object-store {
+    capacity = 104857600
   }
 }
 
