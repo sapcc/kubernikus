@@ -1,7 +1,7 @@
 SHELL    := /bin/sh
 IMAGE    := sapcc/kubernikus-kubectl
 
-KUBERNETES_VERSIONS := v1.7.7 v1.8.0
+KUBERNETES_VERSIONS := v1.10.9
 HELM_VERSION        := v2.9.1
 
 .PHONY: all

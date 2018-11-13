@@ -51,17 +51,12 @@ plan:
 		-var domain_name=$(TF_PROJECT_DOMAIN) \
 		-var tenant_name=$(TF_PROJECT) \
 		-var-file="${TF_VARS_DIR}/kubernikus.tfvars" \
-		-parallelism=1
+		-parallelism=1 \
+		-out terraform.tfplan
 
 apply:
 	@$(TERRAFORM_BIN) apply \
 		-input=false \
 		-auto-approve \
-		-var region=$(TF_REGION) \
-		-var user_name=$(TF_USER) \
-		-var user_domain_name=$(TF_USER_DOMAIN) \
-		-var password=$(TF_PASSWORD) \
-		-var domain_name=$(TF_PROJECT_DOMAIN) \
-		-var tenant_name=$(TF_PROJECT) \
-		-var-file="${TF_VARS_DIR}/kubernikus.tfvars" \
-		-parallelism=1
+		-parallelism=1 \
+		terraform.tfplan

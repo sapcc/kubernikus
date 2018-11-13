@@ -26,7 +26,7 @@ SWAGGER_BIN        := bin/$(GOOS)/swagger-$(GO_SWAGGER_VERSION)
 all: $(BINARIES:%=bin/$(GOOS)/%)
 
 bin/$(GOOS)/swagger-%:
-	curl -f -z $@ -o $@ -L'#' https://github.com/go-swagger/go-swagger/releases/download/$*/swagger_$(GOOS)_amd64
+	curl -f --create-dirs -z $@ -o $@ -L'#' https://github.com/go-swagger/go-swagger/releases/download/$*/swagger_$(GOOS)_amd64
 	chmod +x $@
 
 bin/%: $(GOFILES) Makefile
@@ -41,7 +41,8 @@ linters:
 	gometalinter --vendor -s generated --disable-all -E vet -E ineffassign -E misspell ./cmd/... ./pkg/... ./test/...
 
 gotest:
-	set -o pipefail && go test -v github.com/sapcc/kubernikus/pkg... github.com/sapcc/kubernikus/cmd/... | grep -v 'no test files'
+	# go 1.11 requires gcc for go test because of reasons: https://github.com/golang/go/issues/28065 (CGO_ENABLED=0 fixes this)
+	set -o pipefail && CGO_ENABLED=0 go test -v github.com/sapcc/kubernikus/pkg... github.com/sapcc/kubernikus/cmd/... | grep -v 'no test files'
 
 build:
 	docker build $(BUILD_ARGS) -t sapcc/kubernikus-binaries:$(VERSION)     -f Dockerfile.kubernikus-binaries .
@@ -143,7 +144,7 @@ endif
 
 bootstrap: $(SWAGGER_BIN)
 ifndef HAS_GLIDE
-	brew install glide
+	$(error glide not found. Please run `brew install glide` or install it from https://github.com/Masterminds/glide)
 endif
 ifndef HAS_GLIDE_VC
 	go get -u github.com/sgotti/glide-vc

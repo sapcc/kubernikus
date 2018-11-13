@@ -8,7 +8,7 @@ fi
 
 if [ "$0" = '/usr/local/bin/kubectl' ]; then
   if [ ! -f $HOME/.kube/config ]; then
-    kubernikusctl credentials  
+    kubernikusctl auth init
   fi
 
   exec /usr/bin/kubectl "$@"

@@ -99,6 +99,14 @@ spec:
             items:
               - key: local-kubeconfig
                 path: kubeconfig
+      initContainers:
+        - name: etcd-wait
+          image: sapcc/etcd:3.1.12
+          command:
+            - sh
+            - -c
+          args:
+            - until etcdctl --total-timeout=4s --endpoints http://{{ include "etcd.fullname" . }}:2379 cluster-health; do sleep 5; done;
       containers:
         - name: apiserver
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
@@ -112,6 +120,7 @@ spec:
             - --authorization-mode=Node,RBAC
             - --cloud-config=/etc/kubernetes/cloudprovider/openstack.config
             - --cloud-provider=openstack
+            - --enable-admission-plugins=ExtendedResourceToleration
             - --enable-bootstrap-token-auth=true
             - --external-hostname={{ required "missing .api.apiserverHost" .Values.api.apiserverHost }}
             - --token-auth-file=/etc/kubernetes/bootstrap/token.csv

@@ -30,6 +30,7 @@ import (
 	"github.com/sapcc/kubernikus/pkg/controller/metrics"
 	informers_kubernikus "github.com/sapcc/kubernikus/pkg/generated/informers/externalversions/kubernikus/v1"
 	"github.com/sapcc/kubernikus/pkg/util"
+	etcd_util "github.com/sapcc/kubernikus/pkg/util/etcd"
 	helm_util "github.com/sapcc/kubernikus/pkg/util/helm"
 	waitutil "github.com/sapcc/kubernikus/pkg/util/wait"
 )
@@ -416,6 +417,15 @@ func (op *GroundControl) createKluster(kluster *v1.Kluster) error {
 		Password:   password,
 		DomainName: domain,
 		Region:     region,
+	}
+
+	if err := op.Clients.OpenstackAdmin.CreateStorageContainer(
+		kluster.Spec.Openstack.ProjectID,
+		etcd_util.DefaultStorageContainer(kluster),
+		username,
+		domain,
+	); err != nil {
+		return err
 	}
 
 	rawValues, err := helm_util.KlusterToHelmValues(kluster, options, certificates, bootstrapToken, accessMode)

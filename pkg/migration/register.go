@@ -9,6 +9,7 @@ func init() {
 	defaultRegistry.migrations = []Migration{
 		Init,
 		AddAggregationLayerCertificates,
+		CreateEtcdBackupStorageContainer,
 		// <-- Insert new migrations at the end only!
 	}
 }

@@ -103,6 +103,13 @@ data "openstack_identity_role_v3" "volume_admin" {
   name = "volume_admin"
 }
 
+data "openstack_identity_role_v3" "swiftoperator" {
+  name = "swiftoperator"
+}
+data "openstack_identity_role_v3" "swiftreseller" {
+  name = "swiftreseller"
+}
+
 data "openstack_identity_role_v3" "cloud_compute_admin" {
   name = "cloud_compute_admin"
 }
@@ -282,6 +289,12 @@ resource "openstack_identity_role_assignment_v3" "kubernikus-cloud_volume_admin"
   role_id    = "${data.openstack_identity_role_v3.cloud_volume_admin.id}"
 }
 
+resource "openstack_identity_role_assignment_v3" "kubernikus-swiftreseller" {
+  user_id    = "${openstack_identity_user_v3.kubernikus_service.id}"
+  project_id = "${data.openstack_identity_project_v3.cloud_admin.id}"
+  role_id    = "${data.openstack_identity_role_v3.swiftreseller.id}"
+}
+
 
 
 
@@ -317,6 +330,10 @@ resource "ccloud_quota" "kubernikus" {
 		listeners            = 10
 		loadbalancers        = 10
 		pools                = 10
+  }
+
+  objectstore {
+    capacity = 1073741824
   }
 }
 
@@ -598,6 +615,12 @@ resource "openstack_identity_role_assignment_v3" "pipeline_kubernetes_member_e2e
   role_id    = "${data.openstack_identity_role_v3.member.id}"
 }
 
+resource "openstack_identity_role_assignment_v3" "pipeline_swiftoperator_e2e" {
+  user_id    = "${openstack_identity_user_v3.kubernikus_pipeline.id}"
+  project_id = "${openstack_identity_project_v3.kubernikus_e2e.id}"
+  role_id    = "${data.openstack_identity_role_v3.swiftoperator.id}"
+}
+
 resource "ccloud_quota" "kubernikus_e2e" {
   provider = "ccloud.cloud_admin" 
 
@@ -629,6 +652,10 @@ resource "ccloud_quota" "kubernikus_e2e" {
 		listeners            = 0
 		loadbalancers        = 0
 		pools                = 0
+  }
+
+  objectstore {
+    capacity = 104857600
   }
 }
 

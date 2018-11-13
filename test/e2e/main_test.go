@@ -7,6 +7,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/gophercloud/gophercloud/openstack/identity/v3/tokens"
 	"github.com/stretchr/testify/require"
 
 	"github.com/sapcc/kubernikus/pkg/util"
@@ -77,30 +78,78 @@ func TestRunner(t *testing.T) {
 	fmt.Printf("========================================================================\n")
 	fmt.Printf("Authentication\n")
 	fmt.Printf("========================================================================\n")
-	fmt.Printf("OS_AUTH_URL:            %v\n", os.Getenv("OS_AUTH_URL"))
-	fmt.Printf("OS_USERNAME:            %v\n", os.Getenv("OS_USERNAME"))
-	fmt.Printf("OS_USER_DOMAIN_NAME:    %v\n", os.Getenv("OS_USER_DOMAIN_NAME"))
-	fmt.Printf("OS_PROJECT_NAME:        %v\n", os.Getenv("OS_PROJECT_NAME"))
-	fmt.Printf("OS_PROJECT_DOMAIN_NAME: %v\n", os.Getenv("OS_PROJECT_DOMAIN_NAME"))
+	fmt.Printf("OS_AUTH_URL:               %v\n", os.Getenv("OS_AUTH_URL"))
+	fmt.Printf("OS_USERNAME:               %v\n", os.Getenv("OS_USERNAME"))
+	fmt.Printf("OS_USER_DOMAIN_NAME:       %v\n", os.Getenv("OS_USER_DOMAIN_NAME"))
+	fmt.Printf("OS_PROJECT_NAME:           %v\n", os.Getenv("OS_PROJECT_NAME"))
+	fmt.Printf("OS_PROJECT_DOMAIN_NAME:    %v\n", os.Getenv("OS_PROJECT_DOMAIN_NAME"))
+	fmt.Printf("\n")
+	if os.Getenv("CP_KUBERNIKUS_URL") != "" {
+		fmt.Printf("CP_KUBERNIKUS_URL:         %v\n", os.Getenv("CP_KUBERNIKUS_URL"))
+		fmt.Printf("CP_OS_PROJECT_NAME:        %v\n", os.Getenv("CP_OS_PROJECT_NAME"))
+		fmt.Printf("CP_OS_PROJECT_DOMAIN_NAME: %v\n", os.Getenv("CP_OS_PROJECT_DOMAIN_NAME"))
+	}
 	fmt.Printf("\n")
 	fmt.Printf("========================================================================\n")
 	fmt.Printf("Test Parameters\n")
 	fmt.Printf("========================================================================\n")
-	fmt.Printf("Kubernikus:             %v\n", kurl.Host)
-	fmt.Printf("Kluster Name:           %v\n", klusterName)
-	fmt.Printf("Reuse:                  %v\n", *reuse)
-	fmt.Printf("Cleanup:                %v\n", *cleanup)
+	fmt.Printf("Kubernikus:                %v\n", kurl.Host)
+	fmt.Printf("Kluster Name:              %v\n", klusterName)
+	fmt.Printf("Reuse:                     %v\n", *reuse)
+	fmt.Printf("Cleanup:                   %v\n", *cleanup)
+	if os.Getenv("CP_KUBERNIKUS_URL") != "" {
+		fmt.Printf("CP Kluster Name:           %v\n", os.Getenv("CP_KLUSTER"))
+	}
 	fmt.Printf("\n\n")
 
-	kubernikus, err := framework.NewKubernikusFramework(kurl)
+	authOptions := &tokens.AuthOptions{
+		IdentityEndpoint: os.Getenv("OS_AUTH_URL"),
+		Username:         os.Getenv("OS_USERNAME"),
+		Password:         os.Getenv("OS_PASSWORD"),
+		DomainName:       os.Getenv("OS_USER_DOMAIN_NAME"),
+		AllowReauth:      true,
+		Scope: tokens.Scope{
+			ProjectName: os.Getenv("OS_PROJECT_NAME"),
+			DomainName:  os.Getenv("OS_PROJECT_DOMAIN_NAME"),
+		},
+	}
+	kubernikus, err := framework.NewKubernikusFramework(kurl, authOptions)
 	require.NoError(t, err, "Must be able to connect to Kubernikus")
+
+	var kubernikusControlPlane *framework.Kubernikus
+	if os.Getenv("CP_KUBERNIKUS_URL") != "" {
+		kcpurl, err := url.Parse(os.Getenv("CP_KUBERNIKUS_URL"))
+		require.NoError(t, err, "Must be able to parse Kubernikus control plane URL")
+		authOptionsControlPlane := &tokens.AuthOptions{
+			IdentityEndpoint: os.Getenv("OS_AUTH_URL"),
+			Username:         os.Getenv("OS_USERNAME"),
+			Password:         os.Getenv("OS_PASSWORD"),
+			DomainName:       os.Getenv("OS_USER_DOMAIN_NAME"),
+			AllowReauth:      true,
+			Scope: tokens.Scope{
+				ProjectName: os.Getenv("CP_OS_PROJECT_NAME"),
+				DomainName:  os.Getenv("CP_OS_PROJECT_DOMAIN_NAME"),
+			},
+		}
+		kubernikusControlPlane, err = framework.NewKubernikusFramework(kcpurl, authOptionsControlPlane)
+		require.NoError(t, err, "Must be able to connect to Kubernikus Control Plane")
+	}
 
 	openstack, err := framework.NewOpenStackFramework()
 	require.NoError(t, err, "Must be able to connect to OpenStack")
 
+	project, err := tokens.Get(openstack.Identity, openstack.Provider.Token()).ExtractProject()
+	require.NoError(t, err, "Cannot extract project from token")
+	fullKlusterName := fmt.Sprintf("%s-%s", klusterName, project.ID)
+
 	// Pyrolize garbage left from previous e2e runs
-	pyrolisisTests := &PyrolisisTests{kubernikus, *reuse}
+	pyrolisisTests := &PyrolisisTests{kubernikus, openstack, *reuse}
 	if !t.Run("Pyrolisis", pyrolisisTests.Run) {
+		return
+	}
+
+	preflightTests := &PreFlightTests{kubernikus, openstack, *reuse}
+	if !t.Run("PreflightCheck", preflightTests.Run) {
 		return
 	}
 
@@ -126,6 +175,24 @@ func TestRunner(t *testing.T) {
 	}
 
 	t.Run("Smoke", func(t *testing.T) {
+		if os.Getenv("CP_KUBERNIKUS_URL") != "" {
+			kubernetesControlPlane, err := framework.NewKubernetesFramework(kubernikusControlPlane, os.Getenv("CP_KLUSTER"))
+			require.NoError(t, err, "Must be able to create a control plane kubernetes client")
+
+			namespace := "kubernikus"
+			if os.Getenv("CP_NAMESPACE") != "" {
+				namespace = os.Getenv("CP_NAMESPACE")
+			}
+
+			etcdBackupTests := &EtcdBackupTests{
+				KubernikusControlPlane: kubernikusControlPlane,
+				KubernetesControlPlane: kubernetesControlPlane,
+				FullKlusterName:        fullKlusterName,
+				Namespace:              namespace,
+			}
+			t.Run("EtcdBackupTests", etcdBackupTests.Run)
+		}
+
 		volumeTests := &VolumeTests{Kubernetes: kubernetes}
 		t.Run("Volumes", volumeTests.Run)
 

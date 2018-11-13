@@ -4,7 +4,7 @@ image_resource:
   type: docker-image
   source:
     repository: sapcc/kubernikus-kubectl
-    tag: 'latest'
+    tag: 'v1.10.9'
 
 inputs:
   - name: kubernikus.builds
@@ -16,7 +16,6 @@ run:
     - -c
     - |
       set -exo pipefail
-      kubernikusctl auth init
 
       # recent helm versions fails with `invalid cross-device link` when trying to rename charts.git
       # rename(2) for a directory is allowed only when both the source and the destination path are on the top layer
@@ -25,11 +24,17 @@ run:
 
       helm repo add forked https://raw.githubusercontent.com/BugRoger/charts/repo
       helm dep up kubernikus-copy.builds/charts/kubernikus-system/
+
+      helm diff upgrade kubernikus-system kubernikus-copy.builds/charts/kubernikus-system/ \
+        --suppress-secrets --allow-unreleased --context 5 \
+        --values secrets.git/global/values/kubernikus-system.yaml \
+        --values secrets.git/kubernikus/$KUBERNIKUS_NAME/values/kubernikus-system.yaml
+
       helm upgrade kubernikus-system kubernikus-copy.builds/charts/kubernikus-system/ \
         --namespace=kubernikus-system \
         --values secrets.git/global/values/kubernikus-system.yaml \
         --values secrets.git/kubernikus/$KUBERNIKUS_NAME/values/kubernikus-system.yaml \
-        --install 
+        --install
 
 params:
   OS_AUTH_URL:

@@ -26,7 +26,6 @@ func NewOperatorCommand() *cobra.Command {
 		Short: "Starts an operator that operates things. Beware of magic!",
 		Run: func(c *cobra.Command, args []string) {
 			cmd.CheckError(o.Validate(c, args))
-			cmd.CheckError(o.Complete(args))
 			cmd.CheckError(o.Run(c))
 		},
 	}
@@ -49,7 +48,7 @@ func NewOperatorOptions() *Options {
 	options.KubernikusDomain = "kluster.staging.cloud.sap"
 	options.Namespace = "kubernikus"
 	options.MetricPort = 9091
-	options.Controllers = []string{"groundctl", "launchctl", "deorbiter", "routegc", "flight", "migration"}
+	options.Controllers = []string{"groundctl", "launchctl", "deorbiter", "routegc", "flight", "migration", "hammertime"}
 	return options
 }
 
@@ -59,7 +58,7 @@ func (o *Options) BindFlags(flags *pflag.FlagSet) {
 	flags.StringVar(&o.ChartDirectory, "chart-directory", o.ChartDirectory, "Directory containing the kubernikus related charts")
 	flags.StringVar(&o.AuthURL, "auth-url", o.AuthURL, "Openstack keystone url")
 	flags.StringVar(&o.AuthUsername, "auth-username", o.AuthUsername, "Service user for kubernikus")
-	flags.StringVar(&o.AuthPassword, "auth-password", o.AuthPassword, "Service user password")
+	flags.StringVar(&o.AuthPassword, "auth-password", "", "Service user password (if unset its read from env var OS_PASSWORD)")
 	flags.StringVar(&o.AuthDomain, "auth-domain", o.AuthDomain, "Service user domain")
 	flags.StringVar(&o.AuthProject, "auth-project", o.AuthProject, "Scope service user to this project")
 	flags.StringVar(&o.AuthProjectDomain, "auth-project-domain", o.AuthProjectDomain, "Domain of the project")
@@ -74,14 +73,15 @@ func (o *Options) BindFlags(flags *pflag.FlagSet) {
 }
 
 func (o *Options) Validate(c *cobra.Command, args []string) error {
-	if len(o.AuthPassword) == 0 {
+
+	if o.AuthPassword == "" {
+		o.AuthPassword = os.Getenv("OS_PASSWORD")
+	}
+
+	if o.AuthPassword == "" {
 		return errors.New("you must specify the auth-password flag")
 	}
 
-	return nil
-}
-
-func (o *Options) Complete(args []string) error {
 	return nil
 }
 

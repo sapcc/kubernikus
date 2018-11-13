@@ -8,6 +8,7 @@ import (
 	yaml "gopkg.in/yaml.v2"
 
 	"github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
+	etcd_util "github.com/sapcc/kubernikus/pkg/util/etcd"
 )
 
 //contains unamibious characters for generic random passwords
@@ -38,7 +39,9 @@ type persistenceValues struct {
 }
 
 type etcdValues struct {
-	Persistence persistenceValues `yaml:"persistence,omitempty"`
+	Persistence      persistenceValues `yaml:"persistence,omitempty"`
+	StorageContainer string            `yaml:"storageContainer,omitempty"`
+	Openstack        openstackValues   `yaml:"openstack,omitempty"`
 }
 
 type apiValues struct {
@@ -110,6 +113,14 @@ func KlusterToHelmValues(kluster *v1.Kluster, openstack *OpenstackOptions, certi
 		Etcd: etcdValues{
 			Persistence: persistenceValues{
 				AccessMode: accessMode,
+			},
+			StorageContainer: etcd_util.DefaultStorageContainer(kluster),
+			Openstack: openstackValues{
+				AuthURL:    openstack.AuthURL,
+				Username:   openstack.Username,
+				Password:   openstack.Password,
+				DomainName: openstack.DomainName,
+				ProjectID:  kluster.Spec.Openstack.ProjectID,
 			},
 		},
 		Api: apiValues{

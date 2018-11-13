@@ -22,11 +22,16 @@ auth_e2e_ap-ae-1: &auth_e2e_ap-ae-1
   OS_AUTH_URL: https://identity-3.ap-ae-1.cloud.sap/v3
   OS_USERNAME: kubernikus-pipeline
   OS_PASSWORD: ((kubernikus-pipeline-password))
-  OS_USER_DOMAIN_NAME: Default 
+  OS_USER_DOMAIN_NAME: Default
   OS_PROJECT_NAME: kubernikus_e2e
   OS_PROJECT_DOMAIN_NAME: ccadmin
-  KUBERNIKUS_NAME: e2e 
+  OS_REGION_NAME: ap-ae-1
+  KUBERNIKUS_NAME: e2e
   KUBERNIKUS_URL: https://kubernikus.ap-ae-1.cloud.sap
+  CP_OS_PROJECT_NAME: kubernikus
+  CP_OS_PROJECT_DOMAIN_NAME: ccadmin
+  CP_KUBERNIKUS_URL: https://k-ap-ae-1.admin.cloud.sap
+  CP_KLUSTER: k-ap-ae-1
 
 
 
@@ -59,8 +64,13 @@ auth_e2e_ap-au-1: &auth_e2e_ap-au-1
   OS_USER_DOMAIN_NAME: ccadmin
   OS_PROJECT_NAME: kubernikus-e2e
   OS_PROJECT_DOMAIN_NAME: ccadmin
-  KUBERNIKUS_NAME: e2e 
+  OS_REGION_NAME: ap-au-1
+  KUBERNIKUS_NAME: e2e
   KUBERNIKUS_URL: https://kubernikus.ap-au-1.cloud.sap
+  CP_OS_PROJECT_NAME: kubernikus
+  CP_OS_PROJECT_DOMAIN_NAME: ccadmin
+  CP_KUBERNIKUS_URL: https://k-ap-au-1.admin.cloud.sap
+  CP_KLUSTER: k-ap-au-1
 
 
 
@@ -86,11 +96,16 @@ auth_e2e_ap-cn-1: &auth_e2e_ap-cn-1
   OS_AUTH_URL: https://identity-3.ap-cn-1.cloud.sap/v3
   OS_USERNAME: kubernikus-pipeline
   OS_PASSWORD: ((kubernikus-pipeline-password))
-  OS_USER_DOMAIN_NAME: Default 
+  OS_USER_DOMAIN_NAME: Default
   OS_PROJECT_NAME: kubernikus_e2e
   OS_PROJECT_DOMAIN_NAME: ccadmin
-  KUBERNIKUS_NAME: e2e 
+  OS_REGION_NAME: ap-cn-1
+  KUBERNIKUS_NAME: e2e
   KUBERNIKUS_URL: https://kubernikus.ap-cn-1.cloud.sap
+  CP_OS_PROJECT_NAME: kubernikus
+  CP_OS_PROJECT_DOMAIN_NAME: ccadmin
+  CP_KUBERNIKUS_URL: https://k-ap-cn-1.admin.cloud.sap
+  CP_KLUSTER: k-ap-cn-1
 
 
 
@@ -118,11 +133,16 @@ auth_e2e_ap-jp-1: &auth_e2e_ap-jp-1
   OS_AUTH_URL: https://identity-3.ap-jp-1.cloud.sap/v3
   OS_USERNAME: kubernikus-pipeline
   OS_PASSWORD: ((kubernikus-pipeline-password))
-  OS_USER_DOMAIN_NAME: Default 
+  OS_USER_DOMAIN_NAME: Default
   OS_PROJECT_NAME: kubernikus_e2e
   OS_PROJECT_DOMAIN_NAME: ccadmin
-  KUBERNIKUS_NAME: e2e 
+  OS_REGION_NAME: ap-jp-1
+  KUBERNIKUS_NAME: e2e
   KUBERNIKUS_URL: https://kubernikus.ap-jp-1.cloud.sap
+  CP_OS_PROJECT_NAME: kubernikus
+  CP_OS_PROJECT_DOMAIN_NAME: ccadmin
+  CP_KUBERNIKUS_URL: https://k-ap-jp-1.admin.cloud.sap
+  CP_KLUSTER: k-ap-jp-1
 
 
 
@@ -150,11 +170,16 @@ auth_e2e_ap-jp-2: &auth_e2e_ap-jp-2
   OS_AUTH_URL: https://identity-3.ap-jp-2.cloud.sap/v3
   OS_USERNAME: kubernikus-pipeline
   OS_PASSWORD: ((kubernikus-pipeline-password))
-  OS_USER_DOMAIN_NAME: Default 
+  OS_USER_DOMAIN_NAME: Default
   OS_PROJECT_NAME: kubernikus_e2e
   OS_PROJECT_DOMAIN_NAME: ccadmin
-  KUBERNIKUS_NAME: e2e 
+  OS_REGION_NAME: ap-jp-2
+  KUBERNIKUS_NAME: e2e
   KUBERNIKUS_URL: https://kubernikus.ap-jp-2.cloud.sap
+  CP_OS_PROJECT_NAME: kubernikus
+  CP_OS_PROJECT_DOMAIN_NAME: ccadmin
+  CP_KUBERNIKUS_URL: https://k-ap-jp-2.admin.cloud.sap
+  CP_KLUSTER: k-ap-jp-2
 
 
 
@@ -182,11 +207,16 @@ auth_e2e_ap-sa-1: &auth_e2e_ap-sa-1
   OS_AUTH_URL: https://identity-3.ap-sa-1.cloud.sap/v3
   OS_USERNAME: kubernikus-pipeline
   OS_PASSWORD: ((kubernikus-pipeline-password))
-  OS_USER_DOMAIN_NAME: Default 
+  OS_USER_DOMAIN_NAME: Default
   OS_PROJECT_NAME: kubernikus_e2e
   OS_PROJECT_DOMAIN_NAME: ccadmin
-  KUBERNIKUS_NAME: e2e 
+  OS_REGION_NAME: ap-sa-1
+  KUBERNIKUS_NAME: e2e
   KUBERNIKUS_URL: https://kubernikus.ap-sa-1.cloud.sap
+  CP_OS_PROJECT_NAME: kubernikus
+  CP_OS_PROJECT_DOMAIN_NAME: ccadmin
+  CP_KUBERNIKUS_URL: https://k-ap-sa-1.admin.cloud.sap
+  CP_KLUSTER: k-ap-sa-1
 
 
 
@@ -219,8 +249,13 @@ auth_e2e_eu-de-1: &auth_e2e_eu-de-1
   OS_USER_DOMAIN_NAME: ccadmin
   OS_PROJECT_NAME: kubernikus-e2e
   OS_PROJECT_DOMAIN_NAME: ccadmin
-  KUBERNIKUS_NAME: e2e 
+  OS_REGION_NAME: eu-de-1
+  KUBERNIKUS_NAME: e2e
   KUBERNIKUS_URL: https://kubernikus.eu-de-1.cloud.sap
+  CP_OS_PROJECT_NAME: kubernikus
+  CP_OS_PROJECT_DOMAIN_NAME: ccadmin
+  CP_KUBERNIKUS_URL: https://k-eu-de-1.admin.cloud.sap
+  CP_KLUSTER: k-eu-de-1
 
 
 
@@ -251,8 +286,13 @@ auth_e2e_eu-de-2: &auth_e2e_eu-de-2
   OS_USER_DOMAIN_NAME: ccadmin
   OS_PROJECT_NAME: kubernikus-e2e
   OS_PROJECT_DOMAIN_NAME: ccadmin
-  KUBERNIKUS_NAME: e2e 
+  OS_REGION_NAME: eu-de-2
+  KUBERNIKUS_NAME: e2e
   KUBERNIKUS_URL: https://kubernikus.eu-de-2.cloud.sap
+  CP_OS_PROJECT_NAME: kubernikus
+  CP_OS_PROJECT_DOMAIN_NAME: ccadmin
+  CP_KUBERNIKUS_URL: https://k-eu-de-2.admin.cloud.sap
+  CP_KLUSTER: k-eu-de-2
 
 
 
@@ -278,11 +318,16 @@ auth_e2e_eu-nl-1: &auth_e2e_eu-nl-1
   OS_AUTH_URL: https://identity-3.eu-nl-1.cloud.sap/v3
   OS_USERNAME: kubernikus-pipeline
   OS_PASSWORD: ((kubernikus-pipeline-password))
-  OS_USER_DOMAIN_NAME: Default 
+  OS_USER_DOMAIN_NAME: Default
   OS_PROJECT_NAME: kubernikus_e2e
   OS_PROJECT_DOMAIN_NAME: ccadmin
-  KUBERNIKUS_NAME: e2e 
+  OS_REGION_NAME: eu-nl-1
+  KUBERNIKUS_NAME: e2e
   KUBERNIKUS_URL: https://kubernikus.eu-nl-1.cloud.sap
+  CP_OS_PROJECT_NAME: kubernikus
+  CP_OS_PROJECT_DOMAIN_NAME: ccadmin
+  CP_KUBERNIKUS_URL: https://k-eu-nl-1.admin.cloud.sap
+  CP_KLUSTER: k-eu-nl-1
 
 
 
@@ -310,11 +355,16 @@ auth_e2e_eu-ru-1: &auth_e2e_eu-ru-1
   OS_AUTH_URL: https://identity-3.eu-ru-1.cloud.sap/v3
   OS_USERNAME: kubernikus-pipeline
   OS_PASSWORD: ((kubernikus-pipeline-password))
-  OS_USER_DOMAIN_NAME: Default 
+  OS_USER_DOMAIN_NAME: Default
   OS_PROJECT_NAME: kubernikus_e2e
   OS_PROJECT_DOMAIN_NAME: ccadmin
-  KUBERNIKUS_NAME: e2e 
+  OS_REGION_NAME: eu-ru-1
+  KUBERNIKUS_NAME: e2e
   KUBERNIKUS_URL: https://kubernikus.eu-ru-1.cloud.sap
+  CP_OS_PROJECT_NAME: kubernikus
+  CP_OS_PROJECT_DOMAIN_NAME: ccadmin
+  CP_KUBERNIKUS_URL: https://k-eu-ru-1.admin.cloud.sap
+  CP_KLUSTER: k-eu-ru-1
 
 
 
@@ -342,11 +392,16 @@ auth_e2e_la-br-1: &auth_e2e_la-br-1
   OS_AUTH_URL: https://identity-3.la-br-1.cloud.sap/v3
   OS_USERNAME: kubernikus-pipeline
   OS_PASSWORD: ((kubernikus-pipeline-password))
-  OS_USER_DOMAIN_NAME: Default 
+  OS_USER_DOMAIN_NAME: Default
   OS_PROJECT_NAME: kubernikus_e2e
   OS_PROJECT_DOMAIN_NAME: ccadmin
-  KUBERNIKUS_NAME: e2e 
+  OS_REGION_NAME: la-br-1
+  KUBERNIKUS_NAME: e2e
   KUBERNIKUS_URL: https://kubernikus.la-br-1.cloud.sap
+  CP_OS_PROJECT_NAME: kubernikus
+  CP_OS_PROJECT_DOMAIN_NAME: ccadmin
+  CP_KUBERNIKUS_URL: https://k-la-br-1.admin.cloud.sap
+  CP_KLUSTER: k-la-br-1
 
 
 
@@ -374,11 +429,16 @@ auth_e2e_na-ca-1: &auth_e2e_na-ca-1
   OS_AUTH_URL: https://identity-3.na-ca-1.cloud.sap/v3
   OS_USERNAME: kubernikus-pipeline
   OS_PASSWORD: ((kubernikus-pipeline-password))
-  OS_USER_DOMAIN_NAME: Default 
+  OS_USER_DOMAIN_NAME: Default
   OS_PROJECT_NAME: kubernikus_e2e
   OS_PROJECT_DOMAIN_NAME: ccadmin
-  KUBERNIKUS_NAME: e2e 
+  OS_REGION_NAME: na-ca-1
+  KUBERNIKUS_NAME: e2e
   KUBERNIKUS_URL: https://kubernikus.na-ca-1.cloud.sap
+  CP_OS_PROJECT_NAME: kubernikus
+  CP_OS_PROJECT_DOMAIN_NAME: ccadmin
+  CP_KUBERNIKUS_URL: https://k-na-ca-1.admin.cloud.sap
+  CP_KLUSTER: k-na-ca-1
 
 
 
@@ -411,8 +471,13 @@ auth_e2e_na-us-1: &auth_e2e_na-us-1
   OS_USER_DOMAIN_NAME: ccadmin
   OS_PROJECT_NAME: kubernikus-e2e
   OS_PROJECT_DOMAIN_NAME: ccadmin
-  KUBERNIKUS_NAME: e2e 
+  OS_REGION_NAME: na-us-1
+  KUBERNIKUS_NAME: e2e
   KUBERNIKUS_URL: https://kubernikus.na-us-1.cloud.sap
+  CP_OS_PROJECT_NAME: kubernikus
+  CP_OS_PROJECT_DOMAIN_NAME: ccadmin
+  CP_KUBERNIKUS_URL: https://k-na-us-1.admin.cloud.sap
+  CP_KLUSTER: k-na-us-1
 
 
 
@@ -438,11 +503,16 @@ auth_e2e_na-us-3: &auth_e2e_na-us-3
   OS_AUTH_URL: https://identity-3.na-us-3.cloud.sap/v3
   OS_USERNAME: kubernikus-pipeline
   OS_PASSWORD: ((kubernikus-pipeline-password))
-  OS_USER_DOMAIN_NAME: Default 
+  OS_USER_DOMAIN_NAME: Default
   OS_PROJECT_NAME: kubernikus_e2e
   OS_PROJECT_DOMAIN_NAME: ccadmin
-  KUBERNIKUS_NAME: e2e 
+  OS_REGION_NAME: na-us-3
+  KUBERNIKUS_NAME: e2e
   KUBERNIKUS_URL: https://kubernikus.na-us-3.cloud.sap
+  CP_OS_PROJECT_NAME: kubernikus
+  CP_OS_PROJECT_DOMAIN_NAME: ccadmin
+  CP_KUBERNIKUS_URL: https://k-na-us-3.admin.cloud.sap
+  CP_KLUSTER: k-na-us-3
 
 
 
@@ -470,11 +540,16 @@ auth_e2e_qa-de-1: &auth_e2e_qa-de-1
   OS_AUTH_URL: https://identity-3.qa-de-1.cloud.sap/v3
   OS_USERNAME: kubernikus-pipeline
   OS_PASSWORD: ((kubernikus-pipeline-password))
-  OS_USER_DOMAIN_NAME: Default 
+  OS_USER_DOMAIN_NAME: Default
   OS_PROJECT_NAME: kubernikus_e2e
   OS_PROJECT_DOMAIN_NAME: ccadmin
-  KUBERNIKUS_NAME: e2e 
+  OS_REGION_NAME: qa-de-1
+  KUBERNIKUS_NAME: e2e
   KUBERNIKUS_URL: https://kubernikus.qa-de-1.cloud.sap
+  CP_OS_PROJECT_NAME: kubernikus
+  CP_OS_PROJECT_DOMAIN_NAME: ccadmin
+  CP_KUBERNIKUS_URL: https://k-qa-de-1.admin.cloud.sap
+  CP_KLUSTER: k-qa-de-1
 
 
 
@@ -511,43 +586,31 @@ auth_e2e_master: &auth_e2e_master
   OS_PROJECT_DOMAIN_NAME: ccadmin
   KUBERNIKUS_NAME: e2e 
   KUBERNIKUS_URL: https://kubernikus-master.eu-nl-1.cloud.sap
+  CP_OS_PROJECT_NAME: kubernikus-master
+  CP_OS_PROJECT_DOMAIN_NAME: ccadmin
+  CP_KUBERNIKUS_URL: https://k-master.admin.cloud.sap
+  CP_KLUSTER: k-master
 
 
 
 
-task_tiller: &task_tiller
-  platform: 'linux'
-  
+task_build_args: &task_build_args
+  platform: linux
   image_resource:
     type: docker-image
     source:
-      repository: sapcc/kubernikus-kubectl
-      tag: 'latest'
-  
+      repository: alpine
   inputs:
-    - name: secrets.git
-  
+    - name: kubernikus.builds
+  outputs:
+    - name: args
   run:
-    path: /bin/sh
+    path: sh
     args:
-      - -c
+      - -exc
       - |
-        set -exo pipefail
-        tag=$(cat secrets.git/kubernikus/tiller.version)
-        kubernikusctl auth init
-        kubectl create sa tiller --namespace kube-system || true
-        kubectl create clusterrolebinding tiller --clusterrole cluster-admin --serviceaccount=kube-system:tiller || true
-        helm init --service-account tiller --history-max 5 --tiller-image sapcc/tiller:$tag --upgrade --wait
-  
-  params:
-    OS_AUTH_URL:
-    OS_USERNAME:
-    OS_PASSWORD:
-    OS_USER_DOMAIN_NAME:
-    OS_PROJECT_NAME:
-    OS_PROJECT_DOMAIN_NAME:
-    KUBERNIKUS_NAME:
-    KUBERNIKUS_URL:
+        SHA=$(cat kubernikus.builds/.git/ref)
+        echo '{"VERSION":"'$SHA'"}' > args/build_args.json
   
 
 task_checksum: &task_checksum
@@ -586,48 +649,6 @@ task_checksum: &task_checksum
     TARGET:
   
 
-task_helm_kubernikus: &task_helm_kubernikus
-  platform: 'linux'
-  
-  image_resource:
-    type: docker-image
-    source:
-      repository: sapcc/kubernikus-kubectl
-      tag: 'latest'
-  
-  inputs:
-    - name: kubernikus.builds
-    - name: secrets.git
-  
-  run:
-    path: /bin/sh
-    args:
-      - -c
-      - |
-        set -exo pipefail
-        VERSION=$(cat kubernikus.builds/.git/HEAD)
-        kubernikusctl auth init 
-        helm dep up --skip-refresh kubernikus.builds/charts/kubernikus/
-        helm upgrade kubernikus kubernikus.builds/charts/kubernikus/ \
-          --namespace=kubernikus-system \
-          --values secrets.git/global/values/kubernikus.yaml \
-          --values secrets.git/kubernikus/$KUBERNIKUS_NAME/values/kubernikus.yaml \
-          --set imageTag=$VERSION \
-          --install 
-        kubectl rollout status deployment/kubernikus-api --namespace=kubernikus-system
-        kubectl rollout status deployment/kubernikus-operator --namespace=kubernikus-system
-  
-  params:
-    OS_AUTH_URL:
-    OS_USERNAME:
-    OS_PASSWORD:
-    OS_USER_DOMAIN_NAME:
-    OS_PROJECT_NAME:
-    OS_PROJECT_DOMAIN_NAME:
-    KUBERNIKUS_NAME:
-    KUBERNIKUS_URL:
-  
-
 task_cli: &task_cli
   platform: 'darwin'
   
@@ -662,37 +683,6 @@ task_cli: &task_cli
   params:
   
 
-task_terraform: &task_terraform
-  platform: 'linux'
-  
-  image_resource:
-    type: docker-image
-    source:
-      repository: sapcc/kubernikus-terraform
-      tag: 'latest'
-  
-  inputs:
-    - name: secrets.git
-    - name: terraform.git
-  
-  
-  run:
-    path: /bin/sh
-    args:
-      - -c
-      - |
-        set -exo pipefail
-        cd terraform.git/terraform
-        TF_VARS_DIR=../../secrets.git/$TF_REGION/terraform \
-          make init plan apply
-  
-  params:
-    TF_REGION:
-    TF_PLUGIN_DIR: /usr/local/bin
-    TF_VARS_DIR:
-    TF_PASSWORD:
-  
-
 task_e2e_tests: &task_e2e_tests
   platform: 'linux'
   
@@ -705,12 +695,15 @@ task_e2e_tests: &task_e2e_tests
   inputs:
     - name: kubernikus.builds
       path: gopath/src/github.com/sapcc/kubernikus
-  
+  caches:
+    - path: cache
   run:
     path: /bin/sh
     args:
       - -c
       - |
+        set -o pipefail
+        SENTRY_CLI=$PWD/cache/sentry-cli
         export GOPATH=$PWD/gopath
         cd gopath/src/github.com/sapcc/kubernikus
   
@@ -721,10 +714,10 @@ task_e2e_tests: &task_e2e_tests
           #Get the longest uniq (!) whitespace prefix of --- FAIL: lines
           ws_count=$(grep -- '--- FAIL:' test.output| grep -v -- '->'| awk '{ match($0, /^ */); printf("%d\n", RLENGTH, substr($0,RLENGTH+1)) }' | sort|uniq -u |tail -1)
           test_name=$(sed -n -E  "s/^ {$ws_count}--- FAIL: (.*) \([.0-9]*s\)$/\1/p" test.output)
-          curl -Lo sentry-cli -z sentry-cli https://github.com/getsentry/sentry-cli/releases/download/1.35.6/sentry-cli-Linux-x86_64
-          chmod +x sentry-cli
+          curl -sLo $SENTRY_CLI -z $SENTRY_CLI https://github.com/getsentry/sentry-cli/releases/download/1.35.6/sentry-cli-Linux-x86_64
+          chmod +x $SENTRY_CLI
           unset http_proxy https_proxy no_proxy
-          ./sentry-cli send-event -m "Failed to run $test_name" -E $OS_REGION_NAME --no-environ --logfile test.output
+          $SENTRY_CLI send-event -m "Failed to run $test_name" -E $OS_REGION_NAME --no-environ --logfile test.output
         fi
         exit $rc
   
@@ -737,25 +730,172 @@ task_e2e_tests: &task_e2e_tests
     OS_PROJECT_DOMAIN_NAME:
     OS_REGION_NAME:
     SENTRY_DSN:
+    CP_OS_PROJECT_NAME:
+    CP_OS_PROJECT_DOMAIN_NAME:
+    CP_KUBERNIKUS_URL:
+    CP_KLUSTER:
   
 
-task_build_args: &task_build_args
-  platform: linux
+task_helm-admin_kubernikus: &task_helm-admin_kubernikus
+  platform: 'linux'
+  
   image_resource:
     type: docker-image
     source:
-      repository: alpine
+      repository: hub.global.cloud.sap/monsoon/kubectl
+      tag: 'v1.7.7'
+  
   inputs:
     - name: kubernikus.builds
-  outputs:
-    - name: args
+    - name: secrets.git
+  
+  run:
+    path: /bin/sh
+    args:
+      - -c
+      - |
+        set -exo pipefail
+        VERSION=$(cat kubernikus.builds/.git/HEAD)
+        helm dep up --skip-refresh kubernikus.builds/charts/kubernikus/
+        helm upgrade $KUBERNIKUS_NAME kubernikus.builds/charts/kubernikus/ \
+          --namespace=$KUBERNIKUS_NAME \
+          --values secrets.git/global/values/kubernikus.yaml \
+          --values secrets.git/kubernikus/$KUBERNIKUS_NAME/values/kubernikus.yaml \
+          --values secrets.git/admin/values/$KUBERNIKUS_NAME.yaml \
+          --set imageTag=$VERSION \
+          --install
+        kubectl rollout status deployment/kubernikus-api --namespace=$KUBERNIKUS_NAME
+        kubectl rollout status deployment/kubernikus-operator --namespace=$KUBERNIKUS_NAME
+  
+  params:
+    REGION:
+    KUBERNIKUS_NAME:
+    GITHUB_TOKEN:
+  
+
+task_helm_kubernikus-system: &task_helm_kubernikus-system
+  platform: 'linux'
+  
+  image_resource:
+    type: docker-image
+    source:
+      repository: sapcc/kubernikus-kubectl
+      tag: 'v1.10.9'
+  
+  inputs:
+    - name: kubernikus.builds
+    - name: secrets.git
+  
+  run:
+    path: /bin/sh
+    args:
+      - -c
+      - |
+        set -exo pipefail
+  
+        # recent helm versions fails with `invalid cross-device link` when trying to rename charts.git
+        # rename(2) for a directory is allowed only when both the source and the destination path are on the top layer
+        # https://github.com/kubernetes/helm/issues/2998
+        cp -a kubernikus.builds kubernikus-copy.builds
+  
+        helm repo add forked https://raw.githubusercontent.com/BugRoger/charts/repo
+        helm dep up kubernikus-copy.builds/charts/kubernikus-system/
+  
+        helm diff upgrade kubernikus-system kubernikus-copy.builds/charts/kubernikus-system/ \
+          --suppress-secrets --allow-unreleased --context 5 \
+          --values secrets.git/global/values/kubernikus-system.yaml \
+          --values secrets.git/kubernikus/$KUBERNIKUS_NAME/values/kubernikus-system.yaml
+  
+        helm upgrade kubernikus-system kubernikus-copy.builds/charts/kubernikus-system/ \
+          --namespace=kubernikus-system \
+          --values secrets.git/global/values/kubernikus-system.yaml \
+          --values secrets.git/kubernikus/$KUBERNIKUS_NAME/values/kubernikus-system.yaml \
+          --install
+  
+  params:
+    OS_AUTH_URL:
+    OS_USERNAME:
+    OS_PASSWORD:
+    OS_USER_DOMAIN_NAME:
+    OS_PROJECT_NAME:
+    OS_PROJECT_DOMAIN_NAME:
+    KUBERNIKUS_NAME:
+    KUBERNIKUS_URL:
+  
+
+task_helm_kubernikus: &task_helm_kubernikus
+  platform: 'linux'
+  
+  image_resource:
+    type: docker-image
+    source:
+      repository: sapcc/kubernikus-kubectl
+      tag: 'v1.10.9'
+  
+  
+  inputs:
+    - name: kubernikus.builds
+    - name: secrets.git
+  
+  run:
+    path: /bin/sh
+    args:
+      - -c
+      - |
+        set -exo pipefail
+        VERSION=$(cat kubernikus.builds/.git/HEAD)
+        helm dep up --skip-refresh kubernikus.builds/charts/kubernikus/
+  
+        helm diff upgrade kubernikus kubernikus.builds/charts/kubernikus/ \
+          --suppress-secrets --allow-unreleased --context 5 \
+          --values secrets.git/global/values/kubernikus.yaml \
+          --values secrets.git/kubernikus/$KUBERNIKUS_NAME/values/kubernikus.yaml \
+          --set imageTag=$VERSION
+  
+        helm upgrade kubernikus kubernikus.builds/charts/kubernikus/ \
+          --namespace=kubernikus-system \
+          --values secrets.git/global/values/kubernikus.yaml \
+          --values secrets.git/kubernikus/$KUBERNIKUS_NAME/values/kubernikus.yaml \
+          --set imageTag=$VERSION \
+          --install
+        kubectl rollout status deployment/kubernikus-api --namespace=kubernikus-system
+        kubectl rollout status deployment/kubernikus-operator --namespace=kubernikus-system
+  
+  params:
+    OS_AUTH_URL:
+    OS_USERNAME:
+    OS_PASSWORD:
+    OS_USER_DOMAIN_NAME:
+    OS_PROJECT_NAME:
+    OS_PROJECT_DOMAIN_NAME:
+    KUBERNIKUS_NAME:
+    KUBERNIKUS_URL:
+  
+
+task_helm_seed: &task_helm_seed
+  platform: linux
+  
+  image_resource:
+    type: docker-image
+    source: { repository: hub.global.cloud.sap/monsoon/kubectl, tag: 'v1.7.7'}
+  
+  inputs:
+    - name: secrets.git
+    - name: helm-charts.git
+  
   run:
     path: sh
     args:
       - -exc
       - |
-        SHA=$(cat kubernikus.builds/.git/ref)
-        echo '{"VERSION":"'$SHA'"}' > args/build_args.json
+        set -o pipefail
+        helm upgrade $RELEASE helm-charts.git/openstack/kubernikus --namespace $NAMESPACE --values secrets.git/global/values/kubernikus-seed.yaml --install --debug
+  
+  params:
+    REGION:
+    GITHUB_TOKEN:
+    NAMESPACE: monsoon3 
+    RELEASE: kubernikus 
   
 
 task_reload_prometheus_config: &task_reload_prometheus_config
@@ -807,44 +947,19 @@ task_reload_prometheus_config: &task_reload_prometheus_config
     KUBERNIKUS_URL:
   
 
-task_helm_seed: &task_helm_seed
-  platform: linux
-  
-  image_resource:
-    type: docker-image
-    source: { repository: hub.global.cloud.sap/monsoon/kubectl, tag: 'v1.7.7'}
-  
-  inputs:
-    - name: secrets.git
-    - name: helm-charts.git
-  
-  run:
-    path: sh
-    args:
-      - -exc
-      - |
-        set -o pipefail
-        helm upgrade $RELEASE helm-charts.git/openstack/kubernikus --namespace $NAMESPACE --values secrets.git/global/values/kubernikus-seed.yaml --install --debug
-  
-  params:
-    REGION:
-    GITHUB_TOKEN:
-    NAMESPACE: monsoon3 
-    RELEASE: kubernikus 
-  
-
-task_helm-admin_kubernikus: &task_helm-admin_kubernikus
+task_terraform: &task_terraform
   platform: 'linux'
   
   image_resource:
     type: docker-image
     source:
-      repository: hub.global.cloud.sap/monsoon/kubectl
-      tag: 'v1.7.7'
+      repository: sapcc/kubernikus-terraform
+      tag: 'latest'
   
   inputs:
-    - name: kubernikus.builds
     - name: secrets.git
+    - name: terraform.git
+  
   
   run:
     path: /bin/sh
@@ -852,25 +967,18 @@ task_helm-admin_kubernikus: &task_helm-admin_kubernikus
       - -c
       - |
         set -exo pipefail
-        VERSION=$(cat kubernikus.builds/.git/HEAD)
-        helm dep up --skip-refresh kubernikus.builds/charts/kubernikus/
-        helm upgrade $KUBERNIKUS_NAME kubernikus.builds/charts/kubernikus/ \
-          --namespace=$KUBERNIKUS_NAME \
-          --values secrets.git/global/values/kubernikus.yaml \
-          --values secrets.git/kubernikus/$KUBERNIKUS_NAME/values/kubernikus.yaml \
-          --values secrets.git/admin/values/$KUBERNIKUS_NAME.yaml \
-          --set imageTag=$VERSION \
-          --install
-        kubectl rollout status deployment/kubernikus-api --namespace=$KUBERNIKUS_NAME
-        kubectl rollout status deployment/kubernikus-operator --namespace=$KUBERNIKUS_NAME
+        cd terraform.git/terraform
+        TF_VARS_DIR=../../secrets.git/$TF_REGION/terraform \
+          make init plan apply
   
   params:
-    REGION:
-    KUBERNIKUS_NAME:
-    GITHUB_TOKEN:
+    TF_REGION:
+    TF_PLUGIN_DIR: /usr/local/bin
+    TF_VARS_DIR:
+    TF_PASSWORD:
   
 
-task_helm_kubernikus-system: &task_helm_kubernikus-system
+task_tiller: &task_tiller
   platform: 'linux'
   
   image_resource:
@@ -880,8 +988,7 @@ task_helm_kubernikus-system: &task_helm_kubernikus-system
       tag: 'latest'
   
   inputs:
-    - name: kubernikus.builds
-    - name: secrets.git
+    - name: tiller-version.git
   
   run:
     path: /bin/sh
@@ -889,20 +996,18 @@ task_helm_kubernikus-system: &task_helm_kubernikus-system
       - -c
       - |
         set -exo pipefail
+        tag=$(cat tiller-version.git/kubernikus/tiller.version)
+        if [ -f tiller-version.git/kubernikus/$KUBERNIKUS_NAME/tiller.version ]; then
+          tag=$(cat tiller-version.git/kubernikus/$KUBERNIKUS_NAME/tiller.version )
+        fi
         kubernikusctl auth init
-  
-        # recent helm versions fails with `invalid cross-device link` when trying to rename charts.git
-        # rename(2) for a directory is allowed only when both the source and the destination path are on the top layer
-        # https://github.com/kubernetes/helm/issues/2998
-        cp -a kubernikus.builds kubernikus-copy.builds
-  
-        helm repo add forked https://raw.githubusercontent.com/BugRoger/charts/repo
-        helm dep up kubernikus-copy.builds/charts/kubernikus-system/
-        helm upgrade kubernikus-system kubernikus-copy.builds/charts/kubernikus-system/ \
-          --namespace=kubernikus-system \
-          --values secrets.git/global/values/kubernikus-system.yaml \
-          --values secrets.git/kubernikus/$KUBERNIKUS_NAME/values/kubernikus-system.yaml \
-          --install 
+        if kubectl get deployment tiller-deploy --namespace=kube-system >/dev/null ; then
+          kubectl set image --namespace=kube-system deployment/tiller-deploy tiller=sapcc/tiller:$tag
+        else
+          kubectl create sa tiller --namespace kube-system
+          kubectl create clusterrolebinding tiller --clusterrole cluster-admin --serviceaccount=kube-system:tiller
+          helm init --service-account tiller --history-max 5 --tiller-image sapcc/tiller:$tag --upgrade --wait
+        fi
   
   params:
     OS_AUTH_URL:
@@ -943,6 +1048,17 @@ resources:
       private_key: ((secrets-ssh-key))
       branch:      master
       depth: 1
+
+  - name: tiller-version.git
+    type: git
+    webhook_token: aldhjalkdhahdjkahdjkhjadhjadhkjadlkjhAAdd
+    check_every: 1h
+    source:
+      uri:         git@github.wdf.sap.corp:cc/secrets.git
+      private_key: ((secrets-ssh-key))
+      branch:      master
+      depth: 1
+      paths: [ kubernikus/tiller.version, kubernikus/*/tiller.version ]
 
   - name: terraform.git
     type: git
@@ -1009,7 +1125,21 @@ resource_types:
       tag: v2
 
 jobs:
-  - name: master 
+  - name: tiller_master
+    plan:
+      - aggregate:
+        - get: tiller-version.git
+          trigger: true
+      - aggregate:
+        - task: master
+          config:
+            <<: *task_tiller
+          timeout: 10m
+          params:
+            <<: *auth_master
+    <<: *slack
+
+  - name: master
     serial: true
     plan:
       - aggregate:
@@ -1265,8 +1395,8 @@ jobs:
         - get: ASIA.tag
           trigger: true
           passed: [terraform_ap-ae-1]
-        - get: secrets.git
-          passed: [terraform_ap-ae-1]
+        - get: tiller-version.git
+          trigger: true
       - aggregate:
         - task: k-ap-ae-1
           config: 
@@ -1284,7 +1414,7 @@ jobs:
           trigger: true
           passed: [tiller_ap-ae-1]
         - get: secrets.git
-          passed: [tiller_ap-ae-1]
+          passed: [terraform_ap-ae-1]
         - get: kubernikus.builds
           resource: master.builds
           passed: [ASIA]
@@ -1369,8 +1499,8 @@ jobs:
         - get: ASIA.tag
           trigger: true
           passed: [terraform_ap-au-1]
-        - get: secrets.git
-          passed: [terraform_ap-au-1]
+        - get: tiller-version.git
+          trigger: true
       - aggregate:
         - task: k-ap-au-1
           config: 
@@ -1388,7 +1518,7 @@ jobs:
           trigger: true
           passed: [tiller_ap-au-1]
         - get: secrets.git
-          passed: [tiller_ap-au-1]
+          passed: [terraform_ap-au-1]
         - get: kubernikus.builds
           resource: master.builds
           passed: [ASIA]
@@ -1481,8 +1611,8 @@ jobs:
         - get: ASIA.tag
           trigger: true
           passed: [terraform_ap-cn-1]
-        - get: secrets.git
-          passed: [terraform_ap-cn-1]
+        - get: tiller-version.git
+          trigger: true
       - aggregate:
         - task: k-ap-cn-1
           config: 
@@ -1500,7 +1630,7 @@ jobs:
           trigger: true
           passed: [tiller_ap-cn-1]
         - get: secrets.git
-          passed: [tiller_ap-cn-1]
+          passed: [terraform_ap-cn-1]
         - get: kubernikus.builds
           resource: master.builds
           passed: [ASIA]
@@ -1593,8 +1723,8 @@ jobs:
         - get: ASIA.tag
           trigger: true
           passed: [terraform_ap-jp-1]
-        - get: secrets.git
-          passed: [terraform_ap-jp-1]
+        - get: tiller-version.git
+          trigger: true
       - aggregate:
         - task: k-ap-jp-1
           config: 
@@ -1612,7 +1742,7 @@ jobs:
           trigger: true
           passed: [tiller_ap-jp-1]
         - get: secrets.git
-          passed: [tiller_ap-jp-1]
+          passed: [terraform_ap-jp-1]
         - get: kubernikus.builds
           resource: master.builds
           passed: [ASIA]
@@ -1705,8 +1835,8 @@ jobs:
         - get: ASIA.tag
           trigger: true
           passed: [terraform_ap-jp-2]
-        - get: secrets.git
-          passed: [terraform_ap-jp-2]
+        - get: tiller-version.git
+          trigger: true
       - aggregate:
         - task: k-ap-jp-2
           config: 
@@ -1724,7 +1854,7 @@ jobs:
           trigger: true
           passed: [tiller_ap-jp-2]
         - get: secrets.git
-          passed: [tiller_ap-jp-2]
+          passed: [terraform_ap-jp-2]
         - get: kubernikus.builds
           resource: master.builds
           passed: [ASIA]
@@ -1817,8 +1947,8 @@ jobs:
         - get: ASIA.tag
           trigger: true
           passed: [terraform_ap-sa-1]
-        - get: secrets.git
-          passed: [terraform_ap-sa-1]
+        - get: tiller-version.git
+          trigger: true
       - aggregate:
         - task: k-ap-sa-1
           config: 
@@ -1836,7 +1966,7 @@ jobs:
           trigger: true
           passed: [tiller_ap-sa-1]
         - get: secrets.git
-          passed: [tiller_ap-sa-1]
+          passed: [terraform_ap-sa-1]
         - get: kubernikus.builds
           resource: master.builds
           passed: [ASIA]
@@ -1939,8 +2069,8 @@ jobs:
         - get: EMEA.tag
           trigger: true
           passed: [terraform_eu-de-1]
-        - get: secrets.git
-          passed: [terraform_eu-de-1]
+        - get: tiller-version.git
+          trigger: true
       - aggregate:
         - task: k-eu-de-1
           config: 
@@ -1958,7 +2088,7 @@ jobs:
           trigger: true
           passed: [tiller_eu-de-1]
         - get: secrets.git
-          passed: [tiller_eu-de-1]
+          passed: [terraform_eu-de-1]
         - get: kubernikus.builds
           resource: master.builds
           passed: [EMEA]
@@ -2043,8 +2173,8 @@ jobs:
         - get: EMEA.tag
           trigger: true
           passed: [terraform_eu-de-2]
-        - get: secrets.git
-          passed: [terraform_eu-de-2]
+        - get: tiller-version.git
+          trigger: true
       - aggregate:
         - task: k-eu-de-2
           config: 
@@ -2062,7 +2192,7 @@ jobs:
           trigger: true
           passed: [tiller_eu-de-2]
         - get: secrets.git
-          passed: [tiller_eu-de-2]
+          passed: [terraform_eu-de-2]
         - get: kubernikus.builds
           resource: master.builds
           passed: [EMEA]
@@ -2147,8 +2277,8 @@ jobs:
         - get: EMEA.tag
           trigger: true
           passed: [terraform_eu-nl-1]
-        - get: secrets.git
-          passed: [terraform_eu-nl-1]
+        - get: tiller-version.git
+          trigger: true
       - aggregate:
         - task: k-eu-nl-1
           config: 
@@ -2166,7 +2296,7 @@ jobs:
           trigger: true
           passed: [tiller_eu-nl-1]
         - get: secrets.git
-          passed: [tiller_eu-nl-1]
+          passed: [terraform_eu-nl-1]
         - get: kubernikus.builds
           resource: master.builds
           passed: [EMEA]
@@ -2259,8 +2389,8 @@ jobs:
         - get: EMEA.tag
           trigger: true
           passed: [terraform_eu-ru-1]
-        - get: secrets.git
-          passed: [terraform_eu-ru-1]
+        - get: tiller-version.git
+          trigger: true
       - aggregate:
         - task: k-eu-ru-1
           config: 
@@ -2278,7 +2408,7 @@ jobs:
           trigger: true
           passed: [tiller_eu-ru-1]
         - get: secrets.git
-          passed: [tiller_eu-ru-1]
+          passed: [terraform_eu-ru-1]
         - get: kubernikus.builds
           resource: master.builds
           passed: [EMEA]
@@ -2389,8 +2519,8 @@ jobs:
         - get: AMERICAS.tag
           trigger: true
           passed: [terraform_la-br-1]
-        - get: secrets.git
-          passed: [terraform_la-br-1]
+        - get: tiller-version.git
+          trigger: true
       - aggregate:
         - task: k-la-br-1
           config: 
@@ -2408,7 +2538,7 @@ jobs:
           trigger: true
           passed: [tiller_la-br-1]
         - get: secrets.git
-          passed: [tiller_la-br-1]
+          passed: [terraform_la-br-1]
         - get: kubernikus.builds
           resource: master.builds
           passed: [AMERICAS]
@@ -2501,8 +2631,8 @@ jobs:
         - get: AMERICAS.tag
           trigger: true
           passed: [terraform_na-ca-1]
-        - get: secrets.git
-          passed: [terraform_na-ca-1]
+        - get: tiller-version.git
+          trigger: true
       - aggregate:
         - task: k-na-ca-1
           config: 
@@ -2520,7 +2650,7 @@ jobs:
           trigger: true
           passed: [tiller_na-ca-1]
         - get: secrets.git
-          passed: [tiller_na-ca-1]
+          passed: [terraform_na-ca-1]
         - get: kubernikus.builds
           resource: master.builds
           passed: [AMERICAS]
@@ -2605,8 +2735,8 @@ jobs:
         - get: AMERICAS.tag
           trigger: true
           passed: [terraform_na-us-1]
-        - get: secrets.git
-          passed: [terraform_na-us-1]
+        - get: tiller-version.git
+          trigger: true
       - aggregate:
         - task: k-na-us-1
           config: 
@@ -2624,7 +2754,7 @@ jobs:
           trigger: true
           passed: [tiller_na-us-1]
         - get: secrets.git
-          passed: [tiller_na-us-1]
+          passed: [terraform_na-us-1]
         - get: kubernikus.builds
           resource: master.builds
           passed: [AMERICAS]
@@ -2717,8 +2847,8 @@ jobs:
         - get: AMERICAS.tag
           trigger: true
           passed: [terraform_na-us-3]
-        - get: secrets.git
-          passed: [terraform_na-us-3]
+        - get: tiller-version.git
+          trigger: true
       - aggregate:
         - task: k-na-us-3
           config: 
@@ -2736,7 +2866,7 @@ jobs:
           trigger: true
           passed: [tiller_na-us-3]
         - get: secrets.git
-          passed: [tiller_na-us-3]
+          passed: [terraform_na-us-3]
         - get: kubernikus.builds
           resource: master.builds
           passed: [AMERICAS]
@@ -2847,8 +2977,8 @@ jobs:
         - get: INFRA.tag
           trigger: true
           passed: [terraform_qa-de-1]
-        - get: secrets.git
-          passed: [terraform_qa-de-1]
+        - get: tiller-version.git
+          trigger: true
       - aggregate:
         - task: k-qa-de-1
           config: 
@@ -2866,7 +2996,7 @@ jobs:
           trigger: true
           passed: [tiller_qa-de-1]
         - get: secrets.git
-          passed: [tiller_qa-de-1]
+          passed: [terraform_qa-de-1]
         - get: kubernikus.builds
           resource: master.builds
           passed: [INFRA]
@@ -2915,7 +3045,8 @@ groups:
   - name: deploy
     jobs:
       - master
-      - e2e 
+      - tiller_master
+      - e2e
       - prod
       - admin
 
