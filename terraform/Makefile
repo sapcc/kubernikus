@@ -51,7 +51,8 @@ plan:
 		-var domain_name=$(TF_PROJECT_DOMAIN) \
 		-var tenant_name=$(TF_PROJECT) \
 		-var-file="${TF_VARS_DIR}/kubernikus.tfvars" \
-		-parallelism=1
+		-parallelism=1 \
+		-out terraform.tfplan
 
 apply:
 	@$(TERRAFORM_BIN) apply \
@@ -64,4 +65,5 @@ apply:
 		-var domain_name=$(TF_PROJECT_DOMAIN) \
 		-var tenant_name=$(TF_PROJECT) \
 		-var-file="${TF_VARS_DIR}/kubernikus.tfvars" \
-		-parallelism=1
+		-parallelism=1 \
+		terraform.tfplan
