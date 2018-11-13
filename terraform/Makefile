@@ -64,6 +64,5 @@ apply:
 		-var password=$(TF_PASSWORD) \
 		-var domain_name=$(TF_PROJECT_DOMAIN) \
 		-var tenant_name=$(TF_PROJECT) \
-		-var-file="${TF_VARS_DIR}/kubernikus.tfvars" \
 		-parallelism=1 \
 		terraform.tfplan
