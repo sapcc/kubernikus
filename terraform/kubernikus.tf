@@ -332,7 +332,7 @@ resource "ccloud_quota" "kubernikus" {
 		pools                = 10
   }
 
-  object-store {
+  objectstore {
     capacity = 1073741824
   }
 }
@@ -654,7 +654,7 @@ resource "ccloud_quota" "kubernikus_e2e" {
 		pools                = 0
   }
 
-  object-store {
+  objectstore {
     capacity = 104857600
   }
 }
