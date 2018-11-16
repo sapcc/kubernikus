@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack"
@@ -11,10 +12,16 @@ import (
 	"github.com/gophercloud/gophercloud/openstack/objectstorage/v1/objects"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"k8s.io/apimachinery/pkg/util/wait"
 
 	"github.com/sapcc/kubernikus/pkg/api/client/operations"
 	etcd_util "github.com/sapcc/kubernikus/pkg/util/etcd"
 	"github.com/sapcc/kubernikus/test/e2e/framework"
+)
+
+const (
+	CleanupBackupContainerDeleteInterval = 1 * time.Second
+	CleanupBackupContainerDeleteTimeout  = 1 * time.Minute
 )
 
 type PyrolisisTests struct {
@@ -91,7 +98,11 @@ func (p *PyrolisisTests) CleanupBackupStorageContainers(t *testing.T) {
 				require.NoError(t, err, "There should be no error while deleting object %s/%s", container, object)
 			}
 
-			_, err = containers.Delete(storageClient, container).Extract()
+			wait.PollImmediate(CleanupBackupContainerDeleteInterval, CleanupBackupContainerDeleteTimeout,
+				func() (bool, error) {
+					_, err = containers.Delete(storageClient, container).Extract()
+					return (err == nil), nil
+				})
 			require.NoError(t, err, "There should be no error while deleting storage container: %s", container)
 		}
 	}
