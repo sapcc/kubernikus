@@ -98,10 +98,13 @@ func (p *PyrolisisTests) CleanupBackupStorageContainers(t *testing.T) {
 				require.NoError(t, err, "There should be no error while deleting object %s/%s", container, object)
 			}
 
-			wait.PollImmediate(CleanupBackupContainerDeleteInterval, CleanupBackupContainerDeleteTimeout,
+			err = wait.PollImmediate(CleanupBackupContainerDeleteInterval, CleanupBackupContainerDeleteTimeout,
 				func() (bool, error) {
-					_, err = containers.Delete(storageClient, container).Extract()
-					return (err == nil), nil
+					_, err := containers.Delete(storageClient, container).Extract()
+					if errResponseCode, ok := err.(gophercloud.ErrUnexpectedResponseCode); ok && errResponseCode.Actual == 409 {
+						return false, nil
+					}
+					return true, err
 				})
 			require.NoError(t, err, "There should be no error while deleting storage container: %s", container)
 		}
