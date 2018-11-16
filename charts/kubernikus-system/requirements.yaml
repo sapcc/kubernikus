@@ -23,3 +23,4 @@ dependencies:
   - name: fluent-bit
     repository: https://kubernetes-charts.storage.googleapis.com/
     version: 0.16.3
+    condition: fluent-bit.backend.es.host
