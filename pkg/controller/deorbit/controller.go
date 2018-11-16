@@ -83,14 +83,11 @@ func (d *DeorbitReconciler) deorbit(kluster *v1.Kluster) (err error) {
 	// until the stop channel is closed. This is used to unblock the workqueue.
 	done := make(chan struct{})
 
-	timer := time.NewTimer(UnblockWorkerTimeout)
-	defer timer.Stop()
-
-	go func() {
-		<-timer.C
+	timer := time.AfterFunc(UnblockWorkerTimeout, func() {
 		d.Logger.Log("msg", "timeout waiting. unblocking the worker routine")
 		close(done)
-	}()
+	})
+	defer timer.Stop()
 
 	deorbiter, err := NewDeorbiter(kluster, done, d.Clients, d.Recorder, d.Logger)
 	if err != nil {
