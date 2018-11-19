@@ -3230,7 +3230,7 @@ fluent-bit:
   image:
     fluent_bit:
       repository: fluent/fluent-bit
-      tag: "0.14.9"
+      tag: 0.14.9
     pullPolicy: IfNotPresent
 
   metrics:
