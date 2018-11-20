@@ -14,15 +14,15 @@ persistence:
   # existingClaim: claimName
 resources:
   requests:
-    cpu: 100m
-    memory: 256Mi
+    cpu: 200m
+    memory: 500Mi
   limits:
-    cpu: 500m
-    memory: 512Mi
+    cpu: 750m
+    memory: 2560Mi
 backup:
   image:
     repository: sapcc/etcdbrctl
-    tag: 0.3.0
+    tag: 0.3.1
     pullPolicy: IfNotPresent
   config:
     # do a full-backup every hour
@@ -38,7 +38,7 @@ backup:
   resources:
     requests:
       cpu: 100m
-      memory: 256Mi
+      memory: 128Mi
     limits:
-      cpu: 500m
-      memory: 512Mi
+      cpu: 300m
+      memory: 1Gi
