@@ -8,6 +8,12 @@ metadata:
 data:
   bootstrap.sh: |-
     #!/bin/sh
+    if [ ! -d /var/lib/etcd/new.etcd ]; then
+        mkdir /var/lib/etcd/new.etcd
+    fi
+    if [ -d /var/lib/etcd/member ]; then
+        mv /var/lib/etcd/member /var/lib/etcd/new.etcd/member
+    fi
     while true;
     do
       wget http://localhost:8080/initialization/status -S -O status;
@@ -23,7 +29,7 @@ data:
       "Successful")
             exec etcd \
               --name=kubernikus \
-              --data-dir=/var/lib/etcd \
+              --data-dir=/var/lib/etcd/new.etcd \
               --advertise-client-urls=http://${ETCD_IP}:2379 \
               --initial-advertise-peer-urls=http://${ETCD_IP}:2380 \
               --initial-cluster=kubernikus=http://${ETCD_IP}:2380 \
@@ -100,7 +106,7 @@ spec:
             - server
             - --schedule={{ .Values.backup.config.schedule }}
             - --max-backups={{ .Values.backup.config.maxBackups }}
-            - --data-dir=/var/lib/etcd
+            - --data-dir=/var/lib/etcd/new.etcd
             - --insecure-transport=true
             - --storage-provider=Swift
             - --delta-snapshot-period-seconds={{ .Values.backup.config.deltaSnapshotPeriod }}
