@@ -17,7 +17,7 @@ const (
 	EtcdFailTimeout         = 60 * time.Second
 	EtcdRestorePollInterval = 2 * time.Second
 	EtcdRestoreTimeout      = 60 * time.Second
-	EtcdDataDir             = "/var/lib/etcd"
+	EtcdDataDir             = "/var/lib/etcd/new.etcd"
 )
 
 type EtcdBackupTests struct {
