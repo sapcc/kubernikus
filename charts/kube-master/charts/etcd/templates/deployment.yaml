@@ -84,13 +84,13 @@ spec:
                 - /bin/sh
                 - -ec
                 - ETCDCTL_API=3 etcdctl get foo
-            initialDelaySeconds: 5
+            initialDelaySeconds: 15
             periodSeconds: 5
           readinessProbe:
             httpGet:
               path: /healthz
               port: 8080
-            initialDelaySeconds: 5
+            initialDelaySeconds: 15
             periodSeconds: 10
           resources:
 {{ toYaml .Values.resources | indent 12 }}
