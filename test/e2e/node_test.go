@@ -125,7 +125,7 @@ func (k NodeTests) LatestStableContainerLinux(t *testing.T) {
 		keyval := strings.Split(scanner.Text(), "=")
 		if len(keyval) == 2 && keyval[0] == "COREOS_VERSION" {
 			for _, node := range nodes.Items {
-				assert.Contains(t, node.Status.NodeInfo.OSImage, keyval[1])
+				assert.Contains(t, node.Status.NodeInfo.OSImage, keyval[1], "Node %s is not on latest version", node.Name)
 			}
 			return
 		}
