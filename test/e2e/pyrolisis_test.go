@@ -8,6 +8,8 @@ import (
 
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack"
+	"github.com/gophercloud/gophercloud/openstack/blockstorage/v3/volumes"
+	"github.com/gophercloud/gophercloud/openstack/identity/v3/tokens"
 	"github.com/gophercloud/gophercloud/openstack/objectstorage/v1/containers"
 	"github.com/gophercloud/gophercloud/openstack/objectstorage/v1/objects"
 	"github.com/stretchr/testify/assert"
@@ -38,10 +40,12 @@ func (p *PyrolisisTests) Run(t *testing.T) {
 		t.Run("Wait", func(t *testing.T) {
 			t.Run("Klusters", p.WaitForE2EKlustersTerminated)
 		})
-	}
 
-	cleanup := t.Run("CleanupBackupStorageContainers", p.CleanupBackupStorageContainers)
-	require.True(t, cleanup, "Etcd backup storage container cleanup failed")
+		cleanupStorageContainer := t.Run("CleanupBackupStorageContainers", p.CleanupBackupStorageContainers)
+		require.True(t, cleanupStorageContainer, "Etcd backup storage container cleanup failed")
+
+		t.Run("CleanupVolumes", p.CleanupVolumes)
+	}
 }
 
 func (p *PyrolisisTests) SettingKlustersOnFire(t *testing.T) {
@@ -107,6 +111,32 @@ func (p *PyrolisisTests) CleanupBackupStorageContainers(t *testing.T) {
 					return true, err
 				})
 			require.NoError(t, err, "There should be no error while deleting storage container: %s", container)
+		}
+	}
+}
+
+func (p *PyrolisisTests) CleanupVolumes(t *testing.T) {
+	storageClient, err := openstack.NewBlockStorageV3(p.OpenStack.Provider, gophercloud.EndpointOpts{})
+	require.NoError(t, err, "Could not create block storage client")
+
+	project, err := tokens.Get(p.OpenStack.Identity, p.OpenStack.Provider.Token()).ExtractProject()
+	require.NoError(t, err, "There should be no error while extracting the project")
+
+	volumeListOpts := volumes.ListOpts{
+		TenantID: project.ID,
+	}
+
+	allPages, err := volumes.List(storageClient, volumeListOpts).AllPages()
+	require.NoError(t, err, "There should be no error while retrieving volume pages")
+
+	allVolumes, err := volumes.ExtractVolumes(allPages)
+	require.NoError(t, err, "There should be no error while extracting volumes")
+
+	for _, vol := range allVolumes {
+		if strings.HasPrefix(vol.Name, "kubernetes-dynamic-pvc-") &&
+			strings.HasPrefix(vol.Metadata["kubernetes.io/created-for/pvc/namespace"], "e2e-volumes-") {
+			err := volumes.Delete(storageClient, vol.ID).ExtractErr()
+			require.NoError(t, err, "There should be no error while deleting volume %s (%s)", vol.Name, vol.ID)
 		}
 	}
 }
