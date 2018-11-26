@@ -190,7 +190,7 @@ func (n *NetworkTests) TestPods(t *testing.T) {
 
 			t.Run(fmt.Sprintf("%v->%v", source.Status.PodIP, target.Status.PodIP), func(t *testing.T) {
 				var stdout string
-				cmd := strings.Split(fmt.Sprintf("curl -f --max-time=5 http://%v:%v", target.Status.PodIP, ServeHostnamePort), " ")
+				cmd := strings.Split(fmt.Sprintf("curl -f --max-time 5 http://%v:%v", target.Status.PodIP, ServeHostnamePort), " ")
 				err = wait.PollImmediate(PollInterval, TestPodTimeout,
 					func() (bool, error) {
 						stdout, _, err = n.Kubernetes.ExecCommandInContainerWithFullOutput(n.Namespace, source.Name, source.Spec.Containers[0].Name, cmd...)
@@ -226,7 +226,7 @@ func (n *NetworkTests) TestServices(t *testing.T) {
 
 			t.Run(fmt.Sprintf("%v->%v", source.Status.PodIP, target.Spec.ClusterIP), func(t *testing.T) {
 				var stdout string
-				cmd := strings.Split(fmt.Sprintf("curl -f --max-time=5 http://%v:%v", target.Spec.ClusterIP, ServeHostnamePort), " ")
+				cmd := strings.Split(fmt.Sprintf("curl -f --max-time 5 http://%v:%v", target.Spec.ClusterIP, ServeHostnamePort), " ")
 				err = wait.PollImmediate(PollInterval, TestServicesTimeout,
 					func() (bool, error) {
 						stdout, _, err = n.Kubernetes.ExecCommandInContainerWithFullOutput(n.Namespace, source.Name, source.Spec.Containers[0].Name, cmd...)
