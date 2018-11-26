@@ -5,6 +5,7 @@ package extra_dependencies
 
 import (
 	_ "github.com/gophercloud/gophercloud/openstack/blockstorage/extensions/quotasets"
+	_ "github.com/gophercloud/gophercloud/openstack/blockstorage/v3/volumes"
 	_ "github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/quotasets"
 	_ "github.com/gophercloud/gophercloud/openstack/objectstorage/v1/objects"
 	_ "github.com/stretchr/testify/assert"
