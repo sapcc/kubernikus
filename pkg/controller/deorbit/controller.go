@@ -1,6 +1,7 @@
 package deorbit
 
 import (
+	"sync"
 	"time"
 
 	"github.com/go-kit/kit/log"
@@ -82,12 +83,15 @@ func (d *DeorbitReconciler) deorbit(kluster *v1.Kluster) (err error) {
 	// time. It is required because the deorbit wait-functions block indefinitely or
 	// until the stop channel is closed. This is used to unblock the workqueue.
 	done := make(chan struct{})
+	var once sync.Once
 
 	timer := time.AfterFunc(UnblockWorkerTimeout, func() {
 		d.Logger.Log("msg", "timeout waiting. unblocking the worker routine")
-		close(done)
+		once.Do(func() { close(done) })
 	})
 	defer timer.Stop()
+	//We need to ensure the done channel is closed otherwise we leak goroutines (thanks to wait.PollUntil)
+	defer once.Do(func() { close(done) })
 
 	deorbiter, err := NewDeorbiter(kluster, done, d.Clients, d.Recorder, d.Logger)
 	if err != nil {
