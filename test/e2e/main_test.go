@@ -185,8 +185,8 @@ func TestRunner(t *testing.T) {
 			}
 
 			etcdBackupTests := &EtcdBackupTests{
-				KubernikusControlPlane: kubernikusControlPlane,
 				KubernetesControlPlane: kubernetesControlPlane,
+				Kubernetes:             kubernetes,
 				FullKlusterName:        fullKlusterName,
 				Namespace:              namespace,
 			}
