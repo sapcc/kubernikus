@@ -1,4 +1,4 @@
-IMAGE:= sapcc/serve_hostname
+IMAGE:= sapcc/serve-hostname-amd64
 VERSION := 1.2-alpine
 
 build:

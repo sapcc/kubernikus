@@ -26,7 +26,7 @@ const (
 
 	TestPodTimeout             = 1 * time.Minute
 	TestServicesTimeout        = 1 * time.Minute
-	TestServicesWithDNSTimeout = 5 * time.Minute
+	TestServicesWithDNSTimeout = 2 * time.Minute
 
 	PollInterval = 6 * time.Second // DNS Timeout is 5s
 
@@ -264,7 +264,7 @@ func (n *NetworkTests) TestServicesWithDNS(t *testing.T) {
 
 			t.Run(fmt.Sprintf("%v->%v", source.Status.PodIP, service), func(t *testing.T) {
 				var stdout string
-				cmd := strings.Split(fmt.Sprintf("curl -f --max-time=5 http://%v:%v", service, ServeHostnamePort), " ")
+				cmd := []string{"dig", service}
 				err = wait.PollImmediate(PollInterval, TestServicesWithDNSTimeout,
 					func() (bool, error) {
 						stdout, _, err = n.Kubernetes.ExecCommandInContainerWithFullOutput(n.Namespace, source.Name, source.Spec.Containers[0].Name, cmd...)
