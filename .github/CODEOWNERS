@@ -3,17 +3,12 @@
 # These owners will be the default owners for everything in
 # the repo. Unless a later match takes precedence,
 
-*                           @bugroger @databus23 @edda @auhlig @schwarzm @jonathanschwarze @vonneudeck
-/charts                     @databus23 @bugroger @vonneudeck @auhlig
-/charts/k8sniff             @auhlig @databus23 @bugroger
-/charts/kubernikus-system   @auhlig @databus23 @bugroger
-/charts/kube-master         @databus23 @bugroger
-/charts/kubernikus          @databus23 @bugroger
-/ci                         @databus23 @bugroger
+*                           @bugroger @databus23 @auhlig @schwarzm @onuryilmaz @jknipper
+/charts                     @databus23 @bugroger @auhlig
+/ci                         @bugroger @databus23
 /contrib                    @bugroger @databus23
-/docs                       @bugroger @jonathanschwarze @databus23
-/pkg                        @databus23 @bugroger
-/pkg/templates              @schwarzm @bugroger @databus23
-/pkg/cmd/kubernikusctl      @schwarzm @bugroger @databus23
-/pkg/cmd/kubernikusctl/auth @bugroger @databus23
-swagger                     @databus23 @bugroger
+/docs                       @bugroger @databus23 @auhlig @schwarzm @onuryilmaz @jknipper @jonathanschwarze
+/pkg                        @bugroger @databus23 @onuryilmaz @jknipper
+/pkg/templates              @bugroger @databus23 @schwarzm
+/pkg/cmd/kubernikusctl      @bugroger @databus23 @schwarzm @onuryilmaz @jknipper
+swagger                     @bugroger @databus23
