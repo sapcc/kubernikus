@@ -1,0 +1,4 @@
+image:
+  repository: sapcc/kubernetes-eventexporter
+  tag: 0.1.0
+  pullPolicy: IfNotPresent

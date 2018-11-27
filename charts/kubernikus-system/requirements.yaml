@@ -17,3 +17,6 @@ dependencies:
   - name: oomkill-exporter
     repository: file://vendor/oomkill-exporter
     version: 0.1.0
+  - name: eventexporter
+    repository: file://vendor/eventexporter
+    version: 0.1.0
