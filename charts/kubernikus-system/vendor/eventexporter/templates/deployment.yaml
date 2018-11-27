@@ -16,18 +16,21 @@ spec:
         app: {{ template "name" . }}
       annotations:
         prometheus.io/scrape: "true"
-        prometheus.io/port: "9102"
+        prometheus.io/port: "{{ default 9102 .Values.metrics.port }}"
     spec:
       containers:
       - name: {{ template "name" . }}
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
         imagePullPolicy: {{ .Values.image.pullPolicy }}
+        args:
+        - -logtostderr
+        - -listen-address ":{{ default 9102 .Values.metrics.port }}"
         volumeMounts:
         - name: config-volume
           mountPath: /etc/eventexporter
         ports:
         - name: metrics
-          containerPort: "9102"
+          containerPort: "{{ default 9102 .Values.metrics.port }}"
       serviceAccount: {{ template "name" . }}
       volumes:
       - name: config-volume
