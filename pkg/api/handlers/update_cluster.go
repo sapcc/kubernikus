@@ -20,7 +20,28 @@ type updateCluster struct {
 
 func (d *updateCluster) Handle(params operations.UpdateClusterParams, principal *models.Principal) middleware.Responder {
 
-	kluster, err := editCluster(d.Kubernikus.Kubernikus().Klusters(d.Namespace), principal, params.Name, func(kluster *v1.Kluster) {
+	kluster, err := editCluster(d.Kubernikus.Kubernikus().Klusters(d.Namespace), principal, params.Name, func(kluster *v1.Kluster) error {
+
+		// find the deleted nodepools
+		deletedNodePoolNames, err := detectNodePoolChanges(kluster.Spec.NodePools, params.Body.Spec.NodePools)
+		if err != nil {
+			return err
+		}
+
+		// clear the status for the deleted nodepools
+		if len(deletedNodePoolNames) > 0 {
+			nodePoolInfo := kluster.Status.NodePools
+			for _, name := range deletedNodePoolNames {
+				for i, statusNodePool := range nodePoolInfo {
+					if name == statusNodePool.Name {
+						nodePoolInfo = append(nodePoolInfo[:i], nodePoolInfo[i+1:]...)
+					}
+
+				}
+			}
+			kluster.Status.NodePools = nodePoolInfo
+		}
+
 		nodePools := params.Body.Spec.NodePools
 		//set default image
 		for i, pool := range nodePools {
@@ -35,6 +56,8 @@ func (d *updateCluster) Handle(params operations.UpdateClusterParams, principal 
 		if params.Body.Spec.Openstack.SecurityGroupName != "" {
 			kluster.Spec.Openstack.SecurityGroupName = params.Body.Spec.Openstack.SecurityGroupName
 		}
+
+		return nil
 	})
 	if err != nil {
 		if apierrors.IsNotFound(err) {
