@@ -4,6 +4,6 @@ metadata:
   name: {{ template "name" . }}
   namespace: {{ .Release.Namespace }}
 data:
-  {{- if .Values.config }}
-{{ toYaml .Values.config | indent 2 }}
+  {{- if .Values.metrics.config }}
+{{ toYaml .Values.metrics.config | indent 2 }}
   {{ end }}

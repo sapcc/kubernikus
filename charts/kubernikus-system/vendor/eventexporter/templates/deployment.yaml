@@ -24,13 +24,13 @@ spec:
         imagePullPolicy: {{ .Values.image.pullPolicy }}
         args:
         - -logtostderr
-        - -listen-address ":{{ default 9102 .Values.metrics.port }}"
+        - -listen-address=:{{ default 9102 .Values.metrics.port }}
         volumeMounts:
         - name: config-volume
           mountPath: /etc/eventexporter
         ports:
         - name: metrics
-          containerPort: "{{ default 9102 .Values.metrics.port }}"
+          containerPort: {{ default 9102 .Values.metrics.port }}
       serviceAccount: {{ template "name" . }}
       volumes:
       - name: config-volume
