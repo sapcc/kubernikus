@@ -1,10 +1,8 @@
 package handlers
 
 import (
-	"fmt"
-
 	"errors"
-
+	"fmt"
 	"net/http"
 	"strings"
 
