@@ -28,9 +28,7 @@ type VolumeTests struct {
 }
 
 func (v *VolumeTests) Run(t *testing.T) {
-	if runParallel() {
-		t.Parallel()
-	}
+	runParallel(t)
 
 	v.Namespace = util.SimpleNameGenerator.GenerateName("e2e-volumes-")
 

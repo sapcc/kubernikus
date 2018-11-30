@@ -201,10 +201,8 @@ func TestRunner(t *testing.T) {
 	})
 }
 
-func runParallel() bool {
-	if os.Getenv("RUN_PARALLEL") == "false" {
-		return false
+func runParallel(t *testing.T) {
+	if os.Getenv("RUN_PARALLEL") != "false" {
+		t.Parallel()
 	}
-
-	return true
 }
