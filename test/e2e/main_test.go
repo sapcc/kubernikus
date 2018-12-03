@@ -200,3 +200,9 @@ func TestRunner(t *testing.T) {
 		t.Run("Network", networkTests.Run)
 	})
 }
+
+func runParallel(t *testing.T) {
+	if os.Getenv("RUN_PARALLEL") != "false" {
+		t.Parallel()
+	}
+}

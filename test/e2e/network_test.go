@@ -41,7 +41,7 @@ type NetworkTests struct {
 }
 
 func (n *NetworkTests) Run(t *testing.T) {
-	t.Parallel()
+	runParallel(t)
 
 	n.Namespace = util.SimpleNameGenerator.GenerateName("e2e-network-")
 
@@ -117,7 +117,7 @@ func (n *NetworkTests) CreatePods(t *testing.T) {
 }
 
 func (n *NetworkTests) WaitForPodsRunning(t *testing.T) {
-	t.Parallel()
+	runParallel(t)
 
 	label := labels.SelectorFromSet(labels.Set(map[string]string{"app": "serve-hostname"}))
 	_, err := n.Kubernetes.WaitForPodsWithLabelRunningReady(n.Namespace, label, len(n.Nodes.Items), TestWaitForPodsRunningTimeout)
@@ -125,7 +125,7 @@ func (n *NetworkTests) WaitForPodsRunning(t *testing.T) {
 }
 
 func (n *NetworkTests) WaitForKubeDNSRunning(t *testing.T) {
-	t.Parallel()
+	runParallel(t)
 
 	label := labels.SelectorFromSet(labels.Set(map[string]string{"k8s-app": "kube-dns"}))
 	_, err := n.Kubernetes.WaitForPodsWithLabelRunningReady("kube-system", label, 1, TestWaitForKubeDNSRunningTimeout)
@@ -167,7 +167,7 @@ func (n *NetworkTests) CreateServices(t *testing.T) {
 }
 
 func (n *NetworkTests) WaitForServiceEndpoints(t *testing.T) {
-	t.Parallel()
+	runParallel(t)
 
 	label := labels.SelectorFromSet(labels.Set(map[string]string{"service": "e2e"}))
 	_, err := n.Kubernetes.WaitForServiceEndpointsWithLabelNum(n.Namespace, label, 1, TestWaitForServiceEndpointsTimeout)
@@ -176,7 +176,7 @@ func (n *NetworkTests) WaitForServiceEndpoints(t *testing.T) {
 }
 
 func (n *NetworkTests) TestPods(t *testing.T) {
-	t.Parallel()
+	runParallel(t)
 
 	pods, err := n.Kubernetes.ClientSet.CoreV1().Pods(n.Namespace).List(meta_v1.ListOptions{})
 	assert.NoError(t, err, "There should be no error while listing the kluster's pods")
@@ -190,7 +190,7 @@ func (n *NetworkTests) TestPods(t *testing.T) {
 
 			t.Run(fmt.Sprintf("%v->%v", source.Status.PodIP, target.Status.PodIP), func(t *testing.T) {
 				var stdout string
-				cmd := strings.Split(fmt.Sprintf("curl -f --max-time=5 http://%v:%v", target.Status.PodIP, ServeHostnamePort), " ")
+				cmd := strings.Split(fmt.Sprintf("curl -f --max-time 5 http://%v:%v", target.Status.PodIP, ServeHostnamePort), " ")
 				err = wait.PollImmediate(PollInterval, TestPodTimeout,
 					func() (bool, error) {
 						stdout, _, err = n.Kubernetes.ExecCommandInContainerWithFullOutput(n.Namespace, source.Name, source.Spec.Containers[0].Name, cmd...)
@@ -208,7 +208,7 @@ func (n *NetworkTests) TestPods(t *testing.T) {
 }
 
 func (n *NetworkTests) TestServices(t *testing.T) {
-	t.Parallel()
+	runParallel(t)
 
 	services, err := n.Kubernetes.ClientSet.CoreV1().Services(n.Namespace).List(meta_v1.ListOptions{})
 	assert.NoError(t, err, "There should be no error while listing services")
@@ -226,7 +226,7 @@ func (n *NetworkTests) TestServices(t *testing.T) {
 
 			t.Run(fmt.Sprintf("%v->%v", source.Status.PodIP, target.Spec.ClusterIP), func(t *testing.T) {
 				var stdout string
-				cmd := strings.Split(fmt.Sprintf("curl -f --max-time=5 http://%v:%v", target.Spec.ClusterIP, ServeHostnamePort), " ")
+				cmd := strings.Split(fmt.Sprintf("curl -f --max-time 5 http://%v:%v", target.Spec.ClusterIP, ServeHostnamePort), " ")
 				err = wait.PollImmediate(PollInterval, TestServicesTimeout,
 					func() (bool, error) {
 						stdout, _, err = n.Kubernetes.ExecCommandInContainerWithFullOutput(n.Namespace, source.Name, source.Spec.Containers[0].Name, cmd...)
@@ -245,7 +245,7 @@ func (n *NetworkTests) TestServices(t *testing.T) {
 }
 
 func (n *NetworkTests) TestServicesWithDNS(t *testing.T) {
-	t.Parallel()
+	runParallel(t)
 
 	services, err := n.Kubernetes.ClientSet.CoreV1().Services(n.Namespace).List(meta_v1.ListOptions{})
 	assert.NoError(t, err, "There should be no error while listing services")

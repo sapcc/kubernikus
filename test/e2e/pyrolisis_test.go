@@ -9,6 +9,7 @@ import (
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack"
 	"github.com/gophercloud/gophercloud/openstack/blockstorage/v3/volumes"
+	"github.com/gophercloud/gophercloud/openstack/compute/v2/servers"
 	"github.com/gophercloud/gophercloud/openstack/identity/v3/tokens"
 	"github.com/gophercloud/gophercloud/openstack/objectstorage/v1/containers"
 	"github.com/gophercloud/gophercloud/openstack/objectstorage/v1/objects"
@@ -45,6 +46,7 @@ func (p *PyrolisisTests) Run(t *testing.T) {
 		require.True(t, cleanupStorageContainer, "Etcd backup storage container cleanup failed")
 
 		t.Run("CleanupVolumes", p.CleanupVolumes)
+		t.Run("CleanupInstances", p.CleanupInstances)
 	}
 }
 
@@ -138,5 +140,29 @@ func (p *PyrolisisTests) CleanupVolumes(t *testing.T) {
 			err := volumes.Delete(storageClient, vol.ID).ExtractErr()
 			require.NoError(t, err, "There should be no error while deleting volume %s (%s)", vol.Name, vol.ID)
 		}
+	}
+}
+
+func (p *PyrolisisTests) CleanupInstances(t *testing.T) {
+	computeClient, err := openstack.NewComputeV2(p.OpenStack.Provider, gophercloud.EndpointOpts{})
+	require.NoError(t, err, "There should be no error creating compute client")
+
+	project, err := tokens.Get(p.OpenStack.Identity, p.OpenStack.Provider.Token()).ExtractProject()
+	require.NoError(t, err, "There should be no error while extracting the project")
+
+	serversListOpts := servers.ListOpts{
+		Name:     "e2e-",
+		TenantID: project.ID,
+	}
+
+	allPages, err := servers.List(computeClient, serversListOpts).AllPages()
+	require.NoError(t, err, "There should be no error while listing all servers")
+
+	allServers, err := servers.ExtractServers(allPages)
+	require.NoError(t, err, "There should be no error while extracting all servers")
+
+	for _, srv := range allServers {
+		err := servers.Delete(computeClient, srv.ID).ExtractErr()
+		require.NoError(t, err, "There should be no error while deleting server %s (%s)", srv.Name, srv.ID)
 	}
 }
