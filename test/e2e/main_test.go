@@ -10,7 +10,7 @@ import (
 	"github.com/gophercloud/gophercloud/openstack/identity/v3/tokens"
 	"github.com/stretchr/testify/require"
 
-	"github.com/sapcc/kubernikus/pkg/util"
+	"github.com/sapcc/kubernikus/pkg/util/generator"
 	"github.com/sapcc/kubernikus/test/e2e/framework"
 )
 
@@ -65,7 +65,7 @@ func TestMain(m *testing.M) {
 }
 
 func TestRunner(t *testing.T) {
-	klusterName := util.SimpleNameGenerator.GenerateName("e2e-")
+	klusterName := generator.SimpleNameGenerator.GenerateName("e2e-")
 
 	if kluster != nil && *kluster != "" {
 		klusterName = *kluster
