@@ -199,11 +199,59 @@ grafana:
   serverDashboardFiles: 
     kubernikus.json: |
       {
+        "__inputs": [
+          {
+            "name": "DS_PROMETHEUS",
+            "label": "Prometheus",
+            "description": "",
+            "type": "datasource",
+            "pluginId": "prometheus",
+            "pluginName": "Prometheus"
+          }
+        ],
+        "__requires": [
+          {
+            "type": "grafana",
+            "id": "grafana",
+            "name": "Grafana",
+            "version": "5.0.4"
+          },
+          {
+            "type": "panel",
+            "id": "graph",
+            "name": "Graph",
+            "version": "5.0.0"
+          },
+          {
+            "type": "panel",
+            "id": "natel-discrete-panel",
+            "name": "Discrete",
+            "version": "0.0.8-pre"
+          },
+          {
+            "type": "datasource",
+            "id": "prometheus",
+            "name": "Prometheus",
+            "version": "5.0.0"
+          },
+          {
+            "type": "panel",
+            "id": "singlestat",
+            "name": "Singlestat",
+            "version": "5.0.0"
+          },
+          {
+            "type": "panel",
+            "id": "text",
+            "name": "Text",
+            "version": "5.0.0"
+          }
+        ],
         "annotations": {
           "list": [
             {
               "builtIn": 1,
-              "datasource": "default",
+              "datasource": "${DS_PROMETHEUS}",
               "enable": true,
               "hide": true,
               "iconColor": "rgba(0, 211, 255, 1)",
@@ -215,7 +263,8 @@ grafana:
         "editable": false,
         "gnetId": null,
         "graphTooltip": 0,
-        "iteration": 1519221161829,
+        "id": null,
+        "iteration": 1543925725334,
         "links": [],
         "panels": [
           {
@@ -270,7 +319,7 @@ grafana:
               "rgba(237, 129, 40, 0.89)",
               "#d44a3a"
             ],
-            "datasource": null,
+            "datasource": "${DS_PROMETHEUS}",
             "decimals": 0,
             "format": "none",
             "gauge": {
@@ -355,7 +404,7 @@ grafana:
               "rgba(237, 129, 40, 0.89)",
               "#d44a3a"
             ],
-            "datasource": null,
+            "datasource": "${DS_PROMETHEUS}",
             "decimals": 0,
             "format": "none",
             "gauge": {
@@ -440,7 +489,7 @@ grafana:
               "rgba(237, 129, 40, 0.89)",
               "#d44a3a"
             ],
-            "datasource": null,
+            "datasource": "${DS_PROMETHEUS}",
             "decimals": 0,
             "format": "none",
             "gauge": {
@@ -525,7 +574,7 @@ grafana:
               "rgba(237, 129, 40, 0.89)",
               "#d44a3a"
             ],
-            "datasource": null,
+            "datasource": "${DS_PROMETHEUS}",
             "decimals": 0,
             "format": "none",
             "gauge": {
@@ -639,7 +688,7 @@ grafana:
             "bars": false,
             "dashLength": 10,
             "dashes": false,
-            "datasource": null,
+            "datasource": "${DS_PROMETHEUS}",
             "fill": 3,
             "gridPos": {
               "h": 4,
@@ -690,7 +739,7 @@ grafana:
                 "refId": "A"
               },
               {
-                "expr": "quantile_over_time(0.95, probe_duration_seconds{instance=~\"https://kubernikus.*\"}[24h]) ",
+                "expr": "quantile_over_time(0.95, probe_duration_seconds{instance=~\"https://kubernikus.*\",kubernetes_name=\"kubernikus-api\"}[24h]) ",
                 "format": "time_series",
                 "hide": false,
                 "interval": "",
@@ -742,7 +791,7 @@ grafana:
             "bars": false,
             "dashLength": 10,
             "dashes": false,
-            "datasource": null,
+            "datasource": "${DS_PROMETHEUS}",
             "fill": 3,
             "gridPos": {
               "h": 4,
@@ -853,8 +902,10 @@ grafana:
                 "text": "down"
               }
             ],
-            "datasource": null,
+            "crosshairColor": "#8F070C",
+            "datasource": "${DS_PROMETHEUS}",
             "display": "timeline",
+            "expandFromQueryS": 86400,
             "extendLastValue": true,
             "gridPos": {
               "h": 4,
@@ -890,34 +941,34 @@ grafana:
             "showDistinctCount": false,
             "showLegend": false,
             "showLegendCounts": false,
-            "showLegendNames": true,
-            "showLegendPercent": true,
+            "showLegendNames": false,
+            "showLegendPercent": false,
             "showLegendTime": false,
-            "showLegendValues": true,
+            "showLegendValues": false,
+            "showTimeAxis": false,
             "showTransitionCount": false,
             "targets": [
               {
-                "expr": "probe_success{path=\"/\"}",
+                "expr": "probe_success{path=\"/\", kubernetes_name!~\"e2e.*|kubernikus-test.*\"} < 1 AND ON (kubernetes_name) label_replace(kubernikus_kluster_status_phase{phase=\"Running\"}, \"kubernetes_name\", \"$1\", \"kluster_id\", \"(.*)\")",
                 "format": "time_series",
                 "hide": false,
+                "instant": false,
                 "interval": "",
                 "intervalFactor": 1,
-                "legendFormat": "{{instance}}",
+                "legendFormat": "{{kubernetes_name}}",
                 "refId": "A"
               }
             ],
             "textSize": 12,
-            "timeFrom": "24h",
+            "textSizeTime": 12,
+            "timeFrom": "5m",
             "timeShift": null,
+            "timeTextColor": "#d8d9da",
             "title": "",
             "transparent": true,
             "type": "natel-discrete-panel",
+            "units": "short",
             "valueMaps": [
-              {
-                "op": "=",
-                "text": "N/A",
-                "value": "null"
-              },
               {
                 "op": "=",
                 "text": "up",
@@ -930,8 +981,8 @@ grafana:
               },
               {
                 "op": "=",
-                "text": "",
-                "value": ""
+                "text": "N/A",
+                "value": "null"
               }
             ],
             "valueTextColor": "#fff",
@@ -1006,7 +1057,7 @@ grafana:
               "rgba(237, 129, 40, 0.89)",
               "#299c46"
             ],
-            "datasource": null,
+            "datasource": "${DS_PROMETHEUS}",
             "decimals": 0,
             "description": "Out of CPU in this many Klusters",
             "format": "none",
@@ -1093,7 +1144,7 @@ grafana:
               "rgba(237, 129, 40, 0.89)",
               "#299c46"
             ],
-            "datasource": null,
+            "datasource": "${DS_PROMETHEUS}",
             "decimals": 0,
             "description": "Out of Memory in this many Klusters",
             "format": "none",
@@ -1180,7 +1231,7 @@ grafana:
               "rgba(237, 129, 40, 0.89)",
               "#299c46"
             ],
-            "datasource": null,
+            "datasource": "${DS_PROMETHEUS}",
             "decimals": 0,
             "description": "Out of Podsin this many Klusters",
             "format": "none",
@@ -1297,7 +1348,7 @@ grafana:
               "rgba(237, 129, 40, 0.89)",
               "#299c46"
             ],
-            "datasource": null,
+            "datasource": "${DS_PROMETHEUS}",
             "decimals": 0,
             "description": "Out of Volumes in this many Klusters",
             "format": "none",
@@ -1384,7 +1435,7 @@ grafana:
               "rgba(237, 129, 40, 0.89)",
               "#299c46"
             ],
-            "datasource": null,
+            "datasource": "${DS_PROMETHEUS}",
             "decimals": 0,
             "description": "Out of Volumes in this many Klusters",
             "format": "none",
@@ -1477,7 +1528,7 @@ grafana:
               "rgba(237, 129, 40, 0.89)",
               "#299c46"
             ],
-            "datasource": null,
+            "datasource": "${DS_PROMETHEUS}",
             "decimals": 0,
             "description": "",
             "format": "none",
@@ -1564,7 +1615,7 @@ grafana:
               "rgba(237, 129, 40, 0.89)",
               "#299c46"
             ],
-            "datasource": null,
+            "datasource": "${DS_PROMETHEUS}",
             "decimals": 0,
             "description": "",
             "format": "none",
@@ -1651,7 +1702,7 @@ grafana:
               "rgba(237, 129, 40, 0.89)",
               "#299c46"
             ],
-            "datasource": null,
+            "datasource": "${DS_PROMETHEUS}",
             "decimals": 0,
             "description": "",
             "format": "none",
@@ -1749,7 +1800,7 @@ grafana:
             "bars": false,
             "dashLength": 10,
             "dashes": false,
-            "datasource": null,
+            "datasource": "${DS_PROMETHEUS}",
             "decimals": 0,
             "fill": 6,
             "gridPos": {
@@ -1773,7 +1824,7 @@ grafana:
             "linewidth": 3,
             "links": [],
             "nullPointMode": "connected",
-            "percentage": true,
+            "percentage": false,
             "pointradius": 5,
             "points": false,
             "renderer": "flot",
@@ -1783,7 +1834,7 @@ grafana:
             "steppedLine": false,
             "targets": [
               {
-                "expr": "sum(irate(node_cpu{mode=~\"system|user|iowait\"}[5m])) by (instance) / sum(irate(node_cpu{}[5m])) by (instance)",
+                "expr": "sum(irate(node_cpu_seconds_total{mode=~\"system|user|iowait\"}[5m])) by (instance) / sum(irate(node_cpu_seconds_total{}[5m])) by (instance)",
                 "format": "time_series",
                 "interval": "",
                 "intervalFactor": 3,
@@ -1833,7 +1884,7 @@ grafana:
             "bars": false,
             "dashLength": 10,
             "dashes": false,
-            "datasource": null,
+            "datasource": "${DS_PROMETHEUS}",
             "decimals": 0,
             "fill": 6,
             "gridPos": {
@@ -1857,7 +1908,7 @@ grafana:
             "linewidth": 3,
             "links": [],
             "nullPointMode": "connected",
-            "percentage": true,
+            "percentage": false,
             "pointradius": 5,
             "points": false,
             "renderer": "flot",
@@ -1867,7 +1918,7 @@ grafana:
             "steppedLine": false,
             "targets": [
               {
-                "expr": "sum(irate(node_cpu{mode=~\"system|user|iowait\"}[5m])) by (instance) / sum(irate(node_cpu{}[5m])) by (instance)",
+                "expr": " (node_memory_MemTotal_bytes - node_memory_MemFree_bytes - node_memory_Buffers_bytes - node_memory_Cached_bytes  ) / node_memory_MemTotal_bytes",
                 "format": "time_series",
                 "interval": "",
                 "intervalFactor": 3,
@@ -1878,7 +1929,7 @@ grafana:
             "thresholds": [],
             "timeFrom": null,
             "timeShift": null,
-            "title": "CPU",
+            "title": "Memory",
             "tooltip": {
               "shared": true,
               "sort": 0,
@@ -1917,7 +1968,7 @@ grafana:
             "bars": false,
             "dashLength": 10,
             "dashes": false,
-            "datasource": null,
+            "datasource": "${DS_PROMETHEUS}",
             "decimals": 0,
             "fill": 6,
             "gridPos": {
@@ -1941,17 +1992,17 @@ grafana:
             "linewidth": 2,
             "links": [],
             "nullPointMode": "connected",
-            "percentage": false,
+            "percentage": true,
             "pointradius": 5,
             "points": false,
             "renderer": "flot",
             "seriesOverrides": [],
             "spaceLength": 10,
-            "stack": true,
+            "stack": false,
             "steppedLine": false,
             "targets": [
               {
-                "expr": "sum(label_replace(kubelet_running_pod_count, \"node\", \"$1\", \"instance\", \"(.*)\")) by (node) / sum(kube_node_status_capacity_pods) by (node) * 100",
+                "expr": " count(kube_pod_info) by (node) / sum(kube_node_status_capacity_pods)  by (node)",
                 "format": "time_series",
                 "interval": "",
                 "intervalFactor": 1,
@@ -1986,10 +2037,10 @@ grafana:
             "yaxes": [
               {
                 "decimals": null,
-                "format": "percent",
+                "format": "percentunit",
                 "label": "",
                 "logBase": 1,
-                "max": "400",
+                "max": "1",
                 "min": "0.0",
                 "show": false
               },
@@ -2027,7 +2078,7 @@ grafana:
               "rgba(237, 129, 40, 0.89)",
               "#d44a3a"
             ],
-            "datasource": null,
+            "datasource": "${DS_PROMETHEUS}",
             "decimals": 0,
             "format": "percent",
             "gauge": {
@@ -2114,7 +2165,7 @@ grafana:
               "rgba(237, 129, 40, 0.89)",
               "#d44a3a"
             ],
-            "datasource": null,
+            "datasource": "${DS_PROMETHEUS}",
             "decimals": null,
             "format": "percentunit",
             "gauge": {
@@ -2201,7 +2252,7 @@ grafana:
               "rgba(237, 129, 40, 0.89)",
               "#d44a3a"
             ],
-            "datasource": null,
+            "datasource": "${DS_PROMETHEUS}",
             "format": "percentunit",
             "gauge": {
               "maxValue": 1,
@@ -2285,7 +2336,7 @@ grafana:
               "rgba(237, 129, 40, 0.89)",
               "#d44a3a"
             ],
-            "datasource": null,
+            "datasource": "${DS_PROMETHEUS}",
             "decimals": null,
             "format": "percentunit",
             "gauge": {
@@ -2369,7 +2420,7 @@ grafana:
               "rgba(237, 129, 40, 0.89)",
               "#d44a3a"
             ],
-            "datasource": null,
+            "datasource": "${DS_PROMETHEUS}",
             "decimals": null,
             "format": "percentunit",
             "gauge": {
@@ -2467,7 +2518,7 @@ grafana:
               "rgba(237, 129, 40, 0.89)",
               "#d44a3a"
             ],
-            "datasource": null,
+            "datasource": "${DS_PROMETHEUS}",
             "format": "dtdurations",
             "gauge": {
               "maxValue": 100,
@@ -2482,18 +2533,17 @@ grafana:
               "x": 0,
               "y": 13
             },
+            "hideTimeOverride": true,
             "id": 71,
             "interval": null,
             "links": [],
             "mappingType": 1,
             "mappingTypes": [
               {
-                "$$hashKey": "object:684",
                 "name": "value to text",
                 "value": 1
               },
               {
-                "$$hashKey": "object:685",
                 "name": "range to text",
                 "value": 2
               }
@@ -2521,7 +2571,6 @@ grafana:
             "tableColumn": "",
             "targets": [
               {
-                "$$hashKey": "object:661",
                 "expr": "kubernikus_kluster_boot_duration_sum / kubernikus_kluster_boot_duration_count",
                 "format": "time_series",
                 "instant": false,
@@ -2531,12 +2580,13 @@ grafana:
               }
             ],
             "thresholds": "",
+            "timeFrom": "1m",
+            "timeShift": null,
             "title": "Average Kluster Boot Time",
             "type": "singlestat",
             "valueFontSize": "80%",
             "valueMaps": [
               {
-                "$$hashKey": "object:687",
                 "op": "=",
                 "text": "N/A",
                 "value": "null"
@@ -2549,7 +2599,7 @@ grafana:
             "bars": false,
             "dashLength": 10,
             "dashes": false,
-            "datasource": null,
+            "datasource": "${DS_PROMETHEUS}",
             "decimals": 0,
             "fill": 1,
             "gridPos": {
@@ -2584,7 +2634,6 @@ grafana:
             "steppedLine": false,
             "targets": [
               {
-                "$$hashKey": "object:506",
                 "expr": "sum(label_replace(rate(container_cpu_usage_seconds_total{namespace=\"kubernikus\",name=~\".*(etcd|manager|scheduler|apiserver).*\",image!~\".*pause.*\"}[1h]), \"container\", \"$1\", \"name\", \".*(etcd|manager|scheduler|apiserver).*\")) by (container) / sum(label_replace(kube_pod_container_resource_requests_cpu_cores{container=~\"apiserver|etcd|scheduler|controller-manager\"}, \"container\", \"$1\", \"container\", \".*(etcd|manager|scheduler|apiserver)\")) by (container)",
                 "format": "time_series",
                 "hide": false,
@@ -2594,7 +2643,6 @@ grafana:
                 "refId": "B"
               },
               {
-                "$$hashKey": "object:870",
                 "expr": "",
                 "format": "time_series",
                 "hide": false,
@@ -2622,7 +2670,6 @@ grafana:
             },
             "yaxes": [
               {
-                "$$hashKey": "object:531",
                 "decimals": 1,
                 "format": "percentunit",
                 "label": "",
@@ -2632,7 +2679,6 @@ grafana:
                 "show": true
               },
               {
-                "$$hashKey": "object:532",
                 "format": "short",
                 "label": null,
                 "logBase": 1,
@@ -2647,7 +2693,7 @@ grafana:
             "bars": false,
             "dashLength": 10,
             "dashes": false,
-            "datasource": null,
+            "datasource": "${DS_PROMETHEUS}",
             "decimals": 0,
             "fill": 1,
             "gridPos": {
@@ -2682,7 +2728,6 @@ grafana:
             "steppedLine": false,
             "targets": [
               {
-                "$$hashKey": "object:1526",
                 "expr": "sum(label_replace(container_memory_usage_bytes{namespace=\"kubernikus\",name=~\".*(etcd|manager|scheduler|apiserver).*\",image!~\".*pause.*\"}, \"container\", \"$1\", \"name\", \".*(etcd|manager|scheduler|apiserver).*\")) by (container) / sum(label_replace(kube_pod_container_resource_requests_memory_bytes{container=~\"apiserver|etcd|scheduler|controller-manager\"}, \"container\", \"$1\", \"container\", \".*(etcd|manager|scheduler|apiserver)\")) by (container)",
                 "format": "time_series",
                 "hide": false,
@@ -2711,7 +2756,6 @@ grafana:
             },
             "yaxes": [
               {
-                "$$hashKey": "object:1887",
                 "decimals": null,
                 "format": "percentunit",
                 "label": "",
@@ -2721,7 +2765,6 @@ grafana:
                 "show": true
               },
               {
-                "$$hashKey": "object:1888",
                 "format": "short",
                 "label": null,
                 "logBase": 1,
@@ -2736,7 +2779,7 @@ grafana:
             "bars": false,
             "dashLength": 10,
             "dashes": false,
-            "datasource": null,
+            "datasource": "${DS_PROMETHEUS}",
             "fill": 0,
             "gridPos": {
               "h": 7,
@@ -2852,7 +2895,7 @@ grafana:
             "bars": false,
             "dashLength": 10,
             "dashes": false,
-            "datasource": null,
+            "datasource": "${DS_PROMETHEUS}",
             "fill": 0,
             "gridPos": {
               "h": 7,
@@ -2968,7 +3011,7 @@ grafana:
             "bars": false,
             "dashLength": 10,
             "dashes": false,
-            "datasource": null,
+            "datasource": "${DS_PROMETHEUS}",
             "fill": 0,
             "gridPos": {
               "h": 7,
@@ -3007,7 +3050,6 @@ grafana:
             "steppedLine": false,
             "targets": [
               {
-                "$$hashKey": "object:444",
                 "expr": "sum(go_goroutines{app=\"kubernikus\"})",
                 "format": "time_series",
                 "intervalFactor": 1,
@@ -3015,7 +3057,6 @@ grafana:
                 "refId": "D"
               },
               {
-                "$$hashKey": "object:445",
                 "expr": "go_rout",
                 "format": "time_series",
                 "intervalFactor": 1,
@@ -3042,7 +3083,6 @@ grafana:
             },
             "yaxes": [
               {
-                "$$hashKey": "object:517",
                 "decimals": null,
                 "format": "short",
                 "label": null,
@@ -3052,7 +3092,6 @@ grafana:
                 "show": true
               },
               {
-                "$$hashKey": "object:518",
                 "format": "short",
                 "label": null,
                 "logBase": 1,
@@ -3071,11 +3110,8 @@ grafana:
           "list": [
             {
               "allValue": null,
-              "current": {
-                "text": "1.12.6",
-                "value": "1.12.6"
-              },
-              "datasource": "Prometheus",
+              "current": {},
+              "datasource": "${DS_PROMETHEUS}",
               "hide": 2,
               "includeAll": false,
               "label": null,
@@ -3094,11 +3130,8 @@ grafana:
             },
             {
               "allValue": null,
-              "current": {
-                "text": "1.7.5",
-                "value": "1.7.5"
-              },
-              "datasource": "Prometheus",
+              "current": {},
+              "datasource": "${DS_PROMETHEUS}",
               "hide": 2,
               "includeAll": false,
               "label": null,
@@ -3117,11 +3150,8 @@ grafana:
             },
             {
               "allValue": null,
-              "current": {
-                "text": "1576.4.0",
-                "value": "1576.4.0"
-              },
-              "datasource": "Prometheus",
+              "current": {},
+              "datasource": "${DS_PROMETHEUS}",
               "hide": 2,
               "includeAll": false,
               "label": null,
@@ -3140,11 +3170,8 @@ grafana:
             },
             {
               "allValue": null,
-              "current": {
-                "text": "4.13.16",
-                "value": "4.13.16"
-              },
-              "datasource": "Prometheus",
+              "current": {},
+              "datasource": "${DS_PROMETHEUS}",
               "hide": 2,
               "includeAll": false,
               "label": null,
