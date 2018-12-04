@@ -4,17 +4,27 @@ import (
 	"fmt"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack"
+	"github.com/gophercloud/gophercloud/openstack/blockstorage/v3/volumes"
+	"github.com/gophercloud/gophercloud/openstack/compute/v2/servers"
+	"github.com/gophercloud/gophercloud/openstack/identity/v3/tokens"
 	"github.com/gophercloud/gophercloud/openstack/objectstorage/v1/containers"
 	"github.com/gophercloud/gophercloud/openstack/objectstorage/v1/objects"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"k8s.io/apimachinery/pkg/util/wait"
 
 	"github.com/sapcc/kubernikus/pkg/api/client/operations"
 	etcd_util "github.com/sapcc/kubernikus/pkg/util/etcd"
 	"github.com/sapcc/kubernikus/test/e2e/framework"
+)
+
+const (
+	CleanupBackupContainerDeleteInterval = 1 * time.Second
+	CleanupBackupContainerDeleteTimeout  = 1 * time.Minute
 )
 
 type PyrolisisTests struct {
@@ -31,10 +41,13 @@ func (p *PyrolisisTests) Run(t *testing.T) {
 		t.Run("Wait", func(t *testing.T) {
 			t.Run("Klusters", p.WaitForE2EKlustersTerminated)
 		})
-	}
 
-	cleanup := t.Run("CleanupBackupStorageContainers", p.CleanupBackupStorageContainers)
-	require.True(t, cleanup, "Etcd backup storage container cleanup failed")
+		cleanupStorageContainer := t.Run("CleanupBackupStorageContainers", p.CleanupBackupStorageContainers)
+		require.True(t, cleanupStorageContainer, "Etcd backup storage container cleanup failed")
+
+		t.Run("CleanupVolumes", p.CleanupVolumes)
+		t.Run("CleanupInstances", p.CleanupInstances)
+	}
 }
 
 func (p *PyrolisisTests) SettingKlustersOnFire(t *testing.T) {
@@ -91,8 +104,65 @@ func (p *PyrolisisTests) CleanupBackupStorageContainers(t *testing.T) {
 				require.NoError(t, err, "There should be no error while deleting object %s/%s", container, object)
 			}
 
-			_, err = containers.Delete(storageClient, container).Extract()
+			err = wait.PollImmediate(CleanupBackupContainerDeleteInterval, CleanupBackupContainerDeleteTimeout,
+				func() (bool, error) {
+					_, err := containers.Delete(storageClient, container).Extract()
+					if errResponseCode, ok := err.(gophercloud.ErrUnexpectedResponseCode); ok && errResponseCode.Actual == 409 {
+						return false, nil
+					}
+					return true, err
+				})
 			require.NoError(t, err, "There should be no error while deleting storage container: %s", container)
 		}
+	}
+}
+
+func (p *PyrolisisTests) CleanupVolumes(t *testing.T) {
+	storageClient, err := openstack.NewBlockStorageV3(p.OpenStack.Provider, gophercloud.EndpointOpts{})
+	require.NoError(t, err, "Could not create block storage client")
+
+	project, err := tokens.Get(p.OpenStack.Identity, p.OpenStack.Provider.Token()).ExtractProject()
+	require.NoError(t, err, "There should be no error while extracting the project")
+
+	volumeListOpts := volumes.ListOpts{
+		TenantID: project.ID,
+	}
+
+	allPages, err := volumes.List(storageClient, volumeListOpts).AllPages()
+	require.NoError(t, err, "There should be no error while retrieving volume pages")
+
+	allVolumes, err := volumes.ExtractVolumes(allPages)
+	require.NoError(t, err, "There should be no error while extracting volumes")
+
+	for _, vol := range allVolumes {
+		if strings.HasPrefix(vol.Name, "kubernetes-dynamic-pvc-") &&
+			strings.HasPrefix(vol.Metadata["kubernetes.io/created-for/pvc/namespace"], "e2e-volumes-") {
+			err := volumes.Delete(storageClient, vol.ID).ExtractErr()
+			require.NoError(t, err, "There should be no error while deleting volume %s (%s)", vol.Name, vol.ID)
+		}
+	}
+}
+
+func (p *PyrolisisTests) CleanupInstances(t *testing.T) {
+	computeClient, err := openstack.NewComputeV2(p.OpenStack.Provider, gophercloud.EndpointOpts{})
+	require.NoError(t, err, "There should be no error creating compute client")
+
+	project, err := tokens.Get(p.OpenStack.Identity, p.OpenStack.Provider.Token()).ExtractProject()
+	require.NoError(t, err, "There should be no error while extracting the project")
+
+	serversListOpts := servers.ListOpts{
+		Name:     "e2e-",
+		TenantID: project.ID,
+	}
+
+	allPages, err := servers.List(computeClient, serversListOpts).AllPages()
+	require.NoError(t, err, "There should be no error while listing all servers")
+
+	allServers, err := servers.ExtractServers(allPages)
+	require.NoError(t, err, "There should be no error while extracting all servers")
+
+	for _, srv := range allServers {
+		err := servers.Delete(computeClient, srv.ID).ExtractErr()
+		require.NoError(t, err, "There should be no error while deleting server %s (%s)", srv.Name, srv.ID)
 	}
 }

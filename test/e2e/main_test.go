@@ -185,8 +185,8 @@ func TestRunner(t *testing.T) {
 			}
 
 			etcdBackupTests := &EtcdBackupTests{
-				KubernikusControlPlane: kubernikusControlPlane,
 				KubernetesControlPlane: kubernetesControlPlane,
+				Kubernetes:             kubernetes,
 				FullKlusterName:        fullKlusterName,
 				Namespace:              namespace,
 			}
@@ -199,4 +199,10 @@ func TestRunner(t *testing.T) {
 		networkTests := &NetworkTests{Kubernetes: kubernetes}
 		t.Run("Network", networkTests.Run)
 	})
+}
+
+func runParallel(t *testing.T) {
+	if os.Getenv("RUN_PARALLEL") != "false" {
+		t.Parallel()
+	}
 }

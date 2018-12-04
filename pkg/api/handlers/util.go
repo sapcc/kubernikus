@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"strings"
@@ -31,13 +32,16 @@ func qualifiedName(name string, accountId string) string {
 	return fmt.Sprintf("%s-%s", name, accountId)
 }
 
-func editCluster(client kubernikusv1.KlusterInterface, principal *models.Principal, name string, updateFunc func(k *v1.Kluster)) (*v1.Kluster, error) {
+func editCluster(client kubernikusv1.KlusterInterface, principal *models.Principal, name string, updateFunc func(k *v1.Kluster) error) (*v1.Kluster, error) {
 	kluster, err := client.Get(qualifiedName(name, principal.Account), metav1.GetOptions{})
 	if err != nil {
 		return nil, err
 	}
 
-	updateFunc(kluster)
+	err = updateFunc(kluster)
+	if err != nil {
+		return nil, err
+	}
 
 	updatedCluster, err := client.Update(kluster)
 	if err != nil {
@@ -61,4 +65,47 @@ func getTracingLogger(request *http.Request) kitlog.Logger {
 		logger = kitlog.NewNopLogger()
 	}
 	return logger
+}
+
+// detectNodePoolChanges checks for the changes between node pool lists
+func detectNodePoolChanges(oldNodePools, newNodePools []models.NodePool) (nodePoolsToDelete []string, err error) {
+
+	nodePoolsToDelete = make([]string, 0)
+
+	// For each old node pool
+	for _, old := range oldNodePools {
+		foundInNew := false
+		// For each new node pool
+		for _, new := range newNodePools {
+			// Found in both!
+			if old.Name == new.Name {
+				foundInNew = true
+
+				err := nodePoolEqualsWithScaling(old, new)
+				if err != nil {
+					return nodePoolsToDelete, err
+				}
+			}
+		}
+		if !foundInNew {
+			if old.Size != 0 {
+				return nodePoolsToDelete, errors.New("nodepool with size larger than 0 cannot be deleted: " + old.Name)
+			} else {
+				nodePoolsToDelete = append(nodePoolsToDelete, old.Name)
+			}
+
+		}
+	}
+
+	return nodePoolsToDelete, nil
+}
+
+// nodePoolEqualsWithScaling checks whether the node pool is only scaled without any changes
+func nodePoolEqualsWithScaling(old, new models.NodePool) error {
+
+	if old.Flavor != new.Flavor || old.Image != new.Image || old.Name != new.Name {
+		return errors.New("nodepool data cannot be changed except size: " + old.Name)
+	}
+
+	return nil
 }

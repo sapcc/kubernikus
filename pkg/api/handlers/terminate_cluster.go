@@ -31,9 +31,11 @@ func (d *terminateCluster) Handle(params operations.TerminateClusterParams, prin
 		return NewErrorResponse(&operations.TerminateClusterDefault{}, 500, err.Error())
 	}
 
-	_, err = editCluster(kluster, principal, params.Name, func(kluster *v1.Kluster) {
+	_, err = editCluster(kluster, principal, params.Name, func(kluster *v1.Kluster) error {
 		kluster.Status.Phase = models.KlusterPhaseTerminating
 		kluster.Status.Message = "Cluster terminating"
+
+		return nil
 	})
 	if err != nil {
 		return NewErrorResponse(&operations.TerminateClusterDefault{}, 500, err.Error())

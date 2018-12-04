@@ -3,6 +3,9 @@ package kubernikus
 import (
 	"errors"
 	"fmt"
+	"net"
+	"net/http"
+	_ "net/http/pprof"
 	"os"
 	"os/signal"
 	"strings"
@@ -101,6 +104,18 @@ func (o *Options) Run(c *cobra.Command) error {
 
 	go operator.Run(stop, wg)
 	go metrics.ExposeMetrics("0.0.0.0", o.MetricPort, stop, wg, logger)
+	go func() {
+		host := "127.0.0.1:7353"
+		ln, err := net.Listen("tcp", "127.0.0.1:7353")
+		if err != nil {
+			logger.Log("msg", "failed to create pprof listener", "err", err)
+			return
+		}
+		logger.Log("msg", "starting pprof listener", "addr", host)
+		go http.Serve(ln, http.DefaultServeMux)
+		<-stop
+		ln.Close()
+	}()
 
 	<-sigs // Wait for signals (this hangs until a signal arrives)
 	logger.Log("msg", "shutting down", "v", 1)

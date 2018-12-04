@@ -22,6 +22,7 @@ run:
       cd gopath/src/github.com/sapcc/kubernikus
 
       apk add --no-progress --no-cache make git curl
+      export RUN_PARALLEL=false
       make test-e2e | tee test.output
       rc=$?
       if [ "$SENTRY_DSN" != "" ] && [ $rc -ne 0 ] ; then

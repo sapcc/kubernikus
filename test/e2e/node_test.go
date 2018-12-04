@@ -1,7 +1,10 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
+	"net/http"
+	"strings"
 	"testing"
 	"time"
 
@@ -13,7 +16,6 @@ import (
 
 	"github.com/sapcc/kubernikus/pkg/api/client/operations"
 	"github.com/sapcc/kubernikus/pkg/api/models"
-	wormhole "github.com/sapcc/kubernikus/pkg/wormhole/client"
 	"github.com/sapcc/kubernikus/test/e2e/framework"
 )
 
@@ -38,6 +40,7 @@ type NodeTests struct {
 func (k *NodeTests) Run(t *testing.T) {
 	_ = t.Run("Created", k.StateRunning) &&
 		t.Run("Registered", k.Registered) &&
+		t.Run("LatestStableContainerLinux", k.LatestStableContainerLinux) &&
 		t.Run("Schedulable", k.StateSchedulable) &&
 		t.Run("NetworkUnavailable", k.ConditionNetworkUnavailable) &&
 		t.Run("Healthy", k.StateHealthy) &&
@@ -60,12 +63,6 @@ func (k *NodeTests) StateSchedulable(t *testing.T) {
 
 func (k *NodeTests) StateHealthy(t *testing.T) {
 	count, err := k.checkState(t, func(pool models.NodePoolInfo) int64 { return pool.Healthy }, StateHealthyTimeout)
-	assert.NoError(t, err)
-	assert.Equal(t, k.ExpectedNodeCount, count)
-}
-
-func (k *NodeTests) ConditionRouteBroken(t *testing.T) {
-	count, err := k.checkCondition(t, wormhole.NodeRouteBroken, v1.ConditionFalse, ConditionRouteBrokenTimeout)
 	assert.NoError(t, err)
 	assert.Equal(t, k.ExpectedNodeCount, count)
 }
@@ -107,6 +104,34 @@ func (k *NodeTests) Registered(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.Equal(t, k.ExpectedNodeCount, count)
+}
+
+func (k NodeTests) LatestStableContainerLinux(t *testing.T) {
+
+	nodes, err := k.Kubernetes.ClientSet.CoreV1().Nodes().List(meta_v1.ListOptions{})
+	if !assert.NoError(t, err) {
+		return
+	}
+	resp, err := http.Get("https://stable.release.core-os.net/amd64-usr/current/version.txt")
+	if !assert.NoError(t, err) {
+		return
+	}
+	if !assert.Equal(t, 200, resp.StatusCode) {
+		return
+	}
+
+	scanner := bufio.NewScanner(resp.Body)
+	for scanner.Scan() {
+		keyval := strings.Split(scanner.Text(), "=")
+		if len(keyval) == 2 && keyval[0] == "COREOS_VERSION" {
+			for _, node := range nodes.Items {
+				assert.Contains(t, node.Status.NodeInfo.OSImage, keyval[1], "Node %s is not on latest version", node.Name)
+			}
+			return
+		}
+	}
+	t.Error("Failed to detect latest stable Container Linux version")
+
 }
 
 func (k *NodeTests) Sufficient(t *testing.T) {
