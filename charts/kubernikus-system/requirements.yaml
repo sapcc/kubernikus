@@ -14,3 +14,6 @@ dependencies:
   - name: prometheus-node-exporter
     repository: https://kubernetes-charts.storage.googleapis.com/
     version: 0.3.0
+  - name: oomkill-exporter
+    repository: file://vendor/oomkill-exporter
+    version: 0.1.0
