@@ -201,7 +201,7 @@ grafana:
       {
         "__inputs": [
           {
-            "name": "DS_PROMETHEUS",
+            "name": "default",
             "label": "Prometheus",
             "description": "",
             "type": "datasource",
@@ -251,7 +251,7 @@ grafana:
           "list": [
             {
               "builtIn": 1,
-              "datasource": "${DS_PROMETHEUS}",
+              "datasource": "default",
               "enable": true,
               "hide": true,
               "iconColor": "rgba(0, 211, 255, 1)",
@@ -319,7 +319,7 @@ grafana:
               "rgba(237, 129, 40, 0.89)",
               "#d44a3a"
             ],
-            "datasource": "${DS_PROMETHEUS}",
+            "datasource": null,
             "decimals": 0,
             "format": "none",
             "gauge": {
@@ -404,7 +404,7 @@ grafana:
               "rgba(237, 129, 40, 0.89)",
               "#d44a3a"
             ],
-            "datasource": "${DS_PROMETHEUS}",
+            "datasource": null,
             "decimals": 0,
             "format": "none",
             "gauge": {
@@ -489,7 +489,7 @@ grafana:
               "rgba(237, 129, 40, 0.89)",
               "#d44a3a"
             ],
-            "datasource": "${DS_PROMETHEUS}",
+            "datasource": null,
             "decimals": 0,
             "format": "none",
             "gauge": {
@@ -574,7 +574,7 @@ grafana:
               "rgba(237, 129, 40, 0.89)",
               "#d44a3a"
             ],
-            "datasource": "${DS_PROMETHEUS}",
+            "datasource": null,
             "decimals": 0,
             "format": "none",
             "gauge": {
@@ -688,7 +688,7 @@ grafana:
             "bars": false,
             "dashLength": 10,
             "dashes": false,
-            "datasource": "${DS_PROMETHEUS}",
+            "datasource": null,
             "fill": 3,
             "gridPos": {
               "h": 4,
@@ -791,7 +791,7 @@ grafana:
             "bars": false,
             "dashLength": 10,
             "dashes": false,
-            "datasource": "${DS_PROMETHEUS}",
+            "datasource": null,
             "fill": 3,
             "gridPos": {
               "h": 4,
@@ -903,7 +903,7 @@ grafana:
               }
             ],
             "crosshairColor": "#8F070C",
-            "datasource": "${DS_PROMETHEUS}",
+            "datasource": null,
             "display": "timeline",
             "expandFromQueryS": 86400,
             "extendLastValue": true,
@@ -1057,7 +1057,7 @@ grafana:
               "rgba(237, 129, 40, 0.89)",
               "#299c46"
             ],
-            "datasource": "${DS_PROMETHEUS}",
+            "datasource": null,
             "decimals": 0,
             "description": "Out of CPU in this many Klusters",
             "format": "none",
@@ -1144,7 +1144,7 @@ grafana:
               "rgba(237, 129, 40, 0.89)",
               "#299c46"
             ],
-            "datasource": "${DS_PROMETHEUS}",
+            "datasource": null,
             "decimals": 0,
             "description": "Out of Memory in this many Klusters",
             "format": "none",
@@ -1231,7 +1231,7 @@ grafana:
               "rgba(237, 129, 40, 0.89)",
               "#299c46"
             ],
-            "datasource": "${DS_PROMETHEUS}",
+            "datasource": null,
             "decimals": 0,
             "description": "Out of Podsin this many Klusters",
             "format": "none",
@@ -1348,7 +1348,7 @@ grafana:
               "rgba(237, 129, 40, 0.89)",
               "#299c46"
             ],
-            "datasource": "${DS_PROMETHEUS}",
+            "datasource": null,
             "decimals": 0,
             "description": "Out of Volumes in this many Klusters",
             "format": "none",
@@ -1435,7 +1435,7 @@ grafana:
               "rgba(237, 129, 40, 0.89)",
               "#299c46"
             ],
-            "datasource": "${DS_PROMETHEUS}",
+            "datasource": null,
             "decimals": 0,
             "description": "Out of Volumes in this many Klusters",
             "format": "none",
@@ -1528,7 +1528,7 @@ grafana:
               "rgba(237, 129, 40, 0.89)",
               "#299c46"
             ],
-            "datasource": "${DS_PROMETHEUS}",
+            "datasource": null,
             "decimals": 0,
             "description": "",
             "format": "none",
@@ -1615,7 +1615,7 @@ grafana:
               "rgba(237, 129, 40, 0.89)",
               "#299c46"
             ],
-            "datasource": "${DS_PROMETHEUS}",
+            "datasource": null,
             "decimals": 0,
             "description": "",
             "format": "none",
@@ -1702,7 +1702,7 @@ grafana:
               "rgba(237, 129, 40, 0.89)",
               "#299c46"
             ],
-            "datasource": "${DS_PROMETHEUS}",
+            "datasource": null,
             "decimals": 0,
             "description": "",
             "format": "none",
@@ -1800,7 +1800,7 @@ grafana:
             "bars": false,
             "dashLength": 10,
             "dashes": false,
-            "datasource": "${DS_PROMETHEUS}",
+            "datasource": null,
             "decimals": 0,
             "fill": 6,
             "gridPos": {
@@ -1884,7 +1884,7 @@ grafana:
             "bars": false,
             "dashLength": 10,
             "dashes": false,
-            "datasource": "${DS_PROMETHEUS}",
+            "datasource": null,
             "decimals": 0,
             "fill": 6,
             "gridPos": {
@@ -1968,7 +1968,7 @@ grafana:
             "bars": false,
             "dashLength": 10,
             "dashes": false,
-            "datasource": "${DS_PROMETHEUS}",
+            "datasource": null,
             "decimals": 0,
             "fill": 6,
             "gridPos": {
@@ -2078,7 +2078,7 @@ grafana:
               "rgba(237, 129, 40, 0.89)",
               "#d44a3a"
             ],
-            "datasource": "${DS_PROMETHEUS}",
+            "datasource": null,
             "decimals": 0,
             "format": "percent",
             "gauge": {
@@ -2165,7 +2165,7 @@ grafana:
               "rgba(237, 129, 40, 0.89)",
               "#d44a3a"
             ],
-            "datasource": "${DS_PROMETHEUS}",
+            "datasource": null,
             "decimals": null,
             "format": "percentunit",
             "gauge": {
@@ -2252,7 +2252,7 @@ grafana:
               "rgba(237, 129, 40, 0.89)",
               "#d44a3a"
             ],
-            "datasource": "${DS_PROMETHEUS}",
+            "datasource": null,
             "format": "percentunit",
             "gauge": {
               "maxValue": 1,
@@ -2336,7 +2336,7 @@ grafana:
               "rgba(237, 129, 40, 0.89)",
               "#d44a3a"
             ],
-            "datasource": "${DS_PROMETHEUS}",
+            "datasource": null,
             "decimals": null,
             "format": "percentunit",
             "gauge": {
@@ -2420,7 +2420,7 @@ grafana:
               "rgba(237, 129, 40, 0.89)",
               "#d44a3a"
             ],
-            "datasource": "${DS_PROMETHEUS}",
+            "datasource": null,
             "decimals": null,
             "format": "percentunit",
             "gauge": {
@@ -2518,7 +2518,7 @@ grafana:
               "rgba(237, 129, 40, 0.89)",
               "#d44a3a"
             ],
-            "datasource": "${DS_PROMETHEUS}",
+            "datasource": null,
             "format": "dtdurations",
             "gauge": {
               "maxValue": 100,
@@ -2599,7 +2599,7 @@ grafana:
             "bars": false,
             "dashLength": 10,
             "dashes": false,
-            "datasource": "${DS_PROMETHEUS}",
+            "datasource": null,
             "decimals": 0,
             "fill": 1,
             "gridPos": {
@@ -2693,7 +2693,7 @@ grafana:
             "bars": false,
             "dashLength": 10,
             "dashes": false,
-            "datasource": "${DS_PROMETHEUS}",
+            "datasource": null,
             "decimals": 0,
             "fill": 1,
             "gridPos": {
@@ -2779,7 +2779,7 @@ grafana:
             "bars": false,
             "dashLength": 10,
             "dashes": false,
-            "datasource": "${DS_PROMETHEUS}",
+            "datasource": null,
             "fill": 0,
             "gridPos": {
               "h": 7,
@@ -2895,7 +2895,7 @@ grafana:
             "bars": false,
             "dashLength": 10,
             "dashes": false,
-            "datasource": "${DS_PROMETHEUS}",
+            "datasource": null,
             "fill": 0,
             "gridPos": {
               "h": 7,
@@ -3011,7 +3011,7 @@ grafana:
             "bars": false,
             "dashLength": 10,
             "dashes": false,
-            "datasource": "${DS_PROMETHEUS}",
+            "datasource": null,
             "fill": 0,
             "gridPos": {
               "h": 7,
@@ -3111,7 +3111,7 @@ grafana:
             {
               "allValue": null,
               "current": {},
-              "datasource": "${DS_PROMETHEUS}",
+              "datasource": null,
               "hide": 2,
               "includeAll": false,
               "label": null,
@@ -3131,7 +3131,7 @@ grafana:
             {
               "allValue": null,
               "current": {},
-              "datasource": "${DS_PROMETHEUS}",
+              "datasource": null,
               "hide": 2,
               "includeAll": false,
               "label": null,
@@ -3151,7 +3151,7 @@ grafana:
             {
               "allValue": null,
               "current": {},
-              "datasource": "${DS_PROMETHEUS}",
+              "datasource": null,
               "hide": 2,
               "includeAll": false,
               "label": null,
@@ -3171,7 +3171,7 @@ grafana:
             {
               "allValue": null,
               "current": {},
-              "datasource": "${DS_PROMETHEUS}",
+              "datasource": null,
               "hide": 2,
               "includeAll": false,
               "label": null,
