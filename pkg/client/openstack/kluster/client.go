@@ -131,8 +131,7 @@ func (c *klusterClient) DeleteNode(id string) (err error) {
 }
 
 func (c *klusterClient) ListNodes(pool *models.NodePool) ([]Node, error) {
-
-	prefix := generator.SimpleNameGenerator.Prefix(fmt.Sprintf("%s-%s", c.Kluster.Spec.Name, pool.Name))
+	prefix := fmt.Sprintf("%v-%v-", c.Kluster.Spec.Name, pool.Name)
 	allNodes, err := servers.List(c.ComputeClient, servers.ListOpts{Name: prefix}).AllPages()
 	if err != nil {
 		return nil, err
