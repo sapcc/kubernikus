@@ -209,8 +209,6 @@ definitions:
           properties:
             name:
               type: string
-            available:
-              type: boolean
       flavors:
         type: array
         items:

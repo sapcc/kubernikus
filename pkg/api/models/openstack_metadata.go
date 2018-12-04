@@ -190,9 +190,6 @@ func (m *OpenstackMetadata) UnmarshalBinary(b []byte) error {
 // swagger:model AvailabilityZone
 type AvailabilityZone struct {
 
-	// available
-	Available bool `json:"available,omitempty"`
-
 	// name
 	Name string `json:"name,omitempty"`
 }

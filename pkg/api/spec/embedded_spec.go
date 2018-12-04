@@ -558,9 +558,6 @@ func init() {
           "items": {
             "type": "object",
             "properties": {
-              "available": {
-                "type": "boolean"
-              },
               "name": {
                 "type": "string"
               }

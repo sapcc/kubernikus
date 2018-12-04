@@ -233,10 +233,7 @@ func (c *projectClient) getAvailabilityZones() ([]models.AvailabilityZone, error
 		return nil, err
 	}
 	for _, zone := range zones {
-		// only report on available zones
-		if zone.ZoneState.Available {
-			result = append(result, models.AvailabilityZone{Name: zone.ZoneName, Available: zone.ZoneState.Available})
-		}
+		result = append(result, models.AvailabilityZone{Name: zone.ZoneName})
 	}
 
 	return result, nil
