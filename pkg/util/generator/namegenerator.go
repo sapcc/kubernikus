@@ -1,4 +1,4 @@
-package util
+package generator
 
 import (
 	"fmt"
@@ -12,6 +12,9 @@ type NameGenerator interface {
 	// the base. If base is valid, the returned name must also be valid. The generator is
 	// responsible for knowing the maximum valid name length.
 	GenerateName(base string) string
+
+	//Prefix generates a valid static prefix without the random suffix
+	Prefix(base string) string
 }
 
 // simpleNameGenerator generates random names.
@@ -24,14 +27,18 @@ var SimpleNameGenerator NameGenerator = simpleNameGenerator{}
 
 const (
 	// TODO: make this flexible for non-core resources with alternate naming rules.
-	maxNameLength          = 63
-	randomLength           = 5
-	maxGeneratedNameLength = maxNameLength - randomLength
+	MaxNameLength          = 63
+	RandomLength           = 5
+	MaxGeneratedNameLength = MaxNameLength - RandomLength
 )
 
-func (simpleNameGenerator) GenerateName(base string) string {
-	if len(base) > maxGeneratedNameLength {
-		base = base[:maxGeneratedNameLength]
+func (simpleNameGenerator) Prefix(base string) string {
+	if len(base) > MaxGeneratedNameLength {
+		base = base[:MaxGeneratedNameLength]
 	}
-	return strings.ToLower(fmt.Sprintf("%s%s", base, utilrand.String(randomLength)))
+	return base
+}
+
+func (s simpleNameGenerator) GenerateName(base string) string {
+	return strings.ToLower(fmt.Sprintf("%s%s", s.Prefix(base), utilrand.String(RandomLength)))
 }
