@@ -3,7 +3,7 @@
 # Declare variables to be passed into your templates.
 image:
   repository: sapcc/hyperkube
-  tag: v1.10.8
+  tag: v1.10.11
   pullPolicy: IfNotPresent
 
 # Settings for the openstack cloudprovider
