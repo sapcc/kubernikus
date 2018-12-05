@@ -175,6 +175,12 @@ func TestRunner(t *testing.T) {
 	}
 
 	t.Run("Smoke", func(t *testing.T) {
+		volumeTests := &VolumeTests{Kubernetes: kubernetes}
+		t.Run("Volumes", volumeTests.Run)
+
+		networkTests := &NetworkTests{Kubernetes: kubernetes}
+		t.Run("Network", networkTests.Run)
+
 		if os.Getenv("CP_KUBERNIKUS_URL") != "" {
 			kubernetesControlPlane, err := framework.NewKubernetesFramework(kubernikusControlPlane, os.Getenv("CP_KLUSTER"))
 			require.NoError(t, err, "Must be able to create a control plane kubernetes client")
@@ -192,12 +198,6 @@ func TestRunner(t *testing.T) {
 			}
 			t.Run("EtcdBackupTests", etcdBackupTests.Run)
 		}
-
-		volumeTests := &VolumeTests{Kubernetes: kubernetes}
-		t.Run("Volumes", volumeTests.Run)
-
-		networkTests := &NetworkTests{Kubernetes: kubernetes}
-		t.Run("Network", networkTests.Run)
 	})
 }
 
