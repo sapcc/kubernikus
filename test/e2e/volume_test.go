@@ -12,7 +12,7 @@ import (
 	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 
-	"github.com/sapcc/kubernikus/pkg/util"
+	"github.com/sapcc/kubernikus/pkg/util/generator"
 	"github.com/sapcc/kubernikus/test/e2e/framework"
 )
 
@@ -30,7 +30,7 @@ type VolumeTests struct {
 func (v *VolumeTests) Run(t *testing.T) {
 	runParallel(t)
 
-	v.Namespace = util.SimpleNameGenerator.GenerateName("e2e-volumes-")
+	v.Namespace = generator.SimpleNameGenerator.GenerateName("e2e-volumes-")
 
 	var err error
 	v.Nodes, err = v.Kubernetes.ClientSet.CoreV1().Nodes().List(meta_v1.ListOptions{})
