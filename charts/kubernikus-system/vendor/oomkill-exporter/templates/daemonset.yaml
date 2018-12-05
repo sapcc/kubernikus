@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: {{ template "name" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ template "name" . }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ template "name" . }}
+  template:
+    metadata:
+      labels:
+        app: {{ template "name" . }}
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "{{ default 9102 .Values.metrics.port }}"
+    spec:
+      containers:
+      - name: {{ template "name" . }}
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        args:
+        - -logtostderr
+        - -listen-address=:{{ default 9102 .Values.metrics.port }}
+        - -v=0
+        securityContext:
+          privileged: true
+{{ toYaml .Values.resources | indent 8 }}
+        env:
+        - name: DOCKER_HOST
+          value: "unix:///var/run/docker.sock"
+        volumeMounts:
+        - name: kmsg
+          mountPath: /dev/kmsg
+          readOnly: true
+        - name: docker
+          mountPath: /var/run/docker.sock 
+        ports:
+        - name: metrics
+          containerPort: {{ default 9102 .Values.metrics.port }}
+      volumes:
+      - name: kmsg
+        hostPath:
+          path: /dev/kmsg
+      - name: docker
+        hostPath:
+          path: /var/run/docker.sock

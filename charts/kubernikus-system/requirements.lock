@@ -14,5 +14,8 @@ dependencies:
 - name: prometheus-node-exporter
   repository: https://kubernetes-charts.storage.googleapis.com/
   version: 0.3.0
-digest: sha256:70c42cabcaf252a2342bca375a0607a83b514fb2e8f8d44a48a52004630cd6d1
-generated: 2018-09-17T16:26:54.648440908+02:00
+- name: oomkill-exporter
+  repository: file://vendor/oomkill-exporter
+  version: 0.1.0
+digest: sha256:93d33808c11f78a7c2d82aa81ebfb86e576c65d186e5d35cc0ed62e34aba6289
+generated: 2018-12-04T13:39:32.115337967+01:00
