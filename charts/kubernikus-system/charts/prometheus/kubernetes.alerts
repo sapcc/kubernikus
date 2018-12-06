@@ -5,7 +5,7 @@ groups:
     expr: count(kube_node_status_condition{condition="Ready",status="true"} == 0) > 2
     for: 1h
     labels:
-      tier: kubernikus
+      tier: kks
       service: k8s
       severity: critical
       context: node
@@ -19,7 +19,7 @@ groups:
     expr: kube_node_status_condition{condition="Ready",status="true"} == 0
     for: 1h
     labels:
-      tier: kubernikus
+      tier: kks
       service: k8s
       severity: critical
       context: node
@@ -33,7 +33,7 @@ groups:
     expr: changes(kube_node_status_condition{condition="Ready",status="true"}[15m]) > 2
     for: 1h
     labels:
-      tier: kubernikus
+      tier: kks
       service: k8s
       severity: critical
       context: node
@@ -46,7 +46,7 @@ groups:
     expr: absent(up{app="kube-state-metrics"})
     for: 1h
     labels:
-      tier: kubernikus
+      tier: kks
       service: k8s
       severity: critical
       context: node
@@ -59,7 +59,7 @@ groups:
     expr: rate(kube_pod_container_status_restarts[15m]) > 0
     for: 1h
     labels:
-      tier: kubernikus
+      tier: kks
       service: resources
       severity: info
       context: pod
@@ -72,7 +72,7 @@ groups:
     expr: kube_persistentvolumeclaim_status_phase{phase=~"Pending|Lost"} == 1
     for: 10m
     labels:
-      tier: kubernikus
+      tier: kks
       service: k8s
       severity: info
       context: pvc
@@ -83,7 +83,7 @@ groups:
   - alert: KubernetesNodeContainerOOMKilled
     expr: sum by (instance) (changes(node_vmstat_oom_kill[24h])) > 3
     labels:
-      tier: kubernikus
+      tier: kks
       service: node
       severity: info
       context: memory
@@ -95,7 +95,7 @@ groups:
     expr: (label_replace(delta(kube_pod_container_status_restarts_total{container="apiserver",namespace="kubernikus",pod!~"e2e.*"}[1h]) , "kluster_id", "$1", "pod", "(.*)-api.*") > 1) and on(kluster_id) (kubernikus_kluster_status_phase{phase="Running"} == 1)
     for: 1h
     labels:
-      tier: kubernikus
+      tier: kks
       service: node
       severity: warning 
       context: memory
