@@ -103,4 +103,18 @@ groups:
       summary: An APIServer is OOM. Increase Limits.
       description: APIServer {{ $labels.pod }} is OOM. Increase Limits.
 
+  - alert: PodOOMKilled
+    expr: sum(changes(klog_pod_oomkill[24h])) by (namespace, pod_name) > 0
+    for: 5m
+    labels:
+      tier: kks
+      service: resources
+      severity: warning
+      context: memory
+    annotations:
+      summary: Pod is oomkilled recently
+      description: The pod {{ $labels.namespace }}/{{ $labels.pod_name }} was hit at least once by the oom killer within 24h
+
+
+
 
