@@ -104,7 +104,7 @@ groups:
       description: APIServer {{ $labels.pod }} is OOM. Increase Limits.
 
   - alert: PodOOMKilled
-    expr: sum(changes(klog_pod_oomkill[24h])) by (namespace, pod_name) > 0
+    expr: sum(changes(klog_pod_oomkill[24h]) > 0 or ((klog_pod_oomkill == 1) unless (klog_pod_oomkill offset 24h == 1))) by (namespace, pod_name)
     for: 5m
     labels:
       tier: kks
