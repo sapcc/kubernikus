@@ -6,6 +6,8 @@ metadata:
   labels:
     app: {{ template "name" . }}
 spec:
+  updateStrategy:
+    type: RollingUpdate
   selector:
     matchLabels:
       app: {{ template "name" . }}
