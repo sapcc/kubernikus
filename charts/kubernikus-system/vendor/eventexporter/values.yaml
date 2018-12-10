@@ -1,0 +1,22 @@
+image:
+  repository: sapcc/kubernetes-eventexporter
+  tag: 0.1.0
+  pullPolicy: IfNotPresent
+
+metrics:
+  port: "9102"
+  config:
+    config.yaml: |-
+      metrics:
+      - name: volume_mount_error
+        event_matcher:
+        - key: InvolvedObject.Kind
+          expr: Pod
+        - key: Message
+          expr: Unable to mount volumes for pod.*
+        - key: Reason
+          expr: FailedMount
+        - key: Type
+          expr: Warning
+        labels:
+          node: Source.Host
