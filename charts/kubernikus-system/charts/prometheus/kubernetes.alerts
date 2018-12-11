@@ -112,9 +112,20 @@ groups:
       severity: warning
       context: memory
     annotations:
-      summary: Pod is oomkilled recently
+      summary: Pod was oomkilled recently
       description: The pod {{ $labels.namespace }}/{{ $labels.pod_name }} was hit at least once by the oom killer within 24h
 
+  - alert: VolumeAttachmentFailed
+    expr: sum(increase(volume_mount_error[5m])) by (node) > 1
+    for: 30m
+    labels:
+      tier: kks
+      service: node
+      severity: warning
+      context: pvc
+    annotations:
+      summary: Volume attachments are failing for node
+      description: The node {{ $labels.node }} is having continous problems attaching volumes. Maybe the node is suffering from an VMware internal lock and needs to be migrated to clear it.
 
 
 
