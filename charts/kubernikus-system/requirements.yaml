@@ -20,3 +20,7 @@ dependencies:
   - name: eventexporter
     repository: file://vendor/eventexporter
     version: 0.1.0
+  - name: fluent-bit
+    repository: https://kubernetes-charts.storage.googleapis.com/
+    version: 0.16.3
+    condition: fluent-bit.backend.es.host
