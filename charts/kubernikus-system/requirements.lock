@@ -23,5 +23,5 @@ dependencies:
 - name: fluent-bit
   repository: https://kubernetes-charts.storage.googleapis.com/
   version: 0.16.3
-digest: sha256:68e7833ea7849cfd2022b0d837a7d1066f128bf40d58dfef48b450611e5829f0
-generated: 2018-12-12T11:26:21.467928357+01:00
+digest: sha256:514d79144c98135353a816479dac18edaf7d754a2122b403a9a6d7a2af1b9fca
+generated: 2018-12-13T08:25:25.42064407+01:00
