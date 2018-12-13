@@ -20,7 +20,7 @@ data:
           Tag              kube.*
           Refresh_Interval 5
           Mem_Buf_Limit    5MB
-          Skip_Long_Lines  On
+          Skip_Long_Lines  Off
 
       [INPUT]
           Name          systemd
@@ -49,12 +49,17 @@ data:
           Rename _HOSTNAME hostname
 
       [FILTER]
+          Name       record_modifier
+          Match      kube.*
+          Remove_key time
+
+      [FILTER]
           Name               kubernetes
           Match              kube.*
           Kube_URL           https://kubernetes.default.svc:443
+          tls.verify         Off
           Kube_CA_File       /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
           Kube_Token_File    /var/run/secrets/kubernetes.io/serviceaccount/token
-          K8S-Logging.Parser On
 
 {{ if index .Values "fluent-bit" "filter" "additionalValues" }}
       [FILTER]
