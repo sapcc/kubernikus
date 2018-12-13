@@ -425,7 +425,7 @@ func (op *GroundControl) createKluster(kluster *v1.Kluster) error {
 		username,
 		domain,
 	); err != nil {
-		return err
+		return fmt.Errorf("Failed to create container for etcd backups. Check if the project has quota for object-store usage: %s", err)
 	}
 
 	rawValues, err := helm_util.KlusterToHelmValues(kluster, options, certificates, bootstrapToken, accessMode)
