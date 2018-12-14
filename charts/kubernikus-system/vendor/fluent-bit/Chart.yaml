@@ -1,0 +1,18 @@
+appVersion: 0.14.8
+description: Fast and Lightweight Log/Data Forwarder for Linux, BSD and OSX
+home: http://fluentbit.io
+icon: http://fluentbit.io/assets/img/logo1-default.png
+keywords:
+- logging
+- monitoring
+- fluent
+- fluentd
+maintainers:
+- email: Kevin.Fox@pnnl.gov
+  name: kfox1111
+- email: eduardo@treasure-data.com
+  name: edsiper
+name: fluent-bit
+sources:
+- http://fluentbit.io
+version: 0.16.3
