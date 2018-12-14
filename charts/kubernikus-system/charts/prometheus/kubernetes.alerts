@@ -80,29 +80,6 @@ groups:
       description: "PVC {{ $labels.namespace }}/{{ $labels.persistentvolumeclaim }} stuck in phase {{ $labels.phase }}"
       summary: "PVC stuck in phase {{ $labels.phase }}"
 
-  - alert: KubernetesNodeContainerOOMKilled
-    expr: sum by (instance) (changes(node_vmstat_oom_kill[24h])) > 3
-    labels:
-      tier: kks
-      service: node
-      severity: info
-      context: memory
-    annotations:
-      summary: More than 3 OOM killed pods on a node within 24h
-      description: More than 3 OOM killed pods on node {{ $labels.instance }} within 24h
-
-  - alert: KubernetesAPIServerContainerOOMKilled
-    expr: (label_replace(delta(kube_pod_container_status_restarts_total{container="apiserver",namespace="kubernikus",pod!~"e2e.*"}[1h]) , "kluster_id", "$1", "pod", "(.*)-api.*") > 1) and on(kluster_id) (kubernikus_kluster_status_phase{phase="Running"} == 1)
-    for: 1h
-    labels:
-      tier: kks
-      service: node
-      severity: warning 
-      context: memory
-    annotations:
-      summary: An APIServer is OOM. Increase Limits.
-      description: APIServer {{ $labels.pod }} is OOM. Increase Limits.
-
   - alert: PodOOMKilled
     expr: sum(changes(klog_pod_oomkill[24h]) > 0 or ((klog_pod_oomkill == 1) unless (klog_pod_oomkill offset 24h == 1))) by (namespace, pod_name)
     for: 5m
@@ -114,6 +91,18 @@ groups:
     annotations:
       summary: Pod was oomkilled recently
       description: The pod {{ $labels.namespace }}/{{ $labels.pod_name }} was hit at least once by the oom killer within 24h
+
+  - alert: PodConstantlyOOMKilled
+    expr: sum(changes(klog_pod_oomkill[30m]) ) by (namespace, pod_name) > 2
+    for: 5m
+    labels:
+      tier: kks
+      service: resources
+      severity: critical
+      context: memory
+    annotations:
+      summary: Pod was oomkilled more then 2 times in 30 minutes
+      description: The pod {{ $labels.namespace }}/{{ $labels.pod_name }} killed several times in short succession. This could be due to wrong resource limits.
 
   - alert: VolumeAttachmentFailed
     expr: sum(increase(volume_mount_error[5m])) by (node) > 1
@@ -127,6 +116,4 @@ groups:
     annotations:
       summary: Volume attachments are failing for node
       description: The node {{ $labels.node }} is having continous problems attaching volumes. Maybe the node is suffering from an VMware internal lock and needs to be migrated to clear it.
-
-
 
