@@ -21,7 +21,7 @@ dependencies:
   repository: file://vendor/eventexporter
   version: 0.1.0
 - name: fluent-bit
-  repository: file://vendor/fluent-bit
+  repository: https://kubernetes-charts.storage.googleapis.com/
   version: 0.16.3
-digest: sha256:63489822dd8231f38148e9bcd5003aa46e30daaff72927b19295e1a4d1f900cd
-generated: 2018-12-14T10:36:14.519474995+01:00
+digest: sha256:514d79144c98135353a816479dac18edaf7d754a2122b403a9a6d7a2af1b9fca
+generated: 2018-12-13T08:25:25.42064407+01:00
