@@ -110,7 +110,7 @@ groups:
     labels:
       tier: kks
       service: node
-      severity: warning
+      severity: critical
       context: pvc
       playbook: docs/support/playbook/kubernikus/volume_attachment_failed.html
     annotations:
