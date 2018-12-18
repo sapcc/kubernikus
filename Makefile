@@ -131,6 +131,9 @@ else
 	grep -v "CONT\|PAUSE"
 endif
 
+.PHONY: test-charts
+test-charts:
+	docker run -ti --rm -v $(shell pwd)/charts:/charts -v $(shell pwd)/test/charts:/test --entrypoint "/test/charts.sh" alpine/helm:2.10.0
 
 include code-generate.mk
 code-gen: client-gen informer-gen lister-gen deepcopy-gen
