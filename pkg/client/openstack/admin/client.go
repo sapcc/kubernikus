@@ -3,6 +3,7 @@ package admin
 import (
 	"errors"
 	"fmt"
+	"strconv"
 	"strings"
 	"sync"
 
@@ -17,6 +18,7 @@ import (
 
 	"github.com/sapcc/kubernikus/pkg/client/openstack/domains"
 	"github.com/sapcc/kubernikus/pkg/client/openstack/roles"
+	etcd_util "github.com/sapcc/kubernikus/pkg/util/etcd"
 )
 
 var serviceUserRoles = []string{"network_admin", "member"}
@@ -290,8 +292,27 @@ func (c *adminClient) CreateStorageContainer(projectID, containerName, serviceUs
 	}
 
 	_, err = containers.Create(storageClient, containerName, createOpts).Extract()
+	if err != nil {
+		return err
+	}
 
-	return err
+	result := containers.Get(storageClient, containerName)
+	if result.Err != nil {
+		return result.Err
+	}
+	quota, err := strconv.ParseInt(result.Header.Get("X-Account-Meta-Quota-Bytes"), 10, 64)
+	if err != nil {
+		return fmt.Errorf("Could not get object-store quota information")
+	}
+	used, err := strconv.ParseInt(result.Header.Get("X-Account-Bytes-Used"), 10, 64)
+	if err != nil {
+		return fmt.Errorf("Could not get object-store free storage")
+	}
+	if (used + etcd_util.BackupStorageContainerMinimumFreeStorage) > quota {
+		return fmt.Errorf("There should be at least %v GB free space in object-store", (etcd_util.BackupStorageContainerMinimumFreeStorage / 1000000000))
+	}
+
+	return nil
 }
 
 func (c *adminClient) getPublicObjectStoreEndpointURL(projectID string) (string, error) {
