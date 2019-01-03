@@ -8,7 +8,7 @@ import (
 
 const (
 	BackupStorageContainerBase               = "kubernikus-etcd-backup"
-	BackupStorageContainerMinimumFreeStorage = 1000000000 // 1Gi
+	BackupStorageContainerMinimumFreeStorage = 500000000 // 500MiB
 )
 
 func DefaultStorageContainer(kluster *v1.Kluster) string {

@@ -281,7 +281,7 @@ func (c *adminClient) CreateStorageContainer(projectID, containerName, serviceUs
 		return err
 	}
 	if (accountHeader.BytesUsed + etcd_util.BackupStorageContainerMinimumFreeStorage) > *accountHeader.QuotaBytes {
-		return fmt.Errorf("There should be at least %v GB free space in object-store", (etcd_util.BackupStorageContainerMinimumFreeStorage / 1000000000))
+		return fmt.Errorf("There should be at least %v MB free space in object-store", (etcd_util.BackupStorageContainerMinimumFreeStorage / 1000000))
 	}
 
 	domainID, err := c.getDomainID(serviceUserDomainName)
