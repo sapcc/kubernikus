@@ -32,7 +32,7 @@ bin/$(GOOS)/swagger-%:
 bin/%: $(GOFILES) Makefile
 	GOOS=$(*D) GOARCH=amd64 go build $(GOFLAGS) -v -i -o $(@D)/$(@F) ./cmd/$(basename $(@F))
 
-test: gofmt linters gotest
+test: gofmt linters gotest build-e2e
 
 gofmt:
 	test/gofmt.sh pkg/ cmd/ deps/ test/
@@ -119,6 +119,10 @@ swagger-generate-client:
 
 clean:
 	rm -rf bin/*
+
+.PHONY: build-e2e
+build-e2e:
+	go test -v -c -o /dev/null ./test/e2e
 
 .PHONY: test-e2e
 test-e2e:

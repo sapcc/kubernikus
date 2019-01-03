@@ -10,6 +10,7 @@ ARG VERSION
 RUN make gofmt linters
 RUN make all
 RUN make gotest
+RUN make build-e2e
 
 FROM scratch as kubernikus-binaries
 COPY --from=builder /go/src/github.com/sapcc/kubernikus/bin/linux/* /
