@@ -3230,7 +3230,7 @@ fluent-bit:
   image:
     fluent_bit:
       repository: fluent/fluent-bit
-      tag: 0.14.9
+      tag: 1.0.1
     pullPolicy: IfNotPresent
 
   metrics:
@@ -3269,10 +3269,10 @@ fluent-bit:
   resources:
     limits:
       cpu: 500m
-      memory: 100Mi
+      memory: 200Mi
     requests:
       cpu: 100m
-      memory: 50Mi
+      memory: 100Mi
 
   tolerations: []
 
