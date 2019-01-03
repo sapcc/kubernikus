@@ -24,19 +24,27 @@ ServiceAccount:v1"`
 helm init --client-only
 helm repo add bugroger-charts https://raw.githubusercontent.com/BugRoger/charts/repo
 
-for chart in /charts/*; do
+pwd=$(pwd)
+for chart in $pwd/charts/*; do
   if [ -d "$chart" ]; then
     echo "Rendering chart in $chart ..."
     cd $chart
-    helm dependency build
-    cat values.yaml /test/dummy-values.yaml > /tmp/values.yaml
+    # fix cross device move of overlay fs
+    if [ -d "./charts" ]; then
+      cp -a ./charts ./charts.bak
+      rm -rf ./charts
+      mv ./charts.bak ./charts
+    fi
+    helm dependency build --debug
+    cat values.yaml ../../test/charts/dummy-values.yaml > /tmp/values.yaml
     helm template --debug -f /tmp/values.yaml . > /tmp/chart.yaml
     retval=$?
-    rm -f $chart/charts/*.tgz
+    rm -f ./charts/*.tgz
     if [ $retval -ne 0 ]; then
       echo "Rendering of template failed."
       exit $retval
     fi
+    cd ..
     echo "Done."
 
     echo "Checking API versions ..."

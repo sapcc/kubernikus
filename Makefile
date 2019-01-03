@@ -100,7 +100,6 @@ else
 	$(warning WARNING: $(SWAGGER_BIN) missing. Run `make bootstrap` to fix.)
 endif
 
-
 swagger-generate:
 	make -B pkg/api/rest/operations/kubernikus_api.go
 
@@ -137,7 +136,7 @@ endif
 
 .PHONY: test-charts
 test-charts:
-	docker run -ti --rm -v $(shell pwd)/charts:/charts -v $(shell pwd)/test/charts:/test --entrypoint "/test/charts.sh" alpine/helm:2.10.0
+	test/charts/charts.sh
 
 include code-generate.mk
 code-gen: client-gen informer-gen lister-gen deepcopy-gen
