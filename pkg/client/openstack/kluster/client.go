@@ -137,9 +137,11 @@ func (c *klusterClient) ListNodes(pool *models.NodePool) ([]Node, error) {
 
 	prefix := fmt.Sprintf("%v-%v-", c.Kluster.Spec.Name, pool.Name)
 	err = servers.List(c.ComputeClient, servers.ListOpts{Name: prefix}).EachPage(func(page pagination.Page) (bool, error) {
-		unfilteredNodes, err = ExtractServers(page)
-		if err != nil {
-			return false, err
+		if page != nil {
+			unfilteredNodes, err = ExtractServers(page)
+			if err != nil {
+				return false, err
+			}
 		}
 		return true, nil
 	})
