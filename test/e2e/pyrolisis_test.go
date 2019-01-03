@@ -137,7 +137,7 @@ func (p *PyrolisisTests) CleanupVolumes(t *testing.T) {
 	for _, vol := range allVolumes {
 		if strings.HasPrefix(vol.Name, "kubernetes-dynamic-pvc-") &&
 			strings.HasPrefix(vol.Metadata["kubernetes.io/created-for/pvc/namespace"], "e2e-volumes-") {
-			err := volumes.Delete(storageClient, vol.ID).ExtractErr()
+			err := volumes.Delete(storageClient, vol.ID, volumes.DeleteOpts{}).ExtractErr()
 			require.NoError(t, err, "There should be no error while deleting volume %s (%s)", vol.Name, vol.ID)
 		}
 	}
