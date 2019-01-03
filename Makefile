@@ -122,7 +122,7 @@ clean:
 
 .PHONY: build-e2e
 build-e2e:
-	go test -v -c -o /dev/null ./test/e2e
+	CGO_ENABLED=0 go test -v -c -o /dev/null ./test/e2e
 
 .PHONY: test-e2e
 test-e2e:
