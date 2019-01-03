@@ -1,5 +1,5 @@
-hash: b5352f4065108401065414f6627d608e24ede20945bfa73ceae444e839662136
-updated: 2018-08-31T10:21:40.690495+02:00
+hash: 8403bffa01058ce58c8c8b999d81014bbb28b5977cb7532a89ae1ad1bb25c93b
+updated: 2019-01-02T16:01:43.225938465+01:00
 imports:
 - name: github.com/ajeddeloh/yaml
   version: 1072abfea31191db507785e2e0c1b8d1440d35a5
@@ -150,11 +150,12 @@ imports:
   - compiler
   - extensions
 - name: github.com/gophercloud/gophercloud
-  version: 1ad7a96d69a2e8105920431ee428843b6d1ee4c3
+  version: 94924357ebf6c7d448c70d65082ff7ca6f78ddc5
   subpackages:
   - internal
   - openstack
   - openstack/blockstorage/extensions/quotasets
+  - openstack/blockstorage/v3/volumes
   - openstack/compute/v2/extensions/keypairs
   - openstack/compute/v2/extensions/quotasets
   - openstack/compute/v2/extensions/schedulerhints
@@ -177,6 +178,9 @@ imports:
   - openstack/networking/v2/networks
   - openstack/networking/v2/ports
   - openstack/networking/v2/subnets
+  - openstack/objectstorage/v1/accounts
+  - openstack/objectstorage/v1/containers
+  - openstack/objectstorage/v1/objects
   - openstack/utils
   - pagination
 - name: github.com/gregjones/httpcache

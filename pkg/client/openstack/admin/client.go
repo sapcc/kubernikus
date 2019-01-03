@@ -12,11 +12,13 @@ import (
 	"github.com/gophercloud/gophercloud/openstack/identity/v3/services"
 	"github.com/gophercloud/gophercloud/openstack/identity/v3/tokens"
 	"github.com/gophercloud/gophercloud/openstack/identity/v3/users"
+	"github.com/gophercloud/gophercloud/openstack/objectstorage/v1/accounts"
 	"github.com/gophercloud/gophercloud/openstack/objectstorage/v1/containers"
 	"github.com/gophercloud/gophercloud/pagination"
 
 	"github.com/sapcc/kubernikus/pkg/client/openstack/domains"
 	"github.com/sapcc/kubernikus/pkg/client/openstack/roles"
+	etcd_util "github.com/sapcc/kubernikus/pkg/util/etcd"
 )
 
 var serviceUserRoles = []string{"network_admin", "member"}
@@ -66,10 +68,11 @@ func (c *adminClient) CreateKlusterServiceUser(username, password, domainName, p
 
 	//Do we need to update or create?
 	if user != nil {
+		desc := "Kubernikus kluster service user"
 		user, err = users.Update(c.IdentityClient, user.ID, users.UpdateOpts{
 			Password:         password,
 			DefaultProjectID: projectID,
-			Description:      "Kubernikus kluster service user",
+			Description:      &desc,
 		}).Extract()
 	} else {
 		user, err = users.Create(c.IdentityClient, users.CreateOpts{
@@ -272,6 +275,14 @@ func (c *adminClient) CreateStorageContainer(projectID, containerName, serviceUs
 		return err
 	}
 	storageClient.Endpoint = endpointURL
+
+	accountHeader, err := accounts.Get(storageClient, accounts.GetOpts{Newest: true}).Extract()
+	if err != nil {
+		return err
+	}
+	if (accountHeader.BytesUsed + etcd_util.BackupStorageContainerMinimumFreeStorage) > *accountHeader.QuotaBytes {
+		return fmt.Errorf("There should be at least %v GB free space in object-store", (etcd_util.BackupStorageContainerMinimumFreeStorage / 1000000000))
+	}
 
 	domainID, err := c.getDomainID(serviceUserDomainName)
 	if err != nil {

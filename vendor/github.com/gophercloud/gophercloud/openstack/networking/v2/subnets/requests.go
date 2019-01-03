@@ -18,6 +18,7 @@ type ListOptsBuilder interface {
 // `asc' or `desc'. Marker and Limit are used for pagination.
 type ListOpts struct {
 	Name            string `q:"name"`
+	Description     string `q:"description"`
 	EnableDHCP      *bool  `q:"enable_dhcp"`
 	NetworkID       string `q:"network_id"`
 	TenantID        string `q:"tenant_id"`
@@ -33,6 +34,10 @@ type ListOpts struct {
 	Marker          string `q:"marker"`
 	SortKey         string `q:"sort_key"`
 	SortDir         string `q:"sort_dir"`
+	Tags            string `q:"tags"`
+	TagsAny         string `q:"tags-any"`
+	NotTags         string `q:"not-tags"`
+	NotTagsAny      string `q:"not-tags-any"`
 }
 
 // ToSubnetListQuery formats a ListOpts into a query string.
@@ -84,6 +89,9 @@ type CreateOpts struct {
 
 	// Name is a human-readable name of the subnet.
 	Name string `json:"name,omitempty"`
+
+	// Description of the subnet.
+	Description string `json:"description,omitempty"`
 
 	// The UUID of the project who owns the Subnet. Only administrative users
 	// can specify a project UUID other than their own.
@@ -163,6 +171,9 @@ type UpdateOpts struct {
 	// Name is a human-readable name of the subnet.
 	Name string `json:"name,omitempty"`
 
+	// Description of the subnet.
+	Description *string `json:"description,omitempty"`
+
 	// AllocationPools are IP Address pools that will be available for DHCP.
 	AllocationPools []AllocationPool `json:"allocation_pools,omitempty"`
 
@@ -221,7 +232,12 @@ func Delete(c *gophercloud.ServiceClient, id string) (r DeleteResult) {
 func IDFromName(client *gophercloud.ServiceClient, name string) (string, error) {
 	count := 0
 	id := ""
-	pages, err := List(client, nil).AllPages()
+
+	listOpts := ListOpts{
+		Name: name,
+	}
+
+	pages, err := List(client, listOpts).AllPages()
 	if err != nil {
 		return "", err
 	}

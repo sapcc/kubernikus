@@ -51,6 +51,9 @@ type Router struct {
 	// unique.
 	Name string `json:"name"`
 
+	// Description for the router.
+	Description string `json:"description"`
+
 	// ID is the unique identifier for the router.
 	ID string `json:"id"`
 
@@ -67,6 +70,9 @@ type Router struct {
 	// Availability zone hints groups network nodes that run services like DHCP, L3, FW, and others.
 	// Used to make network resources highly available.
 	AvailabilityZoneHints []string `json:"availability_zone_hints"`
+
+	// Tags optionally set via extensions/attributestags
+	Tags []string `json:"tags"`
 }
 
 // RouterPage is the page returned by a pager when traversing over a
