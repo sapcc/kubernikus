@@ -115,5 +115,5 @@ groups:
       playbook: docs/support/playbook/kubernikus/volume_attachment_failed.html
     annotations:
       summary: Volume attachments are failing for node
-      description: The node {{ $labels.node }} is having continous problems attaching volumes. Maybe the node is suffering from an VMware internal lock and needs to be migrated to clear it.
+      description: The node <https://dashboard.{{ $labels.region }}.cloud.sap/ccadmin/cloud_admin/cloudops#/universal-search/?searchTerm={{ $labels.node }}|{{ $labels.node }}> is having continous problems attaching volumes. Maybe the node is suffering from an VMware internal lock and needs to be migrated to clear it.
 
