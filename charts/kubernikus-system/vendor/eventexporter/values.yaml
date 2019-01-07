@@ -8,7 +8,7 @@ metrics:
   config:
     config.yaml: |-
       metrics:
-      - name: volume_mount_error
+      - name: volume_mount_error_total
         event_matcher:
         - key: InvolvedObject.Kind
           expr: Pod
@@ -18,5 +18,15 @@ metrics:
           expr: FailedMount
         - key: Type
           expr: Warning
+        labels:
+          node: Source.Host
+      - name: volume_mount_success_total
+        event_matcher:
+        - key: InvolvedObject.Kind
+          expr: Pod
+        - key: Message
+          expr: MountVolume.SetUp succeeded for volume .pvc-.*
+        - key: Reason
+          expr: SuccessfulMountVolume
         labels:
           node: Source.Host
