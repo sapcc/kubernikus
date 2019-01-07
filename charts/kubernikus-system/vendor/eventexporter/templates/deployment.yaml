@@ -17,6 +17,7 @@ spec:
       annotations:
         prometheus.io/scrape: "true"
         prometheus.io/port: "{{ default 9102 .Values.metrics.port }}"
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
     spec:
       containers:
       - name: {{ template "name" . }}
