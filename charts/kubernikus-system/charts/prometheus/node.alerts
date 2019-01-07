@@ -5,7 +5,7 @@ groups:
     expr: avg(irate(node_cpu{mode="idle"}[5m])) by(instance, region) < 0.2
     for: 3m
     labels:
-      tier: kubernetes
+      tier: k8s
       service: node
       severity: warning
       context: node
@@ -19,7 +19,7 @@ groups:
     expr: node_netstat_Tcp_CurrEstab > 20000
     for: 15m
     labels:
-      tier: kubernetes
+      tier: k8s
       service: node
       severity: warning
       context: availability
@@ -33,7 +33,7 @@ groups:
     expr: predict_linear(node_netstat_Tcp_CurrEstab[20m], 3600) > 32768
     for: 15m
     labels:
-      tier: kubernetes
+      tier: k8s
       service: node
       severity: critical
       context: availability

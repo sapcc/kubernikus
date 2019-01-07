@@ -5,7 +5,7 @@ groups:
     expr: kubernikus_kluster_status_phase{phase!="Running"} == 1
     for: 1h
     labels:
-      tier: kubernikus
+      tier: kks
       service: k8s
       severity: warning
       context: kluster
@@ -18,7 +18,7 @@ groups:
     expr: count by (instance) (probe_success{kubernetes_name="kubernikus-api"} != 1) >= count by (instance) (probe_success{kubernetes_name="kubernikus-api"} == 1)
     for: 5m
     labels:
-      tier: kubernikus
+      tier: kks
       service: kubernikus
       severity: critical
       context: availability
@@ -30,7 +30,7 @@ groups:
     expr: (probe_success{kubernetes_namespace="kubernikus"} != 1) / on (kubernetes_name) label_replace(kubernikus_kluster_status_phase{phase="Running"} == 1, "kubernetes_name", "$1", "kluster_id", "(.*)")
     for: 20m
     labels:
-      tier: kubernikus
+      tier: kks
       service: kubernikus
       severity: warning
       context: kluster
@@ -45,7 +45,7 @@ groups:
     expr: sum(rate(go_goroutines{app="kubernikus",type="operator"}[5m])) by (app,type) > sum(avg_over_time(go_goroutines{app="kubernikus",type="operator"}[12h] offset 12h)) by (app,type)
     for: 10m
     labels:
-      tier: kubernikus
+      tier: kks
       service: operator
       severity: warning
       context: operator
@@ -57,7 +57,7 @@ groups:
     expr: sum(irate(kubernikus_launch_failed_operation_total[5m])) by (method) > sum(avg_over_time(kubernikus_launch_failed_operation_total[12h] offset 12h)) by (method)
     for: 10m
     labels:
-      tier: kubernikus
+      tier: kks
       service: launch
       severity: warning
       context: operator
@@ -69,7 +69,7 @@ groups:
     expr: sum(kubernikus_launch_operation_total) == 0
     for: 15m
     labels:
-      tier: kubernikus
+      tier: kks
       service: launchctl
       severity: critical
       context: operator
@@ -81,7 +81,7 @@ groups:
     expr: sum(irate(kubernikus_routegc_failed_operation_total[5m])) by (method) > sum(avg_over_time(kubernikus_routegc_failed_operation_total[12h] offset 12h)) by (method)
     for: 10m
     labels:
-      tier: kubernikus
+      tier: kks
       service: routegc
       severity: warning
       context: operator
@@ -93,7 +93,7 @@ groups:
     expr: sum(kubernikus_deorbit_operation_total) == 0
     for: 10m
     labels:
-      tier: kubernikus
+      tier: kks
       service: deorbit
       severity: critical
       context: operator

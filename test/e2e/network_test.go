@@ -15,7 +15,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/sapcc/kubernikus/pkg/util"
+	"github.com/sapcc/kubernikus/pkg/util/generator"
 	"github.com/sapcc/kubernikus/test/e2e/framework"
 )
 
@@ -43,7 +43,7 @@ type NetworkTests struct {
 func (n *NetworkTests) Run(t *testing.T) {
 	runParallel(t)
 
-	n.Namespace = util.SimpleNameGenerator.GenerateName("e2e-network-")
+	n.Namespace = generator.SimpleNameGenerator.GenerateName("e2e-network-")
 
 	var err error
 	n.Nodes, err = n.Kubernetes.ClientSet.CoreV1().Nodes().List(meta_v1.ListOptions{})

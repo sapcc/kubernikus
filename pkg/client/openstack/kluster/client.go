@@ -131,28 +131,36 @@ func (c *klusterClient) DeleteNode(id string) (err error) {
 }
 
 func (c *klusterClient) ListNodes(pool *models.NodePool) ([]Node, error) {
+	var unfilteredNodes []Node
+	var filteredNodes []Node
+	var err error
 
-	prefix := generator.SimpleNameGenerator.Prefix(fmt.Sprintf("%s-%s", c.Kluster.Spec.Name, pool.Name))
-	allNodes, err := servers.List(c.ComputeClient, servers.ListOpts{Name: prefix}).AllPages()
+	prefix := fmt.Sprintf("%v-%v-", c.Kluster.Spec.Name, pool.Name)
+	err = servers.List(c.ComputeClient, servers.ListOpts{Name: prefix}).EachPage(func(page pagination.Page) (bool, error) {
+		if page != nil {
+			unfilteredNodes, err = ExtractServers(page)
+			if err != nil {
+				return false, err
+			}
+		}
+		return true, nil
+	})
 	if err != nil {
 		return nil, err
 	}
-	unfilteredNodes, err := ExtractServers(allNodes)
-	if err != nil {
-		return nil, err
-	}
+
 	//filter nodeList https://github.com/golang/go/wiki/SliceTricks#filtering-without-allocating
 	//we only keep nodes whose where the name length is matched the expected length of a name for this pool
 	//otherwise we would be returning nodes from other nodepools here if the current pool name is a prefix of other pools
-	nodes := unfilteredNodes[:0]
+	filteredNodes = unfilteredNodes[:0]
 	for _, node := range unfilteredNodes {
 		if len(node.GetName()) == len(prefix)+generator.RandomLength {
-			nodes = append(nodes, node)
+			filteredNodes = append(filteredNodes, node)
 
 		}
 	}
 
-	return nodes, nil
+	return filteredNodes, nil
 }
 
 func (c *klusterClient) SetSecurityGroup(nodeID string) (err error) {

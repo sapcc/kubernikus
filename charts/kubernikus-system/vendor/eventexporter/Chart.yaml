@@ -1,0 +1,4 @@
+apiVersion: v1
+description: Eventexporter for Kubernetes
+name: eventexporter
+version: 0.1.0

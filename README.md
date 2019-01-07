@@ -3,6 +3,7 @@
 [![Kubernikus](/assets/kubernikus.svg)](https://github.com/sapcc/kubernikus)
 
 [![Build Status](https://travis-ci.org/sapcc/kubernikus.svg?branch=master)](https://travis-ci.org/sapcc/kubernikus)
+[![Go Report Card](https://goreportcard.com/badge/github.com/sapcc/kubernikus)](https://goreportcard.com/report/github.com/sapcc/kubernikus)
 [![Contributions](https://img.shields.io/badge/contributions-welcome-brightgreen.svg)](https://travis-ci.org/sapcc/kubernikus.svg?branch=master)
 [![License](https://img.shields.io/badge/license-Apache-blue.svg)](http://www.apache.org/licenses/LICENSE-2.0.txt)
 
