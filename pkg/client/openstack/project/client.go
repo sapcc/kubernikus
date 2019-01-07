@@ -2,6 +2,7 @@ package project
 
 import (
 	"github.com/gophercloud/gophercloud"
+	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/availabilityzones"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/keypairs"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/flavors"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/layer3/routers"
@@ -39,10 +40,11 @@ func NewProjectClient(projectID string, network, compute, identity *gophercloud.
 
 func (c *projectClient) GetMetadata() (metadata *models.OpenstackMetadata, err error) {
 	metadata = &models.OpenstackMetadata{
-		Flavors:        make([]models.Flavor, 0),
-		KeyPairs:       make([]*models.KeyPair, 0),
-		Routers:        make([]*models.Router, 0),
-		SecurityGroups: make([]*models.SecurityGroup, 0),
+		Flavors:           make([]models.Flavor, 0),
+		KeyPairs:          make([]*models.KeyPair, 0),
+		Routers:           make([]*models.Router, 0),
+		SecurityGroups:    make([]*models.SecurityGroup, 0),
+		AvailabilityZones: make([]models.AvailabilityZone, 0),
 	}
 
 	if metadata.Routers, err = c.getRouters(); err != nil {
@@ -60,6 +62,11 @@ func (c *projectClient) GetMetadata() (metadata *models.OpenstackMetadata, err e
 	if metadata.Flavors, err = c.getFlavors(); err != nil {
 		return metadata, err
 	}
+
+	if metadata.AvailabilityZones, err = c.getAvailabilityZones(); err != nil {
+		return metadata, err
+	}
+
 	return metadata, nil
 }
 
@@ -213,4 +220,21 @@ func (c *projectClient) getFlavors() ([]models.Flavor, error) {
 	models.SortFlavors(result)
 
 	return result, err
+}
+
+func (c *projectClient) getAvailabilityZones() ([]models.AvailabilityZone, error) {
+	result := []models.AvailabilityZone{}
+	allPages, err := availabilityzones.List(c.ComputeClient).AllPages()
+	if err != nil {
+		return nil, err
+	}
+	zones, err := availabilityzones.ExtractAvailabilityZones(allPages)
+	if err != nil {
+		return nil, err
+	}
+	for _, zone := range zones {
+		result = append(result, models.AvailabilityZone{Name: zone.ZoneName})
+	}
+
+	return result, nil
 }

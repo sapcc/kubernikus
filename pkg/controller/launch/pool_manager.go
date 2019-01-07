@@ -197,6 +197,7 @@ func (cpm *ConcretePoolManager) CreateNode() (id string, err error) {
 		return "", err
 	}
 
+	// add the AZ to this call
 	id, err = cpm.klusterClient.CreateNode(cpm.Pool, nodeName, userdata)
 	if err != nil {
 		return "", err

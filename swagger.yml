@@ -200,6 +200,15 @@ definitions:
   OpenstackMetadata:
     type: object
     properties:
+      availabilityZones:
+        type: array
+        items:
+          x-nullable: false
+          type: object
+          x-go-name: AvailabilityZone
+          properties:
+            name:
+              type: string
       flavors:
         type: array
         items:
@@ -416,6 +425,9 @@ definitions:
         x-nullable: false
         type: string
         default: coreos-stable-amd64
+      availabilityZone:
+        type: string
+        x-nullable: false
       config:
         $ref: '#/definitions/NodePoolConfig'
   NodePoolConfig:
