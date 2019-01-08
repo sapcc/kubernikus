@@ -6,7 +6,10 @@ global:
   scrape_timeout: 55s
 
   external_labels:
-    region: k-{{ .Values.global.region }}
+    region: {{ required ".Values.global.region missing" .Values.global.region }}
+    cluster: {{ required ".Values.global.cluster missing" .Values.global.cluster }}
+    cluster_type: {{ required ".Values.global.cluster_type missing" .Values.global.cluster_type }}
+
 
 {{- if .Values.use_alertmanager }}
 alerting:
