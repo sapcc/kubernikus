@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/util/retry"
@@ -62,6 +63,8 @@ func UpdateEtcdBackupContainerImage(rawKluster []byte, current *v1.Kluster, clie
 					"--garbage-collection-period-seconds=300",
 					"--garbage-collection-policy=LimitBased",
 				}
+				result.Spec.Template.Spec.Containers[i].Resources.Limits["cpu"] = resource.MustParse("500m")
+				result.Spec.Template.Spec.Containers[i].Resources.Limits["memory"] = resource.MustParse("1536Mi")
 				_, err = deploymentsClient.Update(result)
 				return err
 			}
