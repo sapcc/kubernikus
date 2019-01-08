@@ -71,10 +71,15 @@ func TestMigration(t *testing.T) {
 		return nil
 	})
 
+	registry.AddMigration(func(_ []byte, kluster *v1.Kluster, _ kubernetes.Interface, _ openstack.SharedOpenstackClientFactory) error {
+		kluster.Spec.Name = kluster.Spec.Name + "4"
+		return nil
+	})
+
 	if assert.NoError(t, registry.Migrate(kluster, cs, kcs, nil)) {
 		kluster, _ = kcs.Kubernikus().Klusters(NAMESPACE).Get("test", metav1.GetOptions{})
-		assert.Equal(t, 3, int(kluster.Status.SpecVersion))
-		assert.Equal(t, "23", kluster.Spec.Name)
+		assert.Equal(t, 4, int(kluster.Status.SpecVersion))
+		assert.Equal(t, "234", kluster.Spec.Name)
 	}
 }
 

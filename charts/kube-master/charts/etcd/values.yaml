@@ -22,7 +22,7 @@ resources:
 backup:
   image:
     repository: sapcc/etcdbrctl
-    tag: 0.3.1
+    tag: 0.4.1
     pullPolicy: IfNotPresent
   config:
     # do a full-backup every hour
@@ -40,5 +40,5 @@ backup:
       cpu: 100m
       memory: 128Mi
     limits:
-      cpu: 300m
-      memory: 1Gi
+      cpu: 500m
+      memory: 1536Mi
