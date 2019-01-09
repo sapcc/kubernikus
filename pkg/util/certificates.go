@@ -10,12 +10,11 @@ import (
 	"math"
 	"math/big"
 	"net"
-	"strings"
 	"time"
 
-	"github.com/kennygrant/sanitize"
 	certutil "k8s.io/client-go/util/cert"
 
+	"github.com/sapcc/kubernikus/pkg/api/models"
 	"github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
 )
 
@@ -31,103 +30,24 @@ type Bundle struct {
 	PrivateKey  *rsa.PrivateKey
 }
 
-type Certificates struct {
-	Etcd struct {
-		Clients struct {
-			CA        Bundle
-			ApiServer Bundle
-		}
-		Peers struct {
-			CA        Bundle
-			Universal Bundle
-		}
-	}
-
-	ApiServer struct {
-		Clients struct {
-			CA                Bundle
-			ControllerManager Bundle
-			Scheduler         Bundle
-			Proxy             Bundle
-			ClusterAdmin      Bundle
-			Wormhole          Bundle
-		}
-		Nodes struct {
-			CA        Bundle
-			Universal Bundle
-		}
-	}
-
-	Kubelet struct {
-		Clients struct {
-			CA        Bundle
-			ApiServer Bundle
-		}
-	}
-
-	TLS struct {
-		CA        Bundle
-		ApiServer Bundle
-		Wormhole  Bundle
-	}
-
-	Aggregation struct {
-		CA         Bundle
-		Aggregator Bundle
-	}
-}
-
-func (c *Certificates) toMap() map[string]string {
-	bundles := c.all()
-	result := make(map[string]string, len(bundles)*2)
-	for _, bundle := range bundles {
-		result[bundle.NameForCert()] = string(certutil.EncodeCertPEM(bundle.Certificate))
-		result[bundle.NameForKey()] = string(certutil.EncodePrivateKeyPEM(bundle.PrivateKey))
-	}
-	return result
-}
-
-func (c *Certificates) MarshalYAML() (interface{}, error) {
-	return c.toMap(), nil
-}
-
-func NewBundle(key, cert []byte) (Bundle, error) {
+func NewBundle(key, cert []byte) (*Bundle, error) {
 	certificates, err := certutil.ParseCertsPEM(cert)
 	if err != nil {
-		return Bundle{}, err
+		return nil, err
 	}
 	if len(certificates) < 1 {
-		return Bundle{}, errors.New("No certificates found")
+		return nil, errors.New("No certificates found")
 	}
 	k, err := certutil.ParsePrivateKeyPEM(key)
 	if err != nil {
-		return Bundle{}, err
+		return nil, err
 	}
 	rsaKey, isRSAKey := k.(*rsa.PrivateKey)
 	if !isRSAKey {
-		return Bundle{}, errors.New("Key does not seem to be of type RSA")
+		return nil, errors.New("Key does not seem to be of type RSA")
 	}
 
-	return Bundle{PrivateKey: rsaKey, Certificate: certificates[0]}, nil
-}
-
-func (b *Bundle) basename() string {
-	stem := b.Certificate.Issuer.CommonName
-	suffix := b.Certificate.Subject.CommonName
-
-	if b.Certificate.IsCA {
-		stem = b.Certificate.Subject.CommonName
-		suffix = "ca"
-	}
-
-	return sanitize.BaseName(strings.ToLower(fmt.Sprintf("%s-%s", stem, suffix)))
-}
-
-func (b *Bundle) NameForKey() string {
-	return fmt.Sprintf("%s-key.pem", b.basename())
-}
-func (b *Bundle) NameForCert() string {
-	return fmt.Sprintf("%s.pem", b.basename())
+	return &Bundle{PrivateKey: rsaKey, Certificate: certificates[0]}, nil
 }
 
 type Config struct {
@@ -146,150 +66,9 @@ type AltNames struct {
 	IPs      []net.IP
 }
 
-func (c Certificates) all() []Bundle {
-	return []Bundle{
-		c.Etcd.Clients.CA,
-		c.Etcd.Clients.ApiServer,
-		c.Etcd.Peers.CA,
-		c.Etcd.Peers.Universal,
-		c.ApiServer.Clients.CA,
-		c.ApiServer.Clients.ControllerManager,
-		c.ApiServer.Clients.Scheduler,
-		c.ApiServer.Clients.Proxy,
-		c.ApiServer.Clients.ClusterAdmin,
-		c.ApiServer.Clients.Wormhole,
-		c.ApiServer.Nodes.CA,
-		c.ApiServer.Nodes.Universal,
-		c.Kubelet.Clients.CA,
-		c.Kubelet.Clients.ApiServer,
-		c.TLS.CA,
-		c.TLS.ApiServer,
-		c.TLS.Wormhole,
-		c.Aggregation.CA,
-		c.Aggregation.Aggregator,
-	}
-}
-
-func CreateCertificates(kluster *v1.Kluster, apiURL, authURL, domain string) (map[string]string, error) {
-	certs := &Certificates{}
-	apiIP, err := kluster.ApiServiceIP()
-	if err != nil {
-		return nil, err
-	}
-	createCA(kluster.Name, "Etcd Clients", &certs.Etcd.Clients.CA)
-	createCA(kluster.Name, "Etcd Peers", &certs.Etcd.Peers.CA)
-	createCA(kluster.Name, "ApiServer Clients", &certs.ApiServer.Clients.CA)
-	createCA(kluster.Name, "ApiServer Nodes", &certs.ApiServer.Nodes.CA)
-	createCA(kluster.Name, "Kubelet Clients", &certs.Kubelet.Clients.CA)
-	createCA(kluster.Name, "TLS", &certs.TLS.CA)
-	createCA(kluster.Name, "Aggregation", &certs.Aggregation.CA)
-
-	certs.Etcd.Clients.ApiServer = certs.signEtcdClient("apiserver")
-	certs.Etcd.Peers.Universal = certs.signEtcdPeer("universal")
-	certs.ApiServer.Clients.ClusterAdmin = certs.signApiServerClient("cluster-admin", "system:masters")
-	certs.ApiServer.Clients.ControllerManager = certs.signApiServerClient("system:kube-controller-manager")
-	certs.ApiServer.Clients.Proxy = certs.signApiServerClient("system:kube-proxy")
-	certs.ApiServer.Clients.Scheduler = certs.signApiServerClient("system:kube-scheduler")
-	certs.ApiServer.Clients.Wormhole = certs.signApiServerClient("kubernikus:wormhole")
-	certs.ApiServer.Nodes.Universal = certs.signApiServerNode("universal")
-	certs.Kubelet.Clients.ApiServer = certs.signKubeletClient("apiserver")
-	certs.TLS.ApiServer = certs.signTLS("apiserver",
-		[]string{"kubernetes", "kubernetes.default", "kubernetes.default.svc", "apiserver", kluster.Name, fmt.Sprintf("%v.%v", kluster.Name, domain)},
-		[]net.IP{net.IPv4(127, 0, 0, 1), apiIP})
-	certs.TLS.Wormhole = certs.signTLS("wormhole",
-		[]string{fmt.Sprintf("%v-wormhole.%v", kluster.Name, domain)}, []net.IP{})
-	certs.Aggregation.Aggregator = certs.signAggregation("aggregator")
-
-	return certs.toMap(), nil
-}
-
-func (c Certificates) signEtcdClient(name string) Bundle {
-	config := Config{
-		Sign:   name,
-		Usages: []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth},
-	}
-	return c.Etcd.Clients.CA.Sign(config)
-}
-
-func (c Certificates) signEtcdPeer(name string) Bundle {
-	config := Config{
-		Sign:   name,
-		Usages: []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth, x509.ExtKeyUsageServerAuth},
-	}
-	return c.Etcd.Peers.CA.Sign(config)
-}
-
-func (c Certificates) signApiServerClient(name string, groups ...string) Bundle {
-	config := Config{
-		Sign:         name,
-		Organization: groups,
-		Usages:       []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth},
-	}
-	return c.ApiServer.Clients.CA.Sign(config)
-}
-
-func (c Certificates) signApiServerNode(name string) Bundle {
-	config := Config{
-		Sign:         name,
-		Organization: []string{"system:nodes"},
-		Usages:       []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth},
-	}
-	return c.ApiServer.Nodes.CA.Sign(config)
-}
-
-func (c Certificates) signKubeletClient(name string, groups ...string) Bundle {
-	config := Config{
-		Sign:         name,
-		Organization: groups,
-		Usages:       []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth},
-	}
-	return c.Kubelet.Clients.CA.Sign(config)
-}
-
-func (c Certificates) signTLS(name string, dnsNames []string, ips []net.IP) Bundle {
-	config := Config{
-		Sign:   name,
-		Usages: []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth},
-		AltNames: AltNames{
-			DNSNames: dnsNames,
-			IPs:      ips,
-		},
-	}
-	return c.TLS.CA.Sign(config)
-}
-
-func (c Certificates) signAggregation(name string) Bundle {
-	config := Config{
-		Sign:   name,
-		Usages: []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth},
-	}
-	return c.Aggregation.CA.Sign(config)
-}
-
-func createCA(klusterName, name string, bundle *Bundle) {
-	bundle.PrivateKey, _ = certutil.NewPrivateKey()
-
-	now := time.Now()
-	tmpl := x509.Certificate{
-		SerialNumber: new(big.Int).SetInt64(0),
-		Subject: pkix.Name{
-			CommonName:         name,
-			OrganizationalUnit: []string{CA_ISSUER_KUBERNIKUS_IDENTIFIER_0, CA_ISSUER_KUBERNIKUS_IDENTIFIER_1, klusterName},
-		},
-		NotBefore:             now.UTC(),
-		NotAfter:              now.Add(caValidity).UTC(),
-		KeyUsage:              x509.KeyUsageKeyEncipherment | x509.KeyUsageDigitalSignature | x509.KeyUsageCertSign,
-		BasicConstraintsValid: true,
-		IsCA:                  true,
-	}
-
-	certDERBytes, _ := x509.CreateCertificate(rand.Reader, &tmpl, &tmpl, bundle.PrivateKey.Public(), bundle.PrivateKey)
-	bundle.Certificate, _ = x509.ParseCertificate(certDERBytes)
-}
-
-func (ca Bundle) Sign(config Config) Bundle {
+func (ca Bundle) Sign(config Config) (*Bundle, error) {
 	if !ca.Certificate.IsCA {
-		panic("You can't use this certificate for signing. It's not a CA...")
+		return nil, errors.New("You can't use this certificate for signing. It's not a CA...")
 	}
 
 	if config.ValidFor == 0 {
@@ -320,5 +99,195 @@ func (ca Bundle) Sign(config Config) Bundle {
 
 	cert, _ := x509.ParseCertificate(certDERBytes)
 
-	return Bundle{cert, key}
+	return &Bundle{cert, key}, nil
+}
+
+type CertificateFactory struct {
+	kluster *v1.Kluster
+	store   *v1.Certificates
+	domain  string
+}
+
+func NewCertificateFactory(kluster *v1.Kluster, store *v1.Certificates, domain string) *CertificateFactory {
+	return &CertificateFactory{kluster, store, domain}
+}
+
+func (cf *CertificateFactory) Ensure() error {
+	apiIP, err := cf.kluster.ApiServiceIP()
+	if err != nil {
+		return err
+	}
+
+	etcdClientsCA, err := loadOrCreateCA(cf.kluster, "Etcd Clients", &cf.store.EtcdClientsCACertificate, &cf.store.EtcdClientsCAPrivateKey)
+	if err != nil {
+		return err
+	}
+	_, err = loadOrCreateCA(cf.kluster, "Etcd Peers", &cf.store.EtcdPeersCACertificate, &cf.store.EtcdPeersCAPrivateKey)
+	if err != nil {
+		return err
+	}
+	apiserverClientsCA, err := loadOrCreateCA(cf.kluster, "ApiServer Clients", &cf.store.ApiserverClientsCACertiifcate, &cf.store.ApiserverClientsCAPrivateKey)
+	if err != nil {
+		return err
+	}
+	_, err = loadOrCreateCA(cf.kluster, "ApiServer Nodes", &cf.store.ApiserverNodesCACertificate, &cf.store.ApiserverNodesCAPrivateKey)
+	if err != nil {
+		return err
+	}
+	kubeletClientsCA, err := loadOrCreateCA(cf.kluster, "Kubelet Clients", &cf.store.KubeletClientsCACertificate, &cf.store.KubeletClientsApiserverPrivateKey)
+	if err != nil {
+		return err
+	}
+	tlsCA, err := loadOrCreateCA(cf.kluster, "TLS", &cf.store.TLSCACertificate, &cf.store.TLSCAPrivateKey)
+	if err != nil {
+		return err
+	}
+	aggregationCA, err := loadOrCreateCA(cf.kluster, "Aggregation", &cf.store.AggregationAggregatorCertificate, &cf.store.AggregationAggregatorPrivateKey)
+	if err != nil {
+		return err
+	}
+
+	if err := ensureClientCertificate(etcdClientsCA, "apiserver", nil, &cf.store.EtcdClientsApiserverCertificate, &cf.store.EtcdClientsApiserverPrivateKey); err != nil {
+		return err
+	}
+	if err := ensureClientCertificate(apiserverClientsCA, "cluster-admin", []string{"system:masters"}, &cf.store.ApiserverClientsClusterAdminCertificate, &cf.store.ApiserverClientsClusterAdminPrivateKey); err != nil {
+		return err
+	}
+	if err := ensureClientCertificate(apiserverClientsCA, "system:kube-controller-manager", nil, &cf.store.ApiserverClientsKubeControllerManagerCertificate, &cf.store.ApiserverClientsKubeControllerManagerPrivateKey); err != nil {
+		return err
+	}
+	if err := ensureClientCertificate(apiserverClientsCA, "system:kube-proxy", nil, &cf.store.ApiserverClientsKubeProxyCertificate, &cf.store.ApiserverClientsKubeProxyPrivateKey); err != nil {
+		return err
+	}
+	if err := ensureClientCertificate(apiserverClientsCA, "system:kube-scheduler", nil, &cf.store.ApiserverClientsKubeSchedulerCertificate, &cf.store.ApiserverClientsKubeControllerManagerPrivateKey); err != nil {
+		return err
+	}
+	if err := ensureClientCertificate(apiserverClientsCA, "kubernikus:wormhole", nil, &cf.store.ApiserverClientsKubernikusWormholeCertificate, &cf.store.ApiserverClientsKubernikusWormholePrivateKey); err != nil {
+		return err
+	}
+	if err := ensureClientCertificate(kubeletClientsCA, "apiserver", nil, &cf.store.KubeletClientsApiserverCertificate, &cf.store.KubeletClientsApiserverPrivateKey); err != nil {
+		return err
+	}
+	if err := ensureClientCertificate(aggregationCA, "aggregator", nil, &cf.store.AggregationAggregatorCertificate, &cf.store.AggregationAggregatorPrivateKey); err != nil {
+		return err
+	}
+
+	if err := ensureServerCertificate(tlsCA, "apiserver",
+		[]string{"kubernetes", "kubernetes.default", "kubernetes.default.svc", "apiserver", cf.kluster.Name, fmt.Sprintf("%v.%v", cf.kluster.Name, cf.domain)},
+		[]net.IP{net.IPv4(127, 0, 0, 1), apiIP},
+		&cf.store.TLSApiserverCertificate,
+		&cf.store.TLSApiserverPrivateKey); err != nil {
+		return err
+	}
+	if err := ensureServerCertificate(tlsCA, "wormhole",
+		[]string{fmt.Sprintf("%v-wormhole.%v", cf.kluster.Name, cf.domain)},
+		nil,
+		&cf.store.TLSWormholeCertificate,
+		&cf.store.TLSApiserverPrivateKey); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (cf *CertificateFactory) UserCert(principal *models.Principal, apiURL string) (*Bundle, error) {
+
+	caBundle, err := NewBundle([]byte(cf.store.ApiserverClientsCAPrivateKey), []byte(cf.store.ApiserverClientsCACertiifcate))
+	if err != nil {
+		return nil, err
+	}
+
+	var organizations []string
+	for _, role := range principal.Roles {
+		organizations = append(organizations, "os:"+role)
+	}
+
+	return caBundle.Sign(Config{
+		Sign:         fmt.Sprintf("%s@%s", principal.Name, principal.Domain),
+		Organization: organizations,
+		Province:     []string{principal.AuthURL, cf.kluster.Spec.Openstack.ProjectID},
+		Locality:     []string{apiURL},
+		Usages:       []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth},
+		ValidFor:     24 * time.Hour,
+	})
+
+}
+
+func loadOrCreateCA(kluster *v1.Kluster, name string, cert, key *string) (*Bundle, error) {
+	if *cert != "" && *key != "" {
+		return NewBundle([]byte(*key), []byte(*cert))
+	}
+	caBundle, err := createCA(kluster.Name, name)
+	if err != nil {
+		return nil, err
+	}
+	*cert = string(certutil.EncodeCertPEM(caBundle.Certificate))
+	*key = string(certutil.EncodePrivateKeyPEM(caBundle.PrivateKey))
+	return caBundle, nil
+}
+
+func ensureClientCertificate(ca *Bundle, cn string, groups []string, cert, key *string) error {
+	certificate, err := ca.Sign(Config{
+		Sign:         cn,
+		Usages:       []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth},
+		Organization: groups,
+	})
+	if err != nil {
+		return err
+	}
+
+	*cert = string(certutil.EncodeCertPEM(certificate.Certificate))
+	*key = string(certutil.EncodePrivateKeyPEM(certificate.PrivateKey))
+	return nil
+
+}
+
+func ensureServerCertificate(ca *Bundle, cn string, dnsNames []string, ips []net.IP, cert, key *string) error {
+	c, err := ca.Sign(Config{
+		Sign:   cn,
+		Usages: []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth},
+		AltNames: AltNames{
+			DNSNames: dnsNames,
+			IPs:      ips,
+		},
+	})
+	if err != nil {
+		return err
+	}
+
+	*cert = string(certutil.EncodeCertPEM(c.Certificate))
+	*key = string(certutil.EncodePrivateKeyPEM(c.PrivateKey))
+	return nil
+
+}
+
+func createCA(klusterName, name string) (*Bundle, error) {
+	privateKey, err := certutil.NewPrivateKey()
+	if err != nil {
+		return nil, fmt.Errorf("Failed to generate private key for %s ca: %s", name, err)
+	}
+
+	now := time.Now()
+	tmpl := x509.Certificate{
+		SerialNumber: new(big.Int).SetInt64(0),
+		Subject: pkix.Name{
+			CommonName:         name,
+			OrganizationalUnit: []string{CA_ISSUER_KUBERNIKUS_IDENTIFIER_0, CA_ISSUER_KUBERNIKUS_IDENTIFIER_1, klusterName},
+		},
+		NotBefore:             now.UTC(),
+		NotAfter:              now.Add(caValidity).UTC(),
+		KeyUsage:              x509.KeyUsageKeyEncipherment | x509.KeyUsageDigitalSignature | x509.KeyUsageCertSign,
+		BasicConstraintsValid: true,
+		IsCA:                  true,
+	}
+
+	certDERBytes, err := x509.CreateCertificate(rand.Reader, &tmpl, &tmpl, privateKey.Public(), privateKey)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to create certificate for %s CA: %s", name, err)
+	}
+	certificate, err := x509.ParseCertificate(certDERBytes)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to parse cert for %s CA: %s", name, err)
+	}
+	return &Bundle{PrivateKey: privateKey, Certificate: certificate}, nil
 }

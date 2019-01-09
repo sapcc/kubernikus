@@ -4,10 +4,14 @@ import (
 	"fmt"
 	"strconv"
 
+	api_v1 "k8s.io/api/core/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/client-go/kubernetes"
 
 	"github.com/sapcc/kubernikus/pkg/api/models"
-	"github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
+	v1 "github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
 	clientset "github.com/sapcc/kubernikus/pkg/generated/clientset/typed/kubernikus/v1"
 	listers_kubernikus "github.com/sapcc/kubernikus/pkg/generated/listers/kubernikus/v1"
 )
@@ -63,4 +67,35 @@ func UpdateKlusterPhase(client clientset.KubernikusV1Interface, kluster *v1.Klus
 		[]byte(fmt.Sprintf(`{"status":{"phase":"%s"}}`, phase)),
 	)
 	return err
+}
+
+func EnsureKlusterSecret(client kubernetes.Interface, kluster *v1.Kluster) (*v1.Secret, error) {
+	s := api_v1.Secret{
+		ObjectMeta: meta_v1.ObjectMeta{
+			Name:   klusterSecretName(kluster),
+			Labels: kluster.Labels,
+			OwnerReferences: []meta_v1.OwnerReference{meta_v1.OwnerReference{
+				APIVersion: kluster.APIVersion,
+				Kind:       kluster.Kind,
+				Name:       kluster.Name,
+				UID:        kluster.UID,
+			}},
+		},
+	}
+	apiSecret, err := client.Core().Secrets(kluster.Namespace).Create(&s)
+	if apierrors.IsAlreadyExists(err) {
+		return KlusterSecret(client, kluster)
+	}
+	return v1.NewSecret(apiSecret)
+}
+func klusterSecretName(k *v1.Kluster) string {
+	return k.Name + "-secret"
+}
+
+func KlusterSecret(client kubernetes.Interface, kluster *v1.Kluster) (*v1.Secret, error) {
+	secret, err := client.CoreV1().Secrets(kluster.Namespace).Get(klusterSecretName(kluster), meta_v1.GetOptions{})
+	if err != nil {
+		return nil, err
+	}
+	return v1.NewSecret(secret)
 }

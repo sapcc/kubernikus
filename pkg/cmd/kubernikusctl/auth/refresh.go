@@ -5,7 +5,6 @@ import (
 	"encoding/pem"
 	"fmt"
 	"net/url"
-	"os"
 	"strings"
 	"time"
 
@@ -168,8 +167,7 @@ func (o *RefreshOptions) Run(c *cobra.Command) error {
 	if err := o.setupClients(); err != nil {
 
 		if o.openstack.Username != "" {
-			fmt.Println("Deleting password from keyring")
-			keyring.Delete("kubernikus", o.openstack.Username)
+			keyring.Delete("kubernikus", strings.ToLower(o.openstack.Username))
 		}
 
 		return err
@@ -182,13 +180,8 @@ func (o *RefreshOptions) Run(c *cobra.Command) error {
 	}
 
 	if storePasswordInKeyRing {
-		username := os.Getenv("USER")
-		if o.openstack.Username != "" {
-			username = o.openstack.Username
-		}
-
 		fmt.Println("Storing password in keyring")
-		keyring.Set("kubernikus", username, o.openstack.Password)
+		keyring.Set("kubernikus", strings.ToLower(o.openstack.Username), o.openstack.Password)
 	}
 
 	err = o.mergeAndPersist(kubeconfig)

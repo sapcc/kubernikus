@@ -371,22 +371,6 @@ func (op *GroundControl) createKluster(kluster *v1.Kluster) error {
 		return fmt.Errorf("Couldn't determine access mode for pvc: %s", err)
 	}
 
-	apiURL, err := op.Clients.OpenstackAdmin.GetKubernikusCatalogEntry()
-	if err != nil {
-		return fmt.Errorf("Couldn't determine kubernikus api from service catalog: %s", err)
-	}
-
-	certificates, err := util.CreateCertificates(kluster, apiURL, op.Config.Openstack.AuthURL, op.Config.Kubernikus.Domain)
-	if err != nil {
-		return fmt.Errorf("Failed to generate certificates: %s", err)
-	}
-	bootstrapToken := util.GenerateBootstrapToken()
-	username := fmt.Sprintf("kubernikus-%s", kluster.Name)
-	password, err := goutils.Random(20, 32, 127, true, true)
-	if err != nil {
-		return fmt.Errorf("Failed to generate password: %s", err)
-	}
-	domain := "kubernikus"
 	region, err := op.Clients.OpenstackAdmin.GetRegion()
 	if err != nil {
 		return err
@@ -396,39 +380,57 @@ func (op *GroundControl) createKluster(kluster *v1.Kluster) error {
 		return err
 	}
 
+	klusterSecret, err := util.EnsureKlusterSecret(op.Clients.Kubernetes, kluster)
+	if err != nil {
+		return fmt.Errorf("Failed to ensure create kluster secret; %s", err)
+	}
+
+	//contains unamibious characters for generic random passwords
+	var randomPasswordChars = []rune("abcdefghjkmnpqrstuvwxABCDEFGHJKLMNPQRSTUVWX23456789")
+	klusterSecret.NodePassword, err = goutils.Random(12, 0, 0, true, true, randomPasswordChars...)
+	if err != nil {
+		return fmt.Errorf("Failed to generate node password: %s", err)
+	}
+
+	certFactory := util.NewCertificateFactory(kluster, &klusterSecret.Certificates, op.Config.Kubernikus.Domain)
+	if err := certFactory.Ensure(); err != nil {
+		return fmt.Errorf("Failed to generate certificates: %s", err)
+	}
+	klusterSecret.BootstrapToken = util.GenerateBootstrapToken()
+	klusterSecret.Openstack.AuthURL = op.Config.Openstack.AuthURL
+	klusterSecret.Openstack.Username = fmt.Sprintf("kubernikus-%s", kluster.Name)
+	klusterSecret.Openstack.DomainName = "kubernikus"
+	klusterSecret.Openstack.Region = region
+	klusterSecret.Openstack.ProjectID = kluster.Spec.Openstack.ProjectID
+	if klusterSecret.Openstack.Password, err = goutils.Random(20, 32, 127, true, true); err != nil {
+		return fmt.Errorf("Failed to generated password for cluster service user: %s", err)
+	}
+
 	op.Logger.Log(
 		"msg", "creating service user",
-		"username", username,
+		"username", klusterSecret.Openstack.Username,
 		"kluster", kluster.GetName(),
 		"project", kluster.Account())
 
 	if err := op.Clients.OpenstackAdmin.CreateKlusterServiceUser(
-		username,
-		password,
-		domain,
-		kluster.Spec.Openstack.ProjectID,
+		klusterSecret.Openstack.Username,
+		klusterSecret.Openstack.Password,
+		klusterSecret.Openstack.DomainName,
+		klusterSecret.Openstack.ProjectID,
 	); err != nil {
 		return err
-	}
-
-	options := &helm_util.OpenstackOptions{
-		AuthURL:    op.Config.Openstack.AuthURL,
-		Username:   username,
-		Password:   password,
-		DomainName: domain,
-		Region:     region,
 	}
 
 	if err := op.Clients.OpenstackAdmin.CreateStorageContainer(
 		kluster.Spec.Openstack.ProjectID,
 		etcd_util.DefaultStorageContainer(kluster),
-		username,
-		domain,
+		klusterSecret.Openstack.Username,
+		klusterSecret.Openstack.DomainName,
 	); err != nil {
 		return fmt.Errorf("Failed to create container for etcd backups. Check if the project has quota for object-store usage: %s", err)
 	}
 
-	rawValues, err := helm_util.KlusterToHelmValues(kluster, options, certificates, bootstrapToken, accessMode)
+	rawValues, err := helm_util.KlusterToHelmValues(kluster, klusterSecret, accessMode)
 	if err != nil {
 		return err
 	}
@@ -482,7 +484,7 @@ func (op *GroundControl) terminateKluster(kluster *v1.Kluster) error {
 	}
 
 	// TODO: remove if all control-planes are running k8s 1.8+
-	// There's a bug in the garbage-collector regarding CRDs in 1.7. It will not delete
+	// There',s a bug in the garbage-collector regarding CRDs in 1.7. It will not delete
 	// the CRD even though all Finalizers are gone. As a workaround, here we try to just
 	// delte the kluster again.
 	//

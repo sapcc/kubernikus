@@ -22,13 +22,12 @@ spec:
         app: {{ include "master.fullname" . }}-apiserver
         release: {{ .Release.Name }}
       annotations:
-        checksum/secrets: {{ include (print $.Template.BasePath "/secrets.yaml") . | sha256sum }}
         checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
     spec:
       volumes:
         - name: certs
           secret:
-            secretName: {{ .Values.certsSecretName | default (include "master.fullname" .) }}
+            secretName: {{ .Values.secretName }}
             items:
               - key: apiserver-clients-and-nodes-ca.pem
                 path: apiserver-clients-and-nodes-ca.pem
@@ -62,7 +61,7 @@ spec:
                 path: aggregation-aggregator-key.pem
         - name: wormhole-certs
           secret:
-            secretName: {{ include "master.fullname" . }}
+            secretName: {{ .Values.secretName }}
             items:
               - key: tls-ca.pem
                 path: tls-ca.pem

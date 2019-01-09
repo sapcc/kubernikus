@@ -126,7 +126,7 @@ func (o *OpenstackClient) Setup() error {
 				username = o.Username
 			}
 
-			password, err := keyring.Get("kubernikus", username)
+			password, err := keyring.Get("kubernikus", strings.ToLower(username))
 			if err != nil && keyring.ErrNotFound != err {
 				return err
 			}

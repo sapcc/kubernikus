@@ -9,7 +9,7 @@ import (
 	"github.com/ghodss/yaml"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
-	"k8s.io/apimachinery/pkg/apis/meta/v1"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	certutil "k8s.io/client-go/util/cert"
 
 	"github.com/sapcc/kubernikus/pkg/client/kubernetes"
@@ -112,11 +112,14 @@ func (o *SignOptions) Run(c *cobra.Command) error {
 	if err != nil {
 		return err
 	}
-	cert := bundle.Sign(util.Config{
+	cert, err := bundle.Sign(util.Config{
 		Sign:         o.CN,
 		Organization: []string{o.Organization},
 		Usages:       []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth},
 	})
+	if err != nil {
+		return err
+	}
 
 	config := kubernetes.NewClientConfigV1(
 		o.Name,

@@ -10,35 +10,33 @@ import (
 )
 
 func AddAggregationLayerCertificates(rawKluster []byte, kluster *v1.Kluster, client kubernetes.Interface, openstackFactory openstack.SharedOpenstackClientFactory) (err error) {
-	secret, err := client.CoreV1().Secrets(kluster.Namespace).Get(kluster.GetName(), metav1.GetOptions{})
+	apiSecret, err := client.CoreV1().Secrets(kluster.Namespace).Get(kluster.GetName(), metav1.GetOptions{})
 	if err != nil {
 		return err
 	}
 
-	keys := []string{"aggregation-ca-key.pem", "aggregation-ca.pem", "aggregation-aggregator-key.pem", "aggregation-aggregator.pem"}
-	missingCerts := false
-
-	for _, key := range keys {
-		if _, ok := secret.Data[key]; !ok {
-			missingCerts = true
-			break
-		}
+	secret, err := v1.NewSecret(apiSecret)
+	if err != nil {
+		return err
 	}
 
-	if !missingCerts {
+	if secret.AggregationAggregatorCertificate != "" && secret.AggregationCACertificate != "" && secret.AggregationAggregatorPrivateKey != "" && secret.AggregationCAPrivateKey != "" {
 		return nil
 	}
 
-	certs, err := util.CreateCertificates(kluster, "", "", "cluster.local")
+	factory := util.NewCertificateFactory(kluster, &secret.Certificates, "cluster.local")
+
+	if err := factory.Ensure(); err != nil {
+		return err
+	}
+
+	secretData, err := secret.ToData()
 	if err != nil {
 		return err
 	}
 
-	for _, key := range keys {
-		secret.Data[key] = []byte(certs[key])
-	}
-
-	_, err = client.CoreV1().Secrets(kluster.Namespace).Update(secret)
+	apiSecret.Data = secretData
+	_, err = client.CoreV1().Secrets(kluster.Namespace).Update(apiSecret)
 
 	return err
 }

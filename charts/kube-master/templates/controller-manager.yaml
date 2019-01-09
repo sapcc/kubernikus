@@ -26,13 +26,12 @@ spec:
         account: {{ .Values.account }}
         release: {{ .Release.Name }}
       annotations:
-        checksum/secrets: {{ include (print $.Template.BasePath "/secrets.yaml") . | sha256sum }}
         checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
     spec:
       volumes:
         - name: certs
           secret:
-            secretName: {{ .Values.certsSecretName | default (include "master.fullname" .) }}
+            secretName: {{ .Values.secretName }}
             items:
               - key: tls-ca.pem
                 path: tls-ca.pem

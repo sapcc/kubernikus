@@ -4,10 +4,9 @@ import (
 	"fmt"
 	"net/url"
 
-	"github.com/aokoli/goutils"
 	yaml "gopkg.in/yaml.v2"
 
-	"github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
+	v1 "github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
 	etcd_util "github.com/sapcc/kubernikus/pkg/util/etcd"
 )
 
@@ -55,21 +54,20 @@ type versionValues struct {
 }
 
 type kubernikusHelmValues struct {
-	Openstack        openstackValues   `yaml:"openstack,omitempty"`
-	Certs            map[string]string `yaml:"certs,omitempty"`
-	ClusterCIDR      string            `yaml:"clusterCIDR,omitempty"`
-	ServiceCIDR      string            `yaml:"serviceCIDR,omitempty"`
-	AdvertiseAddress string            `yaml:"advertiseAddress,omitempty"`
-	BoostrapToken    string            `yaml:"bootstrapToken,omitempty"`
-	Version          versionValues     `yaml:"version,omitempty"`
-	Etcd             etcdValues        `yaml:"etcd,omitempty"`
-	Api              apiValues         `yaml:"api,omitempty"`
-	NodePassword     string            `yaml:"nodePassword,omitempty"`
-	Name             string            `yaml:"name"`
-	Account          string            `yaml:"account"`
+	Openstack        openstackValues `yaml:"openstack,omitempty"`
+	ClusterCIDR      string          `yaml:"clusterCIDR,omitempty"`
+	ServiceCIDR      string          `yaml:"serviceCIDR,omitempty"`
+	AdvertiseAddress string          `yaml:"advertiseAddress,omitempty"`
+	BoostrapToken    string          `yaml:"bootstrapToken,omitempty"`
+	Version          versionValues   `yaml:"version,omitempty"`
+	Etcd             etcdValues      `yaml:"etcd,omitempty"`
+	Api              apiValues       `yaml:"api,omitempty"`
+	Name             string          `yaml:"name"`
+	Account          string          `yaml:"account"`
+	SecretName       string          `yaml:"secretName"`
 }
 
-func KlusterToHelmValues(kluster *v1.Kluster, openstack *OpenstackOptions, certificates map[string]string, bootstrapToken string, accessMode string) ([]byte, error) {
+func KlusterToHelmValues(kluster *v1.Kluster, secret *v1.Secret, accessMode string) ([]byte, error) {
 	apiserverURL, err := url.Parse(kluster.Status.Apiserver)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to parse apiserver URL: %s", err)
@@ -80,31 +78,24 @@ func KlusterToHelmValues(kluster *v1.Kluster, openstack *OpenstackOptions, certi
 		return nil, fmt.Errorf("Failed to parse wormhole server URL: %s", err)
 	}
 
-	password, err := goutils.Random(12, 0, 0, true, true, randomPasswordChars...)
-
-	if err != nil {
-		return nil, fmt.Errorf("Failed to generate password: %s", err)
-	}
-
 	values := kubernikusHelmValues{
 		Account:          kluster.Account(),
-		BoostrapToken:    bootstrapToken,
-		Certs:            certificates,
+		BoostrapToken:    secret.BootstrapToken,
 		ClusterCIDR:      kluster.Spec.ClusterCIDR,
+		SecretName:       kluster.Name + "-secret",
 		ServiceCIDR:      kluster.Spec.ServiceCIDR,
 		AdvertiseAddress: kluster.Spec.AdvertiseAddress,
 		Name:             kluster.Spec.Name,
-		NodePassword:     password,
 		Version: versionValues{
 			Kubernetes: kluster.Spec.Version,
 			Kubernikus: kluster.Status.Version,
 		},
 		Openstack: openstackValues{
-			AuthURL:             openstack.AuthURL,
-			Username:            openstack.Username,
-			Password:            openstack.Password,
-			DomainName:          openstack.DomainName,
-			Region:              openstack.Region,
+			AuthURL:             secret.Openstack.AuthURL,
+			Username:            secret.Openstack.Username,
+			Password:            secret.Openstack.Password,
+			DomainName:          secret.Openstack.DomainName,
+			Region:              secret.Openstack.Region,
 			ProjectID:           kluster.Spec.Openstack.ProjectID,
 			LbSubnetID:          kluster.Spec.Openstack.LBSubnetID,
 			LbFloatingNetworkID: kluster.Spec.Openstack.LBFloatingNetworkID,
@@ -116,11 +107,11 @@ func KlusterToHelmValues(kluster *v1.Kluster, openstack *OpenstackOptions, certi
 			},
 			StorageContainer: etcd_util.DefaultStorageContainer(kluster),
 			Openstack: openstackValues{
-				AuthURL:    openstack.AuthURL,
-				Username:   openstack.Username,
-				Password:   openstack.Password,
-				DomainName: openstack.DomainName,
-				ProjectID:  kluster.Spec.Openstack.ProjectID,
+				AuthURL:    secret.Openstack.AuthURL,
+				Username:   secret.Openstack.Username,
+				Password:   secret.Openstack.Password,
+				DomainName: secret.Openstack.DomainName,
+				ProjectID:  secret.Openstack.ProjectID,
 			},
 		},
 		Api: apiValues{
