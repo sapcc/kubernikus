@@ -105,7 +105,7 @@ groups:
       description: The pod {{ $labels.namespace }}/{{ $labels.pod_name }} killed several times in short succession. This could be due to wrong resource limits.
 
   - alert: VolumeAttachmentFailed
-    expr: sum(increase(volume_mount_error_total[30m])) by (node) > 10 unless sum(increase(volume_mount_success_total[30m])) by (node) > 1
+    expr: sum(increase(volume_mount_error_total[30m])) by (node) > 5 unless sum(increase(volume_mount_success_total[30m])) by (node) > 1
     for: 5m
     labels:
       tier: kks
@@ -113,7 +113,8 @@ groups:
       severity: critical
       context: pvc
       playbook: docs/support/playbook/kubernikus/volume_attachment_failed.html
+      cloudops: "?searchTerm={{ $labels.node }}"
     annotations:
       summary: Volume attachments are failing for node
-      description: The node <https://dashboard.{{ $labels.region }}.cloud.sap/ccadmin/cloud_admin/cloudops#/universal-search/?searchTerm={{ $labels.node }}|{{ $labels.node }}> is having continous problems attaching volumes. Maybe the node is suffering from an VMware internal lock and needs to be migrated to clear it.
+      description: The node {{ $labels.node }} is having continous problems attaching volumes. Maybe the node is suffering from an VMware internal lock and needs to be migrated to clear it.
 
