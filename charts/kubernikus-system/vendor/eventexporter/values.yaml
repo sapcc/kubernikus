@@ -38,3 +38,13 @@ metrics:
           expr: SuccessfulMountVolume
         labels:
           node: Source.Host
+      - name: volume_multi_attach_error_total
+        event_matcher:
+        - key: InvolvedObject.Kind
+          expr: Pod
+        - key: Message
+          expr: Multi-Attach error for volume.*
+        - key: Reason
+          expr: FailedAttachVolume
+        labels:
+          node: InvolvedObject.Name
