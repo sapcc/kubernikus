@@ -79,6 +79,8 @@ func (d *DeorbitReconciler) Reconcile(kluster *v1.Kluster) (bool, error) {
 }
 
 func (d *DeorbitReconciler) deorbit(kluster *v1.Kluster) (err error) {
+
+	logger := log.With(d.Logger, "kluster", kluster.Spec.Name)
 	// The following channel is used to abort the deorbiting after a certain
 	// time. It is required because the deorbit wait-functions block indefinitely or
 	// until the stop channel is closed. This is used to unblock the workqueue.
@@ -86,14 +88,14 @@ func (d *DeorbitReconciler) deorbit(kluster *v1.Kluster) (err error) {
 	var once sync.Once
 
 	timer := time.AfterFunc(UnblockWorkerTimeout, func() {
-		d.Logger.Log("msg", "timeout waiting. unblocking the worker routine")
+		logger.Log("msg", "timeout waiting. unblocking the worker routine")
 		once.Do(func() { close(done) })
 	})
 	defer timer.Stop()
 	//We need to ensure the done channel is closed otherwise we leak goroutines (thanks to wait.PollUntil)
 	defer once.Do(func() { close(done) })
 
-	deorbiter, err := NewDeorbiter(kluster, done, d.Clients, d.Recorder, d.Logger)
+	deorbiter, err := NewDeorbiter(kluster, done, d.Clients, d.Recorder, logger)
 	if err != nil {
 		return err
 	}
