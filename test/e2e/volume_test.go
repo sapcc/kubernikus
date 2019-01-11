@@ -7,7 +7,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
@@ -36,7 +36,7 @@ func (v *VolumeTests) Run(t *testing.T) {
 	v.Nodes, err = v.Kubernetes.ClientSet.CoreV1().Nodes().List(meta_v1.ListOptions{})
 	require.NoError(t, err, "There must be no error while listing the kluster's nodes")
 
-	defer t.Run("Cleanup", v.DeleteNamespace)
+	//defer t.Run("Cleanup", v.DeleteNamespace)
 	t.Run("CreateNamespace", v.CreateNamespace)
 	t.Run("WaitNamespace", v.WaitForNamespace)
 	t.Run("CreatePVC", v.CreatePVC)
