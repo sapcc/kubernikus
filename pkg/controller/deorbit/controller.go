@@ -10,7 +10,7 @@ import (
 	"k8s.io/client-go/tools/record"
 
 	"github.com/sapcc/kubernikus/pkg/api/models"
-	"github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
+	v1 "github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
 	"github.com/sapcc/kubernikus/pkg/controller/base"
 	"github.com/sapcc/kubernikus/pkg/controller/config"
 	"github.com/sapcc/kubernikus/pkg/controller/metrics"
@@ -79,6 +79,8 @@ func (d *DeorbitReconciler) Reconcile(kluster *v1.Kluster) (bool, error) {
 }
 
 func (d *DeorbitReconciler) deorbit(kluster *v1.Kluster) (err error) {
+
+	logger := log.With(d.Logger, "kluster", kluster.Spec.Name)
 	// The following channel is used to abort the deorbiting after a certain
 	// time. It is required because the deorbit wait-functions block indefinitely or
 	// until the stop channel is closed. This is used to unblock the workqueue.
@@ -86,14 +88,14 @@ func (d *DeorbitReconciler) deorbit(kluster *v1.Kluster) (err error) {
 	var once sync.Once
 
 	timer := time.AfterFunc(UnblockWorkerTimeout, func() {
-		d.Logger.Log("msg", "timeout waiting. unblocking the worker routine")
+		logger.Log("msg", "timeout waiting. unblocking the worker routine")
 		once.Do(func() { close(done) })
 	})
 	defer timer.Stop()
 	//We need to ensure the done channel is closed otherwise we leak goroutines (thanks to wait.PollUntil)
 	defer once.Do(func() { close(done) })
 
-	deorbiter, err := NewDeorbiter(kluster, done, d.Clients, d.Recorder, d.Logger)
+	deorbiter, err := NewDeorbiter(kluster, done, d.Clients, d.Recorder, logger)
 	if err != nil {
 		return err
 	}
@@ -125,12 +127,12 @@ func (d *DeorbitReconciler) doDeorbit(deorbiter Deorbiter) (err error) {
 	return nil
 }
 
-func (d *DeorbitReconciler) doSelfDestruct(deorbiter Deorbiter, outer error) (err error) {
+func (d *DeorbitReconciler) doSelfDestruct(deorbiter Deorbiter, err error) error {
 	// If for some reason communication with the Kluster's apiserver is not possible,
 	// we retry until a timeout is reached. Then self-destruct and accept debris.
-	if errors.IsUnexpectedServerError(outer) || errors.IsServerTimeout(outer) {
+	if errors.IsUnexpectedServerError(err) || errors.IsServerTimeout(err) {
 		if deorbiter.IsAPIUnavailableTimeout() {
-			err = deorbiter.SelfDestruct(APIUnavailable)
+			return deorbiter.SelfDestruct(APIUnavailable)
 		}
 	}
 
@@ -140,7 +142,7 @@ func (d *DeorbitReconciler) doSelfDestruct(deorbiter Deorbiter, outer error) (er
 	// Kluster automatically without human interaction. It frees up the Kluster with
 	// the downside of potential debris in the customer's project.
 	if deorbiter.IsDeorbitHangingTimeout() {
-		err = deorbiter.SelfDestruct(DeorbitHanging)
+		return deorbiter.SelfDestruct(DeorbitHanging)
 	}
 
 	return err
