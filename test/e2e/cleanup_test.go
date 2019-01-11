@@ -1,11 +1,15 @@
 package main
 
 import (
+	"strings"
 	"testing"
 	"time"
 
+	"github.com/gophercloud/gophercloud"
+	"github.com/gophercloud/gophercloud/openstack"
 	blockstorage_quota "github.com/gophercloud/gophercloud/openstack/blockstorage/extensions/quotasets"
 	compute_quota "github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/quotasets"
+	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/servergroups"
 	"github.com/gophercloud/gophercloud/openstack/identity/v3/tokens"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -34,6 +38,7 @@ func (s *CleanupTests) Run(t *testing.T) {
 
 		if s.Reuse == false {
 			t.Run("QuotaPostFlightCheck", s.QuotaPostFlightCheck)
+			t.Run("ServerGroupsGotDeleted", s.ServerGroupsGotDeleted)
 		}
 	}
 }
@@ -74,4 +79,23 @@ func (s *CleanupTests) QuotaPostFlightCheck(t *testing.T) {
 	assert.True(t, quota.RAM.InUse == 0, "There should be no RAM left in use")
 	assert.True(t, storage.Volumes.InUse == 0, "There should be no Volume left in use")
 	assert.True(t, storage.Gigabytes.InUse == 0, "There should be no Storage left in use")
+}
+
+func (s *CleanupTests) ServerGroupsGotDeleted(t *testing.T) {
+	computeClient, err := openstack.NewComputeV2(s.OpenStack.Provider, gophercloud.EndpointOpts{})
+	require.NoError(t, err, "There should be no error creating compute client")
+
+	allPages, err := servergroups.List(computeClient).AllPages()
+	require.NoError(t, err, "There should be no error listing server groups")
+
+	allGroups, err := servergroups.ExtractServerGroups(allPages)
+	require.NoError(t, err, "There should be no error extracting server groups")
+
+	count := 0
+	for _, sg := range allGroups {
+		if strings.HasPrefix(sg.Name, "e2e-") {
+			count++
+		}
+	}
+	require.Equal(t, 0, count, "There should be no server groups left")
 }

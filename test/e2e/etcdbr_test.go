@@ -53,7 +53,7 @@ func (e *EtcdBackupTests) WaitForBackupRestore(t *testing.T) {
 	rv := pod.GetResourceVersion()
 	require.NotEmpty(t, rv, "ResourceVersion should not be empty")
 
-	cmd := fmt.Sprintf("rm -rf %s/*", EtcdDataDir)
+	cmd := fmt.Sprintf("mv %s %s.bak", EtcdDataDir, EtcdDataDir)
 	_, _, err = e.KubernetesControlPlane.ExecCommandInContainerWithFullOutput(e.Namespace, podName, "backup", "/bin/sh", "-c", cmd)
 	require.NoError(t, err, "Deletion of etcd data failed: %s", err)
 

@@ -169,7 +169,7 @@ func TestRunner(t *testing.T) {
 	apiTests := &APITests{kubernikus, klusterName}
 	t.Run("API", apiTests.Run)
 
-	nodeTests := &NodeTests{kubernetes, kubernikus, SmokeTestNodeCount, klusterName}
+	nodeTests := &NodeTests{kubernetes, kubernikus, openstack, SmokeTestNodeCount, klusterName}
 	if !t.Run("Nodes", nodeTests.Run) {
 		return
 	}
