@@ -8,6 +8,10 @@ import (
 	"testing"
 	"time"
 
+	"github.com/gophercloud/gophercloud"
+	"github.com/gophercloud/gophercloud/openstack"
+	"github.com/gophercloud/gophercloud/openstack/compute/v2/servers"
+	"github.com/gophercloud/gophercloud/openstack/identity/v3/tokens"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"k8s.io/api/core/v1"
@@ -33,6 +37,7 @@ const (
 type NodeTests struct {
 	Kubernetes        *framework.Kubernetes
 	Kubernikus        *framework.Kubernikus
+	OpenStack         *framework.OpenStack
 	ExpectedNodeCount int
 	KlusterName       string
 }
@@ -46,7 +51,8 @@ func (k *NodeTests) Run(t *testing.T) {
 		t.Run("Healthy", k.StateHealthy) &&
 		t.Run("Ready", k.ConditionReady) &&
 		t.Run("Labeled", k.Labeled) &&
-		t.Run("Sufficient", k.Sufficient)
+		t.Run("Sufficient", k.Sufficient) &&
+		t.Run("SameBuildingBlock", k.SameBuildingBlock)
 }
 
 func (k *NodeTests) StateRunning(t *testing.T) {
@@ -186,4 +192,40 @@ func (k *NodeTests) checkCondition(t *testing.T, conditionType v1.NodeConditionT
 		})
 
 	return count, err
+}
+
+func (k *NodeTests) SameBuildingBlock(t *testing.T) {
+	if k.ExpectedNodeCount < 2 {
+		return
+	}
+
+	computeClient, err := openstack.NewComputeV2(k.OpenStack.Provider, gophercloud.EndpointOpts{})
+	require.NoError(t, err, "There should be no error creating compute client")
+
+	project, err := tokens.Get(k.OpenStack.Identity, k.OpenStack.Provider.Token()).ExtractProject()
+	require.NoError(t, err, "There should be no error while extracting the project")
+
+	serversListOpts := servers.ListOpts{
+		Name:     "e2e-",
+		TenantID: project.ID,
+	}
+
+	allPages, err := servers.List(computeClient, serversListOpts).AllPages()
+	require.NoError(t, err, "There should be no error while listing all servers")
+
+	var s []struct {
+		BuildingBlock string `json:"OS-EXT-SRV-ATTR:host"`
+	}
+	err = servers.ExtractServersInto(allPages, &s)
+	require.NoError(t, err, "There should be no error extracting server info")
+
+	bb := ""
+	for _, bbs := range s {
+		require.NotEmpty(t, bbs.BuildingBlock, "Node building block should not be empty")
+		if bb == "" {
+			bb = string(bbs.BuildingBlock)
+		} else {
+			require.Equal(t, bb, bbs.BuildingBlock, "Nodes should be on the same building block")
+		}
+	}
 }
