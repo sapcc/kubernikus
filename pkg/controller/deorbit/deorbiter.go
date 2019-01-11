@@ -10,7 +10,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/record"
 
-	"github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
+	v1 "github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
 	"github.com/sapcc/kubernikus/pkg/controller/config"
 	"github.com/sapcc/kubernikus/pkg/controller/metrics"
 )
@@ -177,6 +177,10 @@ func (d *ConcreteDeorbiter) isPersistentVolumesCleanupFinished() (bool, error) {
 	}
 
 	for _, pv := range pvs.Items {
+		//ignore failed PVs
+		if pv.Status.Phase == core_v1.VolumeFailed {
+			continue
+		}
 		if pv.Spec.PersistentVolumeSource.Cinder != nil {
 			return false, nil
 		}
