@@ -584,6 +584,7 @@ auth_e2e_master: &auth_e2e_master
   OS_USER_DOMAIN_NAME: ccadmin
   OS_PROJECT_NAME: kubernikus-e2e
   OS_PROJECT_DOMAIN_NAME: ccadmin
+  OS_REGION_NAME: eu-nl-1
   KUBERNIKUS_NAME: e2e 
   KUBERNIKUS_URL: https://kubernikus-master.eu-nl-1.cloud.sap
   CP_OS_PROJECT_NAME: kubernikus-master

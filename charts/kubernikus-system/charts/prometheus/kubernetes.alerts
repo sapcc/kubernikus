@@ -88,6 +88,7 @@ groups:
       service: resources
       severity: warning
       context: memory
+      meta: {{ $labels.namespace }}/{{ $labels.pod_name }}
     annotations:
       summary: Pod was oomkilled recently
       description: The pod {{ $labels.namespace }}/{{ $labels.pod_name }} was hit at least once by the oom killer within 24h
@@ -100,6 +101,7 @@ groups:
       service: resources
       severity: critical
       context: memory
+      meta: {{ $labels.namespace }}/{{ $labels.pod_name }}
     annotations:
       summary: Pod was oomkilled more then 2 times in 30 minutes
       description: The pod {{ $labels.namespace }}/{{ $labels.pod_name }} killed several times in short succession. This could be due to wrong resource limits.
@@ -113,6 +115,7 @@ groups:
       severity: critical
       context: pvc
       playbook: docs/support/playbook/kubernikus/volume_attachment_failed.html
+      meta: "Node {{ $labels.node }}"
       cloudops: "?searchTerm={{ $labels.node }}"
     annotations:
       summary: Volume attachments are failing for node
