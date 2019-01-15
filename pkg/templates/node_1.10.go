@@ -83,9 +83,13 @@ systemd:
           --volume var-lib-cni,kind=host,source=/var/lib/cni \
           --volume var-log,kind=host,source=/var/log \
           --volume etc-machine-id,kind=host,source=/etc/machine-id,readOnly=true \
+          --volume modprobe,kind=host,source=/usr/sbin/modprobe \
+          --volume lib-modules,kind=host,source=/lib/modules \
           --mount volume=var-lib-cni,target=/var/lib/cni \
           --mount volume=var-log,target=/var/log \
           --mount volume=etc-machine-id,target=/etc/machine-id \
+          --mount volume=modprobe,target=/usr/sbin/modprobe \
+          --mount volume=lib-modules,target=/lib/modules \
           --insecure-options=image"
         Environment="KUBELET_IMAGE_TAG=v1.10.11"
         Environment="KUBELET_IMAGE_URL=docker://sapcc/hyperkube"
@@ -111,6 +115,7 @@ systemd:
 {{- if .NodeTaints }}
           --register-with-taints={{ .NodeTaints | join "," }} \
 {{- end }}
+          --volume-plugin-dir=/var/lib/kubelet/volumeplugins \
           --exit-on-lock-contention
         ExecStop=-/usr/bin/rkt stop --uuid-file=/var/run/kubelet-pod.uuid
         Restart=always
