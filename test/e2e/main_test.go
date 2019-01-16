@@ -97,6 +97,8 @@ func TestRunner(t *testing.T) {
 	fmt.Printf("Kluster Name:              %v\n", klusterName)
 	fmt.Printf("Reuse:                     %v\n", *reuse)
 	fmt.Printf("Cleanup:                   %v\n", *cleanup)
+	fmt.Println("")
+	fmt.Printf("Dashboard:                 https://dashboard.%s.cloud.sap/%s/%s/kubernetes\n", os.Getenv("OS_REGION_NAME"), os.Getenv("OS_PROJECT_DOMAIN_NAME"), os.Getenv("OS_PROJECT_NAME"))
 	if os.Getenv("CP_KUBERNIKUS_URL") != "" {
 		fmt.Printf("CP Kluster Name:           %v\n", os.Getenv("CP_KLUSTER"))
 	}
