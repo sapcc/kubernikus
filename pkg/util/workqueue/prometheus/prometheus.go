@@ -33,6 +33,7 @@ type prometheusMetricsProvider struct{}
 
 func (_ prometheusMetricsProvider) NewDepthMetric(name string) workqueue.GaugeMetric {
 	depth := prometheus.NewGauge(prometheus.GaugeOpts{
+		Namespace: "kubernikus",
 		Subsystem: name,
 		Name:      "depth",
 		Help:      "Current depth of workqueue: " + name,
@@ -43,6 +44,7 @@ func (_ prometheusMetricsProvider) NewDepthMetric(name string) workqueue.GaugeMe
 
 func (_ prometheusMetricsProvider) NewAddsMetric(name string) workqueue.CounterMetric {
 	adds := prometheus.NewCounter(prometheus.CounterOpts{
+		Namespace: "kubernikus",
 		Subsystem: name,
 		Name:      "adds",
 		Help:      "Total number of adds handled by workqueue: " + name,
@@ -53,6 +55,7 @@ func (_ prometheusMetricsProvider) NewAddsMetric(name string) workqueue.CounterM
 
 func (_ prometheusMetricsProvider) NewLatencyMetric(name string) workqueue.SummaryMetric {
 	latency := prometheus.NewSummary(prometheus.SummaryOpts{
+		Namespace: "kubernikus",
 		Subsystem: name,
 		Name:      "queue_latency",
 		Help:      "How long an item stays in workqueue" + name + " before being requested.",
@@ -63,6 +66,7 @@ func (_ prometheusMetricsProvider) NewLatencyMetric(name string) workqueue.Summa
 
 func (_ prometheusMetricsProvider) NewWorkDurationMetric(name string) workqueue.SummaryMetric {
 	workDuration := prometheus.NewSummary(prometheus.SummaryOpts{
+		Namespace: "kubernikus",
 		Subsystem: name,
 		Name:      "work_duration",
 		Help:      "How long processing an item from workqueue" + name + " takes.",
@@ -73,6 +77,7 @@ func (_ prometheusMetricsProvider) NewWorkDurationMetric(name string) workqueue.
 
 func (_ prometheusMetricsProvider) NewRetriesMetric(name string) workqueue.CounterMetric {
 	retries := prometheus.NewCounter(prometheus.CounterOpts{
+		Namespace: "kubernikus",
 		Subsystem: name,
 		Name:      "retries",
 		Help:      "Total number of retries handled by workqueue: " + name,
