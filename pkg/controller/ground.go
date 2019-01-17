@@ -23,7 +23,7 @@ import (
 	"k8s.io/helm/pkg/helm"
 
 	"github.com/sapcc/kubernikus/pkg/api/models"
-	"github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
+	v1 "github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
 	"github.com/sapcc/kubernikus/pkg/client/kubernetes"
 	"github.com/sapcc/kubernikus/pkg/controller/config"
 	"github.com/sapcc/kubernikus/pkg/controller/ground"
@@ -68,7 +68,7 @@ func NewGroundController(threadiness int, factories config.Factories, clients co
 		Factories:       factories,
 		Config:          config,
 		Recorder:        recorder,
-		queue:           workqueue.NewRateLimitingQueue(workqueue.NewItemExponentialFailureRateLimiter(5*time.Second, 300*time.Second)),
+		queue:           workqueue.NewNamedRateLimitingQueue(workqueue.NewItemExponentialFailureRateLimiter(5*time.Second, 300*time.Second), "ground"),
 		klusterInformer: factories.Kubernikus.Kubernikus().V1().Klusters(),
 		podInformer:     factories.Kubernetes.Core().V1().Pods(),
 		Logger:          logger,

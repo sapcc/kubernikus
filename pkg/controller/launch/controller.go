@@ -8,7 +8,7 @@ import (
 	"k8s.io/client-go/util/workqueue"
 
 	"github.com/sapcc/kubernikus/pkg/api/models"
-	"github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
+	v1 "github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
 	"github.com/sapcc/kubernikus/pkg/controller/base"
 	"github.com/sapcc/kubernikus/pkg/controller/config"
 	"github.com/sapcc/kubernikus/pkg/controller/metrics"
@@ -47,7 +47,7 @@ func NewController(threadiness int, factories config.Factories, clients config.C
 		Failed:     metrics.LaunchFailedOperationsTotal,
 	}
 
-	queue := workqueue.NewRateLimitingQueue(workqueue.NewItemExponentialFailureRateLimiter(base.BASE_DELAY, base.MAX_DELAY))
+	queue := workqueue.NewNamedRateLimitingQueue(workqueue.NewItemExponentialFailureRateLimiter(base.BASE_DELAY, base.MAX_DELAY), "launch")
 	factories.NodesObservatory.NodeInformer().AddEventHandlerFuncs(nodeobservatory.NodeEventHandlerFuncs{
 		AddFunc: func(kluster *v1.Kluster, node *core_v1.Node) {
 			if key, err := cache.MetaNamespaceKeyFunc(kluster); err == nil {
@@ -68,7 +68,7 @@ func NewController(threadiness int, factories config.Factories, clients config.C
 		},
 	})
 
-	return base.NewController(threadiness, factories, reconciler, logger, queue)
+	return base.NewController(threadiness, factories, reconciler, logger, queue, "launch")
 }
 
 func (lr *LaunchReconciler) Reconcile(kluster *v1.Kluster) (requeue bool, err error) {

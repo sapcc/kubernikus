@@ -59,7 +59,7 @@ func NewController(threadiness int, factories config.Factories, clients config.C
 		Successful: metrics.DeorbitSuccessfulOperationsTotal,
 		Failed:     metrics.DeorbitFailedOperationsTotal,
 	}
-	return base.NewController(threadiness, factories, reconciler, logger, nil)
+	return base.NewController(threadiness, factories, reconciler, logger, nil, "deorbit")
 
 }
 

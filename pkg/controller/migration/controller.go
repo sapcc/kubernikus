@@ -5,7 +5,7 @@ import (
 	api_v1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/tools/record"
 
-	"github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
+	v1 "github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
 	"github.com/sapcc/kubernikus/pkg/controller/base"
 	"github.com/sapcc/kubernikus/pkg/controller/config"
 	"github.com/sapcc/kubernikus/pkg/migration"
@@ -31,7 +31,7 @@ func NewController(threadiness int, factories config.Factories, clients config.C
 	var reconciler base.Reconciler
 	reconciler = &MigrationReconciler{clients, factories, recorder, logger}
 
-	return base.NewController(threadiness, factories, reconciler, logger, nil)
+	return base.NewController(threadiness, factories, reconciler, logger, nil, "migration")
 }
 
 func (mr *MigrationReconciler) Reconcile(kluster *v1.Kluster) (bool, error) {

@@ -11,7 +11,7 @@ import (
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/util/workqueue"
 
-	"github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
+	v1 "github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
 	"github.com/sapcc/kubernikus/pkg/controller/config"
 )
 
@@ -41,7 +41,7 @@ type controller struct {
 	threadiness int
 }
 
-func NewController(threadiness int, factories config.Factories, reconciler Reconciler, logger log.Logger, queue workqueue.RateLimitingInterface) Controller {
+func NewController(threadiness int, factories config.Factories, reconciler Reconciler, logger log.Logger, queue workqueue.RateLimitingInterface, name string) Controller {
 	c := &controller{
 		Factories:   factories,
 		queue:       queue,
@@ -50,7 +50,7 @@ func NewController(threadiness int, factories config.Factories, reconciler Recon
 		threadiness: threadiness,
 	}
 	if c.queue == nil {
-		c.queue = workqueue.NewRateLimitingQueue(workqueue.NewItemExponentialFailureRateLimiter(BASE_DELAY, MAX_DELAY))
+		c.queue = workqueue.NewNamedRateLimitingQueue(workqueue.NewItemExponentialFailureRateLimiter(BASE_DELAY, MAX_DELAY), name)
 	}
 
 	c.Factories.Kubernikus.Kubernikus().V1().Klusters().Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{

@@ -15,7 +15,7 @@ import (
 	"k8s.io/client-go/util/workqueue"
 
 	"github.com/sapcc/kubernikus/pkg/api/models"
-	"github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
+	v1 "github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
 	kube "github.com/sapcc/kubernikus/pkg/client/kubernetes"
 	kubernikus_informers_v1 "github.com/sapcc/kubernikus/pkg/generated/informers/externalversions/kubernikus/v1"
 )
@@ -62,7 +62,7 @@ func NewController(informer kubernikus_informers_v1.KlusterInformer, factory kub
 	controller := &NodeObservatory{
 		clientFactory:   factory,
 		klusterInformer: informer,
-		queue:           workqueue.NewRateLimitingQueue(workqueue.NewItemExponentialFailureRateLimiter(BaseDelay, MaxDelay)),
+		queue:           workqueue.NewNamedRateLimitingQueue(workqueue.NewItemExponentialFailureRateLimiter(BaseDelay, MaxDelay), "nodeobservatory"),
 		logger:          logger,
 		nodeInformerMap: sync.Map{},
 		threadiness:     threadiness,

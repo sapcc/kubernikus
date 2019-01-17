@@ -4,7 +4,7 @@ import (
 	"github.com/go-kit/kit/log"
 	"k8s.io/client-go/tools/record"
 
-	"github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
+	v1 "github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
 	"github.com/sapcc/kubernikus/pkg/controller/base"
 	"github.com/sapcc/kubernikus/pkg/controller/config"
 )
@@ -71,7 +71,7 @@ func NewController(threadiness int, factories config.Factories, clients config.C
 	var controller base.Reconciler
 	controller = &FlightController{factory, logger}
 
-	return base.NewController(threadiness, factories, controller, logger, nil)
+	return base.NewController(threadiness, factories, controller, logger, nil, "flight")
 }
 
 func (d *FlightController) Reconcile(kluster *v1.Kluster) (bool, error) {
