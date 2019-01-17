@@ -8,14 +8,14 @@ import (
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack"
 	"github.com/gophercloud/gophercloud/openstack/identity/v3/tokens"
-	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	core_v1 "k8s.io/client-go/kubernetes/typed/core/v1"
+	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/cache"
 
 	kubernikus_v1 "github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
 	"github.com/sapcc/kubernikus/pkg/client/openstack/admin"
 	openstack_kluster "github.com/sapcc/kubernikus/pkg/client/openstack/kluster"
 	openstack_project "github.com/sapcc/kubernikus/pkg/client/openstack/project"
+	util "github.com/sapcc/kubernikus/pkg/util"
 	utillog "github.com/sapcc/kubernikus/pkg/util/log"
 )
 
@@ -33,15 +33,15 @@ type factory struct {
 	projectClients sync.Map
 	adminClient    admin.AdminClient
 
-	secrets          core_v1.SecretInterface
+	client           kubernetes.Interface
 	klusters         cache.SharedIndexInformer
 	adminAuthOptions *tokens.AuthOptions
 	logger           log.Logger
 }
 
-func NewSharedOpenstackClientFactory(secrets core_v1.SecretInterface, klusters cache.SharedIndexInformer, adminAuthOptions *tokens.AuthOptions, logger log.Logger) SharedOpenstackClientFactory {
+func NewSharedOpenstackClientFactory(client kubernetes.Interface, klusters cache.SharedIndexInformer, adminAuthOptions *tokens.AuthOptions, logger log.Logger) SharedOpenstackClientFactory {
 	factory := &factory{
-		secrets:          secrets,
+		client:           client,
 		klusters:         klusters,
 		adminAuthOptions: adminAuthOptions,
 		logger:           logger,
@@ -140,19 +140,19 @@ func (f *factory) projectClient(projectID string, authOptions *tokens.AuthOption
 }
 
 func (f *factory) authOptionsForKluster(kluster *kubernikus_v1.Kluster) (*tokens.AuthOptions, error) {
-	secret, err := f.secrets.Get(kluster.Name, meta_v1.GetOptions{})
+	secret, err := util.KlusterSecret(f.client, kluster)
 	if err != nil {
-		return nil, fmt.Errorf("Couldn't retrieve secret %s/%s: %v", kluster.GetNamespace(), kluster.Name, err)
+		return nil, err
 	}
 
 	authOptions := &tokens.AuthOptions{
-		IdentityEndpoint: string(secret.Data["openstack-auth-url"]),
-		Username:         string(secret.Data["openstack-username"]),
-		Password:         string(secret.Data["openstack-password"]),
-		DomainName:       string(secret.Data["openstack-domain-name"]),
+		IdentityEndpoint: secret.Openstack.AuthURL,
+		Username:         secret.Openstack.Username,
+		Password:         secret.Openstack.Password,
+		DomainName:       secret.Openstack.DomainName,
 		AllowReauth:      true,
 		Scope: tokens.Scope{
-			ProjectID: string(secret.Data["openstack-project-id"]),
+			ProjectID: secret.Openstack.ProjectID,
 		},
 	}
 

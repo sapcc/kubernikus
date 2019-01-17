@@ -70,24 +70,48 @@ func UpdateKlusterPhase(client clientset.KubernikusV1Interface, kluster *v1.Klus
 }
 
 func EnsureKlusterSecret(client kubernetes.Interface, kluster *v1.Kluster) (*v1.Secret, error) {
+
+	klusterRef := NewOwnerRef(kluster, v1.SchemeGroupVersion.WithKind("Kluster"))
 	s := api_v1.Secret{
 		ObjectMeta: meta_v1.ObjectMeta{
-			Name:   klusterSecretName(kluster),
-			Labels: kluster.Labels,
-			OwnerReferences: []meta_v1.OwnerReference{meta_v1.OwnerReference{
-				APIVersion: kluster.APIVersion,
-				Kind:       kluster.Kind,
-				Name:       kluster.Name,
-				UID:        kluster.UID,
-			}},
+			Name:            klusterSecretName(kluster),
+			Labels:          kluster.Labels,
+			OwnerReferences: []meta_v1.OwnerReference{*klusterRef},
 		},
 	}
 	apiSecret, err := client.Core().Secrets(kluster.Namespace).Create(&s)
 	if apierrors.IsAlreadyExists(err) {
 		return KlusterSecret(client, kluster)
 	}
+	if err != nil {
+		return nil, err
+	}
 	return v1.NewSecret(apiSecret)
 }
+
+// NOTE: this is not threadsafe (but we are only calling this once per kluster for the time beeing)
+func UpdateKlusterSecret(client kubernetes.Interface, kluster *v1.Kluster, secret *v1.Secret) error {
+	api_secret, err := client.Core().Secrets(kluster.Namespace).Get(klusterSecretName(kluster), meta_v1.GetOptions{})
+	if err != nil {
+		return err
+	}
+	api_secret.Data, err = secret.ToData()
+	if err != nil {
+		return fmt.Errorf("Failed to serialize secret data: %s", err)
+	}
+	_, err = client.Core().Secrets(kluster.Namespace).Update(api_secret)
+	return err
+
+}
+
+func DeleteKlusterSecret(client kubernetes.Interface, kluster *v1.Kluster) error {
+	err := client.Core().Secrets(kluster.Namespace).Delete(klusterSecretName(kluster), nil)
+	if apierrors.IsNotFound(err) {
+		return nil
+	}
+	return err
+}
+
 func klusterSecretName(k *v1.Kluster) string {
 	return k.Name + "-secret"
 }

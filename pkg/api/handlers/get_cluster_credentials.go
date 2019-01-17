@@ -13,7 +13,6 @@ import (
 	"github.com/sapcc/kubernikus/pkg/api"
 	"github.com/sapcc/kubernikus/pkg/api/models"
 	"github.com/sapcc/kubernikus/pkg/api/rest/operations"
-	"github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
 	"github.com/sapcc/kubernikus/pkg/client/kubernetes"
 	"github.com/sapcc/kubernikus/pkg/util"
 )
@@ -28,24 +27,22 @@ type getClusterCredentials struct {
 
 func (d *getClusterCredentials) Handle(params operations.GetClusterCredentialsParams, principal *models.Principal) middleware.Responder {
 
-	secret, err := d.Kubernetes.CoreV1().Secrets(d.Namespace).Get(qualifiedName(params.Name, principal.Account), meta_v1.GetOptions{})
-	if err != nil {
-		if apierrors.IsNotFound(err) {
-			return NewErrorResponse(&operations.GetClusterCredentialsDefault{}, 404, "Not found")
-		}
-		return NewErrorResponse(&operations.GetClusterCredentialsDefault{}, 500, err.Error())
-	}
-
 	kluster, err := d.Kubernikus.Kubernikus().Klusters(d.Namespace).Get(qualifiedName(params.Name, principal.Account), meta_v1.GetOptions{})
 	if err != nil {
 		if apierrors.IsNotFound(err) {
-			return NewErrorResponse(&operations.GetClusterCredentialsDefault{}, 404, "Not found")
+			return NewErrorResponse(&operations.GetClusterCredentialsDefault{}, 404, "Kluster not found")
+		}
+		return NewErrorResponse(&operations.GetClusterCredentialsDefault{}, 500, err.Error())
+	}
+	secret, err := util.KlusterSecret(d.Kubernetes, kluster)
+	if err != nil {
+		if apierrors.IsNotFound(err) {
+			return NewErrorResponse(&operations.GetClusterCredentialsDefault{}, 404, "Secret not found")
 		}
 		return NewErrorResponse(&operations.GetClusterCredentialsDefault{}, 500, err.Error())
 	}
 
-	klusterSecret, err := v1.NewSecret(secret)
-	factory := util.NewCertificateFactory(kluster, &klusterSecret.Certificates, "")
+	factory := util.NewCertificateFactory(kluster, &secret.Certificates, "")
 
 	var organizations []string
 	for _, role := range principal.Roles {
@@ -62,7 +59,7 @@ func (d *getClusterCredentials) Handle(params operations.GetClusterCredentialsPa
 		kluster.Status.Apiserver,
 		certutil.EncodePrivateKeyPEM(cert.PrivateKey),
 		certutil.EncodeCertPEM(cert.Certificate),
-		[]byte(klusterSecret.TLSCACertificate),
+		[]byte(secret.TLSCACertificate),
 	)
 
 	kubeconfig, err := yaml.Marshal(config)

@@ -135,12 +135,11 @@ func NewKubernikusOperator(options *KubernikusOperatorOptions, logger log.Logger
 	o.Factories.Kubernikus = kubernikus_informers.NewFilteredSharedInformerFactory(o.Clients.Kubernikus, DEFAULT_RECONCILIATION, options.Namespace, nil)
 	o.Factories.Kubernetes = kubernetes_informers.NewFilteredSharedInformerFactory(o.Clients.Kubernetes, DEFAULT_RECONCILIATION, options.Namespace, nil)
 
-	secrets := o.Clients.Kubernetes.Core().Secrets(options.Namespace)
 	klusters := o.Factories.Kubernikus.Kubernikus().V1().Klusters().Informer()
 
-	o.Factories.Openstack = openstack.NewSharedOpenstackClientFactory(secrets, klusters, adminAuthOptions, logger)
+	o.Factories.Openstack = openstack.NewSharedOpenstackClientFactory(o.Clients.Kubernetes, klusters, adminAuthOptions, logger)
 
-	o.Clients.Satellites = kube.NewSharedClientFactory(secrets, klusters, logger)
+	o.Clients.Satellites = kube.NewSharedClientFactory(o.Clients.Kubernetes, klusters, logger)
 	o.Clients.OpenstackAdmin, err = o.Factories.Openstack.AdminClient()
 	if err != nil {
 		return nil, fmt.Errorf("Couldn't create Openstack client: %v", err)

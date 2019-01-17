@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	"github.com/sapcc/kubernikus/pkg/api/models"
-	"github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
+	v1 "github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
 	openstack_kluster "github.com/sapcc/kubernikus/pkg/client/openstack/kluster"
 	"github.com/sapcc/kubernikus/pkg/controller/config"
 	"github.com/sapcc/kubernikus/pkg/controller/metrics"
@@ -185,7 +185,8 @@ func (cpm *ConcretePoolManager) SetStatus(status *PoolStatus) error {
 }
 
 func (cpm *ConcretePoolManager) CreateNode() (id string, err error) {
-	secret, err := cpm.Clients.Kubernetes.CoreV1().Secrets(cpm.Kluster.Namespace).Get(cpm.Kluster.GetName(), metav1.GetOptions{})
+
+	secret, err := util.KlusterSecret(cpm.Clients.Kubernetes, cpm.Kluster)
 	if err != nil {
 		return "", err
 	}

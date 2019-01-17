@@ -16,7 +16,6 @@ func NewCertificatesCommand() *cobra.Command {
 	c.AddCommand(
 		certificates.NewFilesCommand(),
 		certificates.NewPlainCommand(),
-		certificates.NewSignCommand(),
 	)
 
 	return c

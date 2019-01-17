@@ -2,6 +2,7 @@ package v1
 
 import (
 	"encoding/json"
+	"fmt"
 
 	corev1 "k8s.io/api/core/v1"
 )
@@ -52,6 +53,7 @@ func (s *Secret) ToStringData() (map[string]string, error) {
 	if err := json.Unmarshal(jdata, &result); err != nil {
 		return nil, err
 	}
+	result["apiserver-clients-and-nodes-ca.pem"] = fmt.Sprintf("%s\n%s", s.ApiserverClientsCACertifcate, s.ApiserverNodesCACertificate)
 	return result, nil
 }
 
@@ -66,7 +68,7 @@ type Openstack struct {
 
 type Certificates struct {
 	ApiserverClientsCAPrivateKey                     string `json:"apiserver-clients-ca-key.pem"`
-	ApiserverClientsCACertiifcate                    string `json:"apiserver-clients-ca.pem"`
+	ApiserverClientsCACertifcate                     string `json:"apiserver-clients-ca.pem"`
 	ApiserverClientsClusterAdminPrivateKey           string `json:"apiserver-clients-cluster-admin-key.pem""`
 	ApiserverClientsClusterAdminCertificate          string `json:"apiserver-clients-cluster-admin.pem"`
 	ApiserverClientsKubeControllerManagerPrivateKey  string `json:"apiserver-clients-system-kube-controller-manager-key.pem"`
@@ -83,8 +85,8 @@ type Certificates struct {
 
 	EtcdClientsCAPrivateKey         string `json:"etcd-clients-ca-key.pem"`
 	EtcdClientsCACertificate        string `json:"etcd-clients-ca.pem"`
-	EtcdClientsApiserverPrivateKey  string "etcd-clients-apiserver-key.pem"
-	EtcdClientsApiserverCertificate string "etcd-clients-apiserver.pem"
+	EtcdClientsApiserverPrivateKey  string `json:"etcd-clients-apiserver-key.pem"`
+	EtcdClientsApiserverCertificate string `json:"etcd-clients-apiserver.pem"`
 
 	EtcdPeersCAPrivateKey  string `json:"etcd-peers-ca-key.pem"`
 	EtcdPeersCACertificate string `json:"etcd-peers-ca.pem"`

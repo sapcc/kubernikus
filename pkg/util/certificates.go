@@ -15,7 +15,7 @@ import (
 	certutil "k8s.io/client-go/util/cert"
 
 	"github.com/sapcc/kubernikus/pkg/api/models"
-	"github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
+	v1 "github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
 )
 
 const (
@@ -126,7 +126,7 @@ func (cf *CertificateFactory) Ensure() error {
 	if err != nil {
 		return err
 	}
-	apiserverClientsCA, err := loadOrCreateCA(cf.kluster, "ApiServer Clients", &cf.store.ApiserverClientsCACertiifcate, &cf.store.ApiserverClientsCAPrivateKey)
+	apiserverClientsCA, err := loadOrCreateCA(cf.kluster, "ApiServer Clients", &cf.store.ApiserverClientsCACertifcate, &cf.store.ApiserverClientsCAPrivateKey)
 	if err != nil {
 		return err
 	}
@@ -134,7 +134,7 @@ func (cf *CertificateFactory) Ensure() error {
 	if err != nil {
 		return err
 	}
-	kubeletClientsCA, err := loadOrCreateCA(cf.kluster, "Kubelet Clients", &cf.store.KubeletClientsCACertificate, &cf.store.KubeletClientsApiserverPrivateKey)
+	kubeletClientsCA, err := loadOrCreateCA(cf.kluster, "Kubelet Clients", &cf.store.KubeletClientsCACertificate, &cf.store.KubeletClientsCAPrivateKey)
 	if err != nil {
 		return err
 	}
@@ -142,7 +142,7 @@ func (cf *CertificateFactory) Ensure() error {
 	if err != nil {
 		return err
 	}
-	aggregationCA, err := loadOrCreateCA(cf.kluster, "Aggregation", &cf.store.AggregationAggregatorCertificate, &cf.store.AggregationAggregatorPrivateKey)
+	aggregationCA, err := loadOrCreateCA(cf.kluster, "Aggregation", &cf.store.AggregationCACertificate, &cf.store.AggregationCAPrivateKey)
 	if err != nil {
 		return err
 	}
@@ -159,7 +159,7 @@ func (cf *CertificateFactory) Ensure() error {
 	if err := ensureClientCertificate(apiserverClientsCA, "system:kube-proxy", nil, &cf.store.ApiserverClientsKubeProxyCertificate, &cf.store.ApiserverClientsKubeProxyPrivateKey); err != nil {
 		return err
 	}
-	if err := ensureClientCertificate(apiserverClientsCA, "system:kube-scheduler", nil, &cf.store.ApiserverClientsKubeSchedulerCertificate, &cf.store.ApiserverClientsKubeControllerManagerPrivateKey); err != nil {
+	if err := ensureClientCertificate(apiserverClientsCA, "system:kube-scheduler", nil, &cf.store.ApiserverClientsKubeSchedulerCertificate, &cf.store.ApiserverClientsKubeSchedulerPrivateKey); err != nil {
 		return err
 	}
 	if err := ensureClientCertificate(apiserverClientsCA, "kubernikus:wormhole", nil, &cf.store.ApiserverClientsKubernikusWormholeCertificate, &cf.store.ApiserverClientsKubernikusWormholePrivateKey); err != nil {
@@ -183,7 +183,7 @@ func (cf *CertificateFactory) Ensure() error {
 		[]string{fmt.Sprintf("%v-wormhole.%v", cf.kluster.Name, cf.domain)},
 		nil,
 		&cf.store.TLSWormholeCertificate,
-		&cf.store.TLSApiserverPrivateKey); err != nil {
+		&cf.store.TLSWormholePrivateKey); err != nil {
 		return err
 	}
 
@@ -192,7 +192,7 @@ func (cf *CertificateFactory) Ensure() error {
 
 func (cf *CertificateFactory) UserCert(principal *models.Principal, apiURL string) (*Bundle, error) {
 
-	caBundle, err := NewBundle([]byte(cf.store.ApiserverClientsCAPrivateKey), []byte(cf.store.ApiserverClientsCACertiifcate))
+	caBundle, err := NewBundle([]byte(cf.store.ApiserverClientsCAPrivateKey), []byte(cf.store.ApiserverClientsCACertifcate))
 	if err != nil {
 		return nil, err
 	}

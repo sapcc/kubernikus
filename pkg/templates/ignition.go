@@ -14,7 +14,6 @@ import (
 	"github.com/coreos/ignition/config/validate/report"
 	"github.com/go-kit/kit/log"
 	"github.com/tredoe/osutil/user/crypt/sha512_crypt"
-	"k8s.io/api/core/v1"
 
 	"github.com/sapcc/kubernikus/pkg/api/models"
 	kubernikusv1 "github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
@@ -55,12 +54,7 @@ func (i *ignition) getIgnitionTemplate(kluster *kubernikusv1.Kluster) string {
 	}
 }
 
-func (i *ignition) GenerateNode(kluster *kubernikusv1.Kluster, pool *models.NodePool, nodeName string, secret *v1.Secret, logger log.Logger) ([]byte, error) {
-	for _, field := range i.requiredNodeSecrets {
-		if _, ok := secret.Data[field]; !ok {
-			return nil, fmt.Errorf("Field %s missing in secret", field)
-		}
-	}
+func (i *ignition) GenerateNode(kluster *kubernikusv1.Kluster, pool *models.NodePool, nodeName string, secret *kubernikusv1.Secret, logger log.Logger) ([]byte, error) {
 
 	ignition := i.getIgnitionTemplate(kluster)
 	tmpl, err := template.New("node").Funcs(sprig.TxtFuncMap()).Parse(ignition)
@@ -71,7 +65,7 @@ func (i *ignition) GenerateNode(kluster *kubernikusv1.Kluster, pool *models.Node
 	//this is the old default for backwards comptibility with clusters that don't have a passwort generated
 	//TODO: Remove once all klusters are upgraded
 	passwordHash := "$6$rounds=1000000$aldshc,xbneroyw$I756LN/FtceE1deC2H.tGeSdeeelaaZWRwzmbEuO1SANf7ssyPjnbQjlW/FcMvWGUGrhF64tX9fK0abE/4oQ80"
-	if nodePassword, ok := secret.Data["node-password"]; ok {
+	if secret.NodePassword != "" {
 		passwordCrypter := sha512_crypt.New()
 		//generate 16 byte random salt
 		salt, err := goutils.Random(sha512_crypt.SaltLenMax, 32, 127, true, true)
@@ -82,7 +76,7 @@ func (i *ignition) GenerateNode(kluster *kubernikusv1.Kluster, pool *models.Node
 		//Reason for this is we expose the resulting hash in the metadata service which is not very secure.
 		//It takes about 500ms on my workstation to compute this hash. So this means login to a node is also
 		// delayed for about a second which should be ok as this password is only meant as a last resort.
-		passwordHash, err = passwordCrypter.Generate(nodePassword, append([]byte(fmt.Sprintf("%srounds=%d$", sha512_crypt.MagicPrefix, passwordHashRounds)), salt...))
+		passwordHash, err = passwordCrypter.Generate([]byte(secret.NodePassword), append([]byte(fmt.Sprintf("%srounds=%d$", sha512_crypt.MagicPrefix, passwordHashRounds)), salt...))
 		if err != nil {
 			return nil, fmt.Errorf("Faied to generate salted password: %s", err)
 		}
@@ -127,21 +121,21 @@ func (i *ignition) GenerateNode(kluster *kubernikusv1.Kluster, pool *models.Node
 		NodeTaints                         []string
 		NodeName                           string
 	}{
-		TLSCA:                              string(secret.Data["tls-ca.pem"]),
-		KubeletClientsCA:                   string(secret.Data["kubelet-clients-ca.pem"]),
-		ApiserverClientsSystemKubeProxy:    string(secret.Data["apiserver-clients-system-kube-proxy.pem"]),
-		ApiserverClientsSystemKubeProxyKey: string(secret.Data["apiserver-clients-system-kube-proxy-key.pem"]),
-		BootstrapToken:                     string(secret.Data["bootstrapToken"]),
+		TLSCA:                              secret.TLSCACertificate,
+		KubeletClientsCA:                   secret.KubeletClientsCACertificate,
+		ApiserverClientsSystemKubeProxy:    secret.ApiserverClientsKubeProxyCertificate,
+		ApiserverClientsSystemKubeProxyKey: secret.ApiserverClientsKubeProxyPrivateKey,
+		BootstrapToken:                     secret.BootstrapToken,
 		ClusterCIDR:                        kluster.Spec.ClusterCIDR,
 		ClusterDNSAddress:                  kluster.Spec.DNSAddress,
 		ClusterDomain:                      kluster.Spec.DNSDomain,
 		ApiserverURL:                       kluster.Status.Apiserver,
 		ApiserverIP:                        kluster.Spec.AdvertiseAddress,
-		OpenstackAuthURL:                   string(secret.Data["openstack-auth-url"]),
-		OpenstackUsername:                  string(secret.Data["openstack-username"]),
-		OpenstackPassword:                  string(secret.Data["openstack-password"]),
-		OpenstackDomain:                    string(secret.Data["openstack-domain-name"]),
-		OpenstackRegion:                    string(secret.Data["openstack-region"]),
+		OpenstackAuthURL:                   secret.Openstack.AuthURL,
+		OpenstackUsername:                  secret.Openstack.Username,
+		OpenstackPassword:                  secret.Openstack.Password,
+		OpenstackDomain:                    secret.Openstack.DomainName,
+		OpenstackRegion:                    secret.Openstack.Region,
 		OpenstackLBSubnetID:                kluster.Spec.Openstack.LBSubnetID,
 		OpenstackLBFloatingNetworkID:       kluster.Spec.Openstack.LBFloatingNetworkID,
 		OpenstackRouterID:                  kluster.Spec.Openstack.RouterID,
