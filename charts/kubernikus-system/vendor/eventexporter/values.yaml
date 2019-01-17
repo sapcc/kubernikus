@@ -1,7 +1,15 @@
 image:
   repository: sapcc/kubernetes-eventexporter
-  tag: 0.1.0
+  tag: 0.2.0
   pullPolicy: IfNotPresent
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 20Mi
+  limits:
+    cpu: 200m
+    memory: 100Mi
 
 metrics:
   port: "9102"
@@ -12,14 +20,14 @@ metrics:
         event_matcher:
         - key: InvolvedObject.Kind
           expr: Pod
-        - key: Message
-          expr: Unable to mount volumes for pod.*
         - key: Reason
-          expr: FailedMount
+          expr: FailedAttachVolume
         - key: Type
           expr: Warning
+        - key: Source.Component
+          expr: attachdetach.*
         labels:
-          node: Source.Host
+          node: Object.Spec.NodeName
       - name: volume_mount_success_total
         event_matcher:
         - key: InvolvedObject.Kind

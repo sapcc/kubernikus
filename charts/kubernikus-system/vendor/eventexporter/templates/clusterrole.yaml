@@ -6,3 +6,6 @@ rules:
 - apiGroups: [""]
   resources: ["events"]
   verbs: ["get", "watch", "list"]
+- apiGroups: [""]
+  resources: ["pods"]
+  verbs: ["get"]

@@ -24,14 +24,17 @@ spec:
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
         imagePullPolicy: {{ .Values.image.pullPolicy }}
         args:
+        - -discard=60s
         - -logtostderr
         - -listen-address=:{{ default 9102 .Values.metrics.port }}
+        - -v=0
         volumeMounts:
         - name: config-volume
           mountPath: /etc/eventexporter
         ports:
         - name: metrics
           containerPort: {{ default 9102 .Values.metrics.port }}
+{{ toYaml .Values.resources | indent 8 }}
       serviceAccount: {{ template "name" . }}
       volumes:
       - name: config-volume
