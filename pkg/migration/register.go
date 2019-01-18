@@ -10,6 +10,7 @@ func init() {
 		Init,
 		AddAggregationLayerCertificates,
 		CreateEtcdBackupStorageContainer,
+		MigrateKlusterSecret,
 		// <-- Insert new migrations at the end only!
 	}
 }
