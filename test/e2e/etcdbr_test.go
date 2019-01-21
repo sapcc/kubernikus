@@ -16,7 +16,7 @@ const (
 	EtcdFailPollInterval    = 1 * time.Second
 	EtcdFailTimeout         = 90 * time.Second
 	EtcdRestorePollInterval = 1 * time.Second
-	EtcdRestoreTimeout      = 90 * time.Second
+	EtcdRestoreTimeout      = 3 * time.Minute
 	EtcdDataDir             = "/var/lib/etcd/new.etcd"
 )
 
@@ -67,11 +67,12 @@ func (e *EtcdBackupTests) WaitForBackupRestore(t *testing.T) {
 	require.NotEqual(t, rv, newRv, "Etcd is still up, can't test recovery")
 
 	var newUID string
-	wait.PollImmediate(EtcdRestorePollInterval, EtcdRestoreTimeout,
+	err = wait.PollImmediate(EtcdRestorePollInterval, EtcdRestoreTimeout,
 		func() (bool, error) {
 			newUID, _ = e.getServiceAccountUID("default", "default")
 			return (UID == newUID), nil
 		})
+	require.NoError(t, err)
 	require.EqualValues(t, UID, newUID, "Recovery of etcd backup failed")
 }
 
