@@ -13,7 +13,7 @@ import (
 	"k8s.io/client-go/tools/record"
 
 	"github.com/sapcc/kubernikus/pkg/api/models"
-	"github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
+	v1 "github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
 	"github.com/sapcc/kubernikus/pkg/controller/base"
 	"github.com/sapcc/kubernikus/pkg/controller/config"
 	"github.com/sapcc/kubernikus/pkg/controller/metrics"
@@ -46,6 +46,11 @@ func New(syncPeriod time.Duration, timeout time.Duration, factories config.Facto
 func (hc *hammertimeController) Reconcile(kluster *v1.Kluster) error {
 	logger := kitlog.With(hc.logger, "kluster", kluster.GetName())
 
+	//No Hammertime if kluster is not in state Running yet
+	if kluster.Status.Phase == models.KlusterPhasePending || kluster.Status.Phase == models.KlusterPhaseCreating {
+		return nil
+	}
+
 	lister, err := hc.nodeObervatory.GetListerForKluster(kluster)
 	if err != nil {
 		return fmt.Errorf("Failed to get node lister: %s", err)
@@ -55,7 +60,7 @@ func (hc *hammertimeController) Reconcile(kluster *v1.Kluster) error {
 		return fmt.Errorf("listing nodes failed: %s", err)
 	}
 
-	// No Hammertime if kluster is not in state Running and has at least 2 nodes
+	// No Hammertime if the cluster is terminating or has less then two nodes
 	if len(nodes) < 2 || kluster.Status.Phase != models.KlusterPhaseRunning {
 		metrics.HammertimeStatus.WithLabelValues(kluster.Name).Set(0)
 		return hc.scaleDeployment(kluster, false, logger)

@@ -13,7 +13,8 @@ import (
 	"github.com/gophercloud/gophercloud/pagination"
 	"github.com/prometheus/client_golang/prometheus"
 
-	"github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
+	"github.com/sapcc/kubernikus/pkg/api/models"
+	v1 "github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
 	os_client "github.com/sapcc/kubernikus/pkg/client/openstack"
 	"github.com/sapcc/kubernikus/pkg/controller/base"
 	"github.com/sapcc/kubernikus/pkg/controller/config"
@@ -38,6 +39,12 @@ func New(syncPeriod time.Duration, factories config.Factories, logger log.Logger
 }
 
 func (w *routeGarbageCollector) Reconcile(kluster *v1.Kluster) (err error) {
+
+	//skip klusters not in state Running
+	if kluster.Status.Phase != models.KlusterPhaseRunning {
+		return nil
+	}
+
 	routerID := kluster.Spec.Openstack.RouterID
 	defer func(begin time.Time) {
 		if err != nil {
