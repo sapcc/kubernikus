@@ -47,6 +47,11 @@ func (mr *MigrationReconciler) Reconcile(kluster *v1.Kluster) (bool, error) {
 		return false, err
 	}
 
+	// don't continue if the updated staus is not reflected yet, wait for the next reconciliation update (triggerd by the migration status update)
+	if !kluster.Status.MigrationsPending {
+		return false, nil
+	}
+
 	err := migration.Migrate(kluster, mr.Kubernetes, mr.Kubernikus, mr.Factories.Openstack)
 	mr.Logger.Log(
 		"msg", "Migrating spec",
