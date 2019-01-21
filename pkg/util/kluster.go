@@ -89,7 +89,7 @@ func EnsureKlusterSecret(client kubernetes.Interface, kluster *v1.Kluster) (*v1.
 	return v1.NewSecret(apiSecret)
 }
 
-// NOTE: this is not threadsafe (but we are only calling this once per kluster for the time beeing)
+// NOTE: this is not threadsafe (but we are only calling this once per kluster for the time being)
 func UpdateKlusterSecret(client kubernetes.Interface, kluster *v1.Kluster, secret *v1.Secret) error {
 	api_secret, err := client.Core().Secrets(kluster.Namespace).Get(klusterSecretName(kluster), meta_v1.GetOptions{})
 	if err != nil {

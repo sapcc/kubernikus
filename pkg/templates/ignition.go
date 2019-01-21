@@ -21,23 +21,9 @@ import (
 )
 
 type ignition struct {
-	requiredNodeSecrets []string
 }
 
-var Ignition = &ignition{
-	requiredNodeSecrets: []string{
-		"tls-ca.pem",
-		"kubelet-clients-ca.pem",
-		"apiserver-clients-system-kube-proxy.pem",
-		"apiserver-clients-system-kube-proxy-key.pem",
-		"bootstrapToken",
-		"openstack-auth-url",
-		"openstack-username",
-		"openstack-password",
-		"openstack-domain-name",
-		"openstack-region",
-	},
-}
+var Ignition = &ignition{}
 
 var passwordHashRounds = 1000000
 

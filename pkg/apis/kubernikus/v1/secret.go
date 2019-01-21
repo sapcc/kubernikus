@@ -69,7 +69,7 @@ type Openstack struct {
 type Certificates struct {
 	ApiserverClientsCAPrivateKey                     string `json:"apiserver-clients-ca-key.pem"`
 	ApiserverClientsCACertifcate                     string `json:"apiserver-clients-ca.pem"`
-	ApiserverClientsClusterAdminPrivateKey           string `json:"apiserver-clients-cluster-admin-key.pem""`
+	ApiserverClientsClusterAdminPrivateKey           string `json:"apiserver-clients-cluster-admin-key.pem"`
 	ApiserverClientsClusterAdminCertificate          string `json:"apiserver-clients-cluster-admin.pem"`
 	ApiserverClientsKubeControllerManagerPrivateKey  string `json:"apiserver-clients-system-kube-controller-manager-key.pem"`
 	ApiserverClientsKubeControllerManagerCertificate string `json:"apiserver-clients-system-kube-controller-manager.pem"`
