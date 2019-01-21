@@ -2,7 +2,7 @@ package v1
 
 import (
 	"encoding/json"
-	"fmt"
+	"strings"
 
 	corev1 "k8s.io/api/core/v1"
 )
@@ -10,7 +10,7 @@ import (
 type Secret struct {
 	Openstack
 
-	NodePassword   string `json:"nodePassword"`
+	NodePassword   string `json:"node-password"`
 	BootstrapToken string `json:"bootstrapToken"`
 
 	Certificates
@@ -53,7 +53,7 @@ func (s *Secret) ToStringData() (map[string]string, error) {
 	if err := json.Unmarshal(jdata, &result); err != nil {
 		return nil, err
 	}
-	result["apiserver-clients-and-nodes-ca.pem"] = fmt.Sprintf("%s\n%s", s.ApiserverClientsCACertifcate, s.ApiserverNodesCACertificate)
+	result["apiserver-clients-and-nodes-ca.pem"] = strings.TrimSuffix(s.ApiserverClientsCACertifcate, "\n") + "\n" + s.ApiserverNodesCACertificate
 	return result, nil
 }
 
