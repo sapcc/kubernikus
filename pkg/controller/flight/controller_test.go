@@ -6,7 +6,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 
-	"github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
+	"github.com/sapcc/kubernikus/pkg/api/models"
+	v1 "github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
 )
 
 type MockFlightReconcilerFactory struct {
@@ -44,6 +45,7 @@ func (m *MockFlightReconciler) DeleteErroredInstances() []string {
 
 func TestReconcile(t *testing.T) {
 	kluster := &v1.Kluster{}
+	kluster.Status.Phase = models.KlusterPhaseRunning
 
 	reconciler := &MockFlightReconciler{}
 	reconciler.On("EnsureKubernikusRuleInSecurityGroup").Return(true)

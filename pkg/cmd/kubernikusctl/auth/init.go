@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/url"
 	"os"
+	"strings"
 
 	"github.com/golang/glog"
 	"github.com/gophercloud/gophercloud"
@@ -106,7 +107,7 @@ func (o *InitOptions) Run(c *cobra.Command) (err error) {
 
 		if _, ok := errors.Cause(err).(gophercloud.ErrDefault401); o.openstack.Username != "" && ok {
 			fmt.Println("Deleting password from keyring")
-			keyring.Delete("kubernikus", o.openstack.Username)
+			keyring.Delete("kubernikus", strings.ToLower(o.openstack.Username))
 		}
 
 		return err
@@ -128,13 +129,8 @@ func (o *InitOptions) Run(c *cobra.Command) (err error) {
 	}
 
 	if storePasswordInKeyRing {
-		username := os.Getenv("USER")
-		if o.openstack.Username != "" {
-			username = o.openstack.Username
-		}
-
 		fmt.Println("Storing password in keyring")
-		keyring.Set("kubernikus", username, o.openstack.Password)
+		keyring.Set("kubernikus", strings.ToLower(o.openstack.Username), o.openstack.Password)
 	}
 
 	err = o.mergeAndPersist(kubeconfig)

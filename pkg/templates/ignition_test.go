@@ -7,7 +7,6 @@ import (
 	"github.com/go-kit/kit/log"
 	"github.com/stretchr/testify/assert"
 	"github.com/tredoe/osutil/user/crypt/sha512_crypt"
-	"k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/sapcc/kubernikus/pkg/api/models"
@@ -15,7 +14,7 @@ import (
 )
 
 var (
-	testKlusterSecret v1.Secret
+	testKlusterSecret kubernikusv1.Secret
 	testKluster       kubernikusv1.Kluster
 )
 
@@ -46,15 +45,22 @@ func init() {
 		},
 	}
 
-	secretData := make(map[string][]byte, len(Ignition.requiredNodeSecrets)+1)
-	for _, f := range Ignition.requiredNodeSecrets {
-		secretData[f] = []byte(fmt.Sprintf("[DATA for %s]", f))
-	}
-	secretData["node-password"] = []byte("password")
-
-	testKlusterSecret = v1.Secret{
-		ObjectMeta: testKluster.ObjectMeta,
-		Data:       secretData,
+	testKlusterSecret = kubernikusv1.Secret{
+		NodePassword:   "password",
+		BootstrapToken: "BootstrapToken",
+		Certificates: kubernikusv1.Certificates{
+			TLSCACertificate:                     "TLSCACertificate",
+			KubeletClientsCACertificate:          "KubeletClientsCACertificate",
+			ApiserverClientsKubeProxyCertificate: "ApiserverClientsKubeProxyCertificate",
+			ApiserverClientsKubeProxyPrivateKey:  "ApiserverClientsKubeProxyPrivateKey",
+		},
+		Openstack: kubernikusv1.Openstack{
+			AuthURL:    "AuthURL",
+			Username:   "Username",
+			Password:   "Password",
+			DomainName: "DomainName",
+			Region:     "Region",
+		},
 	}
 
 }

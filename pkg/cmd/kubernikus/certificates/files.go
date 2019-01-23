@@ -8,6 +8,7 @@ import (
 
 	"github.com/sapcc/kubernikus/pkg/api/models"
 	"github.com/sapcc/kubernikus/pkg/apis/kubernikus"
+	"github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
 	"github.com/sapcc/kubernikus/pkg/cmd"
 	"github.com/sapcc/kubernikus/pkg/util"
 )
@@ -60,12 +61,20 @@ func (o *FilesOptions) Run(c *cobra.Command) error {
 		return err
 	}
 
-	certificates, err := util.CreateCertificates(kluster, "https://api.kubernikus.cloud.sap", "https://identity.openstack.com", "kubernikus.cloud.sap")
+	var certs v1.Certificates
+	factory := util.NewCertificateFactory(kluster, &certs, "kubernikus.cloud.sap")
+
+	factory.Ensure()
 	if err != nil {
 		return err
 	}
 
-	if err := NewFilePersister(".").WriteConfig(certificates); err != nil {
+	data, err := certs.ToStringData()
+	if err != nil {
+		return err
+	}
+
+	if err := NewFilePersister(".").WriteConfig(data); err != nil {
 		return err
 	}
 

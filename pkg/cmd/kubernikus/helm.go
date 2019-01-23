@@ -11,6 +11,7 @@ import (
 
 	"github.com/sapcc/kubernikus/pkg/api/models"
 	"github.com/sapcc/kubernikus/pkg/apis/kubernikus"
+	v1 "github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
 	"github.com/sapcc/kubernikus/pkg/cmd"
 	"github.com/sapcc/kubernikus/pkg/util"
 	"github.com/sapcc/kubernikus/pkg/util/helm"
@@ -43,7 +44,6 @@ type HelmOptions struct {
 	AuthProject       string
 	AuthProjectDomain string
 	ProjectID         string
-	KubernikusAPI     string
 }
 
 func NewHelmOptions() *HelmOptions {
@@ -62,7 +62,6 @@ func (o *HelmOptions) BindFlags(flags *pflag.FlagSet) {
 	flags.StringVar(&o.AuthProject, "auth-project", o.AuthProject, "Scope service user to this project")
 	flags.StringVar(&o.AuthProjectDomain, "auth-project-domain", o.AuthProjectDomain, "Domain of the project")
 	flags.StringVar(&o.ProjectID, "project-id", o.ProjectID, "Project ID where the kublets will be running")
-	flags.StringVar(&o.KubernikusAPI, "api", o.KubernikusAPI, "Kubernikus API URL. e.g. https://kubernikus.eu-nl-1.cloud.sap")
 }
 
 func (o *HelmOptions) Validate(c *cobra.Command, args []string) error {
@@ -82,10 +81,6 @@ func (o *HelmOptions) Validate(c *cobra.Command, args []string) error {
 				return errors.New("password is required")
 			}
 		}
-	}
-
-	if o.KubernikusAPI == "" {
-		return errors.New("--api is required")
 	}
 
 	return nil
@@ -108,21 +103,20 @@ func (o *HelmOptions) Run(c *cobra.Command) error {
 		return err
 	}
 
-	options := &helm.OpenstackOptions{
-		AuthURL:    o.AuthURL,
-		Username:   o.AuthUsername,
-		Password:   o.AuthPassword,
-		DomainName: o.AuthDomain,
-	}
-
-	certificates, err := util.CreateCertificates(kluster, o.KubernikusAPI, o.AuthURL, nameA[1])
-	if err != nil {
+	var secret v1.Secret
+	certFactory := util.NewCertificateFactory(kluster, &secret.Certificates, nameA[1])
+	if err := certFactory.Ensure(); err != nil {
 		return err
 	}
 
-	token := util.GenerateBootstrapToken()
+	secret.Openstack.AuthURL = o.AuthURL
+	secret.Openstack.Username = o.AuthUsername
+	secret.Openstack.Password = o.AuthPassword
+	secret.Openstack.DomainName = o.AuthDomain
+	secret.Openstack.ProjectID = o.ProjectID
+	secret.BootstrapToken = util.GenerateBootstrapToken()
 
-	result, err := helm.KlusterToHelmValues(kluster, options, certificates, token, "")
+	result, err := helm.KlusterToHelmValues(kluster, &secret, "")
 	if err != nil {
 		return err
 	}

@@ -9,7 +9,7 @@ import (
 	"github.com/sapcc/kubernikus/pkg/api"
 	"github.com/sapcc/kubernikus/pkg/api/models"
 	"github.com/sapcc/kubernikus/pkg/api/rest/operations"
-	"github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
+	v1 "github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
 )
 
 func NewTerminateCluster(rt *api.Runtime) operations.TerminateClusterHandler {
@@ -50,7 +50,8 @@ func (d *terminateCluster) Handle(params operations.TerminateClusterParams, prin
 	//
 	// Kubernikus Controllers are required to add/remove Finalizers if clean-up is
 	// required once a Kluster is deleted.
-	if err := kluster.Delete(qualifiedName(params.Name, principal.Account), &metav1.DeleteOptions{}); err != nil {
+	propagationPolicy := metav1.DeletePropagationBackground
+	if err := kluster.Delete(qualifiedName(params.Name, principal.Account), &metav1.DeleteOptions{PropagationPolicy: &propagationPolicy}); err != nil {
 		return NewErrorResponse(&operations.TerminateClusterDefault{}, 500, err.Error())
 	}
 

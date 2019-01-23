@@ -13,7 +13,7 @@ import (
 	"google.golang.org/grpc"
 	api_v1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/wait"
 	informers_v1 "k8s.io/client-go/informers/core/v1"
@@ -371,22 +371,6 @@ func (op *GroundControl) createKluster(kluster *v1.Kluster) error {
 		return fmt.Errorf("Couldn't determine access mode for pvc: %s", err)
 	}
 
-	apiURL, err := op.Clients.OpenstackAdmin.GetKubernikusCatalogEntry()
-	if err != nil {
-		return fmt.Errorf("Couldn't determine kubernikus api from service catalog: %s", err)
-	}
-
-	certificates, err := util.CreateCertificates(kluster, apiURL, op.Config.Openstack.AuthURL, op.Config.Kubernikus.Domain)
-	if err != nil {
-		return fmt.Errorf("Failed to generate certificates: %s", err)
-	}
-	bootstrapToken := util.GenerateBootstrapToken()
-	username := fmt.Sprintf("kubernikus-%s", kluster.Name)
-	password, err := goutils.Random(20, 32, 127, true, true)
-	if err != nil {
-		return fmt.Errorf("Failed to generate password: %s", err)
-	}
-	domain := "kubernikus"
 	region, err := op.Clients.OpenstackAdmin.GetRegion()
 	if err != nil {
 		return err
@@ -396,39 +380,61 @@ func (op *GroundControl) createKluster(kluster *v1.Kluster) error {
 		return err
 	}
 
+	klusterSecret, err := util.EnsureKlusterSecret(op.Clients.Kubernetes, kluster)
+	if err != nil {
+		return fmt.Errorf("Failed to ensure create kluster secret; %s", err)
+	}
+
+	//contains unamibious characters for generic random passwords
+	var randomPasswordChars = []rune("abcdefghjkmnpqrstuvwxABCDEFGHJKLMNPQRSTUVWX23456789")
+	klusterSecret.NodePassword, err = goutils.Random(12, 0, 0, true, true, randomPasswordChars...)
+	if err != nil {
+		return fmt.Errorf("Failed to generate node password: %s", err)
+	}
+
+	certFactory := util.NewCertificateFactory(kluster, &klusterSecret.Certificates, op.Config.Kubernikus.Domain)
+	if err := certFactory.Ensure(); err != nil {
+		return fmt.Errorf("Failed to generate certificates: %s", err)
+	}
+	klusterSecret.BootstrapToken = util.GenerateBootstrapToken()
+	klusterSecret.Openstack.AuthURL = op.Config.Openstack.AuthURL
+	klusterSecret.Openstack.Username = fmt.Sprintf("kubernikus-%s", kluster.Name)
+	klusterSecret.Openstack.DomainName = "kubernikus"
+	klusterSecret.Openstack.Region = region
+	klusterSecret.Openstack.ProjectID = kluster.Spec.Openstack.ProjectID
+	if klusterSecret.Openstack.Password, err = goutils.Random(20, 32, 127, true, true); err != nil {
+		return fmt.Errorf("Failed to generated password for cluster service user: %s", err)
+	}
+
 	op.Logger.Log(
 		"msg", "creating service user",
-		"username", username,
+		"username", klusterSecret.Openstack.Username,
 		"kluster", kluster.GetName(),
 		"project", kluster.Account())
 
 	if err := op.Clients.OpenstackAdmin.CreateKlusterServiceUser(
-		username,
-		password,
-		domain,
-		kluster.Spec.Openstack.ProjectID,
+		klusterSecret.Openstack.Username,
+		klusterSecret.Openstack.Password,
+		klusterSecret.Openstack.DomainName,
+		klusterSecret.Openstack.ProjectID,
 	); err != nil {
 		return err
 	}
 
-	options := &helm_util.OpenstackOptions{
-		AuthURL:    op.Config.Openstack.AuthURL,
-		Username:   username,
-		Password:   password,
-		DomainName: domain,
-		Region:     region,
+	if err := util.UpdateKlusterSecret(op.Clients.Kubernetes, kluster, klusterSecret); err != nil {
+		return fmt.Errorf("Failed to update kluster secret: %s", err)
 	}
 
 	if err := op.Clients.OpenstackAdmin.CreateStorageContainer(
 		kluster.Spec.Openstack.ProjectID,
 		etcd_util.DefaultStorageContainer(kluster),
-		username,
-		domain,
+		klusterSecret.Openstack.Username,
+		klusterSecret.Openstack.DomainName,
 	); err != nil {
 		return fmt.Errorf("Failed to create container for etcd backups. Check if the project has quota for object-store usage: %s", err)
 	}
 
-	rawValues, err := helm_util.KlusterToHelmValues(kluster, options, certificates, bootstrapToken, accessMode)
+	rawValues, err := helm_util.KlusterToHelmValues(kluster, klusterSecret, accessMode)
 	if err != nil {
 		return err
 	}
@@ -448,12 +454,12 @@ func (op *GroundControl) createKluster(kluster *v1.Kluster) error {
 }
 
 func (op *GroundControl) terminateKluster(kluster *v1.Kluster) error {
-	if secret, err := op.Clients.Kubernetes.CoreV1().Secrets(kluster.Namespace).Get(kluster.GetName(), metav1.GetOptions{}); !apierrors.IsNotFound(err) {
+	if secret, err := util.KlusterSecret(op.Clients.Kubernetes, kluster); !apierrors.IsNotFound(err) {
 		if err != nil {
 			return err
 		}
-		username := string(secret.Data["openstack-username"])
-		domain := string(secret.Data["openstack-domain-name"])
+		username := secret.Openstack.Username
+		domain := secret.Openstack.DomainName
 
 		op.Logger.Log(
 			"msg", "Deleting openstack user",
@@ -477,25 +483,32 @@ func (op *GroundControl) terminateKluster(kluster *v1.Kluster) error {
 		return err
 	}
 
+	version, err := op.Clients.Kubernetes.Discovery().ServerVersion()
+	if err != nil {
+		return err
+	}
+	// TODO: Remove when all control lanes run 1.8+
+	if version.Major == "1" && version.Minor == "7" {
+		if err := util.DeleteKlusterSecret(op.Clients.Kubernetes, kluster); err != nil {
+			return err
+		}
+	}
+
 	if err := util.EnsureFinalizerRemoved(op.Clients.Kubernikus.KubernikusV1(), op.klusterInformer.Lister(), kluster, GroundctlFinalizer); err != nil {
 		return err
 	}
 
 	// TODO: remove if all control-planes are running k8s 1.8+
-	// There's a bug in the garbage-collector regarding CRDs in 1.7. It will not delete
+	// There',s a bug in the garbage-collector regarding CRDs in 1.7. It will not delete
 	// the CRD even though all Finalizers are gone. As a workaround, here we try to just
-	// delte the kluster again.
+	// delete the kluster again.
 	//
 	// This can be removed once the control-planes include garbage collector fixes
 	// for CDRs (1.8+)
 	//
 	// See: https://github.com/kubernetes/kubernetes/issues/50528
-	err = op.Clients.Kubernikus.Discovery().RESTClient().Delete().AbsPath("apis/kubernikus.sap.cc/v1").
-		Namespace(kluster.Namespace).
-		Resource("klusters").
-		Name(kluster.Name).
-		Do().
-		Error()
+	propagationPolicy := meta_v1.DeletePropagationBackground
+	err = op.Clients.Kubernikus.KubernikusV1().Klusters(kluster.Namespace).Delete(kluster.Name, &meta_v1.DeleteOptions{PropagationPolicy: &propagationPolicy})
 
 	if err != nil && !apierrors.IsNotFound(err) {
 		return err
