@@ -37,7 +37,7 @@ auth_<%= region %>: &auth_<%= region %>
 
 <% if meta[:install] == "terraform" %>
   OS_AUTH_URL: https://identity-3.<%= region %>.cloud.sap/v3
-  OS_USERNAME: kubernikus-pipeline 
+  OS_USERNAME: kubernikus-pipeline
   OS_PASSWORD: ((kubernikus-pipeline-password))
   OS_USER_DOMAIN_NAME: Default
   OS_PROJECT_NAME: kubernikus
@@ -100,7 +100,7 @@ auth_e2e_<%= region %>: &auth_e2e_<%= region %>
   OS_PROJECT_NAME: kubernikus-e2e
   OS_PROJECT_DOMAIN_NAME: ccadmin
   OS_REGION_NAME: eu-nl-1
-  KUBERNIKUS_NAME: e2e 
+  KUBERNIKUS_NAME: e2e
   KUBERNIKUS_URL: https://kubernikus-master.eu-nl-1.cloud.sap
   CP_OS_PROJECT_NAME: kubernikus-<%= region %>
   CP_OS_PROJECT_DOMAIN_NAME: ccadmin
@@ -113,7 +113,7 @@ auth_e2e_<%= region %>: &auth_e2e_<%= region %>
 <%= task %>: &<%= task%>
   <%= File.read(File.join(File.dirname(__FILE__), "#{task}.yaml")).gsub("\n", "\n  ") %>
 <% end %>
-  
+
 slack: &slack
   on_success: { put: slack, params: {alert_type: fixed } }
   on_failure: { put: slack, params: {alert_type: broke } }
@@ -180,7 +180,7 @@ resources:
     check_every: 525600h # basically never (only when triggered by a job)
 <% end %>
 
-  - name: hourly 
+  - name: hourly
     type: time
     source: {interval: 1h}
 
@@ -229,12 +229,12 @@ jobs:
           resource: master.builds
           trigger: true
       - aggregate:
-        - task: kubernikus 
+        - task: kubernikus
           config:
             <<: *task_helm_kubernikus
           params:
             <<: *auth_master
-        - task: kubernikus-system 
+        - task: kubernikus-system
           config:
             <<: *task_helm_kubernikus-system
           params:
@@ -258,24 +258,43 @@ jobs:
           <<: *auth_e2e_master
     <<: *slack
 
-  - name: prod 
+  - name: prod
     serial: true
     plan:
       - get: kubernikus.builds
         resource: master.builds
         passed: [e2e]
 
-  - name: admin 
+<% GROUPS.each do |group| %>
+  - name: <%= group %>
     serial: true
     plan:
       - aggregate:
+        - get: helm-charts.git
+          trigger: true
+        - get: terraform.git
+          trigger: true
         - get: secrets.git
         - get: kubernikus.builds
           resource: master.builds
           passed: [prod]
           trigger: true
+        - put: <%= group %>.tag
+
+  - name: admin_<%= group %>
+    serial: true
+    plan:
       - aggregate:
-<% REGIONS.keys.each do |region| %>
+        - get: <%= group %>.tag
+          passed: [ <%= group %> ]
+          trigger: true
+        - get: secrets.git
+          passed: [ <%= group %> ]
+        - get: kubernikus.builds
+          resource: master.builds
+          passed: [<%= group %>]
+      - aggregate:
+<% REGIONS.select{ |k, v| v[:continent] == group }.each do |region, meta| %>
         - task: k-<%= region %>
           config:
             <<: *task_helm-admin_kubernikus
@@ -286,41 +305,24 @@ jobs:
 <% end %>
     <<: *slack
 
-<% GROUPS.each do |group| %>
-  - name: <%= group %> 
-    serial: true
-    plan:
-      - aggregate:
-        - get: helm-charts.git
-          trigger: true
-        - get: terraform.git
-          trigger: true
-        - get: secrets.git
-          passed: [admin]
-        - get: kubernikus.builds
-          resource: master.builds
-          passed: [admin]
-          trigger: true
-        - put: <%= group %>.tag
-
 <% REGIONS.select{ |k, v| v[:continent] == group }.each do |region, meta| %>
 <% if ["terraform", "manual"].include? meta[:install] %>
 
   - name: seed_<%= region %>
     serial: true
     plan:
-      - aggregate:      
+      - aggregate:
         - get: <%= group %>.tag
-          passed: [<%= group %>]
+          passed: [admin_<%= group %>]
           trigger: true
         - get: secrets.git
-          passed: [<%= group %>]
+          passed: [admin_<%= group %>]
         - get: helm-charts.git
           passed: [<%= group %>]
       - task: seed
-        config: 
+        config:
           <<: *task_helm_seed
-        input_mapping: 
+        input_mapping:
           charts.git: helm-charts.git
         params:
           REGION:       <%= region %>
@@ -331,16 +333,16 @@ jobs:
   - name: terraform_<%= region %>
     serial: true
     plan:
-      - aggregate:            
+      - aggregate:
         - get: <%= group %>.tag
           trigger: true
           passed: [seed_<%= region %>]
         - get: secrets.git
           passed: [seed_<%= region %>]
-        - get: terraform.git 
+        - get: terraform.git
           passed: [<%= group %>]
       - task: terraform
-        config: 
+        config:
           <<: *task_terraform
         timeout: 45m
         attempts: 5
@@ -352,20 +354,20 @@ jobs:
   - name: terraform_<%= region %>
     serial: true
     plan:
-      - aggregate:            
+      - aggregate:
         - get: <%= group %>.tag
           trigger: true
           passed: [seed_<%= region %>]
         - get: secrets.git
           passed: [seed_<%= region %>]
-        - get: terraform.git 
+        - get: terraform.git
           passed: [<%= group %>]
     <<: *slack
 <% end %>
 
   - name: tiller_<%= region %>
     plan:
-      - aggregate:                  
+      - aggregate:
         - get: <%= group %>.tag
           trigger: true
           passed: [terraform_<%= region %>]
@@ -373,7 +375,7 @@ jobs:
           trigger: true
       - aggregate:
         - task: k-<%= region %>
-          config: 
+          config:
             <<: *task_tiller
           timeout: 10m
           params:
@@ -391,15 +393,15 @@ jobs:
           passed: [terraform_<%= region %>]
         - get: kubernikus.builds
           resource: master.builds
-          passed: [<%= group %>]
+          passed: [admin_<%= group %>]
       - aggregate:
         - task: kubernikus_<%= region %>
-          config: 
+          config:
             <<: *task_helm_kubernikus
           params:
             <<: *auth_<%= region %>
         - task: kubernikus-system_<%= region %>
-          config: 
+          config:
             <<: *task_helm_kubernikus-system
           params:
             <<: *auth_<%= region %>
@@ -416,10 +418,10 @@ jobs:
         - get: kubernikus.builds
           resource: master.builds
           passed: [deploy_<%= region %>]
-        - get: hourly 
+        - get: hourly
           trigger: true
       - task: e2e_tests
-        config: 
+        config:
           <<: *task_e2e_tests
         timeout: 45m
         params:
@@ -438,14 +440,16 @@ groups:
       - tiller_master
       - e2e
       - prod
-      - admin
 <% GROUPS.each do |group| %>
       - <%= group %>
+      - admin_<%= group %>
 <% end %>
 
 <% DEPLOYABLE_REGIONS.each do |region, meta| %>
-  - name: <%= region %> 
+  - name: <%= region %>
     jobs:
+      - <%= meta.fetch(:continent) %>
+      - admin_<%= meta.fetch(:continent) %>
       - seed_<%= region %>
       - terraform_<%= region %>
       - tiller_<%= region %>
@@ -453,14 +457,14 @@ groups:
       - soak_<%= region %>
 <% end %>
 
-  - name: WORLD 
+  - name: WORLD
     jobs:
       - master
-      - e2e 
+      - e2e
       - prod
-      - admin
 <% GROUPS.each do |group| %>
       - <%= group %>
+      - admin_<%= group %>
 <% end %>
 <% DEPLOYABLE_REGIONS.each do |region, meta| %>
       - seed_<%= region %>
@@ -468,4 +472,4 @@ groups:
       - tiller_<%= region %>
       - deploy_<%= region %>
       - soak_<%= region %>
-<% end %> 
+<% end %>
