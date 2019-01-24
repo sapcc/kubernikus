@@ -8,6 +8,7 @@ import (
 	v1 "github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
 	"github.com/sapcc/kubernikus/pkg/controller/base"
 	"github.com/sapcc/kubernikus/pkg/controller/config"
+	"github.com/sapcc/kubernikus/pkg/controller/metrics"
 	"github.com/sapcc/kubernikus/pkg/migration"
 	"github.com/sapcc/kubernikus/pkg/util"
 )
@@ -62,6 +63,7 @@ func (mr *MigrationReconciler) Reconcile(kluster *v1.Kluster) (bool, error) {
 	)
 	if err != nil {
 		mr.Recorder.Event(kluster, api_v1.EventTypeWarning, MigrationFailed, err.Error())
+		metrics.MigrationErrorsTotal.WithLabelValues(kluster.Name).Inc()
 		return false, err
 	}
 	//Clear the klusters migration status as migrations are applied successfully

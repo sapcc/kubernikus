@@ -100,3 +100,29 @@ groups:
     annotations:
       description: Deorbiter operations dropped to 0. The operator might be hanging.
       summary: Deorbiter operations dropped to 0
+
+  - alert: KubernikusHammertime
+    expr: kubernikus_hammertime_status == 1
+    for: 10m
+    labels:
+      tier: kks
+      service: hammertime
+      severity: warning
+      context: operator
+      meta: "{{ $labels.kluster }} is having Hammertime"
+    annotations:
+      description: Hammertime for kluster {{ $labels.kluster }}. Controller manager scaled down because no node posted a status update recently.
+      summary: Hammertime for kluster {{ $labels.kluster }}
+
+  - alert: KubernikusMigrationErrors
+    expr: increase(kubernikus_migration_errors_total[6m]) > 1
+    for: 10m
+    labels:
+      tier: kks
+      service: migration
+      severity: warning
+      context: operator
+      meta: "Migration(s) for kluster {{ $labels.kluster }} failing"
+    annotations:
+      description: The kluster {{ $labels.kluster }} is generating errors while trying to apply pending migrations.
+      summary: Migration errors for kluster {{ $labels.kluster }}
