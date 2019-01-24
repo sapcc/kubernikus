@@ -81,6 +81,10 @@ func (f *sharedClientFactory) ClientFor(k *kubernikus_v1.Kluster) (clientset kub
 	if err != nil {
 		return nil, err
 	}
+	//Ensure the client can actually talk to before saving it to the cache
+	if _, err := clientset.Discovery().ServerVersion(); err != nil {
+		return nil, err
+	}
 
 	f.clients.Store(k.GetUID(), clientset)
 	return clientset, nil
