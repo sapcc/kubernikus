@@ -110,6 +110,10 @@ func (p *PyrolisisTests) CleanupBackupStorageContainers(t *testing.T) {
 					if errResponseCode, ok := err.(gophercloud.ErrUnexpectedResponseCode); ok && errResponseCode.Actual == 409 {
 						return false, nil
 					}
+					//Ignore 404 from swift, this can happen for a successful delete becase of the eventual consitency
+					if _, ok := err.(gophercloud.ErrDefault404); ok {
+						return true, nil
+					}
 					return true, err
 				})
 			require.NoError(t, err, "There should be no error while deleting storage container: %s", container)
