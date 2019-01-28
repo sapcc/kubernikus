@@ -47,6 +47,9 @@ vice-president:
     default_challenge: xyz
 global:
   domain: xyz.com
+  region: xy-xy-1
+  cluster: xy
+  cluster_type: xy
 fluent-bit:
   backend:
     es:
