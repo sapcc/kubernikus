@@ -1,0 +1,5 @@
+global:
+  domain: xyz.com
+  region: xy-xy-1
+  cluster: xy
+  cluster_type: xy

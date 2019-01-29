@@ -88,6 +88,12 @@ gh-pages:
 	docker cp gh-pages:/public/kubernikus gh-pages
 	docker rm gh-pages
 
+tests-image:
+	docker build $(BUILD_ARGS) -t sapcc/kubernikus-tests:$(VERSION) --cache-from=sapcc/kubernikus-tests:latest ./contrib/kubernikus-tests
+	docker tag sapcc/kubernikus-tests:$(VERSION) sapcc/kubernikus-tests:latest
+	docker push sapcc/kubernikus-tests:$(VERSION)
+	docker push sapcc/kubernikus-tests:latest
+
 pkg/api/rest/operations/kubernikus_api.go: swagger.yml
 ifneq (,$(wildcard $(SWAGGER_BIN)))
 	$(SWAGGER_BIN) generate server --name kubernikus --target pkg/api --model-package models \
@@ -137,7 +143,11 @@ endif
 
 .PHONY: test-charts
 test-charts:
-	docker run -ti --rm -v $(shell pwd)/charts:/charts -v $(shell pwd)/test/charts:/test --entrypoint "/test/charts.sh" alpine/helm:2.10.0
+	docker run -ti --rm -v $(shell pwd):/go/src/github.com/sapcc/kubernikus --entrypoint "/go/src/github.com/sapcc/kubernikus/test/charts/charts.sh" sapcc/kubernikus-tests:latest
+
+.PHONY: test-alerts
+test-alerts:
+	docker run -ti --rm -v $(shell pwd):/go/src/github.com/sapcc/kubernikus --entrypoint "/go/src/github.com/sapcc/kubernikus/test/alerts/alerts.sh" sapcc/kubernikus-tests:latest
 
 include code-generate.mk
 code-gen: client-gen informer-gen lister-gen deepcopy-gen
