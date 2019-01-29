@@ -1,6 +1,6 @@
 image:
   repository: sapcc/kubernetes-eventexporter
-  tag: 0.2.0
+  tag: 0.3.1
   pullPolicy: IfNotPresent
 
 resources:
@@ -21,7 +21,7 @@ metrics:
         - key: InvolvedObject.Kind
           expr: Pod
         - key: Reason
-          expr: FailedAttachVolume
+          expr: (FailedAttachVolume|FailedMount)
         - key: Type
           expr: Warning
         - key: Source.Component
