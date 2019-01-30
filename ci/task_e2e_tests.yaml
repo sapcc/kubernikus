@@ -3,8 +3,8 @@ platform: 'linux'
 image_resource:
   type: docker-image
   source:
-    repository: golang
-    tag: 1.9.2-alpine3.6
+    repository: sapcc/kubernikus-tests
+    tag: latest
 
 inputs:
   - name: kubernikus.builds
@@ -17,11 +17,10 @@ run:
     - -c
     - |
       set -o pipefail
-      SENTRY_CLI=$PWD/cache/sentry-cli-1.37.0
+      SENTRY_CLI=/usr/local/bin/sentry-cli
       export GOPATH=$PWD/gopath
       cd gopath/src/github.com/sapcc/kubernikus
 
-      apk add --no-progress --no-cache make git curl
       export RUN_PARALLEL=false
       make test-e2e | tee test.output
       rc=$?
@@ -29,8 +28,6 @@ run:
         #Get the longest uniq (!) whitespace prefix of --- FAIL: lines
         ws_count=$(grep -- '--- FAIL:' test.output| grep -v -- '->'| awk '{ match($0, /^ */); printf("%d\n", RLENGTH, substr($0,RLENGTH+1)) }' | sort|uniq -u |tail -1)
         test_name=$(sed -n -E  "s/^ {$ws_count}--- FAIL: (.*) \([.0-9]*s\)$/\1/p" test.output)
-        curl -sLo $SENTRY_CLI -z $SENTRY_CLI https://github.com/getsentry/sentry-cli/releases/download/1.37.0/sentry-cli-Linux-x86_64
-        chmod +x $SENTRY_CLI
         unset http_proxy https_proxy no_proxy
         $SENTRY_CLI send-event -m "Failed to run $test_name" -E $OS_REGION_NAME --no-environ --logfile test.output
       fi
