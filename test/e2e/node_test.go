@@ -45,7 +45,7 @@ type NodeTests struct {
 func (k *NodeTests) Run(t *testing.T) {
 	_ = t.Run("Created", k.StateRunning) &&
 		t.Run("Registered", k.Registered) &&
-		//t.Run("LatestStableContainerLinux", k.LatestStableContainerLinux) &&
+		t.Run("LatestStableContainerLinux", k.LatestStableContainerLinux) &&
 		t.Run("Schedulable", k.StateSchedulable) &&
 		t.Run("NetworkUnavailable", k.ConditionNetworkUnavailable) &&
 		t.Run("Healthy", k.StateHealthy) &&
@@ -113,7 +113,6 @@ func (k *NodeTests) Registered(t *testing.T) {
 }
 
 func (k NodeTests) LatestStableContainerLinux(t *testing.T) {
-
 	nodes, err := k.Kubernetes.ClientSet.CoreV1().Nodes().List(meta_v1.ListOptions{})
 	if !assert.NoError(t, err) {
 		return
@@ -126,18 +125,37 @@ func (k NodeTests) LatestStableContainerLinux(t *testing.T) {
 		return
 	}
 
+	version := ""
+	var date time.Time
 	scanner := bufio.NewScanner(resp.Body)
 	for scanner.Scan() {
 		keyval := strings.Split(scanner.Text(), "=")
+
 		if len(keyval) == 2 && keyval[0] == "COREOS_VERSION" {
-			for _, node := range nodes.Items {
-				assert.Contains(t, node.Status.NodeInfo.OSImage, keyval[1], "Node %s is not on latest version", node.Name)
+			version = keyval[1]
+			if !assert.NotEmpty(t, version, "Failed to detect latest stable Container Linux version") {
+				return
 			}
-			return
+		}
+
+		if len(keyval) == 2 && keyval[0] == "COREOS_BUILD_ID" {
+			date, err = time.Parse("2006-01-02", keyval[1][1:11])
+			if !assert.NoError(t, err) {
+				return
+			}
+			if !assert.NotEmpty(t, date, "Could not get release date") {
+				return
+			}
+			// check if release is at least 72 old, otherwise image might not be up-to-date
+			if time.Since(date).Hours() < 72 {
+				return
+			}
 		}
 	}
-	t.Error("Failed to detect latest stable Container Linux version")
 
+	for _, node := range nodes.Items {
+		assert.Contains(t, node.Status.NodeInfo.OSImage, version, "Node %s is not on latest version", node.Name)
+	}
 }
 
 func (k *NodeTests) Sufficient(t *testing.T) {
