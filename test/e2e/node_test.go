@@ -45,7 +45,7 @@ type NodeTests struct {
 func (k *NodeTests) Run(t *testing.T) {
 	_ = t.Run("Created", k.StateRunning) &&
 		t.Run("Registered", k.Registered) &&
-		t.Run("LatestStableContainerLinux", k.LatestStableContainerLinux) &&
+		//t.Run("LatestStableContainerLinux", k.LatestStableContainerLinux) &&
 		t.Run("Schedulable", k.StateSchedulable) &&
 		t.Run("NetworkUnavailable", k.ConditionNetworkUnavailable) &&
 		t.Run("Healthy", k.StateHealthy) &&
