@@ -4,13 +4,11 @@ image_resource:
   type: docker-image
   source:
     repository: sapcc/kubernikus-tests
-    tag: latest
+    tag: 3963a930cb1e87826bbe8fb0886db76b8d6ed0ef
 
 inputs:
   - name: kubernikus.builds
     path: gopath/src/github.com/sapcc/kubernikus
-caches:
-  - path: cache
 run:
   path: /bin/sh
   args:
