@@ -1,23 +1,22 @@
+// This file is safe to edit. Once it exists it will not be overwritten
+
 package rest
 
 import (
 	"crypto/tls"
 	"net/http"
 
-	graceful "github.com/tylerb/graceful"
-
 	"github.com/sapcc/kubernikus/pkg/api/rest/operations"
 )
 
-// This file is safe to edit. Once it exists it will not be overwritten
-
-//go:generate swagger generate server --target ../pkg/api --name kubernikus --spec ../swagger.yml --server-package rest --principal models.Principal --exclude-main
+//go:generate swagger generate server --target ../../api --name Kubernikus --spec ../../../swagger.yml --server-package rest --principal models.Principal --exclude-main
 
 func configureFlags(api *operations.KubernikusAPI) {
 	// api.CommandLineOptionsGroups = []swag.CommandLineOptionsGroup{ ... }
 }
 
 func configureAPI(api *operations.KubernikusAPI) http.Handler {
+	// configure the api here
 	return api.Serve(func(handler http.Handler) http.Handler {
 		return handler
 	})
@@ -32,5 +31,13 @@ func configureTLS(tlsConfig *tls.Config) {
 // If you need to modify a config, store server instance to stop it individually later, this is the place.
 // This function can be called multiple times, depending on the number of serving schemes.
 // scheme value will be set accordingly: "http", "https" or "unix"
-func configureServer(s *graceful.Server, scheme, addr string) {
+func configureServer(s *http.Server, scheme, addr string) {
 }
+
+// The middleware configuration is for the handler executors. These do not apply to the swagger.json document.
+// The middleware executes after routing but before authentication, binding and validation
+func setupMiddlewares(handler http.Handler) http.Handler {
+	return handler
+}
+
+

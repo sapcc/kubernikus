@@ -35,6 +35,7 @@ type Event struct {
 	Reason string `json:"reason,omitempty"`
 
 	// Type of this event
+	// Enum: [Normal Warning]
 	Type string `json:"type,omitempty"`
 }
 
@@ -43,7 +44,6 @@ func (m *Event) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateType(formats); err != nil {
-		// prop
 		res = append(res, err)
 	}
 
@@ -66,8 +66,10 @@ func init() {
 }
 
 const (
+
 	// EventTypeNormal captures enum value "Normal"
 	EventTypeNormal string = "Normal"
+
 	// EventTypeWarning captures enum value "Warning"
 	EventTypeWarning string = "Warning"
 )

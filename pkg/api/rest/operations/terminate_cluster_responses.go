@@ -10,7 +10,7 @@ import (
 
 	"github.com/go-openapi/runtime"
 
-	"github.com/sapcc/kubernikus/pkg/api/models"
+	models "github.com/sapcc/kubernikus/pkg/api/models"
 )
 
 // TerminateClusterAcceptedCode is the HTTP code returned for type TerminateClusterAccepted
@@ -25,6 +25,7 @@ type TerminateClusterAccepted struct {
 
 // NewTerminateClusterAccepted creates TerminateClusterAccepted with default headers values
 func NewTerminateClusterAccepted() *TerminateClusterAccepted {
+
 	return &TerminateClusterAccepted{}
 }
 

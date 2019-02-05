@@ -10,7 +10,7 @@ import (
 
 	"github.com/go-openapi/runtime"
 
-	"github.com/sapcc/kubernikus/pkg/api/models"
+	models "github.com/sapcc/kubernikus/pkg/api/models"
 )
 
 // ListAPIVersionsOKCode is the HTTP code returned for type ListAPIVersionsOK
@@ -30,6 +30,7 @@ type ListAPIVersionsOK struct {
 
 // NewListAPIVersionsOK creates ListAPIVersionsOK with default headers values
 func NewListAPIVersionsOK() *ListAPIVersionsOK {
+
 	return &ListAPIVersionsOK{}
 }
 

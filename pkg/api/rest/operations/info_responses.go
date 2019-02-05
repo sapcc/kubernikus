@@ -10,7 +10,7 @@ import (
 
 	"github.com/go-openapi/runtime"
 
-	"github.com/sapcc/kubernikus/pkg/api/models"
+	models "github.com/sapcc/kubernikus/pkg/api/models"
 )
 
 // InfoOKCode is the HTTP code returned for type InfoOK
@@ -30,6 +30,7 @@ type InfoOK struct {
 
 // NewInfoOK creates InfoOK with default headers values
 func NewInfoOK() *InfoOK {
+
 	return &InfoOK{}
 }
 

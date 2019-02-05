@@ -13,9 +13,9 @@ import (
 )
 
 // NewListClustersParams creates a new ListClustersParams object
-// with the default values initialized.
+// no default values defined in spec.
 func NewListClustersParams() ListClustersParams {
-	var ()
+
 	return ListClustersParams{}
 }
 
@@ -30,9 +30,12 @@ type ListClustersParams struct {
 }
 
 // BindRequest both binds and validates a request, it assumes that complex things implement a Validatable(strfmt.Registry) error interface
-// for simple values it will use straight method calls
+// for simple values it will use straight method calls.
+//
+// To ensure default values, the struct must have been initialized with NewListClustersParams() beforehand.
 func (o *ListClustersParams) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {
 	var res []error
+
 	o.HTTPRequest = r
 
 	if len(res) > 0 {

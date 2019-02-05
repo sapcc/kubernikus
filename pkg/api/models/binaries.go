@@ -14,22 +14,22 @@ import (
 	"github.com/go-openapi/swag"
 )
 
-// KlusterInfo kluster info
-// swagger:model KlusterInfo
-type KlusterInfo struct {
+// Binaries binaries
+// swagger:model Binaries
+type Binaries struct {
 
-	// binaries
-	Binaries []Binaries `json:"binaries"`
+	// links
+	Links []Link `json:"links"`
 
-	// setup command
-	SetupCommand string `json:"setupCommand,omitempty"`
+	// name
+	Name string `json:"name,omitempty"`
 }
 
-// Validate validates this kluster info
-func (m *KlusterInfo) Validate(formats strfmt.Registry) error {
+// Validate validates this binaries
+func (m *Binaries) Validate(formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.validateBinaries(formats); err != nil {
+	if err := m.validateLinks(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -39,17 +39,17 @@ func (m *KlusterInfo) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *KlusterInfo) validateBinaries(formats strfmt.Registry) error {
+func (m *Binaries) validateLinks(formats strfmt.Registry) error {
 
-	if swag.IsZero(m.Binaries) { // not required
+	if swag.IsZero(m.Links) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Binaries); i++ {
+	for i := 0; i < len(m.Links); i++ {
 
-		if err := m.Binaries[i].Validate(formats); err != nil {
+		if err := m.Links[i].Validate(formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("binaries" + "." + strconv.Itoa(i))
+				return ve.ValidateName("links" + "." + strconv.Itoa(i))
 			}
 			return err
 		}
@@ -60,7 +60,7 @@ func (m *KlusterInfo) validateBinaries(formats strfmt.Registry) error {
 }
 
 // MarshalBinary interface implementation
-func (m *KlusterInfo) MarshalBinary() ([]byte, error) {
+func (m *Binaries) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -68,8 +68,8 @@ func (m *KlusterInfo) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *KlusterInfo) UnmarshalBinary(b []byte) error {
-	var res KlusterInfo
+func (m *Binaries) UnmarshalBinary(b []byte) error {
+	var res Binaries
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

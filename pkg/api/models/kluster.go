@@ -35,17 +35,14 @@ func (m *Kluster) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateName(formats); err != nil {
-		// prop
 		res = append(res, err)
 	}
 
 	if err := m.validateSpec(formats); err != nil {
-		// prop
 		res = append(res, err)
 	}
 
 	if err := m.validateStatus(formats); err != nil {
-		// prop
 		res = append(res, err)
 	}
 

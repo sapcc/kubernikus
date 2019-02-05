@@ -46,22 +46,18 @@ func (m *NodePool) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateConfig(formats); err != nil {
-		// prop
 		res = append(res, err)
 	}
 
 	if err := m.validateFlavor(formats); err != nil {
-		// prop
 		res = append(res, err)
 	}
 
 	if err := m.validateName(formats); err != nil {
-		// prop
 		res = append(res, err)
 	}
 
 	if err := m.validateSize(formats); err != nil {
-		// prop
 		res = append(res, err)
 	}
 

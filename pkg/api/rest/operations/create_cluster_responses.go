@@ -10,7 +10,7 @@ import (
 
 	"github.com/go-openapi/runtime"
 
-	"github.com/sapcc/kubernikus/pkg/api/models"
+	models "github.com/sapcc/kubernikus/pkg/api/models"
 )
 
 // CreateClusterCreatedCode is the HTTP code returned for type CreateClusterCreated
@@ -30,6 +30,7 @@ type CreateClusterCreated struct {
 
 // NewCreateClusterCreated creates CreateClusterCreated with default headers values
 func NewCreateClusterCreated() *CreateClusterCreated {
+
 	return &CreateClusterCreated{}
 }
 

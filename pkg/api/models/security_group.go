@@ -11,24 +11,24 @@ import (
 	"github.com/go-openapi/swag"
 )
 
-// NodePoolConfig node pool config
-// swagger:model NodePoolConfig
-type NodePoolConfig struct {
+// SecurityGroup security group
+// swagger:model SecurityGroup
+type SecurityGroup struct {
 
-	// repair
-	Repair bool `json:"repair,omitempty"`
+	// id
+	ID string `json:"id,omitempty"`
 
-	// upgrade
-	Upgrade bool `json:"upgrade,omitempty"`
+	// name
+	Name string `json:"name,omitempty"`
 }
 
-// Validate validates this node pool config
-func (m *NodePoolConfig) Validate(formats strfmt.Registry) error {
+// Validate validates this security group
+func (m *SecurityGroup) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *NodePoolConfig) MarshalBinary() ([]byte, error) {
+func (m *SecurityGroup) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -36,8 +36,8 @@ func (m *NodePoolConfig) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NodePoolConfig) UnmarshalBinary(b []byte) error {
-	var res NodePoolConfig
+func (m *SecurityGroup) UnmarshalBinary(b []byte) error {
+	var res SecurityGroup
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
