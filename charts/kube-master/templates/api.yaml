@@ -119,12 +119,18 @@ spec:
             - --authorization-mode=Node,RBAC
             - --cloud-config=/etc/kubernetes/cloudprovider/openstack.config
             - --cloud-provider=openstack
-            - --enable-admission-plugins=ExtendedResourceToleration
+{{ if (semverCompare "1.7.*" .Values.klusterVersion) }}
+            - --experimental-bootstrap-token-auth=true
+            - --runtime-config=rbac.authorization.k8s.io/v1alpha1,extensions/v1beta1=true,extensions/v1beta1/thirdpartyresources=true
+{{ else }}
             - --enable-bootstrap-token-auth=true
             - --external-hostname={{ required "missing .api.apiserverHost" .Values.api.apiserverHost }}
+{{ end }}
             - --token-auth-file=/etc/kubernetes/bootstrap/token.csv
             - --service-cluster-ip-range={{ .Values.serviceCIDR }}
             - --kubelet-preferred-address-types=InternalIP
+{{ if (semverCompare ">=1.10.*" .Values.klusterVersion) }}
+            - --enable-admission-plugins=ExtendedResourceToleration
             # Aggregation Layer
             - --requestheader-client-ca-file=/etc/kubernetes/certs/aggregation-ca.pem
             - --requestheader-allowed-names=aggregator
@@ -134,6 +140,7 @@ spec:
             - --proxy-client-cert-file=/etc/kubernetes/certs/aggregation-aggregator.pem
             - --proxy-client-key-file=/etc/kubernetes/certs/aggregation-aggregator-key.pem
             - --enable-aggregator-routing=true
+{{ end }}
             #Cert Spratz
             - --client-ca-file=/etc/kubernetes/certs/apiserver-clients-and-nodes-ca.pem
             - --etcd-cafile=/etc/kubernetes/certs/etcd-clients-ca.pem
