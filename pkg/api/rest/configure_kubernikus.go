@@ -39,5 +39,3 @@ func configureServer(s *http.Server, scheme, addr string) {
 func setupMiddlewares(handler http.Handler) http.Handler {
 	return handler
 }
-
-
