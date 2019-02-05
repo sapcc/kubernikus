@@ -22,10 +22,10 @@ type Flavor struct {
 	Name string `json:"name,omitempty"`
 
 	// ram
-	RAM int64 `json:"ram,omitempty"`
+	RAM int64 `json:"ram"`
 
 	// vcpus
-	Vcpus int64 `json:"vcpus,omitempty"`
+	Vcpus int64 `json:"vcpus"`
 }
 
 // Validate validates this flavor

@@ -39,7 +39,7 @@ type NodePool struct {
 	// size
 	// Maximum: 127
 	// Minimum: 0
-	Size int64 `json:"size,omitempty"`
+	Size int64 `json:"size"`
 }
 
 // Validate validates this node pool
