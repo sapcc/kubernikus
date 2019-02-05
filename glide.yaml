@@ -32,38 +32,36 @@ import:
 # overwrite gophercloud version given in k8s deps
 - package: github.com/gophercloud/gophercloud
   version: 1ad7a96d69a2e8105920431ee428843b6d1ee4c3
-# Dependencies extracted from go-swagger 0.13.0
+# Dependencies extracted from go-swagger 0.18.0
 - package: github.com/go-openapi/errors
-  version: 03cfca65330da08a5a440053faf994a3c682b5bf
+  version: 7a7ff1b7b8020f22574411a32f28b4d168d69237
 - package: github.com/go-openapi/jsonreference
-  version: 36d33bfe519efae5632669801b180bf1a245da3b
+  version: 8483a886a90412cd6858df4ea3483dce9c8e35a3
 - package: github.com/go-openapi/runtime
-  version: 2da70401d8fa078b6fecdd7afdf3b589ae9669e4
+  version: 41e24cc66d7af6af39eb9b5a6418e901bcdd333c
 - package: github.com/go-openapi/spec
-  version: a4fa9574c7aa73b2fc54e251eb9524d0482bb592
+  version: 5b6cdde3200976e3ecceb2868706ee39b6aff3e4
 - package: gopkg.in/yaml.v2
-  version: eb3733d160e74a9c7e442f435eb3bea458e1d19f
+  version: 51d6538a90f86fe93ac480b35f37b2be17fef232
 - package: github.com/PuerkitoBio/purell
   version: 0bcb03f4b4d0a9428594752bd2a3b9aa0a9d4bd4
 - package: github.com/PuerkitoBio/urlesc
   version: de5bf2ad457846296e2031421a34e2568e304e35
 - package: github.com/go-openapi/loads
-  version: c3e1ca4c0b6160cac10aeef7e8b425cc95b9c820
+  version: 74628589c3b94e3526a842d24f46589980f5ab22
 - package: github.com/mitchellh/mapstructure
-  version: 06020f85339e21b2478f756a78e295255ffa4d6a
+  version: 3536a929edddb9a5b34bd6861dc4a9647cb459fe
 - package: github.com/go-openapi/jsonpointer
-  version: 779f45308c19820f1a69e9a4cd965f496e0da10f
+  version: ef5f0afec364d3b9396b7b77b43dbe26bf1f8004
 - package: github.com/go-openapi/strfmt
-  version: 610b6cacdcde6852f4de68998bd20ce1dac85b22
+  version: e471370ae57ac74eaf0afe816a66e4ddd7f1b027
 - package: github.com/go-openapi/swag
-  version: cf0bdb963811675a4d7e74901cefc7411a1df939
-- package: gopkg.in/mgo.v2
-  version: 3f83fa5005286a7fe593b055f0d7771a7dce4655
+  version: 1d29f06aebd59ccdf11ae04aa0334ded96e2d909
 - package: github.com/asaskevich/govalidator
-  version: 73945b6115bfbbcc57d89b7316e28109364124e1
+  version: ccb8e960c48f04d6935e72476ae4a51028f9e22f
 - package: github.com/go-openapi/analysis
-  version: 8ed83f2ea9f00f945516462951a288eaa68bf0d6
+  version: e2f3fdbb7ed0e56e070ccbfb6fc75b288a33c014
 - package: github.com/go-openapi/validate
-  version: a52193aca9d575f354d8be388254c134765ea793
+  version: d2eab7d93009e9215fc85b2faa2c2f2a98c2af48
 - package: github.com/mailru/easyjson
-  version: 5f62e4f3afa2f576dc86531b7df4d966b19ef8f8
+  version: 60711f1a8329503b04e1c88535f419d0bb440bff
