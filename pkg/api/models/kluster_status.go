@@ -34,7 +34,7 @@ type KlusterStatus struct {
 	Phase KlusterPhase `json:"phase,omitempty"`
 
 	// spec version
-	SpecVersion int64 `json:"specVersion"`
+	SpecVersion int64 `json:"specVersion,omitempty"`
 
 	// version
 	Version string `json:"version,omitempty"`

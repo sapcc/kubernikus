@@ -510,6 +510,7 @@ func init() {
         },
         "name": {
           "type": "string",
+          "maxLength": 20,
           "pattern": "^[a-z]([a-z0-9]*)?$",
           "x-nullable": false
         },
@@ -1280,6 +1281,7 @@ func init() {
         },
         "name": {
           "type": "string",
+          "maxLength": 20,
           "pattern": "^[a-z]([a-z0-9]*)?$",
           "x-nullable": false
         },

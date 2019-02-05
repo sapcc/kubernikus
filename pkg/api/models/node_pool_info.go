@@ -16,19 +16,19 @@ import (
 type NodePoolInfo struct {
 
 	// healthy
-	Healthy int64 `json:"healthy"`
+	Healthy int64 `json:"healthy,omitempty"`
 
 	// name
 	Name string `json:"name,omitempty"`
 
 	// running
-	Running int64 `json:"running"`
+	Running int64 `json:"running,omitempty"`
 
 	// schedulable
-	Schedulable int64 `json:"schedulable"`
+	Schedulable int64 `json:"schedulable,omitempty"`
 
 	// size
-	Size int64 `json:"size"`
+	Size int64 `json:"size,omitempty"`
 }
 
 // Validate validates this node pool info

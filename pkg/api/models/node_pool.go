@@ -32,13 +32,14 @@ type NodePool struct {
 
 	// name
 	// Required: true
+	// Max Length: 20
 	// Pattern: ^[a-z]([a-z0-9]*)?$
 	Name string `json:"name"`
 
 	// size
 	// Maximum: 127
 	// Minimum: 0
-	Size int64 `json:"size"`
+	Size int64 `json:"size,omitempty"`
 }
 
 // Validate validates this node pool
@@ -95,6 +96,10 @@ func (m *NodePool) validateFlavor(formats strfmt.Registry) error {
 func (m *NodePool) validateName(formats strfmt.Registry) error {
 
 	if err := validate.RequiredString("name", "body", string(m.Name)); err != nil {
+		return err
+	}
+
+	if err := validate.MaxLength("name", "body", string(m.Name), 20); err != nil {
 		return err
 	}
 

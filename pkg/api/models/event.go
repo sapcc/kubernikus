@@ -20,7 +20,7 @@ import (
 type Event struct {
 
 	// The number of times this event has occurred.
-	Count int64 `json:"count"`
+	Count int64 `json:"count,omitempty"`
 
 	// The time at which the event was first recorded
 	FirstTimestamp string `json:"firstTimestamp,omitempty"`
