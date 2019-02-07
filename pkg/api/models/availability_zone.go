@@ -11,24 +11,21 @@ import (
 	"github.com/go-openapi/swag"
 )
 
-// NodePoolConfig node pool config
-// swagger:model NodePoolConfig
-type NodePoolConfig struct {
+// AvailabilityZone availability zone
+// swagger:model AvailabilityZone
+type AvailabilityZone struct {
 
-	// repair
-	Repair bool `json:"repair,omitempty"`
-
-	// upgrade
-	Upgrade bool `json:"upgrade,omitempty"`
+	// name
+	Name string `json:"name,omitempty"`
 }
 
-// Validate validates this node pool config
-func (m *NodePoolConfig) Validate(formats strfmt.Registry) error {
+// Validate validates this availability zone
+func (m *AvailabilityZone) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *NodePoolConfig) MarshalBinary() ([]byte, error) {
+func (m *AvailabilityZone) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -36,8 +33,8 @@ func (m *NodePoolConfig) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NodePoolConfig) UnmarshalBinary(b []byte) error {
-	var res NodePoolConfig
+func (m *AvailabilityZone) UnmarshalBinary(b []byte) error {
+	var res AvailabilityZone
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

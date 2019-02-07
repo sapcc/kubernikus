@@ -11,24 +11,24 @@ import (
 	"github.com/go-openapi/swag"
 )
 
-// NodePoolConfig node pool config
-// swagger:model NodePoolConfig
-type NodePoolConfig struct {
+// KeyPair key pair
+// swagger:model KeyPair
+type KeyPair struct {
 
-	// repair
-	Repair bool `json:"repair,omitempty"`
+	// name
+	Name string `json:"name,omitempty"`
 
-	// upgrade
-	Upgrade bool `json:"upgrade,omitempty"`
+	// public key
+	PublicKey string `json:"publicKey,omitempty"`
 }
 
-// Validate validates this node pool config
-func (m *NodePoolConfig) Validate(formats strfmt.Registry) error {
+// Validate validates this key pair
+func (m *KeyPair) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *NodePoolConfig) MarshalBinary() ([]byte, error) {
+func (m *KeyPair) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -36,8 +36,8 @@ func (m *NodePoolConfig) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NodePoolConfig) UnmarshalBinary(b []byte) error {
-	var res NodePoolConfig
+func (m *KeyPair) UnmarshalBinary(b []byte) error {
+	var res KeyPair
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

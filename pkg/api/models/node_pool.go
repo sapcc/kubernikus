@@ -32,6 +32,7 @@ type NodePool struct {
 
 	// name
 	// Required: true
+	// Max Length: 20
 	// Pattern: ^[a-z]([a-z0-9]*)?$
 	Name string `json:"name"`
 
@@ -46,22 +47,18 @@ func (m *NodePool) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateConfig(formats); err != nil {
-		// prop
 		res = append(res, err)
 	}
 
 	if err := m.validateFlavor(formats); err != nil {
-		// prop
 		res = append(res, err)
 	}
 
 	if err := m.validateName(formats); err != nil {
-		// prop
 		res = append(res, err)
 	}
 
 	if err := m.validateSize(formats); err != nil {
-		// prop
 		res = append(res, err)
 	}
 
@@ -99,6 +96,10 @@ func (m *NodePool) validateFlavor(formats strfmt.Registry) error {
 func (m *NodePool) validateName(formats strfmt.Registry) error {
 
 	if err := validate.RequiredString("name", "body", string(m.Name)); err != nil {
+		return err
+	}
+
+	if err := validate.MaxLength("name", "body", string(m.Name), 20); err != nil {
 		return err
 	}
 

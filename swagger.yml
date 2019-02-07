@@ -412,6 +412,7 @@ definitions:
         x-nullable: false
         type: string
         pattern: '^[a-z]([a-z0-9]*)?$'
+        maxLength: 20
       size:
         x-nullable: false
         type: integer

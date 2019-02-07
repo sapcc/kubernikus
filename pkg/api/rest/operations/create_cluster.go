@@ -10,7 +10,7 @@ import (
 
 	middleware "github.com/go-openapi/runtime/middleware"
 
-	"github.com/sapcc/kubernikus/pkg/api/models"
+	models "github.com/sapcc/kubernikus/pkg/api/models"
 )
 
 // CreateClusterHandlerFunc turns a function with the right signature into a create cluster handler

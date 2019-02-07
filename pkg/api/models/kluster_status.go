@@ -6,6 +6,8 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"strconv"
+
 	strfmt "github.com/go-openapi/strfmt"
 
 	"github.com/go-openapi/errors"
@@ -46,12 +48,10 @@ func (m *KlusterStatus) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateNodePools(formats); err != nil {
-		// prop
 		res = append(res, err)
 	}
 
 	if err := m.validatePhase(formats); err != nil {
-		// prop
 		res = append(res, err)
 	}
 
@@ -65,6 +65,17 @@ func (m *KlusterStatus) validateNodePools(formats strfmt.Registry) error {
 
 	if swag.IsZero(m.NodePools) { // not required
 		return nil
+	}
+
+	for i := 0; i < len(m.NodePools); i++ {
+
+		if err := m.NodePools[i].Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("nodePools" + "." + strconv.Itoa(i))
+			}
+			return err
+		}
+
 	}
 
 	return nil

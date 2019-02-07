@@ -14,26 +14,26 @@ import (
 )
 
 var kubeconfig string
-var context string
+var ctx string
 
 func init() {
 	pflag.StringVar(&kubeconfig, "kubeconfig", "", "Path to kubeconfig file with authorization information")
-	pflag.StringVar(&context, "context", "", "Override context")
+	pflag.StringVar(&ctx, "context", "", "Override context")
 }
 
 func NewKubeClients(logger kitlog.Logger) (kubernikus_clientset.Interface, kubernetes_clientset.Interface, error) {
-	client, err := kubernikus.NewClient(kubeconfig, context)
+	client, err := kubernikus.NewClient(kubeconfig, ctx)
 
 	if err != nil {
 		return nil, nil, fmt.Errorf("Failed to create kubernikus clients: %s", err)
 	}
 
-	kubernetesClient, err := kubernetes.NewClient(kubeconfig, context, logger)
+	kubernetesClient, err := kubernetes.NewClient(kubeconfig, ctx, logger)
 	if err != nil {
 		return nil, nil, fmt.Errorf("Failed to create kubernetes clients: %s", err)
 	}
 
-	config, err := kubernetes.NewConfig(kubeconfig, context)
+	config, err := kubernetes.NewConfig(kubeconfig, ctx)
 	if err != nil {
 		return nil, nil, fmt.Errorf("Failed to create kubernetes config: %s", err)
 	}

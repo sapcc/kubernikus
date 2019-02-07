@@ -10,7 +10,7 @@ import (
 
 	"github.com/go-openapi/runtime"
 
-	"github.com/sapcc/kubernikus/pkg/api/models"
+	models "github.com/sapcc/kubernikus/pkg/api/models"
 )
 
 // GetClusterCredentialsOKCode is the HTTP code returned for type GetClusterCredentialsOK
@@ -30,6 +30,7 @@ type GetClusterCredentialsOK struct {
 
 // NewGetClusterCredentialsOK creates GetClusterCredentialsOK with default headers values
 func NewGetClusterCredentialsOK() *GetClusterCredentialsOK {
+
 	return &GetClusterCredentialsOK{}
 }
 

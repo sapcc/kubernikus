@@ -10,7 +10,7 @@ import (
 
 	"github.com/go-openapi/runtime"
 
-	"github.com/sapcc/kubernikus/pkg/api/models"
+	models "github.com/sapcc/kubernikus/pkg/api/models"
 )
 
 // ShowClusterOKCode is the HTTP code returned for type ShowClusterOK
@@ -30,6 +30,7 @@ type ShowClusterOK struct {
 
 // NewShowClusterOK creates ShowClusterOK with default headers values
 func NewShowClusterOK() *ShowClusterOK {
+
 	return &ShowClusterOK{}
 }
 

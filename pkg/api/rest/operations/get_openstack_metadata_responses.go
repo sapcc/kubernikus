@@ -10,7 +10,7 @@ import (
 
 	"github.com/go-openapi/runtime"
 
-	"github.com/sapcc/kubernikus/pkg/api/models"
+	models "github.com/sapcc/kubernikus/pkg/api/models"
 )
 
 // GetOpenstackMetadataOKCode is the HTTP code returned for type GetOpenstackMetadataOK
@@ -30,6 +30,7 @@ type GetOpenstackMetadataOK struct {
 
 // NewGetOpenstackMetadataOK creates GetOpenstackMetadataOK with default headers values
 func NewGetOpenstackMetadataOK() *GetOpenstackMetadataOK {
+
 	return &GetOpenstackMetadataOK{}
 }
 

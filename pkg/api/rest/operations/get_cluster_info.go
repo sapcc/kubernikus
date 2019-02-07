@@ -10,7 +10,7 @@ import (
 
 	middleware "github.com/go-openapi/runtime/middleware"
 
-	"github.com/sapcc/kubernikus/pkg/api/models"
+	models "github.com/sapcc/kubernikus/pkg/api/models"
 )
 
 // GetClusterInfoHandlerFunc turns a function with the right signature into a get cluster info handler

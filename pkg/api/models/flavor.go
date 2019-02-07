@@ -11,24 +11,30 @@ import (
 	"github.com/go-openapi/swag"
 )
 
-// NodePoolConfig node pool config
-// swagger:model NodePoolConfig
-type NodePoolConfig struct {
+// Flavor flavor
+// swagger:model Flavor
+type Flavor struct {
 
-	// repair
-	Repair bool `json:"repair,omitempty"`
+	// id
+	ID string `json:"id,omitempty"`
 
-	// upgrade
-	Upgrade bool `json:"upgrade,omitempty"`
+	// name
+	Name string `json:"name,omitempty"`
+
+	// ram
+	RAM int64 `json:"ram"`
+
+	// vcpus
+	Vcpus int64 `json:"vcpus"`
 }
 
-// Validate validates this node pool config
-func (m *NodePoolConfig) Validate(formats strfmt.Registry) error {
+// Validate validates this flavor
+func (m *Flavor) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *NodePoolConfig) MarshalBinary() ([]byte, error) {
+func (m *Flavor) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -36,8 +42,8 @@ func (m *NodePoolConfig) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *NodePoolConfig) UnmarshalBinary(b []byte) error {
-	var res NodePoolConfig
+func (m *Flavor) UnmarshalBinary(b []byte) error {
+	var res Flavor
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

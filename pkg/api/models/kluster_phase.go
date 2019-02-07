@@ -19,12 +19,16 @@ import (
 type KlusterPhase string
 
 const (
+
 	// KlusterPhasePending captures enum value "Pending"
 	KlusterPhasePending KlusterPhase = "Pending"
+
 	// KlusterPhaseCreating captures enum value "Creating"
 	KlusterPhaseCreating KlusterPhase = "Creating"
+
 	// KlusterPhaseRunning captures enum value "Running"
 	KlusterPhaseRunning KlusterPhase = "Running"
+
 	// KlusterPhaseTerminating captures enum value "Terminating"
 	KlusterPhaseTerminating KlusterPhase = "Terminating"
 )

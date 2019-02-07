@@ -18,4 +18,10 @@ func TestNodePoolValidation(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Contains(t, string(json), `"size":0`)
 
+	pool = NodePool{
+		Name:   "test_underscore",
+		Flavor: "nase",
+		Size:   0,
+	}
+	assert.Error(t, pool.Validate(strfmt.Default))
 }

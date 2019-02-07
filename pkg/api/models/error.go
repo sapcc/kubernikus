@@ -23,6 +23,7 @@ type Error struct {
 	Code int64 `json:"code"`
 
 	// link to help page explaining the error in more detail
+	// Format: uri
 	HelpURL strfmt.URI `json:"helpUrl,omitempty"`
 
 	// The error message
@@ -35,12 +36,14 @@ func (m *Error) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateCode(formats); err != nil {
-		// prop
+		res = append(res, err)
+	}
+
+	if err := m.validateHelpURL(formats); err != nil {
 		res = append(res, err)
 	}
 
 	if err := m.validateMessage(formats); err != nil {
-		// prop
 		res = append(res, err)
 	}
 
@@ -53,6 +56,19 @@ func (m *Error) Validate(formats strfmt.Registry) error {
 func (m *Error) validateCode(formats strfmt.Registry) error {
 
 	if err := validate.Required("code", "body", int64(m.Code)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Error) validateHelpURL(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.HelpURL) { // not required
+		return nil
+	}
+
+	if err := validate.FormatOf("helpUrl", "body", "uri", m.HelpURL.String(), formats); err != nil {
 		return err
 	}
 

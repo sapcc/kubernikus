@@ -15,9 +15,9 @@ import (
 )
 
 // NewShowClusterParams creates a new ShowClusterParams object
-// with the default values initialized.
+// no default values defined in spec.
 func NewShowClusterParams() ShowClusterParams {
-	var ()
+
 	return ShowClusterParams{}
 }
 
@@ -39,9 +39,12 @@ type ShowClusterParams struct {
 }
 
 // BindRequest both binds and validates a request, it assumes that complex things implement a Validatable(strfmt.Registry) error interface
-// for simple values it will use straight method calls
+// for simple values it will use straight method calls.
+//
+// To ensure default values, the struct must have been initialized with NewShowClusterParams() beforehand.
 func (o *ShowClusterParams) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {
 	var res []error
+
 	o.HTTPRequest = r
 
 	rName, rhkName, _ := route.Params.GetOK("name")
@@ -55,11 +58,15 @@ func (o *ShowClusterParams) BindRequest(r *http.Request, route *middleware.Match
 	return nil
 }
 
+// bindName binds and validates parameter Name from path.
 func (o *ShowClusterParams) bindName(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	var raw string
 	if len(rawData) > 0 {
 		raw = rawData[len(rawData)-1]
 	}
+
+	// Required: true
+	// Parameter is provided by construction from the route
 
 	o.Name = raw
 
@@ -70,6 +77,7 @@ func (o *ShowClusterParams) bindName(rawData []string, hasKey bool, formats strf
 	return nil
 }
 
+// validateName carries on validations for parameter Name
 func (o *ShowClusterParams) validateName(formats strfmt.Registry) error {
 
 	return nil
