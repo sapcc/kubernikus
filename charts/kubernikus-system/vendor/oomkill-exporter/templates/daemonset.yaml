@@ -29,7 +29,8 @@ spec:
         - -v=0
         securityContext:
           privileged: true
-{{ toYaml .Values.resources | indent 8 }}
+        resources:
+{{ toYaml .Values.resources | indent 10 }}
         env:
         - name: DOCKER_HOST
           value: "unix:///var/run/docker.sock"

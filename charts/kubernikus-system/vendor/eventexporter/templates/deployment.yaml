@@ -34,7 +34,8 @@ spec:
         ports:
         - name: metrics
           containerPort: {{ default 9102 .Values.metrics.port }}
-{{ toYaml .Values.resources | indent 8 }}
+        resources:
+{{ toYaml .Values.resources | indent 10 }}
       serviceAccount: {{ template "name" . }}
       volumes:
       - name: config-volume
