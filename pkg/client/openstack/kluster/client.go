@@ -90,14 +90,15 @@ func (c *klusterClient) CreateNode(pool *models.NodePool, name string, userData 
 	}
 
 	var createOpts servers.CreateOptsBuilder = servers.CreateOpts{
-		Name:           name,
-		FlavorName:     pool.Flavor,
-		ImageName:      pool.Image,
-		Networks:       networks,
-		UserData:       userData,
-		ServiceClient:  c.ComputeClient,
-		SecurityGroups: []string{c.Kluster.Spec.Openstack.SecurityGroupName},
-		ConfigDrive:    &configDrive,
+		Name:             name,
+		FlavorName:       pool.Flavor,
+		ImageName:        pool.Image,
+		AvailabilityZone: pool.AvailabilityZone,
+		Networks:         networks,
+		UserData:         userData,
+		ServiceClient:    c.ComputeClient,
+		SecurityGroups:   []string{c.Kluster.Spec.Openstack.SecurityGroupName},
+		ConfigDrive:      &configDrive,
 	}
 
 	if os.Getenv("NODEPOOL_AFFINITY") != "" {

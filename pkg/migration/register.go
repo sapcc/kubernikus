@@ -11,6 +11,7 @@ func init() {
 		AddAggregationLayerCertificates,
 		CreateEtcdBackupStorageContainer,
 		MigrateKlusterSecret,
+		InsertAVZIntoNodePools,
 		// <-- Insert new migrations at the end only!
 	}
 }

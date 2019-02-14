@@ -114,6 +114,7 @@ pkg/api/client/kubernikus_client.go: swagger.yml
 ifneq (,$(wildcard $(SWAGGER_BIN)))
 	$(SWAGGER_BIN) generate client --name kubernikus --target pkg/api --client-package client \
 		--existing-models github.com/sapcc/kubernikus/pkg/api/models \
+		--skip-models \
 		--default-scheme=https --with-flatten=full --with-flatten=verbose \
 		--principal models.Principal
 else

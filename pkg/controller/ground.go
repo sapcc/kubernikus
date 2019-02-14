@@ -246,11 +246,7 @@ func (op *GroundControl) handler(key string) error {
 				"expected", len(pods),
 				"actual", podsReady)
 			if podsReady == 4 {
-				clientset, err := op.Clients.Satellites.ClientFor(kluster)
-				if err != nil {
-					return err
-				}
-				if err := ground.SeedKluster(clientset, kluster); err != nil {
+				if err := ground.SeedKluster(op.Clients, op.Factories, kluster); err != nil {
 					return err
 				}
 				if err := op.updatePhase(kluster, models.KlusterPhaseRunning, ""); err != nil {
