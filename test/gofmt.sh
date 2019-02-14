@@ -11,7 +11,7 @@ if [ -n "$VIOLATING_FILES" ]; then
 fi
 
 #Run gofmt to check for possible simplifications (-s flag)
-VIOLATING_FILES=$(gofmt -s -l $@)
+VIOLATING_FILES=$(gofmt -s -l $@ | sed /server.go/d)
 if [ -n "$VIOLATING_FILES" ]; then
   echo "Go code is not `gofmt -s` formatted in these files:"
   echo "$VIOLATING_FILES"

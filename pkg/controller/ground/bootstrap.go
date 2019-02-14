@@ -9,52 +9,93 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	clientset "k8s.io/client-go/kubernetes"
 
-	"github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
+	v1 "github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
+	openstack_project "github.com/sapcc/kubernikus/pkg/client/openstack/project"
+	"github.com/sapcc/kubernikus/pkg/controller/config"
 	"github.com/sapcc/kubernikus/pkg/controller/ground/bootstrap"
 	"github.com/sapcc/kubernikus/pkg/controller/ground/bootstrap/dns"
 	"github.com/sapcc/kubernikus/pkg/controller/ground/bootstrap/gpu"
 )
 
-func SeedKluster(client clientset.Interface, kluster *v1.Kluster) error {
-	if err := SeedAllowBootstrapTokensToPostCSRs(client); err != nil {
+func SeedKluster(clients config.Clients, factories config.Factories, kluster *v1.Kluster) error {
+	kubernetes, err := clients.Satellites.ClientFor(kluster)
+	if err != nil {
 		return err
 	}
-	if err := SeedAutoApproveNodeBootstrapTokens(client); err != nil {
+
+	openstack, err := factories.Openstack.ProjectAdminClientFor(kluster.Spec.Openstack.ProjectID)
+	if err != nil {
 		return err
 	}
-	if err := SeedKubernikusAdmin(client); err != nil {
+
+	if err := SeedAllowBootstrapTokensToPostCSRs(kubernetes); err != nil {
 		return err
 	}
-	if err := SeedKubernikusMember(client); err != nil {
+	if err := SeedAutoApproveNodeBootstrapTokens(kubernetes); err != nil {
 		return err
 	}
-	if err := SeedCinderStorageClass(client); err != nil {
+	if err := SeedKubernikusAdmin(kubernetes); err != nil {
 		return err
 	}
-	if err := SeedAllowCertificateControllerToDeleteCSRs(client); err != nil {
+	if err := SeedKubernikusMember(kubernetes); err != nil {
 		return err
 	}
-	if err := SeedAllowApiserverToAccessKubeletAPI(client); err != nil {
+	if err := SeedCinderStorageClasses(kubernetes, openstack); err != nil {
 		return err
 	}
-	if err := dns.SeedKubeDNS(client, "", "", kluster.Spec.DNSDomain, kluster.Spec.DNSAddress); err != nil {
+	if err := SeedAllowCertificateControllerToDeleteCSRs(kubernetes); err != nil {
 		return err
 	}
-	if err := gpu.SeedGPUSupport(client); err != nil {
+	if err := SeedAllowApiserverToAccessKubeletAPI(kubernetes); err != nil {
+		return err
+	}
+	if err := dns.SeedKubeDNS(kubernetes, "", "", kluster.Spec.DNSDomain, kluster.Spec.DNSAddress); err != nil {
+		return err
+	}
+	if err := gpu.SeedGPUSupport(kubernetes); err != nil {
 		return err
 	}
 	return nil
 }
 
-func SeedCinderStorageClass(client clientset.Interface) error {
+func SeedCinderStorageClasses(client clientset.Interface, openstack openstack_project.ProjectClient) error {
+	if err := createStorageClass(client, "cinder-default", "", true); err != nil {
+		return err
+	}
+
+	metadata, err := openstack.GetMetadata()
+	if err != nil {
+		return err
+	}
+
+	for _, avz := range metadata.AvailabilityZones {
+		name := fmt.Sprintf("cinder-zone-%s", avz.Name[len(avz.Name)-1:])
+		if err := createStorageClass(client, name, avz.Name, false); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func createStorageClass(client clientset.Interface, name, avz string, isDefault bool) error {
 	storageClass := storage.StorageClass{
 		ObjectMeta: metav1.ObjectMeta{
-			Name: "cinder-default",
-			Annotations: map[string]string{
-				"storageclass.kubernetes.io/is-default-class": "true",
-			},
+			Name: name,
 		},
 		Provisioner: "kubernetes.io/cinder",
+	}
+
+	if isDefault {
+		storageClass.Annotations = map[string]string{
+			"storageclass.kubernetes.io/is-default-class": "true",
+		}
+	}
+
+	if avz != "" {
+		storageClass.Parameters = map[string]string{
+			"availability": avz,
+		}
 	}
 
 	if _, err := client.StorageV1().StorageClasses().Create(&storageClass); err != nil {
@@ -66,8 +107,8 @@ func SeedCinderStorageClass(client clientset.Interface) error {
 			return fmt.Errorf("unable to update storage class: %v", err)
 		}
 	}
-	return nil
 
+	return nil
 }
 
 func SeedKubernikusAdmin(client clientset.Interface) error {

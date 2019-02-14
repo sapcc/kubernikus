@@ -7,7 +7,7 @@ import (
 	"github.com/sapcc/kubernikus/pkg/api"
 	"github.com/sapcc/kubernikus/pkg/api/models"
 	"github.com/sapcc/kubernikus/pkg/api/rest/operations"
-	"github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
+	v1 "github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
 )
 
 func NewUpdateCluster(rt *api.Runtime) operations.UpdateClusterHandler {
@@ -49,6 +49,16 @@ func (d *updateCluster) Handle(params operations.UpdateClusterParams, principal 
 				nodePools[i].Image = DEFAULT_IMAGE
 			}
 		}
+
+		// Keep previous AVZ
+		for _, specPool := range kluster.Spec.NodePools {
+			for i, paramPool := range nodePools {
+				if specPool.Name == paramPool.Name {
+					nodePools[i].AvailabilityZone = specPool.AvailabilityZone
+				}
+			}
+		}
+
 		// Update nodepool
 		kluster.Spec.NodePools = nodePools
 		kluster.Spec.SSHPublicKey = params.Body.Spec.SSHPublicKey

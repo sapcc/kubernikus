@@ -592,7 +592,7 @@ func (s *Server) TLSListener() (net.Listener, error) {
 
 func handleInterrupt(once *sync.Once, s *Server) {
 	once.Do(func() {
-		for range s.interrupt {
+		for _ = range s.interrupt {
 			if s.interrupted {
 				s.Logf("Server already shutting down")
 				continue

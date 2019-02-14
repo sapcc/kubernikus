@@ -9,9 +9,10 @@ import (
 
 func TestNodePoolValidation(t *testing.T) {
 	pool := NodePool{
-		Name:   "test",
-		Flavor: "nase",
-		Size:   0,
+		AvailabilityZone: "something",
+		Name:             "test",
+		Flavor:           "nase",
+		Size:             0,
 	}
 	assert.NoError(t, pool.Validate(strfmt.Default))
 	json, err := pool.MarshalBinary()
@@ -19,9 +20,10 @@ func TestNodePoolValidation(t *testing.T) {
 	assert.Contains(t, string(json), `"size":0`)
 
 	pool = NodePool{
-		Name:   "test_underscore",
-		Flavor: "nase",
-		Size:   0,
+		AvailabilityZone: "something",
+		Name:             "test_underscore",
+		Flavor:           "nase",
+		Size:             0,
 	}
 	assert.Error(t, pool.Validate(strfmt.Default))
 }
