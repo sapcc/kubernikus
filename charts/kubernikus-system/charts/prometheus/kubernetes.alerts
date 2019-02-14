@@ -107,7 +107,7 @@ groups:
       description: The pod {{ $labels.namespace }}/{{ $labels.pod_name }} killed several times in short succession. This could be due to wrong resource limits.
 
   - alert: VolumeAttachmentFailed
-    expr: sum(increase(volume_mount_error_total[30m])) by (node) > 5 unless sum(increase(volume_mount_success_total[30m])) by (node) > 1
+    expr: sum(increase(volume_mount_error_total[3h])) by (node) > 75 unless sum(increase(volume_mount_success_total[3h])) by (node) > 1
     for: 5m
     labels:
       tier: kks
