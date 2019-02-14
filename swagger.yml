@@ -411,7 +411,7 @@ definitions:
       name:
         x-nullable: false
         type: string
-        pattern: '^[a-z]([a-z0-9]*)?$'
+        pattern: '^[a-z0-9]([-\.a-z0-9]*)?$'
         maxLength: 20
       size:
         x-nullable: false

@@ -33,7 +33,7 @@ type NodePool struct {
 	// name
 	// Required: true
 	// Max Length: 20
-	// Pattern: ^[a-z]([a-z0-9]*)?$
+	// Pattern: ^[a-z0-9]([-\.a-z0-9]*)?$
 	Name string `json:"name"`
 
 	// size
@@ -103,7 +103,7 @@ func (m *NodePool) validateName(formats strfmt.Registry) error {
 		return err
 	}
 
-	if err := validate.Pattern("name", "body", string(m.Name), `^[a-z]([a-z0-9]*)?$`); err != nil {
+	if err := validate.Pattern("name", "body", string(m.Name), `^[a-z0-9]([-\.a-z0-9]*)?$`); err != nil {
 		return err
 	}
 
