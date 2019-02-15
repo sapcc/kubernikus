@@ -42,6 +42,7 @@ func (d *createCluster) Handle(params operations.CreateClusterParams, principal 
 		return NewErrorResponse(&operations.CreateClusterDefault{}, 500, "Failed to get OpenStack metadata: %s", err)
 	}
 
+	var metadata *models.OpenstackMetadata
 	spec.Name = name
 	for i, pool := range spec.NodePools {
 		// Set default image
@@ -51,14 +52,28 @@ func (d *createCluster) Handle(params operations.CreateClusterParams, principal 
 
 		// Set default AvailabilityZone
 		if pool.AvailabilityZone == "" {
+			if metadata == nil {
+				m, err := fetchOpenstackMetadata(params.HTTPRequest, principal)
+				if err != nil {
+					return NewErrorResponse(&operations.CreateClusterDefault{}, 500, err.Error())
+				}
+				metadata = m
+			}
 			avz, err := getDefaultAvailabilityZone(metadata)
 			if err != nil {
-				return NewErrorResponse(&operations.CreateClusterDefault{}, 500, "Failed to get default availability zones: %s", err)
+				return NewErrorResponse(&operations.CreateClusterDefault{}, 500, err.Error())
 			}
 			spec.NodePools[i].AvailabilityZone = avz
 		} else {
+			if metadata == nil {
+				m, err := fetchOpenstackMetadata(params.HTTPRequest, principal)
+				if err != nil {
+					return NewErrorResponse(&operations.CreateClusterDefault{}, 500, err.Error())
+				}
+				metadata = m
+			}
 			if err := validateAavailabilityZone(pool.AvailabilityZone, metadata); err != nil {
-				return NewErrorResponse(&operations.CreateClusterDefault{}, 409, "Availability zone '%s' for pool '%s' is invalid: %s", pool.AvailabilityZone, pool.Name, err)
+				return NewErrorResponse(&operations.CreateClusterDefault{}, 409, "Availability Zone %s is invalid: %s", pool.AvailabilityZone, err)
 			}
 		}
 	}
