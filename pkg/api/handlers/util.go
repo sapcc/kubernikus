@@ -119,7 +119,6 @@ func fetchOpenstackMetadata(request *http.Request, principal *models.Principal) 
 	authOptions := &tokens.AuthOptions{
 		IdentityEndpoint: principal.AuthURL,
 		TokenID:          tokenID,
-		AllowReauth:      true,
 		Scope: tokens.Scope{
 			ProjectID: principal.Account,
 		},
