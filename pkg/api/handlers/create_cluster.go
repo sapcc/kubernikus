@@ -53,7 +53,7 @@ func (d *createCluster) Handle(params operations.CreateClusterParams, principal 
 		if pool.AvailabilityZone == "" {
 			avz, err := getDefaultAvailabilityZone(metadata)
 			if err != nil {
-				return NewErrorResponse(&operations.CreateClusterDefault{}, 500, err.Error())
+				return NewErrorResponse(&operations.CreateClusterDefault{}, 500, "Failed to get default availability zones: %s", err)
 			}
 			spec.NodePools[i].AvailabilityZone = avz
 		} else {
