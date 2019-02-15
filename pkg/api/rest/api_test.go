@@ -194,10 +194,10 @@ func TestClusterUpdate(t *testing.T) {
 			},
 			NodePools: []models.NodePool{
 				{
-					Flavor:           "flavour",
-					Image:            "image",
-					Name:             "poolname",
-					Size:             2,
+					Flavor: "flavour",
+					Image:  "image",
+					Name:   "poolname",
+					Size:   2,
 				},
 			},
 		},
