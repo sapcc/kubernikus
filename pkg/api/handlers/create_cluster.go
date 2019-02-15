@@ -37,13 +37,32 @@ func (d *createCluster) Handle(params operations.CreateClusterParams, principal 
 		return NewErrorResponse(&operations.CreateClusterDefault{}, int(err.Code()), err.Error())
 	}
 
+	metadata, err := fetchOpenstackMetadata(params.HTTPRequest, principal)
+	if err != nil {
+		return NewErrorResponse(&operations.CreateClusterDefault{}, 500, err.Error())
+	}
+
 	spec.Name = name
 	for i, pool := range spec.NodePools {
-		//Set default image
+		// Set default image
 		if pool.Image == "" {
 			spec.NodePools[i].Image = DEFAULT_IMAGE
 		}
+
+		// Set default AvailabilityZone
+		if pool.AvailabilityZone == "" {
+			avz, err := getDefaultAvailabilityZone(metadata)
+			if err != nil {
+				return NewErrorResponse(&operations.CreateClusterDefault{}, 500, err.Error())
+			}
+			spec.NodePools[i].AvailabilityZone = avz
+		} else {
+			if err := validateAavailabilityZone(pool.AvailabilityZone, metadata); err != nil {
+				return NewErrorResponse(&operations.CreateClusterDefault{}, 409, "Availability Zone %s is invalid: %s", pool.AvailabilityZone, err)
+			}
+		}
 	}
+
 	kluster, err := kubernikus.NewKlusterFactory().KlusterFor(spec)
 	if err != nil {
 		logger.Log(
