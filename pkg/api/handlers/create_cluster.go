@@ -58,7 +58,7 @@ func (d *createCluster) Handle(params operations.CreateClusterParams, principal 
 			spec.NodePools[i].AvailabilityZone = avz
 		} else {
 			if err := validateAavailabilityZone(pool.AvailabilityZone, metadata); err != nil {
-				return NewErrorResponse(&operations.CreateClusterDefault{}, 409, "Availability Zone %s is invalid: %s", pool.AvailabilityZone, err)
+				return NewErrorResponse(&operations.CreateClusterDefault{}, 409, "Availability zone '%s' for pool '%s' is invalid: %s", pool.AvailabilityZone, pool.Name, err)
 			}
 		}
 	}
