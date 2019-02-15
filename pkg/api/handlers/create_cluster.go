@@ -39,7 +39,7 @@ func (d *createCluster) Handle(params operations.CreateClusterParams, principal 
 
 	metadata, err := fetchOpenstackMetadata(params.HTTPRequest, principal)
 	if err != nil {
-		return NewErrorResponse(&operations.CreateClusterDefault{}, 500, err.Error())
+		return NewErrorResponse(&operations.CreateClusterDefault{}, 500, "Failed to get OpenStack metadata: %s", err)
 	}
 
 	spec.Name = name
