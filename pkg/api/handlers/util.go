@@ -4,15 +4,18 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"sort"
 	"strings"
 
 	kitlog "github.com/go-kit/kit/log"
+	"github.com/gophercloud/gophercloud/openstack/identity/v3/tokens"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 
 	"github.com/sapcc/kubernikus/pkg/api/models"
 	"github.com/sapcc/kubernikus/pkg/api/spec"
-	"github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
+	v1 "github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
+	"github.com/sapcc/kubernikus/pkg/client/openstack"
 	kubernikusv1 "github.com/sapcc/kubernikus/pkg/generated/clientset/typed/kubernikus/v1"
 )
 
@@ -108,4 +111,42 @@ func nodePoolEqualsWithScaling(old, new models.NodePool) error {
 	}
 
 	return nil
+}
+
+func fetchOpenstackMetadata(request *http.Request, principal *models.Principal) (*models.OpenstackMetadata, error) {
+	tokenID := request.Header.Get("X-Auth-Token")
+
+	authOptions := &tokens.AuthOptions{
+		IdentityEndpoint: principal.AuthURL,
+		TokenID:          tokenID,
+		Scope: tokens.Scope{
+			ProjectID: principal.Account,
+		},
+	}
+
+	client, err := openstack.NewSharedOpenstackClientFactory(nil, nil, nil, getTracingLogger(request)).ProjectClientFor(authOptions)
+	if err != nil {
+		return nil, err
+	}
+
+	return client.GetMetadata()
+}
+
+func getDefaultAvailabilityZone(metadata *models.OpenstackMetadata) (string, error) {
+	sort.Slice(metadata.AvailabilityZones, func(i, j int) bool { return metadata.AvailabilityZones[i].Name > metadata.AvailabilityZones[j].Name })
+	if len(metadata.AvailabilityZones) == 0 {
+		return "", errors.New("couldn't determine default availability zone")
+	}
+
+	return metadata.AvailabilityZones[0].Name, nil
+}
+
+func validateAavailabilityZone(avz string, metadata *models.OpenstackMetadata) error {
+	for _, a := range metadata.AvailabilityZones {
+		if a.Name == avz {
+			return nil
+		}
+	}
+
+	return errors.New("availability zone not found")
 }

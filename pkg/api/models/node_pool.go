@@ -18,8 +18,7 @@ import (
 type NodePool struct {
 
 	// availability zone
-	// Required: true
-	AvailabilityZone string `json:"availabilityZone"`
+	AvailabilityZone string `json:"availabilityZone,omitempty"`
 
 	// config
 	Config NodePoolConfig `json:"config,omitempty"`
@@ -47,10 +46,6 @@ type NodePool struct {
 func (m *NodePool) Validate(formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.validateAvailabilityZone(formats); err != nil {
-		res = append(res, err)
-	}
-
 	if err := m.validateConfig(formats); err != nil {
 		res = append(res, err)
 	}
@@ -70,15 +65,6 @@ func (m *NodePool) Validate(formats strfmt.Registry) error {
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
-	return nil
-}
-
-func (m *NodePool) validateAvailabilityZone(formats strfmt.Registry) error {
-
-	if err := validate.RequiredString("availabilityZone", "body", string(m.AvailabilityZone)); err != nil {
-		return err
-	}
-
 	return nil
 }
 
