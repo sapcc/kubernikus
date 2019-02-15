@@ -20,7 +20,8 @@ import (
 )
 
 var (
-	DEFAULT_IMAGE = spec.MustDefaultString("NodePool", "image")
+	DEFAULT_IMAGE              = spec.MustDefaultString("NodePool", "image")
+	FetchOpenstackMetadataFunc = fetchOpenstackMetadata
 )
 
 func accountSelector(principal *models.Principal) labels.Selector {

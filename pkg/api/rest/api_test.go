@@ -18,6 +18,7 @@ import (
 
 	apipkg "github.com/sapcc/kubernikus/pkg/api"
 	"github.com/sapcc/kubernikus/pkg/api/auth"
+	"github.com/sapcc/kubernikus/pkg/api/handlers"
 	"github.com/sapcc/kubernikus/pkg/api/models"
 	"github.com/sapcc/kubernikus/pkg/api/rest/operations"
 	"github.com/sapcc/kubernikus/pkg/api/spec"
@@ -162,6 +163,16 @@ func TestClusterShow(t *testing.T) {
 
 func TestClusterUpdate(t *testing.T) {
 	handler, rt := createTestHandler(t)
+
+	handlers.FetchOpenstackMetadataFunc = func(request *http.Request, principal *models.Principal) (*models.OpenstackMetadata, error) {
+		return &models.OpenstackMetadata{
+			AvailabilityZones: []models.AvailabilityZone{
+				models.AvailabilityZone{"us-west-1a"},
+				models.AvailabilityZone{"us-east-1a"},
+			},
+		}, nil
+	}
+
 	kluster := kubernikusv1.Kluster{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      fmt.Sprintf("%s-%s", "nase", ACCOUNT),
@@ -183,7 +194,6 @@ func TestClusterUpdate(t *testing.T) {
 			},
 			NodePools: []models.NodePool{
 				{
-					AvailabilityZone: "us-west-1a",
 					Flavor:           "flavour",
 					Image:            "image",
 					Name:             "poolname",
@@ -261,5 +271,4 @@ func TestClusterUpdate(t *testing.T) {
 
 	//assert nodepool was updated
 	assert.Equal(t, updateObject.Spec.NodePools, apiResponse.Spec.NodePools)
-
 }

@@ -38,6 +38,21 @@ func (d *createCluster) Handle(params operations.CreateClusterParams, principal 
 	}
 
 	var metadata *models.OpenstackMetadata
+	var defaultAVZ string
+	if len(spec.NodePools) > 0 {
+		m, err := FetchOpenstackMetadataFunc(params.HTTPRequest, principal)
+		if err != nil {
+			return NewErrorResponse(&operations.CreateClusterDefault{}, 500, err.Error())
+		}
+		metadata = m
+
+		avz, err := getDefaultAvailabilityZone(metadata)
+		if err != nil {
+			return NewErrorResponse(&operations.CreateClusterDefault{}, 500, err.Error())
+		}
+		defaultAVZ = avz
+	}
+
 	spec.Name = name
 	for i, pool := range spec.NodePools {
 		// Set default image
@@ -47,29 +62,12 @@ func (d *createCluster) Handle(params operations.CreateClusterParams, principal 
 
 		// Set default AvailabilityZone
 		if pool.AvailabilityZone == "" {
-			if metadata == nil {
-				m, err := fetchOpenstackMetadata(params.HTTPRequest, principal)
-				if err != nil {
-					return NewErrorResponse(&operations.CreateClusterDefault{}, 500, err.Error())
-				}
-				metadata = m
-			}
-			avz, err := getDefaultAvailabilityZone(metadata)
-			if err != nil {
-				return NewErrorResponse(&operations.CreateClusterDefault{}, 500, err.Error())
-			}
-			spec.NodePools[i].AvailabilityZone = avz
-		} else {
-			if metadata == nil {
-				m, err := fetchOpenstackMetadata(params.HTTPRequest, principal)
-				if err != nil {
-					return NewErrorResponse(&operations.CreateClusterDefault{}, 500, err.Error())
-				}
-				metadata = m
-			}
-			if err := validateAavailabilityZone(pool.AvailabilityZone, metadata); err != nil {
-				return NewErrorResponse(&operations.CreateClusterDefault{}, 409, "Availability Zone %s is invalid: %s", pool.AvailabilityZone, err)
-			}
+			spec.NodePools[i].AvailabilityZone = defaultAVZ
+		}
+
+		// Validate AVZ
+		if err := validateAavailabilityZone(spec.NodePools[i].AvailabilityZone, metadata); err != nil {
+			return NewErrorResponse(&operations.CreateClusterDefault{}, 409, "Availability Zone %s is invalid: %s", spec.NodePools[i].AvailabilityZone, err)
 		}
 	}
 

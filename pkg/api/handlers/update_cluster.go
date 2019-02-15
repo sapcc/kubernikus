@@ -1,6 +1,9 @@
 package handlers
 
 import (
+	"fmt"
+	"strings"
+
 	"github.com/go-openapi/runtime/middleware"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 
@@ -19,9 +22,17 @@ type updateCluster struct {
 }
 
 func (d *updateCluster) Handle(params operations.UpdateClusterParams, principal *models.Principal) middleware.Responder {
+	metadata, err := FetchOpenstackMetadataFunc(params.HTTPRequest, principal)
+	if err != nil {
+		return NewErrorResponse(&operations.UpdateClusterDefault{}, 500, err.Error())
+	}
+
+	defaultAVZ, err := getDefaultAvailabilityZone(metadata)
+	if err != nil {
+		return NewErrorResponse(&operations.UpdateClusterDefault{}, 500, err.Error())
+	}
 
 	kluster, err := editCluster(d.Kubernikus.Kubernikus().Klusters(d.Namespace), principal, params.Name, func(kluster *v1.Kluster) error {
-
 		// find the deleted nodepools
 		deletedNodePoolNames, err := detectNodePoolChanges(kluster.Spec.NodePools, params.Body.Spec.NodePools)
 		if err != nil {
@@ -59,6 +70,17 @@ func (d *updateCluster) Handle(params operations.UpdateClusterParams, principal 
 			}
 		}
 
+		for i, paramPool := range nodePools {
+			// Set default AvailabilityZone
+			if paramPool.AvailabilityZone == "" {
+				nodePools[i].AvailabilityZone = defaultAVZ
+			}
+
+			if err := validateAavailabilityZone(nodePools[i].AvailabilityZone, metadata); err != nil {
+				return fmt.Errorf("Availability Zone %s is invalid: %s", nodePools[i].AvailabilityZone, err)
+			}
+		}
+
 		// Update nodepool
 		kluster.Spec.NodePools = nodePools
 		kluster.Spec.SSHPublicKey = params.Body.Spec.SSHPublicKey
@@ -69,11 +91,18 @@ func (d *updateCluster) Handle(params operations.UpdateClusterParams, principal 
 
 		return nil
 	})
+
 	if err != nil {
 		if apierrors.IsNotFound(err) {
 			return NewErrorResponse(&operations.UpdateClusterDefault{}, 404, "Not found")
 		}
+
+		if strings.HasPrefix(err.Error(), "Availability Zone") {
+			return NewErrorResponse(&operations.UpdateClusterDefault{}, 409, err.Error())
+		}
+
 		return NewErrorResponse(&operations.UpdateClusterDefault{}, 500, err.Error())
 	}
+
 	return operations.NewUpdateClusterOK().WithPayload(klusterFromCRD(kluster))
 }
