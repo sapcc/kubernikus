@@ -4,7 +4,7 @@ image_resource:
   type: docker-image
   source:
     repository: sapcc/kubernikus-tests
-    tag: 3963a930cb1e87826bbe8fb0886db76b8d6ed0ef
+    tag: 2c96f9427d962b9804caf15af2809d0b168e0624
 
 inputs:
   - name: kubernikus.builds
