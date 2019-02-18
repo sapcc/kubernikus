@@ -14,7 +14,7 @@ import (
 	"github.com/gophercloud/gophercloud/openstack/identity/v3/tokens"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
 
@@ -224,7 +224,7 @@ func (k *NodeTests) SameBuildingBlock(t *testing.T) {
 	require.NoError(t, err, "There should be no error while extracting the project")
 
 	serversListOpts := servers.ListOpts{
-		Name:     "e2e-",
+		Name:     k.KlusterName,
 		TenantID: project.ID,
 	}
 
@@ -233,17 +233,20 @@ func (k *NodeTests) SameBuildingBlock(t *testing.T) {
 
 	var s []struct {
 		BuildingBlock string `json:"OS-EXT-SRV-ATTR:host"`
+		ID            string `json:"id"`
 	}
 	err = servers.ExtractServersInto(allPages, &s)
 	require.NoError(t, err, "There should be no error extracting server info")
+
+	require.Len(t, s, k.ExpectedNodeCount, "Expeted to find %d building blocks", k.ExpectedNodeCount)
 
 	bb := ""
 	for _, bbs := range s {
 		require.NotEmpty(t, bbs.BuildingBlock, "Node building block should not be empty")
 		if bb == "" {
-			bb = string(bbs.BuildingBlock)
+			bb = bbs.BuildingBlock
 		} else {
-			require.Equal(t, bb, bbs.BuildingBlock, "Nodes should be on the same building block")
+			require.Equal(t, bb, bbs.BuildingBlock, "Node %s is on building block %s which is different from node %s which is running on %s", bbs.ID, bbs.BuildingBlock, s[0].ID, s[0].BuildingBlock)
 		}
 	}
 }
