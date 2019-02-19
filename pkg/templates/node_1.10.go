@@ -114,7 +114,8 @@ systemd:
           --register-with-taints={{ .NodeTaints | join "," }} \
 {{- end }}
           --volume-plugin-dir=/var/lib/kubelet/volumeplugins \
-          --exit-on-lock-contention
+          --exit-on-lock-contention \
+          --rotate-certificates
         ExecStop=-/usr/bin/rkt stop --uuid-file=/var/run/kubelet-pod.uuid
         Restart=always
         RestartSec=10
