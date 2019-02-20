@@ -3,7 +3,7 @@ package dns
 import (
 	"errors"
 
-	"k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	extensions "k8s.io/api/extensions/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
@@ -19,17 +19,13 @@ const (
 	CONFIGMAP          = "kube-dns"
 	DEFAULT_REPOSITORY = "sapcc" // Used to be gcr.io/google_containers but that is not working in china
 
-	// If you change this version you need to republish the images:
+	// If you change this version you need to ensure these images are mirrored:
 	//   * k8s-dns-kube-dns-amd64
 	//   * k8s-dns-sidecar-amd64
 	//   * k8s-dns-dnsmasq-nanny-amd64
 	//
-	// Workflow:
-	//   docker pull gcr.io/google_containers/k8s-dns-kube-dns-amd64:1.14.9
-	//   docker tag gcr.io/google_containers/k8s-dns-kube-dns-amd64:1.14.9 sapcc/k8s-dns-kube-dns-amd64:1.14.9
-	//   docker push sapcc/k8s-dns-kube-dns-amd64:1.14.9
-	//
-	DEFAULT_VERSION = "1.14.9"
+	// We have a pipline that should do this automatically
+	DEFAULT_VERSION = "1.14.13"
 )
 
 var (

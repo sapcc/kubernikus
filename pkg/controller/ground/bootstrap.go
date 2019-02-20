@@ -34,6 +34,9 @@ func SeedKluster(clients config.Clients, factories config.Factories, kluster *v1
 	if err := SeedAutoApproveNodeBootstrapTokens(kubernetes); err != nil {
 		return err
 	}
+	if err := SeedAutoRenewalNodeCertificates(kubernetes); err != nil {
+		return err
+	}
 	if err := SeedKubernikusAdmin(kubernetes); err != nil {
 		return err
 	}
@@ -255,6 +258,42 @@ func SeedAutoApproveNodeBootstrapTokens(client clientset.Interface) error {
 			{
 				Kind: "Group",
 				Name: "system:bootstrappers",
+			},
+		},
+	})
+}
+
+func SeedAutoRenewalNodeCertificates(client clientset.Interface) error {
+	err := bootstrap.CreateOrUpdateClusterRole(client, &rbac.ClusterRole{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "system:certificates.k8s.io:certificatesigningrequests:selfnodeclient",
+		},
+		Rules: []rbac.PolicyRule{
+			{
+				Verbs:     []string{"create"},
+				APIGroups: []string{"certificates.k8s.io"},
+				Resources: []string{"certificatesigningrequests/selfnodeclient"},
+			},
+		},
+	})
+	if err != nil {
+		return err
+	}
+
+	return bootstrap.CreateOrUpdateClusterRoleBinding(client, &rbac.ClusterRoleBinding{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "kubernikus:auto-approve-renewals-for-nodes",
+		},
+		RoleRef: rbac.RoleRef{
+			APIGroup: rbac.GroupName,
+			Kind:     "ClusterRole",
+			Name:     "system:certificates.k8s.io:certificatesigningrequests:selfnodeclient",
+		},
+		Subjects: []rbac.Subject{
+			{
+				APIGroup: rbac.GroupName,
+				Kind:     "Group",
+				Name:     "system:nodes",
 			},
 		},
 	})
