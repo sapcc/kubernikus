@@ -18,8 +18,7 @@ const (
 )
 
 type MigrationReconciler struct {
-	config.Clients
-
+	Clients   config.Clients
 	Factories config.Factories
 	Recorder  record.EventRecorder
 	Logger    log.Logger
@@ -40,11 +39,11 @@ func (mr *MigrationReconciler) Reconcile(kluster *v1.Kluster) (bool, error) {
 	//We only care about klusters with pending migrations
 	if !migration.MigrationsPending(kluster) {
 		// Ensure the kluster migration status is up to date
-		return false, util.UpdateKlusterMigrationStatus(mr.Kubernikus.Kubernikus(), kluster, false)
+		return false, util.UpdateKlusterMigrationStatus(mr.Clients.Kubernikus.Kubernikus(), kluster, false)
 	}
 
 	//Ensure pending migrations are reflected in the status
-	if err := util.UpdateKlusterMigrationStatus(mr.Kubernikus.Kubernikus(), kluster, true); err != nil {
+	if err := util.UpdateKlusterMigrationStatus(mr.Clients.Kubernikus.Kubernikus(), kluster, true); err != nil {
 		return false, err
 	}
 
@@ -53,7 +52,7 @@ func (mr *MigrationReconciler) Reconcile(kluster *v1.Kluster) (bool, error) {
 		return false, nil
 	}
 
-	err := migration.Migrate(kluster, mr.Kubernetes, mr.Kubernikus, mr.Factories.Openstack)
+	err := migration.Migrate(kluster, mr.Clients, mr.Factories)
 	mr.Logger.Log(
 		"msg", "Migrating spec",
 		"kluster", kluster.Name,
@@ -67,7 +66,7 @@ func (mr *MigrationReconciler) Reconcile(kluster *v1.Kluster) (bool, error) {
 		return false, err
 	}
 	//Clear the klusters migration status as migrations are applied successfully
-	util.UpdateKlusterMigrationStatus(mr.Kubernikus.Kubernikus(), kluster, false)
+	util.UpdateKlusterMigrationStatus(mr.Clients.Kubernikus.Kubernikus(), kluster, false)
 
 	return false, nil
 }

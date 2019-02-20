@@ -2,29 +2,28 @@ package migration
 
 import (
 	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/kubernetes"
 
 	v1 "github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
-	"github.com/sapcc/kubernikus/pkg/client/openstack"
+	"github.com/sapcc/kubernikus/pkg/controller/config"
 	"github.com/sapcc/kubernikus/pkg/util"
 )
 
-func MigrateKlusterSecret(rawKluster []byte, current *v1.Kluster, client kubernetes.Interface, openstackFactory openstack.SharedOpenstackClientFactory) (err error) {
+func MigrateKlusterSecret(rawKluster []byte, current *v1.Kluster, clients config.Clients, factories config.Factories) (err error) {
 
-	oldSecret, err := client.CoreV1().Secrets(current.Namespace).Get(current.Name, meta_v1.GetOptions{})
+	oldSecret, err := clients.Kubernetes.CoreV1().Secrets(current.Namespace).Get(current.Name, meta_v1.GetOptions{})
 	if err != nil {
 		return err
 	}
-	if _, err := util.EnsureKlusterSecret(client, current); err != nil {
+	if _, err := util.EnsureKlusterSecret(clients.Kubernetes, current); err != nil {
 		return err
 	}
 
-	newSecret, err := client.CoreV1().Secrets(current.Namespace).Get(current.Name+"-secret", meta_v1.GetOptions{})
+	newSecret, err := clients.Kubernetes.CoreV1().Secrets(current.Namespace).Get(current.Name+"-secret", meta_v1.GetOptions{})
 	if err != nil {
 		return err
 	}
 	newSecret.Data = oldSecret.Data
 
-	_, err = client.CoreV1().Secrets(current.Namespace).Update(newSecret)
+	_, err = clients.Kubernetes.CoreV1().Secrets(current.Namespace).Update(newSecret)
 	return err
 }
