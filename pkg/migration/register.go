@@ -12,6 +12,7 @@ func init() {
 		CreateEtcdBackupStorageContainer,
 		MigrateKlusterSecret,
 		InsertAVZIntoNodePools,
+		SeedCinderStorageClasses,
 		// <-- Insert new migrations at the end only!
 	}
 }
