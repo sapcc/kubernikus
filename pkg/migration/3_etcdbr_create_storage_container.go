@@ -4,15 +4,14 @@ import (
 	"errors"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/kubernetes"
 
-	"github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
-	"github.com/sapcc/kubernikus/pkg/client/openstack"
+	v1 "github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
+	"github.com/sapcc/kubernikus/pkg/controller/config"
 	etcd_util "github.com/sapcc/kubernikus/pkg/util/etcd"
 )
 
-func CreateEtcdBackupStorageContainer(rawKluster []byte, current *v1.Kluster, client kubernetes.Interface, openstackFactory openstack.SharedOpenstackClientFactory) (err error) {
-	secret, err := client.CoreV1().Secrets(current.GetNamespace()).Get(current.GetName(), metav1.GetOptions{})
+func CreateEtcdBackupStorageContainer(rawKluster []byte, current *v1.Kluster, clients config.Clients, factories config.Factories) (err error) {
+	secret, err := clients.Kubernetes.CoreV1().Secrets(current.GetNamespace()).Get(current.GetName(), metav1.GetOptions{})
 	if err != nil {
 		return err
 	}
@@ -27,7 +26,7 @@ func CreateEtcdBackupStorageContainer(rawKluster []byte, current *v1.Kluster, cl
 		return errors.New("openstack domain name secret not set")
 	}
 
-	adminClient, err := openstackFactory.AdminClient()
+	adminClient, err := factories.Openstack.AdminClient()
 	if err != nil {
 		return err
 	}
