@@ -3,15 +3,13 @@ package migration
 import (
 	"fmt"
 
-	"k8s.io/client-go/kubernetes"
-
 	v1 "github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
-	"github.com/sapcc/kubernikus/pkg/client/openstack"
+	"github.com/sapcc/kubernikus/pkg/controller/config"
 	"github.com/sapcc/kubernikus/pkg/util"
 )
 
-func InsertAVZIntoNodePools(rawKluster []byte, current *v1.Kluster, client kubernetes.Interface, openstackFactory openstack.SharedOpenstackClientFactory) (err error) {
-	secret, err := util.KlusterSecret(client, current)
+func InsertAVZIntoNodePools(rawKluster []byte, current *v1.Kluster, clients config.Clients, factories config.Factories) (err error) {
+	secret, err := util.KlusterSecret(clients.Kubernetes, current)
 	if err != nil {
 		return err
 	}
