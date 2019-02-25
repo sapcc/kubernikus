@@ -1,5 +1,10 @@
-platform: 'darwin'
+platform: 'linux'
 
+image_resource:
+  type: docker-image
+  source:
+    repository: golang
+    tag: 1.11.5-alpine3.8
 inputs:
   - name: kubernikus.builds
     path: gopath/src/github.com/sapcc/kubernikus
@@ -13,8 +18,10 @@ run:
     - |
       export BINARIES=$(pwd -P)/binaries
       export GOPATH=$PWD/gopath
+      export CGO_ENABLED=0
 
       cd gopath/src/github.com/sapcc/kubernikus
+      apk add --no-cache upx make git
 
       make bin/darwin/kubernikusctl
       make bin/linux/kubernikusctl
