@@ -450,22 +450,24 @@ func (op *GroundControl) createKluster(kluster *v1.Kluster) error {
 }
 
 func (op *GroundControl) terminateKluster(kluster *v1.Kluster) error {
-	if secret, err := util.KlusterSecret(op.Clients.Kubernetes, kluster); !apierrors.IsNotFound(err) && secret.Openstack.Username != "" {
+	if secret, err := util.KlusterSecret(op.Clients.Kubernetes, kluster); !apierrors.IsNotFound(err) {
 		if err != nil {
 			return err
 		}
 		username := secret.Openstack.Username
 		domain := secret.Openstack.DomainName
+		//If the cluster was still in state Pending we don't have a service user yet: skip deletion
+		if username != "" && domain != "" {
+			op.Logger.Log(
+				"msg", "Deleting openstack user",
+				"kluster", kluster.GetName(),
+				"project", kluster.Account(),
+				"username", username,
+				"domain", domain)
 
-		op.Logger.Log(
-			"msg", "Deleting openstack user",
-			"kluster", kluster.GetName(),
-			"project", kluster.Account(),
-			"username", username,
-			"domain", domain)
-
-		if err := op.Clients.OpenstackAdmin.DeleteUser(username, domain); err != nil {
-			return err
+			if err := op.Clients.OpenstackAdmin.DeleteUser(username, domain); err != nil {
+				return err
+			}
 		}
 	}
 
