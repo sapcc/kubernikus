@@ -1,6 +1,7 @@
 package v1
 
 import (
+	"fmt"
 	"net"
 
 	"github.com/sapcc/kubernikus/pkg/api/models"
@@ -34,7 +35,7 @@ func (spec Kluster) Account() string {
 func (spec Kluster) ApiServiceIP() (net.IP, error) {
 	_, ipnet, err := net.ParseCIDR(spec.Spec.ServiceCIDR)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("Failed to parse service CIDR: %s", err)
 	}
 	ip, err := ip.GetIndexedIP(ipnet, 1)
 	if err != nil {
