@@ -1,5 +1,5 @@
-hash: b5352f4065108401065414f6627d608e24ede20945bfa73ceae444e839662136
-updated: 2018-08-31T10:21:40.690495+02:00
+hash: f36f7508dc3c68fd52059531ebf85d404e7c05dfb17be7e2c0dfd707bd54b3f2
+updated: 2019-02-26T08:50:21.042819+01:00
 imports:
 - name: github.com/ajeddeloh/yaml
   version: 1072abfea31191db507785e2e0c1b8d1440d35a5
@@ -125,7 +125,7 @@ imports:
   - proto
   - sortkeys
 - name: github.com/golang/glog
-  version: abbb4165c64123c8932f94a4de5ef6f36db7b66b
+  version: 58f2bb154920fd79224b172cdac6a00d642a420a
   repo: https://github.com/bugroger/glognomore
 - name: github.com/golang/groupcache
   version: 02826c3e79038b59d737d3b1c0a1d937f71a4433
@@ -155,6 +155,8 @@ imports:
   - internal
   - openstack
   - openstack/blockstorage/extensions/quotasets
+  - openstack/blockstorage/v3/volumes
+  - openstack/compute/v2/extensions/availabilityzones
   - openstack/compute/v2/extensions/keypairs
   - openstack/compute/v2/extensions/quotasets
   - openstack/compute/v2/extensions/schedulerhints
@@ -177,6 +179,9 @@ imports:
   - openstack/networking/v2/networks
   - openstack/networking/v2/ports
   - openstack/networking/v2/subnets
+  - openstack/objectstorage/v1/accounts
+  - openstack/objectstorage/v1/containers
+  - openstack/objectstorage/v1/objects
   - openstack/utils
   - pagination
 - name: github.com/gregjones/httpcache
@@ -285,8 +290,6 @@ imports:
   - user/crypt
   - user/crypt/common
   - user/crypt/sha512_crypt
-- name: github.com/tylerb/graceful
-  version: d72b0151351a13d0421b763b88f791469c4f5dc7
 - name: github.com/vincent-petithory/dataurl
   version: 9a301d65acbb728fcc3ace14f45f511a4cfeea9c
 - name: github.com/zalando/go-keyring
@@ -305,8 +308,6 @@ imports:
   - bpf
   - context
   - context/ctxhttp
-  - html
-  - html/atom
   - http2
   - http2/hpack
   - icmp
@@ -317,6 +318,7 @@ imports:
   - ipv4
   - ipv6
   - lex/httplex
+  - netutil
   - trace
 - name: golang.org/x/sys
   version: 95c6576299259db960f6c5b9b69ea52422860fce
