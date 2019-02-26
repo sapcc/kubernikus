@@ -25,13 +25,13 @@ func TestKubernikusContext(t *testing.T) {
 
 	config := &clientcmdapi.Config{
 		Clusters: map[string]*clientcmdapi.Cluster{
-			"test": &clientcmdapi.Cluster{CertificateAuthorityData: []byte(certs.ApiserverClientsCACertifcate)},
+			"test": {CertificateAuthorityData: []byte(certs.ApiserverClientsCACertifcate)},
 		},
 		AuthInfos: map[string]*clientcmdapi.AuthInfo{
-			"test": &clientcmdapi.AuthInfo{ClientCertificateData: certutil.EncodeCertPEM(bundle.Certificate)},
+			"test": {ClientCertificateData: certutil.EncodeCertPEM(bundle.Certificate)},
 		},
 		Contexts: map[string]*clientcmdapi.Context{
-			"test": &clientcmdapi.Context{Cluster: "test", AuthInfo: "test"},
+			"test": {Cluster: "test", AuthInfo: "test"},
 		},
 	}
 
