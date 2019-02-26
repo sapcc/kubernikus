@@ -67,6 +67,9 @@ var (
 		Spec: core_v1.PersistentVolumeClaimSpec{
 			VolumeName: "pv-cinder0",
 		},
+		Status: core_v1.PersistentVolumeClaimStatus{
+			Phase: core_v1.ClaimBound,
+		},
 	}
 
 	pvcCinder1 = &core_v1.PersistentVolumeClaim{
@@ -76,6 +79,19 @@ var (
 		Spec: core_v1.PersistentVolumeClaimSpec{
 			VolumeName: "pv-cinder1",
 		},
+		Status: core_v1.PersistentVolumeClaimStatus{
+			Phase: core_v1.ClaimBound,
+		},
+	}
+
+	pvcCinder2 = &core_v1.PersistentVolumeClaim{
+		ObjectMeta: meta_v1.ObjectMeta{
+			Name: "pvc-cinder2",
+		},
+		Spec: core_v1.PersistentVolumeClaimSpec{},
+		Status: core_v1.PersistentVolumeClaimStatus{
+			Phase: core_v1.ClaimPending,
+		},
 	}
 
 	pvcNFS = &core_v1.PersistentVolumeClaim{
@@ -84,6 +100,9 @@ var (
 		},
 		Spec: core_v1.PersistentVolumeClaimSpec{
 			VolumeName: "pv-nfs",
+		},
+		Status: core_v1.PersistentVolumeClaimStatus{
+			Phase: core_v1.ClaimBound,
 		},
 	}
 
@@ -176,8 +195,8 @@ func TestDeletePersistentVolumeClaims(testing *testing.T) {
 	}
 
 	for i, t := range []test{
-		{"deletes all Cinder PVs", 0, 2, []runtime.Object{pvCinder0, pvCinder1, pvcCinder0, pvcCinder1}},
-		{"deletes only Cinder PVs", 1, 2, []runtime.Object{pvCinder0, pvCinder1, pvNFS, pvcCinder0, pvcCinder1, pvcNFS}},
+		{"deletes all Cinder PVs", 1, 2, []runtime.Object{pvCinder0, pvCinder1, pvcCinder0, pvcCinder1, pvcCinder2}},
+		{"deletes only Cinder PVs", 2, 2, []runtime.Object{pvCinder0, pvCinder1, pvNFS, pvcCinder0, pvcCinder1, pvcCinder2, pvcNFS}},
 	} {
 
 		done := make(chan struct{})
