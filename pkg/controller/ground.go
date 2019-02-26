@@ -450,7 +450,7 @@ func (op *GroundControl) createKluster(kluster *v1.Kluster) error {
 }
 
 func (op *GroundControl) terminateKluster(kluster *v1.Kluster) error {
-	if secret, err := util.KlusterSecret(op.Clients.Kubernetes, kluster); !apierrors.IsNotFound(err) {
+	if secret, err := util.KlusterSecret(op.Clients.Kubernetes, kluster); !apierrors.IsNotFound(err) && secret.Openstack.Username != "" {
 		if err != nil {
 			return err
 		}
