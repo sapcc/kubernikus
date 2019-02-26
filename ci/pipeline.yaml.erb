@@ -121,6 +121,13 @@ slack: &slack
 
 
 resources:
+  - name: kubernikusctl.release
+    type: github-release
+    source:
+      owner: sapcc
+      repository: kubernikus
+      access_token: ((github-com-access-token))
+
   - name: master.builds
     type: gh-status
     source:
@@ -239,6 +246,26 @@ jobs:
             <<: *task_helm_kubernikus-system
           params:
             <<: *auth_master
+    <<: *slack
+
+  - name: cli
+    plan:
+      - aggregate:
+        - get: kubernikus.builds
+          resource: master.builds
+          trigger: true
+      - task: build
+        file: kubernikus.builds/ci/task_cli.yaml
+      - put: kubernikusctl.release
+        params:
+          name: binaries/tag
+          tag: binaries/tag
+          tag_prefix: v
+          commitish: binaries/commitish
+          globs:
+            - binaries/kubernikusctl*
+        get_params:
+          globs: []
     <<: *slack
 
   - name: e2e
@@ -437,6 +464,7 @@ groups:
   - name: deploy
     jobs:
       - master
+      - cli
       - tiller_master
       - e2e
       - prod
@@ -460,6 +488,8 @@ groups:
   - name: WORLD
     jobs:
       - master
+      - cli
+      - tiller_master
       - e2e
       - prod
 <% GROUPS.each do |group| %>

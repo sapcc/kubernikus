@@ -651,8 +651,13 @@ task_checksum: &task_checksum
   
 
 task_cli: &task_cli
-  platform: 'darwin'
+  platform: 'linux'
   
+  image_resource:
+    type: docker-image
+    source:
+      repository: golang
+      tag: 1.11.5-alpine3.8
   inputs:
     - name: kubernikus.builds
       path: gopath/src/github.com/sapcc/kubernikus
@@ -666,8 +671,10 @@ task_cli: &task_cli
       - |
         export BINARIES=$(pwd -P)/binaries
         export GOPATH=$PWD/gopath
+        export CGO_ENABLED=0
   
         cd gopath/src/github.com/sapcc/kubernikus
+        apk add --no-cache upx make git
   
         make bin/darwin/kubernikusctl
         make bin/linux/kubernikusctl
@@ -1030,6 +1037,13 @@ slack: &slack
 
 
 resources:
+  - name: kubernikusctl.release
+    type: github-release
+    source:
+      owner: sapcc
+      repository: kubernikus
+      access_token: ((github-com-access-token))
+
   - name: master.builds
     type: gh-status
     source:
@@ -1160,6 +1174,26 @@ jobs:
             <<: *task_helm_kubernikus-system
           params:
             <<: *auth_master
+    <<: *slack
+
+  - name: cli
+    plan:
+      - aggregate:
+        - get: kubernikus.builds
+          resource: master.builds
+          trigger: true
+      - task: build
+        file: kubernikus.builds/ci/task_cli.yaml
+      - put: kubernikusctl.release
+        params:
+          name: binaries/tag
+          tag: binaries/tag
+          tag_prefix: v
+          commitish: binaries/commitish
+          globs:
+            - binaries/kubernikusctl*
+        get_params:
+          globs: []
     <<: *slack
 
   - name: e2e
@@ -3094,6 +3128,7 @@ groups:
   - name: deploy
     jobs:
       - master
+      - cli
       - tiller_master
       - e2e
       - prod
@@ -3266,6 +3301,8 @@ groups:
   - name: WORLD
     jobs:
       - master
+      - cli
+      - tiller_master
       - e2e
       - prod
 
@@ -3280,6 +3317,7 @@ groups:
 
       - INFRA
       - admin_INFRA
+
 
       - seed_ap-ae-1
       - terraform_ap-ae-1
