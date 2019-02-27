@@ -38,11 +38,15 @@ func (o *GetOptions) valuesRun(c *cobra.Command, args []string) {
 }
 
 func validateClusterValuesCommandArgs(args []string) error {
+	if len(args) == 0 {
+		return errors.New("required cluster fqdn missing")
+
+	}
 	if len(args) > 1 {
 		return errors.Errorf("Surplus arguments to cluster, %v", args)
 	}
 	if !strings.Contains(args[0], "-") {
-		return errors.Errorf("Provided name does not seem to be a cluster fqdn", args)
+		return errors.Errorf("Provided name  '%s' does not seem to be a cluster fqdn", args)
 	}
 	return nil
 }

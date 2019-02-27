@@ -47,6 +47,9 @@ func LoadPolicy(policyFile string) (map[string]string, error) {
 }
 
 func NewOsloPolicyAuthorizer(document *loads.Document, rules map[string]string, logger log.Logger) (runtime.Authorizer, error) {
+	if logger == nil {
+		logger = log.NewNopLogger()
+	}
 
 	recordMap := make(map[string][]denco.Record)
 

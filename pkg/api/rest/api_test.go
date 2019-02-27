@@ -167,8 +167,8 @@ func TestClusterUpdate(t *testing.T) {
 	handlers.FetchOpenstackMetadataFunc = func(request *http.Request, principal *models.Principal) (*models.OpenstackMetadata, error) {
 		return &models.OpenstackMetadata{
 			AvailabilityZones: []models.AvailabilityZone{
-				{"us-west-1a"},
-				{"us-east-1a"},
+				{Name: "us-west-1a"},
+				{Name: "us-east-1a"},
 			},
 		}, nil
 	}
