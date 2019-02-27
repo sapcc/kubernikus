@@ -27,10 +27,10 @@ type openstackValues struct {
 	Password            string `yaml:"password"`
 	DomainName          string `yaml:"domainName"`
 	ProjectID           string `yaml:"projectID"`
-	Region              string `yaml:"region"`
-	LbSubnetID          string `yaml:"lbSubnetID"`
-	LbFloatingNetworkID string `yaml:"lbFloatingNetworkID"`
-	RouterID            string `yaml:"routerID"`
+	Region              string `yaml:"region,omitempty"`
+	LbSubnetID          string `yaml:"lbSubnetID,omitempty"`
+	LbFloatingNetworkID string `yaml:"lbFloatingNetworkID,omitempty"`
+	RouterID            string `yaml:"routerID,omitempty"`
 }
 
 type persistenceValues struct {

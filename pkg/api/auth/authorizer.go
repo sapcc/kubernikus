@@ -9,6 +9,7 @@ import (
 	"regexp"
 
 	policy "github.com/databus23/goslo.policy"
+	"github.com/go-kit/kit/log"
 	"github.com/go-openapi/loads"
 	runtime "github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware/denco"
@@ -45,7 +46,7 @@ func LoadPolicy(policyFile string) (map[string]string, error) {
 	return rules, nil
 }
 
-func NewOsloPolicyAuthorizer(document *loads.Document, rules map[string]string) (runtime.Authorizer, error) {
+func NewOsloPolicyAuthorizer(document *loads.Document, rules map[string]string, logger log.Logger) (runtime.Authorizer, error) {
 
 	recordMap := make(map[string][]denco.Record)
 
@@ -55,11 +56,10 @@ func NewOsloPolicyAuthorizer(document *loads.Document, rules map[string]string) 
 				pathConverter.ReplaceAllString(path, ":$1"),
 				operation.ID,
 			))
-			//Add this once go-openapi/spec includes this fix: https://github.com/go-openapi/spec/pull/40
-			//secSchemes := document.Analyzer.SecurityDefinitionsFor(operation)
-			//if _, ok := rules[operation.ID]; !ok && len(secSchemes) > 0 {
-			//  logger.Log("msg", "policy not found. The api route will not be accessible", "operation", operation.ID)
-			//}
+			secSchemes := document.Analyzer.SecurityDefinitionsFor(operation)
+			if _, ok := rules[operation.ID]; !ok && len(secSchemes) > 0 {
+				logger.Log("msg", "policy not found. The api route will not be accessible", "operation", operation.ID)
+			}
 		}
 	}
 	routers := make(map[string]*denco.Router, len(recordMap))
@@ -96,7 +96,7 @@ func (o *osloPolicyAuthorizer) Authorize(req *http.Request, principal interface{
 	}
 
 	allowed := o.enforcer.Enforce(operationID, policy.Context{
-		Auth:    map[string]string{"user_id": authUser.ID, "project_id": authUser.Account, "domain_name": authUser.Domain},
+		Auth:    map[string]string{"user_id": authUser.ID, "project_id": authUser.Account, "project_name": authUser.AccountName, "domain_name": authUser.Domain},
 		Roles:   authUser.Roles,
 		Request: requestVars,
 	})

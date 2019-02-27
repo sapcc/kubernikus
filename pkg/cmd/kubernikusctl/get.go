@@ -26,5 +26,6 @@ func NewGetCommand() *cobra.Command {
 	o.BindFlags(c.PersistentFlags())
 	c.AddCommand(o.NewClusterCommand())
 	c.AddCommand(o.NewNodePoolCommand())
+	c.AddCommand(o.NewClusterValuesCommand())
 	return c
 }

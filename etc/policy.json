@@ -1,6 +1,7 @@
 {
   "kubernetes_admin": "role:kubernetes_admin",
   "kubernetes_user": "role:kubernetes_member or role:kubernetes_admin",
+  "kubernetes_cloud_admin": "domain_name:ccadmin and project_name:cloud_admin",
 
   "GetOpenstackMetadata": "rule:kubernetes_admin",
   "ListClusters": "rule:kubernetes_user",
@@ -10,5 +11,6 @@
   "UpdateCluster": "rule:kubernetes_admin",
   "GetClusterCredentials": "rule:kubernetes_user",
   "GetClusterEvents": "rule:kubernetes_user",
-  "GetClusterInfo": "rule:kubernetes_user"
+  "GetClusterInfo": "rule:kubernetes_user",
+  "GetClusterValues": "rule:kubernetes_cloud_admin"
 }
