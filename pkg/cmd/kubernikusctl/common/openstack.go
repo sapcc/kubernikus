@@ -47,7 +47,6 @@ func (o *OpenstackClient) BindFlags(flags *pflag.FlagSet) {
 	flags.StringVar(&o.ApplicationCredentialName, "application-credential-name", o.ApplicationCredentialName, "Project application credential name [OS_APPLICATION_CREDENTIAL_NAME]")
 	flags.StringVar(&o.ApplicationCredentialID, "application-credential-id", o.ApplicationCredentialName, "Project application credential id [OS_APPLICATION_CREDENTIAL_ID]")
 	flags.StringVar(&o.ApplicationCredentialSecret, "application-credential-secret", o.ApplicationCredentialSecret, "Project application credential secret [OS_APPLICATION_CREDENTIAL_SECRET]")
-
 }
 
 func (o *OpenstackClient) Validate(c *cobra.Command, args []string) error {
