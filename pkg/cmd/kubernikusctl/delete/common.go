@@ -21,6 +21,7 @@ type DeleteOptions struct {
 }
 
 func (o *DeleteOptions) PersistentPreRun(c *cobra.Command, args []string) {
+	common.SetupLogger()
 	cmd.CheckError(o.Openstack.Validate(c, args))
 	cmd.CheckError(o.Openstack.Setup())
 	cmd.CheckError(o.Openstack.Authenticate())
@@ -28,6 +29,7 @@ func (o *DeleteOptions) PersistentPreRun(c *cobra.Command, args []string) {
 
 func (o *DeleteOptions) BindFlags(flags *pflag.FlagSet) {
 	o.Openstack.BindFlags(flags)
+	common.BindLogFlags(flags)
 
 	flags.StringVar(&o._url, "url", o._url, "URL for Kubernikus API")
 }

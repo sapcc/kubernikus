@@ -35,6 +35,7 @@ func NewRefreshCommand() *cobra.Command {
 		Use:   "refresh",
 		Short: "Refreshes already existing credentials in kubeconfig",
 		Run: func(c *cobra.Command, args []string) {
+			common.SetupLogger()
 			common.CheckError(o.Validate(c, args))
 			common.CheckError(o.Complete(args))
 			common.CheckError(o.Run(c))
@@ -46,7 +47,8 @@ func NewRefreshCommand() *cobra.Command {
 }
 
 func (o *RefreshOptions) BindFlags(flags *pflag.FlagSet) {
-	flags.StringVar(&o.openstack.Password, "password", o.openstack.Password, "User password [OS_PASSWORD]")
+	common.BindLogFlags(flags)
+	flags.StringVar(&o.openstack.Password, "password", "", "User password [OS_PASSWORD]")
 	flags.StringVar(&o.kubeconfigPath, "kubeconfig", o.kubeconfigPath, "Overwrites kubeconfig auto-detection with explicit path")
 	flags.StringVar(&o.context, "context", o.context, "Overwrites current-context in kubeconfig")
 	flags.BoolVar(&o.force, "force", o.force, "Force refresh")

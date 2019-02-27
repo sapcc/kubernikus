@@ -22,15 +22,15 @@ type GetOptions struct {
 
 func (o *GetOptions) BindFlags(flags *pflag.FlagSet) {
 	o.Openstack.BindFlags(flags)
+	common.BindLogFlags(flags)
 	flags.StringVar(&o._url, "url", o._url, "URL for Kubernikus API")
 }
 
 func (o *GetOptions) PersistentPreRun(c *cobra.Command, args []string) {
-	glog.V(2).Infof("Get PPR: %v", o)
+	common.SetupLogger()
 	cmd.CheckError(o.Openstack.Validate(c, args))
 	cmd.CheckError(o.Openstack.Setup())
 	cmd.CheckError(o.Openstack.Authenticate())
-	glog.V(2).Infof("Get PPR out: %v", o)
 }
 
 func (o *GetOptions) SetupKubernikusClient() error {
