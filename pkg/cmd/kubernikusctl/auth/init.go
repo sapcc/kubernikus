@@ -9,13 +9,10 @@ import (
 	"github.com/golang/glog"
 	"github.com/gophercloud/gophercloud"
 	"github.com/howeyc/gopass"
-	"github.com/imdario/mergo"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	keyring "github.com/zalando/go-keyring"
-	"k8s.io/client-go/tools/clientcmd"
-	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
 
 	"github.com/sapcc/kubernikus/pkg/cmd/kubernikusctl/common"
 )
@@ -29,8 +26,6 @@ type InitOptions struct {
 
 	openstack  *common.OpenstackClient
 	kubernikus *common.KubernikusClient
-
-	kubeconfig *clientcmdapi.Config
 }
 
 func NewInitCommand() *cobra.Command {
@@ -79,17 +74,6 @@ func (o *InitOptions) Complete(args []string) (err error) {
 		return err
 	}
 
-	if o.kubeconfigPath != "" {
-		if err := o.loadKubeconfig(); err != nil {
-			return errors.Wrapf(err, "Loading the specified kubeconfig failed")
-		}
-	} else {
-		o.kubeconfig, err = clientcmd.NewDefaultPathOptions().GetStartingConfig()
-		if err != nil {
-			return errors.Wrapf(err, "Loading the default kubeconfig failed")
-		}
-	}
-
 	return nil
 }
 
@@ -135,12 +119,16 @@ func (o *InitOptions) Run(c *cobra.Command) (err error) {
 		keyring.Set("kubernikus", strings.ToLower(o.openstack.Username), o.openstack.Password)
 	}
 
-	err = o.mergeAndPersist(kubeconfig)
+	ktx, err := common.NewKubernikusContext(o.kubeconfigPath, "")
 	if err != nil {
+		return errors.Wrapf(err, "Failed to load kubeconfig")
+	}
+
+	if err := ktx.MergeAndPersist(kubeconfig); err != nil {
 		return errors.Wrapf(err, "Couldn't merge existing kubeconfig with fetched credentials")
 	}
 
-	fmt.Println("Wrote merged kubeconfig")
+	fmt.Printf("Updated kubeconfig at %s\n", ktx.PathOptions.GetDefaultFilename())
 
 	return nil
 }
@@ -163,35 +151,5 @@ func (o *InitOptions) setup() error {
 	}
 
 	o.kubernikus = common.NewKubernikusClient(o.url, o.openstack.Provider.TokenID)
-	return nil
-}
-
-func (o *InitOptions) loadKubeconfig() (err error) {
-	if o.kubeconfig, err = clientcmd.LoadFromFile(o.kubeconfigPath); err != nil {
-		return errors.Wrapf(err, "Failed to load kubeconfig from %v", o.kubeconfigPath)
-	}
-	return nil
-}
-
-func (o *InitOptions) mergeAndPersist(rawConfig string) error {
-	config, err := clientcmd.Load([]byte(rawConfig))
-	if err != nil {
-		return errors.Wrapf(err, "Couldn't load kubernikus kubeconfig: %v", rawConfig)
-	}
-
-	if err := mergo.MergeWithOverwrite(o.kubeconfig, config); err != nil {
-		return errors.Wrap(err, "Couldn't merge kubeconfigs")
-	}
-
-	defaultPathOptions := clientcmd.NewDefaultPathOptions()
-	if o.kubeconfigPath != "" {
-		defaultPathOptions.LoadingRules.ExplicitPath = o.kubeconfigPath
-		defaultPathOptions.LoadingRules.Precedence = []string{o.kubeconfigPath}
-	}
-	glog.V(2).Infof("DefaultPathOptions: %v", defaultPathOptions)
-	if err = clientcmd.ModifyConfig(defaultPathOptions, *o.kubeconfig, false); err != nil {
-		return errors.Wrapf(err, "Couldn't merge Kubernikus config with kubeconfig")
-	}
-
 	return nil
 }
