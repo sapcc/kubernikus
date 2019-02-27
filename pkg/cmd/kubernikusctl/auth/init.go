@@ -44,6 +44,7 @@ func NewInitCommand() *cobra.Command {
 		Use:   "init",
 		Short: "Prepares kubeconfig with Kubernikus credentials",
 		Run: func(c *cobra.Command, args []string) {
+			common.SetupLogger()
 			common.CheckError(o.Validate(c, args))
 			common.CheckError(o.Complete(args))
 			common.CheckError(o.Run(c))
@@ -57,6 +58,7 @@ func NewInitCommand() *cobra.Command {
 
 func (o *InitOptions) BindFlags(flags *pflag.FlagSet) {
 	o.openstack.BindFlags(flags)
+	common.BindLogFlags(flags)
 
 	flags.StringVar(&o._url, "url", o._url, "URL for Kubernikus API")
 	flags.StringVar(&o.name, "name", o.name, "Cluster Name")

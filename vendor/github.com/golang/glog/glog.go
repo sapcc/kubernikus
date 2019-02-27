@@ -32,31 +32,37 @@ func V(level Level) Verbose {
 }
 
 func (v Verbose) Info(args ...interface{}) {
-	var pairs []interface{}
-	pairs = append(pairs, "v", c)
-	pairs = append(pairs, "glog", "Info")
-	for key, value := range args {
-		pairs = append(pairs, key, value)
+	if v {
+		var pairs []interface{}
+		pairs = append(pairs, "v", c)
+		pairs = append(pairs, "glog", "Info")
+		for key, value := range args {
+			pairs = append(pairs, key, value)
+		}
+		logger.Log(pairs...)
 	}
-	logger.Log(pairs...)
 }
 
 func (v Verbose) Infoln(args ...interface{}) {
-	var pairs []interface{}
-	pairs = append(pairs, "v", c)
-	pairs = append(pairs, "glog", "Infoln")
-	for key, value := range args {
-		pairs = append(pairs, key, value)
+	if v {
+		var pairs []interface{}
+		pairs = append(pairs, "v", c)
+		pairs = append(pairs, "glog", "Infoln")
+		for key, value := range args {
+			pairs = append(pairs, key, value)
+		}
+		logger.Log(pairs...)
 	}
-	logger.Log(pairs...)
 }
 
 func (v Verbose) Infof(format string, args ...interface{}) {
-	logger.Log(
-		"v", c,
-		"glog", "Infof",
-		"msg", fmt.Sprintf(format, args...),
-	)
+	if v {
+		logger.Log(
+			"v", c,
+			"glog", "Infof",
+			"msg", fmt.Sprintf(format, args...),
+		)
+	}
 }
 
 func Info(args ...interface{}) {
