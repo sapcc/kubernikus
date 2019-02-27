@@ -1,5 +1,5 @@
-hash: f36f7508dc3c68fd52059531ebf85d404e7c05dfb17be7e2c0dfd707bd54b3f2
-updated: 2019-02-26T08:50:21.042819+01:00
+hash: 6f94eb6b8817ada4d7587f2287cf21e36f0e3168c7659353084b084cc208c036
+updated: 2019-02-27T16:14:18.493574137+01:00
 imports:
 - name: github.com/ajeddeloh/yaml
   version: 1072abfea31191db507785e2e0c1b8d1440d35a5
@@ -8,7 +8,7 @@ imports:
 - name: github.com/aokoli/goutils
   version: 3391d3790d23d03408670993e957e8f408993c34
 - name: github.com/asaskevich/govalidator
-  version: 73945b6115bfbbcc57d89b7316e28109364124e1
+  version: ccb8e960c48f04d6935e72476ae4a51028f9e22f
 - name: github.com/beorn7/perks
   version: 4c0e84591b9aa9e6dcfdf3e020114cd81f89d5f9
   subpackages:
@@ -71,6 +71,11 @@ imports:
   - log
 - name: github.com/ghodss/yaml
   version: 73d445a93680fa1a78ae23a5839bad48f32ba1ee
+- name: github.com/globalsign/mgo
+  version: eeefdecb41b842af6dc652aaea4026e8403e62df
+  subpackages:
+  - bson
+  - internal/json
 - name: github.com/go-kit/kit
   version: 4dc7be5d2d12881735283bcab7352178e190fc71
   subpackages:
@@ -78,33 +83,36 @@ imports:
 - name: github.com/go-logfmt/logfmt
   version: 390ab7935ee28ec6b286364bba9b4dd6410cb3d5
 - name: github.com/go-openapi/analysis
-  version: 8ed83f2ea9f00f945516462951a288eaa68bf0d6
+  version: e2f3fdbb7ed0e56e070ccbfb6fc75b288a33c014
+  subpackages:
+  - internal
 - name: github.com/go-openapi/errors
-  version: 03cfca65330da08a5a440053faf994a3c682b5bf
+  version: 7a7ff1b7b8020f22574411a32f28b4d168d69237
 - name: github.com/go-openapi/jsonpointer
-  version: 779f45308c19820f1a69e9a4cd965f496e0da10f
+  version: ef5f0afec364d3b9396b7b77b43dbe26bf1f8004
 - name: github.com/go-openapi/jsonreference
-  version: 36d33bfe519efae5632669801b180bf1a245da3b
+  version: 8483a886a90412cd6858df4ea3483dce9c8e35a3
 - name: github.com/go-openapi/loads
-  version: c3e1ca4c0b6160cac10aeef7e8b425cc95b9c820
+  version: 74628589c3b94e3526a842d24f46589980f5ab22
 - name: github.com/go-openapi/runtime
-  version: 2da70401d8fa078b6fecdd7afdf3b589ae9669e4
+  version: 41e24cc66d7af6af39eb9b5a6418e901bcdd333c
   subpackages:
   - client
   - flagext
+  - logger
   - middleware
   - middleware/denco
   - middleware/header
   - middleware/untyped
   - security
 - name: github.com/go-openapi/spec
-  version: a4fa9574c7aa73b2fc54e251eb9524d0482bb592
+  version: 5b6cdde3200976e3ecceb2868706ee39b6aff3e4
 - name: github.com/go-openapi/strfmt
-  version: 610b6cacdcde6852f4de68998bd20ce1dac85b22
+  version: e471370ae57ac74eaf0afe816a66e4ddd7f1b027
 - name: github.com/go-openapi/swag
-  version: cf0bdb963811675a4d7e74901cefc7411a1df939
+  version: 1d29f06aebd59ccdf11ae04aa0334ded96e2d909
 - name: github.com/go-openapi/validate
-  version: a52193aca9d575f354d8be388254c134765ea793
+  version: d2eab7d93009e9215fc85b2faa2c2f2a98c2af48
 - name: github.com/go-stack/stack
   version: 259ab82a6cad3992b4e21ff5cac294ccb06474bc
 - name: github.com/gobwas/glob
@@ -150,7 +158,7 @@ imports:
   - compiler
   - extensions
 - name: github.com/gophercloud/gophercloud
-  version: 1ad7a96d69a2e8105920431ee428843b6d1ee4c3
+  version: 077038c4f65ca6324adea7af6907d0d770131c32
   subpackages:
   - internal
   - openstack
@@ -210,12 +218,10 @@ imports:
   version: 5b9ff866471762aa2ab2dced63c9fb6f53921342
 - name: github.com/justinas/alice
   version: 03f45bd4b7dad4734bc4620e46a35789349abb20
-- name: github.com/kennygrant/sanitize
-  version: 2e6820834a1f36c626bf19a253b7d3cc060e9b8b
 - name: github.com/kr/logfmt
   version: b84e30acd515aadc4b783ad4ff83aff3299bdfe0
 - name: github.com/mailru/easyjson
-  version: 5f62e4f3afa2f576dc86531b7df4d966b19ef8f8
+  version: 60711f1a8329503b04e1c88535f419d0bb440bff
   subpackages:
   - buffer
   - jlexer
@@ -231,7 +237,7 @@ imports:
   subpackages:
   - pbutil
 - name: github.com/mitchellh/mapstructure
-  version: 06020f85339e21b2478f756a78e295255ffa4d6a
+  version: 3536a929edddb9a5b34bd6861dc4a9647cb459fe
 - name: github.com/oklog/run
   version: 6934b124db28979da51d3470dadfa34d73d72652
 - name: github.com/peterbourgon/diskv
@@ -278,7 +284,7 @@ imports:
 - name: github.com/stretchr/objx
   version: 8a3f7159479fbc75b30357fbc48f380b7320f08e
 - name: github.com/stretchr/testify
-  version: f35b8ab0b5a2cef36673838d662e249dd9c94686
+  version: ffdc059bfe9ce6a4e144ba849dbedead332c6053
   subpackages:
   - assert
   - mock
@@ -361,13 +367,8 @@ imports:
   - transport
 - name: gopkg.in/inf.v0
   version: 3887ee99ecf07df5b447e9b00d9c0b2adaa9f3e4
-- name: gopkg.in/mgo.v2
-  version: 3f83fa5005286a7fe593b055f0d7771a7dce4655
-  subpackages:
-  - bson
-  - internal/json
 - name: gopkg.in/yaml.v2
-  version: eb3733d160e74a9c7e442f435eb3bea458e1d19f
+  version: 51d6538a90f86fe93ac480b35f37b2be17fef232
 - name: k8s.io/api
   version: 11147472b7c934c474a2c484af3c0c5210b7a3af
   subpackages:

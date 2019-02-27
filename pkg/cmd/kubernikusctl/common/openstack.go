@@ -44,6 +44,10 @@ func (o *OpenstackClient) BindFlags(flags *pflag.FlagSet) {
 	flags.StringVar(&o.Scope.ProjectName, "project-name", o.Scope.ProjectName, "Scope to this project. Also requires --project-domain-name/--project-domain-id [OS_PROJECT_NAME]")
 	flags.StringVar(&o.Scope.DomainID, "project-domain-id", o.Scope.DomainID, "Domain of the project [OS_PROJECT_DOMAIN_ID]")
 	flags.StringVar(&o.Scope.DomainName, "project-domain-name", o.Scope.DomainName, "Domain of the project [OS_PROJECT_DOMAIN_NAME]")
+	flags.StringVar(&o.ApplicationCredentialName, "application-credential-name", o.ApplicationCredentialName, "Project application credential name [OS_APPLICATION_CREDENTIAL_NAME]")
+	flags.StringVar(&o.ApplicationCredentialID, "application-credential-id", o.ApplicationCredentialName, "Project application credential id [OS_APPLICATION_CREDENTIAL_ID]")
+	flags.StringVar(&o.ApplicationCredentialSecret, "application-credential-secret", o.ApplicationCredentialSecret, "Project application credential secret [OS_APPLICATION_CREDENTIAL_SECRET]")
+
 }
 
 func (o *OpenstackClient) Validate(c *cobra.Command, args []string) error {
@@ -52,6 +56,16 @@ func (o *OpenstackClient) Validate(c *cobra.Command, args []string) error {
 	} else {
 		if _, err := url.Parse(o.IdentityEndpoint); err != nil {
 			return errors.Errorf("The URL for the Kubernikus API is not parsable")
+		}
+	}
+
+	if o.ApplicationCredentialID == "" {
+		o.ApplicationCredentialID = os.Getenv("OS_APPLICATION_CREDENTIAL_ID")
+		if o.ApplicationCredentialID == "" {
+			o.ApplicationCredentialName = os.Getenv("OS_APPLICATION_CREDENTIAL_NAME")
+		}
+		if o.ApplicationCredentialSecret == "" {
+			o.ApplicationCredentialSecret = os.Getenv("OS_APPLICATION_CREDENTIAL_SECRET")
 		}
 	}
 
@@ -67,6 +81,14 @@ func (o *OpenstackClient) Validate(c *cobra.Command, args []string) error {
 				}
 			}
 		}
+	}
+
+	if o.ApplicationCredentialID != "" || o.ApplicationCredentialName != "" {
+		if o.ApplicationCredentialSecret == "" {
+			return errors.Errorf("You need to provide --application-credential-secret or OS_APPLICATION_CREDENTIAL_SECRET")
+		}
+		o.Password = ""
+		return nil
 	}
 
 	if o.Username == "" {
@@ -117,7 +139,11 @@ func (o *OpenstackClient) Complete(args []string) error {
 func (o *OpenstackClient) Setup() error {
 	var err error
 
-	if o.Password == "" {
+	if o.ApplicationCredentialSecret == "" && os.Getenv("OS_APPLICATION_CREDENTIAL_SECRET") != "" {
+		o.ApplicationCredentialSecret = os.Getenv("OS_APPLICATION_CREDENTIAL_SECRET")
+	}
+
+	if o.Password == "" && o.ApplicationCredentialSecret == "" {
 		if os.Getenv("OS_PASSWORD") != "" {
 			o.Password = os.Getenv("OS_PASSWORD")
 		} else {
@@ -158,6 +184,12 @@ func (o *OpenstackClient) PrintAuthInfo() string {
 		}
 	}
 
+	if o.ApplicationCredentialName != "" {
+		return fmt.Sprintf("Authenticating with application credential %v (%v)", o.ApplicationCredentialName, user)
+	} else if o.ApplicationCredentialID != "" {
+		return fmt.Sprintf("Authenticating with application credential %v", o.ApplicationCredentialID)
+	}
+
 	if o.Scope.ProjectID != "" {
 		scope = o.Scope.ProjectID
 	} else {
@@ -179,17 +211,19 @@ func (o *OpenstackClient) PrintDebugAuthInfo() string {
 	}
 
 	tmpl := `Using AuthInfo:
-    IdentityEndpoint: {{ .IdentityEndpoint }}
-    Username:         {{ .Username }}
-    UserID:           {{ .UserID }}
-    Password:         {{ mask .Password }}
-    DomainID:         {{ .DomainID }}
-    DomainName:       {{ .DomainName }}
+    IdentityEndpoint:           {{ .IdentityEndpoint }}
+    Username:                   {{ .Username }}
+    UserID:                     {{ .UserID }}
+    Password:                   {{ mask .Password }}
+    DomainID:                   {{ .DomainID }}
+    DomainName:                 {{ .DomainName }}
+    ApplicationCredentialID:    {{ .ApplicationCredentialID }}
+    ApplicationCredentialName:  {{ .ApplicationCredentialName }}
     Scope:
-      ProjectID:      {{ .Scope.ProjectID }}
-      ProjectName:    {{ .Scope.ProjectName }}
-      DomainID:       {{ .Scope.DomainID }}
-      DomainName:     {{ .Scope.DomainName }}`
+      ProjectID:                {{ .Scope.ProjectID }}
+      ProjectName:              {{ .Scope.ProjectName }}
+      DomainID:                 {{ .Scope.DomainID }}
+      DomainName:               {{ .Scope.DomainName }}`
 
 	t := template.Must(template.New("t").Funcs(funcMap).Parse(tmpl))
 	var output bytes.Buffer
