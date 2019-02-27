@@ -89,6 +89,10 @@ func (d *ConcreteDeorbiter) DeletePersistentVolumeClaims() (deleted []core_v1.Pe
 	}
 
 	for _, pvc := range pvcs.Items {
+		if pvc.Status.Phase != core_v1.ClaimBound || pvc.Spec.VolumeName == "" {
+			continue
+		}
+
 		pv, err := d.Client.Core().PersistentVolumes().Get(pvc.Spec.VolumeName, meta_v1.GetOptions{})
 		if err != nil {
 			return deleted, err
