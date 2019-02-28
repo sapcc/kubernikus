@@ -141,6 +141,35 @@ func (a *Client) GetClusterInfo(params *GetClusterInfoParams, authInfo runtime.C
 }
 
 /*
+GetClusterValues gets values for cluster chart admin only
+*/
+func (a *Client) GetClusterValues(params *GetClusterValuesParams, authInfo runtime.ClientAuthInfoWriter) (*GetClusterValuesOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewGetClusterValuesParams()
+	}
+
+	result, err := a.transport.Submit(&runtime.ClientOperation{
+		ID:                 "GetClusterValues",
+		Method:             "GET",
+		PathPattern:        "/api/v1/{account}/clusters/{name}/values",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &GetClusterValuesReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return result.(*GetClusterValuesOK), nil
+
+}
+
+/*
 GetOpenstackMetadata grabs bag of openstack metadata
 */
 func (a *Client) GetOpenstackMetadata(params *GetOpenstackMetadataParams, authInfo runtime.ClientAuthInfoWriter) (*GetOpenstackMetadataOK, error) {

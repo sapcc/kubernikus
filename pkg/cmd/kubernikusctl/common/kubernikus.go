@@ -96,6 +96,22 @@ func (k *KubernikusClient) ShowCluster(name string) (*models.Kluster, error) {
 	return ok.Payload, nil
 }
 
+func (k *KubernikusClient) GetClusterValues(account, name string) (string, error) {
+	params := operations.NewGetClusterValuesParams()
+	params.Name = name
+	params.Account = account
+
+	ok, err := k.client.Operations.GetClusterValues(params, k.authFunc())
+	switch err.(type) {
+	case *operations.GetClusterValuesDefault:
+		result := err.(*operations.GetClusterValuesDefault)
+		return "", errors.Errorf(result.Payload.Message)
+	case error:
+		return "", errors.Wrap(err, "Getting cluster failed")
+	}
+	return ok.Payload.Values, nil
+}
+
 func (k *KubernikusClient) ListAllClusters() ([]*models.Kluster, error) {
 	ok, err := k.client.Operations.ListClusters(operations.NewListClustersParams(), k.authFunc())
 	switch err.(type) {

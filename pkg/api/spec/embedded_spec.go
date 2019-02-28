@@ -251,6 +251,45 @@ func init() {
         }
       }
     },
+    "/api/v1/{account}/clusters/{name}/values": {
+      "get": {
+        "summary": "Get values for cluster chart (admin-only)",
+        "operationId": "GetClusterValues",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "values": {
+                  "description": "The values in yaml Format",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/responses/errorResponse"
+          }
+        }
+      },
+      "parameters": [
+        {
+          "uniqueItems": true,
+          "type": "string",
+          "name": "name",
+          "in": "path",
+          "required": true
+        },
+        {
+          "uniqueItems": true,
+          "type": "string",
+          "name": "account",
+          "in": "path",
+          "required": true
+        }
+      ]
+    },
     "/info": {
       "get": {
         "security": [],
@@ -711,6 +750,10 @@ func init() {
           "description": "account id",
           "type": "string"
         },
+        "account_name": {
+          "description": "account name",
+          "type": "string"
+        },
         "authUrl": {
           "description": "Identity Endpoint",
           "type": "string"
@@ -1044,6 +1087,42 @@ func init() {
           }
         }
       }
+    },
+    "/api/v1/{account}/clusters/{name}/values": {
+      "get": {
+        "summary": "Get values for cluster chart (admin-only)",
+        "operationId": "GetClusterValues",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/getClusterValuesOKBody"
+            }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      },
+      "parameters": [
+        {
+          "uniqueItems": true,
+          "type": "string",
+          "name": "name",
+          "in": "path",
+          "required": true
+        },
+        {
+          "uniqueItems": true,
+          "type": "string",
+          "name": "account",
+          "in": "path",
+          "required": true
+        }
+      ]
     },
     "/info": {
       "get": {
@@ -1396,6 +1475,10 @@ func init() {
           "description": "account id",
           "type": "string"
         },
+        "account_name": {
+          "description": "account name",
+          "type": "string"
+        },
         "authUrl": {
           "description": "Identity Endpoint",
           "type": "string"
@@ -1445,6 +1528,16 @@ func init() {
           "x-nullable": false
         }
       }
+    },
+    "getClusterValuesOKBody": {
+      "type": "object",
+      "properties": {
+        "values": {
+          "description": "The values in yaml Format",
+          "type": "string"
+        }
+      },
+      "x-go-gen-location": "operations"
     },
     "klusterInfoBinariesItems": {
       "type": "object",
