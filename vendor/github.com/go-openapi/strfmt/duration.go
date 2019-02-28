@@ -23,14 +23,14 @@ import (
 	"strings"
 	"time"
 
-	"gopkg.in/mgo.v2/bson"
-
+	"github.com/globalsign/mgo/bson"
 	"github.com/mailru/easyjson/jlexer"
 	"github.com/mailru/easyjson/jwriter"
 )
 
 func init() {
 	d := Duration(0)
+	// register this format in the default registry
 	Default.Add("duration", &d, IsDuration)
 }
 
@@ -67,6 +67,9 @@ func IsDuration(str string) bool {
 }
 
 // Duration represents a duration
+//
+// Duration stores a period of time as a nanosecond count, with the largest
+// repesentable duration being approximately 290 years.
 //
 // swagger:strfmt duration
 type Duration time.Duration
@@ -118,7 +121,7 @@ func ParseDuration(cand string) (time.Duration, error) {
 	if ok {
 		return dur, nil
 	}
-	return 0, fmt.Errorf("Unable to parse %s as duration", cand)
+	return 0, fmt.Errorf("unable to parse %s as duration", cand)
 }
 
 // Scan reads a Duration value from database driver type.
@@ -138,7 +141,7 @@ func (d *Duration) Scan(raw interface{}) error {
 	return nil
 }
 
-// Value converts Duration to a primitive value ready to written to a database.
+// Value converts Duration to a primitive value ready to be written to a database.
 func (d Duration) Value() (driver.Value, error) {
 	return driver.Value(int64(d)), nil
 }
@@ -148,22 +151,26 @@ func (d Duration) String() string {
 	return time.Duration(d).String()
 }
 
+// MarshalJSON returns the Duration as JSON
 func (d Duration) MarshalJSON() ([]byte, error) {
 	var w jwriter.Writer
 	d.MarshalEasyJSON(&w)
 	return w.BuildBytes()
 }
 
+// MarshalEasyJSON writes the Duration to a easyjson.Writer
 func (d Duration) MarshalEasyJSON(w *jwriter.Writer) {
 	w.String(time.Duration(d).String())
 }
 
+// UnmarshalJSON sets the Duration from JSON
 func (d *Duration) UnmarshalJSON(data []byte) error {
 	l := jlexer.Lexer{Data: data}
 	d.UnmarshalEasyJSON(&l)
 	return l.Error()
 }
 
+// UnmarshalEasyJSON sets the Duration from a easyjson.Lexer
 func (d *Duration) UnmarshalEasyJSON(in *jlexer.Lexer) {
 	if data := in.String(); in.Ok() {
 		tt, err := ParseDuration(data)
@@ -175,10 +182,12 @@ func (d *Duration) UnmarshalEasyJSON(in *jlexer.Lexer) {
 	}
 }
 
+// GetBSON returns the Duration a bson.M{} map.
 func (d *Duration) GetBSON() (interface{}, error) {
 	return bson.M{"data": int64(*d)}, nil
 }
 
+// SetBSON sets the Duration from raw bson data
 func (d *Duration) SetBSON(raw bson.Raw) error {
 	var m bson.M
 	if err := raw.Unmarshal(&m); err != nil {

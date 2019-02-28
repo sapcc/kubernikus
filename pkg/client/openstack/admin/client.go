@@ -65,11 +65,12 @@ func (c *adminClient) CreateKlusterServiceUser(username, password, domainName, p
 	}
 
 	//Do we need to update or create?
+	description := "Kubernikus kluster service user"
 	if user != nil {
 		user, err = users.Update(c.IdentityClient, user.ID, users.UpdateOpts{
 			Password:         password,
 			DefaultProjectID: projectID,
-			Description:      "Kubernikus kluster service user",
+			Description:      &description,
 		}).Extract()
 	} else {
 		user, err = users.Create(c.IdentityClient, users.CreateOpts{
