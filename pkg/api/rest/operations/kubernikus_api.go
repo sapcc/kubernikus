@@ -51,6 +51,9 @@ func NewKubernikusAPI(spec *loads.Document) *KubernikusAPI {
 		GetClusterInfoHandler: GetClusterInfoHandlerFunc(func(params GetClusterInfoParams, principal *models.Principal) middleware.Responder {
 			return middleware.NotImplemented("operation GetClusterInfo has not yet been implemented")
 		}),
+		GetClusterValuesHandler: GetClusterValuesHandlerFunc(func(params GetClusterValuesParams, principal *models.Principal) middleware.Responder {
+			return middleware.NotImplemented("operation GetClusterValues has not yet been implemented")
+		}),
 		GetOpenstackMetadataHandler: GetOpenstackMetadataHandlerFunc(func(params GetOpenstackMetadataParams, principal *models.Principal) middleware.Responder {
 			return middleware.NotImplemented("operation GetOpenstackMetadata has not yet been implemented")
 		}),
@@ -126,6 +129,8 @@ type KubernikusAPI struct {
 	GetClusterEventsHandler GetClusterEventsHandler
 	// GetClusterInfoHandler sets the operation handler for the get cluster info operation
 	GetClusterInfoHandler GetClusterInfoHandler
+	// GetClusterValuesHandler sets the operation handler for the get cluster values operation
+	GetClusterValuesHandler GetClusterValuesHandler
 	// GetOpenstackMetadataHandler sets the operation handler for the get openstack metadata operation
 	GetOpenstackMetadataHandler GetOpenstackMetadataHandler
 	// InfoHandler sets the operation handler for the info operation
@@ -221,6 +226,10 @@ func (o *KubernikusAPI) Validate() error {
 
 	if o.GetClusterInfoHandler == nil {
 		unregistered = append(unregistered, "GetClusterInfoHandler")
+	}
+
+	if o.GetClusterValuesHandler == nil {
+		unregistered = append(unregistered, "GetClusterValuesHandler")
 	}
 
 	if o.GetOpenstackMetadataHandler == nil {
@@ -380,6 +389,11 @@ func (o *KubernikusAPI) initHandlerCache() {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/api/v1/clusters/{name}/info"] = NewGetClusterInfo(o.context, o.GetClusterInfoHandler)
+
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/api/v1/{account}/clusters/{name}/values"] = NewGetClusterValues(o.context, o.GetClusterValuesHandler)
 
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)

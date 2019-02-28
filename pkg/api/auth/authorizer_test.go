@@ -32,7 +32,7 @@ func TestAuthorizer(t *testing.T) {
 	assert.NoError(t, err)
 	rules, err := LoadPolicy("../../../etc/policy.json")
 	assert.NoError(t, err)
-	authorizer, err := NewOsloPolicyAuthorizer(document, rules)
+	authorizer, err := NewOsloPolicyAuthorizer(document, rules, nil)
 	assert.NoError(t, err)
 
 	req := httptest.NewRequest("GET", "/api/v1/clusters", nil)

@@ -47,7 +47,7 @@ func Configure(api *operations.KubernikusAPI, rt *apipkg.Runtime) error {
 	if err != nil {
 		return err
 	}
-	authorizer, err := auth.NewOsloPolicyAuthorizer(document, rules)
+	authorizer, err := auth.NewOsloPolicyAuthorizer(document, rules, rt.Logger)
 	if err != nil {
 		return err
 	}
@@ -64,6 +64,7 @@ func Configure(api *operations.KubernikusAPI, rt *apipkg.Runtime) error {
 	api.GetClusterInfoHandler = handlers.NewGetClusterInfo(rt)
 	api.GetOpenstackMetadataHandler = handlers.NewGetOpenstackMetadata(rt)
 	api.GetClusterEventsHandler = handlers.NewGetClusterEvents(rt)
+	api.GetClusterValuesHandler = handlers.NewGetClusterValues(rt)
 
 	api.ServerShutdown = func() {}
 
