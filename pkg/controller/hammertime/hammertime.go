@@ -61,7 +61,11 @@ func (hc *hammertimeController) Reconcile(kluster *v1.Kluster) error {
 	}
 
 	// No Hammertime if the cluster is terminating or has less then two nodes
-	if len(nodes) < 2 || kluster.Status.Phase != models.KlusterPhaseRunning {
+	specNodes := 0
+	for _, pool := range kluster.Spec.NodePools {
+		specNodes += int(pool.Size)
+	}
+	if len(nodes) < 2 || specNodes < 2 || kluster.Status.Phase != models.KlusterPhaseRunning {
 		metrics.HammertimeStatus.WithLabelValues(kluster.Name).Set(0)
 		return hc.scaleDeployment(kluster, false, logger)
 	}
