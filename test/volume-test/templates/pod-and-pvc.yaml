@@ -1,0 +1,35 @@
+{{ range $count := untilStep 1 (add1 .Values.replicaCount|int) 1 }}
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: {{ include "volume-test.fullname" $ }}-{{ $count }}
+  labels:
+    helm.sh/chart: {{ include "volume-test.chart" $ }}
+    app.kubernetes.io/instance: {{ $.Release.Name }}
+    app.kubernetes.io/managed-by: {{ $.Release.Service }}
+spec:
+  containers:
+  - name: whatever
+    image: {{ $.Values.image.repository }}:{{$.Values.image.tag}}
+    imagePullPolicy: {{ $.Values.image.pullPolicy }}
+    command: ['sh', '-c', 'echo Hello Kubernetes! && sleep 3600']
+    volumeMounts:
+      - mountPath: /vol
+        name: vol
+  volumes:
+    - name: vol
+      persistentVolumeClaim:
+        claimName: {{ include "volume-test.fullname" $ }}-{{ $count }}
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: {{ include "volume-test.fullname" $ }}-{{ $count }}
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+{{ end }}
