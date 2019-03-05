@@ -281,7 +281,7 @@ func (cpm *ConcretePoolManager) healthyAndSchedulable() (healthy int, schedulabl
 	if err != nil {
 		return
 	}
-	prefix := fmt.Sprintf("%s-%s", cpm.Kluster.Spec.Name, cpm.Pool.Name)
+	prefix := fmt.Sprintf("%s-%s-", cpm.Kluster.Spec.Name, cpm.Pool.Name)
 	for _, node := range nodes {
 		//Does the node belong to this pool?
 		if strings.HasPrefix(node.Name, prefix) && len(node.Name) == len(prefix)+generator.RandomLength {
