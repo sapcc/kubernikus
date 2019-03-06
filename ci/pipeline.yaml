@@ -745,6 +745,29 @@ task_e2e_tests: &task_e2e_tests
     CP_KLUSTER:
   
 
+task_github_compare_url: &task_github_compare_url
+  platform: 'linux'
+  
+  image_resource:
+    type: docker-image
+    source:
+      repository: alpine
+  inputs:
+    - name: kubernikus.builds
+  outputs:
+  
+  run:
+    path: /bin/sh
+    args:
+      - -ec
+      - |
+        VERSION=$(cat kubernikus.builds/.git/HEAD)
+        echo "Go to this link to see the changes in master since the last prod release:"
+        echo
+        echo "  https://github.com/sapcc/kubernikus/compare/${VERSION}...master"
+  
+  
+
 task_helm-admin_kubernikus: &task_helm-admin_kubernikus
   platform: 'linux'
   
@@ -1219,6 +1242,10 @@ jobs:
       - get: kubernikus.builds
         resource: master.builds
         passed: [e2e]
+      - task: changes
+        config:
+          <<: *task_github_compare_url
+
 
 
   - name: ASIA

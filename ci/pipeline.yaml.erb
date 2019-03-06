@@ -291,6 +291,10 @@ jobs:
       - get: kubernikus.builds
         resource: master.builds
         passed: [e2e]
+      - task: changes
+        config:
+          <<: *task_github_compare_url
+
 
 <% GROUPS.each do |group| %>
   - name: <%= group %>
