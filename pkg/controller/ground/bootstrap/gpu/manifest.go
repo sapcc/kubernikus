@@ -42,20 +42,19 @@ spec:
         hostPath:
           path: /dev
       containers:
-      - image: "k8s.gcr.io/nvidia-gpu-device-plugin@sha256:0842734032018be107fa2490c98156992911e3e1f2a21e059ff0105b07dd8e9e"
+      - image: "k8s.gcr.io/nvidia-gpu-device-plugin@sha256:d18b678437fedc4ec4211c20b3e5469a137a44f989da43dc275e4f2678170db4"
         command:
           - /usr/bin/nvidia-gpu-device-plugin
           - -logtostderr
-          - -host-path=/opt/nvidia/current/lib64
-          - -container-path=/usr/local/nvidia/lib64
         name: nvidia-gpu-device-plugin
         resources:
           requests:
             cpu: 50m
-            memory: 10Mi
+            memory: 50Mi
           limits:
             cpu: 50m
-            memory: 10Mi
+            memory: 50Mi
+	terminationGracePeriodSeconds: 0
         securityContext:
           privileged: true
         volumeMounts:
@@ -64,7 +63,7 @@ spec:
         - name: dev
           mountPath: /dev
   updateStrategy:
-    type: RollingUpdate
+    type: OnDelete
 `
 
 	NVIDIADriverInstaller_v20180808 = `
@@ -104,19 +103,23 @@ spec:
       - name: rootfs
         hostPath:
           path: /
+      - name: dev 
+        hostPath:
+          path: /dev
       initContainers:
       - image: bugroger/coreos-nvidia-driver:stable-396.44-tesla
         name: nvidia-driver-installer
         imagePullPolicy: Always
-        resources:
-          requests:
-            cpu: 0.15
+	terminationGracePeriodSeconds: 0
         securityContext:
           privileged: true
         volumeMounts:
         - name: rootfs 
           mountPath: /root
           mountPropagation: Bidirectional
+	- name: dev
+	  mountPath: /dev
+	  mountPropagation: Bidirectional
       containers:
       - image: "gcr.io/google-containers/pause:2.0"
         name: pause
