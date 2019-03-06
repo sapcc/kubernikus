@@ -117,9 +117,9 @@ spec:
         - name: rootfs 
           mountPath: /root
           mountPropagation: Bidirectional
-	- name: dev
-	  mountPath: /dev
-	  mountPropagation: Bidirectional
+        - name: dev
+          mountPath: /dev
+          mountPropagation: Bidirectional
       containers:
       - image: "gcr.io/google-containers/pause:2.0"
         name: pause
