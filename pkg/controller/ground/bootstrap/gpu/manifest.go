@@ -54,7 +54,7 @@ spec:
           limits:
             cpu: 50m
             memory: 50Mi
-	terminationGracePeriodSeconds: 0
+        terminationGracePeriodSeconds: 0
         securityContext:
           privileged: true
         volumeMounts:
@@ -110,7 +110,7 @@ spec:
       - image: bugroger/coreos-nvidia-driver:stable-396.44-tesla
         name: nvidia-driver-installer
         imagePullPolicy: Always
-	terminationGracePeriodSeconds: 0
+        terminationGracePeriodSeconds: 0
         securityContext:
           privileged: true
         volumeMounts:
