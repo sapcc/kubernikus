@@ -151,7 +151,7 @@ func (o *OpenstackClient) Setup() error {
 			if password, err := keyring.Get("kubernikus", strings.ToLower(username)); err == nil {
 				o.Password = password
 			} else {
-				glog.V(2).Printf("Failed to get credential from keyring: %s", err)
+				glog.V(2).Infof("Failed to get credential from keyring: %s", err)
 			}
 		}
 	}
