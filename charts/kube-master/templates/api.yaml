@@ -100,7 +100,7 @@ spec:
                 path: kubeconfig
       initContainers:
         - name: etcd-wait
-          image: sapcc/etcd:3.1.12
+          image: "{{ required "etcd.image.repository undefined" .Values.etcd.image.repository }}:{{ required "etcd.image.tag undefined" .Values.etcd.image.tag }}"
           command:
             - sh
             - -c
@@ -108,7 +108,7 @@ spec:
             - until etcdctl --total-timeout=4s --endpoints http://{{ include "etcd.fullname" . }}:2379 cluster-health; do sleep 5; done;
       containers:
         - name: apiserver
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          image: {{ include "hyperkube.image" . | quote }}
           args:
             - /hyperkube
             - apiserver
@@ -119,7 +119,7 @@ spec:
             - --authorization-mode=Node,RBAC
             - --cloud-config=/etc/kubernetes/cloudprovider/openstack.config
             - --cloud-provider=openstack
-{{ if (semverCompare "1.7.*" .Values.klusterVersion) }}
+{{ if (semverCompare "1.7.*" .Values.version.kubernetes) }}
             - --experimental-bootstrap-token-auth=true
             - --runtime-config=rbac.authorization.k8s.io/v1alpha1,extensions/v1beta1=true,extensions/v1beta1/thirdpartyresources=true
 {{ else }}
@@ -129,7 +129,7 @@ spec:
             - --token-auth-file=/etc/kubernetes/bootstrap/token.csv
             - --service-cluster-ip-range={{ .Values.serviceCIDR }}
             - --kubelet-preferred-address-types=InternalIP
-{{ if (semverCompare ">=1.10.*" .Values.klusterVersion) }}
+{{ if (semverCompare ">=1.10.*" .Values.version.kubernetes) }}
             - --enable-admission-plugins=ExtendedResourceToleration
             # Aggregation Layer
             - --requestheader-client-ca-file=/etc/kubernetes/certs/aggregation-ca.pem

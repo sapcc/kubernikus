@@ -18,3 +18,10 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
 {{- $name := default "etcd" .Values.etcd.nameOverride -}}
 {{- printf "%s-%s" .Release.Name $name | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
+
+{{- define "hyperkube.image" }}
+{{- $images := required "imagesForVersion undefined" .Values.imagesForVersion}}
+{{- $version := required "version.kubernetes undefined" .Values.version.kubernetes }}
+{{- $imagesForVersion := required (printf "unsupported kubernetes version %s" $version) (index $images $version) }}
+{{- required (printf "No hyperkube image found for version %s" $version) (index $imagesForVersion "hyperkube") }}
+{{- end -}}
