@@ -9,6 +9,18 @@ metadata:
     app.kubernetes.io/instance: {{ $.Release.Name }}
     app.kubernetes.io/managed-by: {{ $.Release.Service }}
 spec:
+  affinity:
+    podAntiAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        podAffinityTerm:
+          labelSelector:
+            matchExpressions:
+            - key: helm.sh/chart
+              operator: In
+              values:
+              - {{ include "volume-test.chart" $ }}
+          topologyKey: kubernetes.io/hostname
   containers:
   - name: whatever
     image: {{ $.Values.image.repository }}:{{$.Values.image.tag}}
