@@ -8,6 +8,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/golang/glog"
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack"
 	"github.com/gophercloud/gophercloud/openstack/identity/v3/tokens"
@@ -147,11 +148,11 @@ func (o *OpenstackClient) Setup() error {
 				username = o.Username
 			}
 
-			password, err := keyring.Get("kubernikus", strings.ToLower(username))
-			if err != nil && keyring.ErrNotFound != err {
-				return err
+			if password, err := keyring.Get("kubernikus", strings.ToLower(username)); err == nil {
+				o.Password = password
+			} else {
+				glog.V(2).Printf("Failed to get credential from keyring: %s", err)
 			}
-			o.Password = password
 		}
 	}
 
