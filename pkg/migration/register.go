@@ -13,6 +13,7 @@ func init() {
 		MigrateKlusterSecret,
 		InsertAVZIntoNodePools,
 		SeedCinderStorageClasses,
+		SeedAllowAPIServerToAccessKubelet,
 		// <-- Insert new migrations at the end only!
 	}
 }
