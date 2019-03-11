@@ -36,8 +36,11 @@ for chart in $pwd/charts/*; do
       mv ./charts.bak ./charts
     fi
     helm dependency build --debug
-    cat values.yaml ../../test/charts/dummy-values.yaml > /tmp/values.yaml
-    helm template --debug -f /tmp/values.yaml . > /tmp/chart.yaml
+    if [ -f test-values.yaml ]; then
+      helm template --debug -f test-values.yaml . > /tmp/chart.yaml
+    else
+      helm template --debug . > /tmp/chart.yaml
+    fi
     retval=$?
     rm -f ./charts/*.tgz
     if [ $retval -ne 0 ]; then

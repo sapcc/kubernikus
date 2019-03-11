@@ -1,0 +1,23 @@
+vice-president:
+  vice:
+    cert: xyz
+    key: xyz
+    intermediate: xyz
+    first_name: xyz
+    last_name: xyz
+    email: xyz@xyz.com
+    country: xyz
+    province: xyz
+    locality: xyz
+    organization: xyz
+    organizational_unit: xyz
+    default_challenge: xyz
+global:
+  domain: xyz.com
+  region: xy-xy-1
+  cluster: xy
+  cluster_type: xy
+fluent-bit:
+  backend:
+    es:
+      host: xyz.com

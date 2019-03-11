@@ -1,0 +1,30 @@
+domain: xyz.com
+bootstrapToken: xyz
+nodePassword: xyz
+secretName: test
+openstack:
+  authURL: http://xyz.com
+  username: xyz
+  password: xyz
+  domainName: xyz.com
+  lbSubnetID: xyz
+  lbFloatingNetworkID: xyz
+  routerID: xyz
+  projectID: xy
+  region: xy-xy-1
+api:
+  apiserverHost: xyz.com
+  wormholeHost: xyz.com
+version:
+  kubernikus: xyz
+  kubernetes: 1.0.0
+etcd:
+  openstack:
+    authURL: http://xyz.com
+    username: xyz
+    password: xyz
+    domainName: xyz.com
+    projectID: xyz
+imagesForVersion:
+  "1.0.0":
+    hyperkube: xyz

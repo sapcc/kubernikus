@@ -34,9 +34,9 @@ advertiseAddress: 198.18.128.1
 #name:
 #account:
 
-version:
+version: {}
 # kubernikus:
-  kubernetes: 1.10.7
+# kubernetes: 1.10.7
 
 api:
   replicaCount: 1

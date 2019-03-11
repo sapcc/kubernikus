@@ -27,7 +27,7 @@ spec:
       volumes:
         - name: certs
           secret:
-            secretName: {{ .Values.secretName }}
+            secretName: {{ required "secretName undefined" .Values.secretName }}
             items:
               - key: apiserver-clients-and-nodes-ca.pem
                 path: apiserver-clients-and-nodes-ca.pem
@@ -61,7 +61,7 @@ spec:
                 path: aggregation-aggregator-key.pem
         - name: wormhole-certs
           secret:
-            secretName: {{ .Values.secretName }}
+            secretName: {{ required "secretName undefined" .Values.secretName }}
             items:
               - key: tls-ca.pem
                 path: tls-ca.pem
