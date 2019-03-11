@@ -496,6 +496,15 @@ func init() {
         "apiserver": {
           "type": "string"
         },
+        "apiserverVersion": {
+          "type": "string"
+        },
+        "chartName": {
+          "type": "string"
+        },
+        "chartVersion": {
+          "type": "string"
+        },
         "message": {
           "type": "string"
         },
@@ -1305,6 +1314,15 @@ func init() {
       "type": "object",
       "properties": {
         "apiserver": {
+          "type": "string"
+        },
+        "apiserverVersion": {
+          "type": "string"
+        },
+        "chartName": {
+          "type": "string"
+        },
+        "chartVersion": {
           "type": "string"
         },
         "message": {

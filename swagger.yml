@@ -482,6 +482,12 @@ definitions:
           $ref: '#/definitions/NodePoolInfo'
       apiserver:
         type: string
+      apiserverVersion:
+        type: string
+      chartName:
+        type: string
+      chartVersion:
+        type: string
       wormhole:
         type: string
       version:
