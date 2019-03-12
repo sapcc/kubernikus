@@ -2,6 +2,7 @@ package controller
 
 import (
 	"fmt"
+	"path"
 	"sync"
 	"time"
 
@@ -68,6 +69,11 @@ const (
 func NewKubernikusOperator(options *KubernikusOperatorOptions, logger log.Logger) (*KubernikusOperator, error) {
 	var err error
 
+	imageRegistry, err := version.NewImageRegistry(path.Join(options.ChartDirectory, "images.yaml"))
+	if err != nil {
+		return nil, fmt.Errorf("Unable to initialize image registry")
+	}
+
 	o := &KubernikusOperator{
 		Config: config.Config{
 			Openstack: config.OpenstackConfig{
@@ -87,6 +93,7 @@ func NewKubernikusOperator(options *KubernikusOperatorOptions, logger log.Logger
 				NetworkID:   options.KubernikusNetworkID,
 				Controllers: make(map[string]config.Controller),
 			},
+			Images: *imageRegistry,
 		},
 		Logger: logger,
 	}

@@ -1,5 +1,6 @@
 imagesForVersion:
   '1.10.11':
+    default: true
     hyperkube: 'sapcc/hyperkube:v1.10.11'
   '1.9.11':
     hyperkube: 'quay.io/coreos/hyperkube:v1.9.11_coreos.1'
