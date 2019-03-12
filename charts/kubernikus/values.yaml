@@ -1,14 +1,13 @@
 image: sapcc/kubernikus
 imageTag: latest
 
-openstack:
-  auth_url: "http://identityv3.openstack:5000/v3"
-  auth_url: "http://identityv3.openstack:5000/v3"
-  auth_username: "openstack"
-  auth_password: "secret!"
-  auth_domain: "Default"
-  auth_project: "master"
-  auth_project_domain: "Default"
+openstack: {}
+  #auth_url: "http://identityv3.openstack:5000/v3"
+  #auth_user_id: "user1"
+  #auth_user_password: "secret!"
+  #auth_domain: "Default"
+  #auth_project: "master"
+  #auth_project_domain: "Default"
 
 api:
   port: 1234

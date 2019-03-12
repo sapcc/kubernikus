@@ -1,5 +1,5 @@
-#authentication:
-#  enabled: true
+authentication:
+  enabled: false
 #  cacrt: |
 #    -----BEGIN CERTIFICATE-----
 #    MIIB+jCCAWOgAwIBAgIEAQAAADANBgkqhkiG9w0BAQUFADAvMQswCQYDVQQGEwJE

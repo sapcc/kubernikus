@@ -1,0 +1,8 @@
+domain: xyz.com
+openstack:
+  auth_url: http://xyz.com
+  auth_user_id: xyz
+  auth_user_password: xyz
+  auth_domain: xyz
+  auth_project: xyz
+  auth_project_domain: xyz
