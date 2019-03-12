@@ -8,9 +8,21 @@ import (
 	yaml "gopkg.in/yaml.v2"
 )
 
+type ImageVersion struct {
+	Repository string `yaml:"repository"`
+	Tag        string `yaml:"tag"`
+}
+
+func (v ImageVersion) String() string {
+	if v.Tag == "" {
+		return v.Repository
+	}
+	return v.Repository + ":" + v.Tag
+}
+
 type KlusterVersion struct {
-	Default   bool   `yaml:"default"`
-	Hyperkube string `yaml:"hyperkube"`
+	Default   bool         `yaml:"default"`
+	Hyperkube ImageVersion `yaml:"hyperkube"`
 }
 
 type ImageRegistry struct {
@@ -39,6 +51,12 @@ func NewImageRegistry(filepath string) (*ImageRegistry, error) {
 				return nil, fmt.Errorf("Multiple default versions found: %s and %s", registry.DefaultVersion, v)
 			}
 			registry.DefaultVersion = v
+		}
+		if info.Hyperkube.Repository == "" {
+			return nil, fmt.Errorf("Repository for hyperkube image missing for version %s", v)
+		}
+		if info.Hyperkube.Tag == "" {
+			return nil, fmt.Errorf("Tag for hyperkube image missing for version %s", v)
 		}
 	}
 	if registry.DefaultVersion == "" {

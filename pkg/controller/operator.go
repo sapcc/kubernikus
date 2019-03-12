@@ -71,7 +71,7 @@ func NewKubernikusOperator(options *KubernikusOperatorOptions, logger log.Logger
 
 	imageRegistry, err := version.NewImageRegistry(path.Join(options.ChartDirectory, "images.yaml"))
 	if err != nil {
-		return nil, fmt.Errorf("Unable to initialize image registry")
+		return nil, fmt.Errorf("Unable to initialize image registry: %s", err)
 	}
 
 	o := &KubernikusOperator{

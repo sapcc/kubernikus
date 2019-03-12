@@ -23,5 +23,7 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
 {{- $images := required "imagesForVersion undefined" .Values.imagesForVersion}}
 {{- $version := required "version.kubernetes undefined" .Values.version.kubernetes }}
 {{- $imagesForVersion := required (printf "unsupported kubernetes version %s" $version) (index $images $version) }}
-{{- required (printf "No hyperkube image found for version %s" $version) (index $imagesForVersion "hyperkube") }}
+{{- $hyperkube := required (printf "No hyperkube image found for version %s" $version) (index $imagesForVersion "hyperkube") }}
+{{ required (printf "repository for hyperkube missing for version %s" $version) $hyperkube.repository }}:
+  {{- required (printf "tag for hyperkube missing for version %s" $version) $hyperkube.tag }}
 {{- end -}}
