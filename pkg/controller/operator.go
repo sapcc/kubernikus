@@ -179,7 +179,7 @@ func NewKubernikusOperator(options *KubernikusOperatorOptions, logger log.Logger
 		case "groundctl":
 			o.Config.Kubernikus.Controllers["groundctl"] = NewGroundController(10, o.Factories, o.Clients, recorder, o.Config, logger)
 		case "launchctl":
-			o.Config.Kubernikus.Controllers["launchctl"] = launch.NewController(10, o.Factories, o.Clients, recorder, logger)
+			o.Config.Kubernikus.Controllers["launchctl"] = launch.NewController(10, o.Factories, o.Clients, recorder, o.Config.Images, logger)
 		case "routegc":
 			o.Config.Kubernikus.Controllers["routegc"] = routegc.New(60*time.Second, o.Factories, logger)
 		case "deorbiter":

@@ -14,6 +14,7 @@ import (
 	"github.com/sapcc/kubernikus/pkg/templates"
 	"github.com/sapcc/kubernikus/pkg/util"
 	"github.com/sapcc/kubernikus/pkg/util/generator"
+	"github.com/sapcc/kubernikus/pkg/version"
 
 	"github.com/go-kit/kit/log"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -44,6 +45,7 @@ type ConcretePoolManager struct {
 
 	klusterClient   openstack_kluster.KlusterClient
 	nodeObservatory *nodeobservatory.NodeObservatory
+	imageRegistry   version.ImageRegistry
 
 	Kluster *v1.Kluster
 	Pool    *models.NodePool
@@ -63,7 +65,7 @@ func (lr *LaunchReconciler) newPoolManager(kluster *v1.Kluster, pool *models.Nod
 	}
 
 	var pm PoolManager
-	pm = &ConcretePoolManager{lr.Clients, klusterClient, lr.nodeObervatory, kluster, pool, logger, lr.klusterInformer.Lister()}
+	pm = &ConcretePoolManager{lr.Clients, klusterClient, lr.nodeObervatory, lr.imageRegistry, kluster, pool, logger, lr.klusterInformer.Lister()}
 	pm = &EventingPoolManager{pm, kluster, lr.Recorder}
 	pm = &LoggingPoolManager{pm, logger}
 	pm = &InstrumentingPoolManager{pm,
@@ -193,7 +195,7 @@ func (cpm *ConcretePoolManager) CreateNode() (id string, err error) {
 
 	nodeName := generator.SimpleNameGenerator.GenerateName(fmt.Sprintf("%v-%v-", cpm.Kluster.Spec.Name, cpm.Pool.Name))
 
-	userdata, err := templates.Ignition.GenerateNode(cpm.Kluster, cpm.Pool, nodeName, secret, cpm.Logger)
+	userdata, err := templates.Ignition.GenerateNode(cpm.Kluster, cpm.Pool, nodeName, secret, cpm.imageRegistry, cpm.Logger)
 	if err != nil {
 		return "", err
 	}

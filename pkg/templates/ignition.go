@@ -40,7 +40,7 @@ func (i *ignition) getIgnitionTemplate(kluster *kubernikusv1.Kluster) string {
 	}
 }
 
-func (i *ignition) GenerateNode(kluster *kubernikusv1.Kluster, pool *models.NodePool, nodeName string, secret *kubernikusv1.Secret, logger log.Logger) ([]byte, error) {
+func (i *ignition) GenerateNode(kluster *kubernikusv1.Kluster, pool *models.NodePool, nodeName string, secret *kubernikusv1.Secret, imageRegistry version.ImageRegistry, logger log.Logger) ([]byte, error) {
 
 	ignition := i.getIgnitionTemplate(kluster)
 	tmpl, err := template.New("node").Funcs(sprig.TxtFuncMap()).Parse(ignition)
@@ -85,6 +85,11 @@ func (i *ignition) GenerateNode(kluster *kubernikusv1.Kluster, pool *models.Node
 		}
 	}
 
+	images, found := imageRegistry.Versions[kluster.Spec.Version]
+	if !found {
+		return nil, fmt.Errorf("Can't find images for version: %s ", kluster.Spec.Version)
+	}
+
 	data := struct {
 		TLSCA                              string
 		KubeletClientsCA                   string
@@ -111,6 +116,8 @@ func (i *ignition) GenerateNode(kluster *kubernikusv1.Kluster, pool *models.Node
 		NodeLabels                         []string
 		NodeTaints                         []string
 		NodeName                           string
+		HyperkubeImage                     string
+		HyperkubeImageTag                  string
 	}{
 		TLSCA:                              secret.TLSCACertificate,
 		KubeletClientsCA:                   secret.KubeletClientsCACertificate,
@@ -137,6 +144,8 @@ func (i *ignition) GenerateNode(kluster *kubernikusv1.Kluster, pool *models.Node
 		NodeLabels:                         nodeLabels,
 		NodeTaints:                         nodeTaints,
 		NodeName:                           nodeName,
+		HyperkubeImage:                     images.Hyperkube.Repository,
+		HyperkubeImageTag:                  images.Hyperkube.Tag,
 	}
 
 	var dataOut []byte
