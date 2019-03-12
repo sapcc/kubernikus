@@ -45,6 +45,7 @@ spec:
       - image: "k8s.gcr.io/nvidia-gpu-device-plugin@sha256:d18b678437fedc4ec4211c20b3e5469a137a44f989da43dc275e4f2678170db4"
         command:
           - /usr/bin/nvidia-gpu-device-plugin
+          - -host-path=/opt/nvidia/current
           - -logtostderr
         name: nvidia-gpu-device-plugin
         resources:
@@ -111,6 +112,7 @@ spec:
         name: nvidia-driver-installer
         imagePullPolicy: Always
         terminationGracePeriodSeconds: 0
+        terminationMessagePath: /tmp/termination-log
         securityContext:
           privileged: true
         volumeMounts:
