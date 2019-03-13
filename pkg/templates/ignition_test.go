@@ -11,11 +11,13 @@ import (
 
 	"github.com/sapcc/kubernikus/pkg/api/models"
 	kubernikusv1 "github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
+	"github.com/sapcc/kubernikus/pkg/version"
 )
 
 var (
 	testKlusterSecret kubernikusv1.Secret
 	testKluster       kubernikusv1.Kluster
+	imageRegistry     version.ImageRegistry
 )
 
 func init() {
@@ -63,15 +65,24 @@ func init() {
 		},
 	}
 
+	imageRegistry = version.ImageRegistry{
+		Versions: map[string]version.KlusterVersion{
+			"1.10": {Hyperkube: version.ImageVersion{Repository: "nase", Tag: "v1.10"}},
+			"1.9":  {Hyperkube: version.ImageVersion{Repository: "nase", Tag: "v1.9"}},
+			"1.8":  {Hyperkube: version.ImageVersion{Repository: "nase", Tag: "v1.8"}},
+			"1.7":  {Hyperkube: version.ImageVersion{Repository: "nase", Tag: "v1.7"}},
+		},
+	}
+
 }
 
 func TestGenerateNode(t *testing.T) {
 
 	kluster := testKluster.DeepCopy()
 
-	for _, version := range []string{"1.7", "1.8", "1.9", "1.10"} {
+	for version := range imageRegistry.Versions {
 		kluster.Spec.Version = version
-		data, err := Ignition.GenerateNode(kluster, nil, "test", &testKlusterSecret, log.NewNopLogger())
+		data, err := Ignition.GenerateNode(kluster, nil, "test", &testKlusterSecret, imageRegistry, log.NewNopLogger())
 		if assert.NoError(t, err, "Failed to generate node for version %s", version) {
 			//Ensure we rendered the expected template
 			assert.Contains(t, string(data), fmt.Sprintf("KUBELET_IMAGE_TAG=v%s", version))
@@ -85,14 +96,14 @@ func TestNodeLabels(t *testing.T) {
 
 	pool := &models.NodePool{Name: "some-name"}
 
-	data, err := Ignition.GenerateNode(kluster, pool, "test", &testKlusterSecret, log.NewNopLogger())
+	data, err := Ignition.GenerateNode(kluster, pool, "test", &testKlusterSecret, imageRegistry, log.NewNopLogger())
 	if assert.NoError(t, err, "Failed to generate node") {
 		//Ensure we rendered the expected template
 		assert.Contains(t, string(data), fmt.Sprintf("--node-labels=ccloud.sap.com/nodepool=%s", pool.Name))
 	}
 
 	gpuPool := &models.NodePool{Name: "some-name", Flavor: "zghuh"}
-	data, err = Ignition.GenerateNode(kluster, gpuPool, "test", &testKlusterSecret, log.NewNopLogger())
+	data, err = Ignition.GenerateNode(kluster, gpuPool, "test", &testKlusterSecret, imageRegistry, log.NewNopLogger())
 	if assert.NoError(t, err, "Failed to generate node") {
 		//Ensure we rendered the expected template
 		assert.Contains(t, string(data), fmt.Sprintf("--node-labels=ccloud.sap.com/nodepool=%s,gpu=nvidia-tesla-v100", pool.Name))

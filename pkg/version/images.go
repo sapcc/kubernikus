@@ -43,7 +43,7 @@ func NewImageRegistry(filepath string) (*ImageRegistry, error) {
 		return nil, err
 	}
 	if len(registry.Versions) < 1 {
-		return nil, fmt.Errorf("No versions found in %s", file)
+		return nil, fmt.Errorf("No versions found in %s", filepath)
 	}
 	for v, info := range registry.Versions {
 		if info.Default {
