@@ -26,8 +26,8 @@ type KlusterVersion struct {
 }
 
 type ImageRegistry struct {
-	Versions       map[string]KlusterVersion `yaml:"imagesForVersion"`
-	DefaultVersion string
+	Versions       map[string]KlusterVersion `yaml:"imagesForVersion,omitempty"`
+	DefaultVersion string                    `yaml:"-"`
 }
 
 func NewImageRegistry(filepath string) (*ImageRegistry, error) {

@@ -471,7 +471,7 @@ func (op *GroundControl) createKluster(kluster *v1.Kluster) error {
 		return fmt.Errorf("Failed to create container for etcd backups. Check if the project has quota for object-store usage: %s", err)
 	}
 
-	rawValues, err := helm_util.KlusterToHelmValues(kluster, klusterSecret, accessMode)
+	rawValues, err := helm_util.KlusterToHelmValues(kluster, klusterSecret, &op.Config.Images, accessMode)
 	if err != nil {
 		return err
 	}
