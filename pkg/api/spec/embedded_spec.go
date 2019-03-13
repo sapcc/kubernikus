@@ -556,6 +556,13 @@ func init() {
           "default": "coreos-stable-amd64",
           "x-nullable": false
         },
+        "labels": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^([a-z0-9]([-a-z0-9]*[a-z0-9])(\\.[a-z0-9]([-a-z0-9]*[a-z0-9]))*/)?[A-Za-z0-9][-A-Za-z0-9_.]{0,62}=[A-Za-z0-9][-A-Za-z0-9_.]{0,62}$"
+          }
+        },
         "name": {
           "type": "string",
           "maxLength": 20,
@@ -567,6 +574,13 @@ func init() {
           "default": 0,
           "maximum": 127,
           "x-nullable": false
+        },
+        "taints": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^([a-z0-9]([-a-z0-9]*[a-z0-9])(\\.[a-z0-9]([-a-z0-9]*[a-z0-9]))*/)?[A-Za-z0-9][-A-Za-z0-9_.]{0,62}=[A-Za-z0-9][-A-Za-z0-9_.]{0,62}:(NoSchedule|NoExecute|PreferNoSchedule)$"
+          }
         }
       },
       "x-nullable": false
@@ -1376,6 +1390,13 @@ func init() {
           "default": "coreos-stable-amd64",
           "x-nullable": false
         },
+        "labels": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^([a-z0-9]([-a-z0-9]*[a-z0-9])(\\.[a-z0-9]([-a-z0-9]*[a-z0-9]))*/)?[A-Za-z0-9][-A-Za-z0-9_.]{0,62}=[A-Za-z0-9][-A-Za-z0-9_.]{0,62}$"
+          }
+        },
         "name": {
           "type": "string",
           "maxLength": 20,
@@ -1388,6 +1409,13 @@ func init() {
           "maximum": 127,
           "minimum": 0,
           "x-nullable": false
+        },
+        "taints": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^([a-z0-9]([-a-z0-9]*[a-z0-9])(\\.[a-z0-9]([-a-z0-9]*[a-z0-9]))*/)?[A-Za-z0-9][-A-Za-z0-9_.]{0,62}=[A-Za-z0-9][-A-Za-z0-9_.]{0,62}:(NoSchedule|NoExecute|PreferNoSchedule)$"
+          }
         }
       },
       "x-nullable": false

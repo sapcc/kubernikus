@@ -455,6 +455,18 @@ definitions:
       availabilityZone:
         type: string
         x-nullable: false
+      taints:
+        type: array
+        items:
+          type: string
+          # validate [valid label name]=[valid label value]:[valid effect]
+          pattern: '^([a-z0-9]([-a-z0-9]*[a-z0-9])(\.[a-z0-9]([-a-z0-9]*[a-z0-9]))*/)?[A-Za-z0-9][-A-Za-z0-9_.]{0,62}=[A-Za-z0-9][-A-Za-z0-9_.]{0,62}:(NoSchedule|NoExecute|PreferNoSchedule)$'
+      labels:
+        type: array
+        items:
+          type: string
+          # validate [valid label name]=[valid label value]
+          pattern: '^([a-z0-9]([-a-z0-9]*[a-z0-9])(\.[a-z0-9]([-a-z0-9]*[a-z0-9]))*/)?[A-Za-z0-9][-A-Za-z0-9_.]{0,62}=[A-Za-z0-9][-A-Za-z0-9_.]{0,62}$'
       config:
         $ref: '#/definitions/NodePoolConfig'
   NodePoolConfig:
