@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"errors"
+	"fmt"
 	"net"
 
 	"github.com/go-openapi/runtime/middleware"
@@ -92,6 +93,14 @@ func (d *createCluster) Handle(params operations.CreateClusterParams, principal 
 		return NewErrorResponse(&operations.CreateClusterDefault{}, 409, "Cluster CIDR %s not allowed: %s", kluster.Spec.ClusterCIDR, err)
 	}
 
+	//Ensure that the clust CIDR range does not overlap with other clusters in the same project
+	if overlap, err := d.overlapWithSiblingCluster(kluster.Spec.ClusterCIDR, kluster.Spec.Openstack.RouterID, principal); overlap || err != nil {
+		if overlap {
+			return NewErrorResponse(&operations.CreateClusterDefault{}, 409, err.Error())
+		}
+		return NewErrorResponse(&operations.CreateClusterDefault{}, 500, err.Error())
+	}
+
 	kluster.ObjectMeta = metav1.ObjectMeta{
 		Name:        qualifiedName(name, principal.Account),
 		Labels:      map[string]string{"account": principal.Account},
@@ -128,6 +137,30 @@ func (d *createCluster) overlapWithControlPlane(cidr string) (bool, error) {
 	svcCIDR := d.controlPlaneServiceCIDR()
 	if svcCIDR != nil && ip.CIDROverlap(inputCIDR, svcCIDR) {
 		return true, errors.New("overlap with control plane service CIDR")
+	}
+	return false, nil
+}
+
+func (d *createCluster) overlapWithSiblingCluster(cidr string, routerID string, principal *models.Principal) (bool, error) {
+	listOpts := metav1.ListOptions{LabelSelector: accountSelector(principal).String()}
+	klusterList, err := d.Kubernikus.Kubernikus().Klusters(d.Namespace).List(listOpts)
+	if err != nil {
+		return false, err
+	}
+	for _, other := range klusterList.Items {
+		if routerID == "" || routerID == other.Spec.Openstack.RouterID {
+			_, ourCIDR, err := net.ParseCIDR(cidr)
+			if err != nil {
+				return false, err
+			}
+			_, otherCIDR, err := net.ParseCIDR(other.Spec.ClusterCIDR)
+			if err != nil {
+				return false, err
+			}
+			if ip.CIDROverlap(ourCIDR, otherCIDR) {
+				return true, fmt.Errorf("Cluster CIDR %s overlaps with cluster CIDR %s from cluster '%s'. Specify a different CIDR Range or use a dedicated router for this cluster", cidr, other.Spec.ClusterCIDR, other.Spec.Name)
+			}
+		}
 	}
 	return false, nil
 }
