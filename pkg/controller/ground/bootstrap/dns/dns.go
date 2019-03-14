@@ -1,8 +1,7 @@
 package dns
 
 import (
-	"errors"
-
+	"github.com/pkg/errors"
 	v1 "k8s.io/api/core/v1"
 	extensions "k8s.io/api/extensions/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -60,19 +59,19 @@ func SeedKubeDNS(client clientset.Interface, repository, version, domain, cluste
 	}
 
 	if err := createKubeDNSServiceAccount(client); err != nil {
-		return err
+		return errors.Wrap(err, "Failed to ensure kubedns service account")
 	}
 
 	if err := createKubeDNSConfigMap(client); err != nil {
-		return err
+		return errors.Wrap(err, "Failed to ensure kubedns configmap")
 	}
 
 	if err := createKubeDNSDeployment(client, repository, version, domain); err != nil {
-		return err
+		return errors.Wrap(err, "Failed to ensure kubedns deployment")
 	}
 
 	if err := createKubeDNSService(client, clusterIP); err != nil {
-		return err
+		return errors.Wrap(err, "Failed to ensure kubedns service")
 	}
 
 	return nil

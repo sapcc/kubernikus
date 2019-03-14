@@ -3,6 +3,7 @@ package ground
 import (
 	"fmt"
 
+	"github.com/pkg/errors"
 	rbac "k8s.io/api/rbac/v1beta1"
 	storage "k8s.io/api/storage/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
@@ -15,6 +16,7 @@ import (
 	"github.com/sapcc/kubernikus/pkg/controller/ground/bootstrap"
 	"github.com/sapcc/kubernikus/pkg/controller/ground/bootstrap/dns"
 	"github.com/sapcc/kubernikus/pkg/controller/ground/bootstrap/gpu"
+	"github.com/sapcc/kubernikus/pkg/util"
 )
 
 func SeedKluster(clients config.Clients, factories config.Factories, kluster *v1.Kluster) error {
@@ -29,34 +31,36 @@ func SeedKluster(clients config.Clients, factories config.Factories, kluster *v1
 	}
 
 	if err := SeedAllowBootstrapTokensToPostCSRs(kubernetes); err != nil {
-		return err
+		return errors.Wrap(err, "seed allow bootstrap tokens to post CSRs")
 	}
 	if err := SeedAutoApproveNodeBootstrapTokens(kubernetes); err != nil {
-		return err
+		return errors.Wrap(err, "seed auto approve node bootstrap tokens")
 	}
 	if err := SeedAutoRenewalNodeCertificates(kubernetes); err != nil {
-		return err
+		return errors.Wrap(err, "seed auto renewal node certificates")
 	}
 	if err := SeedKubernikusAdmin(kubernetes); err != nil {
-		return err
+		return errors.Wrap(err, "seed kubernikus admin")
 	}
 	if err := SeedKubernikusMember(kubernetes); err != nil {
-		return err
+		return errors.Wrap(err, "seed kubernikus member")
 	}
 	if err := SeedCinderStorageClasses(kubernetes, openstack); err != nil {
-		return err
+		return errors.Wrap(err, "seed cinder storage classes")
 	}
 	if err := SeedAllowCertificateControllerToDeleteCSRs(kubernetes); err != nil {
-		return err
+		return errors.Wrap(err, "seed allow certificate controller to delete CSRs")
 	}
 	if err := SeedAllowApiserverToAccessKubeletAPI(kubernetes); err != nil {
-		return err
+		return errors.Wrap(err, "seed allow apiserver access to kubelet api")
 	}
 	if err := dns.SeedKubeDNS(kubernetes, "", "", kluster.Spec.DNSDomain, kluster.Spec.DNSAddress); err != nil {
-		return err
+		return errors.Wrap(err, "seed kubedns")
 	}
-	if err := gpu.SeedGPUSupport(kubernetes); err != nil {
-		return err
+	if ok, _ := util.KlusterVersionConstraint(kluster, ">= 1.10"); ok {
+		if err := gpu.SeedGPUSupport(kubernetes); err != nil {
+			return errors.Wrap(err, "seed GPU support")
+		}
 	}
 	return nil
 }

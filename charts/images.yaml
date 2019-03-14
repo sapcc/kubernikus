@@ -11,7 +11,7 @@ imagesForVersion:
   '1.8.14':
     hyperkube: 
       repository: 'quay.io/coreos/hyperkube'
-      tag: 'v1.9.11_coreos.1'
+      tag: 'v1.8.14_coreos.1'
   '1.7.16':
     hyperkube:
       repository: 'quay.io/coreos/hyperkube'

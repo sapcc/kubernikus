@@ -23,7 +23,7 @@ backup:
   enabled: true
   image:
     repository: sapcc/etcdbrctl
-    tag: 0.5.0
+    tag: 0.5.2
     pullPolicy: IfNotPresent
   config:
     # do a full-backup every hour
