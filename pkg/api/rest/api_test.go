@@ -129,7 +129,7 @@ func TestCreateCluster(t *testing.T) {
 	//Ensure specifying a different router doesn't obverlap
 	req = createRequest("POST", "/api/v1/clusters", `{"name": "ohr", "spec": { "openstack": { "routerID":"routerB"}}}`)
 	code, _, body = result(handler, req)
-	assert.Equal(t, 201, code, "specifying a different router should not conflict")
+	assert.Equal(t, 201, code, "specifying a different router should not conflict. response: %s", string(body))
 
 	//Ensure we refuse service CIDRs that overlap with the control plane
 	rt.Kubernikus = kubernikusfake.NewSimpleClientset()
