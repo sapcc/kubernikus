@@ -32,6 +32,7 @@ import (
 	"github.com/sapcc/kubernikus/pkg/util"
 	etcd_util "github.com/sapcc/kubernikus/pkg/util/etcd"
 	helm_util "github.com/sapcc/kubernikus/pkg/util/helm"
+	"github.com/sapcc/kubernikus/pkg/util/version"
 	waitutil "github.com/sapcc/kubernikus/pkg/util/wait"
 )
 
@@ -148,11 +149,11 @@ func (op *GroundControl) processNextWorkItem() bool {
 	return true
 }
 
-func (op *GroundControl) updateKluster(namespace, name string, updateFunc func(kluster *v1.Kluster) error) error {
+func (op *GroundControl) updateKluster(kluster *v1.Kluster, updateFunc func(*v1.Kluster) error) error {
 	_, err := util.UpdateKlusterWithRetries(
-		op.Clients.Kubernikus.Kubernikus().Klusters(namespace),
-		op.klusterInformer.Lister().Klusters(namespace),
-		name,
+		op.Clients.Kubernikus.Kubernikus().Klusters(kluster.Namespace),
+		op.klusterInformer.Lister().Klusters(kluster.Namespace),
+		kluster.Name,
 		updateFunc)
 	return err
 }
@@ -177,12 +178,15 @@ func (op *GroundControl) handler(key string) error {
 		if kluster.Disabled() {
 			return nil
 		}
-		op.Logger.Log(
-			"msg", "handling kluster",
-			"kluster", kluster.GetName(),
-			"phase", kluster.Status.Phase,
-			"project", kluster.Account(),
-			"v", 5)
+		defer func(start time.Time) {
+			op.Logger.Log(
+				"msg", "handling kluster",
+				"kluster", kluster.GetName(),
+				"phase", kluster.Status.Phase,
+				"project", kluster.Account(),
+				"v", 5,
+				"took", time.Since(start))
+		}(time.Now())
 
 		metrics.SetMetricKlusterInfo(kluster.GetNamespace(), kluster.GetName(), kluster.Status.Version, kluster.Spec.Openstack.ProjectID, kluster.GetAnnotations(), kluster.GetLabels())
 		metrics.SetMetricKlusterStatusPhase(kluster.GetName(), kluster.Status.Phase)
@@ -191,7 +195,7 @@ func (op *GroundControl) handler(key string) error {
 		case models.KlusterPhasePending:
 			{
 				if op.requiresOpenstackInfo(kluster) {
-					if err := op.updateKluster(kluster.Namespace, kluster.Name, op.discoverOpenstackInfo); err != nil {
+					if err := op.updateKluster(kluster, op.discoverOpenstackInfo); err != nil {
 						op.Recorder.Eventf(kluster, api_v1.EventTypeWarning, ConfigurationError, "Discovery of openstack parameters failed: %s", err)
 						return err
 					}
@@ -199,7 +203,7 @@ func (op *GroundControl) handler(key string) error {
 				}
 
 				if op.requiresKubernikusInfo(kluster) {
-					if err := op.updateKluster(kluster.Namespace, kluster.Name, op.discoverKubernikusInfo); err != nil {
+					if err := op.updateKluster(kluster, op.discoverKubernikusInfo); err != nil {
 						op.Recorder.Eventf(kluster, api_v1.EventTypeWarning, ConfigurationError, "Discovery of kubernikus parameters failed: %s", err)
 						return err
 					}
@@ -262,6 +266,43 @@ func (op *GroundControl) handler(key string) error {
 					"kluster", kluster.GetName(),
 					"project", kluster.Account())
 			}
+		case models.KlusterPhaseRunning:
+			kubernetes, err := op.Clients.Satellites.ClientFor(kluster)
+			if err != nil {
+				return err
+			}
+			if v, err := kubernetes.Discovery().ServerVersion(); err == nil {
+				if parsedVersion, err := version.ParseGeneric(v.GitVersion); err == nil {
+					if parsedVersion.String() != kluster.Status.ApiserverVersion {
+						if err := op.updateKluster(kluster, func(k *v1.Kluster) error { k.Status.ApiserverVersion = parsedVersion.String(); return nil }); err != nil {
+							op.Logger.Log(
+								"msg", "failed to update apiserver version of kluster",
+								"kluster", kluster.GetName(),
+								"project", kluster.Account(),
+								"err", err)
+							return err
+						}
+					}
+				}
+			}
+			if rlsContent, err := op.Clients.Helm.ReleaseContent(kluster.GetName()); err == nil {
+				chartMD := rlsContent.Release.Chart.GetMetadata()
+				if kluster.Status.ChartName != chartMD.Name || kluster.Status.ChartVersion != chartMD.Version {
+					if err := op.updateKluster(kluster, func(k *v1.Kluster) error {
+						k.Status.ChartName = chartMD.Name
+						k.Status.ChartVersion = chartMD.Version
+						return nil
+					}); err != nil {
+						op.Logger.Log(
+							"msg", "failed to update chart version of kluster",
+							"kluster", kluster.GetName(),
+							"project", kluster.Account(),
+							"err", err)
+						return err
+					}
+				}
+			}
+
 		case models.KlusterPhaseTerminating:
 			{
 				// Wait until all other finalizers are done.
