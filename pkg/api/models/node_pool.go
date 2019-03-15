@@ -32,7 +32,7 @@ type NodePool struct {
 	// image
 	Image string `json:"image,omitempty"`
 
-	// labels
+	// The specified labels will be added to members of this pool once during initial registration of the node
 	Labels []string `json:"labels"`
 
 	// name
@@ -46,7 +46,7 @@ type NodePool struct {
 	// Minimum: 0
 	Size int64 `json:"size"`
 
-	// taints
+	// The specified taints will be added to members of this pool once during initial registration of the node
 	Taints []string `json:"taints"`
 }
 

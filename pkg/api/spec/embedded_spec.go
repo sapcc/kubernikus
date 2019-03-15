@@ -557,6 +557,7 @@ func init() {
           "x-nullable": false
         },
         "labels": {
+          "description": "The specified labels will be added to members of this pool once during initial registration of the node",
           "type": "array",
           "items": {
             "type": "string",
@@ -576,6 +577,7 @@ func init() {
           "x-nullable": false
         },
         "taints": {
+          "description": "The specified taints will be added to members of this pool once during initial registration of the node",
           "type": "array",
           "items": {
             "type": "string",
@@ -1391,6 +1393,7 @@ func init() {
           "x-nullable": false
         },
         "labels": {
+          "description": "The specified labels will be added to members of this pool once during initial registration of the node",
           "type": "array",
           "items": {
             "type": "string",
@@ -1411,6 +1414,7 @@ func init() {
           "x-nullable": false
         },
         "taints": {
+          "description": "The specified taints will be added to members of this pool once during initial registration of the node",
           "type": "array",
           "items": {
             "type": "string",
