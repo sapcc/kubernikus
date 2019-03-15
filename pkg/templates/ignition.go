@@ -68,16 +68,21 @@ func (i *ignition) GenerateNode(kluster *kubernikusv1.Kluster, pool *models.Node
 		}
 	}
 	var nodeLabels []string
+	var nodeTaints []string
 	if pool != nil {
 		nodeLabels = append(nodeLabels, "ccloud.sap.com/nodepool="+pool.Name)
 		if strings.HasPrefix(pool.Flavor, "zg") {
 			nodeLabels = append(nodeLabels, "gpu=nvidia-tesla-v100")
 		}
-	}
-
-	var nodeTaints []string
-	if pool != nil && strings.HasPrefix(pool.Flavor, "zg") {
-		nodeTaints = append(nodeTaints, "nvidia.com/gpu=present:NoSchedule")
+		if strings.HasPrefix(pool.Flavor, "zg") {
+			nodeTaints = append(nodeTaints, "nvidia.com/gpu=present:NoSchedule")
+		}
+		for _, userTaint := range pool.Taints {
+			nodeTaints = append(nodeTaints, userTaint)
+		}
+		for _, userLabel := range pool.Labels {
+			nodeLabels = append(nodeLabels, userLabel)
+		}
 	}
 
 	data := struct {
