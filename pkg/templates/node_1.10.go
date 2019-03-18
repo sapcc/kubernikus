@@ -89,8 +89,8 @@ systemd:
           --mount volume=etc-machine-id,target=/etc/machine-id \
           --mount volume=modprobe,target=/usr/sbin/modprobe \
           --insecure-options=image"
-        Environment="KUBELET_IMAGE_TAG=v1.10.11"
-        Environment="KUBELET_IMAGE_URL=docker://sapcc/hyperkube"
+        Environment="KUBELET_IMAGE_TAG={{ .HyperkubeImageTag }}"
+        Environment="KUBELET_IMAGE_URL=docker://{{ .HyperkubeImage }}"
         Environment="KUBELET_IMAGE_ARGS=--name=kubelet --exec=/kubelet"
         ExecStartPre=/bin/mkdir -p /etc/kubernetes/manifests
         ExecStartPre=/bin/mkdir -p /var/lib/cni
@@ -172,7 +172,7 @@ systemd:
           --mount volume=lib-modules,target=/lib/modules \
           --stage1-from-dir=stage1-fly.aci \
           --insecure-options=image \
-          docker://sapcc/hyperkube:v1.10.11 \
+          docker://{{ .HyperkubeImage }}:{{ .HyperkubeImageTag }} \
           --name kube-proxy \
           --exec=/hyperkube \
           -- \

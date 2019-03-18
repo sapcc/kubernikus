@@ -10,6 +10,8 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes"
 
+	"github.com/Masterminds/semver"
+
 	"github.com/sapcc/kubernikus/pkg/api/models"
 	v1 "github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
 	clientset "github.com/sapcc/kubernikus/pkg/generated/clientset/typed/kubernikus/v1"
@@ -122,4 +124,16 @@ func KlusterSecret(client kubernetes.Interface, kluster *v1.Kluster) (*v1.Secret
 		return nil, err
 	}
 	return v1.NewSecret(secret)
+}
+
+func KlusterVersionConstraint(kluster *v1.Kluster, constraint string) (bool, error) {
+	c, err := semver.NewConstraint(constraint)
+	if err != nil {
+		return false, err
+	}
+	v, err := semver.NewVersion(kluster.Spec.Version)
+	if err != nil {
+		return false, err
+	}
+	return c.Check(v), nil
 }

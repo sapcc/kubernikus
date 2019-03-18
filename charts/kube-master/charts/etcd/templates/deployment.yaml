@@ -27,17 +27,27 @@ data:
       "Failed")
             continue;;
       "Successful")
-            exec etcd \
-              --name=kubernikus \
-              --data-dir=/var/lib/etcd/new.etcd \
-              --advertise-client-urls=http://${ETCD_IP}:2379 \
-              --initial-advertise-peer-urls=http://${ETCD_IP}:2380 \
-              --initial-cluster=kubernikus=http://${ETCD_IP}:2380 \
-              --listen-client-urls=http://0.0.0.0:2379 \
-              --listen-peer-urls=http://${ETCD_IP}:2380
+            . /bootstrap/etcd.sh
             ;;
       esac;
     done
+  etcd.sh: |-
+    #!/bin/sh
+    if [ ! -d /var/lib/etcd/new.etcd ]; then
+        mkdir /var/lib/etcd/new.etcd
+    fi
+    if [ -d /var/lib/etcd/member ]; then
+        mv /var/lib/etcd/member /var/lib/etcd/new.etcd/member
+    fi
+
+    exec etcd \
+      --name=kubernikus \
+      --data-dir=/var/lib/etcd/new.etcd \
+      --advertise-client-urls=http://${ETCD_IP}:2379 \
+      --initial-advertise-peer-urls=http://${ETCD_IP}:2380 \
+      --initial-cluster=kubernikus=http://${ETCD_IP}:2380 \
+      --listen-client-urls=http://0.0.0.0:2379 \
+      --listen-peer-urls=http://${ETCD_IP}:2380
 ---
 apiVersion: extensions/v1beta1
 kind: Deployment
@@ -78,7 +88,7 @@ spec:
                 fieldRef:
                   fieldPath: status.podIP
           command:
-            - /bootstrap/bootstrap.sh
+            - /bootstrap/{{ if .Values.backup.enabled }}bootstrap.sh{{ else }}etcd.sh{{ end }}
           volumeMounts:
             - mountPath: /var/lib/etcd
               name: data
@@ -92,14 +102,17 @@ spec:
                 - ETCDCTL_API=3 etcdctl get foo
             initialDelaySeconds: 15
             periodSeconds: 5
+          {{- if .Values.backup.enabled }}
           readinessProbe:
             httpGet:
               path: /healthz
               port: 8080
             initialDelaySeconds: 15
             periodSeconds: 10
+          {{- end }}
           resources:
 {{ toYaml .Values.resources | indent 12 }}
+{{- if .Values.backup.enabled }}
         - name: backup
           command:
             - etcdbrctl
@@ -148,3 +161,4 @@ spec:
               name: data
           resources:
 {{ toYaml .Values.backup.resources | indent 12 }}
+{{- end }}

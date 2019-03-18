@@ -15,6 +15,7 @@ import (
 	"github.com/sapcc/kubernikus/pkg/controller/nodeobservatory"
 	informers_kubernikus "github.com/sapcc/kubernikus/pkg/generated/informers/externalversions/kubernikus/v1"
 	"github.com/sapcc/kubernikus/pkg/util"
+	"github.com/sapcc/kubernikus/pkg/version"
 )
 
 const (
@@ -28,16 +29,17 @@ type LaunchReconciler struct {
 	Recorder  record.EventRecorder
 	Logger    log.Logger
 
+	imageRegistry   version.ImageRegistry
 	klusterInformer informers_kubernikus.KlusterInformer
 	nodeObervatory  *nodeobservatory.NodeObservatory
 }
 
-func NewController(threadiness int, factories config.Factories, clients config.Clients, recorder record.EventRecorder, logger log.Logger) base.Controller {
+func NewController(threadiness int, factories config.Factories, clients config.Clients, recorder record.EventRecorder, registry version.ImageRegistry, logger log.Logger) base.Controller {
 	logger = log.With(logger,
 		"controller", "launch")
 
 	var reconciler base.Reconciler
-	reconciler = &LaunchReconciler{clients, factories, recorder, logger, factories.Kubernikus.Kubernikus().V1().Klusters(), factories.NodesObservatory.NodeInformer()}
+	reconciler = &LaunchReconciler{clients, factories, recorder, logger, registry, factories.Kubernikus.Kubernikus().V1().Klusters(), factories.NodesObservatory.NodeInformer()}
 	reconciler = &base.LoggingReconciler{Reconciler: reconciler, Logger: logger}
 	reconciler = &base.InstrumentingReconciler{
 		Reconciler: reconciler,

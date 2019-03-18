@@ -15,6 +15,7 @@ import (
 	"github.com/sapcc/kubernikus/pkg/cmd"
 	"github.com/sapcc/kubernikus/pkg/util"
 	"github.com/sapcc/kubernikus/pkg/util/helm"
+	"github.com/sapcc/kubernikus/pkg/version"
 )
 
 func NewHelmCommand() *cobra.Command {
@@ -44,6 +45,7 @@ type HelmOptions struct {
 	AuthProject       string
 	AuthProjectDomain string
 	ProjectID         string
+	ImagesFile        string
 }
 
 func NewHelmOptions() *HelmOptions {
@@ -52,6 +54,7 @@ func NewHelmOptions() *HelmOptions {
 		AuthDomain:        "ccadmin",
 		AuthProject:       "cloud_admin",
 		AuthProjectDomain: "ccadmin",
+		ImagesFile:        "charts/images.yaml",
 	}
 }
 func (o *HelmOptions) BindFlags(flags *pflag.FlagSet) {
@@ -62,6 +65,7 @@ func (o *HelmOptions) BindFlags(flags *pflag.FlagSet) {
 	flags.StringVar(&o.AuthProject, "auth-project", o.AuthProject, "Scope service user to this project")
 	flags.StringVar(&o.AuthProjectDomain, "auth-project-domain", o.AuthProjectDomain, "Domain of the project")
 	flags.StringVar(&o.ProjectID, "project-id", o.ProjectID, "Project ID where the kublets will be running")
+	flags.StringVar(&o.ImagesFile, "images-file", o.ImagesFile, "Yaml file for populating the image registry")
 }
 
 func (o *HelmOptions) Validate(c *cobra.Command, args []string) error {
@@ -93,6 +97,11 @@ func (o *HelmOptions) Complete(args []string) error {
 
 func (o *HelmOptions) Run(c *cobra.Command) error {
 	nameA := strings.SplitN(o.Name, ".", 2)
+	registry, err := version.NewImageRegistry(o.ImagesFile)
+	if err != nil {
+		return fmt.Errorf("Failed to load images from file: %s", err)
+	}
+
 	kluster, err := kubernikus.NewKlusterFactory().KlusterFor(models.KlusterSpec{
 		Name: nameA[0],
 		Openstack: models.OpenstackSpec{
@@ -116,7 +125,7 @@ func (o *HelmOptions) Run(c *cobra.Command) error {
 	secret.Openstack.ProjectID = o.ProjectID
 	secret.BootstrapToken = util.GenerateBootstrapToken()
 
-	result, err := helm.KlusterToHelmValues(kluster, &secret, "")
+	result, err := helm.KlusterToHelmValues(kluster, &secret, registry, "")
 	if err != nil {
 		return err
 	}

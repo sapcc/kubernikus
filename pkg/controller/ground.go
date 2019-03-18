@@ -471,7 +471,7 @@ func (op *GroundControl) createKluster(kluster *v1.Kluster) error {
 		return fmt.Errorf("Failed to create container for etcd backups. Check if the project has quota for object-store usage: %s", err)
 	}
 
-	rawValues, err := helm_util.KlusterToHelmValues(kluster, klusterSecret, accessMode)
+	rawValues, err := helm_util.KlusterToHelmValues(kluster, klusterSecret, &op.Config.Images, accessMode)
 	if err != nil {
 		return err
 	}
@@ -566,7 +566,7 @@ func (op *GroundControl) requiresOpenstackInfo(kluster *v1.Kluster) bool {
 }
 
 func (op *GroundControl) requiresKubernikusInfo(kluster *v1.Kluster) bool {
-	return kluster.Status.Apiserver == "" || kluster.Status.Wormhole == ""
+	return kluster.Status.Apiserver == "" || kluster.Status.Wormhole == "" || kluster.Spec.Version == ""
 }
 
 func (op *GroundControl) discoverKubernikusInfo(kluster *v1.Kluster) error {
@@ -575,6 +575,13 @@ func (op *GroundControl) discoverKubernikusInfo(kluster *v1.Kluster) error {
 		"kluster", kluster.GetName(),
 		"project", kluster.Account(),
 		"v", 5)
+
+	if kluster.Spec.Version == "" {
+		kluster.Spec.Version = op.Config.Images.DefaultVersion
+	}
+	if _, found := op.Config.Images.Versions[kluster.Spec.Version]; !found {
+		return fmt.Errorf("Unsupported Kubernetes version specified: %s", kluster.Spec.Version)
+	}
 
 	if kluster.Status.Apiserver == "" {
 		kluster.Status.Apiserver = fmt.Sprintf("https://%s.%s", kluster.GetName(), op.Config.Kubernikus.Domain)

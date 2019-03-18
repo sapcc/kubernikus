@@ -13,6 +13,7 @@ import (
 	"github.com/sapcc/kubernikus/pkg/controller/nodeobservatory"
 	kubernikus_clientset "github.com/sapcc/kubernikus/pkg/generated/clientset"
 	kubernikus_informers "github.com/sapcc/kubernikus/pkg/generated/informers/externalversions"
+	"github.com/sapcc/kubernikus/pkg/version"
 )
 
 type Controller interface {
@@ -44,6 +45,7 @@ type Config struct {
 	Openstack  OpenstackConfig
 	Kubernikus KubernikusConfig
 	Helm       HelmConfig
+	Images     version.ImageRegistry
 }
 
 type Clients struct {

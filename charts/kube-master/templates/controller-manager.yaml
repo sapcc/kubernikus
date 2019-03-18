@@ -61,7 +61,7 @@ spec:
             name: {{ include "master.fullname" . }}-os-hacks
       initContainers:
         - name: apiserver-wait
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          image: {{ include "hyperkube.image" . }}
           command:
             - sh
             - -c
@@ -76,7 +76,7 @@ spec:
               readOnly: true
       containers:
         - name: controller-manager
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          image: {{ include "hyperkube.image" . | quote }}
           args:
             - /hyperkube
             - controller-manager

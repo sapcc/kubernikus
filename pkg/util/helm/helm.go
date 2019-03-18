@@ -8,6 +8,7 @@ import (
 
 	v1 "github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
 	etcd_util "github.com/sapcc/kubernikus/pkg/util/etcd"
+	"github.com/sapcc/kubernikus/pkg/version"
 )
 
 //contains unamibious characters for generic random passwords
@@ -54,20 +55,21 @@ type versionValues struct {
 }
 
 type kubernikusHelmValues struct {
-	Openstack        openstackValues `yaml:"openstack,omitempty"`
-	ClusterCIDR      string          `yaml:"clusterCIDR,omitempty"`
-	ServiceCIDR      string          `yaml:"serviceCIDR,omitempty"`
-	AdvertiseAddress string          `yaml:"advertiseAddress,omitempty"`
-	BoostrapToken    string          `yaml:"bootstrapToken,omitempty"`
-	Version          versionValues   `yaml:"version,omitempty"`
-	Etcd             etcdValues      `yaml:"etcd,omitempty"`
-	Api              apiValues       `yaml:"api,omitempty"`
-	Name             string          `yaml:"name"`
-	Account          string          `yaml:"account"`
-	SecretName       string          `yaml:"secretName"`
+	Openstack        openstackValues       `yaml:"openstack,omitempty"`
+	ClusterCIDR      string                `yaml:"clusterCIDR,omitempty"`
+	ServiceCIDR      string                `yaml:"serviceCIDR,omitempty"`
+	AdvertiseAddress string                `yaml:"advertiseAddress,omitempty"`
+	BoostrapToken    string                `yaml:"bootstrapToken,omitempty"`
+	Version          versionValues         `yaml:"version,omitempty"`
+	Etcd             etcdValues            `yaml:"etcd,omitempty"`
+	Api              apiValues             `yaml:"api,omitempty"`
+	Name             string                `yaml:"name"`
+	Account          string                `yaml:"account"`
+	SecretName       string                `yaml:"secretName"`
+	ImageRegistry    version.ImageRegistry `yaml:",inline"`
 }
 
-func KlusterToHelmValues(kluster *v1.Kluster, secret *v1.Secret, accessMode string) ([]byte, error) {
+func KlusterToHelmValues(kluster *v1.Kluster, secret *v1.Secret, registry *version.ImageRegistry, accessMode string) ([]byte, error) {
 	apiserverURL, err := url.Parse(kluster.Status.Apiserver)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to parse apiserver URL: %s", err)
@@ -118,6 +120,9 @@ func KlusterToHelmValues(kluster *v1.Kluster, secret *v1.Secret, accessMode stri
 			ApiserverHost: apiserverURL.Hostname(),
 			WormholeHost:  wormholeURL.Hostname(),
 		},
+	}
+	if registry != nil {
+		values.ImageRegistry = *registry
 	}
 
 	result, err := yaml.Marshal(values)

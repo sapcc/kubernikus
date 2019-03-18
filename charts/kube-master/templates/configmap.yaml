@@ -4,7 +4,6 @@ kind: ConfigMap
 metadata:
   name: {{ include "master.fullname" . }}
   labels:
-    chart: "{{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}"
     release: {{ .Release.Name }}
 data:
   kubeconfig: |-
