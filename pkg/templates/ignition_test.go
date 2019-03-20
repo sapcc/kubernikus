@@ -82,7 +82,7 @@ func TestGenerateNode(t *testing.T) {
 
 	for version := range imageRegistry.Versions {
 		kluster.Spec.Version = version
-		data, err := Ignition.GenerateNode(kluster, nil, "test", &testKlusterSecret, imageRegistry, log.NewNopLogger())
+		data, err := Ignition.GenerateNode(kluster, nil, "test", &testKlusterSecret, false, imageRegistry, log.NewNopLogger())
 		if assert.NoError(t, err, "Failed to generate node for version %s", version) {
 			//Ensure we rendered the expected template
 			assert.Contains(t, string(data), fmt.Sprintf("KUBELET_IMAGE_TAG=v%s", version))
@@ -96,14 +96,14 @@ func TestNodeLabels(t *testing.T) {
 
 	pool := &models.NodePool{Name: "some-name"}
 
-	data, err := Ignition.GenerateNode(kluster, pool, "test", &testKlusterSecret, imageRegistry, log.NewNopLogger())
+	data, err := Ignition.GenerateNode(kluster, pool, "test", &testKlusterSecret, false, imageRegistry, log.NewNopLogger())
 	if assert.NoError(t, err, "Failed to generate node") {
 		//Ensure we rendered the expected template
 		assert.Contains(t, string(data), fmt.Sprintf("--node-labels=ccloud.sap.com/nodepool=%s", pool.Name))
 	}
 
 	gpuPool := &models.NodePool{Name: "some-name", Flavor: "zghuh"}
-	data, err = Ignition.GenerateNode(kluster, gpuPool, "test", &testKlusterSecret, imageRegistry, log.NewNopLogger())
+	data, err = Ignition.GenerateNode(kluster, gpuPool, "test", &testKlusterSecret, false, imageRegistry, log.NewNopLogger())
 	if assert.NoError(t, err, "Failed to generate node") {
 		//Ensure we rendered the expected template
 		assert.Contains(t, string(data), fmt.Sprintf("--node-labels=ccloud.sap.com/nodepool=%s,gpu=nvidia-tesla-v100", pool.Name))

@@ -88,6 +88,14 @@ systemd:
           --mount volume=var-log,target=/var/log \
           --mount volume=etc-machine-id,target=/etc/machine-id \
           --mount volume=modprobe,target=/usr/sbin/modprobe \
+{{- if .CalicoNetworking }}
+          --volume var-lib-calico,kind=host,source=/var/lib/calico,readOnly=true \
+          --volume etc-cni,kind=host,source=/etc/cni,readOnly=true \
+          --volume opt-cni,kind=host,source=/opt/cni,readOnly=true \
+          --mount volume=var-lib-calico,target=/var/lib/calico \
+          --mount volume=etc-cni,target=/etc/cni \
+          --mount volume=opt-cni,target=/opt/cni \
+{{- end }}
           --insecure-options=image"
         Environment="KUBELET_IMAGE_TAG={{ .HyperkubeImageTag }}"
         Environment="KUBELET_IMAGE_URL=docker://{{ .HyperkubeImage }}"
@@ -103,7 +111,11 @@ systemd:
           --config=/etc/kubernetes/kubelet/config \
           --bootstrap-kubeconfig=/etc/kubernetes/bootstrap/kubeconfig \
           --kubeconfig=/var/lib/kubelet/kubeconfig \
+{{- if .CalicoNetworking }}
+          --network-plugin=cni \
+{{- else }}
           --network-plugin=kubenet \
+{{- end }}
           --non-masquerade-cidr=0.0.0.0/0 \
           --lock-file=/var/run/lock/kubelet.lock \
           --pod-infra-container-image=sapcc/pause-amd64:3.1 \
