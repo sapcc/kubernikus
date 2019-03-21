@@ -7,12 +7,15 @@ import (
 	yaml "gopkg.in/yaml.v2"
 
 	v1 "github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
+	"github.com/sapcc/kubernikus/pkg/util"
 	etcd_util "github.com/sapcc/kubernikus/pkg/util/etcd"
 	"github.com/sapcc/kubernikus/pkg/version"
 )
 
 //contains unamibious characters for generic random passwords
 var randomPasswordChars = []rune("abcdefghjkmnpqrstuvwxABCDEFGHJKLMNPQRSTUVWX23456789")
+
+var ETCDBackupAnnotation = "kubernikus.cloud.sap/backup"
 
 type OpenstackOptions struct {
 	AuthURL    string
@@ -42,6 +45,11 @@ type etcdValues struct {
 	Persistence      persistenceValues `yaml:"persistence,omitempty"`
 	StorageContainer string            `yaml:"storageContainer,omitempty"`
 	Openstack        openstackValues   `yaml:"openstack,omitempty"`
+	Backup           etcdBackupValues  `yaml:"backup"`
+}
+
+type etcdBackupValues struct {
+	Enabled bool `yaml:"enabled"`
 }
 
 type apiValues struct {
@@ -104,6 +112,9 @@ func KlusterToHelmValues(kluster *v1.Kluster, secret *v1.Secret, registry *versi
 			RouterID:            kluster.Spec.Openstack.RouterID,
 		},
 		Etcd: etcdValues{
+			Backup: etcdBackupValues{
+				Enabled: !util.DisabledValue(kluster.Annotations[ETCDBackupAnnotation]), //enabled by default
+			},
 			Persistence: persistenceValues{
 				AccessMode: accessMode,
 			},
