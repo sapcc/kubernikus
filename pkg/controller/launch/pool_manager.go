@@ -195,7 +195,14 @@ func (cpm *ConcretePoolManager) CreateNode() (id string, err error) {
 
 	nodeName := generator.SimpleNameGenerator.GenerateName(fmt.Sprintf("%v-%v-", cpm.Kluster.Spec.Name, cpm.Pool.Name))
 
-	userdata, err := templates.Ignition.GenerateNode(cpm.Kluster, cpm.Pool, nodeName, secret, cpm.imageRegistry, cpm.Logger)
+	calicoNetworking := false
+	if client, err := cpm.Clients.Satellites.ClientFor(cpm.Kluster); err == nil {
+		if _, err := client.AppsV1().DaemonSets("kube-system").Get("calico-node", metav1.GetOptions{}); err == nil {
+			calicoNetworking = true
+		}
+	}
+
+	userdata, err := templates.Ignition.GenerateNode(cpm.Kluster, cpm.Pool, nodeName, secret, calicoNetworking, cpm.imageRegistry, cpm.Logger)
 	if err != nil {
 		return "", err
 	}
