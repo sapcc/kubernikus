@@ -1,9 +1,9 @@
 image:
   repository: sapcc/vice-president
-  tag: v201808161913
+  tag: v201903181100
   pullPolicy: IfNotPresent
 
-# config
+# Symantec/DigiCert VICE API configuration.
 vice:
   first_name: ""
   last_name: ""
@@ -15,7 +15,7 @@ vice:
   organizational_unit: ""
   default_challenge: ""
 
-  # symantec API SSO certificate and key
+  # Symantec API SSO certificate and private key.
   cert: ""
   key: ""
 
@@ -49,15 +49,30 @@ vice:
     j6tJLp07kzQoH3jOlOrHvdPJbRzeXDLz
     -----END CERTIFICATE-----
 
-# operator settings
+# Operator configuration.
 president:
-  resync_period_minutes: 12
-  certificate_check_interval_minutes: 30
-  rate_limit: 4
-  metrics_port: 9091
-  log_level: 1
+  # Trigger certificate renewal if cert is valid for less than min_cert_validity_days.
+  minCertValidityDays: 30
 
+  # Verify the certificate via TLS handshake.
+  # Potentially triggers additional certificate renewals or enrollments if the new certificate is not yet presented.
+  # CertificateCheckIntervalMinutes should be set accordingly.
+  enableValidateRemoteCert: false
 
+  # Enable additional symantec metrics for token usage.
+  enableSymantecMetrics: false
 
+  # Resync ingress and secrets every n minutes.
+  resyncPeriodMinutes: 4
 
+  # Check certificates every n minutes.
+  certificateCheckIntervalMinutes: 30
 
+  # Rate limit for certificate enrollments, renewals, etc. per certificateCheckIntervalMinutes.
+  rateLimit: 2
+
+  # Port to expose prometheus metrics on.
+  metricsPort: 9091
+
+  # The log level.
+  logLevel: 1

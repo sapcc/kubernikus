@@ -27,8 +27,11 @@ spec:
             - --vice-cert=/etc/vice-president/secrets/vice.cert
             - --vice-key=/etc/vice-president/secrets/vice.key
             - --intermediate-cert=/etc/vice-president/secrets/intermediate.cert
-            - --metric-port={{default 9091 .Values.president.metrics_port}}
-            - --v={{ default 1 .Values.president.log_level }}
+            - --metric-port={{default 9091 .Values.president.metricsPort}}
+            - --min-cert-validity-days={{ .Values.president.minCertValidityDays }}
+            - --enable-validate-remote-cert={{ .Values.president.enableValidateRemoteCert }}
+            - --enable-symantec-metrics={{ .Values.president.enableSymantecMetrics }}
+            - --v={{ default 1 .Values.president.logLevel }}
           volumeMounts:
             - name: config
               mountPath: /etc/vice-president/config
