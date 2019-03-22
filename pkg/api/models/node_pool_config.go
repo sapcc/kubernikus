@@ -15,11 +15,11 @@ import (
 // swagger:model NodePoolConfig
 type NodePoolConfig struct {
 
-	// repair
-	Repair bool `json:"repair,omitempty"`
+	// allow reboot
+	AllowReboot bool `json:"allowReboot,omitempty"`
 
-	// upgrade
-	Upgrade bool `json:"upgrade,omitempty"`
+	// allow replace
+	AllowReplace bool `json:"allowReplace,omitempty"`
 }
 
 // Validate validates this node pool config

@@ -25,7 +25,6 @@ const (
 )
 
 func createFakeNodeObservatory(kluster *v1.Kluster, node *api_v1.Node) NodeObservatory {
-
 	fakeKubernetesClientset := fake.NewSimpleClientset(node)
 	fakeKubernikusClientset := kubernikusfake.NewSimpleClientset(kluster)
 	kubernikusInformerFactory := kubernikus_informers.NewSharedInformerFactory(fakeKubernikusClientset, 0)

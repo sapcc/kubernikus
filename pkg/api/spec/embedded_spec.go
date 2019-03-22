@@ -590,11 +590,15 @@ func init() {
     "NodePoolConfig": {
       "type": "object",
       "properties": {
-        "repair": {
-          "type": "boolean"
+        "allowReboot": {
+          "type": "boolean",
+          "default": true,
+          "x-nullable": false
         },
-        "upgrade": {
-          "type": "boolean"
+        "allowReplace": {
+          "type": "boolean",
+          "default": true,
+          "x-nullable": false
         }
       },
       "x-nullable": false
@@ -1427,11 +1431,15 @@ func init() {
     "NodePoolConfig": {
       "type": "object",
       "properties": {
-        "repair": {
-          "type": "boolean"
+        "allowReboot": {
+          "type": "boolean",
+          "default": true,
+          "x-nullable": false
         },
-        "upgrade": {
-          "type": "boolean"
+        "allowReplace": {
+          "type": "boolean",
+          "default": true,
+          "x-nullable": false
         }
       },
       "x-nullable": false

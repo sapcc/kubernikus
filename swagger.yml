@@ -475,10 +475,14 @@ definitions:
     type: object
     x-nullable: false
     properties:
-      upgrade:
+      allowReboot:
+        x-nullable: false
         type: boolean
-      repair:
+        default: true
+      allowReplace:
+        x-nullable: false
         type: boolean
+        default: true
   KlusterStatus:
     readOnly: true
     x-nullable: false
