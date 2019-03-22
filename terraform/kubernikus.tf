@@ -557,6 +557,10 @@ resource "ccloud_kubernetes" "kluster" {
     "openstack_identity_endpoint_v3.kubernikus", 
     "openstack_networking_router_v2.router"
   ]
+
+  lifecycle {
+    prevent_destroy = true
+  }
 }
 
 
