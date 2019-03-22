@@ -315,7 +315,7 @@ func (op *GroundControl) handler(key string) error {
 				// There's a "soft" agreement that Finalizers are executed in order from
 				// first to last. Here we check that Groundctl is the last remaining one and
 				// spare us the trouble to maintain a ordered list.
-				if !(len(kluster.Finalizers) == 1 && kluster.Finalizers[0] == GroundctlFinalizer) {
+				if kluster.TerminationProtection() || !(len(kluster.Finalizers) == 1 && kluster.Finalizers[0] == GroundctlFinalizer) {
 					return nil
 				}
 

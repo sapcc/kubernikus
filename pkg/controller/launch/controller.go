@@ -83,6 +83,9 @@ func (lr *LaunchReconciler) Reconcile(kluster *v1.Kluster) (requeue bool, err er
 	case models.KlusterPhaseRunning:
 		return lr.reconcilePools(kluster)
 	case models.KlusterPhaseTerminating:
+		if kluster.TerminationProtection() {
+			return false, nil
+		}
 		return lr.terminatePools(kluster)
 	}
 
