@@ -68,6 +68,9 @@ func (d *DeorbitReconciler) Reconcile(kluster *v1.Kluster) (bool, error) {
 	case models.KlusterPhaseRunning:
 		return false, util.EnsureFinalizerCreated(d.Kubernikus.KubernikusV1(), d.klusterInformer.Lister(), kluster, DeorbiterFinalizer)
 	case models.KlusterPhaseTerminating:
+		if kluster.TerminationProtection() {
+			return false, nil
+		}
 		if kluster.HasFinalizer(DeorbiterFinalizer) {
 			if err := d.deorbit(kluster); err != nil {
 				return false, err
