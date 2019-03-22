@@ -10,6 +10,8 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+var TerminationProtectionAnnotationKey = "kubernikus.cloud.sap/termination-protection"
+
 // +genclient
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
@@ -96,4 +98,8 @@ func (k *Kluster) RemoveFinalizer(finalizer string) {
 
 func (k *Kluster) Disabled() bool {
 	return k.Status.MigrationsPending
+}
+
+func (k *Kluster) TerminationProtection() bool {
+	return k.Annotations[TerminationProtectionAnnotationKey] != ""
 }
