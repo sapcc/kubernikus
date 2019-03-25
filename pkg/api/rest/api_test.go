@@ -90,7 +90,7 @@ func result(handler http.Handler, req *http.Request) (int, http.Header, []byte) 
 
 func TestCreateCluster(t *testing.T) {
 	handler, rt := createTestHandler(t)
-	req := createRequest("POST", "/api/v1/clusters", `{"name": "nase"}`)
+	req := createRequest("POST", "/api/v1/clusters", `{"name": "nase", "spec": { "openstack": { "routerID":"routerA"}}}`)
 	code, _, body := result(handler, req)
 	if !assert.Equal(t, 201, code) {
 		return
@@ -112,6 +112,24 @@ func TestCreateCluster(t *testing.T) {
 	req.Header.Del("X-Auth-Token")
 	code, _, _ = result(handler, req)
 	assert.Equal(t, 401, code)
+
+	//Ensure cluster CIDR does not overlap with other clusters specifying no router
+	req = createRequest("POST", "/api/v1/clusters", `{"name": "ohr" }`)
+	code, _, body = result(handler, req)
+	if assert.Equal(t, 409, code, "response body: %s", string(body)) {
+		assert.Contains(t, string(body), "nase", "when specifying no router it should always conflict with exiting clusters")
+	}
+	//Ensure cluster CIDR does not overlap with other clusters using the same router
+	req = createRequest("POST", "/api/v1/clusters", `{"name": "ohr", "spec": { "openstack": { "routerID":"routerA"}}}`)
+	code, _, body = result(handler, req)
+	if assert.Equal(t, 409, code, "response body: %s", string(body)) {
+		assert.Contains(t, string(body), "nase")
+	}
+
+	//Ensure specifying a different router doesn't obverlap
+	req = createRequest("POST", "/api/v1/clusters", `{"name": "ohr", "spec": { "openstack": { "routerID":"routerB"}}}`)
+	code, _, body = result(handler, req)
+	assert.Equal(t, 201, code, "specifying a different router should not conflict. response: %s", string(body))
 
 	//Ensure we refuse service CIDRs that overlap with the control plane
 	rt.Kubernikus = kubernikusfake.NewSimpleClientset()

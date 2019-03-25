@@ -3,7 +3,7 @@
 # Declare variables to be passed into your templates.
 image:
   repository: sapcc/etcd
-  tag: v3.3.10
+  tag: v3.3.12
   pullPolicy: IfNotPresent
 ## Persist data to a persitent volume
 persistence:
@@ -20,9 +20,10 @@ resources:
     cpu: 750m
     memory: 2560Mi
 backup:
+  enabled: true
   image:
     repository: sapcc/etcdbrctl
-    tag: 0.5.0
+    tag: 0.5.2
     pullPolicy: IfNotPresent
   config:
     # do a full-backup every hour

@@ -27,4 +27,6 @@ etcd:
     projectID: xyz
 imagesForVersion:
   "1.0.0":
-    hyperkube: xyz
+    hyperkube:
+      repository: abc
+      tag: xyz

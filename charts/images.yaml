@@ -1,0 +1,19 @@
+imagesForVersion:
+  '1.10.11':
+    default: true
+    hyperkube:
+      repository: 'sapcc/hyperkube'
+      tag: 'v1.10.11'
+  '1.9.11':
+    hyperkube:
+      repository: 'quay.io/coreos/hyperkube'
+      tag: 'v1.9.11_coreos.1'
+  '1.8.14':
+    hyperkube: 
+      repository: 'quay.io/coreos/hyperkube'
+      tag: 'v1.8.14_coreos.1'
+  '1.7.16':
+    hyperkube:
+      repository: 'quay.io/coreos/hyperkube'
+      tag: 'v1.7.16_coreos.0'
+

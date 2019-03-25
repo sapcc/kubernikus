@@ -21,6 +21,15 @@ type KlusterStatus struct {
 	// apiserver
 	Apiserver string `json:"apiserver,omitempty"`
 
+	// apiserver version
+	ApiserverVersion string `json:"apiserverVersion,omitempty"`
+
+	// chart name
+	ChartName string `json:"chartName,omitempty"`
+
+	// chart version
+	ChartVersion string `json:"chartVersion,omitempty"`
+
 	// message
 	Message string `json:"message,omitempty"`
 

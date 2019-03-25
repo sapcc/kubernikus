@@ -88,9 +88,17 @@ systemd:
           --mount volume=var-log,target=/var/log \
           --mount volume=etc-machine-id,target=/etc/machine-id \
           --mount volume=modprobe,target=/usr/sbin/modprobe \
+{{- if .CalicoNetworking }}
+          --volume var-lib-calico,kind=host,source=/var/lib/calico,readOnly=true \
+          --volume etc-cni,kind=host,source=/etc/cni,readOnly=true \
+          --volume opt-cni,kind=host,source=/opt/cni,readOnly=true \
+          --mount volume=var-lib-calico,target=/var/lib/calico \
+          --mount volume=etc-cni,target=/etc/cni \
+          --mount volume=opt-cni,target=/opt/cni \
+{{- end }}
           --insecure-options=image"
-        Environment="KUBELET_IMAGE_TAG=v1.10.11"
-        Environment="KUBELET_IMAGE_URL=docker://sapcc/hyperkube"
+        Environment="KUBELET_IMAGE_TAG={{ .HyperkubeImageTag }}"
+        Environment="KUBELET_IMAGE_URL=docker://{{ .HyperkubeImage }}"
         Environment="KUBELET_IMAGE_ARGS=--name=kubelet --exec=/kubelet"
         ExecStartPre=/bin/mkdir -p /etc/kubernetes/manifests
         ExecStartPre=/bin/mkdir -p /var/lib/cni
@@ -103,7 +111,11 @@ systemd:
           --config=/etc/kubernetes/kubelet/config \
           --bootstrap-kubeconfig=/etc/kubernetes/bootstrap/kubeconfig \
           --kubeconfig=/var/lib/kubelet/kubeconfig \
+{{- if .CalicoNetworking }}
+          --network-plugin=cni \
+{{- else }}
           --network-plugin=kubenet \
+{{- end }}
           --non-masquerade-cidr=0.0.0.0/0 \
           --lock-file=/var/run/lock/kubelet.lock \
           --pod-infra-container-image=sapcc/pause-amd64:3.1 \
@@ -172,7 +184,7 @@ systemd:
           --mount volume=lib-modules,target=/lib/modules \
           --stage1-from-dir=stage1-fly.aci \
           --insecure-options=image \
-          docker://sapcc/hyperkube:v1.10.11 \
+          docker://{{ .HyperkubeImage }}:{{ .HyperkubeImageTag }} \
           --name kube-proxy \
           --exec=/hyperkube \
           -- \

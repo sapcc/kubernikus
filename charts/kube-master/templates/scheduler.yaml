@@ -41,7 +41,7 @@ spec:
             name: {{ include "master.fullname" . }}
       containers:
         - name: scheduler
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          image: {{ include "hyperkube.image" . | quote }}
           args:
             - /hyperkube
             - scheduler

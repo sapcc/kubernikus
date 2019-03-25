@@ -40,7 +40,7 @@ func (i *ignition) getIgnitionTemplate(kluster *kubernikusv1.Kluster) string {
 	}
 }
 
-func (i *ignition) GenerateNode(kluster *kubernikusv1.Kluster, pool *models.NodePool, nodeName string, secret *kubernikusv1.Secret, logger log.Logger) ([]byte, error) {
+func (i *ignition) GenerateNode(kluster *kubernikusv1.Kluster, pool *models.NodePool, nodeName string, secret *kubernikusv1.Secret, calicoNetworking bool, imageRegistry version.ImageRegistry, logger log.Logger) ([]byte, error) {
 
 	ignition := i.getIgnitionTemplate(kluster)
 	tmpl, err := template.New("node").Funcs(sprig.TxtFuncMap()).Parse(ignition)
@@ -68,16 +68,26 @@ func (i *ignition) GenerateNode(kluster *kubernikusv1.Kluster, pool *models.Node
 		}
 	}
 	var nodeLabels []string
+	var nodeTaints []string
 	if pool != nil {
 		nodeLabels = append(nodeLabels, "ccloud.sap.com/nodepool="+pool.Name)
 		if strings.HasPrefix(pool.Flavor, "zg") {
 			nodeLabels = append(nodeLabels, "gpu=nvidia-tesla-v100")
 		}
+		if strings.HasPrefix(pool.Flavor, "zg") {
+			nodeTaints = append(nodeTaints, "nvidia.com/gpu=present:NoSchedule")
+		}
+		for _, userTaint := range pool.Taints {
+			nodeTaints = append(nodeTaints, userTaint)
+		}
+		for _, userLabel := range pool.Labels {
+			nodeLabels = append(nodeLabels, userLabel)
+		}
 	}
 
-	var nodeTaints []string
-	if pool != nil && strings.HasPrefix(pool.Flavor, "zg") {
-		nodeTaints = append(nodeTaints, "nvidia.com/gpu=present:NoSchedule")
+	images, found := imageRegistry.Versions[kluster.Spec.Version]
+	if !found {
+		return nil, fmt.Errorf("Can't find images for version: %s ", kluster.Spec.Version)
 	}
 
 	data := struct {
@@ -106,6 +116,9 @@ func (i *ignition) GenerateNode(kluster *kubernikusv1.Kluster, pool *models.Node
 		NodeLabels                         []string
 		NodeTaints                         []string
 		NodeName                           string
+		HyperkubeImage                     string
+		HyperkubeImageTag                  string
+		CalicoNetworking                   bool
 	}{
 		TLSCA:                              secret.TLSCACertificate,
 		KubeletClientsCA:                   secret.KubeletClientsCACertificate,
@@ -132,6 +145,9 @@ func (i *ignition) GenerateNode(kluster *kubernikusv1.Kluster, pool *models.Node
 		NodeLabels:                         nodeLabels,
 		NodeTaints:                         nodeTaints,
 		NodeName:                           nodeName,
+		HyperkubeImage:                     images.Hyperkube.Repository,
+		HyperkubeImageTag:                  images.Hyperkube.Tag,
+		CalicoNetworking:                   calicoNetworking,
 	}
 
 	var dataOut []byte
