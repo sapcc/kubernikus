@@ -22,19 +22,21 @@ type terminateCluster struct {
 
 func (d *terminateCluster) Handle(params operations.TerminateClusterParams, principal *models.Principal) middleware.Responder {
 
-	kluster := d.Kubernikus.Kubernikus().Klusters(d.Namespace)
-	_, err := kluster.Get(qualifiedName(params.Name, principal.Account), metav1.GetOptions{})
+	klusterInterface := d.Kubernikus.Kubernikus().Klusters(d.Namespace)
+	kluster, err := klusterInterface.Get(qualifiedName(params.Name, principal.Account), metav1.GetOptions{})
 	if err != nil {
 		if apierrors.IsNotFound(err) {
 			return NewErrorResponse(&operations.TerminateClusterDefault{}, 404, "Not found")
 		}
 		return NewErrorResponse(&operations.TerminateClusterDefault{}, 500, err.Error())
 	}
+	if kluster.TerminationProtection() {
+		return NewErrorResponse(&operations.TerminateClusterDefault{}, 403, "Termination protection enabled")
+	}
 
-	_, err = editCluster(kluster, principal, params.Name, func(kluster *v1.Kluster) error {
+	_, err = editCluster(klusterInterface, principal, params.Name, func(kluster *v1.Kluster) error {
 		kluster.Status.Phase = models.KlusterPhaseTerminating
 		kluster.Status.Message = "Cluster terminating"
-
 		return nil
 	})
 	if err != nil {
@@ -51,7 +53,7 @@ func (d *terminateCluster) Handle(params operations.TerminateClusterParams, prin
 	// Kubernikus Controllers are required to add/remove Finalizers if clean-up is
 	// required once a Kluster is deleted.
 	propagationPolicy := metav1.DeletePropagationBackground
-	if err := kluster.Delete(qualifiedName(params.Name, principal.Account), &metav1.DeleteOptions{PropagationPolicy: &propagationPolicy}); err != nil {
+	if err := klusterInterface.Delete(qualifiedName(params.Name, principal.Account), &metav1.DeleteOptions{PropagationPolicy: &propagationPolicy}); err != nil {
 		return NewErrorResponse(&operations.TerminateClusterDefault{}, 500, err.Error())
 	}
 
