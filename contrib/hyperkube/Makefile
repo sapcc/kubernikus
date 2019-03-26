@@ -5,7 +5,8 @@ CNI_RELEASE=v0.6.0
 CNI_PLUGINS_RELEASE=v0.7.1
 CNI_DEDUP_BRIDGE_RELEASE=v0.1.0
 MULTUS_RELEASE=v3.1
-BASEIMAGE=k8s.gcr.io/hyperkube-$(ARCH):$(VERSION)
+BASEIMAGE?=k8s.gcr.io/hyperkube-$(ARCH):$(VERSION)
+
 TEMP_DIR:=$(shell mktemp -d -t hyperkubeXXXXXX)
 
 build: cni
