@@ -125,7 +125,7 @@ func (o *HelmOptions) Run(c *cobra.Command) error {
 	secret.Openstack.ProjectID = o.ProjectID
 	secret.BootstrapToken = util.GenerateBootstrapToken()
 
-	result, err := helm.KlusterToHelmValues(kluster, &secret, registry, "")
+	result, err := helm.KlusterToHelmValues(kluster, &secret, kluster.Spec.Version, registry, "")
 	if err != nil {
 		return err
 	}

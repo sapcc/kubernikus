@@ -432,6 +432,7 @@ func init() {
         "Pending",
         "Creating",
         "Running",
+        "Upgrading",
         "Terminating"
       ]
     },
@@ -483,9 +484,9 @@ func init() {
           "type": "string"
         },
         "version": {
+          "description": "Kubernetes version",
           "type": "string",
-          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
-          "readOnly": true
+          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
         }
       },
       "x-nullable": false
@@ -503,9 +504,6 @@ func init() {
           "type": "string"
         },
         "chartVersion": {
-          "type": "string"
-        },
-        "message": {
           "type": "string"
         },
         "migrationsPending": {
@@ -1276,6 +1274,7 @@ func init() {
         "Pending",
         "Creating",
         "Running",
+        "Upgrading",
         "Terminating"
       ]
     },
@@ -1327,9 +1326,9 @@ func init() {
           "type": "string"
         },
         "version": {
+          "description": "Kubernetes version",
           "type": "string",
-          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
-          "readOnly": true
+          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
         }
       },
       "x-nullable": false
@@ -1347,9 +1346,6 @@ func init() {
           "type": "string"
         },
         "chartVersion": {
-          "type": "string"
-        },
-        "message": {
           "type": "string"
         },
         "migrationsPending": {

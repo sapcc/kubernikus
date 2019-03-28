@@ -18,6 +18,7 @@ import (
 	"github.com/sapcc/kubernikus/pkg/controller/config"
 	"github.com/sapcc/kubernikus/pkg/controller/metrics"
 	"github.com/sapcc/kubernikus/pkg/controller/nodeobservatory"
+	"github.com/sapcc/kubernikus/pkg/util"
 )
 
 type hammertimeController struct {
@@ -27,6 +28,10 @@ type hammertimeController struct {
 	logger         kitlog.Logger
 	recorder       record.EventRecorder
 }
+
+const (
+	HammertimeDisableAnnotation = "kubernikus.cloud.sap/hammertime"
+)
 
 func New(syncPeriod time.Duration, timeout time.Duration, factories config.Factories, clients config.Clients, recorder record.EventRecorder, logger kitlog.Logger) base.Controller {
 
@@ -46,9 +51,14 @@ func New(syncPeriod time.Duration, timeout time.Duration, factories config.Facto
 func (hc *hammertimeController) Reconcile(kluster *v1.Kluster) error {
 	logger := kitlog.With(hc.logger, "kluster", kluster.GetName())
 
-	//No Hammertime if kluster is not in state Running yet
+	//Hammertime only  makes sense after the kluster's deployment exist (Duh we want to scale them)
 	if kluster.Status.Phase == models.KlusterPhasePending || kluster.Status.Phase == models.KlusterPhaseCreating {
 		return nil
+	}
+
+	// stop hammertime during upgrades and termination or if explicitly disabled
+	if kluster.Status.Phase != models.KlusterPhaseRunning || util.DisabledValue(kluster.Annotations[HammertimeDisableAnnotation]) {
+		return hc.scaleDeployment(kluster, false, logger)
 	}
 
 	lister, err := hc.nodeObervatory.GetListerForKluster(kluster)

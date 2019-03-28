@@ -302,3 +302,64 @@ func TestClusterUpdate(t *testing.T) {
 	//assert nodepool was updated
 	assert.Equal(t, updateObject.Spec.NodePools, apiResponse.Spec.NodePools)
 }
+
+func TestVersionUpdate(t *testing.T) {
+
+	handler, rt := createTestHandler(t)
+	kluster := kubernikusv1.Kluster{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      fmt.Sprintf("%s-%s", "nase", ACCOUNT),
+			Namespace: rt.Namespace,
+			Labels:    map[string]string{"account": ACCOUNT},
+		},
+		Spec: models.KlusterSpec{
+			Version: "1.10.1",
+		},
+		Status: models.KlusterStatus{
+			ApiserverVersion: "1.10.1",
+		},
+	}
+
+	cases := []struct {
+		Version       string
+		Phase         models.KlusterPhase
+		ExpectSuccess bool
+	}{
+		{"1.10.1", models.KlusterPhaseRunning, true},
+		{"1.10.0", models.KlusterPhaseRunning, true},
+		{"1.10.2", models.KlusterPhaseRunning, true},
+		{"1.10.3", models.KlusterPhaseUpgrading, false},
+		{"1.11.2", models.KlusterPhaseRunning, true},
+		{"1.9.2", models.KlusterPhaseRunning, false},
+		{"1.12.2", models.KlusterPhaseRunning, false},
+		{"2.0.0", models.KlusterPhaseRunning, false},
+	}
+
+	for _, c := range cases {
+		k := kluster.DeepCopy()
+		k.Status.Phase = c.Phase
+		rt.Kubernikus = kubernikusfake.NewSimpleClientset(k)
+		updateObject := models.Kluster{
+			Name: "nase",
+			Spec: models.KlusterSpec{
+				Version: c.Version,
+			},
+		}
+		jsonPayload, err := updateObject.MarshalBinary()
+		if !assert.NoError(t, err, "marshaling update payload failed version %s", c.Version) {
+			continue
+		}
+		req := createRequest("PUT", "/api/v1/clusters/nase", string(jsonPayload))
+		code, _, body := result(handler, req)
+
+		if c.ExpectSuccess {
+			if assert.Equal(t, 200, code, "Update to version %s should be accepted. Response: %d,  %s", c.Version, code, string(body)) {
+				var apiResponse models.Kluster
+				assert.NoError(t, apiResponse.UnmarshalBinary(body), "Failed to parse response for version %s", c.Version)
+				assert.Equal(t, c.Version, apiResponse.Spec.Version, "Update to version %s failed", c.Version)
+			}
+		} else {
+			assert.Equal(t, 400, code, "Update to version %s should be rejected. Response: %d, %s", c.Version, code, string(body))
+		}
+	}
+}

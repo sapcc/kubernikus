@@ -82,7 +82,7 @@ type kubernikusHelmValues struct {
 	ImageRegistry    version.ImageRegistry `yaml:",inline"`
 }
 
-func KlusterToHelmValues(kluster *v1.Kluster, secret *v1.Secret, registry *version.ImageRegistry, accessMode string) ([]byte, error) {
+func KlusterToHelmValues(kluster *v1.Kluster, secret *v1.Secret, kubernetesVersion string, registry *version.ImageRegistry, accessMode string) ([]byte, error) {
 	apiserverURL, err := url.Parse(kluster.Status.Apiserver)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to parse apiserver URL: %s", err)
@@ -107,7 +107,7 @@ func KlusterToHelmValues(kluster *v1.Kluster, secret *v1.Secret, registry *versi
 		AdvertiseAddress: kluster.Spec.AdvertiseAddress,
 		Name:             kluster.Spec.Name,
 		Version: versionValues{
-			Kubernetes: kluster.Spec.Version,
+			Kubernetes: kubernetesVersion,
 			Kubernikus: kluster.Status.Version,
 		},
 		Openstack: openstackValues{
