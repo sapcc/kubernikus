@@ -13,11 +13,7 @@ import (
 
 	"github.com/sapcc/kubernikus/pkg/api/models"
 	v1 "github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
-<<<<<<< HEAD
 	openstack_kluster "github.com/sapcc/kubernikus/pkg/client/openstack/kluster"
-=======
-	"github.com/sapcc/kubernikus/pkg/client/openstack/kluster"
->>>>>>> fix mocks
 )
 
 type fakeInstance struct {

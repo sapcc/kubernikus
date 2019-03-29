@@ -204,6 +204,7 @@ func (c *klusterClient) EnsureKubernikusRuleInSecurityGroup(kluster *v1.Kluster)
 		EtherType:      rules.EtherType4,
 		SecGroupID:     groups[0].ID,
 		RemoteIPPrefix: kluster.Spec.ClusterCIDR,
+	}
 
 	if !udp {
 		opts.Protocol = rules.ProtocolUDP
