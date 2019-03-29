@@ -126,6 +126,11 @@ func (r *KlusterReconciler) Do() error {
 		}
 	}
 
+	if len(r.Lister.UpdateFailed()) > 0 {
+		r.Logger.Log("msg", "skipped upgrades because there is a failed upgrade")
+		return nil
+	}
+
 	if len(r.Lister.Updating()) > 0 {
 		r.Logger.Log("msg", "skipped upgrades because there is sitll nodes being updated", "v", 2)
 		return nil
