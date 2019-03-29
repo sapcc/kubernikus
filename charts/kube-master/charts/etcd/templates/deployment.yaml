@@ -117,14 +117,14 @@ spec:
           command:
             - etcdbrctl
             - server
-            - --schedule={{ .Values.backup.config.schedule }}
-            - --max-backups={{ .Values.backup.config.maxBackups }}
+            - --schedule={{ .Values.backup.schedule }}
+            - --max-backups={{ .Values.backup.maxBackups }}
             - --data-dir=/var/lib/etcd/new.etcd
             - --insecure-transport=true
             - --storage-provider=Swift
-            - --delta-snapshot-period-seconds={{ .Values.backup.config.deltaSnapshotPeriod }}
-            - --garbage-collection-period-seconds={{ .Values.backup.config.garbageCollectionPeriod }}
-            - --garbage-collection-policy={{ .Values.backup.config.garbageCollectionPolicy }}
+            - --delta-snapshot-period-seconds={{ .Values.backup.deltaSnapshotPeriod }}
+            - --garbage-collection-period-seconds={{ .Values.backup.garbageCollectionPeriod }}
+            - --garbage-collection-policy={{ .Values.backup.garbageCollectionPolicy }}
           image: "{{ .Values.backup.image.repository }}:{{ .Values.backup.image.tag }}"
           imagePullPolicy: {{ .Values.backup.image.pullPolicy }}
           ports:

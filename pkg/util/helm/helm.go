@@ -2,6 +2,8 @@ package helm
 
 import (
 	"fmt"
+	"hash/crc64"
+	"math/rand"
 	"net/url"
 
 	yaml "gopkg.in/yaml.v2"
@@ -49,7 +51,8 @@ type etcdValues struct {
 }
 
 type etcdBackupValues struct {
-	Enabled bool `yaml:"enabled"`
+	Schedule string `yaml:"schedule,omitempty"`
+	Enabled  bool   `yaml:"enabled"`
 }
 
 type apiValues struct {
@@ -88,6 +91,11 @@ func KlusterToHelmValues(kluster *v1.Kluster, secret *v1.Secret, registry *versi
 		return nil, fmt.Errorf("Failed to parse wormhole server URL: %s", err)
 	}
 
+	//Get a deterministic value for the cluster between 0-59 for the hourly etcd full backup schedule
+	//calculate a crc64 checksum of the kluster UID
+	uidChecksum := crc64.Checksum([]byte(kluster.UID), crc64.MakeTable(crc64.ISO))
+	backupMinute := rand.New(rand.NewSource(int64(uidChecksum))).Intn(60)
+
 	values := kubernikusHelmValues{
 		Account:          kluster.Account(),
 		BoostrapToken:    secret.BootstrapToken,
@@ -113,7 +121,8 @@ func KlusterToHelmValues(kluster *v1.Kluster, secret *v1.Secret, registry *versi
 		},
 		Etcd: etcdValues{
 			Backup: etcdBackupValues{
-				Enabled: !util.DisabledValue(kluster.Annotations[ETCDBackupAnnotation]), //enabled by default
+				Enabled:  !util.DisabledValue(kluster.Annotations[ETCDBackupAnnotation]), //enabled by default
+				Schedule: fmt.Sprintf("%d * * * *", backupMinute),
 			},
 			Persistence: persistenceValues{
 				AccessMode: accessMode,
