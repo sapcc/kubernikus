@@ -7,12 +7,14 @@ import (
 
 	"github.com/pkg/errors"
 
+	"github.com/sapcc/kubernikus/pkg/controller/config"
 	"github.com/sapcc/kubernikus/pkg/controller/nodeobservatory"
 
 	"github.com/go-kit/kit/log"
 	core_v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	listers_core_v1 "k8s.io/client-go/listers/core/v1"
+	"k8s.io/client-go/tools/record"
 
 	v1 "github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
 	"github.com/sapcc/kubernikus/pkg/util/generator"
@@ -25,6 +27,9 @@ type (
 		All() []*core_v1.Node
 		RequiringReboot() []*core_v1.Node
 		RequiringReplacement() []*core_v1.Node
+		Updating() []*core_v1.Node
+		UpdateSuccessful() []*core_v1.Node
+		UpdateFailed() []*core_v1.Node
 		NotReady() []*core_v1.Node
 	}
 
@@ -54,6 +59,15 @@ type (
 		Logger log.Logger
 	}
 )
+
+// NewNodeListerFactory produces a new factory
+func NewNodeListerFactory(logger log.Logger, recorder record.EventRecorder, factories config.Factories, clients config.Clients) ListerFactory {
+	return &NodeListerFactory{
+		Logger:          logger,
+		NodeObservatory: factories.NodesObservatory.NodeInformer(),
+		CoreOSVersion:   &LatestCoreOSVersion{},
+	}
+}
 
 // Make a NodeListerFactory
 func (f *NodeListerFactory) Make(k *v1.Kluster) (Lister, error) {
@@ -153,7 +167,7 @@ func (d *NodeLister) RequiringReplacement() []*core_v1.Node {
 		}
 	}
 
-	klusterVersion, err := version.ParseSemantic(d.Kluster.Status.Version)
+	klusterVersion, err := version.ParseSemantic(d.Kluster.Status.ApiserverVersion)
 	if err != nil {
 		d.Logger.Log(
 			"msg", "Couldn't parse Kluster version. Skipping node upgrade.",
@@ -203,6 +217,136 @@ func (d *NodeLister) NotReady() []*core_v1.Node {
 		core_v1.ConditionUnknown)
 }
 
+// Updating lists nodes which are currenlty being updated
+func (d *NodeLister) Updating() []*core_v1.Node {
+	return d.hasAnnotation(AnnotationUpdateTimestamp)
+}
+
+// UpdateSuccessful lists nodes which have been successfully updated
+func (d *NodeLister) UpdateSuccessful() []*core_v1.Node {
+	var found []*core_v1.Node
+
+	// Node must have updating annotation
+	// is not timed out
+	// Node must not be in the list of nodes to be rebooted
+	// Node must not be in the list of nodes to be replaced
+	// Node must be ready
+
+	for _, node := range d.Updating() {
+		failure := false
+
+		for _, r := range d.updateTimeout() {
+			if r == node {
+				failure = true
+				break
+			}
+		}
+
+		if failure {
+			continue
+		}
+
+		for _, r := range d.RequiringReboot() {
+			if r == node {
+				failure = true
+				break
+			}
+		}
+
+		if failure {
+			continue
+		}
+
+		for _, r := range d.RequiringReplacement() {
+			if r == node {
+				failure = true
+				break
+			}
+		}
+
+		if failure {
+			continue
+		}
+
+		_, condition := getNodeCondition(&node.Status, core_v1.NodeReady)
+		if condition.Status == core_v1.ConditionTrue {
+			found = append(found, node)
+		}
+	}
+
+	return found
+}
+
+// UpdateFailed lists nodes which failed to be updated
+func (d *NodeLister) UpdateFailed() []*core_v1.Node {
+	var found []*core_v1.Node
+
+	// is beyond update timeout AND (
+	//	 is to be rebooted OR
+	//   is to be replaces OR
+	//   is unhealthy
+	// )
+
+	for _, node := range d.updateTimeout() {
+		failed := false
+		for _, r := range d.RequiringReplacement() {
+			if r == node {
+				failed = true
+				found = append(found, node)
+				break
+			}
+		}
+
+		if failed {
+			continue
+		}
+
+		for _, r := range d.RequiringReboot() {
+			if r == node {
+				failed = true
+				found = append(found, node)
+				break
+			}
+		}
+
+		if failed {
+			continue
+		}
+
+		_, condition := getNodeCondition(&node.Status, core_v1.NodeReady)
+		if condition.Status == core_v1.ConditionFalse {
+			found = append(found, node)
+		}
+	}
+
+	return found
+}
+
+func (d *NodeLister) updateTimeout() []*core_v1.Node {
+	var found []*core_v1.Node
+
+	for _, node := range d.hasAnnotation(AnnotationUpdateTimestamp) {
+		updateTime, ok := node.Annotations[AnnotationUpdateTimestamp]
+		if !ok {
+			continue
+		}
+
+		pt, err := time.Parse(time.RFC3339, updateTime)
+		if err != nil {
+			d.Logger.Log("msg", "failed to parse updatetime annotation", "err", err)
+			continue
+		}
+
+		timeout := pt.Add(UpdateTimeout)
+
+		if Now().After(timeout) {
+			found = append(found, node)
+		}
+	}
+
+	return found
+}
+
 func (d *NodeLister) withCondidtion(conditionType core_v1.NodeConditionType,
 	expected ...core_v1.ConditionStatus) []*core_v1.Node {
 	var found []*core_v1.Node
@@ -218,6 +362,38 @@ func (d *NodeLister) withCondidtion(conditionType core_v1.NodeConditionType,
 				found = append(found, node)
 				break
 			}
+		}
+	}
+
+	return found
+}
+
+func (d *NodeLister) hasAnnotation(name string) []*core_v1.Node {
+	var found []*core_v1.Node
+
+	for _, node := range d.All() {
+		_, ok := node.ObjectMeta.Annotations[name]
+		if !ok {
+			continue
+		}
+
+		found = append(found, node)
+	}
+
+	return found
+}
+
+func (d *NodeLister) withAnnotation(name, expected string) []*core_v1.Node {
+	var found []*core_v1.Node
+
+	for _, node := range d.All() {
+		value, ok := node.ObjectMeta.Annotations[name]
+		if !ok {
+			continue
+		}
+
+		if value == expected {
+			found = append(found, node)
 		}
 	}
 
@@ -274,6 +450,44 @@ func (l *LoggingLister) NotReady() (nodes []*core_v1.Node) {
 		)
 	}(time.Now())
 	return l.Lister.NotReady()
+}
+
+// Updating logs
+func (l *LoggingLister) Updating() (nodes []*core_v1.Node) {
+	defer func(begin time.Time) {
+		l.Logger.Log(
+			"msg", "listing updating nodes",
+			"took", time.Since(begin),
+			"count", len(nodes),
+			"v", 3,
+		)
+	}(time.Now())
+	return l.Lister.Updating()
+}
+
+// UpdateSuccessful logs
+func (l *LoggingLister) UpdateSuccessful() (nodes []*core_v1.Node) {
+	defer func(begin time.Time) {
+		l.Logger.Log(
+			"msg", "listing successfully updated nodes",
+			"took", time.Since(begin),
+			"count", len(nodes),
+			"v", 3,
+		)
+	}(time.Now())
+	return l.Lister.UpdateSuccessful()
+}
+
+func (l *LoggingLister) UpdateFailed() (nodes []*core_v1.Node) {
+	defer func(begin time.Time) {
+		l.Logger.Log(
+			"msg", "listing unsuccessfully updated nodes",
+			"took", time.Since(begin),
+			"count", len(nodes),
+			"v", 3,
+		)
+	}(time.Now())
+	return l.Lister.UpdateFailed()
 }
 
 func getKubeletVersion(node *core_v1.Node) (*version.Version, error) {

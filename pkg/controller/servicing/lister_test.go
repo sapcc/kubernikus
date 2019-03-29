@@ -2,6 +2,7 @@ package servicing
 
 import (
 	"testing"
+	"time"
 
 	"github.com/go-kit/kit/log"
 	"github.com/stretchr/testify/assert"
@@ -47,112 +48,112 @@ func NewFakeKlusterForListerTests() (*v1.Kluster, []runtime.Object) {
 			Phase:       models.KlusterPhaseRunning,
 			LastService: nil,
 			NodePools: []FakeNodePoolOptions{
-				FakeNodePoolOptions{
+				{
 					AllowReboot:         true,
 					AllowReplace:        true,
 					NodeOSOutdated:      true,
 					NodeKubeletOutdated: true,
 					Size:                1,
 				},
-				FakeNodePoolOptions{
+				{
 					AllowReboot:         false,
 					AllowReplace:        true,
 					NodeOSOutdated:      true,
 					NodeKubeletOutdated: true,
 					Size:                1,
 				},
-				FakeNodePoolOptions{
+				{
 					AllowReboot:         true,
 					AllowReplace:        false,
 					NodeOSOutdated:      true,
 					NodeKubeletOutdated: true,
 					Size:                1,
 				},
-				FakeNodePoolOptions{
+				{
 					AllowReboot:         true,
 					AllowReplace:        true,
 					NodeOSOutdated:      false,
 					NodeKubeletOutdated: true,
 					Size:                1,
 				},
-				FakeNodePoolOptions{
+				{
 					AllowReboot:         true,
 					AllowReplace:        true,
 					NodeOSOutdated:      true,
 					NodeKubeletOutdated: false,
 					Size:                1,
 				},
-				FakeNodePoolOptions{
+				{
 					AllowReboot:         false,
 					AllowReplace:        false,
 					NodeOSOutdated:      true,
 					NodeKubeletOutdated: true,
 					Size:                1,
 				},
-				FakeNodePoolOptions{
+				{
 					AllowReboot:         false,
 					AllowReplace:        true,
 					NodeOSOutdated:      false,
 					NodeKubeletOutdated: true,
 					Size:                1,
 				},
-				FakeNodePoolOptions{
+				{
 					AllowReboot:         false,
 					AllowReplace:        true,
 					NodeOSOutdated:      true,
 					NodeKubeletOutdated: false,
 					Size:                1,
 				},
-				FakeNodePoolOptions{
+				{
 					AllowReboot:         true,
 					AllowReplace:        false,
 					NodeOSOutdated:      false,
 					NodeKubeletOutdated: true,
 					Size:                1,
 				},
-				FakeNodePoolOptions{
+				{
 					AllowReboot:         true,
 					AllowReplace:        false,
 					NodeOSOutdated:      true,
 					NodeKubeletOutdated: false,
 					Size:                1,
 				},
-				FakeNodePoolOptions{
+				{
 					AllowReboot:         true,
 					AllowReplace:        true,
 					NodeOSOutdated:      false,
 					NodeKubeletOutdated: false,
 					Size:                1,
 				},
-				FakeNodePoolOptions{
+				{
 					AllowReboot:         true,
 					AllowReplace:        false,
 					NodeOSOutdated:      false,
 					NodeKubeletOutdated: false,
 					Size:                1,
 				},
-				FakeNodePoolOptions{
+				{
 					AllowReboot:         false,
 					AllowReplace:        true,
 					NodeOSOutdated:      false,
 					NodeKubeletOutdated: false,
 					Size:                1,
 				},
-				FakeNodePoolOptions{
+				{
 					AllowReboot:         false,
 					AllowReplace:        false,
 					NodeOSOutdated:      true,
 					NodeKubeletOutdated: false,
 					Size:                1,
 				},
-				FakeNodePoolOptions{
+				{
 					AllowReboot:         false,
 					AllowReplace:        false,
 					NodeOSOutdated:      false,
 					NodeKubeletOutdated: true,
 					Size:                1,
 				},
-				FakeNodePoolOptions{
+				{
 					AllowReboot:         false,
 					AllowReplace:        false,
 					NodeOSOutdated:      false,
@@ -186,4 +187,209 @@ func TestServicingListerNotReady(t *testing.T) {
 	kluster, nodes := NewFakeKlusterForListerTests()
 	lister := NewFakeNodeLister(t, TestLogger(), kluster, nodes)
 	assert.Len(t, lister.NotReady(), 15)
+}
+
+func TestServicingListerUpdating(t *testing.T) {
+	updatingSince := Now().Add(-5 * time.Second)
+	kluster, nodes := NewFakeKluster(
+		&FakeKlusterOptions{
+			Phase:       models.KlusterPhaseRunning,
+			LastService: nil,
+			NodePools: []FakeNodePoolOptions{
+				{
+					AllowReboot:         true,
+					AllowReplace:        true,
+					NodeOSOutdated:      true,
+					NodeKubeletOutdated: true,
+					NodeHealthy:         true,
+					NodeUpdating:        &updatingSince,
+					Size:                1,
+				},
+				{
+					AllowReboot:         true,
+					AllowReplace:        true,
+					NodeOSOutdated:      true,
+					NodeKubeletOutdated: true,
+					NodeHealthy:         true,
+					Size:                1,
+				},
+			},
+		},
+	)
+	lister := NewFakeNodeLister(t, TestLogger(), kluster, nodes)
+	assert.Len(t, lister.Updating(), 1)
+}
+
+func TestServicingListerUpdateSuccessful(t *testing.T) {
+	updatingSuccess := Now().Add(-5 * time.Second)
+	updatingFailure := Now().Add(-5 * time.Hour)
+	kluster, nodes := NewFakeKluster(
+		&FakeKlusterOptions{
+			Phase:       models.KlusterPhaseRunning,
+			LastService: nil,
+			NodePools: []FakeNodePoolOptions{
+				{
+					AllowReboot:         true,
+					AllowReplace:        true,
+					NodeOSOutdated:      false,
+					NodeKubeletOutdated: false,
+					NodeHealthy:         true,
+					NodeUpdating:        &updatingSuccess,
+					Size:                1,
+				},
+				{
+					AllowReboot:         true,
+					AllowReplace:        true,
+					NodeOSOutdated:      true,
+					NodeKubeletOutdated: false,
+					NodeHealthy:         true,
+					NodeUpdating:        &updatingSuccess,
+					Size:                1,
+				},
+				{
+					AllowReboot:         true,
+					AllowReplace:        true,
+					NodeOSOutdated:      false,
+					NodeKubeletOutdated: true,
+					NodeHealthy:         true,
+					NodeUpdating:        &updatingSuccess,
+					Size:                1,
+				},
+				{
+					AllowReboot:         true,
+					AllowReplace:        true,
+					NodeOSOutdated:      true,
+					NodeKubeletOutdated: true,
+					NodeHealthy:         true,
+					NodeUpdating:        &updatingSuccess,
+					Size:                1,
+				},
+				{
+					AllowReboot:         true,
+					AllowReplace:        true,
+					NodeOSOutdated:      false,
+					NodeKubeletOutdated: false,
+					NodeHealthy:         true,
+					NodeUpdating:        &updatingFailure,
+					Size:                1,
+				},
+				{
+					AllowReboot:         true,
+					AllowReplace:        true,
+					NodeOSOutdated:      true,
+					NodeKubeletOutdated: false,
+					NodeHealthy:         true,
+					NodeUpdating:        &updatingFailure,
+					Size:                1,
+				},
+				{
+					AllowReboot:         true,
+					AllowReplace:        true,
+					NodeOSOutdated:      false,
+					NodeKubeletOutdated: true,
+					NodeHealthy:         true,
+					NodeUpdating:        &updatingFailure,
+					Size:                1,
+				},
+				{
+					AllowReboot:         true,
+					AllowReplace:        true,
+					NodeOSOutdated:      true,
+					NodeKubeletOutdated: true,
+					NodeHealthy:         true,
+					NodeUpdating:        &updatingFailure,
+					Size:                1,
+				},
+			},
+		},
+	)
+	lister := NewFakeNodeLister(t, TestLogger(), kluster, nodes)
+	assert.Len(t, lister.UpdateSuccessful(), 1)
+}
+
+func TestServicingListerUpdateFailed(t *testing.T) {
+	updatingSuccess := Now().Add(-5 * time.Second)
+	updatingFailure := Now().Add(-5 * time.Hour)
+	kluster, nodes := NewFakeKluster(
+		&FakeKlusterOptions{
+			Phase:       models.KlusterPhaseRunning,
+			LastService: nil,
+			NodePools: []FakeNodePoolOptions{
+				{
+					AllowReboot:         true,
+					AllowReplace:        true,
+					NodeOSOutdated:      false,
+					NodeKubeletOutdated: false,
+					NodeHealthy:         true,
+					NodeUpdating:        &updatingSuccess,
+					Size:                1,
+				},
+				{
+					AllowReboot:         true,
+					AllowReplace:        true,
+					NodeOSOutdated:      true,
+					NodeKubeletOutdated: false,
+					NodeHealthy:         true,
+					NodeUpdating:        &updatingSuccess,
+					Size:                1,
+				},
+				{
+					AllowReboot:         true,
+					AllowReplace:        true,
+					NodeOSOutdated:      false,
+					NodeKubeletOutdated: true,
+					NodeHealthy:         true,
+					NodeUpdating:        &updatingSuccess,
+					Size:                1,
+				},
+				{
+					AllowReboot:         true,
+					AllowReplace:        true,
+					NodeOSOutdated:      true,
+					NodeKubeletOutdated: true,
+					NodeHealthy:         true,
+					NodeUpdating:        &updatingSuccess,
+					Size:                1,
+				},
+				{
+					AllowReboot:         true,
+					AllowReplace:        true,
+					NodeOSOutdated:      false,
+					NodeKubeletOutdated: false,
+					NodeHealthy:         true,
+					NodeUpdating:        &updatingFailure,
+					Size:                1,
+				},
+				{
+					AllowReboot:         true,
+					AllowReplace:        true,
+					NodeOSOutdated:      true,
+					NodeKubeletOutdated: false,
+					NodeHealthy:         true,
+					NodeUpdating:        &updatingFailure,
+					Size:                1,
+				},
+				{
+					AllowReboot:         true,
+					AllowReplace:        true,
+					NodeOSOutdated:      false,
+					NodeKubeletOutdated: true,
+					NodeHealthy:         true,
+					NodeUpdating:        &updatingFailure,
+					Size:                1,
+				},
+				{
+					AllowReboot:         true,
+					AllowReplace:        true,
+					NodeOSOutdated:      true,
+					NodeKubeletOutdated: true,
+					NodeHealthy:         true,
+					NodeUpdating:        &updatingFailure,
+					Size:                1,
+				},
+			},
+		},
+	)
+	lister := NewFakeNodeLister(t, TestLogger(), kluster, nodes)
+	assert.Len(t, lister.UpdateFailed(), 3)
 }
