@@ -13,7 +13,11 @@ import (
 
 	"github.com/sapcc/kubernikus/pkg/api/models"
 	v1 "github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
+<<<<<<< HEAD
 	openstack_kluster "github.com/sapcc/kubernikus/pkg/client/openstack/kluster"
+=======
+	"github.com/sapcc/kubernikus/pkg/client/openstack/kluster"
+>>>>>>> fix mocks
 )
 
 type fakeInstance struct {
@@ -54,6 +58,11 @@ func (m *MockKlusterClient) CreateNode(kluster *v1.Kluster, pool *models.NodePoo
 }
 
 func (m *MockKlusterClient) DeleteNode(id string) error {
+	args := m.Called(id)
+	return args.Error(0)
+}
+
+func (m *MockKlusterClient) RebootNode(id string) error {
 	args := m.Called(id)
 	return args.Error(0)
 }
