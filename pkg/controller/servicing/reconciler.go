@@ -3,19 +3,16 @@ package servicing
 import (
 	"time"
 
+	"github.com/go-kit/kit/log"
+	"github.com/pkg/errors"
 	"k8s.io/client-go/tools/record"
 
-	"github.com/pkg/errors"
-
-	"github.com/go-kit/kit/log"
-
 	"github.com/sapcc/kubernikus/pkg/api/models"
+	v1 "github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
 	"github.com/sapcc/kubernikus/pkg/controller/config"
 	client "github.com/sapcc/kubernikus/pkg/generated/clientset/typed/kubernikus/v1"
 	listers_kubernikus_v1 "github.com/sapcc/kubernikus/pkg/generated/listers/kubernikus/v1"
 	"github.com/sapcc/kubernikus/pkg/util"
-
-	v1 "github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
 )
 
 const (
