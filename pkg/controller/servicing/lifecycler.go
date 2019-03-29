@@ -331,30 +331,18 @@ func (lc *EventingLifeCycler) Uncordon(node *core_v1.Node) error {
 // Drain collects metrics
 func (lc *InstrumentingLifeCycler) Drain(node *core_v1.Node) (err error) {
 	defer func(begin time.Time) {
-		lc.Latency.With(
-			prometheus.Labels{
-				"controller": "servicing",
-				"method":     "Drain",
-			}).Observe(time.Since(begin).Seconds())
+		labels := prometheus.Labels{
+			"controller": "servicing",
+			"method":     "Drain",
+		}
 
-		lc.Total.With(
-			prometheus.Labels{
-				"controller": "servicing",
-				"method":     "Drain",
-			}).Add(1)
+		lc.Latency.With(labels).Observe(time.Since(begin).Seconds())
+		lc.Total.With(labels).Add(1)
 
 		if err != nil {
-			lc.Failed.With(
-				prometheus.Labels{
-					"controller": "servicing",
-					"method":     "Drain",
-				}).Add(1)
+			lc.Failed.With(labels).Add(1)
 		} else {
-			lc.Successful.With(
-				prometheus.Labels{
-					"controller": "servicing",
-					"method":     "Drain",
-				}).Add(1)
+			lc.Successful.With(labels).Add(1)
 		}
 	}(time.Now())
 	return lc.LifeCycler.Drain(node)
@@ -363,30 +351,18 @@ func (lc *InstrumentingLifeCycler) Drain(node *core_v1.Node) (err error) {
 // Reboot collects metrics
 func (lc *InstrumentingLifeCycler) Reboot(node *core_v1.Node) (err error) {
 	defer func(begin time.Time) {
-		lc.Latency.With(
-			prometheus.Labels{
-				"controller": "servicing",
-				"method":     "Reboot",
-			}).Observe(time.Since(begin).Seconds())
+		labels := prometheus.Labels{
+			"controller": "servicing",
+			"method":     "Reboot",
+		}
 
-		lc.Total.With(
-			prometheus.Labels{
-				"controller": "servicing",
-				"method":     "Reboot",
-			}).Add(1)
+		lc.Latency.With(labels).Observe(time.Since(begin).Seconds())
+		lc.Total.With(labels).Add(1)
 
 		if err != nil {
-			lc.Failed.With(
-				prometheus.Labels{
-					"controller": "servicing",
-					"method":     "Reboot",
-				}).Add(1)
+			lc.Failed.With(labels).Add(1)
 		} else {
-			lc.Successful.With(
-				prometheus.Labels{
-					"controller": "servicing",
-					"method":     "Reboot",
-				}).Add(1)
+			lc.Successful.With(labels).Add(1)
 		}
 	}(time.Now())
 	return lc.LifeCycler.Reboot(node)
@@ -395,30 +371,18 @@ func (lc *InstrumentingLifeCycler) Reboot(node *core_v1.Node) (err error) {
 // Replace collects metrics
 func (lc *InstrumentingLifeCycler) Replace(node *core_v1.Node) (err error) {
 	defer func(begin time.Time) {
-		lc.Latency.With(
-			prometheus.Labels{
-				"controller": "servicing",
-				"method":     "Replace",
-			}).Observe(time.Since(begin).Seconds())
+		labels := prometheus.Labels{
+			"controller": "servicing",
+			"method":     "Drain",
+		}
 
-		lc.Total.With(
-			prometheus.Labels{
-				"controller": "servicing",
-				"method":     "Replace",
-			}).Add(1)
+		lc.Latency.With(labels).Observe(time.Since(begin).Seconds())
+		lc.Total.With(labels).Add(1)
 
 		if err != nil {
-			lc.Failed.With(
-				prometheus.Labels{
-					"controller": "servicing",
-					"method":     "Replace",
-				}).Add(1)
+			lc.Failed.With(labels).Add(1)
 		} else {
-			lc.Successful.With(
-				prometheus.Labels{
-					"controller": "servicing",
-					"method":     "Replace",
-				}).Add(1)
+			lc.Successful.With(labels).Add(1)
 		}
 	}(time.Now())
 	return lc.LifeCycler.Replace(node)
@@ -427,30 +391,18 @@ func (lc *InstrumentingLifeCycler) Replace(node *core_v1.Node) (err error) {
 // Uncordon collects metrics
 func (lc *InstrumentingLifeCycler) Uncordon(node *core_v1.Node) (err error) {
 	defer func(begin time.Time) {
-		lc.Latency.With(
-			prometheus.Labels{
-				"controller": "servicing",
-				"method":     "Uncordon",
-			}).Observe(time.Since(begin).Seconds())
+		labels := prometheus.Labels{
+			"controller": "servicing",
+			"method":     "Uncordon",
+		}
 
-		lc.Total.With(
-			prometheus.Labels{
-				"controller": "servicing",
-				"method":     "Uncordon",
-			}).Add(1)
+		lc.Latency.With(labels).Observe(time.Since(begin).Seconds())
+		lc.Total.With(labels).Add(1)
 
 		if err != nil {
-			lc.Failed.With(
-				prometheus.Labels{
-					"controller": "servicing",
-					"method":     "Uncordon",
-				}).Add(1)
+			lc.Failed.With(labels).Add(1)
 		} else {
-			lc.Successful.With(
-				prometheus.Labels{
-					"controller": "servicing",
-					"method":     "Uncordon",
-				}).Add(1)
+			lc.Successful.With(labels).Add(1)
 		}
 	}(time.Now())
 	return lc.LifeCycler.Uncordon(node)
