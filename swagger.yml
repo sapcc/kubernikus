@@ -476,9 +476,11 @@ definitions:
     x-nullable: false
     properties:
       allowReboot:
+        description: Allow automatic drain and reboot of nodes. Enables OS updates. Required by security policy.
         x-nullable: false
         type: boolean
       allowReplace:
+        description: Allow automatic drain and replacement of nodes. Enables Kubernetes upgrades.
         x-nullable: false
         type: boolean
     default:

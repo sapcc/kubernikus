@@ -595,10 +595,12 @@ func init() {
       },
       "properties": {
         "allowReboot": {
+          "description": "Allow automatic drain and reboot of nodes. Enables OS updates. Required by security policy.",
           "type": "boolean",
           "x-nullable": false
         },
         "allowReplace": {
+          "description": "Allow automatic drain and replacement of nodes. Enables Kubernetes upgrades.",
           "type": "boolean",
           "x-nullable": false
         }
@@ -1438,10 +1440,12 @@ func init() {
       },
       "properties": {
         "allowReboot": {
+          "description": "Allow automatic drain and reboot of nodes. Enables OS updates. Required by security policy.",
           "type": "boolean",
           "x-nullable": false
         },
         "allowReplace": {
+          "description": "Allow automatic drain and replacement of nodes. Enables Kubernetes upgrades.",
           "type": "boolean",
           "x-nullable": false
         }
