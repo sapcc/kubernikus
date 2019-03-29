@@ -9,6 +9,7 @@ import (
 	"github.com/go-kit/kit/log"
 	"k8s.io/client-go/tools/record"
 
+	"github.com/sapcc/kubernikus/pkg/api/models"
 	v1 "github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
 	"github.com/sapcc/kubernikus/pkg/controller/base"
 	"github.com/sapcc/kubernikus/pkg/controller/config"
@@ -52,14 +53,10 @@ type Controller struct {
 func NewController(threadiness int, factories config.Factories, clients config.Clients, recorder record.EventRecorder, logger log.Logger) base.Controller {
 	logger = log.With(logger, "controller", "servicing")
 
-	nodeObservatory := factories.NodesObservatory.NodeInformer()
-	klusterLister := factories.Kubernikus.Kubernikus().V1().Klusters().Lister()
-	kubernikusClient := clients.Kubernikus.Kubernikus()
-
 	var controller base.Reconciler
 	controller = &Controller{
 		Logger:     logger,
-		Reconciler: NewKlusterReconcilerFactory(logger, recorder, nodeObservatory, klusterLister, kubernikusClient),
+		Reconciler: NewKlusterReconcilerFactory(logger, recorder, factories, clients),
 	}
 
 	return base.NewController(threadiness, factories, controller, logger, nil, "servicing")
@@ -82,6 +79,11 @@ func (d *Controller) Reconcile(k *v1.Kluster) (requeue bool, err error) {
 
 	if !service {
 		d.Logger.Log("msg", "Skippig upgrades. Manually disabled with safeguard annotation.")
+		return false, nil
+	}
+
+	if k.Status.Phase != models.KlusterPhaseRunning {
+		d.Logger.Log("msg", "skipped upgrades because kluster is not running", "v", 2)
 		return false, nil
 	}
 
