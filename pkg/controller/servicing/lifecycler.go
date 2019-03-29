@@ -15,6 +15,7 @@ import (
 	kube "github.com/sapcc/kubernikus/pkg/client/kubernetes"
 	"github.com/sapcc/kubernikus/pkg/client/openstack"
 	openstack_kluster "github.com/sapcc/kubernikus/pkg/client/openstack/kluster"
+	"github.com/sapcc/kubernikus/pkg/controller/config"
 	"github.com/sapcc/kubernikus/pkg/controller/events"
 	"github.com/sapcc/kubernikus/pkg/controller/metrics"
 	"github.com/sapcc/kubernikus/pkg/controller/servicing/drain"
@@ -29,6 +30,7 @@ type (
 	// LifeCycler managed a node's lifecycle actions
 	LifeCycler interface {
 		Drain(node *core_v1.Node) error
+		Uncordon(node *core_v1.Node) error
 		Reboot(node *core_v1.Node) error
 		Replace(node *core_v1.Node) error
 	}
@@ -77,6 +79,16 @@ type (
 	}
 )
 
+// NewNodeLifeCyclerFactory produces a new factory
+func NewNodeLifeCyclerFactory(logger log.Logger, recorder record.EventRecorder, factories config.Factories, clients config.Clients) LifeCyclerFactory {
+	return &NodeLifeCyclerFactory{
+		Logger:     logger,
+		Recorder:   recorder,
+		Satellites: clients.Satellites,
+		Openstack:  factories.Openstack,
+	}
+}
+
 // Make produces a LifeCycler for a specific Kluster
 func (l *NodeLifeCyclerFactory) Make(k *v1.Kluster) (LifeCycler, error) {
 	var lifeCycler LifeCycler
@@ -124,6 +136,10 @@ func (l *NodeLifeCyclerFactory) Make(k *v1.Kluster) (LifeCycler, error) {
 // It is based on code extracted from kubectl, modified with kit-log
 // compliant logging
 func (lc *NodeLifeCycler) Drain(node *core_v1.Node) error {
+	if err := lc.setUpdatingAnnotation(node); err != nil {
+		return errors.Wrap(err, "Failed to set update annotation")
+	}
+
 	options := &drain.DrainOptions{
 		Force:              false,
 		IgnoreDaemonsets:   true,
@@ -143,6 +159,7 @@ func (lc *NodeLifeCycler) Reboot(node *core_v1.Node) error {
 	if err := lc.Openstack.RebootNode(node.Spec.ExternalID); err != nil {
 		return errors.Wrap(err, "rebooting node failed")
 	}
+
 	return nil
 }
 
@@ -152,6 +169,19 @@ func (lc *NodeLifeCycler) Replace(node *core_v1.Node) error {
 		return errors.Wrap(err, "deleting node failed")
 	}
 	return nil
+}
+
+// Uncordon removes the updating annotation and uncordons the node
+func (lc *NodeLifeCycler) Uncordon(node *core_v1.Node) error {
+	delete(node.Annotations, AnnotationUpdateTimestamp)
+	_, err := lc.Kubernetes.CoreV1().Nodes().Update(node)
+	return err
+}
+
+func (lc *NodeLifeCycler) setUpdatingAnnotation(node *core_v1.Node) error {
+	node.Annotations[AnnotationUpdateTimestamp] = Now().UTC().Format(time.RFC3339)
+	_, err := lc.Kubernetes.CoreV1().Nodes().Update(node)
+	return err
 }
 
 // Drain logs the action
@@ -194,6 +224,20 @@ func (lc *LoggingLifeCycler) Replace(node *core_v1.Node) (err error) {
 		)
 	}(time.Now())
 	return lc.LifeCycler.Replace(node)
+}
+
+// Replace logs the action
+func (lc *LoggingLifeCycler) Uncordon(node *core_v1.Node) (err error) {
+	defer func(begin time.Time) {
+		lc.Logger.Log(
+			"msg", "uncordoning node",
+			"node", node.GetName(),
+			"took", time.Since(begin),
+			"v", 1,
+			"err", err,
+		)
+	}(time.Now())
+	return lc.LifeCycler.Uncordon(node)
 }
 
 // Drain writes an Event
@@ -242,7 +286,7 @@ func (lc *EventingLifeCycler) Reboot(node *core_v1.Node) error {
 
 // Replace writes an Event
 func (lc *EventingLifeCycler) Replace(node *core_v1.Node) error {
-	err := lc.LifeCycler.Reboot(node)
+	err := lc.LifeCycler.Replace(node)
 	if err == nil {
 		lc.Recorder.Eventf(
 			lc.Kluster,
@@ -256,6 +300,28 @@ func (lc *EventingLifeCycler) Replace(node *core_v1.Node) error {
 			core_v1.EventTypeNormal,
 			events.FailedReplaceNode,
 			"Replacing node for upgrade: %v. Termination failed: %v",
+			node.GetName(),
+			err)
+	}
+	return err
+}
+
+// Uncordon writes an Event
+func (lc *EventingLifeCycler) Uncordon(node *core_v1.Node) error {
+	err := lc.LifeCycler.Uncordon(node)
+	if err == nil {
+		lc.Recorder.Eventf(
+			lc.Kluster,
+			core_v1.EventTypeNormal,
+			events.SuccessfulRebootNode,
+			"Uncordoning node: %v. Update was successful",
+			node.GetName())
+	} else {
+		lc.Recorder.Eventf(
+			lc.Kluster,
+			core_v1.EventTypeNormal,
+			events.FailedRebootNode,
+			"Uncordoning node failed: %v. Update was successful anyway",
 			node.GetName(),
 			err)
 	}
@@ -356,4 +422,36 @@ func (lc *InstrumentingLifeCycler) Replace(node *core_v1.Node) (err error) {
 		}
 	}(time.Now())
 	return lc.LifeCycler.Replace(node)
+}
+
+// Uncordon collects metrics
+func (lc *InstrumentingLifeCycler) Uncordon(node *core_v1.Node) (err error) {
+	defer func(begin time.Time) {
+		lc.Latency.With(
+			prometheus.Labels{
+				"controller": "servicing",
+				"method":     "Uncordon",
+			}).Observe(time.Since(begin).Seconds())
+
+		lc.Total.With(
+			prometheus.Labels{
+				"controller": "servicing",
+				"method":     "Uncordon",
+			}).Add(1)
+
+		if err != nil {
+			lc.Failed.With(
+				prometheus.Labels{
+					"controller": "servicing",
+					"method":     "Uncordon",
+				}).Add(1)
+		} else {
+			lc.Successful.With(
+				prometheus.Labels{
+					"controller": "servicing",
+					"method":     "Uncordon",
+				}).Add(1)
+		}
+	}(time.Now())
+	return lc.LifeCycler.Uncordon(node)
 }

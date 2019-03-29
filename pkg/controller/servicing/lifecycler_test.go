@@ -23,6 +23,10 @@ func (m *MockLifeCycler) Replace(node *core_v1.Node) error {
 	return m.Called(node).Error(0)
 }
 
+func (m *MockLifeCycler) Uncordon(node *core_v1.Node) error {
+	return m.Called(node).Error(0)
+}
+
 type MockLifeCyclerFactory struct {
 	mock.Mock
 }
