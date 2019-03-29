@@ -32,7 +32,7 @@ var (
 	}
 )
 
-// FakeKlusterOptions are used to describe a Kluster's properites for tests
+// FakeKlusterOptions are used to describe a Kluster's properties for tests
 type FakeKlusterOptions struct {
 	Phase       models.KlusterPhase
 	NodePools   []FakeNodePoolOptions

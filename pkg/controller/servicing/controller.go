@@ -34,7 +34,7 @@ var (
 // the nodes. CoreOS updates are handled by a soft reboot.
 //
 // In order to allow the payload to settle only a single node per cluster is
-// processed at a time. Inbetween updates there's a 1h grace period.
+// processed at a time. Between updates there's a 1h grace period.
 //
 // In case any node in the cluster is unhealthy the upgrades are skipped. This
 // is to safeguard against failed upgrades destroying the universe.
@@ -65,7 +65,7 @@ func NewController(threadiness int, factories config.Factories, clients config.C
 // Reconcile checks a kluster for node updates
 func (d *Controller) Reconcile(k *v1.Kluster) (requeue bool, err error) {
 	// Default to skip klusters without the servicing annotation
-	service := false
+	var service bool
 	safeguard, ok := k.ObjectMeta.Annotations[AnnotationServicingSafeguard]
 	if !ok {
 		d.Logger.Log("msg", "Skippig upgrades. Safeguard annotation is not set")

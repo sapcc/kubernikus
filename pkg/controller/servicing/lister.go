@@ -217,7 +217,7 @@ func (d *NodeLister) NotReady() []*core_v1.Node {
 		core_v1.ConditionUnknown)
 }
 
-// Updating lists nodes which are currenlty being updated
+// Updating lists nodes which are being updated
 func (d *NodeLister) Updating() []*core_v1.Node {
 	return d.hasAnnotation(AnnotationUpdateTimestamp)
 }
