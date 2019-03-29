@@ -102,21 +102,12 @@ func (c *klusterClient) CreateNode(kluster *v1.Kluster, pool *models.NodePool, n
 	return server.ID, nil
 }
 
-func (c *klusterClient) DeleteNode(id string) (err error) {
-	err = servers.Delete(c.ComputeClient, id).ExtractErr()
-	if err != nil {
-		return err
-	}
-
-	return nil
+func (c *klusterClient) DeleteNode(id string) error {
+	return servers.Delete(c.ComputeClient, id).ExtractErr()
 }
-func (c *klusterClient) RebootNode(id string) (err error) {
-	err = servers.Reboot(c.ComputeClient, id, &servers.RebootOpts{Type: servers.SoftReboot}).ExtractErr()
-	if err != nil {
-		return err
-	}
 
-	return nil
+func (c *klusterClient) RebootNode(id string) error {
+	return servers.Reboot(c.ComputeClient, id, &servers.RebootOpts{Type: servers.SoftReboot}).ExtractErr()
 }
 
 func (c *klusterClient) ListNodes(k *v1.Kluster, pool *models.NodePool) ([]Node, error) {
@@ -213,7 +204,6 @@ func (c *klusterClient) EnsureKubernikusRuleInSecurityGroup(kluster *v1.Kluster)
 		EtherType:      rules.EtherType4,
 		SecGroupID:     groups[0].ID,
 		RemoteIPPrefix: kluster.Spec.ClusterCIDR,
-	}
 
 	if !udp {
 		opts.Protocol = rules.ProtocolUDP
