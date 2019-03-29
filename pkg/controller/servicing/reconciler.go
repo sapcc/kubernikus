@@ -7,11 +7,10 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/sapcc/kubernikus/pkg/controller/nodeobservatory"
-
 	"github.com/go-kit/kit/log"
 
 	"github.com/sapcc/kubernikus/pkg/api/models"
+	"github.com/sapcc/kubernikus/pkg/controller/config"
 	client "github.com/sapcc/kubernikus/pkg/generated/clientset/typed/kubernikus/v1"
 	listers_kubernikus_v1 "github.com/sapcc/kubernikus/pkg/generated/listers/kubernikus/v1"
 	"github.com/sapcc/kubernikus/pkg/util"
@@ -20,13 +19,17 @@ import (
 )
 
 const (
-	// AnnotationServicingTimestamp holds the timestamp when the kluster was last serviced
+	// AnnotationServicingTimestamp show when the kluster was last serviced
 	AnnotationServicingTimestamp = "kubernikus.cloud.sap/servicingTimestamp"
+
+	// AnnotationUpdateTImestamp shows when a node update was started
+	AnnotationUpdateTimestamp = "kubernikus.cloud.sap/updateTimestamp"
 )
 
 var (
 	// ServiceInterval defines how often a kluster is serviced
 	ServiceInterval = 1 * time.Hour
+	UpdateTimeout   = 10 * time.Minute
 )
 
 type (
@@ -67,21 +70,13 @@ type (
 )
 
 // NewKlusterReconcilerFactory produces a new Factory
-func NewKlusterReconcilerFactory(logger log.Logger, recorder record.EventRecorder, no *nodeobservatory.NodeObservatory,
-	kl listers_kubernikus_v1.KlusterLister, kc client.KubernikusV1Interface) *KlusterReconcilerFactory {
+func NewKlusterReconcilerFactory(logger log.Logger, recorder record.EventRecorder, factories config.Factories, clients config.Clients) ReconcilerFactory {
 	return &KlusterReconcilerFactory{
-		Logger: logger,
-		ListerFactory: &NodeListerFactory{
-			Logger:          logger,
-			NodeObservatory: no,
-			CoreOSVersion:   &LatestCoreOSVersion{},
-		},
-		LifeCyclerFactory: &NodeLifeCyclerFactory{
-			Recorder: recorder,
-			Logger:   logger,
-		},
-		KlusterLister:    kl,
-		KubernikusClient: kc,
+		Logger:            logger,
+		ListerFactory:     NewNodeListerFactory(logger, recorder, factories, clients),
+		LifeCyclerFactory: NewNodeLifeCyclerFactory(logger, recorder, factories, clients),
+		KlusterLister:     factories.Kubernikus.Kubernikus().V1().Klusters().Lister(),
+		KubernikusClient:  clients.Kubernikus.Kubernikus(),
 	}
 }
 
@@ -122,6 +117,17 @@ func (r *KlusterReconciler) Do() error {
 
 	if r.Kluster.Status.Phase != models.KlusterPhaseRunning {
 		r.Logger.Log("msg", "skipped upgrades because kluster is not running", "v", 2)
+		return nil
+	}
+
+	for _, node := range r.Lister.UpdateSuccessful() {
+		if err := r.LifeCycler.Uncordon(node); err != nil {
+			return errors.Wrap(err, "Failed to uncordon successfully updated node.")
+		}
+	}
+
+	if len(r.Lister.Updating()) > 0 {
+		r.Logger.Log("msg", "skipped upgrades because there is sitll nodes being updated", "v", 2)
 		return nil
 	}
 
