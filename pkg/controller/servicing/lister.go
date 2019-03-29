@@ -9,6 +9,7 @@ import (
 
 	"github.com/sapcc/kubernikus/pkg/controller/config"
 	"github.com/sapcc/kubernikus/pkg/controller/nodeobservatory"
+	"github.com/sapcc/kubernikus/pkg/controller/servicing/coreos"
 
 	"github.com/go-kit/kit/log"
 	core_v1 "k8s.io/api/core/v1"
@@ -42,7 +43,7 @@ type (
 	NodeListerFactory struct {
 		Logger          log.Logger
 		NodeObservatory *nodeobservatory.NodeObservatory
-		CoreOSVersion   *LatestCoreOSVersion
+		CoreOSVersion   *coreos.Version
 	}
 
 	// NodeLister knows how to figure out the state of Nodes
@@ -50,7 +51,7 @@ type (
 		Logger        log.Logger
 		Kluster       *v1.Kluster
 		Lister        listers_core_v1.NodeLister
-		CoreOSVersion *LatestCoreOSVersion
+		CoreOSVersion *coreos.Version
 	}
 
 	// LoggingLister writes log messages
@@ -65,7 +66,7 @@ func NewNodeListerFactory(logger log.Logger, recorder record.EventRecorder, fact
 	return &NodeListerFactory{
 		Logger:          logger,
 		NodeObservatory: factories.NodesObservatory.NodeInformer(),
-		CoreOSVersion:   &LatestCoreOSVersion{},
+		CoreOSVersion:   &coreos.Version{},
 	}
 }
 

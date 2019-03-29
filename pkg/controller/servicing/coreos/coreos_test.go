@@ -1,4 +1,4 @@
-package servicing
+package coreos
 
 import (
 	"bytes"
@@ -58,9 +58,9 @@ func (f RoundTripFunc) RoundTrip(req *http.Request) (*http.Response, error) {
 	return f(req), nil
 }
 
-func NewFakeLatestCoreOSVersion(t *testing.T, version string) *LatestCoreOSVersion {
+func NewFakeVersion(t *testing.T, version string) *Version {
 	body := fmt.Sprintf("COREOS_VERSION=%s", version)
-	subject := &LatestCoreOSVersion{}
+	subject := &Version{}
 	subject.Client = NewTestClient(t, "https://stable.release.core-os.net/amd64-usr/current/version.txt", body, nil)
 	return subject
 }
@@ -83,10 +83,10 @@ func NewTestClient(t *testing.T, baseURL, body string, count *int) *http.Client 
 	}
 }
 
-func TestServicingCoreOSVersionStable(t *testing.T) {
+func TestVersionStable(t *testing.T) {
 	now = func() time.Time { return time.Date(2019, 2, 3, 4, 0, 0, 0, time.UTC) }
 	count := 0
-	subject := &LatestCoreOSVersion{}
+	subject := &Version{}
 	subject.Client = NewTestClient(t, "https://stable.release.core-os.net/amd64-usr/current/version.txt", Stable2023_4_0, &count)
 
 	t.Run("fetches correct version", func(t *testing.T) {
@@ -118,7 +118,7 @@ func TestServicingCoreOSVersionStable(t *testing.T) {
 		assert.Equal(t, 2, count)
 	})
 
-	subject = &LatestCoreOSVersion{}
+	subject = &Version{}
 	subject.Client = NewTestClient(t, "https://stable.release.core-os.net/amd64-usr/current/version.txt", UnexpectedResponse, &count)
 
 	t.Run("garble from coreos servers", func(t *testing.T) {
@@ -128,9 +128,9 @@ func TestServicingCoreOSVersionStable(t *testing.T) {
 	})
 }
 
-func TestServicingCoreOSVersionBeta(t *testing.T) {
+func TestVersionBeta(t *testing.T) {
 	now = func() time.Time { return time.Date(2019, 2, 3, 4, 0, 0, 0, time.UTC) }
-	subject := &LatestCoreOSVersion{}
+	subject := &Version{}
 	subject.Client = NewTestClient(t, "https://beta.release.core-os.net/amd64-usr/current/version.txt", Beta2051_1_0, nil)
 
 	t.Run("fetches correct version", func(t *testing.T) {
@@ -141,9 +141,9 @@ func TestServicingCoreOSVersionBeta(t *testing.T) {
 	})
 }
 
-func TestServicingCoreOSVersionAlpha(t *testing.T) {
+func TestVersionAlpha(t *testing.T) {
 	now = func() time.Time { return time.Date(2019, 2, 3, 4, 0, 0, 0, time.UTC) }
-	subject := &LatestCoreOSVersion{}
+	subject := &Version{}
 	subject.Client = NewTestClient(t, "https://alpha.release.core-os.net/amd64-usr/current/version.txt", Alpha2065_0_0, nil)
 
 	t.Run("fetches correct version", func(t *testing.T) {
@@ -154,8 +154,8 @@ func TestServicingCoreOSVersionAlpha(t *testing.T) {
 	})
 }
 
-func TestServicingCoreOSVersionIsNodeUptodate(t *testing.T) {
-	subject := &LatestCoreOSVersion{}
+func TestVersionIsNodeUptodate(t *testing.T) {
+	subject := &Version{}
 	subject.Client = NewTestClient(t, "https://stable.release.core-os.net/amd64-usr/current/version.txt", Stable2023_4_0, nil)
 
 	t.Run("outdated node", func(t *testing.T) {

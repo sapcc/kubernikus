@@ -1,4 +1,4 @@
-package servicing
+package coreos
 
 import (
 	"fmt"
@@ -32,29 +32,29 @@ var (
 type channel string
 
 // LatestCoreOSVersion is a helper that fetches and caches CoreOS versions
-type LatestCoreOSVersion struct {
+type Version struct {
 	Client    *http.Client
 	versions  map[channel]*version.Version
 	fetchedAt map[channel]time.Time
 }
 
 // Stable returns version of CoreOS stable channel
-func (d *LatestCoreOSVersion) Stable() (*version.Version, error) {
+func (d *Version) Stable() (*version.Version, error) {
 	return d.latest(stable)
 }
 
 // Beta returns version of CoreOS beta channel
-func (d *LatestCoreOSVersion) Beta() (*version.Version, error) {
+func (d *Version) Beta() (*version.Version, error) {
 	return d.latest(beta)
 }
 
 // Alpha returns version of CoreOS alpha channel
-func (d *LatestCoreOSVersion) Alpha() (*version.Version, error) {
+func (d *Version) Alpha() (*version.Version, error) {
 	return d.latest(alpha)
 }
 
 // IsNodeUptodate checkes whether a Kubernetes Node is a CoreOS that needs updating
-func (d *LatestCoreOSVersion) IsNodeUptodate(node *v1.Node) (bool, error) {
+func (d *Version) IsNodeUptodate(node *v1.Node) (bool, error) {
 	var availableVersion, nodeVersion *version.Version
 	var err error
 
@@ -76,7 +76,7 @@ func (d *LatestCoreOSVersion) IsNodeUptodate(node *v1.Node) (bool, error) {
 	return nodeVersion.AtLeast(availableVersion), nil
 }
 
-func (d *LatestCoreOSVersion) latest(c channel) (*version.Version, error) {
+func (d *Version) latest(c channel) (*version.Version, error) {
 	var err error
 
 	if d.Client == nil {
@@ -103,7 +103,7 @@ func (d *LatestCoreOSVersion) latest(c channel) (*version.Version, error) {
 	return d.versions[c], nil
 }
 
-func (d *LatestCoreOSVersion) fetch(c channel) (*version.Version, error) {
+func (d *Version) fetch(c channel) (*version.Version, error) {
 	r, err := d.Client.Get(fmt.Sprintf(coreOSVersionBaseURL, c))
 	if err != nil {
 		return nil, fmt.Errorf("Couldn't fetch CoreOS version: %s", err)
