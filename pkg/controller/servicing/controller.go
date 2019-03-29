@@ -1,7 +1,6 @@
 package servicing
 
 import (
-	"strconv"
 	"time"
 
 	"github.com/pkg/errors"
@@ -13,6 +12,7 @@ import (
 	v1 "github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
 	"github.com/sapcc/kubernikus/pkg/controller/base"
 	"github.com/sapcc/kubernikus/pkg/controller/config"
+	"github.com/sapcc/kubernikus/pkg/util"
 )
 
 const (
@@ -65,19 +65,7 @@ func NewController(threadiness int, factories config.Factories, clients config.C
 // Reconcile checks a kluster for node updates
 func (d *Controller) Reconcile(k *v1.Kluster) (requeue bool, err error) {
 	// Default to skip klusters without the servicing annotation
-	var service bool
-	safeguard, ok := k.ObjectMeta.Annotations[AnnotationServicingSafeguard]
-	if !ok {
-		d.Logger.Log("msg", "Skippig upgrades. Safeguard annotation is not set")
-		return false, nil
-	}
-
-	if service, err = strconv.ParseBool(safeguard); err != nil {
-		d.Logger.Log("msg", "Skippig upgrades. Safeguard annotation must be true or false.")
-		return false, nil
-	}
-
-	if !service {
+	if !util.EnabledValue(k.ObjectMeta.Annotations[AnnotationServicingSafeguard]) {
 		d.Logger.Log("msg", "Skippig upgrades. Manually disabled with safeguard annotation.")
 		return false, nil
 	}
