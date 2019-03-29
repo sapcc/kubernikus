@@ -181,6 +181,7 @@ func (d *NodeLister) RequiringReplacement() []*core_v1.Node {
 		if err != nil {
 			d.Logger.Log(
 				"msg", "Couldn't get Kubelet version from Node. Skipping node upgrade.",
+				"node", node.GetName(),
 				"err", err,
 			)
 			continue
@@ -195,6 +196,7 @@ func (d *NodeLister) RequiringReplacement() []*core_v1.Node {
 		if err != nil {
 			d.Logger.Log(
 				"msg", "Couldn't get KubeProxy version from Node. Skipping node upgrade.",
+				"node", node.GetName(),
 				"err", err,
 			)
 			continue
@@ -333,7 +335,11 @@ func (d *NodeLister) updateTimeout() []*core_v1.Node {
 
 		pt, err := time.Parse(time.RFC3339, updateTime)
 		if err != nil {
-			d.Logger.Log("msg", "failed to parse updatetime annotation", "err", err)
+			d.Logger.Log(
+				"msg", "failed to parse updatetime annotation",
+				"node", node.GetName(),
+				"err", err,
+			)
 			continue
 		}
 
