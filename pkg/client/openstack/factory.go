@@ -102,7 +102,7 @@ func (f *factory) KlusterClientFor(kluster *kubernikus_v1.Kluster) (openstack_kl
 	}
 
 	var client openstack_kluster.KlusterClient
-	client = openstack_kluster.NewKlusterClient(network, compute, identity, kluster)
+	client = openstack_kluster.NewKlusterClient(network, compute, identity)
 	client = &openstack_kluster.LoggingClient{Client: client, Logger: log.With(f.logger, "kluster", kluster.GetName(), "project", kluster.Account())}
 
 	f.klusterClients.Store(kluster.GetUID(), client)

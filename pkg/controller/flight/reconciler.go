@@ -6,7 +6,7 @@ import (
 	"github.com/go-kit/kit/log"
 	core_v1 "k8s.io/api/core/v1"
 
-	"github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
+	v1 "github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
 	openstack_kluster "github.com/sapcc/kubernikus/pkg/client/openstack/kluster"
 )
 
@@ -44,9 +44,10 @@ func (f *flightReconciler) EnsureInstanceSecurityGroupAssignment() []string {
 			continue
 		}
 
-		if err := f.Client.SetSecurityGroup(instance.GetID()); err != nil {
+		if err := f.Client.SetSecurityGroup(f.Kluster.Spec.Openstack.SecurityGroupName, instance.GetID()); err != nil {
 			f.Logger.Log(
 				"msg", "couldn't set securitygroup",
+				"group", f.Kluster.Spec.Openstack.SecurityGroupName,
 				"instance", instance.GetID(),
 				"err", err)
 			continue
@@ -57,7 +58,7 @@ func (f *flightReconciler) EnsureInstanceSecurityGroupAssignment() []string {
 }
 
 func (f *flightReconciler) EnsureKubernikusRuleInSecurityGroup() bool {
-	ensured, err := f.Client.EnsureKubernikusRuleInSecurityGroup()
+	ensured, err := f.Client.EnsureKubernikusRuleInSecurityGroup(f.Kluster)
 	if err != nil {
 		f.Logger.Log(
 			"msg", "couldn't ensure security group rules",

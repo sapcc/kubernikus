@@ -5,7 +5,7 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/client-go/tools/record"
 
-	"github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
+	v1 "github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
 	"github.com/sapcc/kubernikus/pkg/client/openstack"
 	openstack_kluster "github.com/sapcc/kubernikus/pkg/client/openstack/kluster"
 	"github.com/sapcc/kubernikus/pkg/controller/nodeobservatory"
@@ -56,7 +56,7 @@ func (f *flightReconcilerFactory) FlightReconciler(kluster *v1.Kluster) (FlightR
 func (d *flightReconcilerFactory) getInstances(kluster *v1.Kluster, client openstack_kluster.KlusterClient) ([]Instance, error) {
 	instances := []Instance{}
 	for _, pool := range kluster.Spec.NodePools {
-		if poolNodes, err := client.ListNodes(&pool); err != nil {
+		if poolNodes, err := client.ListNodes(kluster, &pool); err != nil {
 			return nil, err
 		} else {
 			for _, n := range poolNodes {

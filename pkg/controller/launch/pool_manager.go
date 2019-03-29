@@ -81,7 +81,7 @@ func (lr *LaunchReconciler) newPoolManager(kluster *v1.Kluster, pool *models.Nod
 func (cpm *ConcretePoolManager) GetStatus() (status *PoolStatus, err error) {
 	status = &PoolStatus{}
 
-	nodes, err := cpm.klusterClient.ListNodes(cpm.Pool)
+	nodes, err := cpm.klusterClient.ListNodes(cpm.Kluster, cpm.Pool)
 	if err != nil {
 		return status, err
 	}
@@ -208,7 +208,7 @@ func (cpm *ConcretePoolManager) CreateNode() (id string, err error) {
 	}
 
 	// add the AZ to this call
-	id, err = cpm.klusterClient.CreateNode(cpm.Pool, nodeName, userdata)
+	id, err = cpm.klusterClient.CreateNode(cpm.Kluster, cpm.Pool, nodeName, userdata)
 	if err != nil {
 		return "", err
 	}

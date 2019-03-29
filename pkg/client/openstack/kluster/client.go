@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 	"strings"
-	"time"
 
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/schedulerhints"
@@ -14,20 +13,19 @@ import (
 	securitygroups "github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/security/groups"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/security/rules"
 	"github.com/gophercloud/gophercloud/pagination"
-	"k8s.io/client-go/tools/cache"
 
 	"github.com/sapcc/kubernikus/pkg/api/models"
-	"github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
+	v1 "github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
 	"github.com/sapcc/kubernikus/pkg/client/openstack/compute"
 	"github.com/sapcc/kubernikus/pkg/util/generator"
 )
 
 type KlusterClient interface {
-	CreateNode(*models.NodePool, string, []byte) (string, error)
+	CreateNode(*v1.Kluster, *models.NodePool, string, []byte) (string, error)
 	DeleteNode(string) error
-	ListNodes(*models.NodePool) ([]Node, error)
-	SetSecurityGroup(nodeID string) error
-	EnsureKubernikusRuleInSecurityGroup() (bool, error)
+	ListNodes(*v1.Kluster, *models.NodePool) ([]Node, error)
+	SetSecurityGroup(sgName, nodeID string) error
+	EnsureKubernikusRuleInSecurityGroup(*v1.Kluster) (bool, error)
 	EnsureServerGroup(name string) (string, error)
 	DeleteServerGroup(name string) error
 }
@@ -36,56 +34,37 @@ type klusterClient struct {
 	NetworkClient  *gophercloud.ServiceClient
 	ComputeClient  *gophercloud.ServiceClient
 	IdentityClient *gophercloud.ServiceClient
-
-	Kluster   *v1.Kluster
-	NodeStore cache.Store
 }
 
-type cachedNodesEntry struct {
-	Kluster *v1.Kluster
-	Pool    *models.NodePool
-	Nodes   []Node
-}
-
-func CachedNodesKeyFunc(obj interface{}) (string, error) {
-	entry, ok := obj.(cachedNodesEntry)
-	if !ok {
-		return "", fmt.Errorf("unexpected object in cache")
-	}
-	return fmt.Sprintf("%v-%v", entry.Kluster.Spec.Name, entry.Pool.Name), nil
-}
-
-func NewKlusterClient(network, compute, identity *gophercloud.ServiceClient, kluster *v1.Kluster) KlusterClient {
+func NewKlusterClient(network, compute, identity *gophercloud.ServiceClient) KlusterClient {
 	var client KlusterClient
 	client = &klusterClient{
 		NetworkClient:  network,
 		ComputeClient:  compute,
 		IdentityClient: identity,
-		Kluster:        kluster,
-		NodeStore:      cache.NewTTLStore(CachedNodesKeyFunc, 1*time.Minute),
 	}
 
 	return client
 }
 
-func (c *klusterClient) CreateNode(pool *models.NodePool, name string, userData []byte) (string, error) {
+func (c *klusterClient) CreateNode(kluster *v1.Kluster, pool *models.NodePool, name string, userData []byte) (string, error) {
 	configDrive := true
 
-	networks := []servers.Network{{UUID: c.Kluster.Spec.Openstack.NetworkID}}
+	networks := []servers.Network{{UUID: kluster.Spec.Openstack.NetworkID}}
 
 	if strings.HasPrefix(pool.Flavor, "zh") {
 		networks = []servers.Network{
-			{UUID: c.Kluster.Spec.Openstack.NetworkID},
-			{UUID: c.Kluster.Spec.Openstack.NetworkID},
-			{UUID: c.Kluster.Spec.Openstack.NetworkID},
-			{UUID: c.Kluster.Spec.Openstack.NetworkID},
+			{UUID: kluster.Spec.Openstack.NetworkID},
+			{UUID: kluster.Spec.Openstack.NetworkID},
+			{UUID: kluster.Spec.Openstack.NetworkID},
+			{UUID: kluster.Spec.Openstack.NetworkID},
 		}
 	}
 
 	if strings.HasPrefix(pool.Flavor, "zg") {
 		networks = []servers.Network{
-			{UUID: c.Kluster.Spec.Openstack.NetworkID},
-			{UUID: c.Kluster.Spec.Openstack.NetworkID},
+			{UUID: kluster.Spec.Openstack.NetworkID},
+			{UUID: kluster.Spec.Openstack.NetworkID},
 		}
 	}
 
@@ -97,12 +76,12 @@ func (c *klusterClient) CreateNode(pool *models.NodePool, name string, userData 
 		Networks:         networks,
 		UserData:         userData,
 		ServiceClient:    c.ComputeClient,
-		SecurityGroups:   []string{c.Kluster.Spec.Openstack.SecurityGroupName},
+		SecurityGroups:   []string{kluster.Spec.Openstack.SecurityGroupName},
 		ConfigDrive:      &configDrive,
 	}
 
 	if os.Getenv("NODEPOOL_AFFINITY") != "" {
-		serverGroupID, err := c.EnsureServerGroup(c.Kluster.Name + "/" + pool.Name)
+		serverGroupID, err := c.EnsureServerGroup(kluster.Name + "/" + pool.Name)
 		if err != nil {
 			return "", err
 		}
@@ -131,12 +110,12 @@ func (c *klusterClient) DeleteNode(id string) (err error) {
 	return nil
 }
 
-func (c *klusterClient) ListNodes(pool *models.NodePool) ([]Node, error) {
+func (c *klusterClient) ListNodes(k *v1.Kluster, pool *models.NodePool) ([]Node, error) {
 	var unfilteredNodes []Node
 	var filteredNodes []Node
 	var err error
 
-	prefix := fmt.Sprintf("%v-%v-", c.Kluster.Spec.Name, pool.Name)
+	prefix := fmt.Sprintf("%v-%v-", k.Spec.Name, pool.Name)
 	err = servers.List(c.ComputeClient, servers.ListOpts{Name: prefix}).EachPage(func(page pagination.Page) (bool, error) {
 		if page != nil {
 			unfilteredNodes, err = ExtractServers(page)
@@ -164,14 +143,15 @@ func (c *klusterClient) ListNodes(pool *models.NodePool) ([]Node, error) {
 	return filteredNodes, nil
 }
 
-func (c *klusterClient) SetSecurityGroup(nodeID string) (err error) {
-	return secgroups.AddServer(c.ComputeClient, nodeID, c.Kluster.Spec.Openstack.SecurityGroupName).ExtractErr()
+func (c *klusterClient) SetSecurityGroup(sgName, nodeID string) (err error) {
+	return secgroups.AddServer(c.ComputeClient, nodeID, sgName).ExtractErr()
 }
 
-func (c *klusterClient) EnsureKubernikusRuleInSecurityGroup() (created bool, err error) {
-	page, err := securitygroups.List(c.NetworkClient, securitygroups.ListOpts{Name: c.Kluster.Spec.Openstack.SecurityGroupName}).AllPages()
+func (c *klusterClient) EnsureKubernikusRuleInSecurityGroup(kluster *v1.Kluster) (created bool, err error) {
+	sgName := kluster.Spec.Openstack.SecurityGroupName
+	page, err := securitygroups.List(c.NetworkClient, securitygroups.ListOpts{Name: sgName}).AllPages()
 	if err != nil {
-		return false, fmt.Errorf("SecurityGroup %v not found: %s", c.Kluster.Spec.Openstack.SecurityGroupName, err)
+		return false, fmt.Errorf("SecurityGroup %v not found: %s", sgName, err)
 	}
 
 	groups, err := securitygroups.ExtractGroups(page)
@@ -180,7 +160,7 @@ func (c *klusterClient) EnsureKubernikusRuleInSecurityGroup() (created bool, err
 	}
 
 	if len(groups) != 1 {
-		return false, fmt.Errorf("More than one SecurityGroup with name %v found", c.Kluster.Spec.Openstack.SecurityGroupName)
+		return false, fmt.Errorf("More than one SecurityGroup with name %v found", sgName)
 	}
 
 	udp := false
@@ -195,7 +175,7 @@ func (c *klusterClient) EnsureKubernikusRuleInSecurityGroup() (created bool, err
 			continue
 		}
 
-		if rule.RemoteIPPrefix != c.Kluster.Spec.ClusterCIDR {
+		if rule.RemoteIPPrefix != kluster.Spec.ClusterCIDR {
 			continue
 		}
 
@@ -223,7 +203,7 @@ func (c *klusterClient) EnsureKubernikusRuleInSecurityGroup() (created bool, err
 		Direction:      rules.DirIngress,
 		EtherType:      rules.EtherType4,
 		SecGroupID:     groups[0].ID,
-		RemoteIPPrefix: c.Kluster.Spec.ClusterCIDR,
+		RemoteIPPrefix: kluster.Spec.ClusterCIDR,
 	}
 
 	if !udp {

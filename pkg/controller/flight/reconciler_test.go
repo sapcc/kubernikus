@@ -12,7 +12,7 @@ import (
 	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/sapcc/kubernikus/pkg/api/models"
-	"github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
+	v1 "github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
 	openstack_kluster "github.com/sapcc/kubernikus/pkg/client/openstack/kluster"
 )
 
@@ -48,8 +48,8 @@ type MockKlusterClient struct {
 	mock.Mock
 }
 
-func (m *MockKlusterClient) CreateNode(pool *models.NodePool, nodeName string, data []byte) (string, error) {
-	args := m.Called(pool, nodeName, data)
+func (m *MockKlusterClient) CreateNode(kluster *v1.Kluster, pool *models.NodePool, nodeName string, data []byte) (string, error) {
+	args := m.Called(kluster, pool, nodeName, data)
 	return args.String(0), args.Error(1)
 }
 
@@ -58,18 +58,18 @@ func (m *MockKlusterClient) DeleteNode(id string) error {
 	return args.Error(0)
 }
 
-func (m *MockKlusterClient) ListNodes(pool *models.NodePool) ([]openstack_kluster.Node, error) {
-	args := m.Called(pool)
+func (m *MockKlusterClient) ListNodes(kluster *v1.Kluster, pool *models.NodePool) ([]openstack_kluster.Node, error) {
+	args := m.Called(kluster, pool)
 	return args.Get(0).([]openstack_kluster.Node), args.Error(1)
 }
 
-func (m *MockKlusterClient) SetSecurityGroup(id string) error {
-	args := m.Called(id)
+func (m *MockKlusterClient) SetSecurityGroup(name, id string) error {
+	args := m.Called(name, id)
 	return args.Error(0)
 }
 
-func (m *MockKlusterClient) EnsureKubernikusRuleInSecurityGroup() (created bool, err error) {
-	args := m.Called()
+func (m *MockKlusterClient) EnsureKubernikusRuleInSecurityGroup(k *v1.Kluster) (created bool, err error) {
+	args := m.Called(k)
 	return args.Bool(0), args.Error(1)
 }
 
@@ -103,9 +103,9 @@ func TestEnsureInstanceSecurityGroupAssignment(t *testing.T) {
 	nodes := []*core_v1.Node{}
 
 	client := &MockKlusterClient{}
-	client.On("SetSecurityGroup", "a").Return(nil)
-	client.On("SetSecurityGroup", "b").Return(fmt.Errorf("Boom"))
-	client.On("SetSecurityGroup", "c").Return(nil)
+	client.On("SetSecurityGroup", "custom", "a").Return(nil)
+	client.On("SetSecurityGroup", "custom", "b").Return(fmt.Errorf("Boom"))
+	client.On("SetSecurityGroup", "custom", "c").Return(nil)
 
 	reconciler := flightReconciler{
 		kluster,
@@ -116,11 +116,11 @@ func TestEnsureInstanceSecurityGroupAssignment(t *testing.T) {
 	}
 
 	ids := reconciler.EnsureInstanceSecurityGroupAssignment()
-	client.AssertCalled(t, "SetSecurityGroup", "a")
-	client.AssertCalled(t, "SetSecurityGroup", "b")
-	client.AssertCalled(t, "SetSecurityGroup", "c")
-	client.AssertNotCalled(t, "SetSecurityGroup", "d")
-	client.AssertNotCalled(t, "SetSecurityGroup", "e")
+	client.AssertCalled(t, "SetSecurityGroup", "custom", "a")
+	client.AssertCalled(t, "SetSecurityGroup", "custom", "b")
+	client.AssertCalled(t, "SetSecurityGroup", "custom", "c")
+	client.AssertNotCalled(t, "SetSecurityGroup", "custom", "d")
+	client.AssertNotCalled(t, "SetSecurityGroup", "custom", "e")
 	assert.ElementsMatch(t, ids, []string{"a", "c"})
 }
 
@@ -214,7 +214,7 @@ func TestEnsureKubernikusRuleInSecurityGroup(t *testing.T) {
 	nodes := []*core_v1.Node{}
 
 	client := &MockKlusterClient{}
-	client.On("EnsureKubernikusRuleInSecurityGroup").Return(true, nil)
+	client.On("EnsureKubernikusRuleInSecurityGroup", kluster).Return(true, nil)
 
 	reconciler := flightReconciler{
 		kluster,
@@ -225,6 +225,6 @@ func TestEnsureKubernikusRuleInSecurityGroup(t *testing.T) {
 	}
 
 	ensured := reconciler.EnsureKubernikusRuleInSecurityGroup()
-	client.AssertCalled(t, "EnsureKubernikusRuleInSecurityGroup")
+	client.AssertCalled(t, "EnsureKubernikusRuleInSecurityGroup", kluster)
 	assert.True(t, ensured)
 }
