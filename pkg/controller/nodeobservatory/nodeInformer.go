@@ -10,9 +10,8 @@ import (
 	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/tools/cache"
 
+	v1 "github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
 	"github.com/sapcc/kubernikus/pkg/client/kubernetes"
-
-	"github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
 )
 
 const (
