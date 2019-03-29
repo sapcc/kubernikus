@@ -46,6 +46,7 @@ type FakeNodePoolOptions struct {
 	NodeHealthy         bool
 	NodeOSOutdated      bool
 	NodeKubeletOutdated bool
+	NodeUpdating        *time.Time
 	Size                int
 }
 
@@ -64,8 +65,8 @@ func NewFakeKluster(opts *FakeKlusterOptions) (*v1.Kluster, []runtime.Object) {
 			NodePools: []models.NodePool{},
 		},
 		Status: models.KlusterStatus{
-			Phase:   opts.Phase,
-			Version: "v1.10.15",
+			Phase:            opts.Phase,
+			ApiserverVersion: "v1.10.15",
 		},
 	}
 
@@ -86,7 +87,8 @@ func NewFakeKluster(opts *FakeKlusterOptions) (*v1.Kluster, []runtime.Object) {
 			nodeName := fmt.Sprintf("test-%s-0000%d", poolName, j)
 			node := &core_v1.Node{
 				ObjectMeta: meta_v1.ObjectMeta{
-					Name: nodeName,
+					Name:        nodeName,
+					Annotations: map[string]string{},
 				},
 				Status: core_v1.NodeStatus{
 					Phase:    core_v1.NodeRunning,
@@ -98,6 +100,10 @@ func NewFakeKluster(opts *FakeKlusterOptions) (*v1.Kluster, []runtime.Object) {
 						},
 					},
 				},
+			}
+
+			if p.NodeUpdating != nil {
+				node.ObjectMeta.Annotations[AnnotationUpdateTimestamp] = p.NodeUpdating.UTC().Format(time.RFC3339)
 			}
 
 			if p.NodeHealthy {
