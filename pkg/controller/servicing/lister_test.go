@@ -7,12 +7,12 @@ import (
 	"github.com/go-kit/kit/log"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"k8s.io/apimachinery/pkg/runtime"
 
 	"github.com/sapcc/kubernikus/pkg/api/models"
 	v1 "github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
 	"github.com/sapcc/kubernikus/pkg/controller/nodeobservatory"
-
-	"k8s.io/apimachinery/pkg/runtime"
+	"github.com/sapcc/kubernikus/pkg/controller/servicing/coreos"
 )
 
 type MockNodeListerFactory struct {
@@ -31,7 +31,7 @@ func NewFakeNodeLister(t *testing.T, logger log.Logger, kluster *v1.Kluster, nod
 		Logger:        logger,
 		Kluster:       kluster,
 		Lister:        kl,
-		CoreOSVersion: NewFakeLatestCoreOSVersion(t, "2023.4.0"),
+		CoreOSVersion: coreos.NewFakeVersion(t, "2023.4.0"),
 	}
 
 	lister = &LoggingLister{

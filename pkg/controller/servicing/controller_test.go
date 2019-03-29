@@ -9,6 +9,7 @@ import (
 
 	"github.com/sapcc/kubernikus/pkg/api/models"
 	"github.com/sapcc/kubernikus/pkg/controller/nodeobservatory"
+	"github.com/sapcc/kubernikus/pkg/controller/servicing/coreos"
 	kubernikusfake "github.com/sapcc/kubernikus/pkg/generated/clientset/fake"
 )
 
@@ -302,7 +303,7 @@ func TestServicingControllerReconcile(t *testing.T) {
 			listers := &NodeListerFactory{
 				Logger:          logger,
 				NodeObservatory: nodeobservatory.NewFakeController(kluster, nodes...),
-				CoreOSVersion:   &LatestCoreOSVersion{},
+				CoreOSVersion:   &coreos.Version{},
 			}
 
 			reconcilers := &KlusterReconcilerFactory{
