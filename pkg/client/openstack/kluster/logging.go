@@ -6,6 +6,7 @@ import (
 	"github.com/go-kit/kit/log"
 
 	"github.com/sapcc/kubernikus/pkg/api/models"
+	v1 "github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
 )
 
 type LoggingClient struct {
@@ -27,7 +28,7 @@ func (c LoggingClient) DeleteNode(id string) (err error) {
 	return c.Client.DeleteNode(id)
 }
 
-func (c LoggingClient) CreateNode(pool *models.NodePool, nodeName string, userData []byte) (id string, err error) {
+func (c LoggingClient) CreateNode(kluster *v1.Kluster, pool *models.NodePool, nodeName string, userData []byte) (id string, err error) {
 	defer func(begin time.Time) {
 		c.Logger.Log(
 			"msg", "created node",
@@ -39,10 +40,10 @@ func (c LoggingClient) CreateNode(pool *models.NodePool, nodeName string, userDa
 		)
 	}(time.Now())
 
-	return c.Client.CreateNode(pool, nodeName, userData)
+	return c.Client.CreateNode(kluster, pool, nodeName, userData)
 }
 
-func (c LoggingClient) ListNodes(pool *models.NodePool) (nodes []Node, err error) {
+func (c LoggingClient) ListNodes(kluster *v1.Kluster, pool *models.NodePool) (nodes []Node, err error) {
 	defer func(begin time.Time) {
 		c.Logger.Log(
 			"msg", "listed nodes",
@@ -53,13 +54,14 @@ func (c LoggingClient) ListNodes(pool *models.NodePool) (nodes []Node, err error
 		)
 	}(time.Now())
 
-	return c.Client.ListNodes(pool)
+	return c.Client.ListNodes(kluster, pool)
 }
 
-func (c LoggingClient) SetSecurityGroup(nodeID string) (err error) {
+func (c LoggingClient) SetSecurityGroup(sgName, nodeID string) (err error) {
 	defer func(begin time.Time) {
 		c.Logger.Log(
 			"msg", "setting security group",
+			"group", sgName,
 			"node_id", nodeID,
 			"took", time.Since(begin),
 			"v", 2,
@@ -67,13 +69,14 @@ func (c LoggingClient) SetSecurityGroup(nodeID string) (err error) {
 		)
 	}(time.Now())
 
-	return c.Client.SetSecurityGroup(nodeID)
+	return c.Client.SetSecurityGroup(sgName, nodeID)
 }
 
-func (c LoggingClient) EnsureKubernikusRuleInSecurityGroup() (created bool, err error) {
+func (c LoggingClient) EnsureKubernikusRuleInSecurityGroup(k *v1.Kluster) (created bool, err error) {
 	defer func(begin time.Time) {
 		c.Logger.Log(
 			"msg", "ensured securitygroup",
+			"group", k.Spec.Openstack.SecurityGroupName,
 			"created", created,
 			"took", time.Since(begin),
 			"v", 2,
@@ -81,7 +84,7 @@ func (c LoggingClient) EnsureKubernikusRuleInSecurityGroup() (created bool, err 
 		)
 	}(time.Now())
 
-	return c.Client.EnsureKubernikusRuleInSecurityGroup()
+	return c.Client.EnsureKubernikusRuleInSecurityGroup(k)
 }
 
 func (c LoggingClient) DeleteServerGroup(name string) (err error) {
