@@ -6,7 +6,6 @@ import (
 
 	"github.com/go-kit/kit/log"
 	"github.com/stretchr/testify/assert"
-	"k8s.io/client-go/tools/record"
 
 	"github.com/sapcc/kubernikus/pkg/api/models"
 	"github.com/sapcc/kubernikus/pkg/controller/nodeobservatory"
@@ -285,30 +284,38 @@ func TestServicingControllerReconcile(t *testing.T) {
 		t.Run(string(subject.message), func(t *testing.T) {
 			kluster, nodes := NewFakeKluster(subject.options)
 			logger := log.With(TestLogger(), "controller", "servicing")
-			recorder := record.NewFakeRecorder(1)
-			nodeObs := nodeobservatory.NewFakeController(kluster, nodes...)
-			kLister := NewFakeKlusterLister(kluster)
-			kClient := kubernikusfake.NewSimpleClientset(kluster).Kubernikus()
-			factory := NewKlusterReconcilerFactory(logger, recorder, nodeObs, kLister, kClient)
 
 			mockCycler := &MockLifeCycler{}
 			mockCycler.On("Reboot", nodes[0]).Return(nil).Times(0)
 			mockCycler.On("Drain", nodes[0]).Return(nil).Times(0)
 			mockCycler.On("Replace", nodes[0]).Return(nil).Times(0)
+			mockCycler.On("Uncordon", nodes[0]).Return(nil).Times(0)
 
 			var cycler LifeCycler = &LoggingLifeCycler{
 				Logger:     log.With(logger, "kluster", kluster.Spec.Name, "project", kluster.Account()),
 				LifeCycler: mockCycler,
 			}
 
-			cyclerFactory := &MockLifeCyclerFactory{}
-			cyclerFactory.On("Make", kluster).Return(cycler, nil)
+			lifecyclers := &MockLifeCyclerFactory{}
+			lifecyclers.On("Make", kluster).Return(cycler, nil)
 
-			factory.LifeCyclerFactory = cyclerFactory
+			listers := &NodeListerFactory{
+				Logger:          logger,
+				NodeObservatory: nodeobservatory.NewFakeController(kluster, nodes...),
+				CoreOSVersion:   &LatestCoreOSVersion{},
+			}
+
+			reconcilers := &KlusterReconcilerFactory{
+				Logger:            logger,
+				ListerFactory:     listers,
+				LifeCyclerFactory: lifecyclers,
+				KlusterLister:     NewFakeKlusterLister(kluster),
+				KubernikusClient:  kubernikusfake.NewSimpleClientset(kluster).Kubernikus(),
+			}
 
 			controller := &Controller{
 				Logger:     logger,
-				Reconciler: factory,
+				Reconciler: reconcilers,
 			}
 
 			_, err := controller.Reconcile(kluster)
