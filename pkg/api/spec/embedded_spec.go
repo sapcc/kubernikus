@@ -589,15 +589,17 @@ func init() {
     },
     "NodePoolConfig": {
       "type": "object",
+      "default": {
+        "allowReboot": true,
+        "allowReplace": true
+      },
       "properties": {
         "allowReboot": {
           "type": "boolean",
-          "default": true,
           "x-nullable": false
         },
         "allowReplace": {
           "type": "boolean",
-          "default": true,
           "x-nullable": false
         }
       },
@@ -1430,15 +1432,17 @@ func init() {
     },
     "NodePoolConfig": {
       "type": "object",
+      "default": {
+        "allowReboot": true,
+        "allowReplace": true
+      },
       "properties": {
         "allowReboot": {
           "type": "boolean",
-          "default": true,
           "x-nullable": false
         },
         "allowReplace": {
           "type": "boolean",
-          "default": true,
           "x-nullable": false
         }
       },

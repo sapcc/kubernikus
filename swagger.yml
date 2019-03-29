@@ -478,11 +478,12 @@ definitions:
       allowReboot:
         x-nullable: false
         type: boolean
-        default: true
       allowReplace:
         x-nullable: false
         type: boolean
-        default: true
+    default:
+      allowReboot: true 
+      allowReplace: true
   KlusterStatus:
     readOnly: true
     x-nullable: false
