@@ -92,7 +92,7 @@ func NewFakeKluster(opts *FakeKlusterOptions) (*v1.Kluster, []runtime.Object) {
 					Phase:    core_v1.NodeRunning,
 					NodeInfo: core_v1.NodeSystemInfo{},
 					Conditions: []core_v1.NodeCondition{
-						core_v1.NodeCondition{
+						{
 							Type:   core_v1.NodeReady,
 							Status: core_v1.ConditionUnknown,
 						},

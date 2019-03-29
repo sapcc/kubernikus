@@ -37,7 +37,7 @@ func TestServicingControllerReconcile(t *testing.T) {
 				Phase:       models.KlusterPhaseRunning,
 				LastService: nil,
 				NodePools: []FakeNodePoolOptions{
-					FakeNodePoolOptions{
+					{
 						AllowReboot:         true,
 						AllowReplace:        true,
 						NodeHealthy:         true,
@@ -57,7 +57,7 @@ func TestServicingControllerReconcile(t *testing.T) {
 				Phase:       models.KlusterPhaseCreating,
 				LastService: nil,
 				NodePools: []FakeNodePoolOptions{
-					FakeNodePoolOptions{
+					{
 						AllowReboot:         true,
 						AllowReplace:        true,
 						NodeHealthy:         true,
@@ -65,7 +65,8 @@ func TestServicingControllerReconcile(t *testing.T) {
 						NodeKubeletOutdated: true,
 						Size:                1,
 					},
-				}},
+				},
+			},
 			expectedDrain:   false,
 			expectedReboot:  false,
 			expectedReplace: false,
@@ -76,7 +77,7 @@ func TestServicingControllerReconcile(t *testing.T) {
 				Phase:       models.KlusterPhasePending,
 				LastService: nil,
 				NodePools: []FakeNodePoolOptions{
-					FakeNodePoolOptions{
+					{
 						AllowReboot:         true,
 						AllowReplace:        true,
 						NodeHealthy:         true,
@@ -84,7 +85,8 @@ func TestServicingControllerReconcile(t *testing.T) {
 						NodeKubeletOutdated: true,
 						Size:                1,
 					},
-				}},
+				},
+			},
 			expectedDrain:   false,
 			expectedReboot:  false,
 			expectedReplace: false},
@@ -94,7 +96,7 @@ func TestServicingControllerReconcile(t *testing.T) {
 				Phase:       models.KlusterPhaseTerminating,
 				LastService: nil,
 				NodePools: []FakeNodePoolOptions{
-					FakeNodePoolOptions{
+					{
 						AllowReboot:         true,
 						AllowReplace:        true,
 						NodeHealthy:         true,
@@ -102,7 +104,8 @@ func TestServicingControllerReconcile(t *testing.T) {
 						NodeKubeletOutdated: true,
 						Size:                1,
 					},
-				}},
+				},
+			},
 			expectedDrain:   false,
 			expectedReboot:  false,
 			expectedReplace: false,
@@ -117,7 +120,7 @@ func TestServicingControllerReconcile(t *testing.T) {
 				Phase:       models.KlusterPhaseRunning,
 				LastService: nil,
 				NodePools: []FakeNodePoolOptions{
-					FakeNodePoolOptions{
+					{
 						AllowReboot:         true,
 						AllowReplace:        true,
 						NodeHealthy:         true,
@@ -136,7 +139,7 @@ func TestServicingControllerReconcile(t *testing.T) {
 				Phase:       models.KlusterPhaseRunning,
 				LastService: &rec,
 				NodePools: []FakeNodePoolOptions{
-					FakeNodePoolOptions{
+					{
 						AllowReboot:         true,
 						AllowReplace:        true,
 						NodeHealthy:         true,
@@ -156,7 +159,7 @@ func TestServicingControllerReconcile(t *testing.T) {
 				Phase:       models.KlusterPhaseRunning,
 				LastService: &pre,
 				NodePools: []FakeNodePoolOptions{
-					FakeNodePoolOptions{
+					{
 						AllowReboot:         true,
 						AllowReplace:        true,
 						NodeHealthy:         true,
@@ -176,7 +179,7 @@ func TestServicingControllerReconcile(t *testing.T) {
 				Phase:       models.KlusterPhaseRunning,
 				LastService: &now,
 				NodePools: []FakeNodePoolOptions{
-					FakeNodePoolOptions{
+					{
 						AllowReboot:         true,
 						AllowReplace:        true,
 						NodeHealthy:         true,
@@ -200,7 +203,7 @@ func TestServicingControllerReconcile(t *testing.T) {
 				Phase:       models.KlusterPhaseRunning,
 				LastService: nil,
 				NodePools: []FakeNodePoolOptions{
-					FakeNodePoolOptions{
+					{
 						AllowReboot:         true,
 						AllowReplace:        true,
 						NodeHealthy:         false,
@@ -224,7 +227,7 @@ func TestServicingControllerReconcile(t *testing.T) {
 				Phase:       models.KlusterPhaseRunning,
 				LastService: nil,
 				NodePools: []FakeNodePoolOptions{
-					FakeNodePoolOptions{
+					{
 						AllowReboot:         true,
 						AllowReplace:        true,
 						NodeHealthy:         true,
@@ -244,7 +247,7 @@ func TestServicingControllerReconcile(t *testing.T) {
 				Phase:       models.KlusterPhaseRunning,
 				LastService: nil,
 				NodePools: []FakeNodePoolOptions{
-					FakeNodePoolOptions{
+					{
 						AllowReboot:         true,
 						AllowReplace:        true,
 						NodeHealthy:         true,
@@ -264,7 +267,7 @@ func TestServicingControllerReconcile(t *testing.T) {
 				Phase:       models.KlusterPhaseRunning,
 				LastService: nil,
 				NodePools: []FakeNodePoolOptions{
-					FakeNodePoolOptions{
+					{
 						AllowReboot:         true,
 						AllowReplace:        true,
 						NodeHealthy:         true,
