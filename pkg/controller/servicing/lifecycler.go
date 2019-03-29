@@ -1,6 +1,7 @@
 package servicing
 
 import (
+	"encoding/json"
 	"time"
 
 	"github.com/go-kit/kit/log"
@@ -8,6 +9,8 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	core_v1 "k8s.io/api/core/v1"
 	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/apimachinery/pkg/util/strategicpatch"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/record"
 
@@ -137,7 +140,7 @@ func (l *NodeLifeCyclerFactory) Make(k *v1.Kluster) (LifeCycler, error) {
 // compliant logging
 func (lc *NodeLifeCycler) Drain(node *core_v1.Node) error {
 	if err := lc.setUpdatingAnnotation(node); err != nil {
-		return errors.Wrap(err, "Failed to set update annotation")
+		return errors.Wrap(err, "Failed to drain node")
 	}
 
 	options := &drain.DrainOptions{
@@ -150,8 +153,10 @@ func (lc *NodeLifeCycler) Drain(node *core_v1.Node) error {
 		Selector:           nil,
 		Logger:             log.With(lc.Logger, "node", node.GetName()),
 	}
-	err := drain.Drain(lc.Kubernetes, []*core_v1.Node{node}, options)
-	return err
+	if err := drain.Drain(lc.Kubernetes, []*core_v1.Node{node}, options); err != nil {
+		return errors.Wrap(err, "Failed to drain node")
+	}
+	return nil
 }
 
 // Reboot a node softly
@@ -173,15 +178,53 @@ func (lc *NodeLifeCycler) Replace(node *core_v1.Node) error {
 
 // Uncordon removes the updating annotation and uncordons the node
 func (lc *NodeLifeCycler) Uncordon(node *core_v1.Node) error {
-	delete(node.Annotations, AnnotationUpdateTimestamp)
-	_, err := lc.Kubernetes.CoreV1().Nodes().Update(node)
-	return err
+	if err := lc.removeUpdatingAnnotation(node); err != nil {
+		return errors.Wrap(err, "failed to uncordon node")
+	}
+	if err := drain.Uncordon(lc.Kubernetes.Core().Nodes(), node, lc.Logger); err != nil {
+		return errors.Wrap(err, "failed to uncordon node")
+	}
+	return nil
 }
 
 func (lc *NodeLifeCycler) setUpdatingAnnotation(node *core_v1.Node) error {
-	node.Annotations[AnnotationUpdateTimestamp] = Now().UTC().Format(time.RFC3339)
-	_, err := lc.Kubernetes.CoreV1().Nodes().Update(node)
-	return err
+	copy := node.DeepCopy()
+	copy.Annotations[AnnotationUpdateTimestamp] = Now().UTC().Format(time.RFC3339)
+	err := lc.patch(node, copy)
+	if err != nil {
+		errors.Wrap(err, "failed to set updating annotation")
+	}
+	return nil
+}
+
+func (lc *NodeLifeCycler) removeUpdatingAnnotation(node *core_v1.Node) error {
+	copy := node.DeepCopy()
+	delete(copy.Annotations, AnnotationUpdateTimestamp)
+	err := lc.patch(node, copy)
+	if err != nil {
+		errors.Wrap(err, "failed to remove updating annotation")
+	}
+	return nil
+}
+
+func (lc *NodeLifeCycler) patch(old, new *core_v1.Node) error {
+	original, err := json.Marshal(old)
+	if err != nil {
+		return errors.Wrap(err, "failed to marshal node")
+	}
+	modified, err := json.Marshal(new)
+	if err != nil {
+		return errors.Wrap(err, "failed to marshal node")
+	}
+	patch, err := strategicpatch.CreateTwoWayMergePatch(original, modified, core_v1.Node{})
+	if err != nil {
+		return errors.Wrap(err, "failed to create two-way patch")
+	}
+	_, err = lc.Kubernetes.CoreV1().Nodes().Patch(old.GetName(), types.StrategicMergePatchType, patch)
+	if err != nil {
+		return errors.Wrap(err, "failed to apply patch")
+	}
+	return nil
 }
 
 // Drain logs the action
