@@ -253,7 +253,7 @@ func (lc *EventingLifeCycler) Drain(node *core_v1.Node) error {
 	} else {
 		lc.Recorder.Eventf(
 			lc.Kluster,
-			core_v1.EventTypeNormal,
+			core_v1.EventTypeWarning,
 			events.FailedDrainNode,
 			"Preparing upgrade for node: %v. Failed to drain node: %v",
 			node.GetName(),
@@ -275,7 +275,7 @@ func (lc *EventingLifeCycler) Reboot(node *core_v1.Node) error {
 	} else {
 		lc.Recorder.Eventf(
 			lc.Kluster,
-			core_v1.EventTypeNormal,
+			core_v1.EventTypeWarning,
 			events.FailedRebootNode,
 			"Upgrading OS for node: %v. Reboot failed: %v",
 			node.GetName(),
@@ -297,7 +297,7 @@ func (lc *EventingLifeCycler) Replace(node *core_v1.Node) error {
 	} else {
 		lc.Recorder.Eventf(
 			lc.Kluster,
-			core_v1.EventTypeNormal,
+			core_v1.EventTypeWarning,
 			events.FailedReplaceNode,
 			"Replacing node for upgrade: %v. Termination failed: %v",
 			node.GetName(),
@@ -319,7 +319,7 @@ func (lc *EventingLifeCycler) Uncordon(node *core_v1.Node) error {
 	} else {
 		lc.Recorder.Eventf(
 			lc.Kluster,
-			core_v1.EventTypeNormal,
+			core_v1.EventTypeWarning,
 			events.FailedRebootNode,
 			"Uncordoning node failed: %v. Update was successful anyway",
 			node.GetName(),
