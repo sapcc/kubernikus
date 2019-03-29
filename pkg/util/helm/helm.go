@@ -19,6 +19,8 @@ var randomPasswordChars = []rune("abcdefghjkmnpqrstuvwxABCDEFGHJKLMNPQRSTUVWX234
 
 var ETCDBackupAnnotation = "kubernikus.cloud.sap/backup"
 
+var crc64ISOTable = crc64.MakeTable(crc64.ISO)
+
 type OpenstackOptions struct {
 	AuthURL    string
 	Username   string
@@ -93,7 +95,7 @@ func KlusterToHelmValues(kluster *v1.Kluster, secret *v1.Secret, registry *versi
 
 	//Get a deterministic value for the cluster between 0-59 for the hourly etcd full backup schedule
 	//calculate a crc64 checksum of the kluster UID
-	uidChecksum := crc64.Checksum([]byte(kluster.UID), crc64.MakeTable(crc64.ISO))
+	uidChecksum := crc64.Checksum([]byte(kluster.UID), crc64ISOTable)
 	backupMinute := rand.New(rand.NewSource(int64(uidChecksum))).Intn(60)
 
 	values := kubernikusHelmValues{
