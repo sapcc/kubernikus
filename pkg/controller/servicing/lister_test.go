@@ -174,13 +174,13 @@ func TestServicingListertAll(t *testing.T) {
 func TestServicingListerRequiringReboot(t *testing.T) {
 	kluster, nodes := NewFakeKlusterForListerTests()
 	lister := NewFakeNodeLister(t, TestLogger(), kluster, nodes)
-	assert.Len(t, lister.RequiringReboot(), 4)
+	assert.Len(t, lister.Reboot(), 4)
 }
 
 func TestServicingListerRequiringReplacement(t *testing.T) {
 	kluster, nodes := NewFakeKlusterForListerTests()
 	lister := NewFakeNodeLister(t, TestLogger(), kluster, nodes)
-	assert.Len(t, lister.RequiringReplacement(), 4)
+	assert.Len(t, lister.Replace(), 4)
 }
 
 func TestServicingListerNotReady(t *testing.T) {
@@ -304,7 +304,7 @@ func TestServicingListerUpdateSuccessful(t *testing.T) {
 		},
 	)
 	lister := NewFakeNodeLister(t, TestLogger(), kluster, nodes)
-	assert.Len(t, lister.UpdateSuccessful(), 1)
+	assert.Len(t, lister.Successful(), 1)
 }
 
 func TestServicingListerUpdateFailed(t *testing.T) {
@@ -391,5 +391,5 @@ func TestServicingListerUpdateFailed(t *testing.T) {
 		},
 	)
 	lister := NewFakeNodeLister(t, TestLogger(), kluster, nodes)
-	assert.Len(t, lister.UpdateFailed(), 3)
+	assert.Len(t, lister.Failed(), 3)
 }

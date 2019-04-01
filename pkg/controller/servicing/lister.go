@@ -26,11 +26,11 @@ type (
 	// Lister enumerates Nodes in various states
 	Lister interface {
 		All() []*core_v1.Node
-		RequiringReboot() []*core_v1.Node
-		RequiringReplacement() []*core_v1.Node
+		Reboot() []*core_v1.Node
+		Replace() []*core_v1.Node
 		Updating() []*core_v1.Node
-		UpdateSuccessful() []*core_v1.Node
-		UpdateFailed() []*core_v1.Node
+		Successful() []*core_v1.Node
+		Failed() []*core_v1.Node
 		NotReady() []*core_v1.Node
 	}
 
@@ -108,8 +108,8 @@ func (d *NodeLister) All() []*core_v1.Node {
 	return nodes
 }
 
-// RequiringReboot lists nodes that have an outdated CoreOS version
-func (d *NodeLister) RequiringReboot() []*core_v1.Node {
+// Reboot lists nodes that have an outdated CoreOS version
+func (d *NodeLister) Reboot() []*core_v1.Node {
 	var rebootable, found []*core_v1.Node
 
 	for _, pool := range d.Kluster.Spec.NodePools {
@@ -146,8 +146,8 @@ func (d *NodeLister) RequiringReboot() []*core_v1.Node {
 	return found
 }
 
-// RequiringReplacement lists nodes that have an outdated Kubelet/Kube-Proxy
-func (d *NodeLister) RequiringReplacement() []*core_v1.Node {
+// Replacement lists nodes that have an outdated Kubelet/Kube-Proxy
+func (d *NodeLister) Replace() []*core_v1.Node {
 	var upgradable, found []*core_v1.Node
 
 	for _, pool := range d.Kluster.Spec.NodePools {
@@ -225,8 +225,8 @@ func (d *NodeLister) Updating() []*core_v1.Node {
 	return d.hasAnnotation(AnnotationUpdateTimestamp)
 }
 
-// UpdateSuccessful lists nodes which have been successfully updated
-func (d *NodeLister) UpdateSuccessful() []*core_v1.Node {
+// Successful lists nodes which have been successfully updated
+func (d *NodeLister) Successful() []*core_v1.Node {
 	var found []*core_v1.Node
 
 	// Node must have updating annotation
@@ -249,7 +249,7 @@ func (d *NodeLister) UpdateSuccessful() []*core_v1.Node {
 			continue
 		}
 
-		for _, r := range d.RequiringReboot() {
+		for _, r := range d.Reboot() {
 			if r == node {
 				failure = true
 				break
@@ -260,7 +260,7 @@ func (d *NodeLister) UpdateSuccessful() []*core_v1.Node {
 			continue
 		}
 
-		for _, r := range d.RequiringReplacement() {
+		for _, r := range d.Replace() {
 			if r == node {
 				failure = true
 				break
@@ -280,8 +280,8 @@ func (d *NodeLister) UpdateSuccessful() []*core_v1.Node {
 	return found
 }
 
-// UpdateFailed lists nodes which failed to be updated
-func (d *NodeLister) UpdateFailed() []*core_v1.Node {
+// Failed lists nodes which failed to be updated
+func (d *NodeLister) Failed() []*core_v1.Node {
 	var found []*core_v1.Node
 
 	// is beyond update timeout AND (
@@ -292,7 +292,7 @@ func (d *NodeLister) UpdateFailed() []*core_v1.Node {
 
 	for _, node := range d.updateTimeout() {
 		failed := false
-		for _, r := range d.RequiringReplacement() {
+		for _, r := range d.Replace() {
 			if r == node {
 				failed = true
 				found = append(found, node)
@@ -304,7 +304,7 @@ func (d *NodeLister) UpdateFailed() []*core_v1.Node {
 			continue
 		}
 
-		for _, r := range d.RequiringReboot() {
+		for _, r := range d.Reboot() {
 			if r == node {
 				failed = true
 				found = append(found, node)
@@ -420,8 +420,8 @@ func (l *LoggingLister) All() (nodes []*core_v1.Node) {
 	return l.Lister.All()
 }
 
-// RequiringReboot logs
-func (l *LoggingLister) RequiringReboot() (nodes []*core_v1.Node) {
+// Reboot logs
+func (l *LoggingLister) Reboot() (nodes []*core_v1.Node) {
 	defer func(begin time.Time) {
 		l.Logger.Log(
 			"msg", "listing nodes requiring reboot",
@@ -430,11 +430,11 @@ func (l *LoggingLister) RequiringReboot() (nodes []*core_v1.Node) {
 			"v", 3,
 		)
 	}(time.Now())
-	return l.Lister.RequiringReboot()
+	return l.Lister.Reboot()
 }
 
-// RequiringReplacement logs
-func (l *LoggingLister) RequiringReplacement() (nodes []*core_v1.Node) {
+// Replacement logs
+func (l *LoggingLister) Replace() (nodes []*core_v1.Node) {
 	defer func(begin time.Time) {
 		l.Logger.Log(
 			"msg", "listing nodes requiring replacement",
@@ -443,7 +443,7 @@ func (l *LoggingLister) RequiringReplacement() (nodes []*core_v1.Node) {
 			"v", 3,
 		)
 	}(time.Now())
-	return l.Lister.RequiringReplacement()
+	return l.Lister.Replace()
 }
 
 // NotReady logs
@@ -472,8 +472,8 @@ func (l *LoggingLister) Updating() (nodes []*core_v1.Node) {
 	return l.Lister.Updating()
 }
 
-// UpdateSuccessful logs
-func (l *LoggingLister) UpdateSuccessful() (nodes []*core_v1.Node) {
+// Successful logs
+func (l *LoggingLister) Successful() (nodes []*core_v1.Node) {
 	defer func(begin time.Time) {
 		l.Logger.Log(
 			"msg", "listing successfully updated nodes",
@@ -482,10 +482,11 @@ func (l *LoggingLister) UpdateSuccessful() (nodes []*core_v1.Node) {
 			"v", 3,
 		)
 	}(time.Now())
-	return l.Lister.UpdateSuccessful()
+	return l.Lister.Successful()
 }
 
-func (l *LoggingLister) UpdateFailed() (nodes []*core_v1.Node) {
+// Failed logs
+func (l *LoggingLister) Failed() (nodes []*core_v1.Node) {
 	defer func(begin time.Time) {
 		l.Logger.Log(
 			"msg", "listing unsuccessfully updated nodes",
@@ -494,7 +495,7 @@ func (l *LoggingLister) UpdateFailed() (nodes []*core_v1.Node) {
 			"v", 3,
 		)
 	}(time.Now())
-	return l.Lister.UpdateFailed()
+	return l.Lister.Failed()
 }
 
 func getKubeletVersion(node *core_v1.Node) (*version.Version, error) {

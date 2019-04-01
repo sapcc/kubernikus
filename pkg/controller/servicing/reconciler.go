@@ -3,6 +3,10 @@ package servicing
 import (
 	"time"
 
+	"github.com/sapcc/kubernikus/pkg/controller/metrics"
+
+	"github.com/prometheus/client_golang/prometheus"
+
 	"github.com/go-kit/kit/log"
 	"github.com/pkg/errors"
 	"k8s.io/client-go/tools/record"
@@ -57,6 +61,8 @@ type (
 		LifeCycler       LifeCycler
 		KlusterLister    listers_kubernikus_v1.KlusterLister
 		KubernikusClient client.KubernikusV1Interface
+
+		Status *prometheus.GaugeVec
 	}
 
 	// LoggingReconciler decorates a Reconciler with log messages
@@ -98,6 +104,7 @@ func (f *KlusterReconcilerFactory) Make(k *v1.Kluster) (Reconciler, error) {
 		LifeCycler:       cycler,
 		KlusterLister:    f.KlusterLister,
 		KubernikusClient: f.KubernikusClient,
+		Status:           metrics.ServicingStatusNodes,
 	}
 
 	reconciler = &LoggingReconciler{
@@ -117,18 +124,27 @@ func (r *KlusterReconciler) Do() error {
 		return nil
 	}
 
-	for _, node := range r.Lister.UpdateSuccessful() {
+	updating := r.Lister.Updating()
+	failed := r.Lister.Failed()
+	successfull := r.Lister.Successful()
+	reboot := r.Lister.Reboot()
+	replace := r.Lister.Replace()
+	notReady := r.Lister.NotReady()
+
+	r.collectMetrics(len(updating), len(failed), len(successfull), len(replace), len(reboot))
+
+	for _, node := range successfull {
 		if err := r.LifeCycler.Uncordon(node); err != nil {
 			return errors.Wrap(err, "Failed to uncordon successfully updated node.")
 		}
 	}
 
-	if len(r.Lister.UpdateFailed()) > 0 {
+	if len(failed) > 0 {
 		r.Logger.Log("msg", "skipped upgrades because there is a failed upgrade")
 		return nil
 	}
 
-	if len(r.Lister.Updating()) > 0 {
+	if len(updating) > 0 {
 		r.Logger.Log("msg", "skipped upgrades because there is sitll nodes being updated", "v", 2)
 		return nil
 	}
@@ -138,29 +154,25 @@ func (r *KlusterReconciler) Do() error {
 		return nil
 	}
 
-	notReady := r.Lister.NotReady()
-	requiringReboot := r.Lister.RequiringReboot()
-	requiringReplacement := r.Lister.RequiringReplacement()
-
 	if len(notReady) > 0 {
 		r.Logger.Log("msg", "skipped upgrades because kluster is not healthy", "v", 2)
 		return nil
 	}
 
-	if len(requiringReplacement) > 0 {
-		if err := r.LifeCycler.Drain(requiringReplacement[0]); err != nil {
+	if len(replace) > 0 {
+		if err := r.LifeCycler.Drain(replace[0]); err != nil {
 			return errors.Wrap(err, "Failed to drain node that is about to be replaces")
 		}
 
-		if err := r.LifeCycler.Replace(requiringReplacement[0]); err != nil {
+		if err := r.LifeCycler.Replace(replace[0]); err != nil {
 			return errors.Wrap(err, "Failed to replace node")
 		}
-	} else if len(requiringReboot) > 0 {
-		if err := r.LifeCycler.Drain(requiringReboot[0]); err != nil {
+	} else if len(reboot) > 0 {
+		if err := r.LifeCycler.Drain(reboot[0]); err != nil {
 			return errors.Wrap(err, "Failed to drain node that is about to be rebooted")
 		}
 
-		if err := r.LifeCycler.Reboot(requiringReboot[0]); err != nil {
+		if err := r.LifeCycler.Reboot(reboot[0]); err != nil {
 			return errors.Wrap(err, "Failed to reboot node")
 		}
 	}
@@ -208,4 +220,12 @@ func (r *KlusterReconciler) getLastServicingTime(annotations map[string]string) 
 func (r *KlusterReconciler) isServiceIntervalElapsed() bool {
 	nextServiceTime := r.getLastServicingTime(r.Kluster.ObjectMeta.GetAnnotations()).Add(ServiceInterval)
 	return Now().After(nextServiceTime)
+}
+
+func (r *KlusterReconciler) collectMetrics(updating, failed, successful, replace, reboot int) {
+	r.Status.With(prometheus.Labels{"kluster_id": r.Kluster.GetName(), "action": "updating", "status": "started"}).Set(float64(updating))
+	r.Status.With(prometheus.Labels{"kluster_id": r.Kluster.GetName(), "action": "updating", "status": "failed"}).Set(float64(failed))
+	r.Status.With(prometheus.Labels{"kluster_id": r.Kluster.GetName(), "action": "updating", "status": "successfull"}).Set(float64(successful))
+	r.Status.With(prometheus.Labels{"kluster_id": r.Kluster.GetName(), "action": "waiting", "status": "reboot"}).Set(float64(reboot))
+	r.Status.With(prometheus.Labels{"kluster_id": r.Kluster.GetName(), "action": "waiting", "status": "replace"}).Set(float64(replace))
 }
