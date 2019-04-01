@@ -16,6 +16,7 @@ func init() {
 		SeedAllowAPIServerToAccessKubelet,
 		FixRootCertificate,
 		ReconcileK8SVersionInSpec,
+		EnsureLBFloatingNetworkID,
 		// <-- Insert new migrations at the end only!
 	}
 }
