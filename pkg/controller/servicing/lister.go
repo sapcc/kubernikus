@@ -122,6 +122,11 @@ func (d *NodeLister) Reboot() []*core_v1.Node {
 			if !strings.HasPrefix(node.GetName(), prefix) {
 				continue
 			}
+			_, ok := node.ObjectMeta.Annotations[AnnotationUpdateTimestamp]
+			if ok {
+				//skip already updating nodes
+				continue
+			}
 			if len(node.GetName()) == len(prefix)+generator.RandomLength {
 				rebootable = append(rebootable, node)
 			}
@@ -158,6 +163,12 @@ func (d *NodeLister) Replace() []*core_v1.Node {
 		prefix := fmt.Sprintf("%v-%v-", d.Kluster.Spec.Name, pool.Name)
 		for _, node := range d.All() {
 			if !strings.HasPrefix(node.GetName(), prefix) {
+				continue
+			}
+
+			_, ok := node.ObjectMeta.Annotations[AnnotationUpdateTimestamp]
+			if ok {
+				//skip already updating nodes
 				continue
 			}
 

@@ -2,6 +2,12 @@ package metrics
 
 import "github.com/prometheus/client_golang/prometheus"
 
+func init() {
+	prometheus.MustRegister(
+		ServicingStatusNodes,
+	)
+}
+
 var ServicingStatusNodes = prometheus.NewGaugeVec(
 	prometheus.GaugeOpts{
 		Namespace: "kubernikus",

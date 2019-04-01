@@ -187,7 +187,7 @@ func (lc *NodeLifeCycler) Uncordon(node *core_v1.Node) error {
 }
 
 func (lc *NodeLifeCycler) setUpdatingAnnotation(node *core_v1.Node) error {
-	patch := fmt.Sprintf(`[{"op":"add","path":"/metadata/annotations","value":{"%s":"%s"}]`, AnnotationUpdateTimestamp, Now().UTC().Format(time.RFC3339))
+	patch := fmt.Sprintf(`[{"op":"add","path":"/metadata/annotations","value":{"%s":"%s"}}]`, AnnotationUpdateTimestamp, Now().UTC().Format(time.RFC3339))
 	if _, err := lc.Kubernetes.CoreV1().Nodes().Patch(node.Name, types.JSONPatchType, []byte(patch)); err != nil {
 		errors.Wrap(err, "failed to set updating annotation")
 	}
@@ -195,7 +195,7 @@ func (lc *NodeLifeCycler) setUpdatingAnnotation(node *core_v1.Node) error {
 }
 
 func (lc *NodeLifeCycler) removeUpdatingAnnotation(node *core_v1.Node) error {
-	patch := fmt.Sprintf(`[{"op":"remove","path":"/metadata/annotations/%s"}]`, AnnotationUpdateTimestamp)
+	patch := fmt.Sprintf(`[{"op":"remove","path":"/metadata/annotations","value":"%s"}]`, AnnotationUpdateTimestamp)
 	if _, err := lc.Kubernetes.CoreV1().Nodes().Patch(node.Name, types.JSONPatchType, []byte(patch)); err != nil {
 		errors.Wrap(err, "failed to remove updating annotation")
 	}

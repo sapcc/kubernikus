@@ -124,27 +124,20 @@ func (r *KlusterReconciler) Do() error {
 		return nil
 	}
 
-	updating := r.Lister.Updating()
-	failed := r.Lister.Failed()
-	successfull := r.Lister.Successful()
-	reboot := r.Lister.Reboot()
-	replace := r.Lister.Replace()
-	notReady := r.Lister.NotReady()
+	defer r.collectMetrics()
 
-	r.collectMetrics(len(updating), len(failed), len(successfull), len(replace), len(reboot))
-
-	for _, node := range successfull {
+	for _, node := range r.Lister.Successful() {
 		if err := r.LifeCycler.Uncordon(node); err != nil {
 			return errors.Wrap(err, "Failed to uncordon successfully updated node.")
 		}
 	}
 
-	if len(failed) > 0 {
+	if len(r.Lister.Failed()) > 0 {
 		r.Logger.Log("msg", "skipped upgrades because there is a failed upgrade")
 		return nil
 	}
 
-	if len(updating) > 0 {
+	if len(r.Lister.Updating()) > 0 {
 		r.Logger.Log("msg", "skipped upgrades because there is sitll nodes being updated", "v", 2)
 		return nil
 	}
@@ -154,11 +147,13 @@ func (r *KlusterReconciler) Do() error {
 		return nil
 	}
 
-	if len(notReady) > 0 {
+	if len(r.Lister.NotReady()) > 0 {
 		r.Logger.Log("msg", "skipped upgrades because kluster is not healthy", "v", 2)
 		return nil
 	}
 
+	replace := r.Lister.Replace()
+	reboot := r.Lister.Reboot()
 	if len(replace) > 0 {
 		if err := r.LifeCycler.Drain(replace[0]); err != nil {
 			return errors.Wrap(err, "Failed to drain node that is about to be replaces")
@@ -222,10 +217,10 @@ func (r *KlusterReconciler) isServiceIntervalElapsed() bool {
 	return Now().After(nextServiceTime)
 }
 
-func (r *KlusterReconciler) collectMetrics(updating, failed, successful, replace, reboot int) {
-	r.Status.With(prometheus.Labels{"kluster_id": r.Kluster.GetName(), "action": "updating", "status": "started"}).Set(float64(updating))
-	r.Status.With(prometheus.Labels{"kluster_id": r.Kluster.GetName(), "action": "updating", "status": "failed"}).Set(float64(failed))
-	r.Status.With(prometheus.Labels{"kluster_id": r.Kluster.GetName(), "action": "updating", "status": "successfull"}).Set(float64(successful))
-	r.Status.With(prometheus.Labels{"kluster_id": r.Kluster.GetName(), "action": "waiting", "status": "reboot"}).Set(float64(reboot))
-	r.Status.With(prometheus.Labels{"kluster_id": r.Kluster.GetName(), "action": "waiting", "status": "replace"}).Set(float64(replace))
+func (r *KlusterReconciler) collectMetrics() {
+	r.Status.With(prometheus.Labels{"kluster_id": r.Kluster.GetName(), "action": "updating", "status": "started"}).Set(float64(len(r.Lister.Updating())))
+	r.Status.With(prometheus.Labels{"kluster_id": r.Kluster.GetName(), "action": "updating", "status": "failed"}).Set(float64(len(r.Lister.Failed())))
+	r.Status.With(prometheus.Labels{"kluster_id": r.Kluster.GetName(), "action": "updating", "status": "successfull"}).Set(float64(len(r.Lister.Successful())))
+	r.Status.With(prometheus.Labels{"kluster_id": r.Kluster.GetName(), "action": "waiting", "status": "reboot"}).Set(float64(len(r.Lister.Reboot())))
+	r.Status.With(prometheus.Labels{"kluster_id": r.Kluster.GetName(), "action": "waiting", "status": "replace"}).Set(float64(len(r.Lister.Replace())))
 }
