@@ -220,7 +220,7 @@ func (r *KlusterReconciler) isServiceIntervalElapsed() bool {
 func (r *KlusterReconciler) collectMetrics() {
 	r.Status.With(prometheus.Labels{"kluster_id": r.Kluster.GetName(), "action": "updating", "status": "started"}).Set(float64(len(r.Lister.Updating())))
 	r.Status.With(prometheus.Labels{"kluster_id": r.Kluster.GetName(), "action": "updating", "status": "failed"}).Set(float64(len(r.Lister.Failed())))
-	r.Status.With(prometheus.Labels{"kluster_id": r.Kluster.GetName(), "action": "updating", "status": "successfull"}).Set(float64(len(r.Lister.Successful())))
+	r.Status.With(prometheus.Labels{"kluster_id": r.Kluster.GetName(), "action": "updating", "status": "successful"}).Set(float64(len(r.Lister.Successful())))
 	r.Status.With(prometheus.Labels{"kluster_id": r.Kluster.GetName(), "action": "waiting", "status": "reboot"}).Set(float64(len(r.Lister.Reboot())))
 	r.Status.With(prometheus.Labels{"kluster_id": r.Kluster.GetName(), "action": "waiting", "status": "replace"}).Set(float64(len(r.Lister.Replace())))
 }
