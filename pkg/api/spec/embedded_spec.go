@@ -589,12 +589,20 @@ func init() {
     },
     "NodePoolConfig": {
       "type": "object",
+      "default": {
+        "allowReboot": true,
+        "allowReplace": true
+      },
       "properties": {
-        "repair": {
-          "type": "boolean"
+        "allowReboot": {
+          "description": "Allow automatic drain and reboot of nodes. Enables OS updates. Required by security policy.",
+          "type": "boolean",
+          "x-nullable": false
         },
-        "upgrade": {
-          "type": "boolean"
+        "allowReplace": {
+          "description": "Allow automatic drain and replacement of nodes. Enables Kubernetes upgrades.",
+          "type": "boolean",
+          "x-nullable": false
         }
       },
       "x-nullable": false
@@ -1426,12 +1434,20 @@ func init() {
     },
     "NodePoolConfig": {
       "type": "object",
+      "default": {
+        "allowReboot": true,
+        "allowReplace": true
+      },
       "properties": {
-        "repair": {
-          "type": "boolean"
+        "allowReboot": {
+          "description": "Allow automatic drain and reboot of nodes. Enables OS updates. Required by security policy.",
+          "type": "boolean",
+          "x-nullable": false
         },
-        "upgrade": {
-          "type": "boolean"
+        "allowReplace": {
+          "description": "Allow automatic drain and replacement of nodes. Enables Kubernetes upgrades.",
+          "type": "boolean",
+          "x-nullable": false
         }
       },
       "x-nullable": false

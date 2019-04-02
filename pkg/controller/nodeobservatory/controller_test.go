@@ -12,7 +12,7 @@ import (
 	"k8s.io/client-go/kubernetes/fake"
 
 	"github.com/sapcc/kubernikus/pkg/api/models"
-	"github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
+	v1 "github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
 	"github.com/sapcc/kubernikus/pkg/client/kubernetes"
 	kubernikusfake "github.com/sapcc/kubernikus/pkg/generated/clientset/fake"
 	kubernikus_informers "github.com/sapcc/kubernikus/pkg/generated/informers/externalversions"
@@ -25,7 +25,6 @@ const (
 )
 
 func createFakeNodeObservatory(kluster *v1.Kluster, node *api_v1.Node) NodeObservatory {
-
 	fakeKubernetesClientset := fake.NewSimpleClientset(node)
 	fakeKubernikusClientset := kubernikusfake.NewSimpleClientset(kluster)
 	kubernikusInformerFactory := kubernikus_informers.NewSharedInformerFactory(fakeKubernikusClientset, 0)

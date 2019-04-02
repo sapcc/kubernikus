@@ -23,6 +23,7 @@ import (
 type KlusterClient interface {
 	CreateNode(*v1.Kluster, *models.NodePool, string, []byte) (string, error)
 	DeleteNode(string) error
+	RebootNode(string) error
 	ListNodes(*v1.Kluster, *models.NodePool) ([]Node, error)
 	SetSecurityGroup(sgName, nodeID string) error
 	EnsureKubernikusRuleInSecurityGroup(*v1.Kluster) (bool, error)
@@ -101,13 +102,12 @@ func (c *klusterClient) CreateNode(kluster *v1.Kluster, pool *models.NodePool, n
 	return server.ID, nil
 }
 
-func (c *klusterClient) DeleteNode(id string) (err error) {
-	err = servers.Delete(c.ComputeClient, id).ExtractErr()
-	if err != nil {
-		return err
-	}
+func (c *klusterClient) DeleteNode(id string) error {
+	return servers.Delete(c.ComputeClient, id).ExtractErr()
+}
 
-	return nil
+func (c *klusterClient) RebootNode(id string) error {
+	return servers.Reboot(c.ComputeClient, id, &servers.RebootOpts{Type: servers.SoftReboot}).ExtractErr()
 }
 
 func (c *klusterClient) ListNodes(k *v1.Kluster, pool *models.NodePool) ([]Node, error) {

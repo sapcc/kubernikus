@@ -6,6 +6,8 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
+
 	strfmt "github.com/go-openapi/strfmt"
 
 	"github.com/go-openapi/swag"
@@ -15,11 +17,24 @@ import (
 // swagger:model NodePoolConfig
 type NodePoolConfig struct {
 
-	// repair
-	Repair bool `json:"repair,omitempty"`
+	// Allow automatic drain and reboot of nodes. Enables OS updates. Required by security policy.
+	AllowReboot bool `json:"allowReboot,omitempty"`
 
-	// upgrade
-	Upgrade bool `json:"upgrade,omitempty"`
+	// Allow automatic drain and replacement of nodes. Enables Kubernetes upgrades.
+	AllowReplace bool `json:"allowReplace,omitempty"`
+}
+
+func (m *NodePoolConfig) UnmarshalJSON(b []byte) error {
+	type NodePoolConfigAlias NodePoolConfig
+	var t NodePoolConfigAlias
+	if err := json.Unmarshal([]byte("{\"allowReboot\":true,\"allowReplace\":true}"), &t); err != nil {
+		return err
+	}
+	if err := json.Unmarshal(b, &t); err != nil {
+		return err
+	}
+	*m = NodePoolConfig(t)
+	return nil
 }
 
 // Validate validates this node pool config

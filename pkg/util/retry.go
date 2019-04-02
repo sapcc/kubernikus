@@ -5,7 +5,7 @@ import (
 
 	"k8s.io/client-go/util/retry"
 
-	"github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
+	v1 "github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
 	client "github.com/sapcc/kubernikus/pkg/generated/clientset/typed/kubernikus/v1"
 	listers_kubernikus "github.com/sapcc/kubernikus/pkg/generated/listers/kubernikus/v1"
 )

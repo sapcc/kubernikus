@@ -9,7 +9,7 @@ import (
 
 	kitlog "github.com/go-kit/kit/log"
 	"golang.org/x/net/ipv4"
-	"k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
 	typed_core_v1 "k8s.io/client-go/kubernetes/typed/core/v1"

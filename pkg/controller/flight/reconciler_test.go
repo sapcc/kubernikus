@@ -58,6 +58,11 @@ func (m *MockKlusterClient) DeleteNode(id string) error {
 	return args.Error(0)
 }
 
+func (m *MockKlusterClient) RebootNode(id string) error {
+	args := m.Called(id)
+	return args.Error(0)
+}
+
 func (m *MockKlusterClient) ListNodes(kluster *v1.Kluster, pool *models.NodePool) ([]openstack_kluster.Node, error) {
 	args := m.Called(kluster, pool)
 	return args.Get(0).([]openstack_kluster.Node), args.Error(1)
