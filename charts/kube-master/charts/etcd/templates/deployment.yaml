@@ -66,6 +66,9 @@ spec:
       labels:
         app: {{ include "fullname" . }}
         release: {{ .Release.Name }}
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8080"
     spec:
       volumes:
         - name: data
@@ -100,16 +103,16 @@ spec:
                 - /bin/sh
                 - -ec
                 - ETCDCTL_API=3 etcdctl get foo
+            initialDelaySeconds: 300
+            periodSeconds: 30
+          readinessProbe:
+            exec:
+              command:
+                - /bin/sh
+                - -ec
+                - ETCDCTL_API=3 etcdctl get foo
             initialDelaySeconds: 15
             periodSeconds: 5
-          {{- if .Values.backup.enabled }}
-          readinessProbe:
-            httpGet:
-              path: /healthz
-              port: 8080
-            initialDelaySeconds: 15
-            periodSeconds: 10
-          {{- end }}
           resources:
 {{ toYaml .Values.resources | indent 12 }}
 {{- if .Values.backup.enabled }}
