@@ -126,6 +126,12 @@ func (r *KlusterReconciler) Do() error {
 
 	defer r.collectMetrics()
 
+	// Default to skip klusters without the servicing annotation
+	if !util.EnabledValue(r.Kluster.ObjectMeta.Annotations[AnnotationServicingSafeguard]) {
+		r.Logger.Log("msg", "Skippig upgrades. Manually disabled with safeguard annotation.")
+		return nil
+	}
+
 	for _, node := range r.Lister.Successful() {
 		if err := r.LifeCycler.Uncordon(node); err != nil {
 			return errors.Wrap(err, "Failed to uncordon successfully updated node.")
