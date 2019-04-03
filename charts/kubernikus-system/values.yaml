@@ -201,7 +201,7 @@ grafana:
       {
         "__inputs": [
           {
-            "name": "default",
+            "name": "DS_PROMETHEUS",
             "label": "Prometheus",
             "description": "",
             "type": "datasource",
@@ -215,6 +215,12 @@ grafana:
             "id": "grafana",
             "name": "Grafana",
             "version": "5.0.4"
+          },
+          {
+            "type": "panel",
+            "id": "grafana-piechart-panel",
+            "name": "Pie Chart",
+            "version": "1.3.3"
           },
           {
             "type": "panel",
@@ -251,7 +257,7 @@ grafana:
           "list": [
             {
               "builtIn": 1,
-              "datasource": "default",
+              "datasource": "${DS_PROMETHEUS}",
               "enable": true,
               "hide": true,
               "iconColor": "rgba(0, 211, 255, 1)",
@@ -264,7 +270,7 @@ grafana:
         "gnetId": null,
         "graphTooltip": 0,
         "id": null,
-        "iteration": 1543925725334,
+        "iteration": 1554285339512,
         "links": [],
         "panels": [
           {
@@ -319,7 +325,7 @@ grafana:
               "rgba(237, 129, 40, 0.89)",
               "#d44a3a"
             ],
-            "datasource": null,
+            "datasource": "${DS_PROMETHEUS}",
             "decimals": 0,
             "format": "none",
             "gauge": {
@@ -404,7 +410,7 @@ grafana:
               "rgba(237, 129, 40, 0.89)",
               "#d44a3a"
             ],
-            "datasource": null,
+            "datasource": "${DS_PROMETHEUS}",
             "decimals": 0,
             "format": "none",
             "gauge": {
@@ -489,7 +495,7 @@ grafana:
               "rgba(237, 129, 40, 0.89)",
               "#d44a3a"
             ],
-            "datasource": null,
+            "datasource": "${DS_PROMETHEUS}",
             "decimals": 0,
             "format": "none",
             "gauge": {
@@ -574,7 +580,7 @@ grafana:
               "rgba(237, 129, 40, 0.89)",
               "#d44a3a"
             ],
-            "datasource": null,
+            "datasource": "${DS_PROMETHEUS}",
             "decimals": 0,
             "format": "none",
             "gauge": {
@@ -688,7 +694,7 @@ grafana:
             "bars": false,
             "dashLength": 10,
             "dashes": false,
-            "datasource": null,
+            "datasource": "${DS_PROMETHEUS}",
             "fill": 3,
             "gridPos": {
               "h": 4,
@@ -791,7 +797,7 @@ grafana:
             "bars": false,
             "dashLength": 10,
             "dashes": false,
-            "datasource": null,
+            "datasource": "${DS_PROMETHEUS}",
             "fill": 3,
             "gridPos": {
               "h": 4,
@@ -903,7 +909,7 @@ grafana:
               }
             ],
             "crosshairColor": "#8F070C",
-            "datasource": null,
+            "datasource": "${DS_PROMETHEUS}",
             "display": "timeline",
             "expandFromQueryS": 86400,
             "extendLastValue": true,
@@ -991,12 +997,211 @@ grafana:
             "writeMetricNames": true
           },
           {
+            "content": "\n# Updates\n\n",
+            "gridPos": {
+              "h": 4,
+              "w": 2,
+              "x": 1,
+              "y": 5
+            },
+            "id": 78,
+            "links": [],
+            "mode": "markdown",
+            "title": "",
+            "transparent": true,
+            "type": "text"
+          },
+          {
+            "aliasColors": {},
+            "breakPoint": "100%",
+            "cacheTimeout": null,
+            "combine": {
+              "label": "Others",
+              "threshold": 0
+            },
+            "datasource": "${DS_PROMETHEUS}",
+            "decimals": 0,
+            "fontSize": "100%",
+            "format": "none",
+            "gridPos": {
+              "h": 4,
+              "w": 3,
+              "x": 3,
+              "y": 5
+            },
+            "hideTimeOverride": true,
+            "id": 75,
+            "interval": null,
+            "legend": {
+              "percentage": false,
+              "percentageDecimals": 0,
+              "show": true,
+              "values": true
+            },
+            "legendType": "Right side",
+            "links": [],
+            "maxDataPoints": 3,
+            "nullPointMode": "connected",
+            "pieType": "pie",
+            "strokeWidth": 1,
+            "targets": [
+              {
+                "expr": "sum(kubernikus_servicing_status_nodes{action=\"waiting\"}) by (status)",
+                "format": "time_series",
+                "interval": "",
+                "intervalFactor": 1,
+                "legendFormat": "{{status}}",
+                "refId": "A"
+              }
+            ],
+            "timeFrom": "1m",
+            "timeShift": null,
+            "title": "Status by Node",
+            "type": "grafana-piechart-panel",
+            "valueName": "current"
+          },
+          {
+            "aliasColors": {},
+            "breakPoint": "100%",
+            "cacheTimeout": null,
+            "combine": {
+              "label": "Others",
+              "threshold": 0
+            },
+            "datasource": "${DS_PROMETHEUS}",
+            "decimals": 0,
+            "fontSize": "100%",
+            "format": "none",
+            "gridPos": {
+              "h": 4,
+              "w": 3,
+              "x": 6,
+              "y": 5
+            },
+            "hideTimeOverride": true,
+            "id": 76,
+            "interval": null,
+            "legend": {
+              "percentage": false,
+              "percentageDecimals": 0,
+              "show": true,
+              "values": true
+            },
+            "legendType": "Right side",
+            "links": [],
+            "maxDataPoints": 3,
+            "nullPointMode": "connected",
+            "pieType": "pie",
+            "strokeWidth": 1,
+            "targets": [
+              {
+                "expr": "count(sum(kubernikus_servicing_status_nodes{action=\"waiting\"}) by (kluster_id,status) > 0) by (status)",
+                "format": "time_series",
+                "interval": "",
+                "intervalFactor": 1,
+                "legendFormat": "{{status}}",
+                "refId": "A"
+              }
+            ],
+            "timeFrom": "1m",
+            "timeShift": null,
+            "title": "Status by Kluster",
+            "type": "grafana-piechart-panel",
+            "valueName": "current"
+          },
+          {
+            "cacheTimeout": null,
+            "colorBackground": true,
+            "colorValue": false,
+            "colors": [
+              "#299c46",
+              "rgba(237, 129, 40, 0.89)",
+              "#d44a3a"
+            ],
+            "datasource": "${DS_PROMETHEUS}",
+            "decimals": 0,
+            "format": "none",
+            "gauge": {
+              "maxValue": 100,
+              "minValue": 0,
+              "show": false,
+              "thresholdLabels": false,
+              "thresholdMarkers": true
+            },
+            "gridPos": {
+              "h": 4,
+              "w": 2,
+              "x": 9,
+              "y": 5
+            },
+            "hideTimeOverride": true,
+            "id": 77,
+            "interval": null,
+            "links": [],
+            "mappingType": 1,
+            "mappingTypes": [
+              {
+                "name": "value to text",
+                "value": 1
+              },
+              {
+                "name": "range to text",
+                "value": 2
+              }
+            ],
+            "maxDataPoints": 100,
+            "nullPointMode": "connected",
+            "nullText": null,
+            "postfix": "Nodes",
+            "postfixFontSize": "50%",
+            "prefix": "",
+            "prefixFontSize": "50%",
+            "rangeMaps": [
+              {
+                "from": "null",
+                "text": "N/A",
+                "to": "null"
+              }
+            ],
+            "sparkline": {
+              "fillColor": "rgba(31, 118, 189, 0.18)",
+              "full": false,
+              "lineColor": "rgb(31, 120, 193)",
+              "show": false
+            },
+            "tableColumn": "",
+            "targets": [
+              {
+                "expr": "sum(kubernikus_servicing_status_nodes{action=\"updating\", status=\"failed\"})",
+                "format": "time_series",
+                "intervalFactor": 1,
+                "legendFormat": "",
+                "refId": "A"
+              }
+            ],
+            "thresholds": "1,1",
+            "timeFrom": "5m",
+            "timeShift": null,
+            "title": "Failed",
+            "transparent": false,
+            "type": "singlestat",
+            "valueFontSize": "200%",
+            "valueMaps": [
+              {
+                "op": "=",
+                "text": "N/A",
+                "value": "null"
+              }
+            ],
+            "valueName": "current"
+          },
+          {
             "collapsed": false,
             "gridPos": {
               "h": 1,
               "w": 24,
               "x": 0,
-              "y": 5
+              "y": 9
             },
             "id": 33,
             "panels": [],
@@ -1009,7 +1214,7 @@ grafana:
               "h": 6,
               "w": 1,
               "x": 0,
-              "y": 6
+              "y": 10
             },
             "id": 46,
             "links": [],
@@ -1024,7 +1229,7 @@ grafana:
               "h": 3,
               "w": 2,
               "x": 1,
-              "y": 6
+              "y": 10
             },
             "id": 27,
             "links": [],
@@ -1039,7 +1244,7 @@ grafana:
               "h": 6,
               "w": 2,
               "x": 3,
-              "y": 6
+              "y": 10
             },
             "id": 67,
             "links": [],
@@ -1057,7 +1262,7 @@ grafana:
               "rgba(237, 129, 40, 0.89)",
               "#299c46"
             ],
-            "datasource": null,
+            "datasource": "${DS_PROMETHEUS}",
             "decimals": 0,
             "description": "Out of CPU in this many Klusters",
             "format": "none",
@@ -1072,7 +1277,7 @@ grafana:
               "h": 3,
               "w": 2,
               "x": 5,
-              "y": 6
+              "y": 10
             },
             "hideTimeOverride": true,
             "id": 8,
@@ -1144,7 +1349,7 @@ grafana:
               "rgba(237, 129, 40, 0.89)",
               "#299c46"
             ],
-            "datasource": null,
+            "datasource": "${DS_PROMETHEUS}",
             "decimals": 0,
             "description": "Out of Memory in this many Klusters",
             "format": "none",
@@ -1159,7 +1364,7 @@ grafana:
               "h": 3,
               "w": 2,
               "x": 7,
-              "y": 6
+              "y": 10
             },
             "hideTimeOverride": true,
             "id": 9,
@@ -1231,7 +1436,7 @@ grafana:
               "rgba(237, 129, 40, 0.89)",
               "#299c46"
             ],
-            "datasource": null,
+            "datasource": "${DS_PROMETHEUS}",
             "decimals": 0,
             "description": "Out of Podsin this many Klusters",
             "format": "none",
@@ -1246,7 +1451,7 @@ grafana:
               "h": 3,
               "w": 2,
               "x": 9,
-              "y": 6
+              "y": 10
             },
             "hideTimeOverride": true,
             "id": 10,
@@ -1315,7 +1520,7 @@ grafana:
               "h": 6,
               "w": 1,
               "x": 11,
-              "y": 6
+              "y": 10
             },
             "id": 47,
             "links": [],
@@ -1330,7 +1535,7 @@ grafana:
               "h": 3,
               "w": 2,
               "x": 12,
-              "y": 6
+              "y": 10
             },
             "id": 59,
             "links": [],
@@ -1348,7 +1553,7 @@ grafana:
               "rgba(237, 129, 40, 0.89)",
               "#299c46"
             ],
-            "datasource": null,
+            "datasource": "${DS_PROMETHEUS}",
             "decimals": 0,
             "description": "Out of Volumes in this many Klusters",
             "format": "none",
@@ -1363,7 +1568,7 @@ grafana:
               "h": 3,
               "w": 2,
               "x": 14,
-              "y": 6
+              "y": 10
             },
             "hideTimeOverride": true,
             "id": 34,
@@ -1435,7 +1640,7 @@ grafana:
               "rgba(237, 129, 40, 0.89)",
               "#299c46"
             ],
-            "datasource": null,
+            "datasource": "${DS_PROMETHEUS}",
             "decimals": 0,
             "description": "Out of Volumes in this many Klusters",
             "format": "none",
@@ -1450,7 +1655,7 @@ grafana:
               "h": 3,
               "w": 2,
               "x": 16,
-              "y": 6
+              "y": 10
             },
             "hideTimeOverride": true,
             "id": 55,
@@ -1528,7 +1733,7 @@ grafana:
               "rgba(237, 129, 40, 0.89)",
               "#299c46"
             ],
-            "datasource": null,
+            "datasource": "${DS_PROMETHEUS}",
             "decimals": 0,
             "description": "",
             "format": "none",
@@ -1543,7 +1748,7 @@ grafana:
               "h": 3,
               "w": 2,
               "x": 18,
-              "y": 6
+              "y": 10
             },
             "hideTimeOverride": true,
             "id": 63,
@@ -1615,7 +1820,7 @@ grafana:
               "rgba(237, 129, 40, 0.89)",
               "#299c46"
             ],
-            "datasource": null,
+            "datasource": "${DS_PROMETHEUS}",
             "decimals": 0,
             "description": "",
             "format": "none",
@@ -1630,7 +1835,7 @@ grafana:
               "h": 3,
               "w": 2,
               "x": 20,
-              "y": 6
+              "y": 10
             },
             "hideTimeOverride": true,
             "id": 64,
@@ -1702,7 +1907,7 @@ grafana:
               "rgba(237, 129, 40, 0.89)",
               "#299c46"
             ],
-            "datasource": null,
+            "datasource": "${DS_PROMETHEUS}",
             "decimals": 0,
             "description": "",
             "format": "none",
@@ -1717,7 +1922,7 @@ grafana:
               "h": 3,
               "w": 2,
               "x": 22,
-              "y": 6
+              "y": 10
             },
             "hideTimeOverride": true,
             "id": 65,
@@ -1786,7 +1991,7 @@ grafana:
               "h": 3,
               "w": 2,
               "x": 1,
-              "y": 9
+              "y": 13
             },
             "id": 45,
             "links": [],
@@ -1800,14 +2005,14 @@ grafana:
             "bars": false,
             "dashLength": 10,
             "dashes": false,
-            "datasource": null,
+            "datasource": "${DS_PROMETHEUS}",
             "decimals": 0,
             "fill": 6,
             "gridPos": {
               "h": 3,
               "w": 2,
               "x": 5,
-              "y": 9
+              "y": 13
             },
             "id": 41,
             "legend": {
@@ -1884,14 +2089,14 @@ grafana:
             "bars": false,
             "dashLength": 10,
             "dashes": false,
-            "datasource": null,
+            "datasource": "${DS_PROMETHEUS}",
             "decimals": 0,
             "fill": 6,
             "gridPos": {
               "h": 3,
               "w": 2,
               "x": 7,
-              "y": 9
+              "y": 13
             },
             "id": 73,
             "legend": {
@@ -1968,14 +2173,14 @@ grafana:
             "bars": false,
             "dashLength": 10,
             "dashes": false,
-            "datasource": null,
+            "datasource": "${DS_PROMETHEUS}",
             "decimals": 0,
             "fill": 6,
             "gridPos": {
               "h": 3,
               "w": 2,
               "x": 9,
-              "y": 9
+              "y": 13
             },
             "id": 58,
             "legend": {
@@ -2060,7 +2265,7 @@ grafana:
               "h": 2,
               "w": 2,
               "x": 12,
-              "y": 9
+              "y": 13
             },
             "id": 30,
             "links": [],
@@ -2078,7 +2283,7 @@ grafana:
               "rgba(237, 129, 40, 0.89)",
               "#d44a3a"
             ],
-            "datasource": null,
+            "datasource": "${DS_PROMETHEUS}",
             "decimals": 0,
             "format": "percent",
             "gauge": {
@@ -2092,7 +2297,7 @@ grafana:
               "h": 3,
               "w": 2,
               "x": 14,
-              "y": 9
+              "y": 13
             },
             "hideTimeOverride": true,
             "id": 57,
@@ -2165,7 +2370,7 @@ grafana:
               "rgba(237, 129, 40, 0.89)",
               "#d44a3a"
             ],
-            "datasource": null,
+            "datasource": "${DS_PROMETHEUS}",
             "decimals": null,
             "format": "percentunit",
             "gauge": {
@@ -2179,7 +2384,7 @@ grafana:
               "h": 3,
               "w": 2,
               "x": 16,
-              "y": 9
+              "y": 13
             },
             "hideTimeOverride": true,
             "id": 37,
@@ -2252,7 +2457,7 @@ grafana:
               "rgba(237, 129, 40, 0.89)",
               "#d44a3a"
             ],
-            "datasource": null,
+            "datasource": "${DS_PROMETHEUS}",
             "format": "percentunit",
             "gauge": {
               "maxValue": 1,
@@ -2265,7 +2470,7 @@ grafana:
               "h": 3,
               "w": 2,
               "x": 18,
-              "y": 9
+              "y": 13
             },
             "hideTimeOverride": true,
             "id": 39,
@@ -2336,7 +2541,7 @@ grafana:
               "rgba(237, 129, 40, 0.89)",
               "#d44a3a"
             ],
-            "datasource": null,
+            "datasource": "${DS_PROMETHEUS}",
             "decimals": null,
             "format": "percentunit",
             "gauge": {
@@ -2350,7 +2555,7 @@ grafana:
               "h": 3,
               "w": 2,
               "x": 20,
-              "y": 9
+              "y": 13
             },
             "hideTimeOverride": true,
             "id": 38,
@@ -2420,7 +2625,7 @@ grafana:
               "rgba(237, 129, 40, 0.89)",
               "#d44a3a"
             ],
-            "datasource": null,
+            "datasource": "${DS_PROMETHEUS}",
             "decimals": null,
             "format": "percentunit",
             "gauge": {
@@ -2434,7 +2639,7 @@ grafana:
               "h": 3,
               "w": 2,
               "x": 22,
-              "y": 9
+              "y": 13
             },
             "hideTimeOverride": true,
             "id": 56,
@@ -2502,7 +2707,7 @@ grafana:
               "h": 1,
               "w": 24,
               "x": 0,
-              "y": 12
+              "y": 16
             },
             "id": 23,
             "panels": [],
@@ -2518,7 +2723,7 @@ grafana:
               "rgba(237, 129, 40, 0.89)",
               "#d44a3a"
             ],
-            "datasource": null,
+            "datasource": "${DS_PROMETHEUS}",
             "format": "dtdurations",
             "gauge": {
               "maxValue": 100,
@@ -2531,7 +2736,7 @@ grafana:
               "h": 7,
               "w": 3,
               "x": 0,
-              "y": 13
+              "y": 17
             },
             "hideTimeOverride": true,
             "id": 71,
@@ -2599,14 +2804,14 @@ grafana:
             "bars": false,
             "dashLength": 10,
             "dashes": false,
-            "datasource": null,
+            "datasource": "${DS_PROMETHEUS}",
             "decimals": 0,
             "fill": 1,
             "gridPos": {
               "h": 7,
               "w": 4,
               "x": 3,
-              "y": 13
+              "y": 17
             },
             "id": 72,
             "legend": {
@@ -2693,14 +2898,14 @@ grafana:
             "bars": false,
             "dashLength": 10,
             "dashes": false,
-            "datasource": null,
+            "datasource": "${DS_PROMETHEUS}",
             "decimals": 0,
             "fill": 1,
             "gridPos": {
               "h": 7,
               "w": 4,
               "x": 7,
-              "y": 13
+              "y": 17
             },
             "id": 42,
             "legend": {
@@ -2779,13 +2984,13 @@ grafana:
             "bars": false,
             "dashLength": 10,
             "dashes": false,
-            "datasource": null,
+            "datasource": "${DS_PROMETHEUS}",
             "fill": 0,
             "gridPos": {
               "h": 7,
               "w": 4,
               "x": 11,
-              "y": 13
+              "y": 17
             },
             "id": 11,
             "legend": {
@@ -2895,13 +3100,13 @@ grafana:
             "bars": false,
             "dashLength": 10,
             "dashes": false,
-            "datasource": null,
+            "datasource": "${DS_PROMETHEUS}",
             "fill": 0,
             "gridPos": {
               "h": 7,
               "w": 4,
               "x": 15,
-              "y": 13
+              "y": 17
             },
             "id": 4,
             "legend": {
@@ -3011,13 +3216,13 @@ grafana:
             "bars": false,
             "dashLength": 10,
             "dashes": false,
-            "datasource": null,
+            "datasource": "${DS_PROMETHEUS}",
             "fill": 0,
             "gridPos": {
               "h": 7,
               "w": 5,
               "x": 19,
-              "y": 13
+              "y": 17
             },
             "id": 69,
             "legend": {
@@ -3111,7 +3316,7 @@ grafana:
             {
               "allValue": null,
               "current": {},
-              "datasource": null,
+              "datasource": "${DS_PROMETHEUS}",
               "hide": 2,
               "includeAll": false,
               "label": null,
@@ -3131,7 +3336,7 @@ grafana:
             {
               "allValue": null,
               "current": {},
-              "datasource": null,
+              "datasource": "${DS_PROMETHEUS}",
               "hide": 2,
               "includeAll": false,
               "label": null,
@@ -3151,7 +3356,7 @@ grafana:
             {
               "allValue": null,
               "current": {},
-              "datasource": null,
+              "datasource": "${DS_PROMETHEUS}",
               "hide": 2,
               "includeAll": false,
               "label": null,
@@ -3171,7 +3376,7 @@ grafana:
             {
               "allValue": null,
               "current": {},
-              "datasource": null,
+              "datasource": "${DS_PROMETHEUS}",
               "hide": 2,
               "includeAll": false,
               "label": null,
@@ -3223,7 +3428,7 @@ grafana:
         "timezone": "",
         "title": "Kubernikus",
         "uid": "5XtTRCqkk",
-        "version": 5
+        "version": 3
       }
 
 fluent-bit:
