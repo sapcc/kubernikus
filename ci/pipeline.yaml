@@ -1054,9 +1054,9 @@ task_tiller: &task_tiller
 
 
 slack: &slack
-  on_success: { put: slack, params: {alert_type: fixed } }
-  on_failure: { put: slack, params: {alert_type: broke } }
-  on_abort:   { put: slack, params: {alert_type: broke } }
+  on_success: { put: slack, inputs: [], params: {alert_type: fixed } }
+  on_failure: { put: slack, inputs: [], params: {alert_type: broke } }
+  on_abort:   { put: slack, inputs: [], params: {alert_type: broke } }
 
 
 resources:
