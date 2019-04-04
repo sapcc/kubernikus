@@ -135,7 +135,7 @@ groups:
       service: kubernikus
       severity: warning
       context: kluster
-      meta: "Etcd backup for kluster {{ $labels.kluster }} failing"
+      meta: "Etcd backup for kluster {{ $labels.release }} failing"
     annotations:
-      description: Backup of etcd is failing for kluster {{ $labels.kluster }}. There is no full backup created for at least 3h.
-      summary: Etcd backup error for kluster {{ $labels.kluster }}
+      description: Backup of etcd is failing for kluster {{ $labels.release }}. There is no full backup created for at least 3h.
+      summary: Etcd backup error for kluster {{ $labels.release }}
