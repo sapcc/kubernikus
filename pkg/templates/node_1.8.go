@@ -410,4 +410,10 @@ storage:
 
           [Route]
           router-id = {{ .OpenstackRouterID }}
+    - path: /etc/coreos/update.conf
+      filesystem: root
+      mode: 0644
+      contents:
+        inline: |-
+          REBOOT_STRATEGY="off"
 `
