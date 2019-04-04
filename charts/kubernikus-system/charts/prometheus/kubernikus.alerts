@@ -128,7 +128,7 @@ groups:
       summary: Migration errors for kluster {{ $labels.kluster }}
 
   - alert: KubernikusEtcdBackupFailed
-    expr: increase(etcdbr_snapshot_latest_timestamp{kind="Full"}[3h]) == 0
+    expr: (increase(etcdbr_snapshot_latest_timestamp{kind="Full"}[3h]) == 0) / on (release) label_replace(kubernikus_kluster_status_phase{phase="Running"} == 1, "release", "$1", "kluster_id", "(.*)")
     for: 5m
     labels:
       tier: kks
