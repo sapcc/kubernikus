@@ -14,6 +14,11 @@ func init() {
 		InsertAVZIntoNodePools,
 		SeedCinderStorageClasses,
 		SeedAllowAPIServerToAccessKubelet,
+		NoOp,
+		ReconcileK8SVersionInSpec,
+		EnsureLBFloatingNetworkID,
+		EnsureSecurityGroupName,
+		FixRootCertificate,
 		// <-- Insert new migrations at the end only!
 	}
 }

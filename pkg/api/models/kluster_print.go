@@ -48,14 +48,10 @@ func (k *Kluster) printTable(options printers.PrintOptions) {
 		fmt.Print("NAME")
 		fmt.Print("\t")
 		fmt.Print("STATUS")
-		fmt.Print("\t")
-		fmt.Println("MESSAGE")
 	}
 	fmt.Print(k.Name)
 	fmt.Print("\t")
 	fmt.Print(k.Status.Phase)
-	fmt.Print("\t")
-	fmt.Println(k.Status.Message)
 }
 
 func (p NodePool) GetFormats() map[printers.PrintFormat]struct{} {

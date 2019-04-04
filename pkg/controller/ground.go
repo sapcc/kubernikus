@@ -10,11 +10,11 @@ import (
 
 	"github.com/Masterminds/goutils"
 	"github.com/go-kit/kit/log"
+	"github.com/pkg/errors"
 	"google.golang.org/grpc"
 	api_v1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/wait"
 	informers_v1 "k8s.io/client-go/informers/core/v1"
 	"k8s.io/client-go/tools/cache"
@@ -42,8 +42,11 @@ const (
 	//Reason constants for the event recorder
 	ConfigurationError = "ConfigurationError"
 	FailedCreate       = "FailedCreate"
+	FailedUpgrade      = "FailedUpgrade"
 
 	GroundctlFinalizer = "groundctl"
+
+	UpgradeEnableAnnotation = "kubernikus.cloud.sap/upgrade"
 )
 
 type GroundControl struct {
@@ -219,7 +222,7 @@ func (op *GroundControl) handler(key string) error {
 					op.Recorder.Eventf(kluster, api_v1.EventTypeWarning, FailedCreate, "Failed to create cluster: %s", err)
 					return err
 				}
-				if err := op.updatePhase(kluster, models.KlusterPhaseCreating, "Creating Cluster"); err != nil {
+				if err := op.updatePhase(kluster, models.KlusterPhaseCreating); err != nil {
 					op.Logger.Log(
 						"msg", "failed to update status of kluster",
 						"kluster", kluster.GetName(),
@@ -233,27 +236,22 @@ func (op *GroundControl) handler(key string) error {
 					"phase", kluster.Status.Phase)
 			}
 		case models.KlusterPhaseCreating:
-			pods, err := op.podInformer.Lister().List(labels.SelectorFromValidatedSet(map[string]string{"release": kluster.GetName()}))
+
+			podsReady, _, err := util.KlusterPodsReadyCount(kluster, op.podInformer.Lister())
 			if err != nil {
 				return err
-			}
-			podsReady := 0
-			for _, pod := range pods {
-				if kubernetes.IsPodReady(pod) {
-					podsReady++
-				}
 			}
 			op.Logger.Log(
 				"msg", "pod readiness",
 				"kluster", kluster.GetName(),
 				"project", kluster.Account(),
-				"expected", len(pods),
+				"expected", 4,
 				"actual", podsReady)
 			if podsReady == 4 {
 				if err := ground.SeedKluster(op.Clients, op.Factories, kluster); err != nil {
 					return err
 				}
-				if err := op.updatePhase(kluster, models.KlusterPhaseRunning, ""); err != nil {
+				if err := op.updatePhase(kluster, models.KlusterPhaseRunning); err != nil {
 					op.Logger.Log(
 						"msg", "failed to update status of kluster",
 						"kluster", kluster.GetName(),
@@ -267,37 +265,81 @@ func (op *GroundControl) handler(key string) error {
 					"project", kluster.Account())
 			}
 		case models.KlusterPhaseRunning:
-			kubernetes, err := op.Clients.Satellites.ClientFor(kluster)
-			if err != nil {
+			if err := util.EnsureFinalizerCreated(op.Clients.Kubernikus.KubernikusV1(), op.klusterInformer.Lister(), kluster, GroundctlFinalizer); err != nil {
 				return err
 			}
-			if v, err := kubernetes.Discovery().ServerVersion(); err == nil {
-				if parsedVersion, err := version.ParseGeneric(v.GitVersion); err == nil {
-					if parsedVersion.String() != kluster.Status.ApiserverVersion {
-						if err := op.updateKluster(kluster, func(k *v1.Kluster) error { k.Status.ApiserverVersion = parsedVersion.String(); return nil }); err != nil {
-							op.Logger.Log(
-								"msg", "failed to update apiserver version of kluster",
-								"kluster", kluster.GetName(),
-								"project", kluster.Account(),
-								"err", err)
-							return err
-						}
-					}
+
+			updated, err := op.updateVersionStatus(kluster)
+			if err != nil {
+				op.Logger.Log(
+					"msg", "Failed to update version status",
+					"kluster", kluster.GetName(),
+					"project", kluster.Account(),
+					"err", err)
+				return err
+			}
+			if updated {
+				return nil //wait for update to settle
+			}
+
+			if util.EnabledValue(kluster.Annotations[UpgradeEnableAnnotation]) && kluster.Status.ApiserverVersion != kluster.Spec.Version {
+				if _, found := op.Images.Versions[kluster.Spec.Version]; !found {
+					err := fmt.Errorf("Unsupported kubernetes version specified: %s", kluster.Spec.Version)
+					op.Logger.Log(
+						"msg", "Unsupported kubernetes version specified",
+						"kluster", kluster.GetName(),
+						"project", kluster.Account(),
+						"err", err)
+					op.Recorder.Eventf(kluster, api_v1.EventTypeWarning, FailedUpgrade, err.Error())
+					return err
+				}
+
+				if err := op.upgradeKluster(kluster, kluster.Spec.Version); err != nil {
+					op.Logger.Log(
+						"msg", "upgrading kluster failed",
+						"kluster", kluster.GetName(),
+						"project", kluster.Account(),
+						"err", err,
+					)
+					op.Recorder.Eventf(kluster, api_v1.EventTypeWarning, FailedUpgrade, "Failed to upgrade cluster: %s", err)
+					return err
+				}
+				if err := op.updatePhase(kluster, models.KlusterPhaseUpgrading); err != nil {
+					op.Logger.Log(
+						"msg", "failed to update status of kluster",
+						"kluster", kluster.GetName(),
+						"project", kluster.Account(),
+						"err", err,
+					)
+					return err
 				}
 			}
-			if rlsContent, err := op.Clients.Helm.ReleaseContent(kluster.GetName()); err == nil {
-				chartMD := rlsContent.Release.Chart.GetMetadata()
-				if kluster.Status.ChartName != chartMD.Name || kluster.Status.ChartVersion != chartMD.Version {
-					if err := op.updateKluster(kluster, func(k *v1.Kluster) error {
-						k.Status.ChartName = chartMD.Name
-						k.Status.ChartVersion = chartMD.Version
-						return nil
-					}); err != nil {
+		case models.KlusterPhaseUpgrading:
+			updated, err := op.updateVersionStatus(kluster)
+			if err != nil {
+				op.Logger.Log(
+					"msg", "Failed to update version status",
+					"kluster", kluster.GetName(),
+					"project", kluster.Account(),
+					"err", err)
+				return err
+			}
+			if updated {
+				return nil //wait for update to settle
+			}
+			if kluster.Status.ApiserverVersion == kluster.Spec.Version {
+				podsReady, podsTotal, err := util.KlusterPodsReadyCount(kluster, op.podInformer.Lister())
+				if err != nil {
+					return err
+				}
+				if podsReady == podsTotal {
+					if err := op.updatePhase(kluster, models.KlusterPhaseRunning); err != nil {
 						op.Logger.Log(
-							"msg", "failed to update chart version of kluster",
+							"msg", "failed to update status of kluster",
 							"kluster", kluster.GetName(),
 							"project", kluster.Account(),
-							"err", err)
+							"err", err,
+						)
 						return err
 					}
 				}
@@ -382,7 +424,38 @@ func (op *GroundControl) klusterUpdate(cur, old interface{}) {
 	}
 }
 
-func (op *GroundControl) updatePhase(kluster *v1.Kluster, phase models.KlusterPhase, message string) error {
+func (op *GroundControl) updateVersionStatus(kluster *v1.Kluster) (bool, error) {
+	kubernetes, err := op.Clients.Satellites.ClientFor(kluster)
+	if err != nil {
+		return false, err
+	}
+	if v, err := kubernetes.Discovery().ServerVersion(); err == nil {
+		if parsedVersion, err := version.ParseGeneric(v.GitVersion); err == nil {
+			if parsedVersion.String() != kluster.Status.ApiserverVersion {
+				if err := op.updateKluster(kluster, func(k *v1.Kluster) error { k.Status.ApiserverVersion = parsedVersion.String(); return nil }); err != nil {
+					return false, errors.Wrap(err, "Failed to update apiserver version status")
+				}
+				return true, nil
+			}
+		}
+	}
+	if rlsContent, err := op.Clients.Helm.ReleaseContent(kluster.GetName()); err == nil {
+		chartMD := rlsContent.Release.Chart.GetMetadata()
+		if kluster.Status.ChartName != chartMD.Name || kluster.Status.ChartVersion != chartMD.Version {
+			if err := op.updateKluster(kluster, func(k *v1.Kluster) error {
+				k.Status.ChartName = chartMD.Name
+				k.Status.ChartVersion = chartMD.Version
+				return nil
+			}); err != nil {
+				return false, errors.Wrap(err, "Failed to update chart version status")
+			}
+			return true, nil
+		}
+	}
+	return false, nil
+}
+
+func (op *GroundControl) updatePhase(kluster *v1.Kluster, phase models.KlusterPhase) error {
 
 	//Do nothing is the phase is not changing
 	if kluster.Status.Phase == phase {
@@ -392,8 +465,6 @@ func (op *GroundControl) updatePhase(kluster *v1.Kluster, phase models.KlusterPh
 
 	if err == nil {
 		op.Recorder.Eventf(kluster, api_v1.EventTypeNormal, string(phase), "%s kluster", phase)
-		kluster.Status.Message = message
-		kluster.Status.Phase = phase
 		//Wait for up to 5 seconds for the local cache to reflect the phase change
 		waitutil.WaitForKluster(kluster, op.klusterInformer.Informer().GetIndexer(), func(k *v1.Kluster) (bool, error) {
 			return k.Status.Phase == phase, nil
@@ -471,7 +542,7 @@ func (op *GroundControl) createKluster(kluster *v1.Kluster) error {
 		return fmt.Errorf("Failed to create container for etcd backups. Check if the project has quota for object-store usage: %s", err)
 	}
 
-	rawValues, err := helm_util.KlusterToHelmValues(kluster, klusterSecret, &op.Config.Images, accessMode)
+	rawValues, err := helm_util.KlusterToHelmValues(kluster, klusterSecret, kluster.Spec.Version, &op.Config.Images, accessMode)
 	if err != nil {
 		return err
 	}
@@ -487,6 +558,25 @@ func (op *GroundControl) createKluster(kluster *v1.Kluster) error {
 		"v", 6)
 
 	_, err = op.Clients.Helm.InstallRelease(path.Join(op.Config.Helm.ChartDirectory, "kube-master"), kluster.Namespace, helm.ValueOverrides(rawValues), helm.ReleaseName(kluster.GetName()))
+	return err
+}
+
+func (op *GroundControl) upgradeKluster(kluster *v1.Kluster, toVersion string) error {
+	accessMode, err := kubernetes.PVAccessMode(op.Clients.Kubernetes)
+	if err != nil {
+		return fmt.Errorf("Couldn't determine access mode for pvc: %s", err)
+	}
+
+	klusterSecret, err := util.KlusterSecret(op.Clients.Kubernetes, kluster)
+	if err != nil {
+		return err
+	}
+
+	rawValues, err := helm_util.KlusterToHelmValues(kluster, klusterSecret, toVersion, &op.Config.Images, accessMode)
+	if err != nil {
+		return err
+	}
+	_, err = op.Clients.Helm.UpdateRelease(kluster.GetName(), path.Join(op.Config.Helm.ChartDirectory, "kube-master"), helm.UpdateValueOverrides(rawValues))
 	return err
 }
 

@@ -22,6 +22,7 @@ var klusterPhases = []models.KlusterPhase{
 	models.KlusterPhasePending,
 	models.KlusterPhaseCreating,
 	models.KlusterPhaseRunning,
+	models.KlusterPhaseUpgrading,
 	models.KlusterPhaseTerminating,
 }
 

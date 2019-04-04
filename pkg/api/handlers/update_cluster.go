@@ -2,8 +2,8 @@ package handlers
 
 import (
 	"fmt"
-	"strings"
 
+	"github.com/Masterminds/semver"
 	"github.com/go-openapi/runtime/middleware"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 
@@ -77,7 +77,7 @@ func (d *updateCluster) Handle(params operations.UpdateClusterParams, principal 
 			}
 
 			if err := validateAavailabilityZone(nodePools[i].AvailabilityZone, metadata); err != nil {
-				return fmt.Errorf("Availability Zone %s is invalid: %s", nodePools[i].AvailabilityZone, err)
+				return apierrors.NewBadRequest(fmt.Sprintf("Availability Zone %s is invalid: %s", nodePools[i].AvailabilityZone, err))
 			}
 		}
 
@@ -89,19 +89,37 @@ func (d *updateCluster) Handle(params operations.UpdateClusterParams, principal 
 			kluster.Spec.Openstack.SecurityGroupName = params.Body.Spec.Openstack.SecurityGroupName
 		}
 
+		if params.Body.Spec.Version != "" && params.Body.Spec.Version != kluster.Status.ApiserverVersion {
+			newVersion, err := semver.NewVersion(params.Body.Spec.Version)
+			if err != nil {
+				return apierrors.NewBadRequest(fmt.Sprintf("Invalid version (%s) specified for kluser: %s", params.Body.Spec.Version, err))
+			}
+			currentVersion, err := semver.NewVersion(kluster.Status.ApiserverVersion)
+			if err != nil {
+				return apierrors.NewInternalError(fmt.Errorf("Can't parse current apiserver version (%s): %s", kluster.Status.ApiserverVersion, err))
+			}
+			if newVersion.Major() != currentVersion.Major() || newVersion.Minor() < currentVersion.Minor() || newVersion.Minor() > currentVersion.Minor()+1 {
+				return apierrors.NewBadRequest(fmt.Sprintf("Can't upgrade from version %s to %s", kluster.Status.ApiserverVersion, params.Body.Spec.Version))
+			}
+			if kluster.Status.Phase != models.KlusterPhaseRunning {
+				return apierrors.NewBadRequest(fmt.Sprintf("Version can be changed in state %s only", models.KlusterPhaseRunning))
+			}
+			kluster.Spec.Version = params.Body.Spec.Version
+
+		}
+
 		return nil
 	})
 
 	if err != nil {
-		if apierrors.IsNotFound(err) {
-			return NewErrorResponse(&operations.UpdateClusterDefault{}, 404, "Not found")
+
+		switch e := err.(type) {
+		case apierrors.APIStatus:
+			return NewErrorResponse(&operations.UpdateClusterDefault{}, int(e.Status().Code), err.Error())
+		default:
+			return NewErrorResponse(&operations.UpdateClusterDefault{}, 500, err.Error())
 		}
 
-		if strings.HasPrefix(err.Error(), "Availability Zone") {
-			return NewErrorResponse(&operations.UpdateClusterDefault{}, 409, err.Error())
-		}
-
-		return NewErrorResponse(&operations.UpdateClusterDefault{}, 500, err.Error())
 	}
 
 	return operations.NewUpdateClusterOK().WithPayload(klusterFromCRD(kluster))

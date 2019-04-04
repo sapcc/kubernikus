@@ -4,18 +4,20 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/Masterminds/semver"
 	api_v1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes"
-
-	"github.com/Masterminds/semver"
+	listers_core_v1 "k8s.io/client-go/listers/core/v1"
 
 	"github.com/sapcc/kubernikus/pkg/api/models"
 	v1 "github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
 	clientset "github.com/sapcc/kubernikus/pkg/generated/clientset/typed/kubernikus/v1"
 	listers_kubernikus "github.com/sapcc/kubernikus/pkg/generated/listers/kubernikus/v1"
+	utils_pod "github.com/sapcc/kubernikus/pkg/util/pod"
 )
 
 func EnsureFinalizerCreated(client clientset.KubernikusV1Interface, lister listers_kubernikus.KlusterLister, kluster *v1.Kluster, finalizer string) (err error) {
@@ -136,4 +138,19 @@ func KlusterVersionConstraint(kluster *v1.Kluster, constraint string) (bool, err
 		return false, err
 	}
 	return c.Check(v), nil
+}
+
+func KlusterPodsReadyCount(kluster *v1.Kluster, podLister listers_core_v1.PodLister) (int, int, error) {
+	pods, err := podLister.List(labels.SelectorFromValidatedSet(map[string]string{"release": kluster.GetName()}))
+	if err != nil {
+		return 0, 0, err
+	}
+	podsReady := 0
+	for _, pod := range pods {
+		if utils_pod.IsPodReady(pod) {
+			podsReady++
+		}
+	}
+	return podsReady, len(pods), nil
+
 }

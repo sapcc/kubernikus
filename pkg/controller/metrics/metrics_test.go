@@ -41,6 +41,7 @@ kubernikus_kluster_info{account="account",creator="D012345",kluster_name="kluste
 kubernikus_kluster_status_phase{kluster_id="klusterID",phase="Pending"} 0
 kubernikus_kluster_status_phase{kluster_id="klusterID",phase="Creating"} 0
 kubernikus_kluster_status_phase{kluster_id="klusterID",phase="Running"} 1
+kubernikus_kluster_status_phase{kluster_id="klusterID",phase="Upgrading"} 0
 kubernikus_kluster_status_phase{kluster_id="klusterID",phase="Terminating"} 0
 		`,
 	}

@@ -79,13 +79,13 @@ spec:
 
         - name: cloudprovider
           secret:
-            secretName: {{ include "master.fullname" . }}
+            secretName: {{ include "master.fullname" . }}-generated
             items:
               - key: openstack.config
                 path: openstack.config
         - name: bootstrap
           secret:
-            secretName: {{ include "master.fullname" . }}
+            secretName: {{ include "master.fullname" . }}-generated
             items:
               - key: token.csv
                 path: token.csv
