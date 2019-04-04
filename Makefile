@@ -1,5 +1,8 @@
 VERSION  ?= $(shell git rev-parse --verify HEAD)
-GOOS     ?= $(shell go env | grep GOOS | cut -d'"' -f2)
+GOOS     ?= $(shell go env GOOS)
+ifeq ($(GOOS),darwin)
+export CGO_ENABLED=0
+endif
 BINARIES := apiserver kubernikus kubernikusctl wormhole
 
 LDFLAGS := -X github.com/sapcc/kubernikus/pkg/version.GitCommit=$(VERSION)
