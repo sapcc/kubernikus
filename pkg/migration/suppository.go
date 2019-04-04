@@ -157,7 +157,7 @@ func ApplySuppository(script string, client kubernetes.Interface) error {
 
 	pods := informers.NewFilteredSharedInformerFactory(client, 1*time.Minute, namespace.Name, nil).Core().V1().Pods().Lister()
 
-	ok := wait.PollImmediate(1*time.Second, 2*time.Minute, func() (done bool, err error) {
+	wait.PollImmediate(1*time.Second, 2*time.Minute, func() (done bool, err error) {
 		pods, err := pods.List(labels.Everything())
 		if err != nil {
 			return false, err
@@ -175,10 +175,6 @@ func ApplySuppository(script string, client kubernetes.Interface) error {
 
 		return running == len(pods), nil
 	})
-
-	if ok != nil {
-		return errors.Wrap(ok, "Not all pods completed")
-	}
 
 	return nil
 }
