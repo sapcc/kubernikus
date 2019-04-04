@@ -26,7 +26,7 @@ var (
 
 func init() {
 	pflag.StringVar(&namespace, "namespace", "kubernikus", "Namespace the apiserver should work in")
-	pflag.StringVar(&imagesFile, "images-file", "", "Path to yaml file descriping avilable cluster versions/images")
+	pflag.StringVar(&imagesFile, "images-file", "", "Path to yaml file descriping available cluster versions/images")
 	pflag.IntVar(&metricsPort, "metrics-port", 9100, "Lister port for metric exposition")
 	pflag.IntVar(&loglevel, "v", 0, "log level")
 }
