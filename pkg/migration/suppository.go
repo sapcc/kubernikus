@@ -101,7 +101,7 @@ func ApplySuppository(script string, client kubernetes.Interface) error {
 				Spec: core.PodSpec{
 					TerminationGracePeriodSeconds: &null,
 					InitContainers: []core.Container{
-						core.Container{
+						{
 							Name:  "init",
 							Image: image,
 							SecurityContext: &core.SecurityContext{
@@ -109,11 +109,11 @@ func ApplySuppository(script string, client kubernetes.Interface) error {
 							},
 							Command: []string{"/bin/sh", "-c", chrootScript},
 							VolumeMounts: []core.VolumeMount{
-								core.VolumeMount{
+								{
 									Name:      "host",
 									MountPath: "/host",
 								},
-								core.VolumeMount{
+								{
 									Name:      "scripts",
 									MountPath: "/usr/local/scripts",
 								},
@@ -121,13 +121,13 @@ func ApplySuppository(script string, client kubernetes.Interface) error {
 						},
 					},
 					Containers: []core.Container{
-						core.Container{
+						{
 							Name:  "pause",
 							Image: pause,
 						},
 					},
 					Volumes: []core.Volume{
-						core.Volume{
+						{
 							Name: "host",
 							VolumeSource: core.VolumeSource{
 								HostPath: &core.HostPathVolumeSource{
@@ -135,7 +135,7 @@ func ApplySuppository(script string, client kubernetes.Interface) error {
 								},
 							},
 						},
-						core.Volume{
+						{
 							Name: "scripts",
 							VolumeSource: core.VolumeSource{
 								ConfigMap: &core.ConfigMapVolumeSource{
