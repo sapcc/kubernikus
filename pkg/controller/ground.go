@@ -265,6 +265,9 @@ func (op *GroundControl) handler(key string) error {
 					"project", kluster.Account())
 			}
 		case models.KlusterPhaseRunning:
+			if err := util.EnsureFinalizerCreated(op.Clients.Kubernikus.KubernikusV1(), op.klusterInformer.Lister(), kluster, GroundctlFinalizer); err != nil {
+				return err
+			}
 
 			updated, err := op.updateVersionStatus(kluster)
 			if err != nil {
