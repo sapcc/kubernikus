@@ -364,8 +364,25 @@ func init() {
     },
     "Info": {
       "properties": {
-        "version": {
+        "availableClusterVersions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "x-omitempty": true
+        },
+        "defaultClusterVersion": {
           "type": "string"
+        },
+        "gitVersion": {
+          "type": "string"
+        },
+        "supportedClusterVersions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "x-omitempty": true
         }
       }
     },
@@ -1229,8 +1246,25 @@ func init() {
     },
     "Info": {
       "properties": {
-        "version": {
+        "availableClusterVersions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "x-omitempty": true
+        },
+        "defaultClusterVersion": {
           "type": "string"
+        },
+        "gitVersion": {
+          "type": "string"
+        },
+        "supportedClusterVersions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "x-omitempty": true
         }
       }
     },

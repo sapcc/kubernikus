@@ -22,6 +22,7 @@ func (v ImageVersion) String() string {
 
 type KlusterVersion struct {
 	Default   bool         `yaml:"default"`
+	Supported bool         `yaml:"supported"`
 	Hyperkube ImageVersion `yaml:"hyperkube"`
 }
 

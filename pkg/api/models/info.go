@@ -15,8 +15,17 @@ import (
 // swagger:model Info
 type Info struct {
 
-	// version
-	Version string `json:"version,omitempty"`
+	// available cluster versions
+	AvailableClusterVersions []string `json:"availableClusterVersions,omitempty"`
+
+	// default cluster version
+	DefaultClusterVersion string `json:"defaultClusterVersion,omitempty"`
+
+	// git version
+	GitVersion string `json:"gitVersion,omitempty"`
+
+	// supported cluster versions
+	SupportedClusterVersions []string `json:"supportedClusterVersions,omitempty"`
 }
 
 // Validate validates this info

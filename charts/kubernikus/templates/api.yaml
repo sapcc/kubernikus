@@ -31,6 +31,7 @@ spec:
             - --v={{ default 1 .Values.api.log_level }}
             - --namespace={{ default "kubernikus" .Values.namespace }}
             - --policy={{ default "/etc/kubernikus/policy.json" .Values.api.policyFile }}
+            - --images-file=/etc/kubernikus/charts/images.yaml
           ports:
             - name: http
               containerPort: {{ .Values.api.port }}

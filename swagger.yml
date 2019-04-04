@@ -316,8 +316,20 @@ definitions:
       - Terminating
   Info:
     properties:
-      version:
+      gitVersion:
         type: string
+      defaultClusterVersion:
+        type: string
+      supportedClusterVersions:
+        type: array
+        x-omitempty: true
+        items:
+          type: string
+      availableClusterVersions:
+        type: array
+        x-omitempty: true
+        items:
+          type: string
   KlusterInfo:
     properties:
       setupCommand:
