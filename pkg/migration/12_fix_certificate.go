@@ -51,6 +51,9 @@ cat <<EOF > /etc/coreos/update.conf
 REBOOT_STRATEGY="off"
 EOF
 
+/usr/bin/pkill update_engine
+sleep 40 
+
 /usr/sbin/update-ca-certificates
 /usr/bin/update_engine_client -check_for_update
 `

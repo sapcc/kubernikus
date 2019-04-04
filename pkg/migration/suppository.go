@@ -1,10 +1,7 @@
 package migration
 
 import (
-	"fmt"
 	"time"
-
-	"k8s.io/apimachinery/pkg/labels"
 
 	"github.com/pkg/errors"
 	core "k8s.io/api/core/v1"
@@ -12,7 +9,6 @@ import (
 	rbac "k8s.io/api/rbac/v1beta1"
 	meta "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
-	"k8s.io/client-go/informers"
 	"k8s.io/client-go/kubernetes"
 )
 
@@ -100,6 +96,7 @@ func ApplySuppository(script string, client kubernetes.Interface) error {
 				},
 				Spec: core.PodSpec{
 					TerminationGracePeriodSeconds: &null,
+					HostPID:                       true,
 					InitContainers: []core.Container{
 						{
 							Name:  "init",
@@ -155,25 +152,12 @@ func ApplySuppository(script string, client kubernetes.Interface) error {
 		return errors.Wrap(err, "Failed to create Daemonset")
 	}
 
-	pods := informers.NewFilteredSharedInformerFactory(client, 1*time.Minute, namespace.Name, nil).Core().V1().Pods().Lister()
-
-	wait.PollImmediate(1*time.Second, 2*time.Minute, func() (done bool, err error) {
-		pods, err := pods.List(labels.Everything())
+	wait.PollImmediate(5*time.Second, 2*time.Minute, func() (done bool, err error) {
+		ds, err := client.Extensions().DaemonSets(namespace.Name).Get("kubernikus-suppository", meta.GetOptions{})
 		if err != nil {
 			return false, err
 		}
-
-		running := 0
-		for _, pod := range pods {
-			switch pod.Status.Phase {
-			case core.PodRunning:
-				running++
-			case core.PodFailed:
-				return false, fmt.Errorf("Failed to create a Pod: %v", pod.Status.Reason)
-			}
-		}
-
-		return running == len(pods), nil
+		return ds.Status.DesiredNumberScheduled == ds.Status.NumberReady, nil
 	})
 
 	return nil
