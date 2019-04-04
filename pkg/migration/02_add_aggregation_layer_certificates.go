@@ -24,7 +24,7 @@ func AddAggregationLayerCertificates(rawKluster []byte, kluster *v1.Kluster, cli
 		return nil
 	}
 
-	factory := util.NewCertificateFactory(kluster, &secret.Certificates, "cluster.local")
+	factory := util.NewCertificateFactory(kluster, &secret.Certificates, "")
 
 	if err := factory.Ensure(); err != nil {
 		return err
@@ -35,7 +35,10 @@ func AddAggregationLayerCertificates(rawKluster []byte, kluster *v1.Kluster, cli
 		return err
 	}
 
-	apiSecret.Data = secretData
+	//only copy the aggregetion part because factory.Ensure() regenerates all non CA certs
+	for _, key := range []string{"aggregation-ca-key.pem", "aggregation-ca.pem", "aggregation-aggregator-key.pem", "aggregation-aggregator.pem"} {
+		apiSecret.Data[key] = secretData[key]
+	}
 	_, err = clients.Kubernetes.CoreV1().Secrets(kluster.Namespace).Update(apiSecret)
 
 	return err

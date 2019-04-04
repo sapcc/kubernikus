@@ -49,8 +49,7 @@ type KlusterSpec struct {
 	// SSH public key that is injected into spawned nodes.
 	SSHPublicKey string `json:"sshPublicKey,omitempty"`
 
-	// version
-	// Read Only: true
+	// Kubernetes version
 	// Pattern: ^[0-9]+\.[0-9]+\.[0-9]+$
 	Version string `json:"version,omitempty"`
 }

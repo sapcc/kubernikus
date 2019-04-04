@@ -5,6 +5,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 
 	"github.com/sapcc/kubernikus/pkg/generated/clientset"
+	"github.com/sapcc/kubernikus/pkg/version"
 )
 
 type Runtime struct {
@@ -12,4 +13,5 @@ type Runtime struct {
 	Kubernetes kubernetes.Interface
 	Namespace  string
 	Logger     log.Logger
+	Images     *version.ImageRegistry
 }

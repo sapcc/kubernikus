@@ -183,7 +183,7 @@ func (n *NodeObservatory) reconcile(kluster *v1.Kluster) error {
 
 	n.cleanUpInformers()
 
-	if kluster != nil && (kluster.Status.Phase == models.KlusterPhaseRunning || kluster.Status.Phase == models.KlusterPhaseTerminating) {
+	if kluster != nil && (kluster.Status.Phase == models.KlusterPhaseRunning || kluster.Status.Phase == models.KlusterPhaseUpgrading || kluster.Status.Phase == models.KlusterPhaseTerminating) {
 		if err := n.createAndWatchNodeInformerForKluster(kluster); err != nil {
 			return err
 		}

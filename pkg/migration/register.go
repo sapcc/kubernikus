@@ -15,6 +15,9 @@ func init() {
 		SeedCinderStorageClasses,
 		SeedAllowAPIServerToAccessKubelet,
 		FixRootCertificate,
+		ReconcileK8SVersionInSpec,
+		EnsureLBFloatingNetworkID,
+		EnsureSecurityGroupName,
 		// <-- Insert new migrations at the end only!
 	}
 }

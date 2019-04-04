@@ -312,11 +312,24 @@ definitions:
       - Pending
       - Creating
       - Running
+      - Upgrading
       - Terminating
   Info:
     properties:
-      version:
+      gitVersion:
         type: string
+      defaultClusterVersion:
+        type: string
+      supportedClusterVersions:
+        type: array
+        x-omitempty: true
+        items:
+          type: string
+      availableClusterVersions:
+        type: array
+        x-omitempty: true
+        items:
+          type: string
   KlusterInfo:
     properties:
       setupCommand:
@@ -403,9 +416,9 @@ definitions:
         description: SSH public key that is injected into spawned nodes.
         type: string
       version:
+        description: Kubernetes version
         pattern: '^[0-9]+\.[0-9]+\.[0-9]+$'
         type: string
-        readOnly: true
       name:
         type: string
         readOnly: true
@@ -495,8 +508,6 @@ definitions:
         $ref: '#/definitions/KlusterPhase'
       migrationsPending:
         type: boolean
-      message:
-        type: string
       nodePools:
         type: array
         items:

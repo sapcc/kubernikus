@@ -10,7 +10,7 @@ import (
 type Secret struct {
 	Openstack
 
-	NodePassword   string `json:"node-password"`
+	NodePassword   string `json:"node-password,omitempty"`
 	BootstrapToken string `json:"bootstrapToken"`
 
 	Certificates

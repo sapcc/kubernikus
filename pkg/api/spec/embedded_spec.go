@@ -364,8 +364,25 @@ func init() {
     },
     "Info": {
       "properties": {
-        "version": {
+        "availableClusterVersions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "x-omitempty": true
+        },
+        "defaultClusterVersion": {
           "type": "string"
+        },
+        "gitVersion": {
+          "type": "string"
+        },
+        "supportedClusterVersions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "x-omitempty": true
         }
       }
     },
@@ -432,6 +449,7 @@ func init() {
         "Pending",
         "Creating",
         "Running",
+        "Upgrading",
         "Terminating"
       ]
     },
@@ -483,9 +501,9 @@ func init() {
           "type": "string"
         },
         "version": {
+          "description": "Kubernetes version",
           "type": "string",
-          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
-          "readOnly": true
+          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
         }
       },
       "x-nullable": false
@@ -503,9 +521,6 @@ func init() {
           "type": "string"
         },
         "chartVersion": {
-          "type": "string"
-        },
-        "message": {
           "type": "string"
         },
         "migrationsPending": {
@@ -1231,8 +1246,25 @@ func init() {
     },
     "Info": {
       "properties": {
-        "version": {
+        "availableClusterVersions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "x-omitempty": true
+        },
+        "defaultClusterVersion": {
           "type": "string"
+        },
+        "gitVersion": {
+          "type": "string"
+        },
+        "supportedClusterVersions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "x-omitempty": true
         }
       }
     },
@@ -1276,6 +1308,7 @@ func init() {
         "Pending",
         "Creating",
         "Running",
+        "Upgrading",
         "Terminating"
       ]
     },
@@ -1327,9 +1360,9 @@ func init() {
           "type": "string"
         },
         "version": {
+          "description": "Kubernetes version",
           "type": "string",
-          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
-          "readOnly": true
+          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
         }
       },
       "x-nullable": false
@@ -1347,9 +1380,6 @@ func init() {
           "type": "string"
         },
         "chartVersion": {
-          "type": "string"
-        },
-        "message": {
           "type": "string"
         },
         "migrationsPending": {
