@@ -76,7 +76,6 @@ func (hc *hammertimeController) Reconcile(kluster *v1.Kluster) error {
 		specNodes += int(pool.Size)
 	}
 	if len(nodes) < 2 || specNodes < 2 || kluster.Status.Phase != models.KlusterPhaseRunning {
-		metrics.HammertimeStatus.WithLabelValues(kluster.Name).Set(0)
 		return hc.scaleDeployment(kluster, false, logger)
 	}
 
@@ -93,17 +92,17 @@ func (hc *hammertimeController) Reconcile(kluster *v1.Kluster) error {
 	}
 
 	timeout_exeeded := time.Now().Sub(newestHearbeat) > hc.timeout
-	if timeout_exeeded {
-		metrics.HammertimeStatus.WithLabelValues(kluster.Name).Set(1)
-	} else {
-		metrics.HammertimeStatus.WithLabelValues(kluster.Name).Set(0)
-	}
 
 	return hc.scaleDeployment(kluster, timeout_exeeded, logger)
 
 }
 
 func (hc *hammertimeController) scaleDeployment(kluster *v1.Kluster, disable bool, logger kitlog.Logger) error {
+	if disable {
+		metrics.HammertimeStatus.WithLabelValues(kluster.Name).Set(1)
+	} else {
+		metrics.HammertimeStatus.WithLabelValues(kluster.Name).Set(0)
+	}
 
 	deploymentClient := hc.client.ExtensionsV1beta1().Deployments(kluster.Namespace)
 
