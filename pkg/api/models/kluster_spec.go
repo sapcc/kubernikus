@@ -27,6 +27,7 @@ type KlusterSpec struct {
 	ClusterCIDR string `json:"clusterCIDR,omitempty"`
 
 	// dns address
+	// Pattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$
 	DNSAddress string `json:"dnsAddress,omitempty"`
 
 	// dns domain
@@ -62,6 +63,10 @@ func (m *KlusterSpec) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
+	if err := m.validateDNSAddress(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateNodePools(formats); err != nil {
 		res = append(res, err)
 	}
@@ -91,6 +96,19 @@ func (m *KlusterSpec) validateClusterCIDR(formats strfmt.Registry) error {
 	}
 
 	if err := validate.Pattern("clusterCIDR", "body", string(m.ClusterCIDR), `^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$`); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *KlusterSpec) validateDNSAddress(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.DNSAddress) { // not required
+		return nil
+	}
+
+	if err := validate.Pattern("dnsAddress", "body", string(m.DNSAddress), `^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$`); err != nil {
 		return err
 	}
 

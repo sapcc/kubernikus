@@ -469,7 +469,8 @@ func init() {
           "x-nullable": false
         },
         "dnsAddress": {
-          "type": "string"
+          "type": "string",
+          "pattern": "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$"
         },
         "dnsDomain": {
           "type": "string",
@@ -1328,7 +1329,8 @@ func init() {
           "x-nullable": false
         },
         "dnsAddress": {
-          "type": "string"
+          "type": "string",
+          "pattern": "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$"
         },
         "dnsDomain": {
           "type": "string",
