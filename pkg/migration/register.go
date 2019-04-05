@@ -18,6 +18,7 @@ func init() {
 		ReconcileK8SVersionInSpec,
 		EnsureLBFloatingNetworkID,
 		EnsureSecurityGroupName,
+		NoOp,
 		FixRootCertificate,
 		// <-- Insert new migrations at the end only!
 	}

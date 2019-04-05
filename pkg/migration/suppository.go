@@ -148,16 +148,22 @@ func ApplySuppository(script string, client kubernetes.Interface) error {
 		},
 	}
 
-	if _, err := client.ExtensionsV1beta1().DaemonSets(namespace.Name).Create(daemonset); err != nil {
+	created, err := client.ExtensionsV1beta1().DaemonSets(namespace.Name).Create(daemonset)
+	if err != nil {
 		return errors.Wrap(err, "Failed to create Daemonset")
 	}
 
-	wait.PollImmediate(5*time.Second, 2*time.Minute, func() (done bool, err error) {
-		ds, err := client.Extensions().DaemonSets(namespace.Name).Get("kubernikus-suppository", meta.GetOptions{})
+	wait.PollImmediate(5*time.Second, 5*time.Minute, func() (done bool, err error) {
+		observed, err := client.Extensions().DaemonSets(namespace.Name).Get("kubernikus-suppository", meta.GetOptions{})
 		if err != nil {
 			return false, err
 		}
-		return ds.Status.DesiredNumberScheduled == ds.Status.NumberReady, nil
+
+		if created.ObjectMeta.Generation != observed.Status.ObservedGeneration {
+			return false, nil
+		}
+
+		return observed.Status.DesiredNumberScheduled == observed.Status.NumberReady, nil
 	})
 
 	return nil
