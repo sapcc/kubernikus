@@ -146,6 +146,7 @@ func (op *GroundControl) processNextWorkItem() bool {
 
 	op.Logger.Log(
 		"msg", "Error running handler",
+		"key", key,
 		"err", err)
 	op.queue.AddRateLimited(key)
 
