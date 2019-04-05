@@ -101,6 +101,10 @@ func (p *PyrolisisTests) CleanupBackupStorageContainers(t *testing.T) {
 
 			for _, object := range allObjects {
 				_, err := objects.Delete(storageClient, container, object, objects.DeleteOpts{}).Extract()
+				//Ignore 404 from swift, this can happen for a successful delete becase of the eventual consistency
+				if _, ok := err.(gophercloud.ErrDefault404); ok {
+					continue
+				}
 				require.NoError(t, err, "There should be no error while deleting object %s/%s", container, object)
 			}
 
