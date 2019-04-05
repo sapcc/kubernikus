@@ -147,7 +147,7 @@ func (lc *NodeLifeCycler) Drain(node *core_v1.Node) error {
 		IgnoreDaemonsets:   true,
 		GracePeriodSeconds: -1,
 		Timeout:            EvictionTimeout,
-		DeleteLocalData:    false,
+		DeleteLocalData:    true,
 		Namespace:          meta_v1.NamespaceAll,
 		Selector:           nil,
 		Logger:             log.With(lc.Logger, "node", node.GetName()),
