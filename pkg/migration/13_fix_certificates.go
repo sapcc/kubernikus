@@ -52,6 +52,7 @@ REBOOT_STRATEGY="off"
 EOF
 
 /usr/bin/pkill update_engine
+/usr/bin/pkill locksmithd
 sleep 40 
 
 /usr/sbin/update-ca-certificates
