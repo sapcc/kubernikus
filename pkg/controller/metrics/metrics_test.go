@@ -30,11 +30,6 @@ kubernikus_node_pool_status{kluster_id="klusterID",node_pool="nodePoolName",stat
 kubernikus_node_pool_status{kluster_id="klusterID",node_pool="nodePoolName",status="running"} 2
 kubernikus_node_pool_status{kluster_id="klusterID",node_pool="nodePoolName",status="healthy"} 1
 		`,
-		klusterInfo: `
-# HELP kubernikus_kluster_info detailed information on a kluster
-# TYPE kubernikus_kluster_info gauge
-kubernikus_kluster_info{account="account",creator="D012345",kluster_name="klusterName",kluster_namespace="namespace",kluster_version="version",project_id="projectID"} 1
-		`,
 		klusterStatusPhase: `
 # HELP kubernikus_kluster_status_phase the phase the kluster is currently in
 # TYPE kubernikus_kluster_status_phase gauge
@@ -49,7 +44,6 @@ kubernikus_kluster_status_phase{kluster_id="klusterID",phase="Terminating"} 0
 	// call functions that update the metrics here
 	setMetricNodePoolSize("klusterID", "nodePoolName", "imageName", "flavorName", 3)
 	SetMetricNodePoolStatus("klusterID", "nodePoolName", map[string]int64{"schedulable": 2, "healthy": 1, "running": 2})
-	SetMetricKlusterInfo("namespace", "klusterName", "version", "projectID", map[string]string{"creator": "D012345"}, map[string]string{"account": "account"})
 	SetMetricKlusterStatusPhase("klusterID", models.KlusterPhaseRunning)
 
 	registry := prometheus.NewPedanticRegistry()
