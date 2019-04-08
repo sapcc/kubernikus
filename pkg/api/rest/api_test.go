@@ -234,7 +234,7 @@ func TestClusterUpdate(t *testing.T) {
 		Spec: models.KlusterSpec{
 			AdvertiseAddress: "7.7.7.7",
 			ClusterCIDR:      "8.8.8.8/24",
-			DNSAddress:       "9.9.9.9.254",
+			DNSAddress:       "9.9.9.9",
 			DNSDomain:        "changed",
 			Name:             "mund",
 			ServiceCIDR:      "9.9.9.9/24",
