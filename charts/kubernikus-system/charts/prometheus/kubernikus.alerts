@@ -128,7 +128,7 @@ groups:
       summary: Migration errors for kluster {{ $labels.kluster }}
 
   - alert: KubernikusEtcdBackupFailed
-    expr: time() - etcdbr_snapshot_latest_timestamp{kind="Full"} > 2 * 3600
+    expr: sum(etcdbr_snapshot_duration_seconds_count{kind="Full", succeeded="false"}) without (succeeded) unless (time() - etcdbr_snapshot_latest_timestamp{kind="Full"} < 2 * 3600)
     for: 5m
     labels:
       tier: kks
