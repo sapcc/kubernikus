@@ -20,6 +20,7 @@ func init() {
 		EnsureSecurityGroupName,
 		NoOp,
 		FixRootCertificate,
+		CleanupSuppositoryNamespaces,
 		// <-- Insert new migrations at the end only!
 	}
 }
