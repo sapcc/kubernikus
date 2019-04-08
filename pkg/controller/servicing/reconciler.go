@@ -224,6 +224,16 @@ func (r *KlusterReconciler) isServiceIntervalElapsed() bool {
 }
 
 func (r *KlusterReconciler) collectMetrics() {
+	if r.Kluster.Status.Phase == models.KlusterPhaseTerminating {
+		r.Status.Delete(prometheus.Labels{"kluster_id": r.Kluster.GetName(), "action": "updating", "status": "started"})
+		r.Status.Delete(prometheus.Labels{"kluster_id": r.Kluster.GetName(), "action": "updating", "status": "failed"})
+		r.Status.Delete(prometheus.Labels{"kluster_id": r.Kluster.GetName(), "action": "updating", "status": "successful"})
+		r.Status.Delete(prometheus.Labels{"kluster_id": r.Kluster.GetName(), "action": "waiting", "status": "reboot"})
+		r.Status.Delete(prometheus.Labels{"kluster_id": r.Kluster.GetName(), "action": "waiting", "status": "replace"})
+		r.Status.Delete(prometheus.Labels{"kluster_id": r.Kluster.GetName(), "action": "waiting", "status": "uptodate"})
+		return
+	}
+
 	reboot := float64(len(r.Lister.Reboot()))
 	replace := float64(len(r.Lister.Replace()))
 	uptodate := float64(len(r.Lister.All())) - reboot - replace
