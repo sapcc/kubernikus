@@ -3,10 +3,6 @@ package servicing
 import (
 	"time"
 
-	"github.com/sapcc/kubernikus/pkg/controller/metrics"
-
-	"github.com/prometheus/client_golang/prometheus"
-
 	"github.com/go-kit/kit/log"
 	"github.com/pkg/errors"
 	"k8s.io/client-go/tools/record"
@@ -61,8 +57,6 @@ type (
 		LifeCycler       LifeCycler
 		KlusterLister    listers_kubernikus_v1.KlusterLister
 		KubernikusClient client.KubernikusV1Interface
-
-		Status *prometheus.GaugeVec
 	}
 
 	// LoggingReconciler decorates a Reconciler with log messages
@@ -104,7 +98,6 @@ func (f *KlusterReconcilerFactory) Make(k *v1.Kluster) (Reconciler, error) {
 		LifeCycler:       cycler,
 		KlusterLister:    f.KlusterLister,
 		KubernikusClient: f.KubernikusClient,
-		Status:           metrics.ServicingStatusNodes,
 	}
 
 	reconciler = &LoggingReconciler{
@@ -123,8 +116,6 @@ func (r *KlusterReconciler) Do() error {
 		r.Logger.Log("msg", "skipped upgrades because kluster is not running", "v", 2)
 		return nil
 	}
-
-	defer r.collectMetrics()
 
 	// Default to skip klusters without the servicing annotation
 	if !util.EnabledValue(r.Kluster.ObjectMeta.Annotations[AnnotationServicingSafeguard]) {
@@ -221,27 +212,4 @@ func (r *KlusterReconciler) getLastServicingTime(annotations map[string]string) 
 func (r *KlusterReconciler) isServiceIntervalElapsed() bool {
 	nextServiceTime := r.getLastServicingTime(r.Kluster.ObjectMeta.GetAnnotations()).Add(ServiceInterval)
 	return Now().After(nextServiceTime)
-}
-
-func (r *KlusterReconciler) collectMetrics() {
-	if r.Kluster.Status.Phase == models.KlusterPhaseTerminating {
-		r.Status.Delete(prometheus.Labels{"kluster_id": r.Kluster.GetName(), "action": "updating", "status": "started"})
-		r.Status.Delete(prometheus.Labels{"kluster_id": r.Kluster.GetName(), "action": "updating", "status": "failed"})
-		r.Status.Delete(prometheus.Labels{"kluster_id": r.Kluster.GetName(), "action": "updating", "status": "successful"})
-		r.Status.Delete(prometheus.Labels{"kluster_id": r.Kluster.GetName(), "action": "waiting", "status": "reboot"})
-		r.Status.Delete(prometheus.Labels{"kluster_id": r.Kluster.GetName(), "action": "waiting", "status": "replace"})
-		r.Status.Delete(prometheus.Labels{"kluster_id": r.Kluster.GetName(), "action": "waiting", "status": "uptodate"})
-		return
-	}
-
-	reboot := float64(len(r.Lister.Reboot()))
-	replace := float64(len(r.Lister.Replace()))
-	uptodate := float64(len(r.Lister.All())) - reboot - replace
-
-	r.Status.With(prometheus.Labels{"kluster_id": r.Kluster.GetName(), "action": "updating", "status": "started"}).Set(float64(len(r.Lister.Updating())))
-	r.Status.With(prometheus.Labels{"kluster_id": r.Kluster.GetName(), "action": "updating", "status": "failed"}).Set(float64(len(r.Lister.Failed())))
-	r.Status.With(prometheus.Labels{"kluster_id": r.Kluster.GetName(), "action": "updating", "status": "successful"}).Set(float64(len(r.Lister.Successful())))
-	r.Status.With(prometheus.Labels{"kluster_id": r.Kluster.GetName(), "action": "waiting", "status": "reboot"}).Set(reboot)
-	r.Status.With(prometheus.Labels{"kluster_id": r.Kluster.GetName(), "action": "waiting", "status": "replace"}).Set(replace)
-	r.Status.With(prometheus.Labels{"kluster_id": r.Kluster.GetName(), "action": "waiting", "status": "uptodate"}).Set(uptodate)
 }

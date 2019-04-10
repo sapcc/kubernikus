@@ -57,6 +57,8 @@ func NewController(threadiness int, factories config.Factories, clients config.C
 		Reconciler: NewKlusterReconcilerFactory(logger, recorder, factories, clients),
 	}
 
+	RegisterServicingNodesCollector(logger, factories)
+
 	return base.NewController(threadiness, factories, controller, logger, nil, "servicing")
 }
 
