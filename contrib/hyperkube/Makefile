@@ -27,6 +27,8 @@ cni:
 	curl -sSL --retry 5 https://github.com/containernetworking/plugins/releases/download/${CNI_PLUGINS_RELEASE}/cni-plugins-${ARCH}-${CNI_PLUGINS_RELEASE}.tgz | tar -xz -C ${TEMP_DIR}/cni-bin/bin
 	curl -sSL --retry 5 https://github.com/intel/multus-cni/releases/download/${MULTUS_RELEASE}/multus-cni_${MULTUS_RELEASE}_linux_amd64.tar.gz | tar --strip 1 -xz -C ${TEMP_DIR}/cni-bin/bin
 	curl -o ${TEMP_DIR}/cni-bin/bin/dedup-bridge -sSL --retry 5 https://github.com/sapcc/cni-dedup-bridge/releases/download/${CNI_DEDUP_BRIDGE_RELEASE}/dedup-bridge 
+	curl -o ${TEMP_DIR}/cni-bin/bin/static -sSL --retry 5 https://github.com/sapcc/plugins/releases/download/v0.0.1.sapcc.1/static
 	chmod +x ${TEMP_DIR}/cni-bin/bin/dedup-bridge
+	chmod +x ${TEMP_DIR}/cni-bin/bin/static
 
 .PHONY: build push all cni
