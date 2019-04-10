@@ -79,6 +79,9 @@ func NewGroundController(threadiness int, factories config.Factories, clients co
 		threadiness:     threadiness,
 	}
 
+	//Register kluster collector
+	metrics.RegisterKlusterCollector(operator.klusterInformer.Lister())
+
 	operator.klusterInformer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
 		AddFunc:    operator.klusterAdd,
 		UpdateFunc: operator.klusterUpdate,
@@ -192,7 +195,6 @@ func (op *GroundControl) handler(key string) error {
 				"took", time.Since(start))
 		}(time.Now())
 
-		metrics.SetMetricKlusterInfo(kluster.GetNamespace(), kluster.GetName(), kluster.Status.Version, kluster.Spec.Openstack.ProjectID, kluster.GetAnnotations(), kluster.GetLabels())
 		metrics.SetMetricKlusterStatusPhase(kluster.GetName(), kluster.Status.Phase)
 
 		switch phase := kluster.Status.Phase; phase {

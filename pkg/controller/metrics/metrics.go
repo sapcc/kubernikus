@@ -35,15 +35,6 @@ var klusterBootDurationSummary = prometheus.NewSummaryVec(
 	[]string{},
 )
 
-var klusterInfo = prometheus.NewGaugeVec(
-	prometheus.GaugeOpts{
-		Namespace: metricNamespace,
-		Name:      "kluster_info",
-		Help:      "detailed information on a kluster",
-	},
-	[]string{"kluster_namespace", "kluster_name", "kluster_version", "creator", "account", "project_id"},
-)
-
 var klusterStatusPhase = prometheus.NewGaugeVec(
 	prometheus.GaugeOpts{
 		Namespace: metricNamespace,
@@ -70,18 +61,6 @@ var nodePoolStatus = prometheus.NewGaugeVec(
 	},
 	[]string{"kluster_id", "node_pool", "status"},
 )
-
-func SetMetricKlusterInfo(namespace, name, version, projectID string, annotations, labels map[string]string) {
-	promLabels := prometheus.Labels{
-		"kluster_namespace": namespace,
-		"kluster_name":      name,
-		"kluster_version":   version,
-		"creator":           getCreatorFromAnnotations(annotations),
-		"account":           getAccountFromLabels(labels),
-		"project_id":        projectID,
-	}
-	klusterInfo.With(promLabels).Set(1)
-}
 
 /*
 kubernikus_kluster_status_phase{"kluster_id"="<id>","phase"="<phase>"} 			< 1|0 >
@@ -170,7 +149,6 @@ func getAccountFromLabels(labels map[string]string) string {
 
 func init() {
 	prometheus.MustRegister(
-		klusterInfo,
 		klusterStatusPhase,
 		klusterBootDurationSummary,
 		nodePoolSize,
