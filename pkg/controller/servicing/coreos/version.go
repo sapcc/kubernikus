@@ -30,7 +30,7 @@ var (
 
 type channel string
 
-// LatestCoreOSVersion is a helper that fetches and caches CoreOS versions
+// Version is a helper that fetches and caches CoreOS versions
 type Version struct {
 	Client    *http.Client
 	versions  map[channel]*version.Version
@@ -62,17 +62,27 @@ func (d *Version) IsNodeUptodate(node *v1.Node) (bool, error) {
 		return false, errors.Wrap(err, "CoreOS version couldn't be retrieved.")
 	}
 
-	match := coreOSVersionIdentifierRE.FindSubmatch([]byte(node.Status.NodeInfo.OSImage))
-	if len(match) < 2 {
-		return false, fmt.Errorf("Couldn't match CoreOS version from NodeInfo.OSImage: %s", node.Status.NodeInfo.OSImage)
-	}
-
-	nodeVersion, err = version.ParseSemantic(string(match[1]))
+	nodeVersion, err = ExractVersion(node)
 	if err != nil {
-		return false, errors.Wrapf(err, "Node version can't be parsed from %s", match[1])
+		return false, err
 	}
 
 	return nodeVersion.AtLeast(availableVersion), nil
+}
+
+// ExractVersion returns a semantic version of the node
+func ExractVersion(node *v1.Node) (*version.Version, error) {
+	match := coreOSVersionIdentifierRE.FindSubmatch([]byte(node.Status.NodeInfo.OSImage))
+	if len(match) < 2 {
+		return nil, fmt.Errorf("Couldn't match CoreOS version from NodeInfo.OSImage: %s", node.Status.NodeInfo.OSImage)
+	}
+
+	nodeVersion, err := version.ParseSemantic(string(match[1]))
+	if err != nil {
+		return nil, errors.Wrapf(err, "Node version can't be parsed from %s", match[1])
+	}
+
+	return nodeVersion, nil
 }
 
 func (d *Version) latest(c channel) (*version.Version, error) {
