@@ -115,7 +115,7 @@ groups:
       summary: Hammertime for kluster {{ $labels.kluster }}
 
   - alert: KubernikusMigrationErrors
-    expr: increase(kubernikus_migration_errors_total[6m]) > 1
+    expr: max(rate(kubernikus_migration_errors_total[12m])) by (kluster) > 0
     for: 10m
     labels:
       tier: kks
