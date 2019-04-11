@@ -139,3 +139,16 @@ groups:
     annotations:
       description: Backup of etcd is failing for kluster {{ $labels.release }}. Latest full backup is older then 2 hours.
       summary: Etcd backup error for kluster {{ $labels.release }}
+
+  - alert: KubernikusUpgradeErrors
+    expr: max(kubernikus_servicing_nodes_state_updating{state="failed"}) without (instance,kubernetes_pod_name,pod_template_hash) > 0
+    for: 10m
+    labels:
+      tier: kks
+      service: servicing
+      severity: warning
+      context: upgrade
+      meta: "Node upgrade(s) for kluster {{ $labels.kluster_id }} failing"
+      annotation:
+        summary: Node upgrade errors for kluster {{ $labels.kluster_id }}
+        description: A node upgrade failed for kluster {{ $labels.kluster_id }}. As a safety measure, all upgrade operations are stopped for this kluster. The node needs to be investigated. In order to proceed with upgrade remove the `kubernikus.cloud.sap/updateTimestamp` annotation from the failed node. A node is considered failed when it stays `NotReady` for longer than 10min. It is also considered failed when the OS version doesn't change within 10min. 
