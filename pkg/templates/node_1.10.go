@@ -100,6 +100,11 @@ systemd:
         Environment="KUBELET_IMAGE_TAG={{ .HyperkubeImageTag }}"
         Environment="KUBELET_IMAGE_URL=docker://{{ .HyperkubeImage }}"
         Environment="KUBELET_IMAGE_ARGS=--name=kubelet --exec=/kubelet"
+{{- if .CalicoNetworking }}
+        ExecStartPre=/bin/mkdir -p /etc/cni
+        ExecStartPre=/bin/mkdir -p /opt/cni
+        ExecStartPre=/bin/mkdir -p /var/lib/calico
+{{- end }}
         ExecStartPre=/bin/mkdir -p /etc/kubernetes/manifests
         ExecStartPre=/bin/mkdir -p /var/lib/cni
         ExecStartPre=-/usr/bin/rkt rm --uuid-file=/var/run/kubelet-pod.uuid
