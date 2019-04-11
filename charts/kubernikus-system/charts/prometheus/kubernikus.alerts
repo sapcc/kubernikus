@@ -148,7 +148,7 @@ groups:
       service: servicing
       severity: warning
       context: upgrade
-      meta: "Node upgrade(s) for kluster {{ $labels.kluster_id }} failing"
-      annotation:
-        summary: Node upgrade errors for kluster {{ $labels.kluster_id }}
-        description: A node upgrade failed for kluster {{ $labels.kluster_id }}. As a safety measure, all upgrade operations are stopped for this kluster. The node needs to be investigated. In order to proceed with upgrade remove the `kubernikus.cloud.sap/updateTimestamp` annotation from the failed node. A node is considered failed when it stays `NotReady` for longer than 10min. It is also considered failed when the OS version doesn't change within 10min. 
+      meta: "Node upgrade for kluster {{ $labels.kluster_id }} failing"
+    annotation:
+      summary: Node upgrade error for kluster {{ $labels.kluster_id }}
+      description: A node upgrade failed for kluster {{ $labels.kluster_id }}. As a safety measure, all upgrade operations are stopped for this kluster. The node needs to be investigated. In order to proceed with upgrade remove the `kubernikus.cloud.sap/updateTimestamp` annotation from the failed node. A node is considered failed when it stays `NotReady` for longer than 10min. It is also considered failed when the OS version doesn't change within 10min. 
