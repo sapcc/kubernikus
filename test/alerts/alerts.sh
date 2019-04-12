@@ -13,7 +13,7 @@ cp templates/config.yaml ${TMP_CONFIGMAP}
 sed -i "s/kubernikus-system\/charts\///g" templates/config.yaml
 
 echo "Checking prometheus rules ..."
-promtool check rules *.rules
+promtool check rules *.rules *.alerts
 if [ $? -ne 0 ]; then
     echo "Checking of prometheus rules failed."
     exit 1

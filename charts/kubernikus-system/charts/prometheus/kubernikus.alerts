@@ -15,7 +15,7 @@ groups:
       summary: Kluster stuck in phase {{ $labels.phase }}
 
   - alert: KubernikusKlusterStuckCreating
-    expr: kubernikus_kluster_status_phase{phase==Creating} == 1
+    expr: kubernikus_kluster_status_phase{phase="Creating"} == 1
     for: 1h
     labels:
       tier: kks
