@@ -1,4 +1,9 @@
 imagesForVersion:
+  '1.11.9':
+    supported: true
+    hyperkube:
+      repository: 'sapcc/hyperkube'
+      tag: 'v1.11.9'
   '1.10.11':
     default: true
     supported: true
