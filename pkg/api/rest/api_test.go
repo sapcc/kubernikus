@@ -216,7 +216,7 @@ func TestClusterUpdate(t *testing.T) {
 					Image:  "image",
 					Name:   "poolname",
 					Size:   2,
-					Config: models.NodePoolConfig{
+					Config: &models.NodePoolConfig{
 						AllowReboot:  false,
 						AllowReplace: false,
 					},
@@ -251,7 +251,7 @@ func TestClusterUpdate(t *testing.T) {
 					Image:            "image",
 					Name:             "poolname",
 					Size:             5,
-					Config: models.NodePoolConfig{
+					Config: &models.NodePoolConfig{
 						AllowReboot:  true,
 						AllowReplace: true,
 					},
@@ -262,7 +262,7 @@ func TestClusterUpdate(t *testing.T) {
 					Image:            "newimage",
 					Name:             "newpoolname",
 					Size:             3,
-					Config: models.NodePoolConfig{
+					Config: &models.NodePoolConfig{
 						AllowReboot:  true,
 						AllowReplace: true,
 					},
