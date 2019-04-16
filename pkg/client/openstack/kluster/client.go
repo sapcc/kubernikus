@@ -3,7 +3,6 @@ package kluster
 import (
 	"fmt"
 	"os"
-	"regexp"
 	"strings"
 
 	"github.com/gophercloud/gophercloud"
@@ -14,7 +13,6 @@ import (
 	securitygroups "github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/security/groups"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/security/rules"
 	"github.com/gophercloud/gophercloud/pagination"
-	"github.com/pkg/errors"
 
 	"github.com/sapcc/kubernikus/pkg/api/models"
 	v1 "github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
@@ -104,19 +102,12 @@ func (c *klusterClient) CreateNode(kluster *v1.Kluster, pool *models.NodePool, n
 	return server.ID, nil
 }
 
-func (c *klusterClient) DeleteNode(providerID string) error {
-	id, err := instanceIDFromProviderID(providerID)
-	if err != nil {
-		return errors.Wrap(err, "Failed to delete node")
-	}
+func (c *klusterClient) DeleteNode(id string) error {
+
 	return servers.Delete(c.ComputeClient, id).ExtractErr()
 }
 
-func (c *klusterClient) RebootNode(providerID string) error {
-	id, err := instanceIDFromProviderID(providerID)
-	if err != nil {
-		return errors.Wrap(err, "Failed to reboot node")
-	}
+func (c *klusterClient) RebootNode(id string) error {
 	return servers.Reboot(c.ComputeClient, id, &servers.RebootOpts{Type: servers.SoftReboot}).ExtractErr()
 }
 
@@ -293,17 +284,4 @@ func ExtractServers(r pagination.Page) ([]Node, error) {
 	var s []Node
 	err := servers.ExtractServersInto(r, &s)
 	return s, err
-}
-
-// instanceIDFromProviderID splits a provider's id and return instanceID.
-// A providerID is build out of '${ProviderName}:///${instance-id}'which contains ':///'.
-// See cloudprovider.GetInstanceProviderID and Instances.InstanceID.
-func instanceIDFromProviderID(providerID string) (instanceID string, err error) {
-	var providerIDRegexp = regexp.MustCompile(`^openstack:///([^/]+)$`)
-
-	matches := providerIDRegexp.FindStringSubmatch(providerID)
-	if len(matches) != 2 {
-		return "", fmt.Errorf("ProviderID \"%s\" didn't match expected format \"openstack:///InstanceID\"", providerID)
-	}
-	return matches[1], nil
 }

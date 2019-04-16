@@ -2,6 +2,7 @@ package servicing
 
 import (
 	"fmt"
+	"regexp"
 	"time"
 
 	"github.com/go-kit/kit/log"
@@ -160,7 +161,12 @@ func (lc *NodeLifeCycler) Drain(node *core_v1.Node) error {
 
 // Reboot a node softly
 func (lc *NodeLifeCycler) Reboot(node *core_v1.Node) error {
-	if err := lc.Openstack.RebootNode(node.Spec.ProviderID); err != nil {
+	id, err := instanceIDFromProviderID(node.Spec.ProviderID)
+	if err != nil {
+		return errors.Wrap(err, "rebooting node failed")
+	}
+
+	if err := lc.Openstack.RebootNode(id); err != nil {
 		return errors.Wrap(err, "rebooting node failed")
 	}
 
@@ -169,7 +175,12 @@ func (lc *NodeLifeCycler) Reboot(node *core_v1.Node) error {
 
 // Replace a node by temrinating it
 func (lc *NodeLifeCycler) Replace(node *core_v1.Node) error {
-	if err := lc.Openstack.DeleteNode(node.Spec.ProviderID); err != nil {
+	id, err := instanceIDFromProviderID(node.Spec.ProviderID)
+	if err != nil {
+		return errors.Wrap(err, "deleting node failed")
+	}
+
+	if err := lc.Openstack.DeleteNode(id); err != nil {
 		return errors.Wrap(err, "deleting node failed")
 	}
 	return nil
@@ -424,4 +435,17 @@ func (lc *InstrumentingLifeCycler) Uncordon(node *core_v1.Node) (err error) {
 		}
 	}(time.Now())
 	return lc.LifeCycler.Uncordon(node)
+}
+
+// instanceIDFromProviderID splits a provider's id and return instanceID.
+// A providerID is build out of '${ProviderName}:///${instance-id}'which contains ':///'.
+// See cloudprovider.GetInstanceProviderID and Instances.InstanceID.
+func instanceIDFromProviderID(providerID string) (instanceID string, err error) {
+	var providerIDRegexp = regexp.MustCompile(`^openstack:///([^/]+)$`)
+
+	matches := providerIDRegexp.FindStringSubmatch(providerID)
+	if len(matches) != 2 {
+		return "", fmt.Errorf("ProviderID \"%s\" didn't match expected format \"openstack:///InstanceID\"", providerID)
+	}
+	return matches[1], nil
 }
