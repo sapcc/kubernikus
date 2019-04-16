@@ -160,7 +160,7 @@ func (lc *NodeLifeCycler) Drain(node *core_v1.Node) error {
 
 // Reboot a node softly
 func (lc *NodeLifeCycler) Reboot(node *core_v1.Node) error {
-	if err := lc.Openstack.RebootNode(node.Spec.ExternalID); err != nil {
+	if err := lc.Openstack.RebootNode(node.Spec.ProviderID); err != nil {
 		return errors.Wrap(err, "rebooting node failed")
 	}
 
@@ -169,7 +169,7 @@ func (lc *NodeLifeCycler) Reboot(node *core_v1.Node) error {
 
 // Replace a node by temrinating it
 func (lc *NodeLifeCycler) Replace(node *core_v1.Node) error {
-	if err := lc.Openstack.DeleteNode(node.Spec.ExternalID); err != nil {
+	if err := lc.Openstack.DeleteNode(node.Spec.ProviderID); err != nil {
 		return errors.Wrap(err, "deleting node failed")
 	}
 	return nil
