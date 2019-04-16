@@ -64,16 +64,30 @@ func (d *updateCluster) Handle(params operations.UpdateClusterParams, principal 
 		// Keep previous AVZ
 		for _, specPool := range kluster.Spec.NodePools {
 			for i, paramPool := range nodePools {
-				if specPool.Name == paramPool.Name {
-					nodePools[i].AvailabilityZone = specPool.AvailabilityZone
+				if specPool.Name != paramPool.Name {
+					continue
+				}
+
+				nodePools[i].AvailabilityZone = specPool.AvailabilityZone
+
+				if paramPool.Config == nil {
+					nodePools[i].Config = specPool.Config
 				}
 			}
 		}
 
+		// restore defaults
 		for i, paramPool := range nodePools {
 			// Set default AvailabilityZone
 			if paramPool.AvailabilityZone == "" {
 				nodePools[i].AvailabilityZone = defaultAVZ
+			}
+
+			if paramPool.Config == nil {
+				nodePools[i].Config = &models.NodePoolConfig{
+					AllowReboot:  true,
+					AllowReplace: true,
+				}
 			}
 
 			if err := validateAavailabilityZone(nodePools[i].AvailabilityZone, metadata); err != nil {

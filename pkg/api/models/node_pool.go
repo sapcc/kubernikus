@@ -23,7 +23,7 @@ type NodePool struct {
 	AvailabilityZone string `json:"availabilityZone,omitempty"`
 
 	// config
-	Config NodePoolConfig `json:"config,omitempty"`
+	Config *NodePoolConfig `json:"config,omitempty"`
 
 	// flavor
 	// Required: true
@@ -90,11 +90,13 @@ func (m *NodePool) validateConfig(formats strfmt.Registry) error {
 		return nil
 	}
 
-	if err := m.Config.Validate(formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("config")
+	if m.Config != nil {
+		if err := m.Config.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("config")
+			}
+			return err
 		}
-		return err
 	}
 
 	return nil

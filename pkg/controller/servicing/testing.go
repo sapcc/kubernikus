@@ -76,7 +76,7 @@ func NewFakeKluster(opts *FakeKlusterOptions) (*v1.Kluster, []runtime.Object) {
 		poolName := fmt.Sprintf("pool%d", i)
 		pool := models.NodePool{
 			Name: poolName,
-			Config: models.NodePoolConfig{
+			Config: &models.NodePoolConfig{
 				AllowReplace: p.AllowReboot,
 				AllowReboot:  p.AllowReplace,
 			},

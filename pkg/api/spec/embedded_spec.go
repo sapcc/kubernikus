@@ -605,10 +605,6 @@ func init() {
     },
     "NodePoolConfig": {
       "type": "object",
-      "default": {
-        "allowReboot": true,
-        "allowReplace": true
-      },
       "properties": {
         "allowReboot": {
           "description": "Allow automatic drain and reboot of nodes. Enables OS updates. Required by security policy.",
@@ -621,7 +617,7 @@ func init() {
           "x-nullable": false
         }
       },
-      "x-nullable": false
+      "x-nullable": true
     },
     "NodePoolInfo": {
       "type": "object",
@@ -1466,10 +1462,6 @@ func init() {
     },
     "NodePoolConfig": {
       "type": "object",
-      "default": {
-        "allowReboot": true,
-        "allowReplace": true
-      },
       "properties": {
         "allowReboot": {
           "description": "Allow automatic drain and reboot of nodes. Enables OS updates. Required by security policy.",
@@ -1482,7 +1474,7 @@ func init() {
           "x-nullable": false
         }
       },
-      "x-nullable": false
+      "x-nullable": true
     },
     "NodePoolInfo": {
       "type": "object",
