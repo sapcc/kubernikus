@@ -125,8 +125,7 @@ systemd:
           --register-with-taints={{ .NodeTaints | join "," }} \
 {{- end }}
           --volume-plugin-dir=/var/lib/kubelet/volumeplugins \
-          --exit-on-lock-contention \
-          --rotate-certificates
+          --exit-on-lock-contention 
         ExecStop=-/usr/bin/rkt stop --uuid-file=/var/run/kubelet-pod.uuid
         Restart=always
         RestartSec=10
@@ -431,6 +430,7 @@ storage:
               clientCAFile: /etc/kubernetes/certs/kubelet-clients-ca.pem
             anonymous:
               enabled: true
+          rotateCertificates: true
     - path: /etc/kubernetes/kube-proxy/config
       filesystem: root
       mode: 0644
