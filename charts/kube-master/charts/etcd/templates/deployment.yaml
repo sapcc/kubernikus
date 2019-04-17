@@ -121,7 +121,9 @@ spec:
             - etcdbrctl
             - server
             - --schedule={{ .Values.backup.schedule }}
+            {{- if .Values.backup.maxBackups }}
             - --max-backups={{ .Values.backup.maxBackups }}
+            {{- end }}
             - --data-dir=/var/lib/etcd/new.etcd
             - --insecure-transport=true
             - --storage-provider=Swift
