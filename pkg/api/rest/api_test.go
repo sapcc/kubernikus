@@ -191,6 +191,9 @@ func TestClusterUpdate(t *testing.T) {
 		}, nil
 	}
 
+	on := true
+	off := false
+
 	kluster := kubernikusv1.Kluster{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      fmt.Sprintf("%s-%s", "nase", ACCOUNT),
@@ -217,8 +220,8 @@ func TestClusterUpdate(t *testing.T) {
 					Name:   "poolname",
 					Size:   2,
 					Config: &models.NodePoolConfig{
-						AllowReboot:  false,
-						AllowReplace: false,
+						AllowReboot:  &off,
+						AllowReplace: &off,
 					},
 				},
 			},
@@ -252,8 +255,8 @@ func TestClusterUpdate(t *testing.T) {
 					Name:             "poolname",
 					Size:             5,
 					Config: &models.NodePoolConfig{
-						AllowReboot:  true,
-						AllowReplace: true,
+						AllowReboot:  &on,
+						AllowReplace: &on,
 					},
 				},
 				{
@@ -263,8 +266,8 @@ func TestClusterUpdate(t *testing.T) {
 					Name:             "newpoolname",
 					Size:             3,
 					Config: &models.NodePoolConfig{
-						AllowReboot:  true,
-						AllowReplace: true,
+						AllowReboot:  &on,
+						AllowReplace: &on,
 					},
 				},
 			},

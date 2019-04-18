@@ -72,6 +72,14 @@ func (d *updateCluster) Handle(params operations.UpdateClusterParams, principal 
 
 				if paramPool.Config == nil {
 					nodePools[i].Config = specPool.Config
+				} else {
+					if paramPool.Config.AllowReboot == nil {
+						nodePools[i].Config.AllowReboot = specPool.Config.AllowReboot
+					}
+
+					if paramPool.Config.AllowReplace == nil {
+						nodePools[i].Config.AllowReplace = specPool.Config.AllowReplace
+					}
 				}
 			}
 		}
@@ -83,11 +91,21 @@ func (d *updateCluster) Handle(params operations.UpdateClusterParams, principal 
 				nodePools[i].AvailabilityZone = defaultAVZ
 			}
 
+			allowReboot := true
+			allowReplace := true
 			if paramPool.Config == nil {
 				nodePools[i].Config = &models.NodePoolConfig{
-					AllowReboot:  true,
-					AllowReplace: true,
+					AllowReboot:  &allowReboot,
+					AllowReplace: &allowReplace,
 				}
+			}
+
+			if nodePools[i].Config.AllowReboot == nil {
+				nodePools[i].Config.AllowReboot = &allowReboot
+			}
+
+			if nodePools[i].Config.AllowReplace == nil {
+				nodePools[i].Config.AllowReplace = &allowReplace
 			}
 
 			if err := validateAavailabilityZone(nodePools[i].AvailabilityZone, metadata); err != nil {

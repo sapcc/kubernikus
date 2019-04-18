@@ -113,7 +113,7 @@ func (d *NodeLister) Reboot() []*core_v1.Node {
 	var rebootable, found []*core_v1.Node
 
 	for _, pool := range d.Kluster.Spec.NodePools {
-		if !pool.Config.AllowReboot {
+		if *pool.Config.AllowReboot == false {
 			continue
 		}
 
@@ -151,7 +151,7 @@ func (d *NodeLister) Replace() []*core_v1.Node {
 	var upgradable, found []*core_v1.Node
 
 	for _, pool := range d.Kluster.Spec.NodePools {
-		if !pool.Config.AllowReplace {
+		if *pool.Config.AllowReplace == false {
 			continue
 		}
 

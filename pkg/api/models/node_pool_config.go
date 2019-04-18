@@ -16,10 +16,10 @@ import (
 type NodePoolConfig struct {
 
 	// Allow automatic drain and reboot of nodes. Enables OS updates. Required by security policy.
-	AllowReboot bool `json:"allowReboot,omitempty"`
+	AllowReboot *bool `json:"allowReboot"`
 
 	// Allow automatic drain and replacement of nodes. Enables Kubernetes upgrades.
-	AllowReplace bool `json:"allowReplace,omitempty"`
+	AllowReplace *bool `json:"allowReplace"`
 }
 
 // Validate validates this node pool config

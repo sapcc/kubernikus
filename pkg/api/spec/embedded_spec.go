@@ -609,12 +609,14 @@ func init() {
         "allowReboot": {
           "description": "Allow automatic drain and reboot of nodes. Enables OS updates. Required by security policy.",
           "type": "boolean",
-          "x-nullable": false
+          "x-nullable": true,
+          "x-omitempty": false
         },
         "allowReplace": {
           "description": "Allow automatic drain and replacement of nodes. Enables Kubernetes upgrades.",
           "type": "boolean",
-          "x-nullable": false
+          "x-nullable": true,
+          "x-omitempty": false
         }
       },
       "x-nullable": true
@@ -1466,12 +1468,14 @@ func init() {
         "allowReboot": {
           "description": "Allow automatic drain and reboot of nodes. Enables OS updates. Required by security policy.",
           "type": "boolean",
-          "x-nullable": false
+          "x-nullable": true,
+          "x-omitempty": false
         },
         "allowReplace": {
           "description": "Allow automatic drain and replacement of nodes. Enables Kubernetes upgrades.",
           "type": "boolean",
-          "x-nullable": false
+          "x-nullable": true,
+          "x-omitempty": false
         }
       },
       "x-nullable": true
