@@ -21,7 +21,7 @@ func init() {
 		NoOp,
 		FixRootCertificate,
 		CleanupSuppositoryNamespaces,
-		ReconcileNodePoolConfigDefaults
+		ReconcileNodePoolConfigDefaults,
 		// <-- Insert new migrations at the end only!
 	}
 }
