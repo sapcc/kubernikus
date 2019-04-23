@@ -4,7 +4,7 @@ dependencies:
   version: 1.0.0
 - name: kube-state-metrics
   repository: https://kubernetes-charts.storage.googleapis.com/
-  version: 0.9.0
+  version: 0.16.0
 - name: grafana
   repository: https://raw.githubusercontent.com/BugRoger/charts/repo
   version: 0.6.2
@@ -13,7 +13,7 @@ dependencies:
   version: 0.9.4
 - name: prometheus-node-exporter
   repository: https://kubernetes-charts.storage.googleapis.com/
-  version: 0.3.0
+  version: 1.3.2
 - name: oomkill-exporter
   repository: file://vendor/oomkill-exporter
   version: 0.1.0
@@ -23,5 +23,5 @@ dependencies:
 - name: fluent-bit
   repository: https://kubernetes-charts.storage.googleapis.com/
   version: 1.2.0
-digest: sha256:09c4c511731bc51f0d2089589091de059e37cb4ff37f1a3615cabbfff07a2f39
-generated: 2019-04-23T13:19:22.203927636+02:00
+digest: sha256:82a1811b4e73a189d67242c70401c6cac0955bde0bcb5cae9015e685779bd520
+generated: 2019-04-23T13:21:47.902206545+02:00

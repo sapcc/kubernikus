@@ -73,8 +73,8 @@ nginx-ingress:
 
 prometheus-node-exporter:
   image:
-    repository: quay.io/prometheus/node-exporter
-    tag: v0.16.0
+    repository: prom/node-exporter
+    tag: v0.17.0
 
   serviceAccount:
     create: false
@@ -89,7 +89,21 @@ prometheus-node-exporter:
   # set manually to empty
   tolerations: []
 
+  extraHostVolumeMounts:
+    - name: dbus
+      hostPath: /var/run/dbus/system_bus_socket
+      mountPath: /var/run/dbus/system_bus_socket
+      readOnly: true
+
+  resources:
+    requests:
+      memory: 100Mi
+      cpu: 100m
+
 kube-state-metrics:
+  image:
+    repository: sapcc/kube-state-metrics
+
   podAnnotations:
     prometheus.io/scrape: "true"
     prometheus.io/port: "8080"
@@ -97,6 +111,17 @@ kube-state-metrics:
   rbac:
     create: false
     serviceAccountName: default
+
+  collectors:
+    # Not useful.
+    configmaps: false
+    secrets: false
+    horizontalpodautoscalers: false
+
+  resources:
+    requests:
+      memory: 150Mi
+      cpu: 100m
 
 grafana:
   server:
