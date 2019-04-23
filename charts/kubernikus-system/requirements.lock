@@ -1,7 +1,7 @@
 dependencies:
 - name: vice-president
-  repository: file://vendor/vice-president
-  version: 0.1.4
+  repository: https://charts.eu-de-2.cloud.sap
+  version: 1.0.0
 - name: kube-state-metrics
   repository: https://kubernetes-charts.storage.googleapis.com/
   version: 0.9.0
@@ -23,5 +23,5 @@ dependencies:
 - name: fluent-bit
   repository: https://kubernetes-charts.storage.googleapis.com/
   version: 1.2.0
-digest: sha256:a6beeb2c17ff46f30233cebf5ba0852b126972b6d2afdb3bc32ec5b9be830f04
-generated: 2019-03-21T17:17:22.444884166+01:00
+digest: sha256:09c4c511731bc51f0d2089589091de059e37cb4ff37f1a3615cabbfff07a2f39
+generated: 2019-04-23T13:19:22.203927636+02:00

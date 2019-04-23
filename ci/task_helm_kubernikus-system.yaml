@@ -23,6 +23,7 @@ run:
       cp -a kubernikus.builds kubernikus-copy.builds
 
       helm repo add forked https://raw.githubusercontent.com/BugRoger/charts/repo
+      helm repo add sapcc https://charts.eu-de-2.cloud.sap
       helm dep up kubernikus-copy.builds/charts/kubernikus-system/
 
       helm diff upgrade kubernikus-system kubernikus-copy.builds/charts/kubernikus-system/ \
