@@ -67,6 +67,7 @@ func (s *CleanupTests) KlusterPhaseBecomesTerminating(t *testing.T) {
 func (s *CleanupTests) QuotaPostFlightCheck(t *testing.T) {
 	project, err := tokens.Get(s.OpenStack.Identity, s.OpenStack.Provider.Token()).ExtractProject()
 	require.NoError(t, err, "There should be no error while getting project from token")
+	require.NotNil(t, project, "project returned from Token %s was nil. WTF?", s.OpenStack.Provider.Token())
 
 	quota, err := compute_quota.GetDetail(s.OpenStack.Compute, project.ID).Extract()
 	require.NoError(t, err, "There should be no error while getting compute quota details")

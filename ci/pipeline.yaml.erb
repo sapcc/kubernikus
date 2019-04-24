@@ -14,7 +14,7 @@ REGIONS = {
   "na-ca-1": { continent: 'AMERICAS', install: 'terraform', e2e: 'terraform' },
   "na-us-1": { continent: 'AMERICAS', install: 'manual'   , e2e: 'manual'    },
   "na-us-3": { continent: 'AMERICAS', install: 'terraform', e2e: 'terraform' },
-  "qa-de-1": { continent: 'INFRA',    install: 'terraform', e2e: 'terraform' },
+  "qa-de-1": { continent: 'INFRA',    install: 'terraform', e2e: 'terraform', nodepool_avz: 'qa-de-1a' },
   "master":  { continent: "INFRA",    install: 'virtual'  , e2e: 'virtual'   }
 }
 
@@ -34,7 +34,6 @@ auth_<%= region %>: &auth_<%= region %>
   KUBERNIKUS_NAME: k-<%= region %>
   KUBERNIKUS_URL: https://k-<%= region %>.admin.cloud.sap
 <% end %>
-
 <% if meta[:install] == "terraform" %>
   OS_AUTH_URL: https://identity-3.<%= region %>.cloud.sap/v3
   OS_USERNAME: kubernikus-pipeline
@@ -45,7 +44,6 @@ auth_<%= region %>: &auth_<%= region %>
   KUBERNIKUS_NAME: k-<%= region %>
   KUBERNIKUS_URL: https://k-<%= region %>.admin.cloud.sap
 <% end %>
-
 <% if meta[:install] == "virtual" %>
   OS_AUTH_URL: https://identity-3.eu-nl-1.cloud.sap/v3
   OS_USERNAME: ((kubernikus-prod-username))
@@ -57,55 +55,44 @@ auth_<%= region %>: &auth_<%= region %>
   KUBERNIKUS_URL: https://k-<%= region %>.admin.cloud.sap
 <% end %>
 
-<% if meta[:e2e] == "terraform" %>
 auth_e2e_<%= region %>: &auth_e2e_<%= region %>
+  CP_KLUSTER: k-<%= region %>
+  CP_KUBERNIKUS_URL: https://k-<%= region %>.admin.cloud.sap
+  CP_OS_PROJECT_DOMAIN_NAME: ccadmin
+  KUBERNIKUS_NAME: e2e
+  OS_PROJECT_DOMAIN_NAME: ccadmin
+<% if meta[:nodepool_avz] %>
+  NODEPOOL_AVZ: <%= meta[:nodepool_avz] %>
+<% end %>
+<% if meta[:e2e] == "terraform" %>
   OS_AUTH_URL: https://identity-3.<%= region %>.cloud.sap/v3
   OS_USERNAME: kubernikus-pipeline
   OS_PASSWORD: ((kubernikus-pipeline-password))
   OS_USER_DOMAIN_NAME: Default
   OS_PROJECT_NAME: kubernikus_e2e
-  OS_PROJECT_DOMAIN_NAME: ccadmin
   OS_REGION_NAME: <%= region %>
-  KUBERNIKUS_NAME: e2e
   KUBERNIKUS_URL: https://kubernikus.<%= region %>.cloud.sap
   CP_OS_PROJECT_NAME: kubernikus
-  CP_OS_PROJECT_DOMAIN_NAME: ccadmin
-  CP_KUBERNIKUS_URL: https://k-<%= region %>.admin.cloud.sap
-  CP_KLUSTER: k-<%= region %>
 <% end %>
-
 <% if meta[:e2e] == "manual" %>
-auth_e2e_<%= region %>: &auth_e2e_<%= region %>
   OS_AUTH_URL: https://identity-3.<%= region %>.cloud.sap/v3
   OS_USERNAME: ((kubernikus-prod-username))
   OS_PASSWORD: ((kubernikus-prod-password))
   OS_USER_DOMAIN_NAME: ccadmin
   OS_PROJECT_NAME: kubernikus-e2e
-  OS_PROJECT_DOMAIN_NAME: ccadmin
   OS_REGION_NAME: <%= region %>
-  KUBERNIKUS_NAME: e2e
   KUBERNIKUS_URL: https://kubernikus.<%= region %>.cloud.sap
   CP_OS_PROJECT_NAME: kubernikus
-  CP_OS_PROJECT_DOMAIN_NAME: ccadmin
-  CP_KUBERNIKUS_URL: https://k-<%= region %>.admin.cloud.sap
-  CP_KLUSTER: k-<%= region %>
 <% end %>
-
 <% if meta[:e2e] == "virtual" %>
-auth_e2e_<%= region %>: &auth_e2e_<%= region %>
   OS_AUTH_URL: https://identity-3.eu-nl-1.cloud.sap/v3
   OS_USERNAME: ((kubernikus-prod-username))
   OS_PASSWORD: ((kubernikus-prod-password))
   OS_USER_DOMAIN_NAME: ccadmin
   OS_PROJECT_NAME: kubernikus-e2e
-  OS_PROJECT_DOMAIN_NAME: ccadmin
   OS_REGION_NAME: eu-nl-1
-  KUBERNIKUS_NAME: e2e
   KUBERNIKUS_URL: https://kubernikus-master.eu-nl-1.cloud.sap
   CP_OS_PROJECT_NAME: kubernikus-<%= region %>
-  CP_OS_PROJECT_DOMAIN_NAME: ccadmin
-  CP_KUBERNIKUS_URL: https://k-<%= region %>.admin.cloud.sap
-  CP_KLUSTER: k-<%= region %>
 <% end %>
 <% end %>
 
