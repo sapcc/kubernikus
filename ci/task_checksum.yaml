@@ -4,7 +4,7 @@ image_resource:
   type: docker-image
   source:
     repository: golang
-    tag: 1.12-alpine
+    tag: 1.9.2-alpine3.6
 
 inputs:
   - name: kubernikus.builds

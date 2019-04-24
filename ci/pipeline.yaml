@@ -552,7 +552,7 @@ auth_e2e_master: &auth_e2e_master
 task_build_args: &task_build_args
   platform: linux
   image_resource:
-    type: docker-image
+    type: registry-image
     source:
       repository: alpine
   inputs:
@@ -575,7 +575,7 @@ task_checksum: &task_checksum
     type: docker-image
     source:
       repository: golang
-      tag: 1.12-alpine
+      tag: 1.9.2-alpine3.6
   
   inputs:
     - name: kubernikus.builds
@@ -611,7 +611,7 @@ task_cli: &task_cli
     type: docker-image
     source:
       repository: golang
-      tag: 1.12-alpine
+      tag: 1.9.2-alpine3.6
   inputs:
     - name: kubernikus.builds
       path: gopath/src/github.com/sapcc/kubernikus
@@ -652,7 +652,7 @@ task_e2e_tests: &task_e2e_tests
     type: docker-image
     source:
       repository: golang
-      tag: 1.12-alpine
+      tag: 1.9.2-alpine3.6
   
   inputs:
     - name: kubernikus.builds
@@ -704,7 +704,7 @@ task_github_compare_url: &task_github_compare_url
   platform: 'linux'
   
   image_resource:
-    type: docker-image
+    type: registry-image
     source:
       repository: alpine
   inputs:
@@ -764,7 +764,7 @@ task_helm_kubernikus-system: &task_helm_kubernikus-system
   platform: 'linux'
   
   image_resource:
-    type: docker-image
+    type: registry-image
     source:
       repository: sapcc/kubernikus-kubectl
       tag: 'v1.10.9'
@@ -814,7 +814,7 @@ task_helm_kubernikus: &task_helm_kubernikus
   platform: 'linux'
   
   image_resource:
-    type: docker-image
+    type: registry-image
     source:
       repository: sapcc/kubernikus-kubectl
       tag: 'v1.10.9'
@@ -889,7 +889,7 @@ task_reload_prometheus_config: &task_reload_prometheus_config
   platform: 'linux'
   
   image_resource:
-    type: docker-image
+    type: registry-image
     source:
       repository: sapcc/kubernikus-kubectl
       tag: 'latest'
@@ -938,7 +938,7 @@ task_terraform: &task_terraform
   platform: 'linux'
   
   image_resource:
-    type: docker-image
+    type: registry-image
     source:
       repository: sapcc/kubernikus-terraform
       tag: 'latest'
@@ -969,7 +969,7 @@ task_tiller: &task_tiller
   platform: 'linux'
   
   image_resource:
-    type: docker-image
+    type: registry-image
     source:
       repository: sapcc/kubernikus-kubectl
       tag: 'latest'
