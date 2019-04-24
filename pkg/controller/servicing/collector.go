@@ -58,6 +58,7 @@ func RegisterServicingNodesCollector(logger log.Logger, factories config.Factori
 			Logger:          logger,
 			NodeObservatory: factories.NodesObservatory.NodeInformer(),
 			CoreOSVersion:   &coreos.Version{},
+			CoreOSRelease:   &coreos.Release{},
 		},
 	}
 
