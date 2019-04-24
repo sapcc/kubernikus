@@ -32,6 +32,7 @@ func NewFakeNodeLister(t *testing.T, logger log.Logger, kluster *v1.Kluster, nod
 		Kluster:       kluster,
 		Lister:        kl,
 		CoreOSVersion: coreos.NewFakeVersion(t, "2023.4.0"),
+		CoreOSRelease: coreos.NewFakeRelease(t, "2023.4.0"),
 	}
 
 	lister = &LoggingLister{
