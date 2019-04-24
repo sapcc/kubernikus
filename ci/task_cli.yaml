@@ -1,10 +1,10 @@
 platform: 'linux'
 
 image_resource:
-  type: docker-image
+  type: registry-image
   source:
     repository: golang
-    tag: 1.9.2-alpine3.6
+    tag: 1.11.5-alpine3.8
 inputs:
   - name: kubernikus.builds
     path: gopath/src/github.com/sapcc/kubernikus
