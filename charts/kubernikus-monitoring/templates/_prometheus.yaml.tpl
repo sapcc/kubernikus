@@ -1,27 +1,3 @@
-rule_files:
-  - ./*.rules
-  - ./*.alerts
-
-global:
-  scrape_timeout: 55s
-
-  external_labels:
-    region: {{ required ".Values.global.region missing" .Values.global.region }}
-    cluster: {{ required ".Values.global.cluster missing" .Values.global.cluster }}
-    cluster_type: {{ required ".Values.global.cluster_type missing" .Values.global.cluster_type }}
-
-
-{{- if .Values.use_alertmanager }}
-alerting:
-  alertmanagers:
-  - scheme: https
-    static_configs:
-    - targets:
-      - "alertmanager.eu-de-1.cloud.sap"
-      - "alertmanager.eu-nl-1.cloud.sap"
-{{- end}}
-
-scrape_configs:
 - job_name: 'endpoints'
   kubernetes_sd_configs:
   - role: endpoints
@@ -72,87 +48,6 @@ scrape_configs:
     target_label: kubernetes_namespace
   - source_labels: [__meta_kubernetes_pod_name]
     target_label: kubernetes_pod_name
-
-- job_name: 'kubernikus-system/etcd'
-  kubernetes_sd_configs:
-  - role: pod
-  relabel_configs:
-  - action: keep
-    source_labels: [__meta_kubernetes_namespace]
-    regex: kubernikus-system
-  - action: keep
-    source_labels: [__meta_kubernetes_pod_name]
-    regex: (etcd-[^\.]+).+
-  - source_labels: [__address__]
-    target_label: __address__
-    regex: ([^:]+)(:\d+)?
-    replacement: ${1}:2379
-  - target_label: component
-    replacement: etcd
-  - action: replace
-    source_labels: [__meta_kubernetes_pod_node_name]
-    target_label: instance
-
-- job_name: 'kubernikus-system/apiserver'
-  tls_config:
-    ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
-  bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
-  scheme: https
-  kubernetes_sd_configs:
-  - role: pod
-  relabel_configs:
-  - action: keep
-    source_labels: [__meta_kubernetes_namespace]
-    regex: kubernikus-system
-  - action: keep
-    source_labels: [__meta_kubernetes_pod_name]
-    regex: (kubernetes-master[^\.]+).+
-  - target_label: component
-    replacement: apiserver
-  - action: replace
-    source_labels: [__meta_kubernetes_pod_node_name]
-    target_label: instance
-
-- job_name: 'kubernikus-system/controller-manager'
-  kubernetes_sd_configs:
-  - role: pod
-  relabel_configs:
-  - action: keep
-    source_labels: [__meta_kubernetes_namespace]
-    regex: kubernikus-system
-  - action: keep
-    source_labels: [__meta_kubernetes_pod_name]
-    regex: (kubernetes-master[^\.]+).+
-  - source_labels: [__address__]
-    action: replace
-    regex: ([^:]+)(:\d+)?
-    replacement: ${1}:10252
-    target_label: __address__
-  - target_label: component
-    replacement: controller-manager
-  - action: replace
-    source_labels: [__meta_kubernetes_pod_node_name]
-    target_label: instance
-
-- job_name: 'kubernikus-system/scheduler'
-  kubernetes_sd_configs:
-  - role: pod
-  relabel_configs:
-  - action: keep
-    source_labels: [__meta_kubernetes_namespace]
-    regex: kubernikus-system
-  - action: keep
-    source_labels: [__meta_kubernetes_pod_name]
-    regex: (kubernetes-master[^\.]+).+
-  - source_labels: [__address__]
-    replacement: ${1}:10251
-    regex: ([^:]+)(:\d+)?
-    target_label: __address__
-  - target_label: component
-    replacement: scheduler
-  - action: replace
-    source_labels: [__meta_kubernetes_pod_node_name]
-    target_label: instance
 
 - job_name: 'kube-system/dnsmasq'
   kubernetes_sd_configs:
@@ -215,30 +110,33 @@ scrape_configs:
     action: replace
     replacement: ${1}
 
-- job_name: 'kube-system/kubelet'
+- job_name: kube-system/kubelet
+  scheme: https
   kubernetes_sd_configs:
   - role: node
+  bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+  tls_config:
+    ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+    insecure_skip_verify: true
   relabel_configs:
-  - action: labelmap
+  - separator: ;
     regex: __meta_kubernetes_node_label_(.+)
-  - target_label: component
+    replacement: $1
+    action: labelmap
+  - separator: ;
+    regex: (.*)
+    target_label: component
     replacement: kubelet
-  - action: replace
-    source_labels: [__meta_kubernetes_node_name]
+    action: replace
+  - source_labels: [__meta_kubernetes_node_name]
+    separator: ;
+    regex: (.*)
     target_label: instance
-  - source_labels: [__address__]
+    replacement: $1
     action: replace
-    target_label: __address__
-    regex: ([^:;]+):(\d+)
-    replacement: ${1}:10255
-  - source_labels: [__scheme__]
-    action: replace
-    target_label: __scheme__
-    regex: https
-    replacement: http
 
 - job_name: 'kubernetes-cadvisors'
-  scheme: https
+  scheme: http
   tls_config:
     ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
   bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
@@ -247,16 +145,7 @@ scrape_configs:
   relabel_configs:
     - action: labelmap
       regex: __meta_kubernetes_node_label_(.+)
-    - target_label: __address__
-      replacement: kubernetes.default:443
-    - source_labels: [__meta_kubernetes_node_name]
-      regex: (.+)
-      target_label: __metrics_path__
-      replacement: /api/v1/nodes/${1}:4194/proxy/metrics
-
-# Static Targets 
-#
-- job_name: 'kubernikus-prometheus'
-  metrics_path: /metrics
-  static_configs:
-    - targets: ['localhost:9090']
+    - source_labels: [__address__]
+      target_label: __address__
+      regex: ([^:]+)(:\d+)?
+      replacement: ${1}:4194

@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: Secret
+
+metadata:
+  name: kubernikus-additional-scrape-config
+  labels:
+    prometheus: {{ required ".Values.prometheusName missing" .Values.prometheusName }}
+
+data:
+  scrape-config.yaml: {{ include "scrapeConfig" . | b64enc }}

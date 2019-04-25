@@ -71,32 +71,7 @@ nginx-ingress:
         cpu: 10m
         memory: 20Mi
 
-prometheus-node-exporter:
-  image:
-    repository: quay.io/prometheus/node-exporter
-    tag: v0.16.0
 
-  serviceAccount:
-    create: false
-    name: default
-
-  rbac:
-    create: false
-
-  extraArgs:
-    - --collector.filesystem.ignored-mount-points=\"^/(sys|proc|dev|host|etc)($|/)\"
-
-  # set manually to empty
-  tolerations: []
-
-kube-state-metrics:
-  podAnnotations:
-    prometheus.io/scrape: "true"
-    prometheus.io/port: "8080"
-
-  rbac:
-    create: false
-    serviceAccountName: default
 
 grafana:
   server:
