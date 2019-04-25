@@ -305,7 +305,7 @@ func TestServicingListerUpdateSuccessful(t *testing.T) {
 		},
 	)
 	lister := NewFakeNodeLister(t, TestLogger(), kluster, nodes)
-	assert.Len(t, lister.Successful(), 1)
+	assert.Len(t, lister.Successful(), 2)
 }
 
 func TestServicingListerUpdateFailed(t *testing.T) {
