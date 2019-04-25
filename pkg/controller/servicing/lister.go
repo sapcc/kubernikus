@@ -254,24 +254,12 @@ func (d *NodeLister) Successful() []*core_v1.Node {
 	var found []*core_v1.Node
 
 	// Node must have updating annotation
-	// is not timed out
 	// Node must not be in the list of nodes to be rebooted
 	// Node must not be in the list of nodes to be replaced
 	// Node must be ready
 
 	for _, node := range d.Updating() {
 		failure := false
-
-		for _, r := range d.updateTimeout() {
-			if r == node {
-				failure = true
-				break
-			}
-		}
-
-		if failure {
-			continue
-		}
 
 		for _, r := range d.Reboot() {
 			if r == node {
