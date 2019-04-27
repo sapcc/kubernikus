@@ -51,7 +51,7 @@ func NewOperatorOptions() *Options {
 	options.KubernikusDomain = "kluster.staging.cloud.sap"
 	options.Namespace = "kubernikus"
 	options.MetricPort = 9091
-	options.Controllers = []string{"groundctl", "launchctl", "deorbiter", "routegc", "flight", "migration", "hammertime", "servicing"}
+	options.Controllers = []string{"groundctl", "launchctl", "deorbiter", "routegc", "flight", "migration", "hammertime"}
 	return options
 }
 
