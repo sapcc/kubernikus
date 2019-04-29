@@ -96,6 +96,12 @@ systemd:
           --mount volume=etc-cni,target=/etc/cni \
           --mount volume=opt-cni,target=/opt/cni \
 {{- end }}
+          --volume iscsiadm,kind=host,source=/usr/sbin/iscsiadm \
+          --mount volume=iscsiadm,target=/usr/sbin/iscsiadm \
+          --volume etc-iscsi,kind=host,source=/etc/iscsi \
+          --mount volume=etc-iscsi,target=/etc/iscsi \
+          --volume iscsid,kind=host,source=/usr/sbin/iscsid \
+          --mount volume=iscsid,target=/usr/sbin/iscsid \
           --insecure-options=image"
         Environment="KUBELET_IMAGE_TAG={{ .HyperkubeImageTag }}"
         Environment="KUBELET_IMAGE_URL=docker://{{ .HyperkubeImage }}"
