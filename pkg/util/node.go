@@ -1,6 +1,7 @@
 package util
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -8,6 +9,8 @@ import (
 	"strings"
 
 	v1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/client-go/kubernetes"
 
 	"github.com/sapcc/kubernikus/pkg/util/netutil"
 )
@@ -92,4 +95,32 @@ func GetMachineID() (string, error) {
 		return "", fmt.Errorf("failed to read %s: %v", machineIDPath, err)
 	}
 	return strings.TrimSpace(string(machineID)), nil
+}
+
+type annotations struct {
+	Metadata struct {
+		Annotations map[string]interface{} `json:"annotations"`
+	} `json:"metadata"`
+}
+
+func AddNodeAnnotation(nodeName, key, val string, client kubernetes.Interface) error {
+	var a annotations
+	a.Metadata.Annotations = map[string]interface{}{key: val}
+	data, err := json.Marshal(a)
+	if err != nil {
+		return fmt.Errorf("Failed to marshal annotation %v = %v: %s", key, val, err)
+	}
+	_, err = client.CoreV1().Nodes().Patch(nodeName, types.MergePatchType, data)
+	return err
+}
+
+func RemoveNodeAnnotation(nodeName, key string, client kubernetes.Interface) error {
+	var a annotations
+	a.Metadata.Annotations = map[string]interface{}{key: nil}
+	data, err := json.Marshal(a)
+	if err != nil {
+		return fmt.Errorf("Failed to marshal annotation %v = %v: %s", key, nil, err)
+	}
+	_, err = client.CoreV1().Nodes().Patch(nodeName, types.MergePatchType, data)
+	return err
 }
