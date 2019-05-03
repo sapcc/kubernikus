@@ -105,6 +105,7 @@ slack: &slack
   on_success: { put: slack, inputs: [], params: {alert_type: fixed } }
   on_failure: { put: slack, inputs: [], params: {alert_type: broke } }
   on_abort:   { put: slack, inputs: [], params: {alert_type: broke } }
+  on_error:   { put: slack, inputs: [], params: {alert_type: broke } }
 
 
 resources:
@@ -117,6 +118,7 @@ resources:
 
   - name: master.builds
     type: gh-status
+    icon: github-circle
     source:
       username: sapcc-bot
       password: ((github-com-access-token))
@@ -127,6 +129,7 @@ resources:
       depth: 1
 
   - name: secrets.git
+    icon: key-variant
     type: git
     webhook_token: aldhjalkdhahdjkahdjkhjadhjadhkjadlkjhAAdd
     check_every: 1h
@@ -137,6 +140,7 @@ resources:
       depth: 1
 
   - name: tiller-version.git
+    icon: key-variant
     type: git
     webhook_token: aldhjalkdhahdjkahdjkhjadhjadhkjadlkjhAAdd
     check_every: 1h
@@ -149,6 +153,7 @@ resources:
 
   - name: terraform.git
     type: git
+    icon: github-circle
     source:
       uri: https://github.com/sapcc/kubernikus.git
       branch: master
@@ -157,6 +162,7 @@ resources:
 
   - name: helm-charts.git
     type: git
+    icon: github-circle
     source:
       uri:    https://github.com/sapcc/helm-charts.git
       branch: master
@@ -164,6 +170,7 @@ resources:
 
   - name: slack
     type: slack-alert
+    icon: slack
     source:
       url: ((slack-webhook-url))
       channel: '#kubernikus-ci'
