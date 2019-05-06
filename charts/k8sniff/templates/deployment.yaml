@@ -37,8 +37,14 @@ spec:
         command:
           - /pipeline/source/k8sniff
           - -logtostderr
-          - --config /etc/config/k8sniff.json"
+          - --config=/etc/config/k8sniff.json
           - --v={{ default 9 .Values.log_level }}
+        readinessProbe:
+          httpGet:
+            path: /metrics
+            port: metrics
+          initialDelaySeconds: 5
+          periodSeconds: 3
         ports:
         - name: https
           containerPort: 8443
