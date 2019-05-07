@@ -232,14 +232,14 @@ storage:
       mode: 0644
       contents:
         inline: |
-		  #
-		  # VMware SCSI devices Timeout adjustment
-		  #
-		  # Modify the timeout value for VMware SCSI devices so that
-		  # in the event of a failover, we don't time out.
-		  # See Bug 271286 for more information.
+          #
+          # VMware SCSI devices Timeout adjustment
+          #
+          # Modify the timeout value for VMware SCSI devices so that
+          # in the event of a failover, we don't time out.
+          # See Bug 271286 for more information.
 
-		  ACTION=="add", SUBSYSTEMS=="scsi", ATTRS{vendor}=="VMware  ", ATTRS{model}=="Virtual disk", RUN+="/bin/sh -c 'echo 180 >/sys$DEVPATH/timeout'"
+          ACTION=="add", SUBSYSTEMS=="scsi", ATTRS{vendor}=="VMware  ", ATTRS{model}=="Virtual disk", RUN+="/bin/sh -c 'echo 180 >/sys$DEVPATH/timeout'"
     - path: /etc/ssl/certs/SAPGlobalRootCA.pem
       filesystem: root
       mode: 0644
