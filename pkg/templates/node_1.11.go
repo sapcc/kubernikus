@@ -227,7 +227,7 @@ networkd:
 
 storage:
   files:
-	- path: /etc/udev/rules.d/99-vmware-scsi-udev.rules
+    - path: /etc/udev/rules.d/99-vmware-scsi-udev.rules
       filesystem: root
       mode: 0644
       contents:
