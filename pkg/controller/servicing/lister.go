@@ -44,6 +44,7 @@ type (
 		Logger          log.Logger
 		NodeObservatory *nodeobservatory.NodeObservatory
 		CoreOSVersion   *coreos.Version
+		CoreOSRelease   *coreos.Release
 	}
 
 	// NodeLister knows how to figure out the state of Nodes
@@ -52,6 +53,7 @@ type (
 		Kluster       *v1.Kluster
 		Lister        listers_core_v1.NodeLister
 		CoreOSVersion *coreos.Version
+		CoreOSRelease *coreos.Release
 	}
 
 	// LoggingLister writes log messages
@@ -67,6 +69,7 @@ func NewNodeListerFactory(logger log.Logger, recorder record.EventRecorder, fact
 		Logger:          logger,
 		NodeObservatory: factories.NodesObservatory.NodeInformer(),
 		CoreOSVersion:   &coreos.Version{},
+		CoreOSRelease:   &coreos.Release{},
 	}
 }
 
@@ -85,6 +88,7 @@ func (f *NodeListerFactory) Make(k *v1.Kluster) (Lister, error) {
 		Kluster:       k,
 		Lister:        klusterLister,
 		CoreOSVersion: f.CoreOSVersion,
+		CoreOSRelease: f.CoreOSRelease,
 	}
 
 	lister = &LoggingLister{
@@ -112,8 +116,28 @@ func (d *NodeLister) All() []*core_v1.Node {
 func (d *NodeLister) Reboot() []*core_v1.Node {
 	var rebootable, found []*core_v1.Node
 
+	latest, err := d.CoreOSVersion.Stable()
+	if err != nil {
+		d.Logger.Log(
+			"msg", "Couldn't get CoreOS version.",
+			"err", err,
+		)
+		return found
+	}
+
+	released, err := d.CoreOSRelease.GrownUp(latest)
+	if err != nil {
+		d.Logger.Log(
+			"msg", "Couldn't get CoreOS releases.",
+			"err", err,
+		)
+	}
+	if !released {
+		return found
+	}
+
 	for _, pool := range d.Kluster.Spec.NodePools {
-		if !pool.Config.AllowReboot {
+		if *pool.Config.AllowReboot == false {
 			continue
 		}
 
@@ -151,7 +175,7 @@ func (d *NodeLister) Replace() []*core_v1.Node {
 	var upgradable, found []*core_v1.Node
 
 	for _, pool := range d.Kluster.Spec.NodePools {
-		if !pool.Config.AllowReplace {
+		if *pool.Config.AllowReplace == false {
 			continue
 		}
 
@@ -230,24 +254,12 @@ func (d *NodeLister) Successful() []*core_v1.Node {
 	var found []*core_v1.Node
 
 	// Node must have updating annotation
-	// is not timed out
 	// Node must not be in the list of nodes to be rebooted
 	// Node must not be in the list of nodes to be replaced
 	// Node must be ready
 
 	for _, node := range d.Updating() {
 		failure := false
-
-		for _, r := range d.updateTimeout() {
-			if r == node {
-				failure = true
-				break
-			}
-		}
-
-		if failure {
-			continue
-		}
 
 		for _, r := range d.Reboot() {
 			if r == node {

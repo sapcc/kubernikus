@@ -29,7 +29,7 @@ func (n *Node) Starting() bool {
 }
 
 func (n *Node) Stopping() bool {
-	if n.TaskState == "spawning" || n.TaskState == "scheduling" || n.TaskState == "networking" || n.TaskState == "block_device_mapping" {
+	if n.TaskState == "spawning" || n.TaskState == "scheduling" || n.TaskState == "networking" || n.TaskState == "block_device_mapping" || n.TaskState == "image_uploading" {
 		return false
 	}
 

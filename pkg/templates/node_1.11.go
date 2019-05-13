@@ -2,7 +2,7 @@
 
 package templates
 
-var Node_1_7 = `
+var Node_1_11 = `
 passwd:
   users:
     - name:          core
@@ -18,15 +18,22 @@ systemd:
   units:
     - name: iptables-restore.service
       enable: true
-    - name: ccloud-metadata.service
+    - name: ccloud-metadata-hostname.service
+      enable: true
       contents: |
         [Unit]
-        Description=Converged Cloud Metadata Agent
+        Description=Workaround for coreos-metadata hostname bug
 
         [Service]
-        ExecStart=/usr/bin/coreos-metadata --provider=openstack-metadata --attributes=/run/metadata/coreos --ssh-keys=core --hostname=/etc/hostname
+        ExecStartPre=/usr/bin/curl -s http://169.254.169.254/latest/meta-data/hostname
+        ExecStartPre=/usr/bin/bash -c "/usr/bin/systemctl set-environment COREOS_OPENSTACK_HOSTNAME=$(curl -s http://169.254.169.254/latest/meta-data/hostname)"
+        ExecStart=/usr/bin/hostnamectl set-hostname ${COREOS_OPENSTACK_HOSTNAME}
         Restart=on-failure
         RestartSec=30
+        RemainAfterExit=yes
+
+        [Install]
+        WantedBy=multi-user.target
     - name: docker.service
       enable: true
       dropins:
@@ -34,6 +41,34 @@ systemd:
           contents: |
             [Service]
             Environment="DOCKER_OPTS=--log-opt max-size=5m --log-opt max-file=5 --ip-masq=false --iptables=false --bridge=none"
+    - name: flanneld.service
+      enable: true
+      dropins:
+        - name: 10-ccloud-opts.conf
+          contents: |
+            [Service]
+            EnvironmentFile=/etc/kubernetes/environment
+            Environment="FLANNEL_OPTS=-ip-masq=false \
+                                      -kube-subnet-mgr=true \
+                                      -kubeconfig-file=/var/lib/kubelet/kubeconfig \
+                                      -kube-api-url={{ .ApiserverURL }}"
+            Environment="RKT_RUN_ARGS=--uuid-file-save=/var/lib/coreos/flannel-wrapper.uuid \
+                                      --volume var-lib-kubelet,kind=host,source=/var/lib/kubelet,readOnly=true \
+                                      --mount volume=var-lib-kubelet,target=/var/lib/kubelet \
+                                      --volume etc-kubernetes-certs,kind=host,source=/etc/kubernetes/certs,readOnly=true \
+                                      --mount volume=etc-kubernetes-certs,target=/etc/kubernetes/certs \
+                                      --volume etc-kube-flannel,kind=host,source=/etc/kube-flannel,readOnly=true \
+                                      --mount volume=etc-kube-flannel,target=/etc/kube-flannel"
+    - name: flannel-docker-opts.service
+      enable: true
+      contents: |
+        [Unit]
+        PartOf=flanneld.service
+        Requires=flanneld.service
+        After=flanneld.service
+        [Service]
+        Type=oneshot
+        ExecStart=/bin/true
     - name: kubelet.service
       enable: true
       contents: |
@@ -48,11 +83,22 @@ systemd:
           --volume var-lib-cni,kind=host,source=/var/lib/cni \
           --volume var-log,kind=host,source=/var/log \
           --volume etc-machine-id,kind=host,source=/etc/machine-id,readOnly=true \
+          --volume modprobe,kind=host,source=/usr/sbin/modprobe \
           --mount volume=var-lib-cni,target=/var/lib/cni \
-          --mount volume=var-log,target=/var/log" \
-          --mount volume=etc-machine-id,target=/etc/machine-id
+          --mount volume=var-log,target=/var/log \
+          --mount volume=etc-machine-id,target=/etc/machine-id \
+          --mount volume=modprobe,target=/usr/sbin/modprobe \
+{{- if .CalicoNetworking }}
+          --volume var-lib-calico,kind=host,source=/var/lib/calico,readOnly=true \
+          --volume etc-cni,kind=host,source=/etc/cni,readOnly=true \
+          --volume opt-cni,kind=host,source=/opt/cni,readOnly=true \
+          --mount volume=var-lib-calico,target=/var/lib/calico \
+          --mount volume=etc-cni,target=/etc/cni \
+          --mount volume=opt-cni,target=/opt/cni \
+{{- end }}
+          --insecure-options=image"
         Environment="KUBELET_IMAGE_TAG={{ .HyperkubeImageTag }}"
-        Environment="KUBELET_IMAGE_URL={{ .HyperkubeImage }}"
+        Environment="KUBELET_IMAGE_URL=docker://{{ .HyperkubeImage }}"
         Environment="KUBELET_IMAGE_ARGS=--name=kubelet --exec=/kubelet"
         ExecStartPre=/bin/mkdir -p /etc/kubernetes/manifests
         ExecStartPre=/bin/mkdir -p /var/lib/cni
@@ -61,19 +107,25 @@ systemd:
           --cert-dir=/var/lib/kubelet/pki \
           --cloud-config=/etc/kubernetes/openstack/openstack.config \
           --cloud-provider=openstack \
-          --require-kubeconfig \
+          --config=/etc/kubernetes/kubelet/config \
           --bootstrap-kubeconfig=/etc/kubernetes/bootstrap/kubeconfig \
+          --kubeconfig=/var/lib/kubelet/kubeconfig \
+{{- if .CalicoNetworking }}
+          --network-plugin=cni \
+{{- else }}
           --network-plugin=kubenet \
-          --lock-file=/var/run/lock/kubelet.lock \
-          --exit-on-lock-contention \
-          --pod-manifest-path=/etc/kubernetes/manifests \
-          --allow-privileged \
-          --cluster-dns={{ .ClusterDNSAddress }} \
-          --cluster-domain={{ .ClusterDomain }} \
-          --client-ca-file=/etc/kubernetes/certs/kubelet-clients-ca.pem \
+{{- end }}
           --non-masquerade-cidr=0.0.0.0/0 \
-          --read-only-port=0 \
-          --anonymous-auth=false
+          --lock-file=/var/run/lock/kubelet.lock \
+          --pod-infra-container-image=sapcc/pause-amd64:3.1 \
+{{- if .NodeLabels }}
+          --node-labels={{ .NodeLabels | join "," }} \
+{{- end }}
+{{- if .NodeTaints }}
+          --register-with-taints={{ .NodeTaints | join "," }} \
+{{- end }}
+          --volume-plugin-dir=/var/lib/kubelet/volumeplugins \
+          --exit-on-lock-contention 
         ExecStop=-/usr/bin/rkt stop --uuid-file=/var/run/kubelet-pod.uuid
         Restart=always
         RestartSec=10
@@ -129,8 +181,9 @@ systemd:
           --volume lib-modules,kind=host,source=/lib/modules,readOnly=true \
           --mount volume=lib-modules,target=/lib/modules \
           --stage1-from-dir=stage1-fly.aci \
-          {{ .HyperkubeImage }}:{{ .HyperkubeImageTag }} \
-          --name=kube-proxy \
+          --insecure-options=image \
+          docker://{{ .HyperkubeImage }}:{{ .HyperkubeImageTag }} \
+          --name kube-proxy \
           --exec=/hyperkube \
           -- \
           proxy \
@@ -289,10 +342,23 @@ storage:
       contents:
         inline: |-
           net.ipv4.conf.all.accept_redirects=1
-    - path: /etc/coreos/docker-1.12
+    - path: /etc/kube-flannel/net-conf.json
       filesystem: root
+      mode: 0644
       contents:
-        inline: yes
+        inline: |-
+          {
+            "Network": "{{ .ClusterCIDR }}",
+            "Backend": {
+               "Type": "host-gw"
+            }
+          }
+    - path: /etc/kubernetes/environment
+      filesystem: root
+      mode: 0644
+      contents:
+        inline: |-
+          NODE_NAME={{ .NodeName }}
     - path: /etc/kubernetes/certs/kubelet-clients-ca.pem
       filesystem: root
       mode: 0644
@@ -362,12 +428,28 @@ storage:
               user:
                 client-certificate: /etc/kubernetes/certs/apiserver-clients-system-kube-proxy.pem
                 client-key: /etc/kubernetes/certs/apiserver-clients-system-kube-proxy-key.pem
+    - path: /etc/kubernetes/kubelet/config
+      filesystem: root
+      mode: 0644
+      contents:
+        inline: |-
+          kind: KubeletConfiguration
+          apiVersion: kubelet.config.k8s.io/v1beta1
+          readOnlyPort: 0
+          clusterDomain: {{ .ClusterDomain }}
+          clusterDNS: [{{ .ClusterDNSAddress }}]
+          authentication:
+            x509:
+              clientCAFile: /etc/kubernetes/certs/kubelet-clients-ca.pem
+            anonymous:
+              enabled: true
+          rotateCertificates: true
     - path: /etc/kubernetes/kube-proxy/config
       filesystem: root
       mode: 0644
       contents:
         inline: |-
-          apiVersion: componentconfig/v1alpha1
+          apiVersion: kubeproxy.config.k8s.io/v1alpha1
           kind: KubeProxyConfiguration
           bindAddress: 0.0.0.0
           clientConnection:
@@ -385,7 +467,7 @@ storage:
             tcpCloseWaitTimeout: 1h0m0s
             tcpEstablishedTimeout: 24h0m0s
           enableProfiling: false
-          featureGates: ""
+          featureGates: {}
           healthzBindAddress: 0.0.0.0:10256
           hostnameOverride: {{ .NodeName }}
           iptables:
@@ -414,6 +496,7 @@ storage:
           [LoadBalancer]
           lb-version=v2
           subnet-id = {{ .OpenstackLBSubnetID }}
+          floating-network-id = {{ .OpenstackLBFloatingNetworkID }}
           create-monitor = yes
           monitor-delay = 1m
           monitor-timeout = 30s

@@ -74,11 +74,13 @@ func NewFakeKluster(opts *FakeKlusterOptions) (*v1.Kluster, []runtime.Object) {
 
 	for i, p := range opts.NodePools {
 		poolName := fmt.Sprintf("pool%d", i)
+		allowReboot := p.AllowReboot
+		allowReplace := p.AllowReplace
 		pool := models.NodePool{
 			Name: poolName,
-			Config: models.NodePoolConfig{
-				AllowReplace: p.AllowReboot,
-				AllowReboot:  p.AllowReplace,
+			Config: &models.NodePoolConfig{
+				AllowReplace: &allowReboot,
+				AllowReboot:  &allowReplace,
 			},
 		}
 		kluster.Spec.NodePools = append(kluster.Spec.NodePools, pool)

@@ -304,6 +304,7 @@ func TestServicingControllerReconcile(t *testing.T) {
 				Logger:          logger,
 				NodeObservatory: nodeobservatory.NewFakeController(kluster, nodes...),
 				CoreOSVersion:   &coreos.Version{},
+				CoreOSRelease:   coreos.NewFakeRelease(t, "2079.3.0"),
 			}
 
 			reconcilers := &KlusterReconcilerFactory{

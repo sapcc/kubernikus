@@ -64,16 +64,48 @@ func (d *updateCluster) Handle(params operations.UpdateClusterParams, principal 
 		// Keep previous AVZ
 		for _, specPool := range kluster.Spec.NodePools {
 			for i, paramPool := range nodePools {
-				if specPool.Name == paramPool.Name {
-					nodePools[i].AvailabilityZone = specPool.AvailabilityZone
+				if specPool.Name != paramPool.Name {
+					continue
+				}
+
+				nodePools[i].AvailabilityZone = specPool.AvailabilityZone
+
+				if paramPool.Config == nil {
+					nodePools[i].Config = specPool.Config
+				} else {
+					if paramPool.Config.AllowReboot == nil {
+						nodePools[i].Config.AllowReboot = specPool.Config.AllowReboot
+					}
+
+					if paramPool.Config.AllowReplace == nil {
+						nodePools[i].Config.AllowReplace = specPool.Config.AllowReplace
+					}
 				}
 			}
 		}
 
+		// restore defaults
 		for i, paramPool := range nodePools {
 			// Set default AvailabilityZone
 			if paramPool.AvailabilityZone == "" {
 				nodePools[i].AvailabilityZone = defaultAVZ
+			}
+
+			allowReboot := true
+			allowReplace := true
+			if paramPool.Config == nil {
+				nodePools[i].Config = &models.NodePoolConfig{
+					AllowReboot:  &allowReboot,
+					AllowReplace: &allowReplace,
+				}
+			}
+
+			if nodePools[i].Config.AllowReboot == nil {
+				nodePools[i].Config.AllowReboot = &allowReboot
+			}
+
+			if nodePools[i].Config.AllowReplace == nil {
+				nodePools[i].Config.AllowReplace = &allowReplace
 			}
 
 			if err := validateAavailabilityZone(nodePools[i].AvailabilityZone, metadata); err != nil {

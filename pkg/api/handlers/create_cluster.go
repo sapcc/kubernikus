@@ -66,6 +66,23 @@ func (d *createCluster) Handle(params operations.CreateClusterParams, principal 
 			spec.NodePools[i].AvailabilityZone = defaultAVZ
 		}
 
+		allowReboot := true
+		allowReplace := true
+		if pool.Config == nil {
+			spec.NodePools[i].Config = &models.NodePoolConfig{
+				AllowReboot:  &allowReboot,
+				AllowReplace: &allowReplace,
+			}
+		}
+
+		if spec.NodePools[i].Config.AllowReboot == nil {
+			spec.NodePools[i].Config.AllowReboot = &allowReboot
+		}
+
+		if spec.NodePools[i].Config.AllowReplace == nil {
+			spec.NodePools[i].Config.AllowReplace = &allowReplace
+		}
+
 		// Validate AVZ
 		if err := validateAavailabilityZone(spec.NodePools[i].AvailabilityZone, metadata); err != nil {
 			return NewErrorResponse(&operations.CreateClusterDefault{}, 409, "Availability Zone %s is invalid: %s", spec.NodePools[i].AvailabilityZone, err)

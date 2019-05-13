@@ -27,22 +27,29 @@ var Ignition = &ignition{}
 
 var passwordHashRounds = 1000000
 
-func (i *ignition) getIgnitionTemplate(kluster *kubernikusv1.Kluster) string {
+func (i *ignition) getIgnitionTemplate(kluster *kubernikusv1.Kluster) (string, error) {
 	switch {
+	case strings.HasPrefix(kluster.Spec.Version, "1.11"):
+		return Node_1_11, nil
 	case strings.HasPrefix(kluster.Spec.Version, "1.10"):
-		return Node_1_10
+		return Node_1_10, nil
 	case strings.HasPrefix(kluster.Spec.Version, "1.9"):
-		return Node_1_9
+		return Node_1_9, nil
 	case strings.HasPrefix(kluster.Spec.Version, "1.8"):
-		return Node_1_8
+		return Node_1_8, nil
+	case strings.HasPrefix(kluster.Spec.Version, "1.7"):
+		return Node_1_7, nil
 	default:
-		return Node_1_7
+		return "", fmt.Errorf("Can't find iginition template for version %s", kluster.Spec.Version)
 	}
 }
 
 func (i *ignition) GenerateNode(kluster *kubernikusv1.Kluster, pool *models.NodePool, nodeName string, secret *kubernikusv1.Secret, calicoNetworking bool, imageRegistry version.ImageRegistry, logger log.Logger) ([]byte, error) {
 
-	ignition := i.getIgnitionTemplate(kluster)
+	ignition, err := i.getIgnitionTemplate(kluster)
+	if err != nil {
+		return nil, err
+	}
 	tmpl, err := template.New("node").Funcs(sprig.TxtFuncMap()).Parse(ignition)
 	if err != nil {
 		return nil, err

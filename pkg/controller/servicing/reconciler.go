@@ -117,8 +117,7 @@ func (r *KlusterReconciler) Do() error {
 		return nil
 	}
 
-	// Default to skip klusters without the servicing annotation
-	if !util.EnabledValue(r.Kluster.ObjectMeta.Annotations[AnnotationServicingSafeguard]) {
+	if util.DisabledValue(r.Kluster.ObjectMeta.Annotations[AnnotationServicingSafeguard]) {
 		r.Logger.Log("msg", "Skippig upgrades. Manually disabled with safeguard annotation.")
 		return nil
 	}

@@ -6,13 +6,52 @@ groups:
     for: 1h
     labels:
       tier: kks
-      service: k8s
+      service: ground 
+      severity: info 
+      context: kluster
+      meta: "{{ $labels.kluster_id }} stuck in {{ $labels.phase }}"
+    annotations:
+      description: Kluster {{ $labels.kluster_id }} is stuck in {{ $labels.phase }} for 1h
+      summary: Kluster stuck in phase {{ $labels.phase }}
+
+  - alert: KubernikusKlusterStuckCreating
+    expr: kubernikus_kluster_status_phase{phase="Creating"} == 1
+    for: 1h
+    labels:
+      tier: kks
+      service: ground
       severity: warning
       context: kluster
       meta: "{{ $labels.kluster_id }} stuck in {{ $labels.phase }}"
     annotations:
       description: Kluster {{ $labels.kluster_id }} is stuck in {{ $labels.phase }} for 1h
       summary: Kluster stuck in phase {{ $labels.phase }}
+
+  - alert: KubernikusKlusterCreationBroken
+    expr: count(max(sum_over_time(kubernikus_kluster_status_phase{phase="Creating"}[4h])) by (kluster_id,region) > 10) by (region) > 0
+    for: 1h
+    labels:
+      tier: kks
+      service: ground
+      severity: critical
+      context: kluster
+      meta: "Investigate kubernikus control-plane {{ $labels.cluster }}"
+    annotations:
+      description: Klusters can't be created within 10min. There is a problem with the kubernikus control-plane {{ $labels.cluster }}. Most likely because volumes don't attach in time. Login to {{ $labels.cluster }} and investiage why pods in the `kubernikus` namespace can't start.  
+      summary: Klusters can't be created within 10min. There is a problem with the kubernikus control-plane {{ $labels.cluster }}.
+
+  - alert: KubernikusKlusterUnavailable
+    expr: min(probe_success{kubernetes_namespace="kubernikus"} != 1) by (kubernetes_name) and min(label_replace(kubernikus_kluster_status_phase{phase="Running"}== 1, "kubernetes_name", "$1", "kluster_id", "(.*)")) by (kubernetes_name)
+    for: 20m
+    labels:
+      tier: kks
+      service: kubernikus
+      severity: warning
+      context: kluster
+      meta: "{{ $labels.kubernetes_name }} is unavailable"
+    annotations:
+      description: "{{ $labels.kubernetes_name }} is unavailable since 10m"
+      summary: "{{ $labels.kubernetes_name }} is unavailable"
 
   - alert: KubernikusAPIDown
     expr: count by (instance) (probe_success{kubernetes_name="kubernikus-api"} != 1) >= count by (instance) (probe_success{kubernetes_name="kubernikus-api"} == 1)
@@ -26,18 +65,7 @@ groups:
       description: "{{ $labels.instance }} is unavailable"
       summary: "{{ $labels.instance }} is unavailable"
   
-  - alert: KubernikusKlusterUnavailable
-    expr: (probe_success{kubernetes_namespace="kubernikus"} != 1) / on (kubernetes_name) label_replace(kubernikus_kluster_status_phase{phase="Running"} == 1, "kubernetes_name", "$1", "kluster_id", "(.*)")
-    for: 20m
-    labels:
-      tier: kks
-      service: kubernikus
-      severity: warning
-      context: kluster
-      meta: "{{ $labels.kubernetes_name }} is unavailable"
-    annotations:
-      description: "{{ $labels.kubernetes_name }} is unavailable since 10m"
-      summary: "{{ $labels.kubernetes_name }} is unavailable"
+
 
 - name: operator.alerts
   rules:
@@ -115,7 +143,7 @@ groups:
       summary: Hammertime for kluster {{ $labels.kluster }}
 
   - alert: KubernikusMigrationErrors
-    expr: increase(kubernikus_migration_errors_total[6m]) > 1
+    expr: max(rate(kubernikus_migration_errors_total[12m])) by (kluster) > 0
     for: 10m
     labels:
       tier: kks
@@ -149,6 +177,6 @@ groups:
       severity: warning
       context: upgrade
       meta: "Node upgrade for kluster {{ $labels.kluster_id }} failing"
-    annotation:
+    annotations:
       summary: Node upgrade error for kluster {{ $labels.kluster_id }}
       description: A node upgrade failed for kluster {{ $labels.kluster_id }}. As a safety measure, all upgrade operations are stopped for this kluster. The node needs to be investigated. In order to proceed with upgrade remove the `kubernikus.cloud.sap/updateTimestamp` annotation from the failed node. A node is considered failed when it stays `NotReady` for longer than 10min. It is also considered failed when the OS version doesn't change within 10min. 

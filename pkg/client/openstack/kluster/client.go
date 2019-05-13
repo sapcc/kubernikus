@@ -103,6 +103,7 @@ func (c *klusterClient) CreateNode(kluster *v1.Kluster, pool *models.NodePool, n
 }
 
 func (c *klusterClient) DeleteNode(id string) error {
+
 	return servers.Delete(c.ComputeClient, id).ExtractErr()
 }
 

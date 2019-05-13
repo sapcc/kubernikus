@@ -2,6 +2,7 @@ package servicing
 
 import (
 	"fmt"
+	"regexp"
 	"time"
 
 	"github.com/go-kit/kit/log"
@@ -9,7 +10,6 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	core_v1 "k8s.io/api/core/v1"
 	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/record"
 
@@ -21,6 +21,7 @@ import (
 	"github.com/sapcc/kubernikus/pkg/controller/events"
 	"github.com/sapcc/kubernikus/pkg/controller/metrics"
 	"github.com/sapcc/kubernikus/pkg/controller/servicing/drain"
+	"github.com/sapcc/kubernikus/pkg/util"
 )
 
 const (
@@ -160,7 +161,12 @@ func (lc *NodeLifeCycler) Drain(node *core_v1.Node) error {
 
 // Reboot a node softly
 func (lc *NodeLifeCycler) Reboot(node *core_v1.Node) error {
-	if err := lc.Openstack.RebootNode(node.Spec.ExternalID); err != nil {
+	id, err := instanceIDFromProviderID(node.Spec.ProviderID)
+	if err != nil {
+		return errors.Wrap(err, "rebooting node failed")
+	}
+
+	if err := lc.Openstack.RebootNode(id); err != nil {
 		return errors.Wrap(err, "rebooting node failed")
 	}
 
@@ -169,7 +175,12 @@ func (lc *NodeLifeCycler) Reboot(node *core_v1.Node) error {
 
 // Replace a node by temrinating it
 func (lc *NodeLifeCycler) Replace(node *core_v1.Node) error {
-	if err := lc.Openstack.DeleteNode(node.Spec.ExternalID); err != nil {
+	id, err := instanceIDFromProviderID(node.Spec.ProviderID)
+	if err != nil {
+		return errors.Wrap(err, "deleting node failed")
+	}
+
+	if err := lc.Openstack.DeleteNode(id); err != nil {
 		return errors.Wrap(err, "deleting node failed")
 	}
 	return nil
@@ -187,17 +198,15 @@ func (lc *NodeLifeCycler) Uncordon(node *core_v1.Node) error {
 }
 
 func (lc *NodeLifeCycler) setUpdatingAnnotation(node *core_v1.Node) error {
-	patch := fmt.Sprintf(`[{"op":"add","path":"/metadata/annotations","value":{"%s":"%s"}}]`, AnnotationUpdateTimestamp, Now().UTC().Format(time.RFC3339))
-	if _, err := lc.Kubernetes.CoreV1().Nodes().Patch(node.Name, types.JSONPatchType, []byte(patch)); err != nil {
-		errors.Wrap(err, "failed to set updating annotation")
+	if err := util.AddNodeAnnotation(node.Name, AnnotationUpdateTimestamp, Now().UTC().Format(time.RFC3339), lc.Kubernetes); err != nil {
+		return errors.Wrap(err, "failed to set updating annotation")
 	}
 	return nil
 }
 
 func (lc *NodeLifeCycler) removeUpdatingAnnotation(node *core_v1.Node) error {
-	patch := fmt.Sprintf(`[{"op":"remove","path":"/metadata/annotations","value":"%s"}]`, AnnotationUpdateTimestamp)
-	if _, err := lc.Kubernetes.CoreV1().Nodes().Patch(node.Name, types.JSONPatchType, []byte(patch)); err != nil {
-		errors.Wrap(err, "failed to remove updating annotation")
+	if err := util.RemoveNodeAnnotation(node.Name, AnnotationUpdateTimestamp, lc.Kubernetes); err != nil {
+		return errors.Wrap(err, "failed to remove updating annotation")
 	}
 	return nil
 }
@@ -424,4 +433,17 @@ func (lc *InstrumentingLifeCycler) Uncordon(node *core_v1.Node) (err error) {
 		}
 	}(time.Now())
 	return lc.LifeCycler.Uncordon(node)
+}
+
+// instanceIDFromProviderID splits a provider's id and return instanceID.
+// A providerID is build out of '${ProviderName}:///${instance-id}'which contains ':///'.
+// See cloudprovider.GetInstanceProviderID and Instances.InstanceID.
+func instanceIDFromProviderID(providerID string) (instanceID string, err error) {
+	var providerIDRegexp = regexp.MustCompile(`^openstack:///([^/]+)$`)
+
+	matches := providerIDRegexp.FindStringSubmatch(providerID)
+	if len(matches) != 2 {
+		return "", fmt.Errorf("ProviderID \"%s\" didn't match expected format \"openstack:///InstanceID\"", providerID)
+	}
+	return matches[1], nil
 }
