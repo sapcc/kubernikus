@@ -193,6 +193,20 @@ eventexporter:
             expr: FailedAttachVolume
           labels:
             node: InvolvedObject.Name
+        - name: volume_mount_bad_request_total
+          event_matcher:
+          - key: InvolvedObject.Kind
+            expr: Pod
+          - key: Reason
+            expr: (FailedAttachVolume|FailedMount)
+          - key: Type
+            expr: Warning
+          - key: Source.Component
+            expr: attachdetach.*
+          - key: Message
+            expr: .*failed to attach ([-0-9a-f]+) volume to.*compute: Invalid request due to incorrect syntax or missing required parameters.
+          labels:
+            volume: Message[1]
 
 grafana:
   image:
