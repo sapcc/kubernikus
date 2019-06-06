@@ -144,7 +144,7 @@ func (lc *NodeLifeCycler) Drain(node *core_v1.Node) error {
 	}
 
 	options := &drain.DrainOptions{
-		Force:              false,
+		Force:              true,
 		IgnoreDaemonsets:   true,
 		GracePeriodSeconds: -1,
 		Timeout:            EvictionTimeout,
