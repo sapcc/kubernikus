@@ -100,6 +100,11 @@ systemd:
         Environment="KUBELET_IMAGE_TAG={{ .HyperkubeImageTag }}"
         Environment="KUBELET_IMAGE_URL=docker://{{ .HyperkubeImage }}"
         Environment="KUBELET_IMAGE_ARGS=--name=kubelet --exec=/kubelet"
+{{- if .CalicoNetworking }}
+        ExecStartPre=/bin/mkdir -p /etc/cni
+        ExecStartPre=/bin/mkdir -p /opt/cni
+        ExecStartPre=/bin/mkdir -p /var/lib/calico
+{{- end }}
         ExecStartPre=/bin/mkdir -p /etc/kubernetes/manifests
         ExecStartPre=/bin/mkdir -p /var/lib/cni
         ExecStartPre=-/usr/bin/rkt rm --uuid-file=/var/run/kubelet-pod.uuid
@@ -229,6 +234,19 @@ networkd:
 
 storage:
   files:
+    - path: /etc/udev/rules.d/99-vmware-scsi-udev.rules
+      filesystem: root
+      mode: 0644
+      contents:
+        inline: |
+          #
+          # VMware SCSI devices Timeout adjustment
+          #
+          # Modify the timeout value for VMware SCSI devices so that
+          # in the event of a failover, we don't time out.
+          # See Bug 271286 for more information.
+
+          ACTION=="add", SUBSYSTEMS=="scsi", ATTRS{vendor}=="VMware  ", ATTRS{model}=="Virtual disk", RUN+="/bin/sh -c 'echo 180 >/sys$DEVPATH/timeout'"
     - path: /etc/ssl/certs/SAPGlobalRootCA.pem
       filesystem: root
       mode: 0644
