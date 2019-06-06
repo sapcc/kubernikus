@@ -847,6 +847,7 @@ task_helm_kubernikus: &task_helm_kubernikus
           --install
         kubectl rollout status deployment/kubernikus-api --namespace=kubernikus-system
         kubectl rollout status deployment/kubernikus-operator --namespace=kubernikus-system
+        kubectl rollout status deployment/k8sniff-ingress-lb --namespace=kubernikus-system
   
   params:
     OS_AUTH_URL:
@@ -1012,6 +1013,7 @@ slack: &slack
   on_success: { put: slack, inputs: [], params: {alert_type: fixed } }
   on_failure: { put: slack, inputs: [], params: {alert_type: broke } }
   on_abort:   { put: slack, inputs: [], params: {alert_type: broke } }
+  on_error:   { put: slack, inputs: [], params: {alert_type: broke } }
 
 
 resources:
