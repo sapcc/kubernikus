@@ -26,7 +26,7 @@ import (
 
 const (
 	// EvictionTimeout defines when to abort the draining of a node
-	EvictionTimeout = 10 * time.Minute
+	EvictionTimeout = 4 * time.Minute
 )
 
 type (
