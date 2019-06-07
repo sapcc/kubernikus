@@ -11,8 +11,6 @@ passwd:
       ssh_authorized_keys:
         - {{ .LoginPublicKey | quote }}
 {{- end }}
-locksmith:
-  reboot_strategy: "reboot"
 
 systemd:
   units:
