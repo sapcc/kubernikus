@@ -1,0 +1,42 @@
+{{ if .Values.controllerManager.rejectProxy.enabled }}
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ include "master.fullname" . }}-reject-proxy
+  namespace: {{ .Release.Namespace }}
+---
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRole
+metadata:
+  name: {{ include "master.fullname" . }}-reject-proxy
+rules:
+- apiGroups: [""]
+  resources: ["configmaps"]
+  verbs: ["get", "watch", "list"]
+---
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ include "master.fullname" . }}-reject-proxy
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ include "master.fullname" . }}-reject-proxy
+subjects:
+- kind: ServiceAccount
+  name: {{ include "master.fullname" . }}-reject-proxy
+  namespace: {{ .Release.Namespace }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "master.fullname" . }}-reject-proxy
+  namespace: {{ .Release.Namespace }}
+data:
+# Configuration example
+#  config: |-
+#    blockedUrls:
+#    - name: neutron-lbaas
+#      method: "POST"
+#      url: "https://someurl:443/v2.0/lbaas.*"
+{{ end }}

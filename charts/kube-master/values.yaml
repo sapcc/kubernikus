@@ -69,6 +69,20 @@ controllerManager:
       cpu: 500m
       memory: 512Mi
 
+  rejectProxy:
+    enabled: false
+    image:
+      repository: hub.global.cloud.sap/d074427/reject-proxy
+      tag: 0.1.0
+      pullPolicy: IfNotPresent
+    resources:
+      requests:
+        cpu: 50m
+        memory: 16Mi
+      limits:
+        cpu: 100m
+        memory: 64Mi
+
 scheduler:
   replicaCount: 1
   resources:
