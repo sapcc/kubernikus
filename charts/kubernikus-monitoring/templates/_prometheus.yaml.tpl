@@ -134,18 +134,52 @@
     target_label: instance
     replacement: $1
     action: replace
+  metric_relabel_configs:
+    - source_labels: [ id ]
+      action: replace
+      regex: ^/system\.slice/(.+)\.service$
+      target_label: systemd_service_name
+      replacement: '${1}'
+    - source_labels: [ id ]
+      action: replace
+      regex: ^/system\.slice/(.+)\.service$
+      target_label: container_name
+      replacement: '${1}'
 
 - job_name: 'kubernetes-cadvisors'
-  scheme: http
+  scheme: https
+  metrics_path: /metrics/cadvisor
   tls_config:
     ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+    insecure_skip_verify: true
   bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
   kubernetes_sd_configs:
     - role: node
   relabel_configs:
     - action: labelmap
       regex: __meta_kubernetes_node_label_(.+)
-    - source_labels: [__address__]
-      target_label: __address__
-      regex: ([^:]+)(:\d+)?
-      replacement: ${1}:4194
+  metric_relabel_configs:
+    - source_labels: [ id ]
+      action: replace
+      regex: ^/system\.slice/(.+)\.service$
+      target_label: systemd_service_name
+      replacement: '${1}'
+    - source_labels: [ id ]
+      action: replace
+      regex: ^/system\.slice/(.+)\.service$
+      target_label: container_name
+      replacement: '${1}'
+    - source_labels: [ namespace ]
+      action: keep
+      regex: (^$|^kube-system$)
+    - source_labels:
+      - container_name
+      - __name__
+      # The system container POD is used for networking.
+      regex: POD;
+      action: drop
+    - source_labels: [ container_name ]
+      regex: ^$
+      action: drop
+    - regex: ^id$
+      action: labeldrop

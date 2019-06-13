@@ -32,7 +32,7 @@ run:
       helm upgrade kubernikus-monitoring kubernikus-copy.builds/charts/kubernikus-monitoring/ \
         --values secrets.git/kubernikus/$KUBERNIKUS_NAME/values/globals.yaml \
         --values secrets.git/kubernikus/$KUBERNIKUS_NAME/values/kubernikus-monitoring.yaml \
-        --namespace=kubernikus-monitoring \
+        --namespace=kubernikus-system \
         --install
 
 params:
