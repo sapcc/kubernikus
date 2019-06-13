@@ -98,6 +98,9 @@ systemd:
         Environment="KUBELET_IMAGE_TAG={{ .HyperkubeImageTag }}"
         Environment="KUBELET_IMAGE_URL=docker://{{ .HyperkubeImage }}"
         Environment="KUBELET_IMAGE_ARGS=--name=kubelet --exec=/kubelet"
+{{- if .CalicoNetworking }}
+        ExecStartPre=/bin/mkdir -p /etc/cni /opt/cni /var/lib/calico
+ {{- end }}
         ExecStartPre=/bin/mkdir -p /etc/kubernetes/manifests
         ExecStartPre=/bin/mkdir -p /var/lib/cni
         ExecStartPre=-/usr/bin/rkt rm --uuid-file=/var/run/kubelet-pod.uuid
@@ -123,7 +126,7 @@ systemd:
           --register-with-taints={{ .NodeTaints | join "," }} \
 {{- end }}
           --volume-plugin-dir=/var/lib/kubelet/volumeplugins \
-          --exit-on-lock-contention 
+          --exit-on-lock-contention
         ExecStop=-/usr/bin/rkt stop --uuid-file=/var/run/kubelet-pod.uuid
         Restart=always
         RestartSec=10
