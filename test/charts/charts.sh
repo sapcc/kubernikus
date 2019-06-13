@@ -23,6 +23,7 @@ ServiceAccount:v1"`
 
 helm init --client-only
 helm repo add bugroger-charts https://raw.githubusercontent.com/BugRoger/charts/repo
+helm repo add sapcc https://charts.global.cloud.sap
 
 pwd=$(pwd)
 for chart in $pwd/charts/*; do
