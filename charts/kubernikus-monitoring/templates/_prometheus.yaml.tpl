@@ -169,9 +169,6 @@
       regex: ^/system\.slice/(.+)\.service$
       target_label: container_name
       replacement: '${1}'
-    - source_labels: [ namespace ]
-      action: keep
-      regex: (^$|^kube-system$)
     - source_labels:
       - container_name
       - __name__
