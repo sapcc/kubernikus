@@ -1,6 +1,6 @@
 #!/bin/bash
 
-cd charts/kubernikus-rules
+cd charts/kubernikus-monitoring
 
 echo "Checking prometheus alert and aggregation rules ..."
 promtool check rules aggregations/*.rules alerts/*.alerts
