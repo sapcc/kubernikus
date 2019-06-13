@@ -74,7 +74,6 @@ controllerManager:
     image:
       repository: hub.global.cloud.sap/d074427/reject-proxy
       tag: 0.1.0
-      pullPolicy: IfNotPresent
     resources:
       requests:
         cpu: 50m

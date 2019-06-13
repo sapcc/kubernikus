@@ -188,19 +188,24 @@ spec:
 {{ if .Values.controllerManager.rejectProxy.enabled }}
         - name: reject-proxy
           command:
-            - /reject-proxy
-            - -v=true
-            - -namespace={{ .Release.Namespace }}
-            - -config-map={{ include "master.fullname" . }}-reject-proxy
-            - -cert-dir=/tmp/reject-cert
-            image: "{{ .Values.controllerManager.rejectProxy.image.repository }}:{{ .Values.controllerManager.rejectProxy.image.tag }}"
-            ports:
-              - containerPort: 8080
-                name: reject-proxy
-                protocol: TCP
-            volumeMounts:
-              - mountPath: /tmp/reject-cert
-                name: reject-cert-exchange
+            - /bin/sh
+          args:
+            - -ce
+            - |-
+              /reject-proxy \
+              -v=true \
+              -namespace={{ .Release.Namespace }} \
+              -cert-dir=/tmp/reject-cert \
+              -config-map={{ include "master.fullname" . }}-reject-proxy
+          image: "{{ .Values.controllerManager.rejectProxy.image.repository }}:{{ .Values.controllerManager.rejectProxy.image.tag }}"
+          ports:
+            - containerPort: 8080
+              name: reject-proxy
+              protocol: TCP
+          volumeMounts:
+            - mountPath: /tmp/reject-cert
+              name: reject-cert-exchange
+          resources:
 {{ toYaml .Values.controllerManager.rejectProxy.resources | indent 12 }}
 {{ end }}
 ---
