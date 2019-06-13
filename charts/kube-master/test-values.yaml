@@ -32,3 +32,6 @@ imagesForVersion:
     hyperkube:
       repository: abc
       tag: xyz
+controllerManager:
+    rejectProxy:
+      enabled: true

@@ -16,8 +16,10 @@ for chart in $pwd/charts/*; do
     fi
     helm dependency build --debug
     if [ -f test-values.yaml ]; then
+      helm lint --debug -f test-values.yaml . && \
       helm template --debug -f test-values.yaml . > /tmp/chart.yaml
     else
+      helm lint --debug . && \
       helm template --debug . > /tmp/chart.yaml
     fi
     retval=$?
