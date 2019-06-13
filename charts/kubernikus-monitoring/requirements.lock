@@ -7,9 +7,15 @@ dependencies:
   version: 1.0.0
 - name: prometheus-server
   repository: https://charts.global.cloud.sap
-  version: 1.1.9
+  version: 1.1.13
 - name: prometheus-node-exporter
   repository: https://kubernetes-charts.storage.googleapis.com/
   version: 0.3.0
-digest: sha256:73e789829add1563ad0a967c222dbc945429afc8707edb2414eb84929b039607
-generated: 2019-05-27T17:10:03.283899731+02:00
+- name: oomkill-exporter
+  repository: https://charts.global.cloud.sap
+  version: 0.1.0
+- name: eventexporter
+  repository: https://charts.global.cloud.sap
+  version: 0.1.0
+digest: sha256:b7298141402e64097ba98cee6542b499932eb3676d56678143f8cc2912c980e9
+generated: 2019-06-13T14:38:58.633480932+02:00
