@@ -188,3 +188,18 @@
       action: drop
     - regex: ^id$
       action: labeldrop
+
+- job_name: 'kube-system/apiserver'
+  tls_config:
+    ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+    insecure_skip_verify: true
+  bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+  scheme: https
+  static_configs:
+  - targets:
+    - $(KUBERNETES_SERVICE_HOST)
+  relabel_configs:
+    - target_label: component
+      replacement: apiserver
+  metric_relabel_configs:
+{{ include "prometheus.keep-metrics.metric-relabel-config" .Values.allowedMetrics.kubeAPIServer | indent 4 }}
