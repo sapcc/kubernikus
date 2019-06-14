@@ -1455,12 +1455,12 @@ jobs:
     plan:
     - aggregate:
       - get: ASIA.tag
-        trigger: true
+        trigger: false
         passed: [prometheus-operator_ap-ae-1]
       - get: secrets.git
         passed: [prometheus-operator_ap-ae-1]
       - get: kubernikus.builds
-        trigger: true
+        trigger: false
         resource: master.builds
         passed: [prometheus-operator_ap-ae-1]
     - aggregate:
@@ -1599,12 +1599,12 @@ jobs:
     plan:
     - aggregate:
       - get: ASIA.tag
-        trigger: true
+        trigger: false
         passed: [prometheus-operator_ap-au-1]
       - get: secrets.git
         passed: [prometheus-operator_ap-au-1]
       - get: kubernikus.builds
-        trigger: true
+        trigger: false
         resource: master.builds
         passed: [prometheus-operator_ap-au-1]
     - aggregate:
@@ -1751,12 +1751,12 @@ jobs:
     plan:
     - aggregate:
       - get: ASIA.tag
-        trigger: true
+        trigger: false
         passed: [prometheus-operator_ap-cn-1]
       - get: secrets.git
         passed: [prometheus-operator_ap-cn-1]
       - get: kubernikus.builds
-        trigger: true
+        trigger: false
         resource: master.builds
         passed: [prometheus-operator_ap-cn-1]
     - aggregate:
@@ -1903,12 +1903,12 @@ jobs:
     plan:
     - aggregate:
       - get: ASIA.tag
-        trigger: true
+        trigger: false
         passed: [prometheus-operator_ap-jp-1]
       - get: secrets.git
         passed: [prometheus-operator_ap-jp-1]
       - get: kubernikus.builds
-        trigger: true
+        trigger: false
         resource: master.builds
         passed: [prometheus-operator_ap-jp-1]
     - aggregate:
@@ -2055,12 +2055,12 @@ jobs:
     plan:
     - aggregate:
       - get: ASIA.tag
-        trigger: true
+        trigger: false
         passed: [prometheus-operator_ap-jp-2]
       - get: secrets.git
         passed: [prometheus-operator_ap-jp-2]
       - get: kubernikus.builds
-        trigger: true
+        trigger: false
         resource: master.builds
         passed: [prometheus-operator_ap-jp-2]
     - aggregate:
@@ -2207,12 +2207,12 @@ jobs:
     plan:
     - aggregate:
       - get: ASIA.tag
-        trigger: true
+        trigger: false
         passed: [prometheus-operator_ap-sa-1]
       - get: secrets.git
         passed: [prometheus-operator_ap-sa-1]
       - get: kubernikus.builds
-        trigger: true
+        trigger: false
         resource: master.builds
         passed: [prometheus-operator_ap-sa-1]
     - aggregate:
@@ -2416,12 +2416,12 @@ jobs:
     plan:
     - aggregate:
       - get: EMEA.tag
-        trigger: true
+        trigger: false
         passed: [prometheus-operator_eu-de-1]
       - get: secrets.git
         passed: [prometheus-operator_eu-de-1]
       - get: kubernikus.builds
-        trigger: true
+        trigger: false
         resource: master.builds
         passed: [prometheus-operator_eu-de-1]
     - aggregate:
@@ -2560,12 +2560,12 @@ jobs:
     plan:
     - aggregate:
       - get: EMEA.tag
-        trigger: true
+        trigger: false
         passed: [prometheus-operator_eu-de-2]
       - get: secrets.git
         passed: [prometheus-operator_eu-de-2]
       - get: kubernikus.builds
-        trigger: true
+        trigger: false
         resource: master.builds
         passed: [prometheus-operator_eu-de-2]
     - aggregate:
@@ -2704,12 +2704,12 @@ jobs:
     plan:
     - aggregate:
       - get: EMEA.tag
-        trigger: true
+        trigger: false
         passed: [prometheus-operator_eu-nl-1]
       - get: secrets.git
         passed: [prometheus-operator_eu-nl-1]
       - get: kubernikus.builds
-        trigger: true
+        trigger: false
         resource: master.builds
         passed: [prometheus-operator_eu-nl-1]
     - aggregate:
@@ -2856,12 +2856,12 @@ jobs:
     plan:
     - aggregate:
       - get: EMEA.tag
-        trigger: true
+        trigger: false
         passed: [prometheus-operator_eu-ru-1]
       - get: secrets.git
         passed: [prometheus-operator_eu-ru-1]
       - get: kubernikus.builds
-        trigger: true
+        trigger: false
         resource: master.builds
         passed: [prometheus-operator_eu-ru-1]
     - aggregate:
@@ -3073,12 +3073,12 @@ jobs:
     plan:
     - aggregate:
       - get: AMERICAS.tag
-        trigger: true
+        trigger: false
         passed: [prometheus-operator_la-br-1]
       - get: secrets.git
         passed: [prometheus-operator_la-br-1]
       - get: kubernikus.builds
-        trigger: true
+        trigger: false
         resource: master.builds
         passed: [prometheus-operator_la-br-1]
     - aggregate:
@@ -3225,12 +3225,12 @@ jobs:
     plan:
     - aggregate:
       - get: AMERICAS.tag
-        trigger: true
+        trigger: false
         passed: [prometheus-operator_na-ca-1]
       - get: secrets.git
         passed: [prometheus-operator_na-ca-1]
       - get: kubernikus.builds
-        trigger: true
+        trigger: false
         resource: master.builds
         passed: [prometheus-operator_na-ca-1]
     - aggregate:
@@ -3369,12 +3369,12 @@ jobs:
     plan:
     - aggregate:
       - get: AMERICAS.tag
-        trigger: true
+        trigger: false
         passed: [prometheus-operator_na-us-1]
       - get: secrets.git
         passed: [prometheus-operator_na-us-1]
       - get: kubernikus.builds
-        trigger: true
+        trigger: false
         resource: master.builds
         passed: [prometheus-operator_na-us-1]
     - aggregate:
@@ -3521,12 +3521,12 @@ jobs:
     plan:
     - aggregate:
       - get: AMERICAS.tag
-        trigger: true
+        trigger: false
         passed: [prometheus-operator_na-us-3]
       - get: secrets.git
         passed: [prometheus-operator_na-us-3]
       - get: kubernikus.builds
-        trigger: true
+        trigger: false
         resource: master.builds
         passed: [prometheus-operator_na-us-3]
     - aggregate:
@@ -3722,12 +3722,12 @@ jobs:
     plan:
     - aggregate:
       - get: INFRA.tag
-        trigger: true
+        trigger: false
         passed: [prometheus-operator_qa-de-1]
       - get: secrets.git
         passed: [prometheus-operator_qa-de-1]
       - get: kubernikus.builds
-        trigger: true
+        trigger: false
         resource: master.builds
         passed: [prometheus-operator_qa-de-1]
     - aggregate:

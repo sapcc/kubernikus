@@ -464,12 +464,12 @@ jobs:
     plan:
     - aggregate:
       - get: <%= group %>.tag
-        trigger: true
+        trigger: false
         passed: [prometheus-operator_<%= region %>]
       - get: secrets.git
         passed: [prometheus-operator_<%= region %>]
       - get: kubernikus.builds
-        trigger: true
+        trigger: false
         resource: master.builds
         passed: [prometheus-operator_<%= region %>]
     - aggregate:
