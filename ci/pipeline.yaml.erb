@@ -439,46 +439,6 @@ jobs:
             <<: *auth_<%= region %>
     <<: *slack
 
-  - name: prometheus-operator_<%= region %>
-    plan:
-    - aggregate:
-      - get: <%= group %>.tag
-        trigger: true
-        passed: [tiller_<%= region %>]
-      - get: helm-charts-prometheus-operator.git
-        trigger: true
-        passed: [tiller_<%= region %>]
-      - get: secrets.git
-        passed: [tiller_<%= region %>]
-    - aggregate:
-      - task: prometheus-operator_<%= region %>
-        input_mapping: {helm-charts.git: helm-charts-prometheus-operator.git}
-        config:
-          <<: *task_helm_prometheus-operator
-        params:
-          <<: *auth_<%= region %>
-    <<: *slack
-
-  - name: kubernikus-monitoring_<%= region %>
-    serial: true
-    plan:
-    - aggregate:
-      - get: <%= group %>.tag
-        trigger: false
-        passed: [prometheus-operator_<%= region %>]
-      - get: secrets.git
-        passed: [prometheus-operator_<%= region %>]
-      - get: kubernikus.builds
-        trigger: false
-        resource: master.builds
-        passed: [prometheus-operator_<%= region %>]
-    - aggregate:
-      - task: kubernikus-monitoring_<%= region %>
-        config:
-          <<: *task_helm_kubernikus-monitoring
-        params:
-          <<: *auth_<%= region %>
-
   - name: soak_<%= region %>
     serial: true
     build_logs_to_retain: 168
@@ -547,4 +507,11 @@ groups:
       - tiller_<%= region %>
       - deploy_<%= region %>
       - soak_<%= region %>
+<% end %>
+
+  - name: kubernikus-monitoring
+    jobs:
+<% DEPLOYABLE_REGIONS.each do |region, meta| %>
+      - name: prometheus-operator_<%= region %>
+      - name: kubernikus-monitoring_<%= region %>
 <% end %>
