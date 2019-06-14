@@ -1,9 +1,27 @@
-# Name of the Prometheus to which the rules should be assigned to.
+# Name of the Prometheus to which the alert and aggregation rules should be assigned to.
 prometheusName: kubernikus
 
 kube-rules:
   # Name of the Prometheus to which the rules should be assigned to.
   prometheusName: kubernikus
+
+allowedMetrics:
+  cAdvisor:
+    - container_cpu_cfs_periods_total
+    - container_cpu_usage_seconds_total
+    - container_fs_inodes_total
+    - container_fs_limit_bytes
+    - container_fs_usage_bytes
+    - container_last_seen
+    - container_memory_working_set_bytes
+    - container_network_receive_bytes_total
+    - container_network_transmit_bytes_total
+
+  kubelet:
+    - kubelet_pod_start_latency_microseconds
+    - kubelet_running_pod_count
+    - process_max_fds
+    - process_open_fds
 
 prometheus-kubernikus:
   name: kubernikus
@@ -43,8 +61,13 @@ prometheus-kubernikus:
     endpoints:
       enabled: false
 
-  # alertmanagers:
-  #  - alertmanager.eu-de-1.cloud.sap
+  resources:
+    requests:
+      cpu: 100m
+      memory: 500Mi
+
+  alertmanagers:
+    - alertmanager.eu-de-1.cloud.sap
   #  - alertmanager.eu-nl-1.cloud.sap
 
 prometheus-node-exporter:

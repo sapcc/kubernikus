@@ -145,6 +145,13 @@
       regex: ^/system\.slice/(.+)\.service$
       target_label: container_name
       replacement: '${1}'
+{{ include "prometheus.keep-metrics.metric-relabel-config" .Values.allowedMetrics.kubelet | indent 4 }}
+    - source_labels:
+      - container_name
+      - __name__
+      # The system container POD is used for networking.
+      regex: POD;({{ .Values.allowedMetrics.kubelet | join "|" }})
+      action: drop
 
 - job_name: 'kubernetes-cadvisors'
   scheme: https
@@ -169,11 +176,12 @@
       regex: ^/system\.slice/(.+)\.service$
       target_label: container_name
       replacement: '${1}'
+{{ include "prometheus.keep-metrics.metric-relabel-config" .Values.allowedMetrics.cAdvisor | indent 4 }}
     - source_labels:
       - container_name
       - __name__
       # The system container POD is used for networking.
-      regex: POD;
+      regex: POD;({{ without .Values.allowedMetrics.cAdvisor "container_network_receive_bytes_total" "container_network_transmit_bytes_total" | join "|" }})
       action: drop
     - source_labels: [ container_name ]
       regex: ^$
