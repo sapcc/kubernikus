@@ -592,6 +592,18 @@ func (op *GroundControl) terminateKluster(kluster *v1.Kluster) error {
 		domain := secret.Openstack.DomainName
 		//If the cluster was still in state Pending we don't have a service user yet: skip deletion
 		if username != "" && domain != "" {
+			projectProviderClient, err := op.Factories.Openstack.ProviderClientForKluster(kluster, op.Logger)
+			if err != nil {
+				return fmt.Errorf("Couldn't get provider client for project: %s", err)
+			}
+			if err := etcd_util.SetObjectStorageExpiration(
+				projectProviderClient,
+				etcd_util.DefaultStorageContainer(kluster),
+				time.Duration(time.Hour*720), // delete after 30 days
+			); err != nil {
+				return fmt.Errorf("Couldn't set backup object store expiration: %s", err)
+			}
+
 			op.Logger.Log(
 				"msg", "Deleting openstack user",
 				"kluster", kluster.GetName(),
