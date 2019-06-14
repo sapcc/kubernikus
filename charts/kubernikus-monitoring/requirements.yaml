@@ -5,7 +5,7 @@ dependencies:
 
   - name: kube-rules
     repository: https://charts.global.cloud.sap
-    version: 1.0.0
+    version: 1.0.1
 
   - name: prometheus-server
     alias: prometheus-kubernikus
