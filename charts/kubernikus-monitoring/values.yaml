@@ -94,7 +94,7 @@ prometheus-kubernikus:
 prometheus-node-exporter:
   image:
     repository: prom/node-exporter
-    tag: v0.17.0
+    tag: v0.18.1
 
   serviceAccount:
     create: false
@@ -123,6 +123,7 @@ prometheus-node-exporter:
 kube-state-metrics:
   image:
     repository: sapcc/kube-state-metrics
+    tag: v1.6.0
 
   podAnnotations:
     prometheus.io/scrape: "true"
