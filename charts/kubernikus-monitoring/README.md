@@ -10,3 +10,8 @@ metadata:
   labels:
     prometheus: kubernikus
 ```
+
+
+**TODO:**  
+This chart uses the Kubernetes Prometheus alert- and aggregation rules as deployed in the controlplane via [kube-rules](https://github.com/sapcc/helm-charts/tree/master/system/kube-monitoring/charts/kube-rules) sub-chart.
+Re-use the entire [kube-monitoring chart](https://github.com/sapcc/helm-charts/tree/master/system/kube-monitoring) once all openstack and infrastructure parts have been cleansed from it.

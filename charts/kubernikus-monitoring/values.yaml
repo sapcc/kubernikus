@@ -9,7 +9,7 @@ kube-rules:
   tier: kks
 
   # Disable alerts that are too specific to our baremetal controlplane.
-  disabledAlerts:
+  disableAlerts:
     - controlplane
 
 allowedMetrics:
