@@ -87,9 +87,15 @@ prometheus-kubernikus:
     - alertmanager.eu-de-1.cloud.sap
   #  - alertmanager.eu-nl-1.cloud.sap
 
-  # Required for kubernikus <-> prometheus-openstack federation of limes metrics.
+  # Required for prometheus-kubernikus <- prometheus-openstack federation of limes metrics.
   secrets:
     - prometheus-openstack-sso-cert
+
+# SSO certificate required for prometheus-kubernikus <- prometheus-openstack federation of limes metrics.
+authentication:
+  enabled: false
+  # ssoCert:
+  # ssoKey:
 
 prometheus-node-exporter:
   image:
