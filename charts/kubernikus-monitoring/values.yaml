@@ -59,9 +59,6 @@ prometheus-kubernikus:
   ingress:
     enabled: true
     host: prometheus.kubernikus
-    annotations:
-      prometheus.io/probe: "true"
-      prometheus.io/probe_code: "400"
 
     authentication:
       authTLSSecret: "kubernikus-system/ca-crt"
