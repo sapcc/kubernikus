@@ -414,6 +414,36 @@ jobs:
             <<: *auth_<%= region %>
     <<: *slack
 
+  - name: prometheus-operator_<%= region %>
+    plan:
+    - aggregate:
+      - get: helm-charts-prometheus-operator.git
+        trigger: true
+      - get: secrets.git
+    - aggregate:
+      - task: prometheus-operator_<%= region %>
+        input_mapping: {helm-charts.git: helm-charts-prometheus-operator.git}
+        config:
+          <<: *task_helm_prometheus-operator
+        params:
+          <<: *auth_<%= region %>
+
+  - name: kubernikus-monitoring_<%= region %>
+    serial: true
+    plan:
+    - aggregate:
+      - get: secrets.git
+        passed: [prometheus-operator_<%= region %>]
+      - get: kubernikus.builds
+        trigger: false
+        resource: master.builds
+    - aggregate:
+      - task: kubernikus-monitoring_<%= region %>
+        config:
+          <<: *task_helm_kubernikus-monitoring
+        params:
+          <<: *auth_<%= region %>
+
   - name: deploy_<%= region %>
     serial: true
     plan:
@@ -509,38 +539,9 @@ groups:
       - soak_<%= region %>
 <% end %>
 
-  - name: kubernikus-monitoring
+  - name: monitoring
     jobs:
 <% DEPLOYABLE_REGIONS.each do |region, meta| %>
-      - name: prometheus-operator_<%= region %>
-        plan:
-        - aggregate:
-          - get: helm-charts-prometheus-operator.git
-            trigger: true
-          - get: secrets.git
-        - aggregate:
-          - task: prometheus-operator_<%= region %>
-            input_mapping: {helm-charts.git: helm-charts-prometheus-operator.git}
-            config:
-              <<: *task_helm_prometheus-operator
-            params:
-              <<: *auth_<%= region %>
-        <<: *slack
-
-      - name: kubernikus-monitoring_<%= region %>
-        serial: true
-        plan:
-        - aggregate:
-          - get: secrets.git
-            passed: [prometheus-operator_<%= region %>]
-          - get: kubernikus.builds
-            trigger: false
-            resource: master.builds
-            passed: [prometheus-operator_<%= region %>]
-        - aggregate:
-          - task: kubernikus-monitoring_<%= region %>
-            config:
-              <<: *task_helm_kubernikus-monitoring
-            params:
-              <<: *auth_<%= region %>
+      - kubernikus-monitoring_<%= region %>
+      - prometheus-operator_<%= region %>
 <% end %>

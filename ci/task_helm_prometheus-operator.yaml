@@ -25,7 +25,7 @@ run:
 
       helm upgrade prometheus-operator helm-charts.git/system/prometheus-operator/ \
         --namespace=prometheus-operator \
-        --values secrets.git/global/values/prometheus-operator.yaml
+        --values secrets.git/global/values/prometheus-operator.yaml \
         --install
 
       kubectl rollout status deployment/prometheus-operator --namespace=prometheus-operator
