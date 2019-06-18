@@ -515,8 +515,6 @@ groups:
       - name: prometheus-operator_<%= region %>
         plan:
         - aggregate:
-          - get: <%= group %>.tag
-            trigger: false
           - get: helm-charts-prometheus-operator.git
             trigger: true
           - get: secrets.git
@@ -533,9 +531,6 @@ groups:
         serial: true
         plan:
         - aggregate:
-          - get: <%= group %>.tag
-            trigger: false
-            passed: [prometheus-operator_<%= region %>]
           - get: secrets.git
             passed: [prometheus-operator_<%= region %>]
           - get: kubernikus.builds
