@@ -21,7 +21,7 @@ run:
       # https://github.com/kubernetes/helm/issues/2998
       cp -a kubernikus.builds kubernikus-copy.builds
 
-      helm repo add sapcc https://charts.eu-de-2.cloud.sap
+      helm repo add sapcc https://charts.global.cloud.sap
       helm dep up kubernikus-copy.builds/charts/kubernikus-monitoring/
 
       helm diff upgrade kubernikus-monitoring kubernikus-copy.builds/charts/kubernikus-monitoring/ \
