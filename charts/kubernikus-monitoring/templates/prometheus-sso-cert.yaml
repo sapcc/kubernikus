@@ -4,6 +4,10 @@ kind: Secret
 metadata:
   name: prometheus-openstack-sso-cert
 
+{{ if and .Values.authentication .Values.authentication.enabled }}
 data:
-  sso.crt: {{ default "this must exist but cannot be empty" .Values.authentication.ssoCert | b64enc | quote }}
-  sso.key: {{ default "this must exist but cannot be empty" .Values.authentication.ssoKey | b64enc | quote }}
+  sso.crt: {{ required ".Values.authentication.ssoCert missing" .Values.authentication.ssoCert | b64enc | quote }}
+  sso.key: {{ required ".Values.authentication.ssoKey missing" .Values.authentication.ssoKey | b64enc | quote }}
+{{ else }}
+data: {}
+{{ end }}
