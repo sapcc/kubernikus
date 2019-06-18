@@ -1,0 +1,21 @@
+dependencies:
+- name: kube-state-metrics
+  repository: https://kubernetes-charts.storage.googleapis.com/
+  version: 0.9.0
+- name: kube-rules
+  repository: https://charts.global.cloud.sap
+  version: 1.0.1
+- name: prometheus-server
+  repository: https://charts.global.cloud.sap
+  version: 1.1.13
+- name: prometheus-node-exporter
+  repository: https://kubernetes-charts.storage.googleapis.com/
+  version: 0.3.0
+- name: oomkill-exporter
+  repository: https://charts.global.cloud.sap
+  version: 0.1.0
+- name: eventexporter
+  repository: https://charts.global.cloud.sap
+  version: 0.1.0
+digest: sha256:422acb1cda48ae0899e779303565e77d2020cdd4529e97e4b68d8bf67caacf42
+generated: 2019-06-14T15:39:41.791710717+02:00

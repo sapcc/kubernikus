@@ -1,0 +1,41 @@
+platform: 'linux'
+
+image_resource:
+  type: registry-image
+  source:
+    repository: sapcc/kubernikus-kubectl
+    tag: 'v1.10.9'
+
+inputs:
+  - name: helm-charts.git
+  - name: secrets.git
+
+run:
+  path: /bin/sh
+  args:
+    - -c
+    - |
+      set -exo pipefail
+
+      helm dep up helm-charts.git/system/prometheus-operator
+
+      helm diff upgrade prometheus-operator helm-charts.git/system/prometheus-operator/ \
+        --suppress-secrets --allow-unreleased --context 5 \
+        --values secrets.git/global/values/prometheus-operator.yaml
+
+      helm upgrade prometheus-operator helm-charts.git/system/prometheus-operator/ \
+        --namespace=prometheus-operator \
+        --values secrets.git/global/values/prometheus-operator.yaml
+        --install
+
+      kubectl rollout status deployment/prometheus-operator --namespace=prometheus-operator
+
+params:
+  OS_AUTH_URL:
+  OS_USERNAME:
+  OS_PASSWORD:
+  OS_USER_DOMAIN_NAME:
+  OS_PROJECT_NAME:
+  OS_PROJECT_DOMAIN_NAME:
+  KUBERNIKUS_NAME:
+  KUBERNIKUS_URL:

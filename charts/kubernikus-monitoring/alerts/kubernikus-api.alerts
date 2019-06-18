@@ -1,0 +1,14 @@
+groups:
+- name: kubernikus-api.alerts
+  rules:
+  - alert: KubernikusAPIDown
+    expr: count by (instance) (probe_success{kubernetes_name="kubernikus-api"} != 1) >= count by (instance) (probe_success{kubernetes_name="kubernikus-api"} == 1)
+    for: 5m
+    labels:
+      tier: kks
+      service: kubernikus
+      severity: critical
+      context: availability
+    annotations:
+      description: "{{ $labels.instance }} is unavailable"
+      summary: "{{ $labels.instance }} is unavailable"

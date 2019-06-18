@@ -760,6 +760,55 @@ task_helm-admin_kubernikus: &task_helm-admin_kubernikus
     GITHUB_TOKEN:
   
 
+task_helm_kubernikus-monitoring: &task_helm_kubernikus-monitoring
+  platform: 'linux'
+  
+  image_resource:
+    type: registry-image
+    source:
+      repository: sapcc/kubernikus-kubectl
+      tag: 'v1.10.9'
+  
+  inputs:
+    - name: kubernikus.builds
+  
+  run:
+    path: /bin/sh
+    args:
+      - -c
+      - |
+        set -exo pipefail
+  
+        # recent helm versions fails with `invalid cross-device link` when trying to rename charts.git
+        # rename(2) for a directory is allowed only when both the source and the destination path are on the top layer
+        # https://github.com/kubernetes/helm/issues/2998
+        cp -a kubernikus.builds kubernikus-copy.builds
+  
+        helm repo add sapcc https://charts.global.cloud.sap
+        helm dep up kubernikus-copy.builds/charts/kubernikus-monitoring/
+  
+        helm diff upgrade kubernikus-monitoring kubernikus-copy.builds/charts/kubernikus-monitoring/ \
+          --values secrets.git/kubernikus/$KUBERNIKUS_NAME/values/globals.yaml \
+          --values secrets.git/kubernikus/$KUBERNIKUS_NAME/values/kubernikus-monitoring.yaml \
+          --suppress-secrets --allow-unreleased --context 5
+  
+        helm upgrade kubernikus-monitoring kubernikus-copy.builds/charts/kubernikus-monitoring/ \
+          --values secrets.git/kubernikus/$KUBERNIKUS_NAME/values/globals.yaml \
+          --values secrets.git/kubernikus/$KUBERNIKUS_NAME/values/kubernikus-monitoring.yaml \
+          --namespace=kubernikus-system \
+          --install
+  
+  params:
+    OS_AUTH_URL:
+    OS_USERNAME:
+    OS_PASSWORD:
+    OS_USER_DOMAIN_NAME:
+    OS_PROJECT_NAME:
+    OS_PROJECT_DOMAIN_NAME:
+    KUBERNIKUS_NAME:
+    KUBERNIKUS_URL:
+  
+
 task_helm_kubernikus-system: &task_helm_kubernikus-system
   platform: 'linux'
   
@@ -860,6 +909,50 @@ task_helm_kubernikus: &task_helm_kubernikus
     KUBERNIKUS_URL:
   
 
+task_helm_prometheus-operator: &task_helm_prometheus-operator
+  platform: 'linux'
+  
+  image_resource:
+    type: registry-image
+    source:
+      repository: sapcc/kubernikus-kubectl
+      tag: 'v1.10.9'
+  
+  inputs:
+    - name: helm-charts.git
+    - name: secrets.git
+  
+  run:
+    path: /bin/sh
+    args:
+      - -c
+      - |
+        set -exo pipefail
+  
+        helm dep up helm-charts.git/system/prometheus-operator
+  
+        helm diff upgrade prometheus-operator helm-charts.git/system/prometheus-operator/ \
+          --suppress-secrets --allow-unreleased --context 5 \
+          --values secrets.git/global/values/prometheus-operator.yaml
+  
+        helm upgrade prometheus-operator helm-charts.git/system/prometheus-operator/ \
+          --namespace=prometheus-operator \
+          --values secrets.git/global/values/prometheus-operator.yaml
+          --install
+  
+        kubectl rollout status deployment/prometheus-operator --namespace=prometheus-operator
+  
+  params:
+    OS_AUTH_URL:
+    OS_USERNAME:
+    OS_PASSWORD:
+    OS_USER_DOMAIN_NAME:
+    OS_PROJECT_NAME:
+    OS_PROJECT_DOMAIN_NAME:
+    KUBERNIKUS_NAME:
+    KUBERNIKUS_URL:
+  
+
 task_helm_seed: &task_helm_seed
   platform: linux
   
@@ -884,55 +977,6 @@ task_helm_seed: &task_helm_seed
     GITHUB_TOKEN:
     NAMESPACE: monsoon3 
     RELEASE: kubernikus 
-  
-
-task_reload_prometheus_config: &task_reload_prometheus_config
-  platform: 'linux'
-  
-  image_resource:
-    type: registry-image
-    source:
-      repository: sapcc/kubernikus-kubectl
-      tag: 'latest'
-  
-  inputs:
-    - name: charts.git
-    - name: secrets.git
-  
-  run:
-    path: /bin/sh
-    args:
-      - -c
-      - |
-        set -exo pipefail
-  
-        k() {
-          local OPERATION="$1"
-          shift
-          kubectl "${OPERATION}" --namespace="${NAMESPACE}" "$@"
-        }
-  
-        echo ">> Waiting ${DELAY_SECONDS} seconds before reloading prometheus configuration"
-        sleep "${DELAY_SECONDS}"
-  
-        kubernikusctl auth init
-  
-        k get pods -o jsonpath='{.items[*].metadata.name}'| tr ' ' '\n' | grep prometheus | while read POD ; do
-          echo "Reloading configuration for ${POD}..."
-          k exec "${POD}" -- kill -HUP 1
-        done
-  
-  params:
-    NAMESPACE:
-    DELAY_SECONDS:
-    OS_AUTH_URL:
-    OS_USERNAME:
-    OS_PASSWORD:
-    OS_USER_DOMAIN_NAME:
-    OS_PROJECT_NAME:
-    OS_PROJECT_DOMAIN_NAME:
-    KUBERNIKUS_NAME:
-    KUBERNIKUS_URL:
   
 
 task_terraform: &task_terraform
@@ -1075,6 +1119,13 @@ resources:
       uri:    https://github.com/sapcc/helm-charts.git
       branch: master
       paths:  [ openstack/kubernikus/ ]
+
+  - name: helm-charts-prometheus-operator.git
+    type: git
+    source:
+      uri: https://github.com/sapcc/helm-charts.git
+      branch: master
+      paths:  [ system/prometheus-operator/ ]
 
   - name: slack
     type: slack-alert
@@ -3398,4 +3449,488 @@ groups:
       - tiller_qa-de-1
       - deploy_qa-de-1
       - soak_qa-de-1
+
+
+  - name: kubernikus-monitoring
+    jobs:
+
+      - name: prometheus-operator_ap-ae-1
+        plan:
+        - aggregate:
+          - get: helm-charts-prometheus-operator.git
+            trigger: true
+          - get: secrets.git
+        - aggregate:
+          - task: prometheus-operator_ap-ae-1
+            input_mapping: {helm-charts.git: helm-charts-prometheus-operator.git}
+            config:
+              <<: *task_helm_prometheus-operator
+            params:
+              <<: *auth_ap-ae-1
+        <<: *slack
+
+      - name: kubernikus-monitoring_ap-ae-1
+        serial: true
+        plan:
+        - aggregate:
+          - get: secrets.git
+            passed: [prometheus-operator_ap-ae-1]
+          - get: kubernikus.builds
+            trigger: false
+            resource: master.builds
+            passed: [prometheus-operator_ap-ae-1]
+        - aggregate:
+          - task: kubernikus-monitoring_ap-ae-1
+            config:
+              <<: *task_helm_kubernikus-monitoring
+            params:
+              <<: *auth_ap-ae-1
+
+      - name: prometheus-operator_ap-au-1
+        plan:
+        - aggregate:
+          - get: helm-charts-prometheus-operator.git
+            trigger: true
+          - get: secrets.git
+        - aggregate:
+          - task: prometheus-operator_ap-au-1
+            input_mapping: {helm-charts.git: helm-charts-prometheus-operator.git}
+            config:
+              <<: *task_helm_prometheus-operator
+            params:
+              <<: *auth_ap-au-1
+        <<: *slack
+
+      - name: kubernikus-monitoring_ap-au-1
+        serial: true
+        plan:
+        - aggregate:
+          - get: secrets.git
+            passed: [prometheus-operator_ap-au-1]
+          - get: kubernikus.builds
+            trigger: false
+            resource: master.builds
+            passed: [prometheus-operator_ap-au-1]
+        - aggregate:
+          - task: kubernikus-monitoring_ap-au-1
+            config:
+              <<: *task_helm_kubernikus-monitoring
+            params:
+              <<: *auth_ap-au-1
+
+      - name: prometheus-operator_ap-cn-1
+        plan:
+        - aggregate:
+          - get: helm-charts-prometheus-operator.git
+            trigger: true
+          - get: secrets.git
+        - aggregate:
+          - task: prometheus-operator_ap-cn-1
+            input_mapping: {helm-charts.git: helm-charts-prometheus-operator.git}
+            config:
+              <<: *task_helm_prometheus-operator
+            params:
+              <<: *auth_ap-cn-1
+        <<: *slack
+
+      - name: kubernikus-monitoring_ap-cn-1
+        serial: true
+        plan:
+        - aggregate:
+          - get: secrets.git
+            passed: [prometheus-operator_ap-cn-1]
+          - get: kubernikus.builds
+            trigger: false
+            resource: master.builds
+            passed: [prometheus-operator_ap-cn-1]
+        - aggregate:
+          - task: kubernikus-monitoring_ap-cn-1
+            config:
+              <<: *task_helm_kubernikus-monitoring
+            params:
+              <<: *auth_ap-cn-1
+
+      - name: prometheus-operator_ap-jp-1
+        plan:
+        - aggregate:
+          - get: helm-charts-prometheus-operator.git
+            trigger: true
+          - get: secrets.git
+        - aggregate:
+          - task: prometheus-operator_ap-jp-1
+            input_mapping: {helm-charts.git: helm-charts-prometheus-operator.git}
+            config:
+              <<: *task_helm_prometheus-operator
+            params:
+              <<: *auth_ap-jp-1
+        <<: *slack
+
+      - name: kubernikus-monitoring_ap-jp-1
+        serial: true
+        plan:
+        - aggregate:
+          - get: secrets.git
+            passed: [prometheus-operator_ap-jp-1]
+          - get: kubernikus.builds
+            trigger: false
+            resource: master.builds
+            passed: [prometheus-operator_ap-jp-1]
+        - aggregate:
+          - task: kubernikus-monitoring_ap-jp-1
+            config:
+              <<: *task_helm_kubernikus-monitoring
+            params:
+              <<: *auth_ap-jp-1
+
+      - name: prometheus-operator_ap-jp-2
+        plan:
+        - aggregate:
+          - get: helm-charts-prometheus-operator.git
+            trigger: true
+          - get: secrets.git
+        - aggregate:
+          - task: prometheus-operator_ap-jp-2
+            input_mapping: {helm-charts.git: helm-charts-prometheus-operator.git}
+            config:
+              <<: *task_helm_prometheus-operator
+            params:
+              <<: *auth_ap-jp-2
+        <<: *slack
+
+      - name: kubernikus-monitoring_ap-jp-2
+        serial: true
+        plan:
+        - aggregate:
+          - get: secrets.git
+            passed: [prometheus-operator_ap-jp-2]
+          - get: kubernikus.builds
+            trigger: false
+            resource: master.builds
+            passed: [prometheus-operator_ap-jp-2]
+        - aggregate:
+          - task: kubernikus-monitoring_ap-jp-2
+            config:
+              <<: *task_helm_kubernikus-monitoring
+            params:
+              <<: *auth_ap-jp-2
+
+      - name: prometheus-operator_ap-sa-1
+        plan:
+        - aggregate:
+          - get: helm-charts-prometheus-operator.git
+            trigger: true
+          - get: secrets.git
+        - aggregate:
+          - task: prometheus-operator_ap-sa-1
+            input_mapping: {helm-charts.git: helm-charts-prometheus-operator.git}
+            config:
+              <<: *task_helm_prometheus-operator
+            params:
+              <<: *auth_ap-sa-1
+        <<: *slack
+
+      - name: kubernikus-monitoring_ap-sa-1
+        serial: true
+        plan:
+        - aggregate:
+          - get: secrets.git
+            passed: [prometheus-operator_ap-sa-1]
+          - get: kubernikus.builds
+            trigger: false
+            resource: master.builds
+            passed: [prometheus-operator_ap-sa-1]
+        - aggregate:
+          - task: kubernikus-monitoring_ap-sa-1
+            config:
+              <<: *task_helm_kubernikus-monitoring
+            params:
+              <<: *auth_ap-sa-1
+
+      - name: prometheus-operator_eu-de-1
+        plan:
+        - aggregate:
+          - get: helm-charts-prometheus-operator.git
+            trigger: true
+          - get: secrets.git
+        - aggregate:
+          - task: prometheus-operator_eu-de-1
+            input_mapping: {helm-charts.git: helm-charts-prometheus-operator.git}
+            config:
+              <<: *task_helm_prometheus-operator
+            params:
+              <<: *auth_eu-de-1
+        <<: *slack
+
+      - name: kubernikus-monitoring_eu-de-1
+        serial: true
+        plan:
+        - aggregate:
+          - get: secrets.git
+            passed: [prometheus-operator_eu-de-1]
+          - get: kubernikus.builds
+            trigger: false
+            resource: master.builds
+            passed: [prometheus-operator_eu-de-1]
+        - aggregate:
+          - task: kubernikus-monitoring_eu-de-1
+            config:
+              <<: *task_helm_kubernikus-monitoring
+            params:
+              <<: *auth_eu-de-1
+
+      - name: prometheus-operator_eu-de-2
+        plan:
+        - aggregate:
+          - get: helm-charts-prometheus-operator.git
+            trigger: true
+          - get: secrets.git
+        - aggregate:
+          - task: prometheus-operator_eu-de-2
+            input_mapping: {helm-charts.git: helm-charts-prometheus-operator.git}
+            config:
+              <<: *task_helm_prometheus-operator
+            params:
+              <<: *auth_eu-de-2
+        <<: *slack
+
+      - name: kubernikus-monitoring_eu-de-2
+        serial: true
+        plan:
+        - aggregate:
+          - get: secrets.git
+            passed: [prometheus-operator_eu-de-2]
+          - get: kubernikus.builds
+            trigger: false
+            resource: master.builds
+            passed: [prometheus-operator_eu-de-2]
+        - aggregate:
+          - task: kubernikus-monitoring_eu-de-2
+            config:
+              <<: *task_helm_kubernikus-monitoring
+            params:
+              <<: *auth_eu-de-2
+
+      - name: prometheus-operator_eu-nl-1
+        plan:
+        - aggregate:
+          - get: helm-charts-prometheus-operator.git
+            trigger: true
+          - get: secrets.git
+        - aggregate:
+          - task: prometheus-operator_eu-nl-1
+            input_mapping: {helm-charts.git: helm-charts-prometheus-operator.git}
+            config:
+              <<: *task_helm_prometheus-operator
+            params:
+              <<: *auth_eu-nl-1
+        <<: *slack
+
+      - name: kubernikus-monitoring_eu-nl-1
+        serial: true
+        plan:
+        - aggregate:
+          - get: secrets.git
+            passed: [prometheus-operator_eu-nl-1]
+          - get: kubernikus.builds
+            trigger: false
+            resource: master.builds
+            passed: [prometheus-operator_eu-nl-1]
+        - aggregate:
+          - task: kubernikus-monitoring_eu-nl-1
+            config:
+              <<: *task_helm_kubernikus-monitoring
+            params:
+              <<: *auth_eu-nl-1
+
+      - name: prometheus-operator_eu-ru-1
+        plan:
+        - aggregate:
+          - get: helm-charts-prometheus-operator.git
+            trigger: true
+          - get: secrets.git
+        - aggregate:
+          - task: prometheus-operator_eu-ru-1
+            input_mapping: {helm-charts.git: helm-charts-prometheus-operator.git}
+            config:
+              <<: *task_helm_prometheus-operator
+            params:
+              <<: *auth_eu-ru-1
+        <<: *slack
+
+      - name: kubernikus-monitoring_eu-ru-1
+        serial: true
+        plan:
+        - aggregate:
+          - get: secrets.git
+            passed: [prometheus-operator_eu-ru-1]
+          - get: kubernikus.builds
+            trigger: false
+            resource: master.builds
+            passed: [prometheus-operator_eu-ru-1]
+        - aggregate:
+          - task: kubernikus-monitoring_eu-ru-1
+            config:
+              <<: *task_helm_kubernikus-monitoring
+            params:
+              <<: *auth_eu-ru-1
+
+      - name: prometheus-operator_la-br-1
+        plan:
+        - aggregate:
+          - get: helm-charts-prometheus-operator.git
+            trigger: true
+          - get: secrets.git
+        - aggregate:
+          - task: prometheus-operator_la-br-1
+            input_mapping: {helm-charts.git: helm-charts-prometheus-operator.git}
+            config:
+              <<: *task_helm_prometheus-operator
+            params:
+              <<: *auth_la-br-1
+        <<: *slack
+
+      - name: kubernikus-monitoring_la-br-1
+        serial: true
+        plan:
+        - aggregate:
+          - get: secrets.git
+            passed: [prometheus-operator_la-br-1]
+          - get: kubernikus.builds
+            trigger: false
+            resource: master.builds
+            passed: [prometheus-operator_la-br-1]
+        - aggregate:
+          - task: kubernikus-monitoring_la-br-1
+            config:
+              <<: *task_helm_kubernikus-monitoring
+            params:
+              <<: *auth_la-br-1
+
+      - name: prometheus-operator_na-ca-1
+        plan:
+        - aggregate:
+          - get: helm-charts-prometheus-operator.git
+            trigger: true
+          - get: secrets.git
+        - aggregate:
+          - task: prometheus-operator_na-ca-1
+            input_mapping: {helm-charts.git: helm-charts-prometheus-operator.git}
+            config:
+              <<: *task_helm_prometheus-operator
+            params:
+              <<: *auth_na-ca-1
+        <<: *slack
+
+      - name: kubernikus-monitoring_na-ca-1
+        serial: true
+        plan:
+        - aggregate:
+          - get: secrets.git
+            passed: [prometheus-operator_na-ca-1]
+          - get: kubernikus.builds
+            trigger: false
+            resource: master.builds
+            passed: [prometheus-operator_na-ca-1]
+        - aggregate:
+          - task: kubernikus-monitoring_na-ca-1
+            config:
+              <<: *task_helm_kubernikus-monitoring
+            params:
+              <<: *auth_na-ca-1
+
+      - name: prometheus-operator_na-us-1
+        plan:
+        - aggregate:
+          - get: helm-charts-prometheus-operator.git
+            trigger: true
+          - get: secrets.git
+        - aggregate:
+          - task: prometheus-operator_na-us-1
+            input_mapping: {helm-charts.git: helm-charts-prometheus-operator.git}
+            config:
+              <<: *task_helm_prometheus-operator
+            params:
+              <<: *auth_na-us-1
+        <<: *slack
+
+      - name: kubernikus-monitoring_na-us-1
+        serial: true
+        plan:
+        - aggregate:
+          - get: secrets.git
+            passed: [prometheus-operator_na-us-1]
+          - get: kubernikus.builds
+            trigger: false
+            resource: master.builds
+            passed: [prometheus-operator_na-us-1]
+        - aggregate:
+          - task: kubernikus-monitoring_na-us-1
+            config:
+              <<: *task_helm_kubernikus-monitoring
+            params:
+              <<: *auth_na-us-1
+
+      - name: prometheus-operator_na-us-3
+        plan:
+        - aggregate:
+          - get: helm-charts-prometheus-operator.git
+            trigger: true
+          - get: secrets.git
+        - aggregate:
+          - task: prometheus-operator_na-us-3
+            input_mapping: {helm-charts.git: helm-charts-prometheus-operator.git}
+            config:
+              <<: *task_helm_prometheus-operator
+            params:
+              <<: *auth_na-us-3
+        <<: *slack
+
+      - name: kubernikus-monitoring_na-us-3
+        serial: true
+        plan:
+        - aggregate:
+          - get: secrets.git
+            passed: [prometheus-operator_na-us-3]
+          - get: kubernikus.builds
+            trigger: false
+            resource: master.builds
+            passed: [prometheus-operator_na-us-3]
+        - aggregate:
+          - task: kubernikus-monitoring_na-us-3
+            config:
+              <<: *task_helm_kubernikus-monitoring
+            params:
+              <<: *auth_na-us-3
+
+      - name: prometheus-operator_qa-de-1
+        plan:
+        - aggregate:
+          - get: helm-charts-prometheus-operator.git
+            trigger: true
+          - get: secrets.git
+        - aggregate:
+          - task: prometheus-operator_qa-de-1
+            input_mapping: {helm-charts.git: helm-charts-prometheus-operator.git}
+            config:
+              <<: *task_helm_prometheus-operator
+            params:
+              <<: *auth_qa-de-1
+        <<: *slack
+
+      - name: kubernikus-monitoring_qa-de-1
+        serial: true
+        plan:
+        - aggregate:
+          - get: secrets.git
+            passed: [prometheus-operator_qa-de-1]
+          - get: kubernikus.builds
+            trigger: false
+            resource: master.builds
+            passed: [prometheus-operator_qa-de-1]
+        - aggregate:
+          - task: kubernikus-monitoring_qa-de-1
+            config:
+              <<: *task_helm_kubernikus-monitoring
+            params:
+              <<: *auth_qa-de-1
 

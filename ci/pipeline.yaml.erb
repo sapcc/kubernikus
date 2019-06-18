@@ -168,6 +168,13 @@ resources:
       branch: master
       paths:  [ openstack/kubernikus/ ]
 
+  - name: helm-charts-prometheus-operator.git
+    type: git
+    source:
+      uri: https://github.com/sapcc/helm-charts.git
+      branch: master
+      paths:  [ system/prometheus-operator/ ]
+
   - name: slack
     type: slack-alert
     icon: slack
@@ -500,4 +507,40 @@ groups:
       - tiller_<%= region %>
       - deploy_<%= region %>
       - soak_<%= region %>
+<% end %>
+
+  - name: kubernikus-monitoring
+    jobs:
+<% DEPLOYABLE_REGIONS.each do |region, meta| %>
+      - name: prometheus-operator_<%= region %>
+        plan:
+        - aggregate:
+          - get: helm-charts-prometheus-operator.git
+            trigger: true
+          - get: secrets.git
+        - aggregate:
+          - task: prometheus-operator_<%= region %>
+            input_mapping: {helm-charts.git: helm-charts-prometheus-operator.git}
+            config:
+              <<: *task_helm_prometheus-operator
+            params:
+              <<: *auth_<%= region %>
+        <<: *slack
+
+      - name: kubernikus-monitoring_<%= region %>
+        serial: true
+        plan:
+        - aggregate:
+          - get: secrets.git
+            passed: [prometheus-operator_<%= region %>]
+          - get: kubernikus.builds
+            trigger: false
+            resource: master.builds
+            passed: [prometheus-operator_<%= region %>]
+        - aggregate:
+          - task: kubernikus-monitoring_<%= region %>
+            config:
+              <<: *task_helm_kubernikus-monitoring
+            params:
+              <<: *auth_<%= region %>
 <% end %>

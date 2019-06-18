@@ -1,0 +1,192 @@
+# Name of the Prometheus to which the alert and aggregation rules should be assigned to.
+prometheusName: kubernikus
+
+kube-rules:
+  # Name of the Prometheus to which the rules should be assigned to.
+  prometheusName: kubernikus
+
+  # The alert tier.
+  tier: kks
+
+  # Disable alerts that are too specific to our baremetal controlplane.
+  disableAlerts:
+    - controlplane
+
+allowedMetrics:
+  cAdvisor:
+    - container_cpu_cfs_periods_total
+    - container_cpu_cfs_throttled_seconds_total
+    - container_cpu_cfs_throttled_periods_total
+    - container_cpu_usage_seconds_total
+    - container_fs_inodes_total
+    - container_fs_limit_bytes
+    - container_fs_usage_bytes
+    - container_last_seen
+    - container_memory_usage_bytes
+    - container_memory_working_set_bytes
+    - container_network_receive_bytes_total
+    - container_network_transmit_bytes_total
+
+  kubelet:
+    - kubelet_pod_start_latency_microseconds
+    - kubelet_running_pod_count
+    - process_max_fds
+    - process_open_fds
+
+  kubeAPIServer:
+    - apiserver_request_count
+    - apiserver_request_latencies_bucket
+    - etcd_object_counts
+    - process_max_fds
+    - process_open_fds
+
+prometheus-kubernikus:
+  name: kubernikus
+
+  retentionTime: 7d
+
+  externalLabels:
+    cluster_type: kubernikus-controlplane
+
+    # Defined via secrets.
+    # region:
+    # cluster:
+
+  additionalScrapeConfigs:
+    name: kubernikus-additional-scrape-config
+    key: scrape-config.yaml
+
+  ingress:
+    enabled: true
+    host: prometheus.kubernikus
+    annotations:
+      prometheus.io/probe: "true"
+      prometheus.io/probe_code: "400"
+
+    authentication:
+      authTLSSecret: "kubernikus-system/ca-crt"
+
+  persistence:
+    enabled: true
+    size: 300Gi
+
+  serviceAccount:
+    create: false
+    name: default
+
+  serviceDiscoveries:
+    endpoints:
+      enabled: false
+
+  resources:
+    requests:
+      cpu: 100m
+      memory: 500Mi
+
+  alertmanagers:
+    - alertmanager.eu-de-1.cloud.sap
+  #  - alertmanager.eu-nl-1.cloud.sap
+
+  # Required for prometheus-kubernikus <- prometheus-openstack federation of limes metrics.
+  secrets:
+    - prometheus-openstack-sso-cert
+
+# SSO certificate required for prometheus-kubernikus <- prometheus-openstack federation of limes metrics.
+authentication:
+  enabled: false
+  # ssoCert:
+  # ssoKey:
+
+prometheus-node-exporter:
+  image:
+    repository: prom/node-exporter
+    tag: v0.18.1
+
+  serviceAccount:
+    create: false
+    name: default
+
+  rbac:
+    create: false
+
+  extraArgs:
+    - --collector.filesystem.ignored-mount-points=\"^/(sys|proc|dev|host|etc)($|/)\"
+
+  # set manually to empty
+  tolerations: []
+
+  extraHostVolumeMounts:
+    - name: dbus
+      hostPath: /var/run/dbus/system_bus_socket
+      mountPath: /var/run/dbus/system_bus_socket
+      readOnly: true
+
+  resources:
+    requests:
+      memory: 100Mi
+      cpu: 100m
+
+kube-state-metrics:
+  image:
+    repository: sapcc/kube-state-metrics
+    tag: v1.6.0
+
+  podAnnotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "8080"
+
+  rbac:
+    create: false
+    serviceAccountName: default
+
+  collectors:
+    # Not useful but a lot of metrics.
+    configmaps: false
+    secrets: false
+    horizontalpodautoscalers: false
+
+  resources:
+    requests:
+      memory: 150Mi
+      cpu: 100m
+
+eventexporter:
+  rbac:
+    create: true
+
+  metrics:
+    config:
+      config.yaml: |-
+        metrics:
+        - name: volume_mount_error_total
+          event_matcher:
+          - key: InvolvedObject.Kind
+            expr: Pod
+          - key: Reason
+            expr: (FailedAttachVolume|FailedMount)
+          - key: Type
+            expr: Warning
+          - key: Source.Component
+            expr: attachdetach.*
+          labels:
+            node: Object.Spec.NodeName
+        - name: volume_mount_success_total
+          event_matcher:
+          - key: InvolvedObject.Kind
+            expr: Pod
+          - key: Message
+            expr: MountVolume.SetUp succeeded for volume .pvc-.*
+          - key: Reason
+            expr: SuccessfulMountVolume
+          labels:
+            node: Source.Host
+        - name: volume_multi_attach_error_total
+          event_matcher:
+          - key: InvolvedObject.Kind
+            expr: Pod
+          - key: Message
+            expr: Multi-Attach error for volume.*
+          - key: Reason
+            expr: FailedAttachVolume
+          labels:
+            node: InvolvedObject.Name
