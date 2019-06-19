@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+
+metadata:
+  name: {{ include "prometheus.fullName" . }}
+  labels:
+    prometheus: {{ include "prometheus.name" . }}
+
+spec:
+  selector:
+    app: prometheus
+    prometheus: {{ include "prometheus.name" . }}
+  ports:
+    - name: http
+      port: 9090

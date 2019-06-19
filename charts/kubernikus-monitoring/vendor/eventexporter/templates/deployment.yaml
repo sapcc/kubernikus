@@ -1,0 +1,45 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: {{ template "name" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ template "name" . }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ template "name" . }}
+  template:
+    metadata:
+      labels:
+        app: {{ template "name" . }}
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "{{ default 9102 .Values.metrics.port }}"
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+    spec:
+      containers:
+      - name: {{ template "name" . }}
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        args:
+        - -discard=60s
+        - -logtostderr
+        - -listen-address=:{{ default 9102 .Values.metrics.port }}
+        - -v=0
+        volumeMounts:
+        - name: config-volume
+          mountPath: /etc/eventexporter
+        ports:
+        - name: metrics
+          containerPort: {{ default 9102 .Values.metrics.port }}
+        resources:
+{{ toYaml .Values.resources | indent 10 }}
+{{- if .Values.rbac.create }}
+      serviceAccount: {{ template "name" . }}
+{{- end }}
+      volumes:
+      - name: config-volume
+        configMap:
+          name: {{ template "name" . }}

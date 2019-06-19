@@ -1,0 +1,23 @@
+{{- if .Values.thanos.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "prometheus.fullName" . }}-thanos-peers
+  labels:
+    thanos-peers: "true"
+    prometheus: {{ include "prometheus.name" . }}
+
+spec:
+  clusterIP: None
+  ports:
+  - name: cluster
+    port: 10900
+    targetPort: cluster
+  - name: http
+    port: 10902
+    targetPort: http
+  selector:
+    thanos-peers: "true"
+    prometheus: {{ include "prometheus.name" . }}
+  type: ClusterIP
+{{ end }}

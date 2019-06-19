@@ -1,0 +1,102 @@
+{{- if .Values.serviceDiscoveries.pods.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+
+metadata:
+  name: {{ include "prometheus.fullName" . }}-pod-sd
+  labels:
+    prometheus: {{ include "prometheus.name" . }}
+
+spec:
+  jobLabel: pod-sd
+
+  # Selector not used but required in k8s 1.10+ .
+  selector:
+    matchExpressions:
+      - key: foo
+        operator: DoesNotExist
+
+  # Find pods in any namespace.
+  namespaceSelector:
+    any: true
+
+  endpoints:
+    - bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
+      interval: 60s
+      scrapeTimeout: 55s
+      scheme: http
+      relabelings:
+        - action: keep
+          sourceLabels:
+            - __meta_kubernetes_pod_annotation_prometheus_io_scrape
+          regex: 'true'
+        - action: keep
+          sourceLabels:
+            - __meta_kubernetes_pod_annotation_prometheus_io_targets
+          regex: {{ include "prometheusTargetsValue" . | quote }}
+        - action: keep
+          sourceLabels:
+            - __meta_kubernetes_pod_container_port_number
+            - __meta_kubernetes_pod_container_port_name
+            - __meta_kubernetes_pod_annotation_prometheus_io_port
+          regex: '(9102;.*;.*)|(.*;metrics;.*)|(.*;.*;\d+)'
+        - sourceLabels:
+            - __meta_kubernetes_pod_annotation_prometheus_io_path
+          targetLabel: __metrics_path__
+          regex: '(.+)'
+        - sourceLabels:
+            - __address__
+            - __meta_kubernetes_pod_annotation_prometheus_io_port
+          targetLabel: __address__
+          regex: '([^:]+)(?::\d+);(\d+)'
+          replacement: ${1}:${2}
+        - action: labelmap
+          regex: '__meta_kubernetes_pod_label_(.+)'
+        - sourceLabels:
+            - __meta_kubernetes_namespace
+          targetLabel: kubernetes_namespace
+        - sourceLabels:
+            - __meta_kubernetes_pod_name
+          targetLabel: kubernetes_pod_name
+
+    - bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
+      interval: 60s
+      scrapeTimeout: 55s
+      scheme: http
+      relabelings:
+        - action: keep
+          sourceLabels:
+            - __meta_kubernetes_pod_annotation_prometheus_io_scrape
+          regex: 'true'
+        - action: keep
+          sourceLabels:
+            - __meta_kubernetes_pod_annotation_prometheus_io_targets
+          regex: {{ include "prometheusTargetsValue" . | quote }}
+        - action: keep
+          source_labels:
+            - __meta_kubernetes_pod_annotation_prometheus_io_port_1
+        - action: keep
+          sourceLabels:
+            - __meta_kubernetes_pod_container_port_number
+            - __meta_kubernetes_pod_container_port_name
+            - __meta_kubernetes_pod_annotation_prometheus_io_port_1
+          regex: '(9102;.*;.*)|(.*;metrics;.*)|(.*;.*;\d+)'
+        - sourceLabels:
+            - __meta_kubernetes_pod_annotation_prometheus_io_path
+          targetLabel: __metrics_path__
+          regex: '(.+)'
+        - sourceLabels:
+            - __address__
+            - __meta_kubernetes_pod_annotation_prometheus_io_port_1
+          targetLabel: __address__
+          regex: '([^:]+)(?::\d+);(\d+)'
+          replacement: ${1}:${2}
+        - action: labelmap
+          regex: '__meta_kubernetes_pod_label_(.+)'
+        - sourceLabels:
+            - __meta_kubernetes_namespace
+          targetLabel: kubernetes_namespace
+        - sourceLabels:
+            - __meta_kubernetes_pod_name
+          targetLabel: kubernetes_pod_name
+{{ end }}

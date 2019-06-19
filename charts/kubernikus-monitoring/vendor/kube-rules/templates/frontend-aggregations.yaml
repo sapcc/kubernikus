@@ -1,0 +1,16 @@
+{{- $values := .Values }}
+{{- range $path, $bytes := .Files.Glob "aggregations/frontend/*.rules" }}
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+
+metadata:
+  name: kubernetes-{{ printf "%s" $path | replace "/" "-" }}
+  labels:
+    tier: {{ required ".Values.tier missing" $values.tier }}
+    prometheus: {{ required ".Values.prometheusName missing" $values.prometheusName }}
+
+spec:
+{{ printf "%s" $bytes | indent 2 }}
+
+{{- end }}

@@ -1,0 +1,53 @@
+{{- if .Values.thanos.enabled }}
+apiVersion: apps/v1beta2
+kind: StatefulSet
+metadata:
+  name: {{ include "prometheus.fullName" . }}-thanos-store
+  prometheus: {{ include "prometheus.name" . }}
+
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: thanos
+      thanos-peers: "true"
+      prometheus: {{ include "prometheus.name" . }}
+  serviceName: thanos-store
+  template:
+    metadata:
+      labels:
+        app: thanos
+        thanos-peers: "true"
+        prometheus: {{ include "prometheus.name" . }}
+    spec:
+      containers:
+      - args:
+        - store
+        - --log.level={{ .Values.logLevel }}
+        - --data-dir=/var/thanos/store
+        - --cluster.peers={{ include "thanos.peers" . }}
+        - --objstore.config=$(OBJSTORE_CONFIG)
+        env:
+        - name: OBJSTORE_CONFIG
+          valueFrom:
+            secretKeyRef:
+              key: {{ include "thanos.objectStorageConfig.key" . }}
+              name: {{ include "thanos.objectStorageConfig.name" . }}
+        image: {{ include "thanos.image" . }}
+        name: thanos-store
+        ports:
+        - containerPort: 10900
+          name: cluster
+        - containerPort: 10901
+          name: grpc
+        - containerPort: 10902
+          name: http
+        volumeMounts:
+        - mountPath: /var/thanos/store
+          name: data
+          readOnly: false
+      volumes:
+      - emptyDir: {}
+        name: data
+  volumeClaimTemplates: []
+{{ end }}

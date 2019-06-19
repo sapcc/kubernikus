@@ -1,0 +1,4 @@
+apiVersion: v1
+description: OOMKill exporter for Kubernetes
+name: oomkill-exporter
+version: 0.1.0
