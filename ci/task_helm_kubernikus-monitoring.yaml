@@ -21,16 +21,17 @@ run:
       # https://github.com/kubernetes/helm/issues/2998
       cp -a kubernikus.builds kubernikus-copy.builds
 
-      helm repo add sapcc https://charts.global.cloud.sap
+      # Dependencies are currently vendored.
+      # helm repo add sapcc https://charts.global.cloud.sap
       helm dep up kubernikus-copy.builds/charts/kubernikus-monitoring/
 
       helm diff upgrade kubernikus-monitoring kubernikus-copy.builds/charts/kubernikus-monitoring/ \
-        --values secrets.git/kubernikus/$KUBERNIKUS_NAME/values/globals.yaml \
+        --values secrets.git/global/values/kubernikus-monitoring.yaml \
         --values secrets.git/kubernikus/$KUBERNIKUS_NAME/values/kubernikus-monitoring.yaml \
         --suppress-secrets --allow-unreleased --context 5
 
       helm upgrade kubernikus-monitoring kubernikus-copy.builds/charts/kubernikus-monitoring/ \
-        --values secrets.git/kubernikus/$KUBERNIKUS_NAME/values/globals.yaml \
+        --values secrets.git/global/values/kubernikus-monitoring.yaml \
         --values secrets.git/kubernikus/$KUBERNIKUS_NAME/values/kubernikus-monitoring.yaml \
         --namespace=kubernikus-system \
         --install
