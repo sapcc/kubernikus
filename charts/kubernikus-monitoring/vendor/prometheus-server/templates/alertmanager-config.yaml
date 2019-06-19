@@ -1,0 +1,12 @@
+{{- if .Values.alertmanagers }}
+apiVersion: v1
+kind: Secret
+
+metadata:
+  name: {{ include "prometheus.fullName" . }}-alertmanager-config
+  labels:
+    prometheus: {{ include "prometheus.name" . }}
+
+data:
+  config.yaml: {{ include "alertmanager.config" . | b64enc }}
+{{- end }}

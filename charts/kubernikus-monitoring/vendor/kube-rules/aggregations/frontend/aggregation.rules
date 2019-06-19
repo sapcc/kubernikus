@@ -1,0 +1,15 @@
+groups:
+- name: prometheus
+  rules:
+  - record: prometheus_local_storage_ingested_samples_total_rate
+    expr: rate(prometheus_local_storage_ingested_samples_total[5m])
+
+- name: skydns
+  rules:
+  - record: skydns_skydns_dns_error_count_total_irate
+    expr: irate(skydns_skydns_dns_error_count_total[5m])
+
+- name: etcd
+  rules:
+  - record: instance:fd_utilization
+    expr: process_open_fds{component="etcd"} / process_max_fds{component="etcd"}

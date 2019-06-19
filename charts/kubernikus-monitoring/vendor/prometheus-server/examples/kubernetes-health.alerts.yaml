@@ -1,0 +1,26 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+
+metadata:
+  name: kubernetes-health-alerts
+  labels:
+    prometheus: {{ include "prometheus.name" }}
+
+spec:
+  groups:
+    - name: kuberneteshealth
+      rules:
+        - alert: KubernetesNodeManyNotReady
+          expr: count(kube_node_status_condition{condition="Ready",status="true"} == 0) > 2
+          for: 1h
+          labels:
+            tier: k8s
+            service: k8s
+            severity: critical
+            context: node
+            meta: "{{`{{ $value }}`}} nodes NotReady"
+            dashboard: kubernetes-health
+            playbook: docs/support/playbook/kubernetes/k8s_node_not_ready.html
+          annotations:
+            summary: Many Nodes are NotReady
+            description: "{{`{{ $value }}`}} nodes are NotReady for more than an hour"

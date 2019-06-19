@@ -1,0 +1,21 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+
+metadata:
+  name: {{ include "prometheus.fullName" . }}
+  labels:
+    prometheus: {{ include "prometheus.name" . }}
+
+spec:
+  jobLabel: {{ include "prometheus.name" . }}
+
+  selector:
+    matchLabels:
+      prometheus: {{ include "prometheus.name" . }}
+
+  endpoints:
+    - bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
+      interval: 60s
+      scrapeTimeout: 55s
+      port: http
+      scheme: http
