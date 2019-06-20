@@ -113,7 +113,7 @@ grafana:
         type: prometheus
         access: proxy
         org_id: 1
-        url: http://kubernikus-prometheus:9090
+        url: http://prometheus-kubernikus:9090
         is_default: true
         version: 1
         editable: false 
