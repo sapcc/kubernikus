@@ -1428,7 +1428,7 @@ jobs:
       - get: secrets.git
         passed: [prometheus-operator_ap-ae-1]
       - get: kubernikus.builds
-        trigger: false
+        trigger: true
         resource: master.builds
     - aggregate:
       - task: kubernikus-monitoring_ap-ae-1
@@ -1562,7 +1562,7 @@ jobs:
       - get: secrets.git
         passed: [prometheus-operator_ap-au-1]
       - get: kubernikus.builds
-        trigger: false
+        trigger: true
         resource: master.builds
     - aggregate:
       - task: kubernikus-monitoring_ap-au-1
@@ -1704,7 +1704,7 @@ jobs:
       - get: secrets.git
         passed: [prometheus-operator_ap-cn-1]
       - get: kubernikus.builds
-        trigger: false
+        trigger: true
         resource: master.builds
     - aggregate:
       - task: kubernikus-monitoring_ap-cn-1
@@ -1846,7 +1846,7 @@ jobs:
       - get: secrets.git
         passed: [prometheus-operator_ap-jp-1]
       - get: kubernikus.builds
-        trigger: false
+        trigger: true
         resource: master.builds
     - aggregate:
       - task: kubernikus-monitoring_ap-jp-1
@@ -1988,7 +1988,7 @@ jobs:
       - get: secrets.git
         passed: [prometheus-operator_ap-jp-2]
       - get: kubernikus.builds
-        trigger: false
+        trigger: true
         resource: master.builds
     - aggregate:
       - task: kubernikus-monitoring_ap-jp-2
@@ -2130,7 +2130,7 @@ jobs:
       - get: secrets.git
         passed: [prometheus-operator_ap-sa-1]
       - get: kubernikus.builds
-        trigger: false
+        trigger: true
         resource: master.builds
     - aggregate:
       - task: kubernikus-monitoring_ap-sa-1
@@ -2329,7 +2329,7 @@ jobs:
       - get: secrets.git
         passed: [prometheus-operator_eu-de-1]
       - get: kubernikus.builds
-        trigger: false
+        trigger: true
         resource: master.builds
     - aggregate:
       - task: kubernikus-monitoring_eu-de-1
@@ -2463,7 +2463,7 @@ jobs:
       - get: secrets.git
         passed: [prometheus-operator_eu-de-2]
       - get: kubernikus.builds
-        trigger: false
+        trigger: true
         resource: master.builds
     - aggregate:
       - task: kubernikus-monitoring_eu-de-2
@@ -2597,7 +2597,7 @@ jobs:
       - get: secrets.git
         passed: [prometheus-operator_eu-nl-1]
       - get: kubernikus.builds
-        trigger: false
+        trigger: true
         resource: master.builds
     - aggregate:
       - task: kubernikus-monitoring_eu-nl-1
@@ -2739,7 +2739,7 @@ jobs:
       - get: secrets.git
         passed: [prometheus-operator_eu-ru-1]
       - get: kubernikus.builds
-        trigger: false
+        trigger: true
         resource: master.builds
     - aggregate:
       - task: kubernikus-monitoring_eu-ru-1
@@ -2946,7 +2946,7 @@ jobs:
       - get: secrets.git
         passed: [prometheus-operator_la-br-1]
       - get: kubernikus.builds
-        trigger: false
+        trigger: true
         resource: master.builds
     - aggregate:
       - task: kubernikus-monitoring_la-br-1
@@ -3088,7 +3088,7 @@ jobs:
       - get: secrets.git
         passed: [prometheus-operator_na-ca-1]
       - get: kubernikus.builds
-        trigger: false
+        trigger: true
         resource: master.builds
     - aggregate:
       - task: kubernikus-monitoring_na-ca-1
@@ -3222,7 +3222,7 @@ jobs:
       - get: secrets.git
         passed: [prometheus-operator_na-us-1]
       - get: kubernikus.builds
-        trigger: false
+        trigger: true
         resource: master.builds
     - aggregate:
       - task: kubernikus-monitoring_na-us-1
@@ -3364,7 +3364,7 @@ jobs:
       - get: secrets.git
         passed: [prometheus-operator_na-us-3]
       - get: kubernikus.builds
-        trigger: false
+        trigger: true
         resource: master.builds
     - aggregate:
       - task: kubernikus-monitoring_na-us-3
@@ -3555,7 +3555,7 @@ jobs:
       - get: secrets.git
         passed: [prometheus-operator_qa-de-1]
       - get: kubernikus.builds
-        trigger: false
+        trigger: true
         resource: master.builds
     - aggregate:
       - task: kubernikus-monitoring_qa-de-1

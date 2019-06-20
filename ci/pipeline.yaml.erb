@@ -435,7 +435,7 @@ jobs:
       - get: secrets.git
         passed: [prometheus-operator_<%= region %>]
       - get: kubernikus.builds
-        trigger: false
+        trigger: true
         resource: master.builds
     - aggregate:
       - task: kubernikus-monitoring_<%= region %>
