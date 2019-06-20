@@ -771,6 +771,7 @@ task_helm_kubernikus-monitoring: &task_helm_kubernikus-monitoring
   
   inputs:
     - name: kubernikus.builds
+    - name: secrets.git
   
   run:
     path: /bin/sh
