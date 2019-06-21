@@ -7,6 +7,10 @@ dependencies:
     repository: https://kubernetes-charts.storage.googleapis.com/
     version: 0.3.0
 
+  - name: grafana
+    repository: https://kubernetes-charts.storage.googleapis.com/
+    version: 3.5.4
+
   - name: kube-rules
     repository: file://vendor/kube-rules
     version: 1.0.1
