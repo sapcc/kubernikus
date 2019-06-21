@@ -1,58 +1,4 @@
 {
-  "__inputs": [
-    {
-      "name": "default",
-      "label": "Prometheus",
-      "description": "",
-      "type": "datasource",
-      "pluginId": "prometheus",
-      "pluginName": "Prometheus"
-    }
-  ],
-  "__requires": [
-    {
-      "type": "grafana",
-      "id": "grafana",
-      "name": "Grafana",
-      "version": "5.0.4"
-    },
-    {
-      "type": "panel",
-      "id": "grafana-piechart-panel",
-      "name": "Pie Chart",
-      "version": "1.3.6"
-    },
-    {
-      "type": "panel",
-      "id": "graph",
-      "name": "Graph",
-      "version": "5.0.0"
-    },
-    {
-      "type": "panel",
-      "id": "natel-discrete-panel",
-      "name": "Discrete",
-      "version": "0.0.9"
-    },
-    {
-      "type": "datasource",
-      "id": "prometheus",
-      "name": "Prometheus",
-      "version": "5.0.0"
-    },
-    {
-      "type": "panel",
-      "id": "singlestat",
-      "name": "Singlestat",
-      "version": "5.0.0"
-    },
-    {
-      "type": "panel",
-      "id": "text",
-      "name": "Text",
-      "version": "5.0.0"
-    }
-  ],
   "annotations": {
     "list": [
       {
@@ -69,8 +15,8 @@
   "editable": false,
   "gnetId": null,
   "graphTooltip": 0,
-  "id": null,
-  "iteration": 1554904344399,
+  "id": 2,
+  "iteration": 1561119537215,
   "links": [],
   "panels": [
     {
@@ -97,6 +43,7 @@
       "id": 18,
       "links": [],
       "mode": "markdown",
+      "options": {},
       "title": "",
       "transparent": true,
       "type": "text"
@@ -112,6 +59,7 @@
       "id": 19,
       "links": [],
       "mode": "markdown",
+      "options": {},
       "title": "",
       "transparent": true,
       "type": "text"
@@ -159,6 +107,7 @@
       "maxDataPoints": 100,
       "nullPointMode": "connected",
       "nullText": null,
+      "options": {},
       "postfix": "Klusters",
       "postfixFontSize": "50%",
       "prefix": "",
@@ -244,6 +193,7 @@
       "maxDataPoints": 100,
       "nullPointMode": "connected",
       "nullText": null,
+      "options": {},
       "postfix": "Klusters",
       "postfixFontSize": "50%",
       "prefix": "",
@@ -329,6 +279,7 @@
       "maxDataPoints": 100,
       "nullPointMode": "connected",
       "nullText": null,
+      "options": {},
       "postfix": "Klusters",
       "postfixFontSize": "50%",
       "prefix": "",
@@ -414,6 +365,7 @@
       "maxDataPoints": 100,
       "nullPointMode": "connected",
       "nullText": null,
+      "options": {},
       "postfix": "Klusters",
       "postfixFontSize": "50%",
       "prefix": "",
@@ -445,7 +397,6 @@
       "timeFrom": "5m",
       "timeShift": null,
       "title": "Terminating",
-      "transparent": false,
       "type": "singlestat",
       "valueFontSize": "200%",
       "valueMaps": [
@@ -468,6 +419,7 @@
       "id": 61,
       "links": [],
       "mode": "markdown",
+      "options": {},
       "title": "",
       "transparent": true,
       "type": "text"
@@ -476,13 +428,14 @@
       "content": "# Availability",
       "gridPos": {
         "h": 4,
-        "w": 2,
+        "w": 3,
         "x": 12,
         "y": 1
       },
       "id": 31,
       "links": [],
       "mode": "markdown",
+      "options": {},
       "title": "",
       "transparent": true,
       "type": "text"
@@ -498,8 +451,8 @@
       "fill": 3,
       "gridPos": {
         "h": 4,
-        "w": 3,
-        "x": 14,
+        "w": 4,
+        "x": 15,
         "y": 1
       },
       "id": 49,
@@ -518,6 +471,7 @@
       "linewidth": 1,
       "links": [],
       "nullPointMode": "connected",
+      "options": {},
       "percentage": false,
       "pointradius": 5,
       "points": false,
@@ -556,6 +510,7 @@
       ],
       "thresholds": [],
       "timeFrom": null,
+      "timeRegions": [],
       "timeShift": null,
       "title": "Kubernikus",
       "tooltip": {
@@ -590,7 +545,11 @@
           "min": null,
           "show": true
         }
-      ]
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
     },
     {
       "aliasColors": {},
@@ -601,8 +560,8 @@
       "fill": 3,
       "gridPos": {
         "h": 4,
-        "w": 3,
-        "x": 17,
+        "w": 4,
+        "x": 19,
         "y": 1
       },
       "id": 60,
@@ -621,6 +580,7 @@
       "linewidth": 1,
       "links": [],
       "nullPointMode": "connected",
+      "options": {},
       "percentage": false,
       "pointradius": 5,
       "points": false,
@@ -656,6 +616,7 @@
       ],
       "thresholds": [],
       "timeFrom": null,
+      "timeRegions": [],
       "timeShift": null,
       "title": "Klusters",
       "tooltip": {
@@ -690,150 +651,11 @@
           "min": null,
           "show": true
         }
-      ]
-    },
-    {
-      "backgroundColor": "rgb(60, 60, 60)",
-      "colorMaps": [
-        {
-          "color": "#e5ac0e",
-          "text": "N/A"
-        },
-        {
-          "color": "#508642",
-          "text": "up"
-        },
-        {
-          "color": "#bf1b00",
-          "text": "down"
-        }
       ],
-      "crosshairColor": "#8F070C",
-      "datasource": "default",
-      "display": "timeline",
-      "expandFromQueryS": 86400,
-      "extendLastValue": true,
-      "gridPos": {
-        "h": 4,
-        "w": 4,
-        "x": 20,
-        "y": 1
-      },
-      "hideTimeOverride": true,
-      "highlightOnMouseover": false,
-      "id": 21,
-      "legendSortBy": "-ms",
-      "lineColor": "rgba(0, 0, 0, 0.53)",
-      "links": [],
-      "mappingTypes": [
-        {
-          "name": "value to text",
-          "value": 1
-        },
-        {
-          "name": "range to text",
-          "value": 2
-        }
-      ],
-      "metricNameColor": "#fff",
-      "rangeMaps": [
-        {
-          "from": "null",
-          "text": "N/A",
-          "to": "null"
-        }
-      ],
-      "rowHeight": 32,
-      "showDistinctCount": false,
-      "showLegend": false,
-      "showLegendCounts": false,
-      "showLegendNames": false,
-      "showLegendPercent": false,
-      "showLegendTime": false,
-      "showLegendValues": false,
-      "showTimeAxis": false,
-      "showTransitionCount": false,
-      "targets": [
-        {
-          "expr": "probe_success{path=\"/\", kubernetes_name!~\"e2e.*|kubernikus-test.*\"} < 1 AND ON (kubernetes_name) label_replace(kubernikus_kluster_status_phase{phase=\"Running\"}, \"kubernetes_name\", \"$1\", \"kluster_id\", \"(.*)\")",
-          "format": "time_series",
-          "hide": false,
-          "instant": false,
-          "interval": "",
-          "intervalFactor": 1,
-          "legendFormat": "{{kubernetes_name}}",
-          "refId": "A"
-        }
-      ],
-      "textSize": 12,
-      "textSizeTime": 12,
-      "timeFrom": "5m",
-      "timeOptions": [
-        {
-          "name": "Years",
-          "value": "years"
-        },
-        {
-          "name": "Months",
-          "value": "months"
-        },
-        {
-          "name": "Weeks",
-          "value": "weeks"
-        },
-        {
-          "name": "Days",
-          "value": "days"
-        },
-        {
-          "name": "Hours",
-          "value": "hours"
-        },
-        {
-          "name": "Minutes",
-          "value": "minutes"
-        },
-        {
-          "name": "Seconds",
-          "value": "seconds"
-        },
-        {
-          "name": "Milliseconds",
-          "value": "milliseconds"
-        }
-      ],
-      "timePrecision": {
-        "name": "Minutes",
-        "value": "minutes"
-      },
-      "timeShift": null,
-      "timeTextColor": "#d8d9da",
-      "title": "",
-      "transparent": true,
-      "type": "natel-discrete-panel",
-      "units": "short",
-      "useTimePrecision": false,
-      "valueMaps": [
-        {
-          "op": "=",
-          "text": "up",
-          "value": "1"
-        },
-        {
-          "op": "=",
-          "text": "down",
-          "value": "0"
-        },
-        {
-          "op": "=",
-          "text": "N/A",
-          "value": "null"
-        }
-      ],
-      "valueTextColor": "#fff",
-      "writeAllValues": false,
-      "writeLastValue": false,
-      "writeMetricNames": true
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
     },
     {
       "content": "\n# Updates\n\n",
@@ -846,6 +668,7 @@
       "id": 78,
       "links": [],
       "mode": "markdown",
+      "options": {},
       "title": "",
       "transparent": true,
       "type": "text"
@@ -881,6 +704,7 @@
       "links": [],
       "maxDataPoints": 3,
       "nullPointMode": "connected",
+      "options": {},
       "pieType": "pie",
       "strokeWidth": 1,
       "targets": [
@@ -930,6 +754,7 @@
       "links": [],
       "maxDataPoints": 3,
       "nullPointMode": "connected",
+      "options": {},
       "pieType": "pie",
       "strokeWidth": 1,
       "targets": [
@@ -991,6 +816,7 @@
       "maxDataPoints": 100,
       "nullPointMode": "connected",
       "nullText": null,
+      "options": {},
       "postfix": "Nodes",
       "postfixFontSize": "50%",
       "prefix": "",
@@ -1022,7 +848,6 @@
       "timeFrom": "5m",
       "timeShift": null,
       "title": "Failed",
-      "transparent": false,
       "type": "singlestat",
       "valueFontSize": "200%",
       "valueMaps": [
@@ -1037,14 +862,15 @@
     {
       "content": "# Versions",
       "gridPos": {
-        "h": 5,
-        "w": 2,
+        "h": 4,
+        "w": 3,
         "x": 12,
         "y": 5
       },
       "id": 79,
       "links": [],
       "mode": "markdown",
+      "options": {},
       "title": "",
       "transparent": true,
       "type": "text"
@@ -1063,8 +889,8 @@
       "format": "none",
       "gridPos": {
         "h": 5,
-        "w": 4,
-        "x": 14,
+        "w": 3,
+        "x": 15,
         "y": 5
       },
       "hideTimeOverride": true,
@@ -1082,6 +908,7 @@
       "links": [],
       "maxDataPoints": 3,
       "nullPointMode": "connected",
+      "options": {},
       "pieType": "pie",
       "strokeWidth": 1,
       "targets": [
@@ -1133,6 +960,7 @@
       "links": [],
       "maxDataPoints": 3,
       "nullPointMode": "connected",
+      "options": {},
       "pieType": "pie",
       "strokeWidth": 1,
       "targets": [
@@ -1184,6 +1012,7 @@
       "links": [],
       "maxDataPoints": 3,
       "nullPointMode": "connected",
+      "options": {},
       "pieType": "pie",
       "strokeWidth": 1,
       "targets": [
@@ -1212,7 +1041,7 @@
       },
       "id": 33,
       "panels": [],
-      "title": "Capacity",
+      "title": "Kubernetes capacity",
       "type": "row"
     },
     {
@@ -1226,6 +1055,7 @@
       "id": 46,
       "links": [],
       "mode": "markdown",
+      "options": {},
       "title": "",
       "transparent": true,
       "type": "text"
@@ -1241,23 +1071,24 @@
       "id": 27,
       "links": [],
       "mode": "markdown",
+      "options": {},
       "title": "",
       "transparent": true,
       "type": "text"
     },
     {
-      "content": "<style>\n  table.info td {\n    border: none;\n    background: none;\n  }   \n  table.info th {\n    border: none;\n    font-weight: bold;\n    background: none;\n  } \n</style>\n\n<table class=\"info\">\n<tr><th>CoreOS</th><td>$coreos_version</td></tr>\n<tr><th>Kernel</th><td>$kernel_version</td></tr>\n<tr><th>Kubernetes</th><td>$kubelet_version</td></tr>\n<tr><th>Docker</th><td>$container_runtime_version</td></tr>\n</table>\n",
+      "content": "<table class=\"info\">\n<tr><th>CoreOS</th><td>$coreos_version</td></tr>\n<tr><th>Kernel</th><td>$kernel_version</td></tr>\n<tr><th>Kubernetes</th><td>$kubelet_version</td></tr>\n<tr><th>Docker</th><td>$container_runtime_version</td></tr>\n</table>\n",
       "gridPos": {
         "h": 6,
-        "w": 2,
+        "w": 3,
         "x": 3,
         "y": 11
       },
       "id": 67,
       "links": [],
       "mode": "html",
+      "options": {},
       "title": "Control Plane",
-      "transparent": false,
       "type": "text"
     },
     {
@@ -1282,8 +1113,8 @@
       },
       "gridPos": {
         "h": 3,
-        "w": 2,
-        "x": 5,
+        "w": 3,
+        "x": 6,
         "y": 11
       },
       "hideTimeOverride": true,
@@ -1304,6 +1135,7 @@
       "maxDataPoints": 100,
       "nullPointMode": "connected",
       "nullText": null,
+      "options": {},
       "postfix": "Klusters",
       "postfixFontSize": "50%",
       "prefix": "",
@@ -1358,93 +1190,6 @@
       ],
       "datasource": "default",
       "decimals": 0,
-      "description": "Out of Memory in this many Klusters",
-      "format": "none",
-      "gauge": {
-        "maxValue": 100,
-        "minValue": 0,
-        "show": false,
-        "thresholdLabels": false,
-        "thresholdMarkers": true
-      },
-      "gridPos": {
-        "h": 3,
-        "w": 2,
-        "x": 7,
-        "y": 11
-      },
-      "hideTimeOverride": true,
-      "id": 9,
-      "interval": null,
-      "links": [],
-      "mappingType": 1,
-      "mappingTypes": [
-        {
-          "name": "value to text",
-          "value": 1
-        },
-        {
-          "name": "range to text",
-          "value": 2
-        }
-      ],
-      "maxDataPoints": 100,
-      "nullPointMode": "connected",
-      "nullText": null,
-      "postfix": "Klusters",
-      "postfixFontSize": "50%",
-      "prefix": "",
-      "prefixFontSize": "50%",
-      "rangeMaps": [
-        {
-          "from": "null",
-          "text": "N/A",
-          "to": "null"
-        }
-      ],
-      "sparkline": {
-        "fillColor": "rgba(31, 118, 189, 0.18)",
-        "full": false,
-        "lineColor": "#0a50a1",
-        "show": false
-      },
-      "tableColumn": "",
-      "targets": [
-        {
-          "expr": "(sum(kube_node_status_allocatable_memory_bytes) - sum(kube_pod_container_resource_requests_memory_bytes)) / (sum(kube_pod_container_resource_requests_memory_bytes{namespace=\"kubernikus\"}) / sum(kubernikus_kluster_status_phase))",
-          "format": "time_series",
-          "interval": "",
-          "intervalFactor": 1,
-          "legendFormat": "",
-          "refId": "A"
-        }
-      ],
-      "thresholds": "5,10",
-      "timeFrom": "1m",
-      "timeShift": null,
-      "title": "Remaining Memory",
-      "type": "singlestat",
-      "valueFontSize": "200%",
-      "valueMaps": [
-        {
-          "op": "=",
-          "text": "N/A",
-          "value": "null"
-        }
-      ],
-      "valueName": "current"
-    },
-    {
-      "cacheTimeout": null,
-      "colorBackground": true,
-      "colorValue": false,
-      "colors": [
-        "#d44a3a",
-        "rgba(237, 129, 40, 0.89)",
-        "#299c46"
-      ],
-      "datasource": "default",
-      "decimals": 0,
       "description": "Out of Podsin this many Klusters",
       "format": "none",
       "gauge": {
@@ -1456,7 +1201,7 @@
       },
       "gridPos": {
         "h": 3,
-        "w": 2,
+        "w": 3,
         "x": 9,
         "y": 11
       },
@@ -1478,6 +1223,7 @@
       "maxDataPoints": 100,
       "nullPointMode": "connected",
       "nullText": null,
+      "options": {},
       "postfix": "Klusters",
       "postfixFontSize": "50%",
       "prefix": "",
@@ -1522,16 +1268,411 @@
       "valueName": "current"
     },
     {
+      "cacheTimeout": null,
+      "colorBackground": true,
+      "colorValue": false,
+      "colors": [
+        "#d44a3a",
+        "rgba(237, 129, 40, 0.89)",
+        "#299c46"
+      ],
+      "datasource": "default",
+      "decimals": 0,
+      "description": "Out of Memory in this many Klusters",
+      "format": "none",
+      "gauge": {
+        "maxValue": 100,
+        "minValue": 0,
+        "show": false,
+        "thresholdLabels": false,
+        "thresholdMarkers": true
+      },
+      "gridPos": {
+        "h": 3,
+        "w": 3,
+        "x": 12,
+        "y": 11
+      },
+      "hideTimeOverride": true,
+      "id": 9,
+      "interval": null,
+      "links": [],
+      "mappingType": 1,
+      "mappingTypes": [
+        {
+          "name": "value to text",
+          "value": 1
+        },
+        {
+          "name": "range to text",
+          "value": 2
+        }
+      ],
+      "maxDataPoints": 100,
+      "nullPointMode": "connected",
+      "nullText": null,
+      "options": {},
+      "postfix": "Klusters",
+      "postfixFontSize": "50%",
+      "prefix": "",
+      "prefixFontSize": "50%",
+      "rangeMaps": [
+        {
+          "from": "null",
+          "text": "N/A",
+          "to": "null"
+        }
+      ],
+      "sparkline": {
+        "fillColor": "rgba(31, 118, 189, 0.18)",
+        "full": false,
+        "lineColor": "#0a50a1",
+        "show": false
+      },
+      "tableColumn": "",
+      "targets": [
+        {
+          "expr": "(sum(kube_node_status_allocatable_memory_bytes) - sum(kube_pod_container_resource_requests_memory_bytes)) / (sum(kube_pod_container_resource_requests_memory_bytes{namespace=\"kubernikus\"}) / sum(kubernikus_kluster_status_phase))",
+          "format": "time_series",
+          "interval": "",
+          "intervalFactor": 1,
+          "legendFormat": "",
+          "refId": "A"
+        }
+      ],
+      "thresholds": "5,10",
+      "timeFrom": "1m",
+      "timeShift": null,
+      "title": "Remaining Memory",
+      "type": "singlestat",
+      "valueFontSize": "200%",
+      "valueMaps": [
+        {
+          "op": "=",
+          "text": "N/A",
+          "value": "null"
+        }
+      ],
+      "valueName": "current"
+    },
+    {
+      "content": "# Usage",
+      "gridPos": {
+        "h": 3,
+        "w": 2,
+        "x": 1,
+        "y": 14
+      },
+      "id": 45,
+      "links": [],
+      "mode": "markdown",
+      "options": {},
+      "title": "",
+      "transparent": true,
+      "type": "text"
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "default",
+      "decimals": 0,
+      "fill": 6,
+      "gridPos": {
+        "h": 3,
+        "w": 3,
+        "x": 6,
+        "y": 14
+      },
+      "id": 41,
+      "legend": {
+        "alignAsTable": false,
+        "avg": false,
+        "current": false,
+        "max": false,
+        "min": false,
+        "show": false,
+        "total": false,
+        "values": false
+      },
+      "lines": true,
+      "linewidth": 3,
+      "links": [],
+      "nullPointMode": "connected",
+      "options": {},
+      "percentage": false,
+      "pointradius": 5,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "expr": "sum(irate(node_cpu_seconds_total{mode=~\"system|user|iowait\"}[5m])) by (instance) / sum(irate(node_cpu_seconds_total{}[5m])) by (instance)",
+          "format": "time_series",
+          "interval": "",
+          "intervalFactor": 3,
+          "legendFormat": "{{instance}}",
+          "refId": "A"
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "CPU",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": false,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "decimals": null,
+          "format": "percentunit",
+          "label": "",
+          "logBase": 1,
+          "max": "1",
+          "min": "0",
+          "show": false
+        },
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": false
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "default",
+      "decimals": 0,
+      "fill": 6,
+      "gridPos": {
+        "h": 3,
+        "w": 3,
+        "x": 9,
+        "y": 14
+      },
+      "id": 58,
+      "legend": {
+        "alignAsTable": false,
+        "avg": false,
+        "current": false,
+        "max": false,
+        "min": false,
+        "show": false,
+        "total": false,
+        "values": false
+      },
+      "lines": true,
+      "linewidth": 2,
+      "links": [],
+      "nullPointMode": "connected",
+      "options": {},
+      "percentage": true,
+      "pointradius": 5,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "expr": " count(kube_pod_info) by (node) / sum(kube_node_status_capacity_pods)  by (node)",
+          "format": "time_series",
+          "interval": "",
+          "intervalFactor": 1,
+          "legendFormat": "{{node}}",
+          "refId": "A"
+        },
+        {
+          "expr": "",
+          "format": "time_series",
+          "intervalFactor": 1,
+          "legendFormat": "",
+          "refId": "B"
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "Pods",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": false,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "decimals": null,
+          "format": "percentunit",
+          "label": "",
+          "logBase": 1,
+          "max": "1",
+          "min": "0.0",
+          "show": false
+        },
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": false
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "default",
+      "decimals": 0,
+      "fill": 6,
+      "gridPos": {
+        "h": 3,
+        "w": 3,
+        "x": 12,
+        "y": 14
+      },
+      "id": 73,
+      "legend": {
+        "alignAsTable": false,
+        "avg": false,
+        "current": false,
+        "max": false,
+        "min": false,
+        "show": false,
+        "total": false,
+        "values": false
+      },
+      "lines": true,
+      "linewidth": 3,
+      "links": [],
+      "nullPointMode": "connected",
+      "options": {},
+      "percentage": false,
+      "pointradius": 5,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "expr": " (node_memory_MemTotal_bytes - node_memory_MemFree_bytes - node_memory_Buffers_bytes - node_memory_Cached_bytes  ) / node_memory_MemTotal_bytes",
+          "format": "time_series",
+          "interval": "",
+          "intervalFactor": 3,
+          "legendFormat": "{{instance}}",
+          "refId": "A"
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "Memory",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": false,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "decimals": null,
+          "format": "percentunit",
+          "label": "",
+          "logBase": 1,
+          "max": "1",
+          "min": "0",
+          "show": false
+        },
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": false
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 17
+      },
+      "id": 84,
+      "panels": [],
+      "title": "OpenStack capacity",
+      "type": "row"
+    },
+    {
       "content": "\n\n\n![Openstack](https://raw.githubusercontent.com/sapcc/kubernikus/master/assets/openstack_64x64.png) \n",
       "gridPos": {
         "h": 6,
         "w": 1,
-        "x": 11,
-        "y": 11
+        "x": 0,
+        "y": 18
       },
       "id": 47,
       "links": [],
       "mode": "markdown",
+      "options": {},
       "title": "",
       "transparent": true,
       "type": "text"
@@ -1541,12 +1682,13 @@
       "gridPos": {
         "h": 3,
         "w": 2,
-        "x": 12,
-        "y": 11
+        "x": 1,
+        "y": 18
       },
       "id": 59,
       "links": [],
       "mode": "markdown",
+      "options": {},
       "title": "",
       "transparent": true,
       "type": "text"
@@ -1573,9 +1715,9 @@
       },
       "gridPos": {
         "h": 3,
-        "w": 2,
-        "x": 14,
-        "y": 11
+        "w": 3,
+        "x": 3,
+        "y": 18
       },
       "hideTimeOverride": true,
       "id": 34,
@@ -1595,6 +1737,7 @@
       "maxDataPoints": 100,
       "nullPointMode": "connected",
       "nullText": null,
+      "options": {},
       "postfix": "Kl",
       "postfixFontSize": "50%",
       "prefix": "",
@@ -1660,9 +1803,9 @@
       },
       "gridPos": {
         "h": 3,
-        "w": 2,
-        "x": 16,
-        "y": 11
+        "w": 3,
+        "x": 6,
+        "y": 18
       },
       "hideTimeOverride": true,
       "id": 55,
@@ -1682,6 +1825,7 @@
       "maxDataPoints": 100,
       "nullPointMode": "connected",
       "nullText": null,
+      "options": {},
       "postfix": "Kl",
       "postfixFontSize": "50%",
       "prefix": "",
@@ -1753,9 +1897,9 @@
       },
       "gridPos": {
         "h": 3,
-        "w": 2,
-        "x": 18,
-        "y": 11
+        "w": 3,
+        "x": 9,
+        "y": 18
       },
       "hideTimeOverride": true,
       "id": 63,
@@ -1775,6 +1919,7 @@
       "maxDataPoints": 100,
       "nullPointMode": "connected",
       "nullText": null,
+      "options": {},
       "postfix": "Nodes",
       "postfixFontSize": "50%",
       "prefix": "",
@@ -1840,9 +1985,9 @@
       },
       "gridPos": {
         "h": 3,
-        "w": 2,
-        "x": 20,
-        "y": 11
+        "w": 3,
+        "x": 12,
+        "y": 18
       },
       "hideTimeOverride": true,
       "id": 64,
@@ -1862,6 +2007,7 @@
       "maxDataPoints": 100,
       "nullPointMode": "connected",
       "nullText": null,
+      "options": {},
       "postfix": "Nodes",
       "postfixFontSize": "50%",
       "prefix": "",
@@ -1927,9 +2073,9 @@
       },
       "gridPos": {
         "h": 3,
-        "w": 2,
-        "x": 22,
-        "y": 11
+        "w": 3,
+        "x": 15,
+        "y": 18
       },
       "hideTimeOverride": true,
       "id": 65,
@@ -1949,6 +2095,7 @@
       "maxDataPoints": 100,
       "nullPointMode": "connected",
       "nullText": null,
+      "options": {},
       "postfix": "Nodes",
       "postfixFontSize": "50%",
       "prefix": "",
@@ -1998,285 +2145,12 @@
         "h": 3,
         "w": 2,
         "x": 1,
-        "y": 14
-      },
-      "id": 45,
-      "links": [],
-      "mode": "markdown",
-      "title": "",
-      "transparent": true,
-      "type": "text"
-    },
-    {
-      "aliasColors": {},
-      "bars": false,
-      "dashLength": 10,
-      "dashes": false,
-      "datasource": "default",
-      "decimals": 0,
-      "fill": 6,
-      "gridPos": {
-        "h": 3,
-        "w": 2,
-        "x": 5,
-        "y": 14
-      },
-      "id": 41,
-      "legend": {
-        "alignAsTable": false,
-        "avg": false,
-        "current": false,
-        "max": false,
-        "min": false,
-        "show": false,
-        "total": false,
-        "values": false
-      },
-      "lines": true,
-      "linewidth": 3,
-      "links": [],
-      "nullPointMode": "connected",
-      "percentage": false,
-      "pointradius": 5,
-      "points": false,
-      "renderer": "flot",
-      "seriesOverrides": [],
-      "spaceLength": 10,
-      "stack": false,
-      "steppedLine": false,
-      "targets": [
-        {
-          "expr": "sum(irate(node_cpu_seconds_total{mode=~\"system|user|iowait\"}[5m])) by (instance) / sum(irate(node_cpu_seconds_total{}[5m])) by (instance)",
-          "format": "time_series",
-          "interval": "",
-          "intervalFactor": 3,
-          "legendFormat": "{{instance}}",
-          "refId": "A"
-        }
-      ],
-      "thresholds": [],
-      "timeFrom": null,
-      "timeShift": null,
-      "title": "CPU",
-      "tooltip": {
-        "shared": true,
-        "sort": 0,
-        "value_type": "individual"
-      },
-      "type": "graph",
-      "xaxis": {
-        "buckets": null,
-        "mode": "time",
-        "name": null,
-        "show": false,
-        "values": []
-      },
-      "yaxes": [
-        {
-          "decimals": null,
-          "format": "percentunit",
-          "label": "",
-          "logBase": 1,
-          "max": "1",
-          "min": "0",
-          "show": false
-        },
-        {
-          "format": "short",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": false
-        }
-      ]
-    },
-    {
-      "aliasColors": {},
-      "bars": false,
-      "dashLength": 10,
-      "dashes": false,
-      "datasource": "default",
-      "decimals": 0,
-      "fill": 6,
-      "gridPos": {
-        "h": 3,
-        "w": 2,
-        "x": 7,
-        "y": 14
-      },
-      "id": 73,
-      "legend": {
-        "alignAsTable": false,
-        "avg": false,
-        "current": false,
-        "max": false,
-        "min": false,
-        "show": false,
-        "total": false,
-        "values": false
-      },
-      "lines": true,
-      "linewidth": 3,
-      "links": [],
-      "nullPointMode": "connected",
-      "percentage": false,
-      "pointradius": 5,
-      "points": false,
-      "renderer": "flot",
-      "seriesOverrides": [],
-      "spaceLength": 10,
-      "stack": false,
-      "steppedLine": false,
-      "targets": [
-        {
-          "expr": " (node_memory_MemTotal_bytes - node_memory_MemFree_bytes - node_memory_Buffers_bytes - node_memory_Cached_bytes  ) / node_memory_MemTotal_bytes",
-          "format": "time_series",
-          "interval": "",
-          "intervalFactor": 3,
-          "legendFormat": "{{instance}}",
-          "refId": "A"
-        }
-      ],
-      "thresholds": [],
-      "timeFrom": null,
-      "timeShift": null,
-      "title": "Memory",
-      "tooltip": {
-        "shared": true,
-        "sort": 0,
-        "value_type": "individual"
-      },
-      "type": "graph",
-      "xaxis": {
-        "buckets": null,
-        "mode": "time",
-        "name": null,
-        "show": false,
-        "values": []
-      },
-      "yaxes": [
-        {
-          "decimals": null,
-          "format": "percentunit",
-          "label": "",
-          "logBase": 1,
-          "max": "1",
-          "min": "0",
-          "show": false
-        },
-        {
-          "format": "short",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": false
-        }
-      ]
-    },
-    {
-      "aliasColors": {},
-      "bars": false,
-      "dashLength": 10,
-      "dashes": false,
-      "datasource": "default",
-      "decimals": 0,
-      "fill": 6,
-      "gridPos": {
-        "h": 3,
-        "w": 2,
-        "x": 9,
-        "y": 14
-      },
-      "id": 58,
-      "legend": {
-        "alignAsTable": false,
-        "avg": false,
-        "current": false,
-        "max": false,
-        "min": false,
-        "show": false,
-        "total": false,
-        "values": false
-      },
-      "lines": true,
-      "linewidth": 2,
-      "links": [],
-      "nullPointMode": "connected",
-      "percentage": true,
-      "pointradius": 5,
-      "points": false,
-      "renderer": "flot",
-      "seriesOverrides": [],
-      "spaceLength": 10,
-      "stack": false,
-      "steppedLine": false,
-      "targets": [
-        {
-          "expr": " count(kube_pod_info) by (node) / sum(kube_node_status_capacity_pods)  by (node)",
-          "format": "time_series",
-          "interval": "",
-          "intervalFactor": 1,
-          "legendFormat": "{{node}}",
-          "refId": "A"
-        },
-        {
-          "expr": "",
-          "format": "time_series",
-          "intervalFactor": 1,
-          "legendFormat": "",
-          "refId": "B"
-        }
-      ],
-      "thresholds": [],
-      "timeFrom": null,
-      "timeShift": null,
-      "title": "Pods",
-      "tooltip": {
-        "shared": true,
-        "sort": 0,
-        "value_type": "individual"
-      },
-      "type": "graph",
-      "xaxis": {
-        "buckets": null,
-        "mode": "time",
-        "name": null,
-        "show": false,
-        "values": []
-      },
-      "yaxes": [
-        {
-          "decimals": null,
-          "format": "percentunit",
-          "label": "",
-          "logBase": 1,
-          "max": "1",
-          "min": "0.0",
-          "show": false
-        },
-        {
-          "format": "short",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": false
-        }
-      ]
-    },
-    {
-      "content": "# Usage",
-      "gridPos": {
-        "h": 3,
-        "w": 2,
-        "x": 12,
-        "y": 14
+        "y": 21
       },
       "id": 30,
       "links": [],
       "mode": "markdown",
+      "options": {},
       "title": "",
       "transparent": true,
       "type": "text"
@@ -2302,9 +2176,9 @@
       },
       "gridPos": {
         "h": 3,
-        "w": 2,
-        "x": 14,
-        "y": 14
+        "w": 3,
+        "x": 3,
+        "y": 21
       },
       "hideTimeOverride": true,
       "id": 57,
@@ -2324,6 +2198,7 @@
       "maxDataPoints": 100,
       "nullPointMode": "connected",
       "nullText": null,
+      "options": {},
       "postfix": "",
       "postfixFontSize": "50%",
       "prefix": "",
@@ -2389,9 +2264,9 @@
       },
       "gridPos": {
         "h": 3,
-        "w": 2,
-        "x": 16,
-        "y": 14
+        "w": 3,
+        "x": 6,
+        "y": 21
       },
       "hideTimeOverride": true,
       "id": 37,
@@ -2411,6 +2286,7 @@
       "maxDataPoints": 100,
       "nullPointMode": "connected",
       "nullText": null,
+      "options": {},
       "postfix": "",
       "postfixFontSize": "50%",
       "prefix": "",
@@ -2475,9 +2351,9 @@
       },
       "gridPos": {
         "h": 3,
-        "w": 2,
-        "x": 18,
-        "y": 14
+        "w": 3,
+        "x": 9,
+        "y": 21
       },
       "hideTimeOverride": true,
       "id": 39,
@@ -2497,6 +2373,7 @@
       "maxDataPoints": 100,
       "nullPointMode": "connected",
       "nullText": null,
+      "options": {},
       "postfix": "",
       "postfixFontSize": "50%",
       "prefix": "",
@@ -2560,9 +2437,9 @@
       },
       "gridPos": {
         "h": 3,
-        "w": 2,
-        "x": 20,
-        "y": 14
+        "w": 3,
+        "x": 12,
+        "y": 21
       },
       "hideTimeOverride": true,
       "id": 38,
@@ -2582,6 +2459,7 @@
       "maxDataPoints": 100,
       "nullPointMode": "connected",
       "nullText": null,
+      "options": {},
       "postfix": "",
       "postfixFontSize": "50%",
       "prefix": "",
@@ -2644,9 +2522,9 @@
       },
       "gridPos": {
         "h": 3,
-        "w": 2,
-        "x": 22,
-        "y": 14
+        "w": 3,
+        "x": 15,
+        "y": 21
       },
       "hideTimeOverride": true,
       "id": 56,
@@ -2666,6 +2544,7 @@
       "maxDataPoints": 100,
       "nullPointMode": "connected",
       "nullText": null,
+      "options": {},
       "postfix": "",
       "postfixFontSize": "50%",
       "prefix": "",
@@ -2714,7 +2593,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 17
+        "y": 24
       },
       "id": 23,
       "panels": [],
@@ -2743,7 +2622,7 @@
         "h": 7,
         "w": 3,
         "x": 0,
-        "y": 18
+        "y": 25
       },
       "hideTimeOverride": true,
       "id": 71,
@@ -2763,6 +2642,7 @@
       "maxDataPoints": 100,
       "nullPointMode": "connected",
       "nullText": null,
+      "options": {},
       "postfix": "",
       "postfixFontSize": "50%",
       "prefix": "",
@@ -2818,7 +2698,7 @@
         "h": 7,
         "w": 4,
         "x": 3,
-        "y": 18
+        "y": 25
       },
       "id": 72,
       "legend": {
@@ -2836,6 +2716,7 @@
       "linewidth": 3,
       "links": [],
       "nullPointMode": "connected",
+      "options": {},
       "percentage": false,
       "pointradius": 5,
       "points": false,
@@ -2865,6 +2746,7 @@
       ],
       "thresholds": [],
       "timeFrom": null,
+      "timeRegions": [],
       "timeShift": null,
       "title": "CPU Usage Ratio",
       "tooltip": {
@@ -2898,7 +2780,11 @@
           "min": null,
           "show": false
         }
-      ]
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
     },
     {
       "aliasColors": {},
@@ -2912,7 +2798,7 @@
         "h": 7,
         "w": 4,
         "x": 7,
-        "y": 18
+        "y": 25
       },
       "id": 42,
       "legend": {
@@ -2930,6 +2816,7 @@
       "linewidth": 2,
       "links": [],
       "nullPointMode": "connected",
+      "options": {},
       "percentage": false,
       "pointradius": 5,
       "points": false,
@@ -2951,6 +2838,7 @@
       ],
       "thresholds": [],
       "timeFrom": null,
+      "timeRegions": [],
       "timeShift": null,
       "title": "Memory Usage Ratio",
       "tooltip": {
@@ -2984,7 +2872,11 @@
           "min": null,
           "show": false
         }
-      ]
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
     },
     {
       "aliasColors": {},
@@ -2997,7 +2889,7 @@
         "h": 7,
         "w": 4,
         "x": 11,
-        "y": 18
+        "y": 25
       },
       "id": 11,
       "legend": {
@@ -3013,6 +2905,7 @@
       "linewidth": 3,
       "links": [],
       "nullPointMode": "connected",
+      "options": {},
       "percentage": false,
       "pointradius": 5,
       "points": false,
@@ -3068,6 +2961,7 @@
       ],
       "thresholds": [],
       "timeFrom": null,
+      "timeRegions": [],
       "timeShift": null,
       "title": "Deorbit Operations",
       "tooltip": {
@@ -3100,7 +2994,11 @@
           "min": null,
           "show": true
         }
-      ]
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
     },
     {
       "aliasColors": {},
@@ -3113,7 +3011,7 @@
         "h": 7,
         "w": 4,
         "x": 15,
-        "y": 18
+        "y": 25
       },
       "id": 4,
       "legend": {
@@ -3129,6 +3027,7 @@
       "linewidth": 3,
       "links": [],
       "nullPointMode": "connected",
+      "options": {},
       "percentage": false,
       "pointradius": 5,
       "points": false,
@@ -3184,6 +3083,7 @@
       ],
       "thresholds": [],
       "timeFrom": null,
+      "timeRegions": [],
       "timeShift": null,
       "title": "Launch Operations",
       "tooltip": {
@@ -3216,7 +3116,11 @@
           "min": null,
           "show": true
         }
-      ]
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
     },
     {
       "aliasColors": {},
@@ -3229,7 +3133,7 @@
         "h": 7,
         "w": 5,
         "x": 19,
-        "y": 18
+        "y": 25
       },
       "id": 69,
       "legend": {
@@ -3246,6 +3150,7 @@
       "linewidth": 3,
       "links": [],
       "nullPointMode": "connected",
+      "options": {},
       "percentage": false,
       "pointradius": 5,
       "points": false,
@@ -3278,6 +3183,7 @@
       ],
       "thresholds": [],
       "timeFrom": null,
+      "timeRegions": [],
       "timeShift": null,
       "title": "GoRoutines",
       "tooltip": {
@@ -3311,19 +3217,27 @@
           "min": null,
           "show": true
         }
-      ]
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
     }
   ],
   "refresh": "1m",
-  "schemaVersion": 16,
+  "schemaVersion": 18,
   "style": "dark",
   "tags": [],
   "templating": {
     "list": [
       {
         "allValue": null,
-        "current": {},
+        "current": {
+          "text": "18.6.3",
+          "value": "18.6.3"
+        },
         "datasource": "default",
+        "definition": "",
         "hide": 2,
         "includeAll": false,
         "label": null,
@@ -3333,6 +3247,7 @@
         "query": "label_values(kube_node_info,container_runtime_version)",
         "refresh": 1,
         "regex": "/[^0-9]*([0-9]+.[0-9]+.[0-9]+)[^0-9]*/",
+        "skipUrlSync": false,
         "sort": 0,
         "tagValuesQuery": "",
         "tags": [],
@@ -3342,8 +3257,12 @@
       },
       {
         "allValue": null,
-        "current": {},
+        "current": {
+          "text": "1.11.9",
+          "value": "1.11.9"
+        },
         "datasource": "default",
+        "definition": "",
         "hide": 2,
         "includeAll": false,
         "label": null,
@@ -3353,6 +3272,7 @@
         "query": "label_values(kube_node_info, kubelet_version)",
         "refresh": 1,
         "regex": "/[^0-9]*([0-9]+.[0-9]+.[0-9]+)[^0-9]*/",
+        "skipUrlSync": false,
         "sort": 0,
         "tagValuesQuery": "",
         "tags": [],
@@ -3362,8 +3282,12 @@
       },
       {
         "allValue": null,
-        "current": {},
+        "current": {
+          "text": "2079.5.1",
+          "value": "2079.5.1"
+        },
         "datasource": "default",
+        "definition": "",
         "hide": 2,
         "includeAll": false,
         "label": null,
@@ -3373,6 +3297,7 @@
         "query": "label_values(kube_node_info, os_image)",
         "refresh": 1,
         "regex": "/[^0-9]*([0-9]+.[0-9]+.[0-9]+)[^0-9]*/",
+        "skipUrlSync": false,
         "sort": 3,
         "tagValuesQuery": "",
         "tags": [],
@@ -3382,8 +3307,12 @@
       },
       {
         "allValue": null,
-        "current": {},
+        "current": {
+          "text": "4.19.43",
+          "value": "4.19.43"
+        },
         "datasource": "default",
+        "definition": "",
         "hide": 2,
         "includeAll": false,
         "label": null,
@@ -3393,6 +3322,7 @@
         "query": "label_values(kube_node_info, kernel_version)",
         "refresh": 1,
         "regex": "/[^0-9]*([0-9]+.[0-9]+.[0-9]+)[^0-9]*/",
+        "skipUrlSync": false,
         "sort": 3,
         "tagValuesQuery": "",
         "tags": [],
@@ -3435,5 +3365,5 @@
   "timezone": "",
   "title": "Kubernikus",
   "uid": "5XtTRCqkk",
-  "version": 10
+  "version": 2
 }
