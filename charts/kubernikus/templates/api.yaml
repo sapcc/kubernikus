@@ -35,6 +35,8 @@ spec:
           ports:
             - name: http
               containerPort: {{ .Values.api.port }}
+            - name: metrics
+              containerPort: 9100
           readinessProbe:
             httpGet:
               path: /
