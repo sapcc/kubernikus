@@ -18,6 +18,8 @@ spec:
       labels:
         app: kubernikus
         type: api
+      annotations:
+        prometheus.io/scrape: 'true'
     spec:
       containers:
         - name: api
