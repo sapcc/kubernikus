@@ -1,0 +1,16 @@
+{{ if .Values.etcd.metricsProxy.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "master.fullname" . }}-cmanager
+  labels:
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}"
+    release: {{ .Release.Name }}
+spec:
+  clusterIP: None
+  ports:
+    - name: metrics
+      port: 10252
+  selector:
+    kluster: {{ .Values.name }}
+{{ end }}

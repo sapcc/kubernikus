@@ -70,3 +70,7 @@ scheduler:
       memory: 512Mi
 
 revisionHistoryLimit: 3
+
+etcd:
+  metricsProxy:
+    enabled: false

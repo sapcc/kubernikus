@@ -4304,3 +4304,10 @@ fluent-bit:
   serviceAccount:
     create: true
     name:
+
+metricsProxy:
+  enabled: false
+  image:
+    repository: hub.global.cloud.sap/d074427/metrics-proxy
+    tag: "0.1.0"
+    pullPolicy: IfNotPresent

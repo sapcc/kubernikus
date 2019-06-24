@@ -1,0 +1,30 @@
+{{ if .Values.metricsProxy.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: metrics-proxy
+spec:
+  selector:
+    matchLabels:
+      app: metrics-proxy
+  template:
+    metadata:
+      labels:
+        app: metrics-proxy
+    spec:
+      containers:
+      - name: metrics-proxy
+        image: "{{ .Values.metricsProxy.image.repository }}:{{ .Values.metricsProxy.image.tag }}"
+        imagePullPolicy: {{ .Values.metricsProxy.image.pullPolicy }}
+        ports:
+        - containerPort: 8080
+          name: http
+          protocol: TCP
+        command:
+        - /metrics-proxy
+        args:
+        - -api-domain=kubernikus.{{ .Values.global.region }}.cloud.sap
+        - -addr=:8080
+        - -logtostderr
+        - -v=2
+{{ end }}

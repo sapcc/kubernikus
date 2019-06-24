@@ -25,6 +25,8 @@ etcd:
     password: xyz
     domainName: xyz.com
     projectID: xyz
+  metricsProxy:
+    enabled: true
 imagesForVersion:
   "1.0.0":
     hyperkube:

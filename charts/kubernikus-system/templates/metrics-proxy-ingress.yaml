@@ -1,0 +1,18 @@
+{{ if .Values.metricsProxy.enabled }}
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: metrics-proxy
+  annotations:
+    nginx.ingress.kubernetes.io/auth-url: http://metrics-proxy.{{ .Release.Namespace }}.svc.cluster.local:8080$request_uri&auth=true
+  labels:
+    app: metrics-proxy
+spec:
+  rules:
+  - host: metrics.kubernikus.{{ .Values.global.region }}.cloud.sap
+    http:
+      paths:
+      - backend:
+          serviceName: metrics-proxy
+          servicePort: 8080
+{{ end }}
