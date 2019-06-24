@@ -193,6 +193,14 @@ grafana:
     repository: grafana/grafana
     tag: 6.2.4
 
+  admin:
+    existingSecret: kubernikus-monitoring-grafana-admin
+    userKey: adminUser
+    passwordKey: adminPassword
+    # Defined via secrets.
+    # username: admin-user
+    # password: admin-password
+
   rbac:
     pspEnabled: false
 
