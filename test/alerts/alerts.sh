@@ -10,7 +10,6 @@ if [ $? -ne 0 ]; then
 fi
 
 helm init --client-only
-helm repo add bugroger-charts https://raw.githubusercontent.com/BugRoger/charts/repo
 helm dependency build --debug
 
 # Rendered kubernikus-monitoring chart.
