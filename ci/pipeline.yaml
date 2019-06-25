@@ -836,7 +836,6 @@ task_helm_kubernikus-system: &task_helm_kubernikus-system
         # https://github.com/kubernetes/helm/issues/2998
         cp -a kubernikus.builds kubernikus-copy.builds
   
-        helm repo add forked https://raw.githubusercontent.com/BugRoger/charts/repo
         helm dep up kubernikus-copy.builds/charts/kubernikus-system/
   
         helm diff upgrade kubernikus-system kubernikus-copy.builds/charts/kubernikus-system/ \

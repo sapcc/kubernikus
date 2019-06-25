@@ -2,14 +2,11 @@ dependencies:
 - name: vice-president
   repository: file://vendor/vice-president
   version: 0.1.4
-- name: grafana
-  repository: https://raw.githubusercontent.com/BugRoger/charts/repo
-  version: 0.6.2
 - name: nginx-ingress
   repository: https://kubernetes-charts.storage.googleapis.com/
   version: 0.9.4
 - name: fluent-bit
   repository: https://kubernetes-charts.storage.googleapis.com/
   version: 1.2.0
-digest: sha256:ca451ce274b4ce0d1196dbba041b022b85b1cf9ea33654e56de2d08bf75641ec
-generated: 2019-05-08T12:16:33.577113422+02:00
+digest: sha256:5fdee42c3a54adade6fbbdbd806d88fe10a86b1a3bfb0fc4b800a84fbfa83ed2
+generated: 2019-06-21T12:42:41.749964533+02:00
