@@ -28,7 +28,7 @@ retentionTime: 7d
 
 # Reference a secret containing additional Prometheus scrape configurations.
 # Injecting an invalid configuration might break the Prometheus server instance.
-additionalScrapeConfigs:
+additionalScrapeConfigs: {}
   # Name of the secret.
   # name:
 

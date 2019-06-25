@@ -20,5 +20,8 @@ dependencies:
 - name: eventexporter
   repository: file://vendor/eventexporter
   version: 0.1.0
-digest: sha256:54ae7c91f1091e9ab8322252f317f7da26adbb4803ca76c83490333625db0686
-generated: 2019-06-21T11:56:48.050873295+02:00
+- name: ping-exporter
+  repository: file://vendor/ping-exporter
+  version: 0.1.0
+digest: sha256:3f7bbb69dd0b0b240f9d2d16d5ce76c2d7a36691c8c58ec6b6961ec2bb3fc160
+generated: 2019-06-25T14:50:04.065472+02:00
