@@ -1,0 +1,16 @@
+{{- $values := .Values }}
+{{- range $path, $bytes := .Files.Glob "grafana/dashboards/*.json" }}
+---
+apiVersion: v1
+kind: ConfigMap
+
+metadata:
+  name: kubernikus-grafana-dashboard-{{ printf "%s" $path | replace "/" "-"  }}
+  labels:
+    kubernikus-grafana-dashboard: "true"
+
+data:
+{{ printf "%s" $path | replace "/" "-" | indent 2 }}: |
+{{ printf "%s" $bytes | indent 4 }}
+
+{{- end }}

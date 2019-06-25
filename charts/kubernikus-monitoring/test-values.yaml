@@ -3,7 +3,11 @@ global:
   region: xy-xy-1
   cluster: xy
   cluster_type: xy
-fluent-bit:
-  backend:
-    es:
-      host: xyz.com
+
+grafana:
+  admin:
+    existingSecret: kubernikus-monitoring-grafana-admin
+    userKey: adminUser
+    passwordKey: adminPassword
+    username: adminUser
+    password: adminPassword
