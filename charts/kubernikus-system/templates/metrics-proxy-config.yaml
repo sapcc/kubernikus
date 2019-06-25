@@ -1,0 +1,13 @@
+{{ if .Values.metricsProxy.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: metrics-proxy
+data:
+  config.yaml: |-
+    endpoints:
+      etcd: http://%s-etcd.kubernikus.svc.cluster.local:8080/metrics
+      apiserver: https://%s.%s:443/metrics
+      cmanager:  http://%s-cmanager.kubernikus.svc.cluster.local:10252/metrics
+      scheduler: http://%s-scheduler.kubernikus.svc.cluster.local:10251/metrics
+{{ end }}

@@ -27,4 +27,11 @@ spec:
         - -addr=:8080
         - -logtostderr
         - -v=2
+        volumeMounts:
+        - name: config-volume
+          mountPath: /etc/metrics-proxy
+      volumes:
+      - name: config-volume
+        configMap:
+          name: metrics-proxy
 {{ end }}
