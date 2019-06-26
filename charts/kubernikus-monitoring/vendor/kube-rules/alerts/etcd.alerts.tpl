@@ -9,9 +9,9 @@ groups:
       dashboard: kubernetes-etcd
       service: etcd
       severity: warning
-      tier: k8s
+      tier: {{ required ".Values.tier missing" .Values.tier }}
     annotations:
-      description: Etcd on {{ $labels.instance }} is DOWN.
+      description: Etcd on {{`{{ $labels.instance }}`}} is DOWN.
       summary: An Etcd is DOWN
 
   - alert: KubernetesEtcdInsufficientPeers
@@ -22,7 +22,7 @@ groups:
       dashboard: kubernetes-etcd
       service: etcd
       severity: info
-      tier: k8s
+      tier: {{ required ".Values.tier missing" .Values.tier }}
     annotations:
       description: If one more etcd peer goes down the cluster will be unavailable
       summary: Etcd cluster small
@@ -35,7 +35,7 @@ groups:
       dashboard: kubernetes-etcd
       service: etcd
       severity: critical
-      tier: k8s
+      tier: {{ required ".Values.tier missing" .Values.tier }}
     annotations:
       description: The etcd cluster is DOWN. Kubernetes API is unavailable.
       summary: Etcd cluster is DOWN
@@ -48,9 +48,9 @@ groups:
       dashboard: kubernetes-etcd
       service: etcd
       severity: warning
-      tier: k8s
+      tier: {{ required ".Values.tier missing" .Values.tier }}
     annotations:
-      description: The etcd on {{ $labels.instance }} will exhaust in file descriptors
+      description: The etcd on {{`{{ $labels.instance }}`}} will exhaust in file descriptors
         soon
       summary: Etcd's file descriptors soon exhausted
 
@@ -62,9 +62,9 @@ groups:
       dashboard: kubernetes-etcd
       service: etcd
       severity: critical
-      tier: k8s
+      tier: {{ required ".Values.tier missing" .Values.tier }}
     annotations:
-      description: Etcd on {{ $labels.instance }} will exhaust in file descriptors
+      description: Etcd on {{`{{ $labels.instance }}`}} will exhaust in file descriptors
         within 1h!
       summary: Etcd's file descriptors soon exhausted
 
@@ -76,9 +76,9 @@ groups:
       playbook: https://coreos.com/etcd/docs/latest/admin_guide.html
       service: etcd
       severity: warning
-      tier: k8s
+      tier: {{ required ".Values.tier missing" .Values.tier }}
     annotations:
-      description: Etcd on {{ $labels.instance }} has seen {{ $value }} proposal failures
+      description: Etcd on {{`{{ $labels.instance }}`}} has seen {{`{{ $value }}`}} proposal failures
         within the last hour
       summary: There is a high number of failed proposals
 
@@ -91,7 +91,7 @@ groups:
       playbook: https://coreos.com/etcd/docs/latest/admin_guide.html
       service: etcd
       severity: warning
-      tier: k8s
+      tier: {{ required ".Values.tier missing" .Values.tier }}
     annotations:
-      description: Ectd on {{ $labels.instance }} is seeing high fsync durations.
+      description: Ectd on {{`{{ $labels.instance }}`}} is seeing high fsync durations.
       summary: high fsync durations

@@ -10,9 +10,9 @@ groups:
       dashboard: kubernetes-dns
       service: dns
       severity: info
-      tier: k8s
+      tier: {{ required ".Values.tier missing" .Values.tier }}
     annotations:
-      description: Unusually many errors in {{ $labels.system }}/{{ $labels.cause }}
+      description: Unusually many errors in {{`{{ $labels.system }}`}}/{{`{{ $labels.cause }}`}}
       summary: Unusual high kube-dns errors
 
   - alert: KubernetesDNSDown
@@ -23,9 +23,9 @@ groups:
       dashboard: kubernetes-health
       service: dns
       severity: warning
-      tier: k8s
+      tier: {{ required ".Values.tier missing" .Values.tier }}
     annotations:
-      description: Kube-dns on {{ $labels.instance }} is DOWN.
+      description: Kube-dns on {{`{{ $labels.instance }}`}} is DOWN.
       summary: An kube-dns is DOWN
 
   - alert: KubernetesDNSAllDown
@@ -36,7 +36,7 @@ groups:
       dashboard: kubernetes-health
       service: dns
       severity: critical
-      tier: k8s
+      tier: {{ required ".Values.tier missing" .Values.tier }}
     annotations:
       description: All kube-dns servers are down. Cluster internal DNS is unavailable!
       summary: Kube-DNS is unavailable
@@ -49,7 +49,7 @@ groups:
       dashboard: kubernetes-health
       service: dns
       severity: warning
-      tier: k8s
+      tier: {{ required ".Values.tier missing" .Values.tier }}
     annotations:
       description: Kube-dns failed to be scraped.
       summary: Kube-dns cannot be scraped

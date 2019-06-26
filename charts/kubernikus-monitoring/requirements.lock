@@ -10,7 +10,7 @@ dependencies:
   version: 3.5.4
 - name: kube-rules
   repository: file://vendor/kube-rules
-  version: 1.0.1
+  version: 1.1.0
 - name: prometheus-server
   repository: file://vendor/prometheus-server
   version: 1.1.13
@@ -23,5 +23,5 @@ dependencies:
 - name: ping-exporter
   repository: file://vendor/ping-exporter
   version: 0.1.0
-digest: sha256:3f7bbb69dd0b0b240f9d2d16d5ce76c2d7a36691c8c58ec6b6961ec2bb3fc160
-generated: 2019-06-25T14:50:04.065472+02:00
+digest: sha256:e8bd061f51835174a919e7307830a9e357fba8c4b1ebc7d564e40001dba05cf3
+generated: 2019-06-26T12:51:53.557951482+02:00
