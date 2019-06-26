@@ -47,6 +47,8 @@ prometheus-kubernikus:
 
   externalLabels:
     cluster_type: kubernikus-controlplane
+    # Tier used for alerts.
+    tier: kks
 
     # Defined via secrets.
     # region:
