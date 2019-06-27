@@ -232,7 +232,7 @@ resource "openstack_identity_role_assignment_v3" "terraform_kubernetes_admin" {
 resource "openstack_identity_role_assignment_v3" "terraform_member" {
   user_id    = "${data.openstack_identity_user_v3.kubernikus_terraform.id}"
   project_id = "${openstack_identity_project_v3.kubernikus.id}"
-  role_id    = "${openstack_identity_role_v3.member.id}"
+  role_id    = "${data.openstack_identity_role_v3.member.id}"
 }
 
 resource "openstack_identity_role_assignment_v3" "pipeline_kubernetes_admin" {
