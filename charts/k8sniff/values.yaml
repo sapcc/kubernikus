@@ -1,5 +1,5 @@
 image: "sapcc/k8sniff"
-tag: "a5be8af067f3c30cecea466fa6a5c9e82531ee0a"
+tag: "c1e78f77a3802ce5f2912db59ad3e47f23590f1e"
 metrics_port: 9091
 log_level: 2
 replicas: 2
