@@ -70,7 +70,6 @@ data "openstack_identity_project_v3" "cloud_admin" {
 }
 
 data "openstack_identity_group_v3" "ccadmin_domain_admins" {
-  provider = "ccloud.cloud_admin"
   name = "CCADMIN_DOMAIN_ADMINS"
 }
 
