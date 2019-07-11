@@ -21,7 +21,7 @@ provider "openstack" {
 }
 
 provider "openstack" {
-  alias            = "masternaus1"
+  alias            = "master.na-us-1"
 
   auth_url         = "https://identity-3.na-us-1.cloud.sap/v3"
   region           = "na-us-1"
@@ -457,7 +457,7 @@ data "openstack_dns_zone_v2" "region_cloud_sap" {
 }
 
 data "openstack_dns_zone_v2" "admin_cloud_sap" {
-  provider = "openstack.masternaus1"
+  provider = "openstack.master.na-us-1"
   name     = "admin.cloud.sap."
 }
 
@@ -516,7 +516,7 @@ resource "openstack_dns_recordset_v2" "grafana" {
 }
 
 resource "openstack_dns_recordset_v2" "k-region" {
-  provider = "openstack.masternaus1"
+  provider = "openstack.master.na-us-1"
   zone_id = "${data.openstack_dns_zone_v2.admin_cloud_sap.id}"
   name    = "k-${var.region}.admin.cloud.sap."
   type    = "CNAME"
@@ -525,7 +525,7 @@ resource "openstack_dns_recordset_v2" "k-region" {
 }
 
 resource "openstack_dns_recordset_v2" "wildcard-k-region" {
-  provider = "openstack.masternaus1"
+  provider = "openstack.master.na-us-1"
   zone_id = "${data.openstack_dns_zone_v2.admin_cloud_sap.id}"
   name    = "*.k-${var.region}.admin.cloud.sap."
   type    = "CNAME"
