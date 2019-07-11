@@ -1021,7 +1021,7 @@ task_terraform: &task_terraform
     type: registry-image
     source:
       repository: sapcc/kubernikus-terraform
-      tag: 'latest'
+      tag: 'v20190711170237'
   
   inputs:
     - name: secrets.git
