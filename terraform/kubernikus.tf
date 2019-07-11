@@ -335,7 +335,7 @@ resource "ccloud_quota" "kubernikus" {
 		listeners            = 10
 		loadbalancers        = 10
 		pools                = 10
-    pool_members         = 10
+    pool_members         = 100
   }
 
   objectstore {
