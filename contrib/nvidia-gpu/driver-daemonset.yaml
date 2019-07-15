@@ -34,6 +34,9 @@ spec:
       - name: rootfs
         hostPath:
           path: /
+      - name: dev
+        hostPath:
+          path: /dev
       initContainers:
       - image: bugroger/coreos-nvidia-driver:stable-396.44-tesla
         name: nvidia-driver-installer
@@ -47,6 +50,9 @@ spec:
         - name: rootfs 
           mountPath: /root
           mountPropagation: Bidirectional
+        - mountPath: /dev
+          mountPropagation: Bidirectional
+          name: dev
       containers:
       - image: "gcr.io/google-containers/pause:2.0"
         name: pause
