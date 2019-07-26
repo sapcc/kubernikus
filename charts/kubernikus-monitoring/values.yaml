@@ -297,5 +297,8 @@ grafana:
     alerting:
       enabled: false
 
+# Ping exporter enabled via secrets with list of targets.
 ping-exporter:
-  enabled: true
+  enabled: false
+  # targets:
+  #   - target.something
