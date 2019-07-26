@@ -1459,7 +1459,6 @@ jobs:
     plan:
     - aggregate:
       - get: secrets.git
-        passed: [prometheus-operator_ap-ae-1]
       - get: kubernikus.builds
         trigger: true
         resource: master.builds
@@ -1514,7 +1513,7 @@ jobs:
         timeout: 45m
         params:
           <<: *auth_e2e_ap-ae-1
-          SENTRY_DSN: ((sentry-soak-tests))
+          #SENTRY_DSN: ((sentry-soak-tests))
     <<: *slack
 
 
@@ -1593,7 +1592,6 @@ jobs:
     plan:
     - aggregate:
       - get: secrets.git
-        passed: [prometheus-operator_ap-au-1]
       - get: kubernikus.builds
         trigger: true
         resource: master.builds
@@ -1648,7 +1646,7 @@ jobs:
         timeout: 45m
         params:
           <<: *auth_e2e_ap-au-1
-          SENTRY_DSN: ((sentry-soak-tests))
+          #SENTRY_DSN: ((sentry-soak-tests))
     <<: *slack
 
 
@@ -1735,7 +1733,6 @@ jobs:
     plan:
     - aggregate:
       - get: secrets.git
-        passed: [prometheus-operator_ap-cn-1]
       - get: kubernikus.builds
         trigger: true
         resource: master.builds
@@ -1790,7 +1787,7 @@ jobs:
         timeout: 45m
         params:
           <<: *auth_e2e_ap-cn-1
-          SENTRY_DSN: ((sentry-soak-tests))
+          #SENTRY_DSN: ((sentry-soak-tests))
     <<: *slack
 
 
@@ -1877,7 +1874,6 @@ jobs:
     plan:
     - aggregate:
       - get: secrets.git
-        passed: [prometheus-operator_ap-jp-1]
       - get: kubernikus.builds
         trigger: true
         resource: master.builds
@@ -1932,7 +1928,7 @@ jobs:
         timeout: 45m
         params:
           <<: *auth_e2e_ap-jp-1
-          SENTRY_DSN: ((sentry-soak-tests))
+          #SENTRY_DSN: ((sentry-soak-tests))
     <<: *slack
 
 
@@ -2019,7 +2015,6 @@ jobs:
     plan:
     - aggregate:
       - get: secrets.git
-        passed: [prometheus-operator_ap-jp-2]
       - get: kubernikus.builds
         trigger: true
         resource: master.builds
@@ -2074,7 +2069,7 @@ jobs:
         timeout: 45m
         params:
           <<: *auth_e2e_ap-jp-2
-          SENTRY_DSN: ((sentry-soak-tests))
+          #SENTRY_DSN: ((sentry-soak-tests))
     <<: *slack
 
 
@@ -2161,7 +2156,6 @@ jobs:
     plan:
     - aggregate:
       - get: secrets.git
-        passed: [prometheus-operator_ap-sa-1]
       - get: kubernikus.builds
         trigger: true
         resource: master.builds
@@ -2216,7 +2210,7 @@ jobs:
         timeout: 45m
         params:
           <<: *auth_e2e_ap-sa-1
-          SENTRY_DSN: ((sentry-soak-tests))
+          #SENTRY_DSN: ((sentry-soak-tests))
     <<: *slack
 
 
@@ -2360,7 +2354,6 @@ jobs:
     plan:
     - aggregate:
       - get: secrets.git
-        passed: [prometheus-operator_eu-de-1]
       - get: kubernikus.builds
         trigger: true
         resource: master.builds
@@ -2415,7 +2408,7 @@ jobs:
         timeout: 45m
         params:
           <<: *auth_e2e_eu-de-1
-          SENTRY_DSN: ((sentry-soak-tests))
+          #SENTRY_DSN: ((sentry-soak-tests))
     <<: *slack
 
 
@@ -2494,7 +2487,6 @@ jobs:
     plan:
     - aggregate:
       - get: secrets.git
-        passed: [prometheus-operator_eu-de-2]
       - get: kubernikus.builds
         trigger: true
         resource: master.builds
@@ -2549,7 +2541,7 @@ jobs:
         timeout: 45m
         params:
           <<: *auth_e2e_eu-de-2
-          SENTRY_DSN: ((sentry-soak-tests))
+          #SENTRY_DSN: ((sentry-soak-tests))
     <<: *slack
 
 
@@ -2628,7 +2620,6 @@ jobs:
     plan:
     - aggregate:
       - get: secrets.git
-        passed: [prometheus-operator_eu-nl-1]
       - get: kubernikus.builds
         trigger: true
         resource: master.builds
@@ -2683,7 +2674,7 @@ jobs:
         timeout: 45m
         params:
           <<: *auth_e2e_eu-nl-1
-          SENTRY_DSN: ((sentry-soak-tests))
+          #SENTRY_DSN: ((sentry-soak-tests))
     <<: *slack
 
 
@@ -2770,7 +2761,6 @@ jobs:
     plan:
     - aggregate:
       - get: secrets.git
-        passed: [prometheus-operator_eu-ru-1]
       - get: kubernikus.builds
         trigger: true
         resource: master.builds
@@ -2825,7 +2815,7 @@ jobs:
         timeout: 45m
         params:
           <<: *auth_e2e_eu-ru-1
-          SENTRY_DSN: ((sentry-soak-tests))
+          #SENTRY_DSN: ((sentry-soak-tests))
     <<: *slack
 
 
@@ -2985,7 +2975,6 @@ jobs:
     plan:
     - aggregate:
       - get: secrets.git
-        passed: [prometheus-operator_la-br-1]
       - get: kubernikus.builds
         trigger: true
         resource: master.builds
@@ -3040,7 +3029,7 @@ jobs:
         timeout: 45m
         params:
           <<: *auth_e2e_la-br-1
-          SENTRY_DSN: ((sentry-soak-tests))
+          #SENTRY_DSN: ((sentry-soak-tests))
     <<: *slack
 
 
@@ -3127,7 +3116,6 @@ jobs:
     plan:
     - aggregate:
       - get: secrets.git
-        passed: [prometheus-operator_na-ca-1]
       - get: kubernikus.builds
         trigger: true
         resource: master.builds
@@ -3182,7 +3170,7 @@ jobs:
         timeout: 45m
         params:
           <<: *auth_e2e_na-ca-1
-          SENTRY_DSN: ((sentry-soak-tests))
+          #SENTRY_DSN: ((sentry-soak-tests))
     <<: *slack
 
 
@@ -3261,7 +3249,6 @@ jobs:
     plan:
     - aggregate:
       - get: secrets.git
-        passed: [prometheus-operator_na-us-1]
       - get: kubernikus.builds
         trigger: true
         resource: master.builds
@@ -3316,7 +3303,7 @@ jobs:
         timeout: 45m
         params:
           <<: *auth_e2e_na-us-1
-          SENTRY_DSN: ((sentry-soak-tests))
+          #SENTRY_DSN: ((sentry-soak-tests))
     <<: *slack
 
 
@@ -3545,7 +3532,6 @@ jobs:
     plan:
     - aggregate:
       - get: secrets.git
-        passed: [prometheus-operator_na-us-3]
       - get: kubernikus.builds
         trigger: true
         resource: master.builds
@@ -3600,7 +3586,7 @@ jobs:
         timeout: 45m
         params:
           <<: *auth_e2e_na-us-3
-          SENTRY_DSN: ((sentry-soak-tests))
+          #SENTRY_DSN: ((sentry-soak-tests))
     <<: *slack
 
 
@@ -3736,7 +3722,6 @@ jobs:
     plan:
     - aggregate:
       - get: secrets.git
-        passed: [prometheus-operator_qa-de-1]
       - get: kubernikus.builds
         trigger: true
         resource: master.builds
@@ -3791,7 +3776,7 @@ jobs:
         timeout: 45m
         params:
           <<: *auth_e2e_qa-de-1
-          SENTRY_DSN: ((sentry-soak-tests))
+          #SENTRY_DSN: ((sentry-soak-tests))
     <<: *slack
 
 

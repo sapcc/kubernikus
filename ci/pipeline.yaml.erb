@@ -434,7 +434,6 @@ jobs:
     plan:
     - aggregate:
       - get: secrets.git
-        passed: [prometheus-operator_<%= region %>]
       - get: kubernikus.builds
         trigger: true
         resource: master.builds
@@ -489,7 +488,7 @@ jobs:
         timeout: 45m
         params:
           <<: *auth_e2e_<%= region %>
-          SENTRY_DSN: ((sentry-soak-tests))
+          #SENTRY_DSN: ((sentry-soak-tests))
     <<: *slack
 
 <% end %>
