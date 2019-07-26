@@ -296,3 +296,6 @@ grafana:
 
     alerting:
       enabled: false
+
+ping-exporter:
+  enabled: true
