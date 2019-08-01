@@ -29,7 +29,7 @@ var (
 		},
 		Spec: core_v1.PersistentVolumeSpec{
 			PersistentVolumeSource: core_v1.PersistentVolumeSource{
-				Cinder: &core_v1.CinderVolumeSource{
+				Cinder: &core_v1.CinderPersistentVolumeSource{
 					VolumeID: "hase",
 				},
 			},
@@ -42,7 +42,7 @@ var (
 		},
 		Spec: core_v1.PersistentVolumeSpec{
 			PersistentVolumeSource: core_v1.PersistentVolumeSource{
-				Cinder: &core_v1.CinderVolumeSource{
+				Cinder: &core_v1.CinderPersistentVolumeSource{
 					VolumeID: "maus",
 				},
 			},
