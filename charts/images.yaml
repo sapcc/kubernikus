@@ -1,12 +1,16 @@
 imagesForVersion:
+  '1.12.10':
+    supported: true
+    hyperkube:
+      repository: 'sapcc/hyperkube'
+      tag: 'v1.12.10'
   '1.11.9':
+    default: true
     supported: true
     hyperkube:
       repository: 'sapcc/hyperkube'
       tag: 'v1.11.9'
   '1.10.11':
-    default: true
-    supported: true
     hyperkube:
       repository: 'sapcc/hyperkube'
       tag: 'v1.10.11'
