@@ -1,5 +1,5 @@
 /*
-Copyright 2017 The Kubernetes Authors All rights reserved.
+Copyright The Helm Authors.
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
@@ -29,11 +29,12 @@ var (
 
 	// DefaultKubeVersion is the default kubernetes version
 	DefaultKubeVersion = &version.Info{
-		Major:     "1",
-		Minor:     "7",
-		GoVersion: runtime.Version(),
-		Compiler:  runtime.Compiler,
-		Platform:  fmt.Sprintf("%s/%s", runtime.GOOS, runtime.GOARCH),
+		Major:      "1",
+		Minor:      "9",
+		GitVersion: "v1.9.0",
+		GoVersion:  runtime.Version(),
+		Compiler:   runtime.Compiler,
+		Platform:   fmt.Sprintf("%s/%s", runtime.GOOS, runtime.GOARCH),
 	}
 )
 
@@ -41,7 +42,7 @@ var (
 type Capabilities struct {
 	// List of all supported API versions
 	APIVersions VersionSet
-	// KubeVerison is the Kubernetes version
+	// KubeVersion is the Kubernetes version
 	KubeVersion *version.Info
 	// TillerVersion is the Tiller version
 	//

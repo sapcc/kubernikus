@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors All rights reserved.
+Copyright The Helm Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -77,11 +77,16 @@ func (r *Rules) Len() int {
 	return len(r.patterns)
 }
 
-// Ignore evalutes the file at the given path, and returns true if it should be ignored.
+// Ignore evaluates the file at the given path, and returns true if it should be ignored.
 //
 // Ignore evaluates path against the rules in order. Evaluation stops when a match
 // is found. Matching a negative rule will stop evaluation.
 func (r *Rules) Ignore(path string, fi os.FileInfo) bool {
+	// Don't match on empty dirs.
+	if path == "" {
+		return false
+	}
+
 	// Disallow ignoring the current working directory.
 	// See issue:
 	// 1776 (New York City) Hamilton: "Pardon me, are you Aaron Burr, sir?"
