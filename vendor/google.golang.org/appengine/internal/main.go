@@ -11,6 +11,9 @@ import (
 )
 
 func Main() {
+<<<<<<< HEAD
 	MainPath = ""
+=======
+>>>>>>> Update kubernetes deps to k8s 1.12, helm to 2.11.0
 	appengine_internal.Main()
 }

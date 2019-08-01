@@ -7,10 +7,15 @@
 package internal
 
 import (
+<<<<<<< HEAD
 	"log"
 	"net/http"
 	"os"
 	"strings"
+=======
+	"net/http"
+	"os"
+>>>>>>> Update kubernetes deps to k8s 1.12, helm to 2.11.0
 
 	netcontext "golang.org/x/net/context"
 )
@@ -41,6 +46,7 @@ func RequestID(ctx netcontext.Context) string {
 }
 
 func Datacenter(ctx netcontext.Context) string {
+<<<<<<< HEAD
 	if dc := ctxHeaders(ctx).Get(hDatacenter); dc != "" {
 		return dc
 	}
@@ -56,6 +62,9 @@ func Datacenter(ctx netcontext.Context) string {
 		return ""
 	}
 	return parts[len(parts)-1]
+=======
+	return ctxHeaders(ctx).Get(hDatacenter)
+>>>>>>> Update kubernetes deps to k8s 1.12, helm to 2.11.0
 }
 
 func ServerSoftware() string {
@@ -63,9 +72,12 @@ func ServerSoftware() string {
 	if s := os.Getenv("SERVER_SOFTWARE"); s != "" {
 		return s
 	}
+<<<<<<< HEAD
 	if s := os.Getenv("GAE_ENV"); s != "" {
 		return s
 	}
+=======
+>>>>>>> Update kubernetes deps to k8s 1.12, helm to 2.11.0
 	return "Google App Engine/1.x.x"
 }
 
@@ -75,9 +87,12 @@ func ModuleName(_ netcontext.Context) string {
 	if s := os.Getenv("GAE_MODULE_NAME"); s != "" {
 		return s
 	}
+<<<<<<< HEAD
 	if s := os.Getenv("GAE_SERVICE"); s != "" {
 		return s
 	}
+=======
+>>>>>>> Update kubernetes deps to k8s 1.12, helm to 2.11.0
 	return string(mustGetMetadata("instance/attributes/gae_backend_name"))
 }
 
@@ -85,9 +100,12 @@ func VersionID(_ netcontext.Context) string {
 	if s1, s2 := os.Getenv("GAE_MODULE_VERSION"), os.Getenv("GAE_MINOR_VERSION"); s1 != "" && s2 != "" {
 		return s1 + "." + s2
 	}
+<<<<<<< HEAD
 	if s1, s2 := os.Getenv("GAE_VERSION"), os.Getenv("GAE_DEPLOYMENT_ID"); s1 != "" && s2 != "" {
 		return s1 + "." + s2
 	}
+=======
+>>>>>>> Update kubernetes deps to k8s 1.12, helm to 2.11.0
 	return string(mustGetMetadata("instance/attributes/gae_backend_version")) + "." + string(mustGetMetadata("instance/attributes/gae_backend_minor_version"))
 }
 
@@ -95,14 +113,18 @@ func InstanceID() string {
 	if s := os.Getenv("GAE_MODULE_INSTANCE"); s != "" {
 		return s
 	}
+<<<<<<< HEAD
 	if s := os.Getenv("GAE_INSTANCE"); s != "" {
 		return s
 	}
+=======
+>>>>>>> Update kubernetes deps to k8s 1.12, helm to 2.11.0
 	return string(mustGetMetadata("instance/attributes/gae_backend_instance"))
 }
 
 func partitionlessAppID() string {
 	// gae_project has everything except the partition prefix.
+<<<<<<< HEAD
 	if appID := os.Getenv("GAE_LONG_APP_ID"); appID != "" {
 		return appID
 	}
@@ -116,6 +138,16 @@ func fullyQualifiedAppID(_ netcontext.Context) string {
 	if s := os.Getenv("GAE_APPLICATION"); s != "" {
 		return s
 	}
+=======
+	appID := os.Getenv("GAE_LONG_APP_ID")
+	if appID == "" {
+		appID = string(mustGetMetadata("instance/attributes/gae_project"))
+	}
+	return appID
+}
+
+func fullyQualifiedAppID(_ netcontext.Context) string {
+>>>>>>> Update kubernetes deps to k8s 1.12, helm to 2.11.0
 	appID := partitionlessAppID()
 
 	part := os.Getenv("GAE_PARTITION")

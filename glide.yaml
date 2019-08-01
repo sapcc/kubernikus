@@ -9,16 +9,16 @@ import:
   - assert
   - mock
 - package: k8s.io/client-go
-  version: v6.0.0
+  version: release-9.0
 - package: k8s.io/apimachinery
-  version: kubernetes-1.9.1
+  version: release-1.12
 - package: k8s.io/apiextensions-apiserver
-  version: kubernetes-1.9.1
+  version: release-1.12
 - package: k8s.io/code-generator
-  version: kubernetes-1.9.1
+  version: release-1.12
 - package: k8s.io/gengo
 - package: k8s.io/helm
-  version: v2.7.2
+  version: v2.11.0
 - package: github.com/coreos/container-linux-config-transpiler
   version: v0.4.2
 - package: github.com/pkg/errors

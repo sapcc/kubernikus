@@ -12,6 +12,10 @@ package internal
 import (
 	"fmt"
 	"io/ioutil"
+<<<<<<< HEAD
+=======
+	"log"
+>>>>>>> Update kubernetes deps to k8s 1.12, helm to 2.11.0
 	"net/http"
 	"net/url"
 )
@@ -31,7 +35,11 @@ var (
 func mustGetMetadata(key string) []byte {
 	b, err := getMetadata(key)
 	if err != nil {
+<<<<<<< HEAD
 		panic(fmt.Sprintf("Metadata fetch failed for '%s': %v", key, err))
+=======
+		log.Fatalf("Metadata fetch failed: %v", err)
+>>>>>>> Update kubernetes deps to k8s 1.12, helm to 2.11.0
 	}
 	return b
 }
