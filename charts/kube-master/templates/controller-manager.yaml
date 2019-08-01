@@ -79,17 +79,33 @@ spec:
           image: {{ include "hyperkube.image" . | quote }}
           args:
             - /hyperkube
+{{- if (semverCompare ">= 1.15" .Values.version.kubernetes) }}
+            - kube-controller-manager
+{{- else }}
             - controller-manager
+{{- end }}
             - --allocate-node-cidrs=true
             - --cloud-config=/etc/kubernetes/cloudprovider/openstack.config
+{{- if (semverCompare ">= 1.13" .Values.version.kubernetes) }}
+            - --cloud-provider=external
+            - --external-cloud-volume-plugin=openstack
+{{- else }}
             - --cloud-provider=openstack
+{{- end }}
             - --cluster-cidr={{ .Values.clusterCIDR }}
-            - --cluster-name=kubernetes
+            - --cluster-name={{ .Values.name }}
             - --cluster-signing-cert-file=/etc/kubernetes/certs/apiserver-nodes-ca.pem
             - --cluster-signing-key-file=/etc/kubernetes/certs/apiserver-nodes-ca-key.pem
             - --configure-cloud-routes=true
             - --controllers=*,bootstrapsigner,tokencleaner
             - --kubeconfig=/etc/kubernetes/config/kubeconfig
+{{- if (semverCompare ">= 1.12" .Values.version.kubernetes) }}
+            - --authentication-kubeconfig=/etc/kubernetes/config/kubeconfig
+            - --authorization-kubeconfig=/etc/kubernetes/config/kubeconfig
+{{- end }}
+{{- if (semverCompare ">= 1.14" .Values.version.kubernetes) }}
+            - --feature-gates=NodeLease=false
+{{- end }}
             - --leader-elect=false
             - --root-ca-file=/etc/kubernetes/certs/tls-ca.pem
             - --service-account-private-key-file=/etc/kubernetes/certs/apiserver-clients-ca-key.pem
@@ -98,9 +114,15 @@ spec:
           livenessProbe:
             httpGet:
               path: /healthz
+{{- if (semverCompare ">= 1.13" .Values.version.kubernetes) }}
+              port: 10257
+              scheme: HTTPS
+{{- else }}
               port: 10252
-            initialDelaySeconds: 120
-            timeoutSeconds: 1
+              scheme: HTTP
+{{- end }}
+            initialDelaySeconds: 15
+            timeoutSeconds: 15
           volumeMounts:
             - mountPath: /etc/kubernetes/certs/
               name: certs

@@ -44,9 +44,29 @@ spec:
           image: {{ include "hyperkube.image" . | quote }}
           args:
             - /hyperkube
+{{- if (semverCompare ">= 1.15" .Values.version.kubernetes) }}
+            - kube-scheduler
+{{- else }}
             - scheduler
+{{- end }}
             - --kubeconfig=/etc/kubernetes/config/kubeconfig
+{{- if (semverCompare ">= 1.13" .Values.version.kubernetes) }}
+            - --authentication-kubeconfig=/etc/kubernetes/config/kubeconfig
+            - --authorization-kubeconfig=/etc/kubernetes/config/kubeconfig
+{{- end }}
             - --leader-elect=false
+          livenessProbe:
+            httpGet:
+              path: /healthz
+{{- if (semverCompare ">= 1.13" .Values.version.kubernetes) }}
+              port: 10259
+              scheme: HTTPS
+{{- else }}
+              port: 10251
+              scheme: HTTP
+{{- end }}
+            initialDelaySeconds: 15
+            timeoutSeconds: 15
           volumeMounts:
             - mountPath: /etc/kubernetes/certs
               name: certs

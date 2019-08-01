@@ -1,0 +1,92 @@
+{{- if (semverCompare ">= 1.13" .Values.version.kubernetes) }}
+{{/* vim: set filetype=gotexttmpl: */ -}}
+apiVersion: "extensions/v1beta1"
+kind: Deployment
+metadata:
+  name: {{ include "master.fullname" . }}-ccmanager
+  labels:
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}"
+    release: {{ .Release.Name }}
+spec:
+  revisionHistoryLimit: {{ .Values.revisionHistoryLimit }}
+  replicas: {{ .Values.cloudControllerManager.replicaCount }}
+  strategy:
+    rollingUpdate:
+      maxUnavailable: {{ if eq (toString .Values.cloudControllerManager.replicaCount) "1" }}0{{else}}1{{end}}
+      maxSurge: 1
+  selector:
+    matchLabels:
+      app: cloud-controller-manager
+      kluster: {{ .Values.name }}
+      account: {{ .Values.account }}
+  template:
+    metadata:
+      labels:
+        app: cloud-controller-manager
+        kluster: {{ .Values.name }}
+        account: {{ .Values.account }}
+        release: {{ .Release.Name }}
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+    spec:
+      volumes:
+        - name: certs
+          secret:
+            secretName: {{ .Values.secretName }}
+            items:
+              - key: tls-ca.pem
+                path: tls-ca.pem
+              - key: apiserver-clients-system-kube-controller-manager.pem
+                path: kube-client.pem
+              - key: apiserver-clients-system-kube-controller-manager-key.pem
+                path: kube-client.key
+        - name: config
+          configMap:
+            name: {{ include "master.fullname" . }}
+        - name: cloudprovider
+          secret:
+            secretName: {{ include "master.fullname" . }}-generated
+            items:
+              - key: openstack.config
+                path: openstack.config
+      containers:
+        - name: cloud-controller-manager
+          image: {{ include "cloudControllerManager.image" . | quote }}
+          args:
+            - /bin/openstack-cloud-controller-manager
+            - --allocate-node-cidrs=true
+            - --authentication-kubeconfig=/etc/kubernetes/config/kubeconfig
+            - --authorization-kubeconfig=/etc/kubernetes/config/kubeconfig
+            - --cloud-config=/etc/kubernetes/cloudprovider/openstack.config
+            - --cloud-provider=openstack
+            - --cluster-cidr={{ .Values.clusterCIDR }}
+            - --cluster-name={{ .Values.name }}
+            - --configure-cloud-routes=true
+{{- if (semverCompare ">= 1.14" .Values.version.kubernetes) }}
+            - --feature-gates=NodeLease=false
+{{- end }}
+            - --kubeconfig=/etc/kubernetes/config/kubeconfig
+{{ if eq (toString .Values.cloudControllerManager.replicaCount) "1" }}
+            - --leader-elect=false
+{{- end }}
+            - --use-service-account-credentials=true
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 10258
+              scheme: HTTPS
+            initialDelaySeconds: 15
+            timeoutSeconds: 15
+          volumeMounts:
+            - mountPath: /etc/kubernetes/certs/
+              name: certs
+              readOnly: true
+            - mountPath: /etc/kubernetes/config
+              name: config
+              readOnly: true
+            - mountPath: /etc/kubernetes/cloudprovider
+              name: cloudprovider
+              readOnly: true
+          resources:
+{{ toYaml .Values.cloudControllerManager.resources | indent 12 }}
+{{- end }}
