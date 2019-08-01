@@ -90,6 +90,8 @@ spec:
             - --configure-cloud-routes=true
             - --controllers=*,bootstrapsigner,tokencleaner
             - --kubeconfig=/etc/kubernetes/config/kubeconfig
+            - --authentication-kubeconfig=/etc/kubernetes/config/kubeconfig
+            - --authorization-kubeconfig=/etc/kubernetes/config/kubeconfig
             - --leader-elect=false
             - --root-ca-file=/etc/kubernetes/certs/tls-ca.pem
             - --service-account-private-key-file=/etc/kubernetes/certs/apiserver-clients-ca-key.pem

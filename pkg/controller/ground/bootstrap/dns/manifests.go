@@ -29,7 +29,9 @@ spec:
         k8s-app: kube-dns
       annotations:
         scheduler.alpha.kubernetes.io/critical-pod: ''
+        seccomp.security.alpha.kubernetes.io/pod: 'docker/default'
     spec:
+      priorityClassName: system-cluster-critical
       tolerations:
       - key: "CriticalAddonsOnly"
         operator: "Exists"
@@ -110,6 +112,7 @@ spec:
         - -k
         - --cache-size=1000
         - --no-negcache
+        - --dns-loop-detect
         - --log-facility=-
         - --server=/{{ .Domain }}/127.0.0.1#10053
         - --server=/in-addr.arpa/127.0.0.1#10053
@@ -143,8 +146,8 @@ spec:
         args:
         - --v=2
         - --logtostderr
-        - --probe=kubedns,127.0.0.1:10053,kubernetes.default.svc.{{ .Domain }},5,A
-        - --probe=dnsmasq,127.0.0.1:53,kubernetes.default.svc.{{ .Domain }},5,A
+        - --probe=kubedns,127.0.0.1:10053,kubernetes.default.svc.{{ .Domain }},5,SRV
+        - --probe=dnsmasq,127.0.0.1:53,kubernetes.default.svc.{{ .Domain }},5,SRV
         ports:
         - containerPort: 10054
           name: metrics
