@@ -1,0 +1,5 @@
+groups:
+- name: skydns
+  rules:
+  - record: skydns_skydns_dns_error_count_total_irate
+    expr: irate(skydns_skydns_dns_error_count_total[5m])

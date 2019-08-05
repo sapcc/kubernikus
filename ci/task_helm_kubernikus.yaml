@@ -34,6 +34,7 @@ run:
         --install
       kubectl rollout status deployment/kubernikus-api --namespace=kubernikus-system
       kubectl rollout status deployment/kubernikus-operator --namespace=kubernikus-system
+      kubectl rollout status deployment/k8sniff-ingress-lb --namespace=kubernikus-system
 
 params:
   OS_AUTH_URL:

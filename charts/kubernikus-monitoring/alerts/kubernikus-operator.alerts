@@ -1,0 +1,114 @@
+groups:
+- name: kubernikus-operator.alerts
+  rules:
+  - alert: KubernikusOperatorGoroutineLeak
+    expr: sum(rate(go_goroutines{app="kubernikus",type="operator"}[5m])) by (app,type) > sum(avg_over_time(go_goroutines{app="kubernikus",type="operator"}[12h] offset 12h)) by (app,type)
+    for: 10m
+    labels:
+      tier: kks
+      service: operator
+      severity: warning
+      context: operator
+    annotations:
+      description: High number of goroutines in kubernikus operator
+      summary: Goroutine leak in kubernikus operator
+
+  - alert: KubernikusLaunchOperationErrorSpike
+    expr: sum(irate(kubernikus_launch_failed_operation_total[5m])) by (method) > sum(avg_over_time(kubernikus_launch_failed_operation_total[12h] offset 12h)) by (method)
+    for: 10m
+    labels:
+      tier: kks
+      service: launch
+      severity: warning
+      context: operator
+    annotations:
+      description: Unusually high amount of failed launchctl operations
+      summary: Unusually many launchctl failures
+
+  - alert: KubernikusLaunchHanging
+    expr: sum(kubernikus_launch_operation_total) == 0
+    for: 15m
+    labels:
+      tier: kks
+      service: launchctl
+      severity: critical
+      context: operator
+    annotations:
+      description: Launchctl operations dropped to 0. The operator might be hanging.
+      summary: Launchctl operations dropped to 0
+
+  - alert: KubernikusRouteGcOperationErrorSpike
+    expr: sum(irate(kubernikus_routegc_failed_operation_total[5m])) by (method) > sum(avg_over_time(kubernikus_routegc_failed_operation_total[12h] offset 12h)) by (method)
+    for: 10m
+    labels:
+      tier: kks
+      service: routegc
+      severity: warning
+      context: operator
+    annotations:
+      description: Unusually high amount of failed routegc operations
+      summary:  Unusually many routegc failures
+
+  - alert: KubernikusDeorbiterHanging
+    expr: sum(kubernikus_deorbit_operation_total) == 0
+    for: 10m
+    labels:
+      tier: kks
+      service: deorbit
+      severity: critical
+      context: operator
+    annotations:
+      description: Deorbiter operations dropped to 0. The operator might be hanging.
+      summary: Deorbiter operations dropped to 0
+
+  - alert: KubernikusHammertime
+    expr: kubernikus_hammertime_status == 1
+    for: 10m
+    labels:
+      tier: kks
+      service: hammertime
+      severity: warning
+      context: operator
+      meta: "{{ $labels.kluster }} is having Hammertime"
+    annotations:
+      description: Hammertime for kluster {{ $labels.kluster }}. Controller manager scaled down because no node posted a status update recently.
+      summary: Hammertime for kluster {{ $labels.kluster }}
+
+  - alert: KubernikusMigrationErrors
+    expr: max(rate(kubernikus_migration_errors_total[12m])) by (kluster) > 0
+    for: 10m
+    labels:
+      tier: kks
+      service: migration
+      severity: warning
+      context: operator
+      meta: "Migration(s) for kluster {{ $labels.kluster }} failing"
+    annotations:
+      description: The kluster {{ $labels.kluster }} is generating errors while trying to apply pending migrations.
+      summary: Migration errors for kluster {{ $labels.kluster }}
+
+  - alert: KubernikusEtcdBackupFailed
+    expr: sum(etcdbr_snapshot_duration_seconds_count{kind="Full", succeeded="false"}) without (succeeded) unless (time() - etcdbr_snapshot_latest_timestamp{kind="Full"} < 2 * 3600)
+    for: 5m
+    labels:
+      tier: kks
+      service: kubernikus
+      severity: warning
+      context: kluster
+      meta: "Latest etcd backup for kluster {{ $labels.release }} older than 2h"
+    annotations:
+      description: Backup of etcd is failing for kluster {{ $labels.release }}. Latest full backup is older then 2 hours.
+      summary: Etcd backup error for kluster {{ $labels.release }}
+
+  - alert: KubernikusUpgradeErrors
+    expr: max(kubernikus_servicing_nodes_state_updating{state="failed"}) without (instance,kubernetes_pod_name,pod_template_hash) > 0
+    for: 4h
+    labels:
+      tier: kks
+      service: servicing
+      severity: warning
+      context: upgrade
+      meta: "Node upgrade for kluster {{ $labels.kluster_id }} failing"
+    annotations:
+      summary: Node upgrade error for kluster {{ $labels.kluster_id }}
+      description: A node upgrade failed for kluster {{ $labels.kluster_id }}. As a safety measure, all upgrade operations are stopped for this kluster. The node needs to be investigated. In order to proceed with upgrade remove the `kubernikus.cloud.sap/updateTimestamp` annotation from the failed node. A node is considered failed when it stays `NotReady` for longer than 10min. It is also considered failed when the OS version doesn't change within 10min.

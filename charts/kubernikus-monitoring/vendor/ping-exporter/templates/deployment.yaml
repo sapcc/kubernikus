@@ -1,0 +1,61 @@
+apiVersion: apps/v1beta2
+kind: Deployment
+metadata:
+  name: {{ include "ping-exporter.fullname" . }}
+  labels:
+    app.kubernetes.io/name: {{ include "ping-exporter.name" . }}
+    helm.sh/chart: {{ include "ping-exporter.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "ping-exporter.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "ping-exporter.name" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+      annotations:
+        prometheus.io/scrape: 'true'
+    spec:
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command:
+            - /app/ping_exporter
+          args:
+            - --ping.interval={{ .Values.pingInterval }}
+            - --ping.timeout={{ .Values.pingTimeout }}
+            - --ping.history-size={{ .Values.pingHistorySize }}
+            - --log.level={{ .Values.logLevel }}
+            - --metrics.deprecated=disable
+            {{- range $target := .Values.targets }}
+            - {{ $target | trim }}
+            {{- end }}
+          ports:
+            - name: metrics
+              containerPort: 9427
+              protocol: TCP
+          readinessProbe:
+            httpGet:
+              path: /
+              port: metrics
+          resources:
+{{ toYaml .Values.resources | indent 12 }}
+    {{- with .Values.nodeSelector }}
+      nodeSelector:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.affinity }}
+      affinity:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.tolerations }}
+      tolerations:
+{{ toYaml . | indent 8 }}
+    {{- end }}

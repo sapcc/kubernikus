@@ -4,12 +4,21 @@ metadata:
   name: k8sniff-ingress-lb
   labels:
     role: k8sniff-ingress-lb
-  annotations:
-    prometheus.io/scrape: "true"
-    prometheus.io/port: {{ default "9091" .Values.metrics_port | quote }}
 
 spec:
-  replicas: 1
+  affinity:
+    podAntiAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        podAffinityTerm:
+          labelSelector:
+            matchExpressions:
+            - key: role
+              operator: In
+              values:
+              - k8sniff-ingress-lb
+          topologyKey: kubernetes.io/hostname
+  replicas: {{ .Values.replicas }}
   selector:
     matchLabels:
       role: k8sniff-ingress-lb
@@ -17,19 +26,30 @@ spec:
     metadata:
       labels:
         role: k8sniff-ingress-lb
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: {{ .Values.metrics_port | quote }}
     spec:
       containers:
-      - image: {{ default "kubermatic/k8sniff" .Values.image }}:{{ default "v1.0" .Values.tag }}
+      - image: "{{ .Values.image }}:{{ .Values.tag }}"
         name: k8sniff-ingress-lb
         imagePullPolicy: IfNotPresent
         command:
-          - /bin/sh
-          - -c
-          - -x
-          - "/pipeline/source/k8sniff -logtostderr --v={{ default 9 .Values.log_level }} --config /etc/config/k8sniff.json"
+          - /pipeline/source/k8sniff
+          - -logtostderr
+          - --config=/etc/config/k8sniff.json
+          - --v={{ default 9 .Values.log_level }}
+        readinessProbe:
+          httpGet:
+            path: /metrics
+            port: metrics
+          initialDelaySeconds: 5
+          periodSeconds: 3
         ports:
         - name: https
           containerPort: 8443
+        - name: metrics
+          containerPort: {{ .Values.metrics_port }}
         volumeMounts:
         - name: k8sniff-config
           mountPath: /etc/config

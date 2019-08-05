@@ -26,7 +26,7 @@ const (
 var (
 	// ServiceInterval defines how often a kluster is serviced
 	ServiceInterval = 1 * time.Hour
-	UpdateTimeout   = 10 * time.Minute
+	UpdateTimeout   = 3*time.Hour + 15*time.Minute
 )
 
 type (
@@ -133,11 +133,6 @@ func (r *KlusterReconciler) Do() error {
 		return nil
 	}
 
-	if len(r.Lister.Updating()) > 0 {
-		r.Logger.Log("msg", "skipped upgrades because there is sitll nodes being updated", "v", 2)
-		return nil
-	}
-
 	if !r.isServiceIntervalElapsed() {
 		r.Logger.Log("msg", "skipped upgrades because kluster service interval not elapsed yet", "v", 2)
 		return nil
@@ -146,6 +141,15 @@ func (r *KlusterReconciler) Do() error {
 	if len(r.Lister.NotReady()) > 0 {
 		r.Logger.Log("msg", "skipped upgrades because kluster is not healthy", "v", 2)
 		return nil
+	}
+
+	update := r.Lister.Updating()
+	if len(update) > 0 {
+		if err := r.LifeCycler.Reboot(update[0]); err != nil {
+			return errors.Wrap(err, "Failed to reboot node")
+		}
+
+		return r.updateLastServicingTime()
 	}
 
 	replace := r.Lister.Replace()
@@ -158,7 +162,11 @@ func (r *KlusterReconciler) Do() error {
 		if err := r.LifeCycler.Replace(replace[0]); err != nil {
 			return errors.Wrap(err, "Failed to replace node")
 		}
-	} else if len(reboot) > 0 {
+
+		r.updateLastServicingTime()
+	}
+
+	if len(reboot) > 0 {
 		if err := r.LifeCycler.Drain(reboot[0]); err != nil {
 			return errors.Wrap(err, "Failed to drain node that is about to be rebooted")
 		}

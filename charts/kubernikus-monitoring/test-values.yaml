@@ -1,0 +1,13 @@
+global:
+  domain: xyz.com
+  region: xy-xy-1
+  cluster: xy
+  cluster_type: xy
+
+grafana:
+  admin:
+    existingSecret: kubernikus-monitoring-grafana-admin
+    userKey: adminUser
+    passwordKey: adminPassword
+    username: adminUser
+    password: adminPassword

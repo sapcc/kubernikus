@@ -1,0 +1,42 @@
+{{- if .Values.thanos.enabled }}
+apiVersion: apps/v1beta2
+kind: Deployment
+metadata:
+  name: {{ include "prometheus.fullName" . }}-thanos-query
+  labels:
+    app: thanos-query
+    thanos-peers: "true"
+    prometheus: {{ include "prometheus.name" . }}
+
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: thanos-query
+      thanos-peers: "true"
+      prometheus: {{ include "prometheus.name" . }}
+  template:
+    metadata:
+      labels:
+        app: thanos-query
+        thanos-peers: "true"
+        prometheus: {{ include "prometheus.name" . }}
+    spec:
+      containers:
+      - args:
+        - query
+        - --log.level={{ .Values.logLevel }}
+        - --query.replica-label=prometheus_replica
+        - --query.auto-downsampling
+        - --cluster.peers={{ include "thanos.peers" . }}
+        image: {{ include "thanos.image" . }}
+        name: thanos-query
+        ports:
+        - containerPort: 10902
+          name: http
+        - containerPort: 10901
+          name: grpc
+        - containerPort: 10900
+          name: cluster
+      serviceAccountName: {{ include "serviceAccount.name" . }}
+{{ end }}

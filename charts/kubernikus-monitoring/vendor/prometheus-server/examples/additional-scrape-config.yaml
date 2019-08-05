@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: Secret
+
+metadata:
+  name: {{ include "prometheus.name" }}-additional-scrape-config
+  labels:
+    prometheus: {{ include "prometheus.name" }}
+
+data:
+  scrape-config.yaml: {{ include (print "prometheus.yaml") . | b64enc -}}

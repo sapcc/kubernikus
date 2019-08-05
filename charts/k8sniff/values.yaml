@@ -1,6 +1,7 @@
-image: "kubermatic/k8sniff"
-tag: "8d5bf771eb906c58acfdd68e553f9408432043fa"
+image: "sapcc/k8sniff"
+tag: "c1e78f77a3802ce5f2912db59ad3e47f23590f1e"
 metrics_port: 9091
 log_level: 2
+replicas: 2
 
 # loadBalancerIP
