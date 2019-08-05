@@ -102,7 +102,7 @@ groups:
 
   - alert: KubernikusUpgradeErrors
     expr: max(kubernikus_servicing_nodes_state_updating{state="failed"}) without (instance,kubernetes_pod_name,pod_template_hash) > 0
-    for: 10m
+    for: 4h
     labels:
       tier: kks
       service: servicing

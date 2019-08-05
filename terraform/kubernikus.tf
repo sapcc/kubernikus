@@ -21,7 +21,7 @@ provider "openstack" {
 }
 
 provider "openstack" {
-  alias            = "masternaus1"
+  alias            = "master.na-us-1"
 
   auth_url         = "https://identity-3.na-us-1.cloud.sap/v3"
   region           = "na-us-1"
@@ -69,8 +69,7 @@ data "openstack_identity_project_v3" "cloud_admin" {
   domain_id = "${data.openstack_identity_project_v3.ccadmin.id}"
 }
 
-data "ccloud_identity_group_v3" "ccadmin_domain_admins" {
-  provider = "ccloud.cloud_admin"
+data "openstack_identity_group_v3" "ccadmin_domain_admins" {
   name = "CCADMIN_DOMAIN_ADMINS"
 }
 
@@ -187,37 +186,37 @@ resource "openstack_identity_project_v3" "kubernikus" {
 }
 
 resource "openstack_identity_role_assignment_v3" "admin" {
-  group_id   = "${data.ccloud_identity_group_v3.ccadmin_domain_admins.id}"
+  group_id   = "${data.openstack_identity_group_v3.ccadmin_domain_admins.id}"
   project_id = "${openstack_identity_project_v3.kubernikus.id}"
   role_id    = "${data.openstack_identity_role_v3.admin.id}"
 }
 
 resource "openstack_identity_role_assignment_v3" "compute_admin" {
-  group_id   = "${data.ccloud_identity_group_v3.ccadmin_domain_admins.id}"
+  group_id   = "${data.openstack_identity_group_v3.ccadmin_domain_admins.id}"
   project_id = "${openstack_identity_project_v3.kubernikus.id}"
   role_id    = "${data.openstack_identity_role_v3.compute_admin.id}"
 }
 
 resource "openstack_identity_role_assignment_v3" "network_admin" {
-  group_id   = "${data.ccloud_identity_group_v3.ccadmin_domain_admins.id}"
+  group_id   = "${data.openstack_identity_group_v3.ccadmin_domain_admins.id}"
   project_id = "${openstack_identity_project_v3.kubernikus.id}"
   role_id    = "${data.openstack_identity_role_v3.network_admin.id}"
 }
 
 resource "openstack_identity_role_assignment_v3" "resource_admin" {
-  group_id   = "${data.ccloud_identity_group_v3.ccadmin_domain_admins.id}"
+  group_id   = "${data.openstack_identity_group_v3.ccadmin_domain_admins.id}"
   project_id = "${openstack_identity_project_v3.kubernikus.id}"
   role_id    = "${data.openstack_identity_role_v3.resource_admin.id}"
 }
 
 resource "openstack_identity_role_assignment_v3" "volume_admin" {
-  group_id   = "${data.ccloud_identity_group_v3.ccadmin_domain_admins.id}"
+  group_id   = "${data.openstack_identity_group_v3.ccadmin_domain_admins.id}"
   project_id = "${openstack_identity_project_v3.kubernikus.id}"
   role_id    = "${data.openstack_identity_role_v3.volume_admin.id}"
 }
 
 resource "openstack_identity_role_assignment_v3" "kubernetes_admin" {
-  group_id   = "${data.ccloud_identity_group_v3.ccadmin_domain_admins.id}"
+  group_id   = "${data.openstack_identity_group_v3.ccadmin_domain_admins.id}"
   project_id = "${openstack_identity_project_v3.kubernikus.id}"
   role_id    = "${openstack_identity_role_v3.kubernetes_admin.id}"
 }
@@ -336,7 +335,7 @@ resource "ccloud_quota" "kubernikus" {
 		listeners            = 10
 		loadbalancers        = 10
 		pools                = 10
-    pool_members         = 10
+    pool_members         = 100
   }
 
   objectstore {
@@ -457,7 +456,7 @@ data "openstack_dns_zone_v2" "region_cloud_sap" {
 }
 
 data "openstack_dns_zone_v2" "admin_cloud_sap" {
-  provider = "openstack.masternaus1"
+  provider = "openstack.master.na-us-1"
   name     = "admin.cloud.sap."
 }
 
@@ -516,7 +515,7 @@ resource "openstack_dns_recordset_v2" "grafana" {
 }
 
 resource "openstack_dns_recordset_v2" "k-region" {
-  provider = "openstack.masternaus1"
+  provider = "openstack.master.na-us-1"
   zone_id = "${data.openstack_dns_zone_v2.admin_cloud_sap.id}"
   name    = "k-${var.region}.admin.cloud.sap."
   type    = "CNAME"
@@ -525,7 +524,7 @@ resource "openstack_dns_recordset_v2" "k-region" {
 }
 
 resource "openstack_dns_recordset_v2" "wildcard-k-region" {
-  provider = "openstack.masternaus1"
+  provider = "openstack.master.na-us-1"
   zone_id = "${data.openstack_dns_zone_v2.admin_cloud_sap.id}"
   name    = "*.k-${var.region}.admin.cloud.sap."
   type    = "CNAME"
@@ -579,37 +578,37 @@ resource "openstack_identity_project_v3" "kubernikus_e2e" {
 }
 
 resource "openstack_identity_role_assignment_v3" "admin_e2e" {
-  group_id   = "${data.ccloud_identity_group_v3.ccadmin_domain_admins.id}"
+  group_id   = "${data.openstack_identity_group_v3.ccadmin_domain_admins.id}"
   project_id = "${openstack_identity_project_v3.kubernikus_e2e.id}"
   role_id    = "${data.openstack_identity_role_v3.admin.id}"
 }
 
 resource "openstack_identity_role_assignment_v3" "compute_admin_e2e" {
-  group_id   = "${data.ccloud_identity_group_v3.ccadmin_domain_admins.id}"
+  group_id   = "${data.openstack_identity_group_v3.ccadmin_domain_admins.id}"
   project_id = "${openstack_identity_project_v3.kubernikus_e2e.id}"
   role_id    = "${data.openstack_identity_role_v3.compute_admin.id}"
 }
 
 resource "openstack_identity_role_assignment_v3" "network_admin_e2e" {
-  group_id   = "${data.ccloud_identity_group_v3.ccadmin_domain_admins.id}"
+  group_id   = "${data.openstack_identity_group_v3.ccadmin_domain_admins.id}"
   project_id = "${openstack_identity_project_v3.kubernikus_e2e.id}"
   role_id    = "${data.openstack_identity_role_v3.network_admin.id}"
 }
 
 resource "openstack_identity_role_assignment_v3" "resource_admin_e2e" {
-  group_id   = "${data.ccloud_identity_group_v3.ccadmin_domain_admins.id}"
+  group_id   = "${data.openstack_identity_group_v3.ccadmin_domain_admins.id}"
   project_id = "${openstack_identity_project_v3.kubernikus_e2e.id}"
   role_id    = "${data.openstack_identity_role_v3.resource_admin.id}"
 }
 
 resource "openstack_identity_role_assignment_v3" "volume_admin_e2e" {
-  group_id   = "${data.ccloud_identity_group_v3.ccadmin_domain_admins.id}"
+  group_id   = "${data.openstack_identity_group_v3.ccadmin_domain_admins.id}"
   project_id = "${openstack_identity_project_v3.kubernikus_e2e.id}"
   role_id    = "${data.openstack_identity_role_v3.volume_admin.id}"
 }
 
 resource "openstack_identity_role_assignment_v3" "kubernetes_admin_e2e" {
-  group_id   = "${data.ccloud_identity_group_v3.ccadmin_domain_admins.id}"
+  group_id   = "${data.openstack_identity_group_v3.ccadmin_domain_admins.id}"
   project_id = "${openstack_identity_project_v3.kubernikus_e2e.id}"
   role_id    = "${openstack_identity_role_v3.kubernetes_admin.id}"
 }

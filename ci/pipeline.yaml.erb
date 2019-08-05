@@ -217,10 +217,10 @@ resource_types:
 jobs:
   - name: tiller_master
     plan:
-      - aggregate:
+      - in_parallel:
         - get: tiller-version.git
           trigger: true
-      - aggregate:
+      - in_parallel:
         - task: master
           config:
             <<: *task_tiller
@@ -232,12 +232,12 @@ jobs:
   - name: master
     serial: true
     plan:
-      - aggregate:
+      - in_parallel:
         - get: secrets.git
         - get: kubernikus.builds
           resource: master.builds
           trigger: true
-      - aggregate:
+      - in_parallel:
         - task: kubernikus
           config:
             <<: *task_helm_kubernikus
@@ -252,7 +252,7 @@ jobs:
 
   - name: cli
     plan:
-      - aggregate:
+      - in_parallel:
         - get: kubernikus.builds
           resource: master.builds
           trigger: true
@@ -273,7 +273,7 @@ jobs:
   - name: e2e
     serial: true
     plan:
-      - aggregate:
+      - in_parallel:
         - get: secrets.git
         - get: kubernikus.builds
           resource: master.builds
@@ -302,7 +302,7 @@ jobs:
   - name: <%= group %>
     serial: true
     plan:
-      - aggregate:
+      - in_parallel:
         - get: helm-charts.git
           trigger: true
         - get: terraform.git
@@ -317,7 +317,7 @@ jobs:
   - name: admin_<%= group %>
     serial: true
     plan:
-      - aggregate:
+      - in_parallel:
         - get: <%= group %>.tag
           passed: [ <%= group %> ]
           trigger: true
@@ -326,7 +326,7 @@ jobs:
         - get: kubernikus.builds
           resource: master.builds
           passed: [<%= group %>]
-      - aggregate:
+      - in_parallel:
 <% REGIONS.select{ |k, v| v[:continent] == group }.each do |region, meta| %>
         - task: k-<%= region %>
           config:
@@ -344,7 +344,7 @@ jobs:
   - name: seed_<%= region %>
     serial: true
     plan:
-      - aggregate:
+      - in_parallel:
         - get: <%= group %>.tag
           passed: [admin_<%= group %>]
           trigger: true
@@ -366,7 +366,7 @@ jobs:
   - name: terraform_<%= region %>
     serial: true
     plan:
-      - aggregate:
+      - in_parallel:
         - get: <%= group %>.tag
           trigger: true
           passed: [seed_<%= region %>]
@@ -387,7 +387,7 @@ jobs:
   - name: terraform_<%= region %>
     serial: true
     plan:
-      - aggregate:
+      - in_parallel:
         - get: <%= group %>.tag
           trigger: true
           passed: [seed_<%= region %>]
@@ -400,13 +400,13 @@ jobs:
 
   - name: tiller_<%= region %>
     plan:
-      - aggregate:
+      - in_parallel:
         - get: <%= group %>.tag
           trigger: true
           passed: [terraform_<%= region %>]
         - get: tiller-version.git
           trigger: true
-      - aggregate:
+      - in_parallel:
         - task: k-<%= region %>
           config:
             <<: *task_tiller
@@ -417,11 +417,11 @@ jobs:
 
   - name: prometheus-operator_<%= region %>
     plan:
-    - aggregate:
+    - in_parallel:
       - get: helm-charts-prometheus-operator.git
         trigger: true
       - get: secrets.git
-    - aggregate:
+    - in_parallel:
       - task: prometheus-operator_<%= region %>
         input_mapping: {helm-charts.git: helm-charts-prometheus-operator.git}
         config:
@@ -432,13 +432,12 @@ jobs:
   - name: kubernikus-monitoring_<%= region %>
     serial: true
     plan:
-    - aggregate:
+    - in_parallel:
       - get: secrets.git
-        passed: [prometheus-operator_<%= region %>]
       - get: kubernikus.builds
         trigger: true
         resource: master.builds
-    - aggregate:
+    - in_parallel:
       - task: kubernikus-monitoring_<%= region %>
         config:
           <<: *task_helm_kubernikus-monitoring
@@ -448,7 +447,7 @@ jobs:
   - name: deploy_<%= region %>
     serial: true
     plan:
-      - aggregate:
+      - in_parallel:
         - get: <%= group %>.tag
           trigger: true
           passed: [tiller_<%= region %>]
@@ -457,7 +456,7 @@ jobs:
         - get: kubernikus.builds
           resource: master.builds
           passed: [admin_<%= group %>]
-      - aggregate:
+      - in_parallel:
         - task: kubernikus_<%= region %>
           config:
             <<: *task_helm_kubernikus
@@ -474,7 +473,7 @@ jobs:
     serial: true
     build_logs_to_retain: 168
     plan:
-      - aggregate:
+      - in_parallel:
         - get: <%= group %>.tag
           trigger: true
           passed: [deploy_<%= region %>]
@@ -489,7 +488,7 @@ jobs:
         timeout: 45m
         params:
           <<: *auth_e2e_<%= region %>
-          SENTRY_DSN: ((sentry-soak-tests))
+          #SENTRY_DSN: ((sentry-soak-tests))
     <<: *slack
 
 <% end %>
