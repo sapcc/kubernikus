@@ -49,6 +49,7 @@ func NewRefreshCommand() *cobra.Command {
 func (o *RefreshOptions) BindFlags(flags *pflag.FlagSet) {
 	common.BindLogFlags(flags)
 	flags.StringVar(&o.openstack.Password, "password", "", "User password [OS_PASSWORD]")
+	flags.StringVar(&o.openstack.TokenID, "token", "", "Token to authenticate with [OS_TOKEN]")
 	flags.StringVar(&o.kubeconfigPath, "kubeconfig", o.kubeconfigPath, "Overwrites kubeconfig auto-detection with explicit path")
 	flags.StringVar(&o.context, "context", o.context, "Overwrites current-context in kubeconfig")
 	flags.BoolVar(&o.force, "force", o.force, "Force refresh")
@@ -114,26 +115,28 @@ func (o *RefreshOptions) Run(c *cobra.Command) error {
 		return errors.Wrap(err, "Couldn't parse Kubernikus URL. Rerun init.")
 	}
 
-	if o.openstack.Username, err = ktx.Username(); err != nil {
-		return errors.Wrap(err, "Failed to extract username from certificate")
-	}
-	glog.V(2).Infof("Detected username: %v", o.openstack.Username)
-	o.openstack.UserID = "" //Ignore conflicting value from env environment
-
-	if o.openstack.DomainName, err = ktx.UserDomainname(); err != nil {
-		return errors.Wrap(err, "Failed to extract user domain from certificate")
-	}
-	glog.V(2).Infof("Detected domain-name: %v", o.openstack.DomainName)
-	o.openstack.DomainID = "" //Ignore conflicting value from environment
-
 	storePasswordInKeyRing := false
-	if o.openstack.Password == "" {
-		fmt.Printf("Password: ")
-		if password, err := gopass.GetPasswdMasked(); err != nil {
-			return err
-		} else {
-			o.openstack.Password = string(password)
-			storePasswordInKeyRing = true
+	if o.openstack.TokenID == "" {
+		if o.openstack.Username, err = ktx.Username(); err != nil {
+			return errors.Wrap(err, "Failed to extract username from certificate")
+		}
+		glog.V(2).Infof("Detected username: %v", o.openstack.Username)
+		o.openstack.UserID = "" //Ignore conflicting value from env environment
+
+		if o.openstack.DomainName, err = ktx.UserDomainname(); err != nil {
+			return errors.Wrap(err, "Failed to extract user domain from certificate")
+		}
+		glog.V(2).Infof("Detected domain-name: %v", o.openstack.DomainName)
+		o.openstack.DomainID = "" //Ignore conflicting value from environment
+
+		if o.openstack.Password == "" {
+			fmt.Printf("Password: ")
+			if password, err := gopass.GetPasswdMasked(); err != nil {
+				return err
+			} else {
+				o.openstack.Password = string(password)
+				storePasswordInKeyRing = true
+			}
 		}
 	}
 

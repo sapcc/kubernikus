@@ -48,9 +48,17 @@ func (o *OpenstackClient) BindFlags(flags *pflag.FlagSet) {
 	flags.StringVar(&o.ApplicationCredentialName, "application-credential-name", o.ApplicationCredentialName, "Project application credential name [OS_APPLICATION_CREDENTIAL_NAME]")
 	flags.StringVar(&o.ApplicationCredentialID, "application-credential-id", o.ApplicationCredentialName, "Project application credential id [OS_APPLICATION_CREDENTIAL_ID]")
 	flags.StringVar(&o.ApplicationCredentialSecret, "application-credential-secret", "", "Project application credential secret [OS_APPLICATION_CREDENTIAL_SECRET]")
+	flags.StringVar(&o.TokenID, "token", "", "Token to authenticate with [OS_TOKEN]")
 }
 
 func (o *OpenstackClient) Validate(c *cobra.Command, args []string) error {
+	if o.TokenID == "" {
+		o.TokenID = os.Getenv("OS_TOKEN")
+	}
+	if o.TokenID != "" {
+		return nil
+	}
+
 	if o.IdentityEndpoint == "" {
 		return errors.Errorf("You need to provide --auth-url or OS_AUTH_URL")
 	} else {
@@ -139,7 +147,11 @@ func (o *OpenstackClient) Complete(args []string) error {
 func (o *OpenstackClient) Setup() error {
 	var err error
 
-	if o.Password == "" && o.ApplicationCredentialSecret == "" {
+	if o.TokenID == "" && os.Getenv("OS_TOKEN") != "" {
+		o.TokenID = os.Getenv("OS_TOKEN")
+	}
+
+	if o.Password == "" && o.ApplicationCredentialSecret == "" && o.TokenID == "" {
 		if os.Getenv("OS_PASSWORD") != "" {
 			o.Password = os.Getenv("OS_PASSWORD")
 		} else {
@@ -215,6 +227,7 @@ func (o *OpenstackClient) PrintDebugAuthInfo() string {
     DomainName:                 {{ .DomainName }}
     ApplicationCredentialID:    {{ .ApplicationCredentialID }}
     ApplicationCredentialName:  {{ .ApplicationCredentialName }}
+    Token:                      {{ .TokenID }}
     Scope:
       ProjectID:                {{ .Scope.ProjectID }}
       ProjectName:              {{ .Scope.ProjectName }}
@@ -232,6 +245,11 @@ func (o *OpenstackClient) PrintDebugAuthInfo() string {
 }
 
 func (o *OpenstackClient) Authenticate() error {
+	if o.TokenID != "" {
+		o.Provider.TokenID = o.TokenID
+		return nil
+	}
+
 	return openstack.AuthenticateV3(o.Provider, o, gophercloud.EndpointOpts{})
 }
 

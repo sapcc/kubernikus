@@ -79,7 +79,7 @@ func (o *InitOptions) Complete(args []string) (err error) {
 
 func (o *InitOptions) Run(c *cobra.Command) (err error) {
 	storePasswordInKeyRing := false
-	if o.openstack.Password == "" && o.openstack.ApplicationCredentialSecret == "" {
+	if o.openstack.Password == "" && o.openstack.ApplicationCredentialSecret == "" && o.openstack.TokenID == "" {
 		fmt.Printf("Password: ")
 		if password, err := gopass.GetPasswdMasked(); err != nil {
 			return err
