@@ -49,7 +49,6 @@ func (o *OpenstackClient) BindFlags(flags *pflag.FlagSet) {
 	flags.StringVar(&o.ApplicationCredentialID, "application-credential-id", o.ApplicationCredentialName, "Project application credential id [OS_APPLICATION_CREDENTIAL_ID]")
 	flags.StringVar(&o.ApplicationCredentialSecret, "application-credential-secret", "", "Project application credential secret [OS_APPLICATION_CREDENTIAL_SECRET]")
 	flags.StringVar(&o.TokenID, "token", "", "Token to authenticate with [OS_TOKEN]")
-
 }
 
 func (o *OpenstackClient) Validate(c *cobra.Command, args []string) error {
@@ -227,8 +226,8 @@ func (o *OpenstackClient) PrintDebugAuthInfo() string {
     DomainID:                   {{ .DomainID }}
     DomainName:                 {{ .DomainName }}
     ApplicationCredentialID:    {{ .ApplicationCredentialID }}
-		ApplicationCredentialName:  {{ .ApplicationCredentialName }}
-		Token:                      {{ .TokenID }}
+    ApplicationCredentialName:  {{ .ApplicationCredentialName }}
+    Token:                      {{ .TokenID }}
     Scope:
       ProjectID:                {{ .Scope.ProjectID }}
       ProjectName:              {{ .Scope.ProjectName }}
