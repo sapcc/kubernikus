@@ -1,6 +1,7 @@
 package kubernetes
 
 import (
+	"fmt"
 	"sync"
 
 	kitlog "github.com/go-kit/kit/log"
@@ -69,7 +70,7 @@ func (f *sharedClientFactory) ClientFor(k *kubernikus_v1.Kluster) (clientset kub
 	}
 
 	c := rest.Config{
-		Host: k.Status.Apiserver,
+		Host: fmt.Sprintf("https://%s:6443", k.Name), // access kubernetes api directly by service name (bypass sni sniffer)
 		TLSClientConfig: rest.TLSClientConfig{
 			CertData: []byte(secret.ApiserverClientsClusterAdminCertificate),
 			KeyData:  []byte(secret.ApiserverClientsClusterAdminPrivateKey),
