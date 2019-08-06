@@ -1,29 +1,11 @@
-FROM golang:alpine as builder
+FROM alpine:3.9
 
-RUN apk add --update git make bash gcc musl-dev zip
-
-ARG TERRAFORM_PROVIDER_CCLOUD_VERSION
-WORKDIR /go/src/github.com/sapcc/terraform-provider-ccloud
-RUN git clone https://github.com/sapcc/terraform-provider-ccloud.git . 
-RUN git reset --hard ${TERRAFORM_PROVIDER_CCLOUD_VERSION}
-RUN make
-
+ARG TERRAFORM_VERSION
 ARG TERRAFORM_PROVIDER_OPENSTACK_VERSION
-WORKDIR /go/src/github.com/terraform-providers/terraform-provider-openstack
-RUN git clone https://github.com/kayrus/terraform-provider-openstack.git . 
-RUN git reset --hard ${TERRAFORM_PROVIDER_OPENSTACK_VERSION}
-RUN make 
-
-# WORKDIR /go/src/github.com/hashicorp/terraform
-# RUN git clone https://github.com/jtopjian/terraform.git --branch backend-swift-auth-update .
-# RUN make tools
-# RUN make fmt 
-# RUN XC_OS=linux XC_ARCH=amd64 make bin
-
-FROM sapcc/kubernikus-terraform:v20181113152146 as terraform11
-FROM alpine:3.8
+ARG TERRAFORM_PROVIDER_CCLOUD_VERSION
 
 RUN apk add --update make ca-certificates 
-COPY --from=builder /go/bin/* /usr/local/bin/
-COPY --from=terraform11 /usr/local/bin/terraform /usr/local/bin/
-
+ADD https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip /usr/local/bin/
+ADD https://github.com/sapcc/terraform-provider-ccloud/releases/download/v${TERRAFORM_PROVIDER_CCLOUD_VERSION}/terraform-provider-ccloud_linux_amd64.zip /usr/local/bin/
+ADD https://releases.hashicorp.com/terraform-provider-openstack/${TERRAFORM_PROVIDER_OPENSTACK_VERSION}/terraform-provider-openstack_${TERRAFORM_PROVIDER_OPENSTACK_VERSION}_linux_amd64.zip /usr/local/bin/
+RUN for i in /usr/local/bin/*.zip; do unzip -qd /usr/local/bin/ $i; done && rm /usr/local/bin/*.zip

@@ -9,7 +9,7 @@ provider "openstack" {
 }
 
 provider "openstack" {
-  alias            = "master"
+  alias = "master"
 
   auth_url         = "https://identity-3.${var.region}.cloud.sap/v3"
   region           = "${var.region}"
@@ -21,7 +21,7 @@ provider "openstack" {
 }
 
 provider "openstack" {
-  alias            = "master.na-us-1"
+  alias = "master.na-us-1"
 
   auth_url         = "https://identity-3.na-us-1.cloud.sap/v3"
   region           = "na-us-1"
@@ -33,7 +33,7 @@ provider "openstack" {
 }
 
 provider "ccloud" {
-  alias            = "cloud_admin"
+  alias = "cloud_admin"
 
   auth_url         = "https://identity-3.${var.region}.cloud.sap/v3"
   region           = "${var.region}"
@@ -158,23 +158,23 @@ resource "openstack_identity_role_v3" "kubernetes_member" {
 }
 
 resource "openstack_identity_user_v3" "kubernikus_pipeline" {
-  domain_id    = "${data.openstack_identity_project_v3.default.id}"
-  name         = "kubernikus-pipeline"
-  description  = "Kubernikus Pipeline User"
-  password     = "${var.kubernikus-pipeline-password}"
+  domain_id   = "${data.openstack_identity_project_v3.default.id}"
+  name        = "kubernikus-pipeline"
+  description = "Kubernikus Pipeline User"
+  password    = "${var.kubernikus-pipeline-password}"
 
   ignore_change_password_upon_first_use = true
-  ignore_password_expiry = true
+  ignore_password_expiry                = true
 }
 
 resource "openstack_identity_user_v3" "kubernikus_service" {
-  domain_id    = "${data.openstack_identity_project_v3.default.id}"
-  name         = "kubernikus"
-  description  = "Kubernikus Service User"
-  password     = "${var.kubernikus-service-password}"
+  domain_id   = "${data.openstack_identity_project_v3.default.id}"
+  name        = "kubernikus"
+  description = "Kubernikus Service User"
+  password    = "${var.kubernikus-service-password}"
 
   ignore_change_password_upon_first_use = true
-  ignore_password_expiry = true
+  ignore_password_expiry                = true
 }
 
 
@@ -305,15 +305,15 @@ resource "openstack_identity_role_assignment_v3" "kubernikus-swiftreseller" {
 
 
 resource "ccloud_quota" "kubernikus" {
-  provider = "ccloud.cloud_admin" 
+  provider = "ccloud.cloud_admin"
 
   domain_id  = "${data.openstack_identity_project_v3.ccadmin.id}"
   project_id = "${openstack_identity_project_v3.kubernikus.id}"
 
   compute {
     instances = 10
-    cores     = 48 
-    ram       = 81920 
+    cores     = 48
+    ram       = 81920
   }
 
   volumev2 {
@@ -323,18 +323,18 @@ resource "ccloud_quota" "kubernikus" {
   }
 
   network {
-		floating_ips         = 4
-		networks             = 1
-		ports                = 500
-		routers              = 2
-		security_group_rules = 64
-		security_groups      = 4
-		subnets              = 1
-		healthmonitors       = 10
-		l7policies           = 10
-		listeners            = 10
-		loadbalancers        = 10
-		pools                = 10
+    floating_ips         = 4
+    networks             = 1
+    ports                = 500
+    routers              = 2
+    security_group_rules = 64
+    security_groups      = 4
+    subnets              = 1
+    healthmonitors       = 10
+    l7policies           = 10
+    listeners            = 10
+    loadbalancers        = 10
+    pools                = 10
     pool_members         = 100
   }
 
@@ -343,7 +343,7 @@ resource "ccloud_quota" "kubernikus" {
   }
 }
 
-resource "openstack_networking_rbacpolicies_v2" "external" {
+resource "openstack_networking_rbac_policy_v2" "external" {
   action        = "access_as_shared"
   object_id     = "${data.openstack_networking_network_v2.external.id}"
   object_type   = "network"
@@ -380,43 +380,43 @@ resource "openstack_networking_router_interface_v2" "router_interface" {
 
 
 data "openstack_networking_secgroup_v2" "kubernikus_default" {
-  name        = "default"
-  tenant_id   = "${openstack_identity_project_v3.kubernikus.id}"
+  name      = "default"
+  tenant_id = "${openstack_identity_project_v3.kubernikus.id}"
 }
 
 resource "openstack_networking_secgroup_rule_v2" "secgroup_rule_0" {
-  tenant_id = "${openstack_identity_project_v3.kubernikus.id}"
-  direction = "ingress"
-  ethertype = "IPv4"
-  protocol = "tcp"
+  tenant_id         = "${openstack_identity_project_v3.kubernikus.id}"
+  direction         = "ingress"
+  ethertype         = "IPv4"
+  protocol          = "tcp"
   remote_ip_prefix  = "198.18.0.0/15"
   security_group_id = "${data.openstack_networking_secgroup_v2.kubernikus_default.id}"
 
-  depends_on          = ["ccloud_quota.kubernikus"]
+  depends_on = ["ccloud_quota.kubernikus"]
 }
 
 resource "openstack_networking_secgroup_rule_v2" "secgroup_rule_1" {
-  tenant_id = "${openstack_identity_project_v3.kubernikus.id}"
-  direction = "ingress"
-  ethertype = "IPv4"
-  protocol = "udp"
+  tenant_id         = "${openstack_identity_project_v3.kubernikus.id}"
+  direction         = "ingress"
+  ethertype         = "IPv4"
+  protocol          = "udp"
   remote_ip_prefix  = "198.18.0.0/15"
   security_group_id = "${data.openstack_networking_secgroup_v2.kubernikus_default.id}"
 
-  depends_on          = ["ccloud_quota.kubernikus"]
+  depends_on = ["ccloud_quota.kubernikus"]
 }
 
 resource "openstack_networking_secgroup_rule_v2" "secgroup_rule_ssh" {
-  tenant_id = "${openstack_identity_project_v3.kubernikus.id}"
-  direction = "ingress"
-  ethertype = "IPv4"
-  protocol = "tcp"
+  tenant_id         = "${openstack_identity_project_v3.kubernikus.id}"
+  direction         = "ingress"
+  ethertype         = "IPv4"
+  protocol          = "tcp"
   remote_ip_prefix  = "198.18.0.0/24"
   port_range_min    = 22
   port_range_max    = 22
   security_group_id = "${data.openstack_networking_secgroup_v2.kubernikus_default.id}"
 
-  depends_on          = ["ccloud_quota.kubernikus"]
+  depends_on = ["ccloud_quota.kubernikus"]
 }
 
 resource "openstack_identity_service_v3" "kubernikus" {
@@ -432,19 +432,19 @@ resource "openstack_identity_service_v3" "kubernikus-kubernikus" {
 }
 
 resource "openstack_identity_endpoint_v3" "kubernikus" {
-  service_id = "${openstack_identity_service_v3.kubernikus.id}"
-  name       = "kubernikus"
-  interface  = "public"
-  region     = "${var.region}"
-  url        = "https://kubernikus.${var.region}.cloud.sap"
+  service_id      = "${openstack_identity_service_v3.kubernikus.id}"
+  name            = "kubernikus"
+  interface       = "public"
+  endpoint_region = "${var.region}"
+  url             = "https://kubernikus.${var.region}.cloud.sap"
 }
 
 resource "openstack_identity_endpoint_v3" "kubernikus-kubernikus" {
-  service_id = "${openstack_identity_service_v3.kubernikus-kubernikus.id}"
-  name       = "kubernikus-kubernikus"
-  interface  = "public"
-  region     = "${var.region}"
-  url        = "https://k-${var.region}.admin.cloud.sap"
+  service_id      = "${openstack_identity_service_v3.kubernikus-kubernikus.id}"
+  name            = "kubernikus-kubernikus"
+  interface       = "public"
+  endpoint_region = "${var.region}"
+  url             = "https://k-${var.region}.admin.cloud.sap"
 }
 
 
@@ -462,81 +462,81 @@ data "openstack_dns_zone_v2" "admin_cloud_sap" {
 
 resource "openstack_dns_recordset_v2" "kubernikus-ingress" {
   provider = "openstack.master"
-  zone_id = "${data.openstack_dns_zone_v2.region_cloud_sap.id}"
-  name    = "kubernikus-ingress.${var.region}.cloud.sap."
-  type    = "A"
-  ttl     = 1800
-  records = ["${var.lb-kubernikus-ingress-fip}"]
+  zone_id  = "${data.openstack_dns_zone_v2.region_cloud_sap.id}"
+  name     = "kubernikus-ingress.${var.region}.cloud.sap."
+  type     = "A"
+  ttl      = 1800
+  records  = ["${var.lb-kubernikus-ingress-fip}"]
 }
 
 resource "openstack_dns_recordset_v2" "kubernikus-k8sniff" {
   provider = "openstack.master"
-  zone_id = "${data.openstack_dns_zone_v2.region_cloud_sap.id}"
-  name    = "kubernikus-k8sniff.${var.region}.cloud.sap."
-  type    = "A"
-  ttl     = 1800
-  records = ["${var.lb-kubernikus-k8sniff-fip}"]
+  zone_id  = "${data.openstack_dns_zone_v2.region_cloud_sap.id}"
+  name     = "kubernikus-k8sniff.${var.region}.cloud.sap."
+  type     = "A"
+  ttl      = 1800
+  records  = ["${var.lb-kubernikus-k8sniff-fip}"]
 }
 
 resource "openstack_dns_recordset_v2" "wildcard-kubernikus" {
   provider = "openstack.master"
-  zone_id = "${data.openstack_dns_zone_v2.region_cloud_sap.id}"
-  name    = "*.kubernikus.${var.region}.cloud.sap."
-  type    = "CNAME"
-  ttl     = 1800
-  records = ["kubernikus-k8sniff.${var.region}.cloud.sap."]
+  zone_id  = "${data.openstack_dns_zone_v2.region_cloud_sap.id}"
+  name     = "*.kubernikus.${var.region}.cloud.sap."
+  type     = "CNAME"
+  ttl      = 1800
+  records  = ["kubernikus-k8sniff.${var.region}.cloud.sap."]
 }
 
 resource "openstack_dns_recordset_v2" "kubernikus" {
   provider = "openstack.master"
-  zone_id = "${data.openstack_dns_zone_v2.region_cloud_sap.id}"
-  name    = "kubernikus.${var.region}.cloud.sap."
-  type    = "CNAME"
-  ttl     = 1800
-  records = ["kubernikus-ingress.${var.region}.cloud.sap."]
+  zone_id  = "${data.openstack_dns_zone_v2.region_cloud_sap.id}"
+  name     = "kubernikus.${var.region}.cloud.sap."
+  type     = "CNAME"
+  ttl      = 1800
+  records  = ["kubernikus-ingress.${var.region}.cloud.sap."]
 }
 
 resource "openstack_dns_recordset_v2" "prometheus" {
   provider = "openstack.master"
-  zone_id = "${data.openstack_dns_zone_v2.region_cloud_sap.id}"
-  name    = "prometheus.kubernikus.${var.region}.cloud.sap."
-  type    = "CNAME"
-  ttl     = 1800
-  records = ["kubernikus-ingress.${var.region}.cloud.sap."]
+  zone_id  = "${data.openstack_dns_zone_v2.region_cloud_sap.id}"
+  name     = "prometheus.kubernikus.${var.region}.cloud.sap."
+  type     = "CNAME"
+  ttl      = 1800
+  records  = ["kubernikus-ingress.${var.region}.cloud.sap."]
 }
 
 resource "openstack_dns_recordset_v2" "grafana" {
   provider = "openstack.master"
-  zone_id = "${data.openstack_dns_zone_v2.region_cloud_sap.id}"
-  name    = "grafana.kubernikus.${var.region}.cloud.sap."
-  type    = "CNAME"
-  ttl     = 1800
-  records = ["kubernikus-ingress.${var.region}.cloud.sap."]
+  zone_id  = "${data.openstack_dns_zone_v2.region_cloud_sap.id}"
+  name     = "grafana.kubernikus.${var.region}.cloud.sap."
+  type     = "CNAME"
+  ttl      = 1800
+  records  = ["kubernikus-ingress.${var.region}.cloud.sap."]
 }
 
 resource "openstack_dns_recordset_v2" "k-region" {
   provider = "openstack.master.na-us-1"
-  zone_id = "${data.openstack_dns_zone_v2.admin_cloud_sap.id}"
-  name    = "k-${var.region}.admin.cloud.sap."
-  type    = "CNAME"
-  ttl     = 1800
-  records = ["ingress.admin.cloud.sap."]
+  zone_id  = "${data.openstack_dns_zone_v2.admin_cloud_sap.id}"
+  name     = "k-${var.region}.admin.cloud.sap."
+  type     = "CNAME"
+  ttl      = 1800
+  records  = ["ingress.admin.cloud.sap."]
 }
 
 resource "openstack_dns_recordset_v2" "wildcard-k-region" {
   provider = "openstack.master.na-us-1"
-  zone_id = "${data.openstack_dns_zone_v2.admin_cloud_sap.id}"
-  name    = "*.k-${var.region}.admin.cloud.sap."
-  type    = "CNAME"
-  ttl     = 1800
-  records = ["kubernikus.admin.cloud.sap."]
+  zone_id  = "${data.openstack_dns_zone_v2.admin_cloud_sap.id}"
+  name     = "*.k-${var.region}.admin.cloud.sap."
+  type     = "CNAME"
+  ttl      = 1800
+  records  = ["kubernikus.admin.cloud.sap."]
 }
 
 
 
 
 provider "ccloud" {
-  alias            = "kubernikus"
+  alias = "kubernikus"
 
   auth_url         = "https://identity-3.${var.region}.cloud.sap/v3"
   region           = "${var.region}"
@@ -547,7 +547,7 @@ provider "ccloud" {
 }
 
 resource "ccloud_kubernetes" "kluster" {
-  provider = "ccloud.kubernikus" 
+  provider = "ccloud.kubernikus"
 
   is_admin       = true
   name           = "k-${var.region}"
@@ -560,7 +560,7 @@ resource "ccloud_kubernetes" "kluster" {
   ]
 
   depends_on = [
-    "openstack_identity_endpoint_v3.kubernikus", 
+    "openstack_identity_endpoint_v3.kubernikus",
     "openstack_networking_router_v2.router"
   ]
 
@@ -632,36 +632,36 @@ resource "openstack_identity_role_assignment_v3" "pipeline_swiftoperator_e2e" {
 }
 
 resource "ccloud_quota" "kubernikus_e2e" {
-  provider = "ccloud.cloud_admin" 
+  provider = "ccloud.cloud_admin"
 
   domain_id  = "${data.openstack_identity_project_v3.ccadmin.id}"
   project_id = "${openstack_identity_project_v3.kubernikus_e2e.id}"
 
   compute {
-    instances = 5 
-    cores     = 32 
+    instances = 5
+    cores     = 32
     ram       = 8192
   }
 
   volumev2 {
-    capacity  = 16 
+    capacity  = 16
     snapshots = 2
-    volumes   = 2 
+    volumes   = 2
   }
 
   network {
-		floating_ips         = 2
-		networks             = 1
-		ports                = 500
-		routers              = 1
-		security_group_rules = 64
-		security_groups      = 4
-		subnets              = 1
-		healthmonitors       = 0
-		l7policies           = 0
-		listeners            = 0
-		loadbalancers        = 0
-		pools                = 0
+    floating_ips         = 2
+    networks             = 1
+    ports                = 500
+    routers              = 1
+    security_group_rules = 64
+    security_groups      = 4
+    subnets              = 1
+    healthmonitors       = 0
+    l7policies           = 0
+    listeners            = 0
+    loadbalancers        = 0
+    pools                = 0
   }
 
   objectstore {
@@ -670,7 +670,7 @@ resource "ccloud_quota" "kubernikus_e2e" {
 }
 
 
-resource "openstack_networking_rbacpolicies_v2" "external_e2e" {
+resource "openstack_networking_rbac_policy_v2" "external_e2e" {
   action        = "access_as_shared"
   object_id     = "${data.openstack_networking_network_v2.external_e2e.id}"
   object_type   = "network"
@@ -707,19 +707,19 @@ resource "openstack_networking_router_interface_v2" "router_interface_e2e" {
 }
 
 data "openstack_networking_secgroup_v2" "kubernikus_e2e_default" {
-  name        = "default"
-  tenant_id   = "${openstack_identity_project_v3.kubernikus_e2e.id}"
+  name      = "default"
+  tenant_id = "${openstack_identity_project_v3.kubernikus_e2e.id}"
 }
 
 resource "openstack_networking_secgroup_rule_v2" "secgroup_rule_e2e_ssh" {
-  tenant_id = "${openstack_identity_project_v3.kubernikus_e2e.id}"
-  direction = "ingress"
-  ethertype = "IPv4"
-  protocol = "tcp"
+  tenant_id         = "${openstack_identity_project_v3.kubernikus_e2e.id}"
+  direction         = "ingress"
+  ethertype         = "IPv4"
+  protocol          = "tcp"
   remote_ip_prefix  = "10.180.0.0/16"
   port_range_min    = 22
   port_range_max    = 22
   security_group_id = "${data.openstack_networking_secgroup_v2.kubernikus_e2e_default.id}"
 
-  depends_on          = ["ccloud_quota.kubernikus_e2e"]
+  depends_on = ["ccloud_quota.kubernikus_e2e"]
 }

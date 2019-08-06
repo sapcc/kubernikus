@@ -3,9 +3,9 @@ IMAGE    := sapcc/kubernikus-terraform
 DATE     := $(shell date +%Y%m%d%H%M%S)
 VERSION  ?= v$(DATE)
 
-TERRAFORM_VERSION                    := 0.11.7-r0
-TERRAFORM_PROVIDER_OPENSTACK_VERSION := v1.21.0
-TERRAFORM_PROVIDER_CCLOUD_VERSION    := v1.1.2
+TERRAFORM_VERSION                    := 0.12.5
+TERRAFORM_PROVIDER_OPENSTACK_VERSION := 1.21.0
+TERRAFORM_PROVIDER_CCLOUD_VERSION    := 1.1.2
 
 
 .PHONY: all
