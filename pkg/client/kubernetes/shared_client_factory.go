@@ -2,6 +2,7 @@ package kubernetes
 
 import (
 	"fmt"
+	"os"
 	"sync"
 
 	kitlog "github.com/go-kit/kit/log"
@@ -69,8 +70,15 @@ func (f *sharedClientFactory) ClientFor(k *kubernikus_v1.Kluster) (clientset kub
 		return nil, err
 	}
 
+	// If run inside a kubernetes cluster we want to bypass the sni proxy and access the api service directly
+	// if we run outside (dev) we fall back to using the fqdn that is exposed by the sni ingress controller
+	apiHost := fmt.Sprintf("https://%s:6443", k.Name)
+	if os.Getenv("KUBERNETES_SERVICE_HOST") == "" {
+		apiHost = k.Status.Apiserver
+	}
+
 	c := rest.Config{
-		Host: fmt.Sprintf("https://%s:6443", k.Name), // access kubernetes api directly by service name (bypass sni sniffer)
+		Host: apiHost,
 		TLSClientConfig: rest.TLSClientConfig{
 			CertData: []byte(secret.ApiserverClientsClusterAdminCertificate),
 			KeyData:  []byte(secret.ApiserverClientsClusterAdminPrivateKey),
