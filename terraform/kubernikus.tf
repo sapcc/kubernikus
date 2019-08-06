@@ -304,7 +304,7 @@ resource "openstack_identity_role_assignment_v3" "kubernikus-swiftreseller" {
 
 
 
-resource "ccloud_quota" "kubernikus" {
+resource "ccloud_project_quota_v1" "kubernikus" {
   provider = "ccloud.cloud_admin"
 
   domain_id  = "${data.openstack_identity_project_v3.ccadmin.id}"
@@ -354,7 +354,7 @@ resource "openstack_networking_network_v2" "network" {
   tenant_id      = "${openstack_identity_project_v3.kubernikus.id}"
   name           = "kubernikus"
   admin_state_up = "true"
-  depends_on     = ["ccloud_quota.kubernikus"]
+  depends_on     = ["ccloud_project_quota_v1.kubernikus"]
 }
 
 resource "openstack_networking_subnet_v2" "subnet" {
@@ -370,7 +370,7 @@ resource "openstack_networking_router_v2" "router" {
   name                = "kubernikus"
   admin_state_up      = true
   external_network_id = "${data.openstack_networking_network_v2.external.id}"
-  depends_on          = ["ccloud_quota.kubernikus"]
+  depends_on          = ["ccloud_project_quota_v1.kubernikus"]
 }
 
 resource "openstack_networking_router_interface_v2" "router_interface" {
@@ -392,7 +392,7 @@ resource "openstack_networking_secgroup_rule_v2" "secgroup_rule_0" {
   remote_ip_prefix  = "198.18.0.0/15"
   security_group_id = "${data.openstack_networking_secgroup_v2.kubernikus_default.id}"
 
-  depends_on = ["ccloud_quota.kubernikus"]
+  depends_on = ["ccloud_project_quota_v1.kubernikus"]
 }
 
 resource "openstack_networking_secgroup_rule_v2" "secgroup_rule_1" {
@@ -403,7 +403,7 @@ resource "openstack_networking_secgroup_rule_v2" "secgroup_rule_1" {
   remote_ip_prefix  = "198.18.0.0/15"
   security_group_id = "${data.openstack_networking_secgroup_v2.kubernikus_default.id}"
 
-  depends_on = ["ccloud_quota.kubernikus"]
+  depends_on = ["ccloud_project_quota_v1.kubernikus"]
 }
 
 resource "openstack_networking_secgroup_rule_v2" "secgroup_rule_ssh" {
@@ -416,7 +416,7 @@ resource "openstack_networking_secgroup_rule_v2" "secgroup_rule_ssh" {
   port_range_max    = 22
   security_group_id = "${data.openstack_networking_secgroup_v2.kubernikus_default.id}"
 
-  depends_on = ["ccloud_quota.kubernikus"]
+  depends_on = ["ccloud_project_quota_v1.kubernikus"]
 }
 
 resource "openstack_identity_service_v3" "kubernikus" {
@@ -546,7 +546,7 @@ provider "ccloud" {
   tenant_id        = "${openstack_identity_project_v3.kubernikus.id}"
 }
 
-resource "ccloud_kubernetes" "kluster" {
+resource "ccloud_kubernetes_v1" "kluster" {
   provider = "ccloud.kubernikus"
 
   is_admin       = true
@@ -555,9 +555,11 @@ resource "ccloud_kubernetes" "kluster" {
   service_cidr   = "192.168.128.0/17"
   ssh_public_key = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQCXIxVEUgtUVkvk2VM1hmIb8MxvxsmvYoiq9OBy3J8akTGNybqKsA2uhcwxSJX5Cn3si8kfMfka9EWiJT+e1ybvtsGILO5XRZPxyhYzexwb3TcALwc3LuzpF3Z/Dg2jYTRELTGhYmyca3mxzTlCjNXvYayLNedjJ8fIBzoCuSXNqDRToHru7h0Glz+wtuE74mNkOiXSvhtuJtJs7VCNVjobFQNfC1aeDsri2bPRHJJZJ0QF4LLYSayMEz3lVwIDyAviQR2Aa97WfuXiofiAemfGqiH47Kq6b8X7j3bOYGBvJKMUV7XeWhGsskAmTsvvnFxkc5PAD3Ct+liULjiQWlzDrmpTE8aMqLK4l0YQw7/8iRVz6gli42iEc2ZG56ob1ErpTLAKFWyCNOebZuGoygdEQaGTIIunAncXg5Rz07TdPl0Tf5ZZLpiAgR5ck0H1SETnjDTZ/S83CiVZWJgmCpu8YOKWyYRD4orWwdnA77L4+ixeojLIhEoNL8KlBgsP9Twx+fFMWLfxMmiuX+yksM6Hu+Lsm+Ao7Q284VPp36EB1rxP1JM7HCiEOEm50Jb6hNKjgN4aoLhG5yg+GnDhwCZqUwcRJo1bWtm3QvRA+rzrGZkId4EY3cyOK5QnYV5+24x93Ex0UspHMn7HGsHUESsVeV0fLqlfXyd2RbHTmDMP6w=="
 
-  node_pools = [
-    { name = "payload", flavor = "m1.xlarge_cpu", size = 3 },
-  ]
+  node_pools {
+    name   = "payload"
+    flavor = "m1.xlarge_cpu"
+    size   = 3
+  }
 
   depends_on = [
     "openstack_identity_endpoint_v3.kubernikus",
@@ -631,7 +633,7 @@ resource "openstack_identity_role_assignment_v3" "pipeline_swiftoperator_e2e" {
   role_id    = "${data.openstack_identity_role_v3.swiftoperator.id}"
 }
 
-resource "ccloud_quota" "kubernikus_e2e" {
+resource "ccloud_project_quota_v1" "kubernikus_e2e" {
   provider = "ccloud.cloud_admin"
 
   domain_id  = "${data.openstack_identity_project_v3.ccadmin.id}"
@@ -681,7 +683,7 @@ resource "openstack_networking_network_v2" "network_e2e" {
   tenant_id      = "${openstack_identity_project_v3.kubernikus_e2e.id}"
   name           = "kubernikus_e2e"
   admin_state_up = "true"
-  depends_on     = ["ccloud_quota.kubernikus_e2e"]
+  depends_on     = ["ccloud_project_quota_v1.kubernikus_e2e"]
 }
 
 resource "openstack_networking_subnet_v2" "subnet_e2e" {
@@ -690,7 +692,7 @@ resource "openstack_networking_subnet_v2" "subnet_e2e" {
   network_id = "${openstack_networking_network_v2.network_e2e.id}"
   cidr       = "10.180.0.0/16"
   ip_version = 4
-  depends_on = ["ccloud_quota.kubernikus_e2e"]
+  depends_on = ["ccloud_project_quota_v1.kubernikus_e2e"]
 }
 
 resource "openstack_networking_router_v2" "router_e2e" {
@@ -698,7 +700,7 @@ resource "openstack_networking_router_v2" "router_e2e" {
   name                = "default"
   admin_state_up      = true
   external_network_id = "${data.openstack_networking_network_v2.external_e2e.id}"
-  depends_on          = ["ccloud_quota.kubernikus_e2e"]
+  depends_on          = ["ccloud_project_quota_v1.kubernikus_e2e"]
 }
 
 resource "openstack_networking_router_interface_v2" "router_interface_e2e" {
@@ -721,5 +723,5 @@ resource "openstack_networking_secgroup_rule_v2" "secgroup_rule_e2e_ssh" {
   port_range_max    = 22
   security_group_id = "${data.openstack_networking_secgroup_v2.kubernikus_e2e_default.id}"
 
-  depends_on = ["ccloud_quota.kubernikus_e2e"]
+  depends_on = ["ccloud_project_quota_v1.kubernikus_e2e"]
 }
