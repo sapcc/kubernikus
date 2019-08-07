@@ -33,6 +33,8 @@ spec:
                 path: apiserver-clients-and-nodes-ca.pem
               - key: apiserver-clients-ca-key.pem
                 path: apiserver-clients-ca-key.pem
+              - key: tls-etcd-ca.pem
+                path: tls-etcd-ca.pem
               - key: etcd-clients-ca.pem
                 path: etcd-clients-ca.pem
               - key: etcd-clients-apiserver.pem
@@ -114,7 +116,18 @@ spec:
             - sh
             - -c
           args:
+{{- if .Values.api.secureEtcd }}
+            - until etcdctl --endpoints https://{{ include "etcd.fullname" . }}:2379 --cacert=/etc/kubernetes/certs/tls-etcd-ca.pem --cert=/etc/kubernetes/certs/etcd-clients-apiserver.pem --key=/etc/kubernetes/certs/etcd-clients-apiserver-key.pem --insecure-transport=false endpoint health; do sleep 5; done;
+          env:
+            - name: ETCDCTL_API
+              value: "3"
+          volumeMounts:
+            - mountPath: /etc/kubernetes/certs
+              name: certs
+              readOnly: true
+{{- else }}
             - until etcdctl --total-timeout=4s --endpoints http://{{ include "etcd.fullname" . }}:2379 cluster-health; do sleep 5; done;
+{{- end }}
       containers:
         - name: apiserver
           image: {{ include "hyperkube.image" . | quote }}
@@ -125,7 +138,11 @@ spec:
 {{- else }}
             - apiserver
 {{- end }}
+            {{- if .Values.api.secureEtcd }}
+            - --etcd-servers=https://{{ include "etcd.fullname" . }}:2379
+            {{- else }}
             - --etcd-servers=http://{{ include "etcd.fullname" . }}:2379
+            {{- end }}
             - --secure-port={{ required "missing advertisePort" .Values.advertisePort }}
             - --advertise-address={{ .Values.advertiseAddress }}
             - --allow-privileged=true
@@ -167,7 +184,7 @@ spec:
 {{- end }}
             #Cert Spratz
             - --client-ca-file=/etc/kubernetes/certs/apiserver-clients-and-nodes-ca.pem
-            - --etcd-cafile=/etc/kubernetes/certs/etcd-clients-ca.pem
+            - --etcd-cafile=/etc/kubernetes/certs/tls-etcd-ca.pem
             - --etcd-certfile=/etc/kubernetes/certs/etcd-clients-apiserver.pem
             - --etcd-keyfile=/etc/kubernetes/certs/etcd-clients-apiserver-key.pem
             - --kubelet-client-certificate=/etc/kubernetes/certs/kubelet-clients-apiserver.pem

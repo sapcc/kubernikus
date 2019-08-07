@@ -14,6 +14,7 @@ openstack:
   region: xy-xy-1
   projectDomainName: xyz
 api:
+  secureEtcd: true
   apiserverHost: xyz.com
   wormholeHost: xyz.com
 version:
@@ -22,6 +23,8 @@ version:
 etcd:
   backup:
     storageProvider: Swift
+  secure:
+    enabled: true
   openstack:
     authURL: http://xyz.com
     username: xyz

@@ -43,6 +43,7 @@ api:
   replicaCount: 1
   # apiserverHost:
   # wormholeHost:
+  secureEtcd: false
   resources:
     requests:
       cpu: 200m

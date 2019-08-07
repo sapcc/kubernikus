@@ -43,11 +43,27 @@ data:
     exec etcd \
       --name=kubernikus \
       --data-dir=/var/lib/etcd/new.etcd \
+{{- if .Values.secure.enabled }}
+      --cert-file=/etc/kubernetes/certs/tls-etcd.pem \
+      --key-file=/etc/kubernetes/certs/tls-etcd-key.pem \
+      --client-cert-auth=true \
+      --trusted-ca-file=/etc/kubernetes/certs/etcd-clients-ca.pem \
+      --peer-cert-file=/etc/kubernetes/certs/tls-etcd.pem \
+      --peer-key-file=/etc/kubernetes/certs/tls-etcd-key.pem \
+      --peer-client-cert-auth=true \
+      --peer-trusted-ca-file=/etc/kubernetes/certs/etcd-peers-ca.pem \
+      --advertise-client-urls=https://${ETCD_IP}:2379 \
+      --initial-advertise-peer-urls=https://${ETCD_IP}:2380 \
+      --initial-cluster=kubernikus=https://${ETCD_IP}:2380 \
+      --listen-client-urls=https://0.0.0.0:2379 \
+      --listen-peer-urls=https://${ETCD_IP}:2380
+{{- else }}
       --advertise-client-urls=http://${ETCD_IP}:2379 \
       --initial-advertise-peer-urls=http://${ETCD_IP}:2380 \
       --initial-cluster=kubernikus=http://${ETCD_IP}:2380 \
       --listen-client-urls=http://0.0.0.0:2379 \
       --listen-peer-urls=http://${ETCD_IP}:2380
+{{- end }}
 ---
 apiVersion: extensions/v1beta1
 kind: Deployment
@@ -82,6 +98,38 @@ spec:
           configMap:
             name: {{ include "fullname" . }}
             defaultMode: 0700
+{{- if .Values.secure.enabled }}
+        - name: certs-etcd
+          secret:
+            secretName: {{ include "master.fullname" . }}-secret
+            items:
+              - key: etcd-clients-ca.pem
+                path: etcd-clients-ca.pem
+              - key: etcd-peers-ca.pem
+                path: etcd-peers-ca.pem
+              - key: tls-etcd-ca.pem
+                path: tls-etcd-ca.pem
+              - key: tls-etcd.pem
+                path: tls-etcd.pem
+              - key: tls-etcd-key.pem
+                path: tls-etcd-key.pem
+              - key: etcd-clients-backup.pem
+                path: etcd-clients-backup.pem
+              - key: etcd-clients-backup-key.pem
+                path: etcd-clients-backup-key.pem
+        - name: certs-backup
+          secret:
+            secretName: {{ include "master.fullname" . }}-secret
+            items:
+              - key: tls-etcd-ca.pem
+                path: tls-etcd-ca.pem
+              - key: etcd-clients-ca.pem
+                path: etcd-clients-ca.pem
+              - key: etcd-clients-backup.pem
+                path: etcd-clients-backup.pem
+              - key: etcd-clients-backup-key.pem
+                path: etcd-clients-backup-key.pem
+{{- end }}
       containers:
         - name: etcd
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
@@ -97,12 +145,21 @@ spec:
               name: data
             - mountPath: /bootstrap
               name: bootstrap
+{{- if .Values.secure.enabled }}
+            - mountPath: /etc/kubernetes/certs
+              name: certs-etcd
+              readOnly: true
+{{- end }}
           livenessProbe:
             exec:
               command:
                 - /bin/sh
                 - -ec
+                {{- if .Values.secure.enabled }}
+                - ETCDCTL_API=3 etcdctl --endpoints=https://127.0.0.1:2379 --cacert=/etc/kubernetes/certs/tls-etcd-ca.pem --cert=/etc/kubernetes/certs/etcd-clients-backup.pem --key=/etc/kubernetes/certs/etcd-clients-backup-key.pem --insecure-transport=false endpoint health
+                {{- else }}
                 - ETCDCTL_API=3 etcdctl get foo
+                {{- end }}
             initialDelaySeconds: 300
             periodSeconds: 30
           readinessProbe:
@@ -110,7 +167,11 @@ spec:
               command:
                 - /bin/sh
                 - -ec
+                {{- if .Values.secure.enabled }}
+                - ETCDCTL_API=3 etcdctl --endpoints=https://127.0.0.1:2379 --cacert=/etc/kubernetes/certs/tls-etcd-ca.pem --cert=/etc/kubernetes/certs/etcd-clients-backup.pem --key=/etc/kubernetes/certs/etcd-clients-backup-key.pem --insecure-transport=false endpoint health
+                {{- else }}
                 - ETCDCTL_API=3 etcdctl get foo
+                {{- end }}
             initialDelaySeconds: 5
             periodSeconds: 5
           resources:
@@ -125,11 +186,18 @@ spec:
             - --max-backups={{ .Values.backup.maxBackups }}
             {{- end }}
             - --data-dir=/var/lib/etcd/new.etcd
-            - --insecure-transport=true
             - --storage-provider={{ .Values.backup.storageProvider | default "Swift" }}
             - --delta-snapshot-period-seconds={{ .Values.backup.deltaSnapshotPeriod }}
             - --garbage-collection-period-seconds={{ .Values.backup.garbageCollectionPeriod }}
             - --garbage-collection-policy={{ .Values.backup.garbageCollectionPolicy }}
+            {{- if .Values.secure.enabled }}
+            - --cacert=/etc/kubernetes/certs/tls-etcd-ca.pem
+            - --cert=/etc/kubernetes/certs/etcd-clients-backup.pem
+            - --key=/etc/kubernetes/certs/etcd-clients-backup-key.pem
+            - --insecure-transport=false
+            - {{- else }}
+            - --insecure-transport=true
+            {{- end }}
           image: "{{ .Values.backup.image.repository }}:{{ .Values.backup.image.tag }}"
           imagePullPolicy: {{ .Values.backup.image.pullPolicy }}
           ports:
@@ -187,6 +255,11 @@ spec:
           volumeMounts:
             - mountPath: /var/lib/etcd
               name: data
+{{- if .Values.secure.enabled }}
+            - mountPath: /etc/kubernetes/certs
+              name: certs-backup
+              readOnly: true
+{{- end }}
           resources:
 {{ toYaml .Values.backup.resources | indent 12 }}
 {{- end }}
