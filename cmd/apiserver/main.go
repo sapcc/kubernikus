@@ -8,6 +8,7 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/spf13/pflag"
+	"k8s.io/client-go/tools/cache"
 
 	apipkg "github.com/sapcc/kubernikus/pkg/api"
 	"github.com/sapcc/kubernikus/pkg/api/rest"
@@ -59,10 +60,14 @@ func main() {
 
 	api := operations.NewKubernikusAPI(swaggerSpec)
 
-	rt := &apipkg.Runtime{
-		Namespace: namespace,
-		Logger:    logger,
+	kubernikusClient, k8sclient, err := rest.NewKubeClients(logger)
+	if err != nil {
+		logger.Log(
+			"msg", "failed to create kubernetes clients",
+			"err", err)
+		os.Exit(1)
 	}
+	rt := apipkg.NewRuntime(namespace, kubernikusClient, k8sclient, logger)
 	if imagesFile != "" {
 		if rt.Images, err = version.NewImageRegistry(imagesFile); err != nil {
 			logger.Log(
@@ -73,11 +78,11 @@ func main() {
 			os.Exit(1)
 		}
 	}
-	rt.Kubernikus, rt.Kubernetes, err = rest.NewKubeClients(logger)
-	if err != nil {
-		logger.Log(
-			"msg", "failed to create kubernetes clients",
-			"err", err)
+
+	stopInformer := make(chan struct{})
+	go rt.Klusters.Run(stopInformer)
+	if !cache.WaitForCacheSync(nil, rt.Klusters.HasSynced) {
+		logger.Log("err", "Cache not synced")
 		os.Exit(1)
 	}
 
@@ -108,6 +113,7 @@ func main() {
 		go http.Serve(metricsListener, promhttp.Handler())
 		api.ServerShutdown = func() {
 			metricsListener.Close()
+			close(stopInformer)
 		}
 	}
 

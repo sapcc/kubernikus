@@ -153,6 +153,32 @@ func init() {
         }
       ]
     },
+    "/api/v1/clusters/{name}/bootstrap": {
+      "get": {
+        "summary": "Get bootstrap config to onboard a node",
+        "operationId": "GetBootstrapConfig",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/Credentials"
+            }
+          },
+          "default": {
+            "$ref": "#/responses/errorResponse"
+          }
+        }
+      },
+      "parameters": [
+        {
+          "uniqueItems": true,
+          "type": "string",
+          "name": "name",
+          "in": "path",
+          "required": true
+        }
+      ]
+    },
     "/api/v1/clusters/{name}/credentials": {
       "get": {
         "summary": "Get user specific credentials to access the cluster",
@@ -1009,6 +1035,35 @@ func init() {
         "responses": {
           "202": {
             "description": "OK"
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      },
+      "parameters": [
+        {
+          "uniqueItems": true,
+          "type": "string",
+          "name": "name",
+          "in": "path",
+          "required": true
+        }
+      ]
+    },
+    "/api/v1/clusters/{name}/bootstrap": {
+      "get": {
+        "summary": "Get bootstrap config to onboard a node",
+        "operationId": "GetBootstrapConfig",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/Credentials"
+            }
           },
           "default": {
             "description": "Error",

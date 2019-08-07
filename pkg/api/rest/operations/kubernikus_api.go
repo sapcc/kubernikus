@@ -42,6 +42,9 @@ func NewKubernikusAPI(spec *loads.Document) *KubernikusAPI {
 		CreateClusterHandler: CreateClusterHandlerFunc(func(params CreateClusterParams, principal *models.Principal) middleware.Responder {
 			return middleware.NotImplemented("operation CreateCluster has not yet been implemented")
 		}),
+		GetBootstrapConfigHandler: GetBootstrapConfigHandlerFunc(func(params GetBootstrapConfigParams, principal *models.Principal) middleware.Responder {
+			return middleware.NotImplemented("operation GetBootstrapConfig has not yet been implemented")
+		}),
 		GetClusterCredentialsHandler: GetClusterCredentialsHandlerFunc(func(params GetClusterCredentialsParams, principal *models.Principal) middleware.Responder {
 			return middleware.NotImplemented("operation GetClusterCredentials has not yet been implemented")
 		}),
@@ -123,6 +126,8 @@ type KubernikusAPI struct {
 
 	// CreateClusterHandler sets the operation handler for the create cluster operation
 	CreateClusterHandler CreateClusterHandler
+	// GetBootstrapConfigHandler sets the operation handler for the get bootstrap config operation
+	GetBootstrapConfigHandler GetBootstrapConfigHandler
 	// GetClusterCredentialsHandler sets the operation handler for the get cluster credentials operation
 	GetClusterCredentialsHandler GetClusterCredentialsHandler
 	// GetClusterEventsHandler sets the operation handler for the get cluster events operation
@@ -214,6 +219,10 @@ func (o *KubernikusAPI) Validate() error {
 
 	if o.CreateClusterHandler == nil {
 		unregistered = append(unregistered, "CreateClusterHandler")
+	}
+
+	if o.GetBootstrapConfigHandler == nil {
+		unregistered = append(unregistered, "GetBootstrapConfigHandler")
 	}
 
 	if o.GetClusterCredentialsHandler == nil {
@@ -374,6 +383,11 @@ func (o *KubernikusAPI) initHandlerCache() {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
 	o.handlers["POST"]["/api/v1/clusters"] = NewCreateCluster(o.context, o.CreateClusterHandler)
+
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/api/v1/clusters/{name}/bootstrap"] = NewGetBootstrapConfig(o.context, o.GetBootstrapConfigHandler)
 
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)

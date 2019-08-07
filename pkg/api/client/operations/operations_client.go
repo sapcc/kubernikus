@@ -54,6 +54,35 @@ func (a *Client) CreateCluster(params *CreateClusterParams, authInfo runtime.Cli
 }
 
 /*
+GetBootstrapConfig gets bootstrap config to onboard a node
+*/
+func (a *Client) GetBootstrapConfig(params *GetBootstrapConfigParams, authInfo runtime.ClientAuthInfoWriter) (*GetBootstrapConfigOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewGetBootstrapConfigParams()
+	}
+
+	result, err := a.transport.Submit(&runtime.ClientOperation{
+		ID:                 "GetBootstrapConfig",
+		Method:             "GET",
+		PathPattern:        "/api/v1/clusters/{name}/bootstrap",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &GetBootstrapConfigReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return result.(*GetBootstrapConfigOK), nil
+
+}
+
+/*
 GetClusterCredentials gets user specific credentials to access the cluster
 */
 func (a *Client) GetClusterCredentials(params *GetClusterCredentialsParams, authInfo runtime.ClientAuthInfoWriter) (*GetClusterCredentialsOK, error) {

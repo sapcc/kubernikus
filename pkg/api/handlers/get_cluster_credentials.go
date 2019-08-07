@@ -60,6 +60,7 @@ func (d *getClusterCredentials) Handle(params operations.GetClusterCredentialsPa
 		certutil.EncodePrivateKeyPEM(cert.PrivateKey),
 		certutil.EncodeCertPEM(cert.Certificate),
 		[]byte(secret.TLSCACertificate),
+		"",
 	)
 
 	kubeconfig, err := yaml.Marshal(config)
