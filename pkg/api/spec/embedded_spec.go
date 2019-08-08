@@ -161,7 +161,7 @@ func init() {
           "200": {
             "description": "OK",
             "schema": {
-              "$ref": "#/definitions/Credentials"
+              "$ref": "#/definitions/BootstrapConfig"
             }
           },
           "default": {
@@ -344,6 +344,17 @@ func init() {
           "items": {
             "type": "string"
           }
+        }
+      }
+    },
+    "BootstrapConfig": {
+      "type": "object",
+      "properties": {
+        "kubeconfig": {
+          "type": "string"
+        },
+        "kubeletClientsCA": {
+          "type": "string"
         }
       }
     },
@@ -1062,7 +1073,7 @@ func init() {
           "200": {
             "description": "OK",
             "schema": {
-              "$ref": "#/definitions/Credentials"
+              "$ref": "#/definitions/BootstrapConfig"
             }
           },
           "default": {
@@ -1257,6 +1268,17 @@ func init() {
           "items": {
             "type": "string"
           }
+        }
+      }
+    },
+    "BootstrapConfig": {
+      "type": "object",
+      "properties": {
+        "kubeconfig": {
+          "type": "string"
+        },
+        "kubeletClientsCA": {
+          "type": "string"
         }
       }
     },

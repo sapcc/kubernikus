@@ -54,7 +54,7 @@ func NewGetBootstrapConfigOK() *GetBootstrapConfigOK {
 OK
 */
 type GetBootstrapConfigOK struct {
-	Payload *models.Credentials
+	Payload *models.BootstrapConfig
 }
 
 func (o *GetBootstrapConfigOK) Error() string {
@@ -63,7 +63,7 @@ func (o *GetBootstrapConfigOK) Error() string {
 
 func (o *GetBootstrapConfigOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	o.Payload = new(models.Credentials)
+	o.Payload = new(models.BootstrapConfig)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {

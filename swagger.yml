@@ -152,7 +152,7 @@ paths:
         '200':
           description: OK
           schema:
-            $ref: '#/definitions/Credentials'
+            $ref: '#/definitions/BootstrapConfig'
         default:
           $ref: '#/responses/errorResponse'
   '/api/v1/clusters/{name}/info':
@@ -563,6 +563,13 @@ definitions:
     type: object
     properties:
       kubeconfig:
+        type: string
+  BootstrapConfig:
+    type: object
+    properties:
+      kubeconfig:
+        type: string
+      kubeletClientsCA:
         type: string
   Principal:
     type: object

@@ -68,8 +68,9 @@ func (d *getBootstrapConfig) Handle(params operations.GetBootstrapConfigParams, 
 		return NewErrorResponse(&operations.GetBootstrapConfigDefault{}, 500, "Failed to generate YAML document: %s", err)
 	}
 
-	credentials := models.Credentials{
-		Kubeconfig: string(kubeconfig),
+	credentials := models.BootstrapConfig{
+		Kubeconfig:       string(kubeconfig),
+		KubeletClientsCA: secret.KubeletClientsCACertificate,
 	}
 
 	return operations.NewGetBootstrapConfigOK().WithPayload(&credentials)

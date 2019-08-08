@@ -25,7 +25,7 @@ type GetBootstrapConfigOK struct {
 	/*
 	  In: Body
 	*/
-	Payload *models.Credentials `json:"body,omitempty"`
+	Payload *models.BootstrapConfig `json:"body,omitempty"`
 }
 
 // NewGetBootstrapConfigOK creates GetBootstrapConfigOK with default headers values
@@ -35,13 +35,13 @@ func NewGetBootstrapConfigOK() *GetBootstrapConfigOK {
 }
 
 // WithPayload adds the payload to the get bootstrap config o k response
-func (o *GetBootstrapConfigOK) WithPayload(payload *models.Credentials) *GetBootstrapConfigOK {
+func (o *GetBootstrapConfigOK) WithPayload(payload *models.BootstrapConfig) *GetBootstrapConfigOK {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the get bootstrap config o k response
-func (o *GetBootstrapConfigOK) SetPayload(payload *models.Credentials) {
+func (o *GetBootstrapConfigOK) SetPayload(payload *models.BootstrapConfig) {
 	o.Payload = payload
 }
 
