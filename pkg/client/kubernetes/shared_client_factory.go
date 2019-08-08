@@ -2,8 +2,10 @@ package kubernetes
 
 import (
 	"fmt"
+	"net"
 	"os"
 	"sync"
+	"time"
 
 	kitlog "github.com/go-kit/kit/log"
 	"k8s.io/client-go/kubernetes"
@@ -70,11 +72,22 @@ func (f *sharedClientFactory) ClientFor(k *kubernikus_v1.Kluster) (clientset kub
 		return nil, err
 	}
 
+	apiHost := k.Status.Apiserver
+	var dialerFunc func(string, string) (net.Conn, error)
+
 	// If run inside a kubernetes cluster we want to bypass the sni proxy and access the api service directly
 	// if we run outside (dev) we fall back to using the fqdn that is exposed by the sni ingress controller
-	apiHost := fmt.Sprintf("https://%s:6443", k.Name)
-	if os.Getenv("KUBERNETES_SERVICE_HOST") == "" {
-		apiHost = k.Status.Apiserver
+	// We need to provide a custom dialer to add the kluster namespace to the dns resolution because the
+	// apiserver cert is missing an SAN for $kluster.$namespace
+	if os.Getenv("KUBERNETES_SERVICE_HOST") != "" {
+		apiHost = fmt.Sprintf("https://%s:6443", k.Name)
+		dialer := net.Dialer{
+			Timeout:   30 * time.Second,
+			KeepAlive: 30 * time.Second,
+		}
+		dialerFunc = func(network, _ string) (net.Conn, error) {
+			return dialer.Dial(network, k.Name+"."+k.Namespace+":6443")
+		}
 	}
 
 	c := rest.Config{
@@ -84,6 +97,7 @@ func (f *sharedClientFactory) ClientFor(k *kubernikus_v1.Kluster) (clientset kub
 			KeyData:  []byte(secret.ApiserverClientsClusterAdminPrivateKey),
 			CAData:   []byte(secret.TLSCACertificate),
 		},
+		Dial: dialerFunc,
 	}
 
 	clientset, err = kubernetes.NewForConfig(&c)
