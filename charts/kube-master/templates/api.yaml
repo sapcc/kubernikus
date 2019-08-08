@@ -181,6 +181,16 @@ spec:
             - mountPath: /etc/kubernetes/bootstrap
               name: bootstrap
               readOnly: true
+          livenessProbe:
+            exec:
+              command:
+                - sh
+                - -c
+                - cat < /dev/null > /dev/tcp/{{ include "etcd.fullname" . }}/2379
+            initialDelaySeconds: 60
+            periodSeconds: 5
+            timeoutSeconds: 1
+            failureThreshold: 1
           readinessProbe:
             httpGet:
               path: /healthz
