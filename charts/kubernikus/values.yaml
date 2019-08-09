@@ -27,5 +27,6 @@ k8sniff:
 standalone: true
 
 operator:
+  controllers: []
   nodeAffinity: true
   metrics_port: 9091

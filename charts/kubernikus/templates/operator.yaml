@@ -37,6 +37,9 @@ spec:
             - --kubernikus-domain={{ .Values.domain }}
             - --namespace={{ default "kubernikus" .Values.namespace }}
             - --metric-port={{ default 9091 .Values.operator.metrics_port }}
+            {{- if .Values.operator.controllers }}
+            - --controllers={{ join "," .Values.operator.controllers }}
+            {{- end }}
             - --v={{ default 1 .Values.groundctl.log_level }}
           env:
             {{- if .Values.operator.nodeAffinity }}
