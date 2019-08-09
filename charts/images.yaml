@@ -1,5 +1,6 @@
 imagesForVersion:
   '1.15.2':
+    supported: true
     hyperkube:
       repository: 'sapcc/hyperkube'
       tag: 'v1.15.2'
@@ -7,6 +8,7 @@ imagesForVersion:
       repository: 'sapcc/openstack-cloud-controller-manager'
       tag: 'v1.15.0'
   '1.14.5':
+    supported: true
     hyperkube:
       repository: 'sapcc/hyperkube'
       tag: 'v1.14.5'
@@ -14,6 +16,7 @@ imagesForVersion:
       repository: 'sapcc/openstack-cloud-controller-manager'
       tag: 'v1.14.0'
   '1.13.9':
+    supported: true
     hyperkube:
       repository: 'sapcc/hyperkube'
       tag: 'v1.13.9'
