@@ -37,6 +37,9 @@ type KlusterSpec struct {
 	// Read Only: true
 	Name string `json:"name,omitempty"`
 
+	// no cloud
+	NoCloud bool `json:"noCloud,omitempty"`
+
 	// node pools
 	NodePools []NodePool `json:"nodePools"`
 

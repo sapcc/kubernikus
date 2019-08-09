@@ -45,6 +45,11 @@ func (w *routeGarbageCollector) Reconcile(kluster *v1.Kluster) (err error) {
 		return nil
 	}
 
+	// disable routegc for clusters with no cloudprovider
+	if kluster.Spec.NoCloud {
+		return nil
+	}
+
 	routerID := kluster.Spec.Openstack.RouterID
 	defer func(begin time.Time) {
 		if err != nil {

@@ -80,6 +80,10 @@ func (d *FlightController) Reconcile(kluster *v1.Kluster) (bool, error) {
 	if kluster.Status.Phase != models.KlusterPhaseRunning {
 		return false, nil
 	}
+	//Skip flight controller for klusters without cloudprovider
+	if kluster.Spec.NoCloud {
+		return false, nil
+	}
 
 	reconciler, err := d.Factory.FlightReconciler(kluster)
 	if err != nil {

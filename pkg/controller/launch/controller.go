@@ -77,6 +77,10 @@ func (lr *LaunchReconciler) Reconcile(kluster *v1.Kluster) (requeue bool, err er
 	if kluster.Disabled() {
 		return false, nil
 	}
+	//disable launchctl for clusters with no cloudprovider
+	if kluster.Spec.NoCloud {
+		return false, nil
+	}
 	switch kluster.Status.Phase {
 	case models.KlusterPhaseCreating:
 		util.EnsureFinalizerCreated(lr.Kubernikus.Kubernikus(), lr.klusterInformer.Lister(), kluster, LaunchctlFinalizer)

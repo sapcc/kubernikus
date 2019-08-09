@@ -1,6 +1,7 @@
 package openstack
 
 import (
+	"errors"
 	"fmt"
 	"sync"
 
@@ -122,6 +123,9 @@ func (f *factory) ProjectAdminClientFor(projectID string) (openstack_project.Pro
 }
 
 func (f *factory) projectClient(projectID string, authOptions *tokens.AuthOptions) (openstack_project.ProjectClient, error) {
+	if projectID == "" {
+		return nil, errors.New("Can't create project admin client for empty projectID")
+	}
 	if obj, found := f.projectClients.Load(projectID); found {
 		return obj.(openstack_project.ProjectClient), nil
 	}

@@ -384,6 +384,8 @@ definitions:
     properties:
       openstack:
         $ref: '#/definitions/OpenstackSpec'
+      noCloud:
+        type: boolean
       serviceCIDR:
         description: CIDR Range for Services in the cluster. Can not be updated.
         default: 198.18.128.0/17

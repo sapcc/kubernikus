@@ -110,17 +110,6 @@ func KlusterToHelmValues(kluster *v1.Kluster, secret *v1.Secret, kubernetesVersi
 			Kubernetes: kubernetesVersion,
 			Kubernikus: kluster.Status.Version,
 		},
-		Openstack: openstackValues{
-			AuthURL:             secret.Openstack.AuthURL,
-			Username:            secret.Openstack.Username,
-			Password:            secret.Openstack.Password,
-			DomainName:          secret.Openstack.DomainName,
-			Region:              secret.Openstack.Region,
-			ProjectID:           kluster.Spec.Openstack.ProjectID,
-			LbSubnetID:          kluster.Spec.Openstack.LBSubnetID,
-			LbFloatingNetworkID: kluster.Spec.Openstack.LBFloatingNetworkID,
-			RouterID:            kluster.Spec.Openstack.RouterID,
-		},
 		Etcd: etcdValues{
 			Backup: etcdBackupValues{
 				Enabled:  !util.DisabledValue(kluster.Annotations[ETCDBackupAnnotation]), //enabled by default
@@ -142,6 +131,19 @@ func KlusterToHelmValues(kluster *v1.Kluster, secret *v1.Secret, kubernetesVersi
 			ApiserverHost: apiserverURL.Hostname(),
 			WormholeHost:  wormholeURL.Hostname(),
 		},
+	}
+	if !kluster.Spec.NoCloud {
+		values.Openstack = openstackValues{
+			AuthURL:             secret.Openstack.AuthURL,
+			Username:            secret.Openstack.Username,
+			Password:            secret.Openstack.Password,
+			DomainName:          secret.Openstack.DomainName,
+			Region:              secret.Openstack.Region,
+			ProjectID:           kluster.Spec.Openstack.ProjectID,
+			LbSubnetID:          kluster.Spec.Openstack.LBSubnetID,
+			LbFloatingNetworkID: kluster.Spec.Openstack.LBFloatingNetworkID,
+			RouterID:            kluster.Spec.Openstack.RouterID,
+		}
 	}
 	if registry != nil {
 		values.ImageRegistry = *registry
