@@ -27,4 +27,5 @@ k8sniff:
 standalone: true
 
 operator:
+  nodeAffinity: true
   metrics_port: 9091
