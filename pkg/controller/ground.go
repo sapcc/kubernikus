@@ -244,13 +244,19 @@ func (op *GroundControl) handler(key string) error {
 			if err != nil {
 				return err
 			}
+
+			expectedPods := 4
+			if ok, _ := util.KlusterVersionConstraint(kluster, ">= 1.13"); ok {
+				expectedPods = 5
+			}
+
 			op.Logger.Log(
 				"msg", "pod readiness",
 				"kluster", kluster.GetName(),
 				"project", kluster.Account(),
-				"expected", 4,
+				"expected", expectedPods,
 				"actual", podsReady)
-			if podsReady == 4 {
+			if podsReady == expectedPods {
 				if err := ground.SeedKluster(op.Clients, op.Factories, kluster); err != nil {
 					return err
 				}

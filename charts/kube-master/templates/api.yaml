@@ -111,7 +111,11 @@ spec:
           image: {{ include "hyperkube.image" . | quote }}
           args:
             - /hyperkube
+{{- if (semverCompare ">= 1.15" .Values.version.kubernetes) }}
+            - kube-apiserver
+{{- else }}
             - apiserver
+{{- end }}
             - --etcd-servers=http://{{ include "etcd.fullname" . }}:2379
             - --secure-port=6443
             - --advertise-address={{ .Values.advertiseAddress }}
@@ -143,6 +147,12 @@ spec:
 {{- else }}{{/* < 1.10 */}}
             - --admission-control=NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,ResourceQuota
             - --tls-ca-file=/etc/kubernetes/certs/tls-ca.pem
+{{- end }}
+{{- if (semverCompare ">= 1.13" .Values.version.kubernetes) }}
+            - --enable-admission-plugins=PersistentVolumeLabel
+{{- end }}
+{{- if (semverCompare ">= 1.14" .Values.version.kubernetes) }}
+            - --feature-gates=NodeLease=false
 {{- end }}
             #Cert Spratz
             - --client-ca-file=/etc/kubernetes/certs/apiserver-clients-and-nodes-ca.pem

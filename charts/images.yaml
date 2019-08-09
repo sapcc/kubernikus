@@ -1,12 +1,40 @@
 imagesForVersion:
+  '1.15.2':
+    supported: true
+    hyperkube:
+      repository: 'sapcc/hyperkube'
+      tag: 'v1.15.2'
+    cloudControllerManager:
+      repository: 'sapcc/openstack-cloud-controller-manager'
+      tag: 'v1.15.0'
+  '1.14.5':
+    supported: true
+    hyperkube:
+      repository: 'sapcc/hyperkube'
+      tag: 'v1.14.5'
+    cloudControllerManager:
+      repository: 'sapcc/openstack-cloud-controller-manager'
+      tag: 'v1.14.0'
+  '1.13.9':
+    supported: true
+    hyperkube:
+      repository: 'sapcc/hyperkube'
+      tag: 'v1.13.9'
+    cloudControllerManager:
+      repository: 'sapcc/openstack-cloud-controller-manager'
+      tag: 'v1.13.1'
+  '1.12.10':
+    supported: true
+    hyperkube:
+      repository: 'sapcc/hyperkube'
+      tag: 'v1.12.10'
   '1.11.9':
+    default: true
     supported: true
     hyperkube:
       repository: 'sapcc/hyperkube'
       tag: 'v1.11.9'
   '1.10.11':
-    default: true
-    supported: true
     hyperkube:
       repository: 'sapcc/hyperkube'
       tag: 'v1.10.11'
