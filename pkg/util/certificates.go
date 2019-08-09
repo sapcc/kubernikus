@@ -23,6 +23,8 @@ const (
 	defaultCertValidity = 2 * time.Hour * 24 * 365
 	//out CAs are valid for 10 years
 	caValidity = 10 * time.Hour * 24 * 365
+	// renew cert 24 hours before it is expired
+	certExpiration = 24 * time.Hour
 )
 
 type Bundle struct {
@@ -237,6 +239,20 @@ func loadOrCreateCA(kluster *v1.Kluster, name string, cert, key *string) (*Bundl
 }
 
 func ensureClientCertificate(ca *Bundle, cn string, groups []string, cert, key *string) error {
+	if *cert != "" && *key != "" {
+		certBundle, err := NewBundle([]byte(*key), []byte(*cert))
+
+		if err != nil {
+			return fmt.Errorf("Failed parsing certificate bundle: %s", err)
+		}
+
+		if !isCertExpiredIn(certBundle.Certificate, certExpiration) {
+			return nil
+		}
+
+		// Todo: logging
+	}
+
 	certificate, err := ca.Sign(Config{
 		Sign:         cn,
 		Usages:       []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth},
@@ -253,6 +269,20 @@ func ensureClientCertificate(ca *Bundle, cn string, groups []string, cert, key *
 }
 
 func ensureServerCertificate(ca *Bundle, cn string, dnsNames []string, ips []net.IP, cert, key *string) error {
+	if *cert != "" && *key != "" {
+		certBundle, err := NewBundle([]byte(*key), []byte(*cert))
+
+		if err != nil {
+			return fmt.Errorf("Failed parsing certificate bundle: %s", err)
+		}
+
+		if !isCertExpiredIn(certBundle.Certificate, certExpiration) {
+			return nil
+		}
+
+		// Todo: logging
+	}
+
 	c, err := ca.Sign(Config{
 		Sign:   cn,
 		Usages: []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth},
@@ -268,7 +298,6 @@ func ensureServerCertificate(ca *Bundle, cn string, dnsNames []string, ips []net
 	*cert = string(certutil.EncodeCertPEM(c.Certificate))
 	*key = string(certutil.EncodePrivateKeyPEM(c.PrivateKey))
 	return nil
-
 }
 
 func createCA(klusterName, name string) (*Bundle, error) {
@@ -300,4 +329,9 @@ func createCA(klusterName, name string) (*Bundle, error) {
 		return nil, fmt.Errorf("Failed to parse cert for %s CA: %s", name, err)
 	}
 	return &Bundle{PrivateKey: privateKey, Certificate: certificate}, nil
+}
+
+func isCertExpiredIn(cert *x509.Certificate, duration time.Duration) bool {
+	expire := time.Now().Add(duration)
+	return expire.After(cert.NotAfter)
 }
