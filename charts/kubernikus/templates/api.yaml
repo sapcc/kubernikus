@@ -21,6 +21,9 @@ spec:
       annotations:
         prometheus.io/scrape: 'true'
     spec:
+      {{- if .Values.useServiceAccount }}
+      serviceAccountName: kubernikus-api
+      {{- end }}
       containers:
         - name: api
           image: "{{ .Values.image }}:{{ .Values.imageTag }}"
