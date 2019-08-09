@@ -182,11 +182,10 @@ spec:
               name: bootstrap
               readOnly: true
           livenessProbe:
-            exec:
-              command:
-                - sh
-                - -c
-                - cat < /dev/null > /dev/tcp/{{ include "etcd.fullname" . }}/2379
+            httpGet:
+              path: /healthz
+              port: 6443
+              scheme: HTTPS
             initialDelaySeconds: 60
             periodSeconds: 5
             timeoutSeconds: 1
