@@ -80,8 +80,8 @@ func main() {
 	}
 
 	stopInformer := make(chan struct{})
-	go rt.Klusters.Run(stopInformer)
-	if !cache.WaitForCacheSync(nil, rt.Klusters.HasSynced) {
+	go rt.Informer.Run(stopInformer)
+	if !cache.WaitForCacheSync(nil, rt.Informer.HasSynced) {
 		logger.Log("err", "Cache not synced")
 		os.Exit(1)
 	}

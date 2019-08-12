@@ -1,6 +1,7 @@
 package rest
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -14,7 +15,9 @@ import (
 	"github.com/stretchr/testify/assert"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes/fake"
+	"k8s.io/client-go/tools/cache"
 
 	apipkg "github.com/sapcc/kubernikus/pkg/api"
 	"github.com/sapcc/kubernikus/pkg/api/auth"
@@ -50,23 +53,32 @@ func mockAuth(token string) (*models.Principal, error) {
 	}, nil
 }
 
-func createTestHandler(t *testing.T) (http.Handler, *apipkg.Runtime) {
+func createTestHandler(t *testing.T, klusters ...runtime.Object) (http.Handler, *apipkg.Runtime, func()) {
 	swaggerSpec, err := spec.Spec()
 	if err != nil {
 		t.Fatal(err)
 	}
 	api := operations.NewKubernikusAPI(swaggerSpec)
-	rt := &apipkg.Runtime{
-		Namespace:  NAMESPACE,
-		Kubernikus: kubernikusfake.NewSimpleClientset(),
-		Kubernetes: fake.NewSimpleClientset(),
-		Logger:     kitlog.NewNopLogger(),
-	}
+	rt := apipkg.NewRuntime(
+		NAMESPACE,
+		kubernikusfake.NewSimpleClientset(klusters...),
+		fake.NewSimpleClientset(),
+		kitlog.NewNopLogger(),
+	)
 	if err := Configure(api, rt); err != nil {
 		t.Fatal(err)
 	}
 	api.KeystoneAuth = mockAuth
-	return configureAPI(api), rt
+	return configureAPI(api), rt, runInformer(rt)
+}
+
+func runInformer(rt *apipkg.Runtime) func() {
+	closeCh := make(chan struct{})
+	go rt.Informer.Run(closeCh)
+	cache.WaitForCacheSync(nil, rt.Informer.HasSynced)
+	return func() {
+		close(closeCh)
+	}
 }
 
 func createRequest(method, path, body string) *http.Request {
@@ -89,7 +101,8 @@ func result(handler http.Handler, req *http.Request) (int, http.Header, []byte) 
 }
 
 func TestCreateCluster(t *testing.T) {
-	handler, rt := createTestHandler(t)
+	handler, rt, cancel := createTestHandler(t)
+	defer cancel()
 	req := createRequest("POST", "/api/v1/clusters", `{"name": "nase", "spec": { "openstack": { "routerID":"routerA"}}}`)
 	code, _, body := result(handler, req)
 	if !assert.Equal(t, 201, code) {
@@ -151,17 +164,16 @@ func TestCreateCluster(t *testing.T) {
 }
 
 func TestClusterShow(t *testing.T) {
-	handler, rt := createTestHandler(t)
 	kluster := kubernikusv1.Kluster{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      fmt.Sprintf("%s-%s", "nase", ACCOUNT),
-			Namespace: rt.Namespace,
+			Namespace: NAMESPACE,
 			Labels:    map[string]string{"account": ACCOUNT},
 		},
 		Spec: models.KlusterSpec{Name: "nase"},
 	}
-
-	rt.Kubernikus = kubernikusfake.NewSimpleClientset(&kluster)
+	handler, _, cancel := createTestHandler(t, &kluster)
+	defer cancel()
 
 	//Test Success
 	req := createRequest("GET", "/api/v1/clusters/nase", "")
@@ -179,8 +191,56 @@ func TestClusterShow(t *testing.T) {
 	assert.Equal(t, 404, code)
 }
 
+func TestClusterList(t *testing.T) {
+	kluster1 := &kubernikusv1.Kluster{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      fmt.Sprintf("%s-%s", "nase", ACCOUNT),
+			Namespace: NAMESPACE,
+			Labels:    map[string]string{"account": ACCOUNT},
+		},
+		Spec: models.KlusterSpec{Name: "nase"},
+	}
+	kluster2 := &kubernikusv1.Kluster{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      fmt.Sprintf("%s-%s", "mund", ACCOUNT),
+			Namespace: NAMESPACE,
+			Labels:    map[string]string{"account": ACCOUNT},
+		},
+		Spec: models.KlusterSpec{Name: "mund"},
+	}
+	otherKluster := &kubernikusv1.Kluster{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      fmt.Sprintf("%s-%s", "ohr", "other"),
+			Namespace: NAMESPACE,
+			Labels:    map[string]string{"account": "other"},
+		},
+		Spec: models.KlusterSpec{Name: "ohr"},
+	}
+	handler, _, cancel := createTestHandler(t, kluster1, kluster2, otherKluster)
+	defer cancel()
+
+	//Test Success
+	req := createRequest("GET", "/api/v1/clusters", "")
+	code, _, body := result(handler, req)
+	if !assert.Equal(t, 200, code) {
+		return
+	}
+	var apiKlusters []models.Kluster
+	assert.NoError(t, json.Unmarshal(body, &apiKlusters), "Failed to parse response")
+	assert.Equal(t, []models.Kluster{
+		{
+			Name: "nase",
+			Spec: models.KlusterSpec{Name: "nase"},
+		},
+		{
+			Name: "mund",
+			Spec: models.KlusterSpec{Name: "mund"},
+		},
+	}, apiKlusters)
+
+}
+
 func TestClusterUpdate(t *testing.T) {
-	handler, rt := createTestHandler(t)
 
 	handlers.FetchOpenstackMetadataFunc = func(request *http.Request, principal *models.Principal) (*models.OpenstackMetadata, error) {
 		return &models.OpenstackMetadata{
@@ -197,7 +257,7 @@ func TestClusterUpdate(t *testing.T) {
 	kluster := kubernikusv1.Kluster{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      fmt.Sprintf("%s-%s", "nase", ACCOUNT),
-			Namespace: rt.Namespace,
+			Namespace: NAMESPACE,
 			Labels:    map[string]string{"account": ACCOUNT},
 		},
 		Spec: models.KlusterSpec{
@@ -231,7 +291,8 @@ func TestClusterUpdate(t *testing.T) {
 			Version: "someversion",
 		},
 	}
-	rt.Kubernikus = kubernikusfake.NewSimpleClientset(&kluster)
+	handler, _, cancel := createTestHandler(t, &kluster)
+	defer cancel()
 	updateObject := models.Kluster{
 		Name: "mund",
 		Spec: models.KlusterSpec{
@@ -308,11 +369,10 @@ func TestClusterUpdate(t *testing.T) {
 
 func TestVersionUpdate(t *testing.T) {
 
-	handler, rt := createTestHandler(t)
 	kluster := kubernikusv1.Kluster{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      fmt.Sprintf("%s-%s", "nase", ACCOUNT),
-			Namespace: rt.Namespace,
+			Namespace: NAMESPACE,
 			Labels:    map[string]string{"account": ACCOUNT},
 		},
 		Spec: models.KlusterSpec{
@@ -341,7 +401,8 @@ func TestVersionUpdate(t *testing.T) {
 	for _, c := range cases {
 		k := kluster.DeepCopy()
 		k.Status.Phase = c.Phase
-		rt.Kubernikus = kubernikusfake.NewSimpleClientset(k)
+		handler, _, cancel := createTestHandler(t, k)
+		defer cancel()
 		updateObject := models.Kluster{
 			Name: "nase",
 			Spec: models.KlusterSpec{

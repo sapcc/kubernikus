@@ -4,7 +4,6 @@ import (
 	"github.com/ghodss/yaml"
 	"github.com/go-openapi/runtime/middleware"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
-	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/sapcc/kubernikus/pkg/api"
 	"github.com/sapcc/kubernikus/pkg/api/models"
@@ -24,7 +23,7 @@ type getBootstrapConfig struct {
 
 func (d *getBootstrapConfig) Handle(params operations.GetBootstrapConfigParams, principal *models.Principal) middleware.Responder {
 
-	kluster, err := d.Kubernikus.Kubernikus().Klusters(d.Namespace).Get(qualifiedName(params.Name, principal.Account), meta_v1.GetOptions{})
+	kluster, err := d.Klusters.Klusters(d.Namespace).Get(qualifiedName(params.Name, principal.Account))
 	if err != nil {
 		if apierrors.IsNotFound(err) {
 			return NewErrorResponse(&operations.GetBootstrapConfigDefault{}, 404, "Kluster not found")
