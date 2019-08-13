@@ -50,6 +50,7 @@ spec:
         - name: config
           configMap:
             name: {{ include "master.fullname" . }}
+        {{- if .Values.openstack }}
         - name: cloudprovider
           secret:
             secretName: {{ include "master.fullname" . }}-generated
@@ -59,6 +60,7 @@ spec:
         - name: openstack-hacks
           configMap:
             name: {{ include "master.fullname" . }}-os-hacks
+        {{- end }}
       initContainers:
         - name: apiserver-wait
           image: {{ include "hyperkube.image" . }}
@@ -85,18 +87,20 @@ spec:
             - controller-manager
 {{- end }}
             - --allocate-node-cidrs=true
+            {{- if .Values.openstack }}
             - --cloud-config=/etc/kubernetes/cloudprovider/openstack.config
 {{- if (semverCompare ">= 1.13" .Values.version.kubernetes) }}
             - --cloud-provider=external
             - --external-cloud-volume-plugin=openstack
 {{- else }}
             - --cloud-provider=openstack
+            - --configure-cloud-routes=true
 {{- end }}
+            {{- end }}
             - --cluster-cidr={{ .Values.clusterCIDR }}
             - --cluster-name={{ .Values.name }}
             - --cluster-signing-cert-file=/etc/kubernetes/certs/apiserver-nodes-ca.pem
             - --cluster-signing-key-file=/etc/kubernetes/certs/apiserver-nodes-ca-key.pem
-            - --configure-cloud-routes=true
             - --controllers=*,bootstrapsigner,tokencleaner
             - --kubeconfig=/etc/kubernetes/config/kubeconfig
 {{- if (semverCompare ">= 1.12" .Values.version.kubernetes) }}
@@ -130,14 +134,17 @@ spec:
             - mountPath: /etc/kubernetes/config
               name: config
               readOnly: true
+            {{- if .Values.openstack }}
             - mountPath: /etc/kubernetes/cloudprovider
               name: cloudprovider
               readOnly: true
             - mountPath: /var/lib/cloud/data/
               name: openstack-hacks
               readOnly: true
+            {{- end }}
           resources:
 {{ toYaml .Values.controllerManager.resources | indent 12 }}
+{{- if .Values.openstack }}
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -148,3 +155,4 @@ metadata:
     release: {{ .Release.Name }}
 data:
   instance-id: gurkenwurst
+{{- end }}

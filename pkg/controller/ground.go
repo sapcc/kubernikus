@@ -245,8 +245,9 @@ func (op *GroundControl) handler(key string) error {
 				return err
 			}
 
-			expectedPods := 4
-			if ok, _ := util.KlusterVersionConstraint(kluster, ">= 1.13"); ok {
+			expectedPods := 4 //apiserver,etcd,scheduler,controller-manager
+			//cloud-controller-manager
+			if ok, _ := util.KlusterVersionConstraint(kluster, ">= 1.13"); ok && !kluster.Spec.NoCloud {
 				expectedPods = 5
 			}
 
@@ -519,6 +520,10 @@ func (op *GroundControl) createKluster(kluster *v1.Kluster) error {
 	klusterSecret.Openstack.DomainName = "kubernikus"
 	klusterSecret.Openstack.Region = region
 	klusterSecret.Openstack.ProjectID = kluster.Spec.Openstack.ProjectID
+	//TODO: remove once the backup credentials are disentageled from the service user (e.g. backup to s3)
+	if klusterSecret.Openstack.ProjectID == "" {
+		klusterSecret.Openstack.ProjectID = kluster.Account()
+	}
 	if klusterSecret.Openstack.Password, err = goutils.Random(20, 32, 127, true, true); err != nil {
 		return fmt.Errorf("Failed to generated password for cluster service user: %s", err)
 	}
@@ -543,7 +548,7 @@ func (op *GroundControl) createKluster(kluster *v1.Kluster) error {
 	}
 
 	if err := op.Clients.OpenstackAdmin.CreateStorageContainer(
-		kluster.Spec.Openstack.ProjectID,
+		klusterSecret.Openstack.ProjectID,
 		etcd_util.DefaultStorageContainer(kluster),
 		klusterSecret.Openstack.Username,
 		klusterSecret.Openstack.DomainName,
@@ -657,6 +662,9 @@ func (op *GroundControl) terminateKluster(kluster *v1.Kluster) error {
 }
 
 func (op *GroundControl) requiresOpenstackInfo(kluster *v1.Kluster) bool {
+	if kluster.Spec.NoCloud {
+		return false
+	}
 	return kluster.Spec.Openstack.ProjectID == "" ||
 		kluster.Spec.Openstack.RouterID == "" ||
 		kluster.Spec.Openstack.NetworkID == "" ||

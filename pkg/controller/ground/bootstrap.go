@@ -25,11 +25,6 @@ func SeedKluster(clients config.Clients, factories config.Factories, kluster *v1
 		return err
 	}
 
-	openstack, err := factories.Openstack.ProjectAdminClientFor(kluster.Spec.Openstack.ProjectID)
-	if err != nil {
-		return err
-	}
-
 	if err := SeedAllowBootstrapTokensToPostCSRs(kubernetes); err != nil {
 		return errors.Wrap(err, "seed allow bootstrap tokens to post CSRs")
 	}
@@ -45,8 +40,14 @@ func SeedKluster(clients config.Clients, factories config.Factories, kluster *v1
 	if err := SeedKubernikusMember(kubernetes); err != nil {
 		return errors.Wrap(err, "seed kubernikus member")
 	}
-	if err := SeedCinderStorageClasses(kubernetes, openstack); err != nil {
-		return errors.Wrap(err, "seed cinder storage classes")
+	if !kluster.Spec.NoCloud {
+		openstack, err := factories.Openstack.ProjectAdminClientFor(kluster.Spec.Openstack.ProjectID)
+		if err != nil {
+			return err
+		}
+		if err := SeedCinderStorageClasses(kubernetes, openstack); err != nil {
+			return errors.Wrap(err, "seed cinder storage classes")
+		}
 	}
 	if err := SeedAllowCertificateControllerToDeleteCSRs(kubernetes); err != nil {
 		return errors.Wrap(err, "seed allow certificate controller to delete CSRs")

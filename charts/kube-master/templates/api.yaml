@@ -77,12 +77,14 @@ spec:
               - key: apiserver-clients-cluster-admin-key.pem
                 path: kube-client.key
 
+        {{- if .Values.openstack }}
         - name: cloudprovider
           secret:
             secretName: {{ include "master.fullname" . }}-generated
             items:
               - key: openstack.config
                 path: openstack.config
+        {{- end }}
         - name: bootstrap
           secret:
             secretName: {{ include "master.fullname" . }}-generated
@@ -121,8 +123,10 @@ spec:
             - --advertise-address={{ .Values.advertiseAddress }}
             - --allow-privileged=true
             - --authorization-mode=Node,RBAC
+            {{- if .Values.openstack }}
             - --cloud-config=/etc/kubernetes/cloudprovider/openstack.config
             - --cloud-provider=openstack
+            {{- end }}
 {{- if (semverCompare ">= 1.8" .Values.version.kubernetes) }}
             - --enable-bootstrap-token-auth=true
             - --external-hostname={{ required "missing .api.apiserverHost" .Values.api.apiserverHost }}
@@ -169,9 +173,11 @@ spec:
             - mountPath: /etc/kubernetes/certs
               name: certs
               readOnly: true
+            {{- if .Values.openstack }}
             - mountPath: /etc/kubernetes/cloudprovider
               name: cloudprovider
               readOnly: true
+            {{- end }}
             - mountPath: /etc/kubernetes/bootstrap
               name: bootstrap
               readOnly: true

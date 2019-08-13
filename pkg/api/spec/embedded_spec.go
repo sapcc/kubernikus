@@ -481,6 +481,9 @@ func init() {
           "type": "string",
           "readOnly": true
         },
+        "noCloud": {
+          "type": "boolean"
+        },
         "nodePools": {
           "type": "array",
           "items": {
@@ -1338,6 +1341,9 @@ func init() {
         "name": {
           "type": "string",
           "readOnly": true
+        },
+        "noCloud": {
+          "type": "boolean"
         },
         "nodePools": {
           "type": "array",

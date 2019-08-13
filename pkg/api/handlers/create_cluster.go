@@ -111,11 +111,13 @@ func (d *createCluster) Handle(params operations.CreateClusterParams, principal 
 	}
 
 	//Ensure that the clust CIDR range does not overlap with other clusters in the same project
-	if overlap, err := d.overlapWithSiblingCluster(kluster.Spec.ClusterCIDR, kluster.Spec.Openstack.RouterID, principal); overlap || err != nil {
-		if overlap {
-			return NewErrorResponse(&operations.CreateClusterDefault{}, 409, err.Error())
+	if !kluster.Spec.NoCloud {
+		if overlap, err := d.overlapWithSiblingCluster(kluster.Spec.ClusterCIDR, kluster.Spec.Openstack.RouterID, principal); overlap || err != nil {
+			if overlap {
+				return NewErrorResponse(&operations.CreateClusterDefault{}, 409, err.Error())
+			}
+			return NewErrorResponse(&operations.CreateClusterDefault{}, 500, err.Error())
 		}
-		return NewErrorResponse(&operations.CreateClusterDefault{}, 500, err.Error())
 	}
 
 	kluster.ObjectMeta = metav1.ObjectMeta{
