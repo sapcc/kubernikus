@@ -27,7 +27,7 @@ systemd:
         ExecStartPre=/usr/bin/bash -c "/usr/bin/systemctl set-environment COREOS_OPENSTACK_HOSTNAME=$(curl -s http://169.254.169.254/latest/meta-data/hostname)"
         ExecStart=/usr/bin/hostnamectl set-hostname ${COREOS_OPENSTACK_HOSTNAME}
         Restart=on-failure
-        RestartSec=30
+        RestartSec=5
         RemainAfterExit=yes
 
         [Install]
@@ -111,6 +111,7 @@ systemd:
           --cloud-provider=openstack \
           --config=/etc/kubernetes/kubelet/config \
           --bootstrap-kubeconfig=/etc/kubernetes/bootstrap/kubeconfig \
+          --hostname-override={{ .NodeName }} \
           --kubeconfig=/var/lib/kubelet/kubeconfig \
 {{- if .CalicoNetworking }}
           --network-plugin=cni \
