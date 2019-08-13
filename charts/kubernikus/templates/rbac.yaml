@@ -1,0 +1,155 @@
+{{ if .Values.useServiceAccount -}}
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: "kubernikus-operator"
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: "kubernikus-api"
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: "kubernikus:{{.Release.Name}}"
+rules:
+- apiGroups:
+  - apiextensions.k8s.io
+  resources:
+  - customresourcedefinitions
+  verbs:
+  - create
+- apiGroups:
+  - apiextensions.k8s.io
+  resources:
+  - customresourcedefinitions
+  resourceNames:
+  - klusters.kubernikus.sap.cc
+  verbs:
+  - update
+  - get
+- apiGroups:
+  - storage.k8s.io
+  resources:
+  - storageclasses
+  verbs:
+  - list
+- apiGroups:
+  - ""
+  resources:
+  - persistentvolumes
+  verbs:
+  - list
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: "kubernikus:{{ .Release.Name }}"
+subjects:
+- kind: ServiceAccount
+  name: "kubernikus-operator"
+  namespace: "{{.Release.Namespace}}"
+- kind: ServiceAccount
+  name: "kubernikus-api"
+  namespace: "{{.Release.Namespace}}"
+roleRef:
+  kind: ClusterRole #this must be Role or ClusterRole
+  name: "kubernikus:{{.Release.Namespace}}"
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: "kubernikus:operator"
+rules:
+- apiGroups:
+  - kubernikus.sap.cc
+  resources:
+  - klusters
+  verbs:
+  - create
+  - update
+  - patch
+  - delete
+  - list
+  - get
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - events
+  verbs:
+  - create
+  - patch
+  - update
+- apiGroups:
+  - ""
+  resources:
+  - pods
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - secrets
+  verbs:
+  - create
+  - update
+  - delete
+  - list
+  - get
+  - watch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: "kubernikus:operator"
+subjects:
+- kind: ServiceAccount
+  name: "kubernikus-operator"
+roleRef:
+  kind: Role #this must be Role or ClusterRole
+  name: "kubernikus:operator"
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: "kubernikus:api"
+subjects:
+- kind: ServiceAccount
+  name: "kubernikus-api"
+  namespace: "{{ .Release.Namespace }}"
+roleRef:
+  kind: Role #this must be Role or ClusterRole
+  name: "kubernikus:api"
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: "kubernikus:api"
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - events
+  - secrets
+  verbs:
+  - get
+- apiGroups:
+  - kubernikus.sap.cc
+  resources:
+  - klusters
+  verbs:
+  - create
+  - update
+  - patch
+  - delete
+  - list
+  - get
+  - watch
+{{- end }}

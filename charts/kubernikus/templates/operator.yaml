@@ -18,6 +18,9 @@ spec:
         prometheus.io/scrape: 'true'
         prometheus.io/port: {{ .Values.operator.metrics_port | quote }}
     spec:
+      {{- if .Values.useServiceAccount }}
+      serviceAccountName: kubernikus-operator
+      {{- end }}
       containers:
         - name: operator
           image: "{{ .Values.image }}:{{ .Values.imageTag }}"
@@ -34,10 +37,15 @@ spec:
             - --kubernikus-domain={{ .Values.domain }}
             - --namespace={{ default "kubernikus" .Values.namespace }}
             - --metric-port={{ default 9091 .Values.operator.metrics_port }}
+            {{- if .Values.operator.controllers }}
+            - --controllers={{ join "," .Values.operator.controllers }}
+            {{- end }}
             - --v={{ default 1 .Values.groundctl.log_level }}
           env:
+            {{- if .Values.operator.nodeAffinity }}
             - name: NODEPOOL_AFFINITY
               value: "true"
+            {{- end }}
             - name: OS_PASSWORD
               valueFrom:
                 secretKeyRef:
