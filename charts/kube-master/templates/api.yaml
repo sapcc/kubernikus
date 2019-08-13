@@ -100,6 +100,8 @@ spec:
             items:
               - key: local-kubeconfig
                 path: kubeconfig
+              - key: liveness-probe.sh
+                path: liveness-probe.sh
       initContainers:
         - name: etcd-wait
           image: "{{ required "etcd.image.repository undefined" .Values.etcd.image.repository }}:{{ required "etcd.image.tag undefined" .Values.etcd.image.tag }}"
@@ -181,15 +183,14 @@ spec:
             - mountPath: /etc/kubernetes/bootstrap
               name: bootstrap
               readOnly: true
+            - mountPath: /
+              name: liveness-probe.sh
+              readOnly: true
           livenessProbe:
-            httpGet:
-              path: /healthz
-              port: 6443
-              scheme: HTTPS
+            command:
+              - /liveness-probe.sh
             initialDelaySeconds: 60
-            periodSeconds: 5
-            timeoutSeconds: 1
-            failureThreshold: 1
+            periodSeconds: 60
           readinessProbe:
             httpGet:
               path: /healthz
