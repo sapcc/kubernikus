@@ -44,19 +44,29 @@ data:
         user:
           client-certificate: /etc/kubernetes/certs/kube-client.pem
           client-key: /etc/kubernetes/certs/kube-client.key
-  liveness-probe.sh: |-
+  api-liveness-probe.sh: |-
     #!/bin/bash
 
     STAT_FILE=/etcdbr_restoration_duration_seconds_count.txt
     CURL_BIN=/usr/bin/curl
     if [ ! -f "$CURL_BIN" ]; then
       clean-install curl
+      if [ $? -ne 0 ]; then
+        exit 1
+      fi
     fi
 
     BACKUP=$(curl -s http://${ETCD_HOST}:${ETCD_BACKUP_PORT}/metrics | grep etcdbr_restoration_duration_seconds_count)
+    if [ $? -ne 0 ]; then
+      exit 2
+    fi
     IFS=" "
     set -- $BACKUP
     REST_COUNT=$2
+
+    if [ -z "$REST_COUNT" ]; then
+      REST_COUNT=0
+    fi
 
     if [ ! -f "$STAT_FILE" ]; then
       echo $REST_COUNT > $STAT_FILE
@@ -64,7 +74,7 @@ data:
 
     STAT=$(cat $STAT_FILE)
     if [ "$REST_COUNT" -gt "$STAT" ]; then
-      exit 1
+      exit 3
     fi
 
     exit 0
