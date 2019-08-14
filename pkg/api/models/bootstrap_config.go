@@ -15,11 +15,17 @@ import (
 // swagger:model BootstrapConfig
 type BootstrapConfig struct {
 
+	// config
+	Config string `json:"config,omitempty"`
+
 	// kubeconfig
 	Kubeconfig string `json:"kubeconfig,omitempty"`
 
 	// kubelet clients c a
 	KubeletClientsCA string `json:"kubeletClientsCA,omitempty"`
+
+	// kubelet clients c a file
+	KubeletClientsCAFile string `json:"kubeletClientsCAFile,omitempty"`
 }
 
 // Validate validates this bootstrap config

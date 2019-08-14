@@ -571,6 +571,10 @@ definitions:
         type: string
       kubeletClientsCA:
         type: string
+      kubeletClientsCAFile:
+        type: string
+      config:
+        type: string
   Principal:
     type: object
     properties:

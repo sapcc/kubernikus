@@ -350,10 +350,16 @@ func init() {
     "BootstrapConfig": {
       "type": "object",
       "properties": {
+        "config": {
+          "type": "string"
+        },
         "kubeconfig": {
           "type": "string"
         },
         "kubeletClientsCA": {
+          "type": "string"
+        },
+        "kubeletClientsCAFile": {
           "type": "string"
         }
       }
@@ -1274,10 +1280,16 @@ func init() {
     "BootstrapConfig": {
       "type": "object",
       "properties": {
+        "config": {
+          "type": "string"
+        },
         "kubeconfig": {
           "type": "string"
         },
         "kubeletClientsCA": {
+          "type": "string"
+        },
+        "kubeletClientsCAFile": {
           "type": "string"
         }
       }

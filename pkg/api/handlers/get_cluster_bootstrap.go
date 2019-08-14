@@ -1,6 +1,9 @@
 package handlers
 
 import (
+	"strings"
+	"text/template"
+
 	"github.com/ghodss/yaml"
 	"github.com/go-openapi/runtime/middleware"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
@@ -12,6 +15,21 @@ import (
 	"github.com/sapcc/kubernikus/pkg/util"
 	"github.com/sapcc/kubernikus/pkg/util/bootstraptoken"
 )
+
+var kubeletConfigurationTemplate = template.Must(template.New("config").Parse(`kind: KubeletConfiguration
+apiVersion: kubelet.config.k8s.io/v1beta1
+readOnlyPort: 0
+clusterDomain: {{ .ClusterDomain }}
+clusterDNS: [{{ .ClusterDNS }}]
+authentication:
+  x509:
+  clientCAFile: {{ .KubeletClientsCAFile }} 
+  anonymous:
+    enabled: true
+rotateCertificates: true
+featureGates:
+  NodeLease: false
+`))
 
 func NewGetBootstrapConfig(rt *api.Runtime) operations.GetBootstrapConfigHandler {
 	return &getBootstrapConfig{rt}
@@ -52,7 +70,7 @@ func (d *getBootstrapConfig) Handle(params operations.GetBootstrapConfigParams, 
 		return NewErrorResponse(&operations.GetBoostrapConfigDefault{}, 500, "Failed to store bootstrap token: %s", err)
 	}
 
-	config := kubernetes.NewClientConfigV1(
+	kubeconfig := kubernetes.NewClientConfigV1(
 		params.Name,
 		"kubelet-bootstrap",
 		kluster.Status.Apiserver,
@@ -62,14 +80,30 @@ func (d *getBootstrapConfig) Handle(params operations.GetBootstrapConfigParams, 
 		token,
 	)
 
-	kubeconfig, err := yaml.Marshal(config)
+	kubeconfigData, err := yaml.Marshal(kubeconfig)
 	if err != nil {
-		return NewErrorResponse(&operations.GetBootstrapConfigDefault{}, 500, "Failed to generate YAML document: %s", err)
+		return NewErrorResponse(&operations.GetBootstrapConfigDefault{}, 500, "Failed to generate kubeconfig YAML document: %s", err)
+	}
+
+	kubeletConfig := struct {
+		ClusterDomain        string
+		ClusterDNS           string
+		KubeletClientsCAFile string
+	}{
+		ClusterDomain:        kluster.Spec.DNSDomain,
+		ClusterDNS:           kluster.Spec.DNSAddress,
+		KubeletClientsCAFile: "/etc/kubernetes/certs/kubelet-clients-ca.pem",
+	}
+	var kubeletConfigYAML strings.Builder
+	if err := kubeletConfigurationTemplate.Execute(&kubeletConfigYAML, kubeletConfig); err != nil {
+		return NewErrorResponse(&operations.GetBootstrapConfigDefault{}, 500, "Failed to generate kubelet config YAML document: %s", err)
 	}
 
 	credentials := models.BootstrapConfig{
-		Kubeconfig:       string(kubeconfig),
-		KubeletClientsCA: secret.KubeletClientsCACertificate,
+		Kubeconfig:           string(kubeconfigData),
+		KubeletClientsCA:     secret.KubeletClientsCACertificate,
+		KubeletClientsCAFile: kubeletConfig.KubeletClientsCAFile,
+		Config:               kubeletConfigYAML.String(),
 	}
 
 	return operations.NewGetBootstrapConfigOK().WithPayload(&credentials)
