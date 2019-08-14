@@ -10,6 +10,7 @@ import (
 	"math"
 	"math/big"
 	"net"
+	"reflect"
 	"time"
 
 	certutil "k8s.io/client-go/util/cert"
@@ -23,8 +24,8 @@ const (
 	defaultCertValidity = 2 * time.Hour * 24 * 365
 	//out CAs are valid for 10 years
 	caValidity = 10 * time.Hour * 24 * 365
-	// renew cert 24 hours before it is expired
-	certExpiration = 24 * time.Hour
+	// renew cert two weeks before it is expired
+	certExpiration = 14 * 24 * time.Hour
 )
 
 type Bundle struct {
@@ -331,7 +332,9 @@ func createCA(klusterName, name string) (*Bundle, error) {
 	return &Bundle{PrivateKey: privateKey, Certificate: certificate}, nil
 }
 
-func isCertExpiredIn(cert *x509.Certificate, duration time.Duration) bool {
+func hasCertChangedOrExpires(origCert, newCert *x509.Certificate, duration time.Duration) bool {
 	expire := time.Now().Add(duration)
-	return expire.After(cert.NotAfter)
+	return reflect.DeepEqual(origCert.DNSNames, newCert.DNSNames) &&
+		reflect.DeepEqual(origCert.IPAddresses, newCert.IPAddresses) &&
+		expire.After(origCert.NotAfter)
 }
