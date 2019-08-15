@@ -178,7 +178,7 @@ func (cf *CertificateFactory) Ensure() error {
 	}
 
 	if err := ensureServerCertificate(tlsCA, "apiserver",
-		[]string{"kubernetes", "kubernetes.default", "kubernetes.default.svc", "apiserver", cf.kluster.Name, fmt.Sprintf("%s.%s", cf.kluster.Namespace), fmt.Sprintf("%v.%v", cf.kluster.Name, cf.domain)},
+		[]string{"kubernetes", "kubernetes.default", "kubernetes.default.svc", "apiserver", cf.kluster.Name, fmt.Sprintf("%s.%s", cf.kluster.Name, cf.kluster.Namespace), fmt.Sprintf("%v.%v", cf.kluster.Name, cf.domain)},
 		[]net.IP{net.IPv4(127, 0, 0, 1), apiServiceIP, apiIP},
 		&cf.store.TLSApiserverCertificate,
 		&cf.store.TLSApiserverPrivateKey); err != nil {

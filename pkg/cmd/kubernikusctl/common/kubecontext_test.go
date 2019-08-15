@@ -15,7 +15,7 @@ import (
 
 func TestKubernikusContext(t *testing.T) {
 
-	kluster := &v1.Kluster{Spec: models.KlusterSpec{ServiceCIDR: "192.168.0.0/24", Openstack: models.OpenstackSpec{ProjectID: "12345678"}}}
+	kluster := &v1.Kluster{Spec: models.KlusterSpec{AdvertiseAddress: "1.1.1.1", ServiceCIDR: "192.168.0.0/24", Openstack: models.OpenstackSpec{ProjectID: "12345678"}}}
 	certs := new(v1.Certificates)
 
 	factory := util.NewCertificateFactory(kluster, certs, "test.local")
