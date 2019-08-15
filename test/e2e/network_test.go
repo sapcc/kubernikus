@@ -128,7 +128,7 @@ func (n *NetworkTests) WaitForKubeDNSRunning(t *testing.T) {
 	runParallel(t)
 
 	label := labels.SelectorFromSet(labels.Set(map[string]string{"k8s-app": "kube-dns"}))
-	_, err := n.Kubernetes.WaitForPodsWithLabelRunningReady("kube-system", label, 1, TestWaitForKubeDNSRunningTimeout)
+	_, err := n.Kubernetes.WaitForPodsWithLabelRunningReady("kube-system", label, 2, TestWaitForKubeDNSRunningTimeout)
 	assert.NoError(t, err, "Kube-DNS must become ready")
 }
 
