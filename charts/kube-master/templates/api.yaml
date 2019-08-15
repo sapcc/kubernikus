@@ -99,8 +99,8 @@ spec:
             name: {{ include "master.fullname" . }}
             defaultMode: 0356
             items:
-              - key: api-liveness-probe.sh
-                path: api-liveness-probe.sh
+              - key: api-liveness-probe.py
+                path: api-liveness-probe.py
         - name: wormhole-config
           configMap:
             name: {{ include "master.fullname" . }}
@@ -193,7 +193,7 @@ spec:
           livenessProbe:
             exec:
               command:
-                - /liveness-probe/api-liveness-probe.sh
+                - /liveness-probe/api-liveness-probe.py
             initialDelaySeconds: 60
             periodSeconds: 60
           readinessProbe:

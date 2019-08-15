@@ -44,37 +44,20 @@ data:
         user:
           client-certificate: /etc/kubernetes/certs/kube-client.pem
           client-key: /etc/kubernetes/certs/kube-client.key
-  api-liveness-probe.sh: |-
-    #!/bin/bash
-
-    STAT_FILE=/etcdbr_restoration_duration_seconds_count.txt
-    CURL_BIN=/usr/bin/curl
-    if [ ! -f "$CURL_BIN" ]; then
-      clean-install curl
-      if [ $? -ne 0 ]; then
-        exit 1
-      fi
-    fi
-
-    BACKUP=$(curl -s http://${ETCD_HOST}:${ETCD_BACKUP_PORT}/metrics | grep etcdbr_restoration_duration_seconds_count)
-    if [ $? -ne 0 ]; then
-      exit 2
-    fi
-    IFS=" "
-    set -- $BACKUP
-    REST_COUNT=$2
-
-    if [ -z "$REST_COUNT" ]; then
-      REST_COUNT=0
-    fi
-
-    if [ ! -f "$STAT_FILE" ]; then
-      echo $REST_COUNT > $STAT_FILE
-    fi
-
-    STAT=$(cat $STAT_FILE)
-    if [ "$REST_COUNT" -gt "$STAT" ]; then
-      exit 3
-    fi
-
-    exit 0
+  api-liveness-probe.py: |-
+    #!/usr/bin/python
+    import requests, os, os.path, sys
+    try:
+      for line in requests.get('http://' + os.environ['ETCD_HOST'] + ':' + os.environ['ETCD_BACKUP_PORT'] + '/metrics', timeout=1).text.splitlines():
+        if line.startswith('etcdbr_restoration_duration_seconds_count{succeeded="true"}'):
+            restore_count=line.split(" ")[-1]
+            if os.path.isfile("/tmp/last"):
+              with open("/tmp/last", "r") as f:
+                last = int(f.read())
+                if last < int(restore_count):
+                  sys.exit("restore detected")
+            with open("/tmp/last", "w") as f:
+              f.write(restore_count)
+    except requests.exceptions.RequestException as e:
+      print e
+      sys.exit(0)
