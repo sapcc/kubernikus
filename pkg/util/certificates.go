@@ -113,9 +113,14 @@ func NewCertificateFactory(kluster *v1.Kluster, store *v1.Certificates, domain s
 }
 
 func (cf *CertificateFactory) Ensure() error {
-	apiIP, err := cf.kluster.ApiServiceIP()
+	apiServiceIP, err := cf.kluster.ApiServiceIP()
 	if err != nil {
 		return err
+	}
+
+	apiIP := net.ParseIP(cf.kluster.Spec.AdvertiseAddress)
+	if apiIP == nil {
+		return fmt.Errorf("Failed to parse clusters advertise address: %s", cf.kluster.Spec.AdvertiseAddress)
 	}
 
 	etcdClientsCA, err := loadOrCreateCA(cf.kluster, "Etcd Clients", &cf.store.EtcdClientsCACertificate, &cf.store.EtcdClientsCAPrivateKey)
@@ -173,8 +178,8 @@ func (cf *CertificateFactory) Ensure() error {
 	}
 
 	if err := ensureServerCertificate(tlsCA, "apiserver",
-		[]string{"kubernetes", "kubernetes.default", "kubernetes.default.svc", "apiserver", cf.kluster.Name, fmt.Sprintf("%v.%v", cf.kluster.Name, cf.domain)},
-		[]net.IP{net.IPv4(127, 0, 0, 1), apiIP},
+		[]string{"kubernetes", "kubernetes.default", "kubernetes.default.svc", "apiserver", cf.kluster.Name, fmt.Sprintf("%s.%s", cf.kluster.Namespace), fmt.Sprintf("%v.%v", cf.kluster.Name, cf.domain)},
+		[]net.IP{net.IPv4(127, 0, 0, 1), apiServiceIP, apiIP},
 		&cf.store.TLSApiserverCertificate,
 		&cf.store.TLSApiserverPrivateKey); err != nil {
 		return err
