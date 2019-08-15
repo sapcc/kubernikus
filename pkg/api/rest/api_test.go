@@ -13,6 +13,8 @@ import (
 	kitlog "github.com/go-kit/kit/log"
 	errors "github.com/go-openapi/errors"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+	"gopkg.in/yaml.v2"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -26,7 +28,9 @@ import (
 	"github.com/sapcc/kubernikus/pkg/api/rest/operations"
 	"github.com/sapcc/kubernikus/pkg/api/spec"
 	kubernikusv1 "github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
+	"github.com/sapcc/kubernikus/pkg/client/kubernetes"
 	kubernikusfake "github.com/sapcc/kubernikus/pkg/generated/clientset/fake"
+	"github.com/sapcc/kubernikus/pkg/util"
 )
 
 const (
@@ -65,6 +69,9 @@ func createTestHandler(t *testing.T, klusters ...runtime.Object) (http.Handler, 
 		fake.NewSimpleClientset(),
 		kitlog.NewNopLogger(),
 	)
+	rt.KlusterClientFactory = &kubernetes.MockSharedClientFactory{
+		Clientset: fake.NewSimpleClientset(),
+	}
 	if err := Configure(api, rt); err != nil {
 		t.Fatal(err)
 	}
@@ -227,7 +234,7 @@ func TestClusterList(t *testing.T) {
 	}
 	var apiKlusters []models.Kluster
 	assert.NoError(t, json.Unmarshal(body, &apiKlusters), "Failed to parse response")
-	assert.Equal(t, []models.Kluster{
+	assert.ElementsMatch(t, []models.Kluster{
 		{
 			Name: "nase",
 			Spec: models.KlusterSpec{Name: "nase"},
@@ -426,4 +433,57 @@ func TestVersionUpdate(t *testing.T) {
 			assert.Equal(t, 400, code, "Update to version %s should be rejected. Response: %d, %s", c.Version, code, string(body))
 		}
 	}
+}
+
+func TestClusterBootstrapConfig(t *testing.T) {
+
+	kluster := &kubernikusv1.Kluster{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      fmt.Sprintf("%s-%s", "nase", ACCOUNT),
+			Namespace: NAMESPACE,
+			Labels:    map[string]string{"account": ACCOUNT},
+		},
+		Spec: models.KlusterSpec{
+			Version:   "1.10.1",
+			DNSDomain: "example.com",
+		},
+		Status: models.KlusterStatus{
+			ApiserverVersion: "1.10.1",
+		},
+	}
+
+	handler, rt, cancel := createTestHandler(t, kluster)
+	defer cancel()
+	_, err := util.EnsureKlusterSecret(rt.Kubernetes, kluster)
+	if !assert.NoError(t, err, "failed to ensure kluster secret") {
+		return
+	}
+
+	req := createRequest("GET", "/api/v1/clusters/nase/bootstrap", "")
+	code, _, body := result(handler, req)
+
+	require.Equal(t, 200, code, string(body))
+
+	//I don't want to vendor https://github.com/kubernetes/kubelet sp I'm just checking if the yaml parses correctly
+
+	var apiResponse models.BootstrapConfig
+	require.NoError(t, apiResponse.UnmarshalBinary(body), "failed to parse api response")
+
+	type fakeKubeletConfig struct {
+		Kind               string `yaml:"kind"`
+		APIVersion         string `yaml:"apiVersion"`
+		RotateCertificates bool   `yaml:"rotateCertificates,omitempty"`
+		ClusterDomain      string `yaml:"clusterDomain,omitempty"`
+	}
+
+	var config fakeKubeletConfig
+
+	require.NoError(t, yaml.Unmarshal([]byte(apiResponse.Config), &config))
+	assert.Equal(t, fakeKubeletConfig{
+		Kind:               "KubeletConfiguration",
+		APIVersion:         "kubelet.config.k8s.io/v1beta1",
+		ClusterDomain:      "example.com",
+		RotateCertificates: true,
+	}, config)
+
 }
