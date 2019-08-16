@@ -23,6 +23,7 @@ fluent-bit:
       host: xyz.com
 disco:
   enabled: true
+  record: xyz
   openstack:
     authURL:            xyz
     regionName:         xyz
