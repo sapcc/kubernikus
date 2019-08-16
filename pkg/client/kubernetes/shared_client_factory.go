@@ -1,6 +1,7 @@
 package kubernetes
 
 import (
+	"context"
 	"fmt"
 	"net"
 	"os"
@@ -73,7 +74,7 @@ func (f *sharedClientFactory) ClientFor(k *kubernikus_v1.Kluster) (clientset kub
 	}
 
 	apiHost := k.Status.Apiserver
-	var dialerFunc func(string, string) (net.Conn, error)
+	var dialerFunc func(context.Context, string, string) (net.Conn, error)
 
 	// If run inside a kubernetes cluster we want to bypass the sni proxy and access the api service directly
 	// if we run outside (dev) we fall back to using the fqdn that is exposed by the sni ingress controller
@@ -85,12 +86,12 @@ func (f *sharedClientFactory) ClientFor(k *kubernikus_v1.Kluster) (clientset kub
 			port = 6443
 		}
 		apiHost = fmt.Sprintf("https://%s:%d", k.Name, port)
-		dialer := net.Dialer{
+		dialer := (&net.Dialer{
 			Timeout:   30 * time.Second,
 			KeepAlive: 30 * time.Second,
-		}
-		dialerFunc = func(network, _ string) (net.Conn, error) {
-			return dialer.Dial(network, fmt.Sprintf("%s.%s:%d", k.Name, k.Namespace, port))
+		}).DialContext
+		dialerFunc = func(ctx context.Context, network, _ string) (net.Conn, error) {
+			return dialer(ctx, network, fmt.Sprintf("%s.%s:%d", k.Name, k.Namespace, port))
 		}
 	}
 
