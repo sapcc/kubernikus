@@ -3,7 +3,6 @@ package handlers
 import (
 	"github.com/go-openapi/runtime/middleware"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/sapcc/kubernikus/pkg/api"
 	"github.com/sapcc/kubernikus/pkg/api/models"
@@ -20,7 +19,7 @@ type showCluster struct {
 
 func (d *showCluster) Handle(params operations.ShowClusterParams, principal *models.Principal) middleware.Responder {
 	name := qualifiedName(params.Name, principal.Account)
-	kluster, err := d.Kubernikus.Kubernikus().Klusters(d.Namespace).Get(name, metav1.GetOptions{})
+	kluster, err := d.Klusters.Klusters(d.Namespace).Get(name)
 
 	if err != nil {
 		if apierrors.IsNotFound(err) {

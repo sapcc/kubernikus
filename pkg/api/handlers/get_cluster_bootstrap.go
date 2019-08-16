@@ -1,0 +1,110 @@
+package handlers
+
+import (
+	"strings"
+	"text/template"
+
+	"github.com/ghodss/yaml"
+	"github.com/go-openapi/runtime/middleware"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
+
+	"github.com/sapcc/kubernikus/pkg/api"
+	"github.com/sapcc/kubernikus/pkg/api/models"
+	"github.com/sapcc/kubernikus/pkg/api/rest/operations"
+	"github.com/sapcc/kubernikus/pkg/client/kubernetes"
+	"github.com/sapcc/kubernikus/pkg/util"
+	"github.com/sapcc/kubernikus/pkg/util/bootstraptoken"
+)
+
+var kubeletConfigurationTemplate = template.Must(template.New("config").Parse(`kind: KubeletConfiguration
+apiVersion: kubelet.config.k8s.io/v1beta1
+readOnlyPort: 0
+clusterDomain: {{ .ClusterDomain }}
+clusterDNS: [{{ .ClusterDNS }}]
+authentication:
+  x509:
+    clientCAFile: {{ .KubeletClientsCAFile }}
+  anonymous:
+    enabled: true
+rotateCertificates: true
+featureGates:
+  NodeLease: false
+`))
+
+func NewGetBootstrapConfig(rt *api.Runtime) operations.GetBootstrapConfigHandler {
+	return &getBootstrapConfig{rt}
+}
+
+type getBootstrapConfig struct {
+	*api.Runtime
+}
+
+func (d *getBootstrapConfig) Handle(params operations.GetBootstrapConfigParams, principal *models.Principal) middleware.Responder {
+
+	kluster, err := d.Klusters.Klusters(d.Namespace).Get(qualifiedName(params.Name, principal.Account))
+	if err != nil {
+		if apierrors.IsNotFound(err) {
+			return NewErrorResponse(&operations.GetBootstrapConfigDefault{}, 404, "Kluster not found")
+		}
+		return NewErrorResponse(&operations.GetBootstrapConfigDefault{}, 500, err.Error())
+	}
+
+	secret, err := util.KlusterSecret(d.Kubernetes, kluster)
+	if err != nil {
+		if apierrors.IsNotFound(err) {
+			return NewErrorResponse(&operations.GetClusterCredentialsDefault{}, 404, "Secret not found")
+		}
+		return NewErrorResponse(&operations.GetClusterCredentialsDefault{}, 500, err.Error())
+	}
+
+	client, err := d.KlusterClientFactory.ClientFor(kluster)
+	if err != nil {
+		return NewErrorResponse(&operations.GetBoostrapConfigDefault{}, 500, "Failed to create cluster client: %s", err)
+	}
+
+	token, tokenSecret, err := bootstraptoken.GenerateBootstrapToken()
+	if err != nil {
+		return NewErrorResponse(&operations.GetBoostrapConfigDefault{}, 500, "Failed to generate bootstrap token: %s", err)
+	}
+	if _, err := client.CoreV1().Secrets(tokenSecret.Namespace).Create(tokenSecret); err != nil {
+		return NewErrorResponse(&operations.GetBoostrapConfigDefault{}, 500, "Failed to store bootstrap token: %s", err)
+	}
+
+	kubeconfig := kubernetes.NewClientConfigV1(
+		params.Name,
+		"kubelet-bootstrap",
+		kluster.Status.Apiserver,
+		nil,
+		nil,
+		[]byte(secret.TLSCACertificate),
+		token,
+	)
+
+	kubeconfigData, err := yaml.Marshal(kubeconfig)
+	if err != nil {
+		return NewErrorResponse(&operations.GetBootstrapConfigDefault{}, 500, "Failed to generate kubeconfig YAML document: %s", err)
+	}
+
+	kubeletConfig := struct {
+		ClusterDomain        string
+		ClusterDNS           string
+		KubeletClientsCAFile string
+	}{
+		ClusterDomain:        kluster.Spec.DNSDomain,
+		ClusterDNS:           kluster.Spec.DNSAddress,
+		KubeletClientsCAFile: "/etc/kubernetes/certs/kubelet-clients-ca.pem",
+	}
+	var kubeletConfigYAML strings.Builder
+	if err := kubeletConfigurationTemplate.Execute(&kubeletConfigYAML, kubeletConfig); err != nil {
+		return NewErrorResponse(&operations.GetBootstrapConfigDefault{}, 500, "Failed to generate kubelet config YAML document: %s", err)
+	}
+
+	credentials := models.BootstrapConfig{
+		Kubeconfig:           string(kubeconfigData),
+		KubeletClientsCA:     secret.KubeletClientsCACertificate,
+		KubeletClientsCAFile: kubeletConfig.KubeletClientsCAFile,
+		Config:               kubeletConfigYAML.String(),
+	}
+
+	return operations.NewGetBootstrapConfigOK().WithPayload(&credentials)
+}

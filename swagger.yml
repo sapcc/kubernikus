@@ -138,6 +138,23 @@ paths:
             $ref: '#/definitions/Credentials'
         default:
           $ref: '#/responses/errorResponse'
+  '/api/v1/clusters/{name}/bootstrap':
+    parameters:
+      - uniqueItems: true
+        type: string
+        name: name
+        required: true
+        in: path
+    get:
+      operationId: GetBootstrapConfig
+      summary: Get bootstrap config to onboard a node
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/BootstrapConfig'
+        default:
+          $ref: '#/responses/errorResponse'
   '/api/v1/clusters/{name}/info':
     parameters:
       - uniqueItems: true
@@ -546,6 +563,17 @@ definitions:
     type: object
     properties:
       kubeconfig:
+        type: string
+  BootstrapConfig:
+    type: object
+    properties:
+      kubeconfig:
+        type: string
+      kubeletClientsCA:
+        type: string
+      kubeletClientsCAFile:
+        type: string
+      config:
         type: string
   Principal:
     type: object

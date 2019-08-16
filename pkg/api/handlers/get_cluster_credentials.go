@@ -7,7 +7,6 @@ import (
 	"github.com/ghodss/yaml"
 	"github.com/go-openapi/runtime/middleware"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
-	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	certutil "k8s.io/client-go/util/cert"
 
 	"github.com/sapcc/kubernikus/pkg/api"
@@ -27,7 +26,7 @@ type getClusterCredentials struct {
 
 func (d *getClusterCredentials) Handle(params operations.GetClusterCredentialsParams, principal *models.Principal) middleware.Responder {
 
-	kluster, err := d.Kubernikus.Kubernikus().Klusters(d.Namespace).Get(qualifiedName(params.Name, principal.Account), meta_v1.GetOptions{})
+	kluster, err := d.Klusters.Klusters(d.Namespace).Get(qualifiedName(params.Name, principal.Account))
 	if err != nil {
 		if apierrors.IsNotFound(err) {
 			return NewErrorResponse(&operations.GetClusterCredentialsDefault{}, 404, "Kluster not found")
@@ -60,6 +59,7 @@ func (d *getClusterCredentials) Handle(params operations.GetClusterCredentialsPa
 		certutil.EncodePrivateKeyPEM(cert.PrivateKey),
 		certutil.EncodeCertPEM(cert.Certificate),
 		[]byte(secret.TLSCACertificate),
+		"",
 	)
 
 	kubeconfig, err := yaml.Marshal(config)

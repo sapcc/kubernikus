@@ -62,6 +62,7 @@ func Configure(api *operations.KubernikusAPI, rt *apipkg.Runtime) error {
 	api.UpdateClusterHandler = handlers.NewUpdateCluster(rt)
 	api.GetClusterCredentialsHandler = handlers.NewGetClusterCredentials(rt)
 	api.GetClusterInfoHandler = handlers.NewGetClusterInfo(rt)
+	api.GetBootstrapConfigHandler = handlers.NewGetBootstrapConfig(rt)
 	api.GetOpenstackMetadataHandler = handlers.NewGetOpenstackMetadata(rt)
 	api.GetClusterEventsHandler = handlers.NewGetClusterEvents(rt)
 	api.GetClusterValuesHandler = handlers.NewGetClusterValues(rt)

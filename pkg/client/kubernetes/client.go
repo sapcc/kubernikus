@@ -56,7 +56,7 @@ func NewClient(kubeconfig, context string, logger kitlog.Logger) (kubernetes.Int
 	return clientset, nil
 }
 
-func NewClientConfigV1(name, user, url string, key, cert, ca []byte) clientcmdapiv1.Config {
+func NewClientConfigV1(name, user, url string, key, cert, ca []byte, token string) clientcmdapiv1.Config {
 	return clientcmdapiv1.Config{
 		APIVersion:     "v1",
 		Kind:           "Config",
@@ -85,6 +85,7 @@ func NewClientConfigV1(name, user, url string, key, cert, ca []byte) clientcmdap
 				AuthInfo: clientcmdapiv1.AuthInfo{
 					ClientCertificateData: cert,
 					ClientKeyData:         key,
+					Token:                 token,
 				},
 			},
 		},

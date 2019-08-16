@@ -12,5 +12,6 @@
   "GetClusterCredentials": "rule:kubernetes_user",
   "GetClusterEvents": "rule:kubernetes_user",
   "GetClusterInfo": "rule:kubernetes_user",
+  "GetBootstrapConfig": "rule:kubernetes_admin",
   "GetClusterValues": "rule:kubernetes_cloud_admin"
 }
