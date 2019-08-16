@@ -4,12 +4,14 @@ import (
 	"errors"
 	"fmt"
 	"net"
+	"time"
 
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/validate"
 
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/wait"
 
 	"github.com/sapcc/kubernikus/pkg/api"
 	"github.com/sapcc/kubernikus/pkg/api/models"
@@ -140,6 +142,15 @@ func (d *createCluster) Handle(params operations.CreateClusterParams, principal 
 		}
 		return NewErrorResponse(&operations.CreateClusterDefault{}, 500, err.Error())
 	}
+
+	//Wait for a second so that the newly created cluster shows up in the cache
+	//This is a hack so that a subsequent GET /api/v1/cluster/:name will not return 404
+	wait.Poll(50*time.Millisecond, 2*time.Second, func() (bool, error) {
+		if _, err := d.Klusters.Klusters(d.Namespace).Get(kluster.Name); err != nil {
+			return false, nil
+		}
+		return true, nil
+	})
 
 	return operations.NewCreateClusterCreated().WithPayload(klusterFromCRD(kluster))
 }
