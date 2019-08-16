@@ -97,7 +97,7 @@ spec:
         - name: liveness-probe
           configMap:
             name: {{ include "master.fullname" . }}
-            defaultMode: 0356
+            defaultMode: 0700
             items:
               - key: api-liveness-probe.py
                 path: api-liveness-probe.py
