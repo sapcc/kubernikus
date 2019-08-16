@@ -106,13 +106,14 @@ func (ca Bundle) Sign(config Config) (*Bundle, error) {
 }
 
 type CertificateFactory struct {
-	kluster *v1.Kluster
-	store   *v1.Certificates
-	domain  string
+	kluster     *v1.Kluster
+	store       *v1.Certificates
+	domain      string
+	certUpdates []string
 }
 
 func NewCertificateFactory(kluster *v1.Kluster, store *v1.Certificates, domain string) *CertificateFactory {
-	return &CertificateFactory{kluster, store, domain}
+	return &CertificateFactory{kluster, store, domain, nil}
 }
 
 func (cf *CertificateFactory) Ensure() error {
@@ -125,6 +126,8 @@ func (cf *CertificateFactory) Ensure() error {
 	if apiIP == nil {
 		return fmt.Errorf("Failed to parse clusters advertise address: %s", cf.kluster.Spec.AdvertiseAddress)
 	}
+
+	cf.certUpdates = nil
 
 	etcdClientsCA, err := loadOrCreateCA(cf.kluster, "Etcd Clients", &cf.store.EtcdClientsCACertificate, &cf.store.EtcdClientsCAPrivateKey)
 	if err != nil {
@@ -155,28 +158,74 @@ func (cf *CertificateFactory) Ensure() error {
 		return err
 	}
 
-	if err := ensureClientCertificate(etcdClientsCA, "apiserver", nil, &cf.store.EtcdClientsApiserverCertificate, &cf.store.EtcdClientsApiserverPrivateKey); err != nil {
+	if err := ensureClientCertificate(
+		etcdClientsCA,
+		"apiserver",
+		nil,
+		&cf.store.EtcdClientsApiserverCertificate,
+		&cf.store.EtcdClientsApiserverPrivateKey,
+		&cf.certUpdates); err != nil {
 		return err
 	}
-	if err := ensureClientCertificate(apiserverClientsCA, "cluster-admin", []string{"system:masters"}, &cf.store.ApiserverClientsClusterAdminCertificate, &cf.store.ApiserverClientsClusterAdminPrivateKey); err != nil {
+	if err := ensureClientCertificate(apiserverClientsCA,
+		"cluster-admin",
+		[]string{"system:masters"},
+		&cf.store.ApiserverClientsClusterAdminCertificate,
+		&cf.store.ApiserverClientsClusterAdminPrivateKey,
+		&cf.certUpdates); err != nil {
 		return err
 	}
-	if err := ensureClientCertificate(apiserverClientsCA, "system:kube-controller-manager", nil, &cf.store.ApiserverClientsKubeControllerManagerCertificate, &cf.store.ApiserverClientsKubeControllerManagerPrivateKey); err != nil {
+	if err := ensureClientCertificate(apiserverClientsCA,
+		"system:kube-controller-manager",
+		nil,
+		&cf.store.ApiserverClientsKubeControllerManagerCertificate,
+		&cf.store.ApiserverClientsKubeControllerManagerPrivateKey,
+		&cf.certUpdates); err != nil {
 		return err
 	}
-	if err := ensureClientCertificate(apiserverClientsCA, "system:kube-proxy", nil, &cf.store.ApiserverClientsKubeProxyCertificate, &cf.store.ApiserverClientsKubeProxyPrivateKey); err != nil {
+	if err := ensureClientCertificate(
+		apiserverClientsCA,
+		"system:kube-proxy",
+		nil,
+		&cf.store.ApiserverClientsKubeProxyCertificate,
+		&cf.store.ApiserverClientsKubeProxyPrivateKey,
+		&cf.certUpdates); err != nil {
 		return err
 	}
-	if err := ensureClientCertificate(apiserverClientsCA, "system:kube-scheduler", nil, &cf.store.ApiserverClientsKubeSchedulerCertificate, &cf.store.ApiserverClientsKubeSchedulerPrivateKey); err != nil {
+	if err := ensureClientCertificate(
+		apiserverClientsCA,
+		"system:kube-scheduler",
+		nil,
+		&cf.store.ApiserverClientsKubeSchedulerCertificate,
+		&cf.store.ApiserverClientsKubeSchedulerPrivateKey,
+		&cf.certUpdates); err != nil {
 		return err
 	}
-	if err := ensureClientCertificate(apiserverClientsCA, "kubernikus:wormhole", nil, &cf.store.ApiserverClientsKubernikusWormholeCertificate, &cf.store.ApiserverClientsKubernikusWormholePrivateKey); err != nil {
+	if err := ensureClientCertificate(
+		apiserverClientsCA,
+		"kubernikus:wormhole",
+		nil,
+		&cf.store.ApiserverClientsKubernikusWormholeCertificate,
+		&cf.store.ApiserverClientsKubernikusWormholePrivateKey,
+		&cf.certUpdates); err != nil {
 		return err
 	}
-	if err := ensureClientCertificate(kubeletClientsCA, "apiserver", nil, &cf.store.KubeletClientsApiserverCertificate, &cf.store.KubeletClientsApiserverPrivateKey); err != nil {
+	if err := ensureClientCertificate(
+		kubeletClientsCA,
+		"apiserver",
+		nil,
+		&cf.store.KubeletClientsApiserverCertificate,
+		&cf.store.KubeletClientsApiserverPrivateKey,
+		&cf.certUpdates); err != nil {
 		return err
 	}
-	if err := ensureClientCertificate(aggregationCA, "aggregator", nil, &cf.store.AggregationAggregatorCertificate, &cf.store.AggregationAggregatorPrivateKey); err != nil {
+	if err := ensureClientCertificate(
+		aggregationCA,
+		"aggregator",
+		nil,
+		&cf.store.AggregationAggregatorCertificate,
+		&cf.store.AggregationAggregatorPrivateKey,
+		&cf.certUpdates); err != nil {
 		return err
 	}
 
@@ -184,14 +233,16 @@ func (cf *CertificateFactory) Ensure() error {
 		[]string{"kubernetes", "kubernetes.default", "kubernetes.default.svc", "apiserver", cf.kluster.Name, fmt.Sprintf("%s.%s", cf.kluster.Name, cf.kluster.Namespace), fmt.Sprintf("%v.%v", cf.kluster.Name, cf.domain)},
 		[]net.IP{net.IPv4(127, 0, 0, 1), apiServiceIP, apiIP},
 		&cf.store.TLSApiserverCertificate,
-		&cf.store.TLSApiserverPrivateKey); err != nil {
+		&cf.store.TLSApiserverPrivateKey,
+		&cf.certUpdates); err != nil {
 		return err
 	}
 	if err := ensureServerCertificate(tlsCA, "wormhole",
 		[]string{fmt.Sprintf("%v-wormhole.%v", cf.kluster.Name, cf.domain)},
 		nil,
 		&cf.store.TLSWormholeCertificate,
-		&cf.store.TLSWormholePrivateKey); err != nil {
+		&cf.store.TLSWormholePrivateKey,
+		&cf.certUpdates); err != nil {
 		return err
 	}
 
@@ -226,6 +277,10 @@ func (cf *CertificateFactory) UserCert(principal *models.Principal, apiURL strin
 
 }
 
+func (cf *CertificateFactory) GetCertUpdates() []string {
+	return cf.certUpdates
+}
+
 func loadOrCreateCA(kluster *v1.Kluster, name string, cert, key *string) (*Bundle, error) {
 	if *cert != "" && *key != "" {
 		return NewBundle([]byte(*key), []byte(*cert))
@@ -239,21 +294,7 @@ func loadOrCreateCA(kluster *v1.Kluster, name string, cert, key *string) (*Bundl
 	return caBundle, nil
 }
 
-func ensureClientCertificate(ca *Bundle, cn string, groups []string, cert, key *string) error {
-	if *cert != "" && *key != "" {
-		certBundle, err := NewBundle([]byte(*key), []byte(*cert))
-
-		if err != nil {
-			return fmt.Errorf("Failed parsing certificate bundle: %s", err)
-		}
-
-		if !isCertExpiredIn(certBundle.Certificate, certExpiration) {
-			return nil
-		}
-
-		// Todo: logging
-	}
-
+func ensureClientCertificate(ca *Bundle, cn string, groups []string, cert, key *string, certUpdate *[]string) error {
 	certificate, err := ca.Sign(Config{
 		Sign:         cn,
 		Usages:       []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth},
@@ -263,13 +304,6 @@ func ensureClientCertificate(ca *Bundle, cn string, groups []string, cert, key *
 		return err
 	}
 
-	*cert = string(certutil.EncodeCertPEM(certificate.Certificate))
-	*key = string(certutil.EncodePrivateKeyPEM(certificate.PrivateKey))
-	return nil
-
-}
-
-func ensureServerCertificate(ca *Bundle, cn string, dnsNames []string, ips []net.IP, cert, key *string) error {
 	if *cert != "" && *key != "" {
 		certBundle, err := NewBundle([]byte(*key), []byte(*cert))
 
@@ -277,14 +311,22 @@ func ensureServerCertificate(ca *Bundle, cn string, dnsNames []string, ips []net
 			return fmt.Errorf("Failed parsing certificate bundle: %s", err)
 		}
 
-		if !isCertExpiredIn(certBundle.Certificate, certExpiration) {
+		reason, invalid := isCertChangedOrExpires(certBundle.Certificate, certificate.Certificate, certExpiration)
+		if !invalid {
 			return nil
 		}
 
-		// Todo: logging
+		*certUpdate = append(*certUpdate, fmt.Sprintf("Certificate: %s, Type: %s, Reason: %s", cn, "Client Certificate", reason))
 	}
 
-	c, err := ca.Sign(Config{
+	*cert = string(certutil.EncodeCertPEM(certificate.Certificate))
+	*key = string(certutil.EncodePrivateKeyPEM(certificate.PrivateKey))
+	return nil
+
+}
+
+func ensureServerCertificate(ca *Bundle, cn string, dnsNames []string, ips []net.IP, cert, key *string, certUpdate *[]string) error {
+	certificate, err := ca.Sign(Config{
 		Sign:   cn,
 		Usages: []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth},
 		AltNames: AltNames{
@@ -296,8 +338,23 @@ func ensureServerCertificate(ca *Bundle, cn string, dnsNames []string, ips []net
 		return err
 	}
 
-	*cert = string(certutil.EncodeCertPEM(c.Certificate))
-	*key = string(certutil.EncodePrivateKeyPEM(c.PrivateKey))
+	if *cert != "" && *key != "" {
+		certBundle, err := NewBundle([]byte(*key), []byte(*cert))
+
+		if err != nil {
+			return fmt.Errorf("Failed parsing certificate bundle: %s", err)
+		}
+
+		reason, invalid := isCertChangedOrExpires(certBundle.Certificate, certificate.Certificate, certExpiration)
+		if !invalid {
+			return nil
+		}
+
+		*certUpdate = append(*certUpdate, fmt.Sprintf("Certificate: %s, Type: %s, Reason: %s", cn, "Server Certificate", reason))
+	}
+
+	*cert = string(certutil.EncodeCertPEM(certificate.Certificate))
+	*key = string(certutil.EncodePrivateKeyPEM(certificate.PrivateKey))
 	return nil
 }
 
@@ -332,9 +389,19 @@ func createCA(klusterName, name string) (*Bundle, error) {
 	return &Bundle{PrivateKey: privateKey, Certificate: certificate}, nil
 }
 
-func hasCertChangedOrExpires(origCert, newCert *x509.Certificate, duration time.Duration) bool {
+func isCertChangedOrExpires(origCert, newCert *x509.Certificate, duration time.Duration) (string, bool) {
+	if !reflect.DeepEqual(origCert.DNSNames, newCert.DNSNames) {
+		return "DNS changes", true
+	}
+
+	if !reflect.DeepEqual(origCert.IPAddresses, newCert.IPAddresses) {
+		return "IP changes", true
+	}
+
 	expire := time.Now().Add(duration)
-	return reflect.DeepEqual(origCert.DNSNames, newCert.DNSNames) &&
-		reflect.DeepEqual(origCert.IPAddresses, newCert.IPAddresses) &&
-		expire.After(origCert.NotAfter)
+	if expire.After(origCert.NotAfter) {
+		return fmt.Sprintf("Certificate expires at %s", origCert.NotAfter), true
+	}
+
+	return "", false
 }
