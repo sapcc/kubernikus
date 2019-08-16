@@ -17,6 +17,8 @@ run:
     - |
       set -exo pipefail
 
+      helm repo add sapcc https://charts.global.cloud.sap
+
       # recent helm versions fails with `invalid cross-device link` when trying to rename charts.git
       # rename(2) for a directory is allowed only when both the source and the destination path are on the top layer
       # https://github.com/kubernetes/helm/issues/2998

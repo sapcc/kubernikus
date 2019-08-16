@@ -21,3 +21,14 @@ fluent-bit:
   backend:
     es:
       host: xyz.com
+disco:
+  enabled: true
+  openstack:
+    authURL:            xyz
+    regionName:         xyz
+    username:           xyz
+    userDomainName:     xyz
+    password:           xyz
+    projectName:        xyz
+    projectDomainName:  xyz
+    zoneName:           xyz

@@ -8,5 +8,8 @@ dependencies:
 - name: fluent-bit
   repository: https://kubernetes-charts.storage.googleapis.com/
   version: 1.2.0
-digest: sha256:5fdee42c3a54adade6fbbdbd806d88fe10a86b1a3bfb0fc4b800a84fbfa83ed2
-generated: 2019-06-21T12:42:41.749964533+02:00
+- name: disco
+  repository: https://charts.global.cloud.sap
+  version: 1.1.0
+digest: sha256:7b71fa0c304f02fd7299a1f60eaee219cd57de3816b5d0317ef66c5feae1986b
+generated: 2019-08-16T14:10:26.51569974+02:00

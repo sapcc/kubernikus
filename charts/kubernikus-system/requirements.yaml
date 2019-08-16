@@ -11,3 +11,8 @@ dependencies:
     repository: https://kubernetes-charts.storage.googleapis.com/
     version: 1.2.0
     condition: fluent-bit.backend.es.host,fluent-bit.backend.es.http_user,fluent-bit.backend.es.http_passwd
+
+  - name: disco
+    repository: https://charts.global.cloud.sap
+    version: 1.1.0
+    condition: disco.enabled

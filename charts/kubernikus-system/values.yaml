@@ -129,3 +129,24 @@ fluent-bit:
   serviceAccount:
     create: true
     name:
+
+disco:
+  enabled: false
+
+  # Record which should be used for the CNAME.
+  # record: ingress.domain.tld.p.
+
+  # Credentials of the service user who creates the recordsets in OpenStack Designate.
+  openstack: {}
+  # authURL:            DEFINED-IN-SECRETS
+  # regionName:         DEFINED-IN-SECRETS
+  # username:           DEFINED-IN-SECRETS
+  # userDomainName:     DEFINED-IN-SECRETS
+  # password:           DEFINED-IN-SECRETS
+  # projectName:        DEFINED-IN-SECRETS
+  # projectDomainName:  DEFINED-IN-SECRETS
+  # zoneName:           DEFINED-IN-SECRETS
+
+  metrics:
+    # Name of the Prometheis by which the metrics will be scraped.
+    prometheus: kubernikus
