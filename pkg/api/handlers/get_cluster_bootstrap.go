@@ -23,7 +23,7 @@ clusterDomain: {{ .ClusterDomain }}
 clusterDNS: [{{ .ClusterDNS }}]
 authentication:
   x509:
-  clientCAFile: {{ .KubeletClientsCAFile }} 
+    clientCAFile: {{ .KubeletClientsCAFile }}
   anonymous:
     enabled: true
 rotateCertificates: true
