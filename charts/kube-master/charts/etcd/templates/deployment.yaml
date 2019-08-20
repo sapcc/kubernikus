@@ -81,7 +81,7 @@ spec:
         - name: bootstrap
           configMap:
             name: {{ include "fullname" . }}
-            defaultMode: 0356
+            defaultMode: 0700
       containers:
         - name: etcd
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"

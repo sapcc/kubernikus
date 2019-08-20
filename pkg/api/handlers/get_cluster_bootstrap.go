@@ -59,15 +59,15 @@ func (d *getBootstrapConfig) Handle(params operations.GetBootstrapConfigParams, 
 
 	client, err := d.KlusterClientFactory.ClientFor(kluster)
 	if err != nil {
-		return NewErrorResponse(&operations.GetBoostrapConfigDefault{}, 500, "Failed to create cluster client: %s", err)
+		return NewErrorResponse(&operations.GetBootstrapConfigDefault{}, 500, "Failed to create cluster client: %s", err)
 	}
 
 	token, tokenSecret, err := bootstraptoken.GenerateBootstrapToken()
 	if err != nil {
-		return NewErrorResponse(&operations.GetBoostrapConfigDefault{}, 500, "Failed to generate bootstrap token: %s", err)
+		return NewErrorResponse(&operations.GetBootstrapConfigDefault{}, 500, "Failed to generate bootstrap token: %s", err)
 	}
 	if _, err := client.CoreV1().Secrets(tokenSecret.Namespace).Create(tokenSecret); err != nil {
-		return NewErrorResponse(&operations.GetBoostrapConfigDefault{}, 500, "Failed to store bootstrap token: %s", err)
+		return NewErrorResponse(&operations.GetBootstrapConfigDefault{}, 500, "Failed to store bootstrap token: %s", err)
 	}
 
 	kubeconfig := kubernetes.NewClientConfigV1(

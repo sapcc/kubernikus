@@ -1,2 +1,2 @@
 {{/* vim: set filetype=gotexttmpl: */ -}}
-{{ required "missing boostrapToken" .Values.bootstrapToken }},kubelet-bootstrap,10001,"system:bootstrappers"
+{{ required "missing bootstrapToken" .Values.bootstrapToken }},kubelet-bootstrap,10001,"system:bootstrappers"

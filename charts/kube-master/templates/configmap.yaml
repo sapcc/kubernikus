@@ -44,3 +44,20 @@ data:
         user:
           client-certificate: /etc/kubernetes/certs/kube-client.pem
           client-key: /etc/kubernetes/certs/kube-client.key
+  api-liveness-probe.py: |-
+    #!/usr/bin/python
+    import requests, os, os.path, sys
+    try:
+      for line in requests.get('http://' + os.environ['ETCD_HOST'] + ':' + os.environ['ETCD_BACKUP_PORT'] + '/metrics', timeout=1).text.splitlines():
+        if line.startswith('etcdbr_restoration_duration_seconds_count{succeeded="true"}'):
+            restore_count=line.split(" ")[-1]
+            if os.path.isfile("/tmp/last"):
+              with open("/tmp/last", "r") as f:
+                last = int(f.read())
+                if last < int(restore_count):
+                  sys.exit("restore detected")
+            with open("/tmp/last", "w") as f:
+              f.write(restore_count)
+    except requests.exceptions.RequestException as e:
+      print e
+      sys.exit(0)
