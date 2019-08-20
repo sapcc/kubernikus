@@ -103,7 +103,7 @@ fluent-bit:
 
   podAnnotations:
     # manual versioning, raise if configmap changes
-    versioning: "1"
+    versioning: "2"
 
   existingConfigMap: fluent-bit-config
 
