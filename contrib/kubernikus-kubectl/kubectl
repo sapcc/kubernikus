@@ -2,10 +2,6 @@
 set -o errexit
 set -o pipefail
 
-if [ "${1:0:1}" = '-' ]; then
-	set -- kubectl "$@"
-fi
-
 if [ "$0" = '/usr/local/bin/kubectl' ]; then
   if [ ! -f $HOME/.kube/config ]; then
     kubernikusctl auth init
