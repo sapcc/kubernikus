@@ -109,11 +109,17 @@ type CertificateFactory struct {
 	kluster     *v1.Kluster
 	store       *v1.Certificates
 	domain      string
-	certUpdates []string
+	certUpdates []CertUpdates
+}
+
+type CertUpdates struct {
+	Certificate *x509.Certificate
+	Type        string
+	Reason      string
 }
 
 func NewCertificateFactory(kluster *v1.Kluster, store *v1.Certificates, domain string) *CertificateFactory {
-	return &CertificateFactory{kluster, store, domain, nil}
+	return &CertificateFactory{kluster, store, domain, []CertUpdates{}}
 }
 
 func (cf *CertificateFactory) Ensure() error {
@@ -127,7 +133,7 @@ func (cf *CertificateFactory) Ensure() error {
 		return fmt.Errorf("Failed to parse clusters advertise address: %s", cf.kluster.Spec.AdvertiseAddress)
 	}
 
-	cf.certUpdates = nil
+	cf.certUpdates = []CertUpdates{}
 
 	etcdClientsCA, err := loadOrCreateCA(cf.kluster, "Etcd Clients", &cf.store.EtcdClientsCACertificate, &cf.store.EtcdClientsCAPrivateKey)
 	if err != nil {
@@ -277,7 +283,7 @@ func (cf *CertificateFactory) UserCert(principal *models.Principal, apiURL strin
 
 }
 
-func (cf *CertificateFactory) GetCertUpdates() []string {
+func (cf *CertificateFactory) GetCertUpdates() []CertUpdates {
 	return cf.certUpdates
 }
 
@@ -294,7 +300,7 @@ func loadOrCreateCA(kluster *v1.Kluster, name string, cert, key *string) (*Bundl
 	return caBundle, nil
 }
 
-func ensureClientCertificate(ca *Bundle, cn string, groups []string, cert, key *string, certUpdate *[]string) error {
+func ensureClientCertificate(ca *Bundle, cn string, groups []string, cert, key *string, certUpdates *[]CertUpdates) error {
 	certificate, err := ca.Sign(Config{
 		Sign:         cn,
 		Usages:       []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth},
@@ -316,7 +322,12 @@ func ensureClientCertificate(ca *Bundle, cn string, groups []string, cert, key *
 			return nil
 		}
 
-		*certUpdate = append(*certUpdate, fmt.Sprintf("Certificate: %s, Type: %s, Reason: %s", cn, "Client Certificate", reason))
+		update := CertUpdates{
+			Certificate: certBundle.Certificate,
+			Type:        "Client Certificate",
+			Reason:      reason,
+		}
+		*certUpdates = append(*certUpdates, update)
 	}
 
 	*cert = string(certutil.EncodeCertPEM(certificate.Certificate))
@@ -325,7 +336,7 @@ func ensureClientCertificate(ca *Bundle, cn string, groups []string, cert, key *
 
 }
 
-func ensureServerCertificate(ca *Bundle, cn string, dnsNames []string, ips []net.IP, cert, key *string, certUpdate *[]string) error {
+func ensureServerCertificate(ca *Bundle, cn string, dnsNames []string, ips []net.IP, cert, key *string, certUpdates *[]CertUpdates) error {
 	certificate, err := ca.Sign(Config{
 		Sign:   cn,
 		Usages: []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth},
@@ -350,7 +361,12 @@ func ensureServerCertificate(ca *Bundle, cn string, dnsNames []string, ips []net
 			return nil
 		}
 
-		*certUpdate = append(*certUpdate, fmt.Sprintf("Certificate: %s, Type: %s, Reason: %s", cn, "Server Certificate", reason))
+		update := CertUpdates{
+			Certificate: certBundle.Certificate,
+			Type:        "Server Certificate",
+			Reason:      reason,
+		}
+		*certUpdates = append(*certUpdates, update)
 	}
 
 	*cert = string(certutil.EncodeCertPEM(certificate.Certificate))
