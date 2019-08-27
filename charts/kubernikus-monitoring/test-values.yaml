@@ -11,3 +11,6 @@ grafana:
     passwordKey: adminPassword
     username: adminUser
     password: adminPassword
+
+prometheus-server:
+  name: xyz
