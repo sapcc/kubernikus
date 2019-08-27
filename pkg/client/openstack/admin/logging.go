@@ -81,3 +81,21 @@ func (c LoggingClient) CreateStorageContainer(projectID, containerName, serviceU
 	}(time.Now())
 	return c.Client.CreateStorageContainer(projectID, containerName, serviceUserName, serviceUserDomainName)
 }
+
+func (c LoggingClient) AssignUserRoles(projectID, userID string, userRoles []string) (err error) {
+	defer func(begin time.Time) {
+		c.Logger.Log(
+			"msg", "assign user roles",
+			"project_id", projectID,
+			"user_id", userID,
+			"user_roles", userRoles,
+			"took", time.Since(begin),
+			"v", 2,
+			"err", err,
+		)
+	}(time.Now())
+	return c.Client.AssignUserRoles(projectID, userID, userRoles)
+}
+
+func (c LoggingClient) AssignUserRoles(projectID, userID string, userRoles []string) (err error) {
+}

@@ -27,6 +27,9 @@ type AdminClient interface {
 	GetKubernikusCatalogEntry() (string, error)
 	GetRegion() (string, error)
 	CreateStorageContainer(projectID, containerName, serviceUserName, serviceUserDomainName string) error
+	AssignUserRoles(string, string, []string) error
+	GetDefaultServiceUserRoles() []string
+	//GetUserRoles(string, string) ([]string, error)
 }
 
 type adminClient struct {
@@ -81,20 +84,66 @@ func (c *adminClient) CreateKlusterServiceUser(username, password, domainName, p
 			Description:      "Kubernikus kluster service user",
 		}).Extract()
 	}
+
+	err = c.AssignUserRoles(projectID, user.ID, c.GetDefaultServiceUserRoles())
 	if err != nil {
-		return err
+		return fmt.Errorf("Failed to assign roles to service user: %s", err)
 	}
-	for _, roleName := range serviceUserRoles {
+
+	return nil
+}
+
+func (c *adminClient) AssignUserRoles(projectID, userID string, userRoles []string) error {
+	for _, roleName := range userRoles {
 		roleID, err := c.getRoleID(roleName)
 		if err != nil {
 			return err
 		}
-		err = roles.AssignToUserInProject(c.IdentityClient, projectID, user.ID, roleID)
+
+		err = roles.AssignToUserInProject(c.IdentityClient, projectID, userID, roleID)
 		if err != nil {
 			return err
 		}
 	}
+
 	return nil
+}
+
+/*
+func (c *adminClient) GetUserRoles(projectID, userID string) ([]string, error) {
+	domainID, err := c.getDomainID()
+	if err != nil {
+		return nil, err
+	}
+	user, err := c.getUser(user, domainID)
+	if err != nil {
+		return nil, err
+	}
+	listOpts := roles_gc.ListAssignmentsOnResourceOpts{
+		UserID:    user.ID,
+		ProjectID: projectID,
+	}
+	pages, err := roles_gc.ListAssignmentsOnResource(c.IdentityClient, listOpts).AllPages()
+	if err != nil {
+		return nil, err
+	}
+
+	userRoles, err := roles_gc.ExtractRoles(pages)
+	if err != nil {
+		return nil, err
+	}
+
+	var retRoles []string
+	for _, role := range userRoles {
+		retRoles = append(retRoles, role.Name)
+	}
+
+	return retRoles, nil
+}
+*/
+
+func (c *adminClient) GetDefaultServiceUserRoles() []string {
+	return serviceUserRoles
 }
 
 func (c *adminClient) DeleteUser(username, domainName string) error {

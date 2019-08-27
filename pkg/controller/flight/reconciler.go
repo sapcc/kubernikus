@@ -1,13 +1,16 @@
 package flight
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/go-kit/kit/log"
 	core_v1 "k8s.io/api/core/v1"
 
 	v1 "github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
+	"github.com/sapcc/kubernikus/pkg/client/openstack/admin"
 	openstack_kluster "github.com/sapcc/kubernikus/pkg/client/openstack/kluster"
+	"github.com/sapcc/kubernikus/pkg/util"
 )
 
 const (
@@ -19,14 +22,16 @@ type FlightReconciler interface {
 	DeleteIncompletelySpawnedInstances() []string
 	DeleteErroredInstances() []string
 	EnsureKubernikusRuleInSecurityGroup() bool
+	EnsureServiceUserRoles() error
 }
 
 type flightReconciler struct {
-	Kluster   *v1.Kluster
-	Instances []Instance
-	Nodes     []*core_v1.Node
-	Client    openstack_kluster.KlusterClient
-	Logger    log.Logger
+	Kluster     *v1.Kluster
+	Instances   []Instance
+	Nodes       []*core_v1.Node
+	Client      openstack_kluster.KlusterClient
+	AdminClient admin.AdminClient
+	Logger      log.Logger
 }
 
 func (f *flightReconciler) EnsureInstanceSecurityGroupAssignment() []string {
@@ -112,6 +117,25 @@ func (f *flightReconciler) DeleteErroredInstances() []string {
 	}
 
 	return deletedInstanceIDs
+}
+
+func (f *flightReconciler) EnsureServiceUserRoles() {
+	secret, err := util.KlusterSecret(f.Kluster)
+	if err != nil {
+		return fmt.Errorf("Could not get kluster secret: %v", err)
+	}
+
+	wantedUserRoles := f.AdminClient.ServiceUserRoles
+
+	/*
+		userRoles := f.AdminClient.GetUserRoles(secret.Openstack.ProjectID, secret.Openstack.Username)
+		userRoles, err := roles.ExtractRoles(userRolePages)
+		if len(userRoles) != len(wantedUserRoles) {
+		}
+	*/
+
+	f.Logger.Log("msg", "Reconciling service user roles", "wanted user roles", wantedUserRoles)
+	return f.AdminClient.AssignUserRoles(secret.Openstack.ProjectID, secret.Openstack.Username, wantedUserRoles)
 }
 
 func (f *flightReconciler) getErroredInstances() []Instance {
