@@ -117,7 +117,6 @@ func createCoreDNSConfigMap(client clientset.Interface, domain string) error {
     health
     kubernetes {{ .Domain }} in-addr.arpa ip6.arpa {
         pods insecure
-        upstream
         fallthrough in-addr.arpa ip6.arpa
         ttl 30
     }
@@ -191,7 +190,7 @@ func createCoreDNSDeployment(client clientset.Interface, repository, version str
 	}
 
 	if version == "" {
-		version = "1.3.1"
+		version = "1.6.2"
 	}
 
 	manifest := `
