@@ -72,7 +72,7 @@ controllerManager:
   rejectProxy:
     enabled: false
     image:
-      repository: hub.global.cloud.sap/d074427/reject-proxy
+      repository: sapcc/reject-proxy
       tag: 0.1.0
     resources:
       requests:
