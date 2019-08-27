@@ -1,5 +1,5 @@
-{{- if .Values.openstack }}
-{{- if (semverCompare ">= 1.13" .Values.version.kubernetes) }}
+{{ if .Values.openstack }}
+{{ if (semverCompare ">= 1.13" .Values.version.kubernetes) }}
 {{/* vim: set filetype=gotexttmpl: */ -}}
 apiVersion: "extensions/v1beta1"
 kind: Deployment
@@ -50,27 +50,64 @@ spec:
             items:
               - key: openstack.config
                 path: openstack.config
+        {{- if .Values.controllerManager.rejectProxy.enabled }}
+        - name: reject-cert-exchange
+          emptyDir: {}
+        {{- end }}
+      initContainers:
+{{ if .Values.controllerManager.rejectProxy.enabled }}
+        - name: generate-ca
+          image: "{{ .Values.controllerManager.rejectProxy.image.repository }}:{{ .Values.controllerManager.rejectProxy.image.tag }}"
+          command:
+            - /bin/sh
+          args:
+            - -ce
+            - |-
+              if [ ! -f /tmp/reject-cert/ca.crt ]; then
+                /reject-proxy -v=true -cert-dir=/tmp/reject-cert generate-ca
+              fi
+          volumeMounts:
+            - mountPath: /tmp/reject-cert
+              name: reject-cert-exchange
+{{ end }}
       containers:
         - name: cloud-controller-manager
           image: {{ include "cloudControllerManager.image" . | quote }}
+          command:
+            - /bin/sh
           args:
-            - /bin/openstack-cloud-controller-manager
-            - --allocate-node-cidrs=true
-            - --authentication-kubeconfig=/etc/kubernetes/config/kubeconfig
-            - --authorization-kubeconfig=/etc/kubernetes/config/kubeconfig
-            - --cloud-config=/etc/kubernetes/cloudprovider/openstack.config
-            - --cloud-provider=openstack
-            - --cluster-cidr={{ .Values.clusterCIDR }}
-            - --cluster-name={{ .Values.name }}
-            - --configure-cloud-routes=true
+            - -ce
+            - |-
+{{ if .Values.controllerManager.rejectProxy.enabled }}
+              cp /tmp/reject-cert/ca.crt /usr/local/share/ca-certificates/reject-proxy-ca.crt
+              update-ca-certificates
+{{ end }}
+              exec /bin/openstack-cloud-controller-manager \
+              --allocate-node-cidrs=true \
+              --authentication-kubeconfig=/etc/kubernetes/config/kubeconfig \
+              --authorization-kubeconfig=/etc/kubernetes/config/kubeconfig \
+              --cloud-config=/etc/kubernetes/cloudprovider/openstack.config \
+              --cloud-provider=openstack \
+              --cluster-cidr={{ .Values.clusterCIDR }} \
+              --cluster-name={{ .Values.name }} \
+              --configure-cloud-routes=true \
 {{- if (semverCompare ">= 1.14" .Values.version.kubernetes) }}
-            - --feature-gates=NodeLease=false
+              --feature-gates=NodeLease=false \
 {{- end }}
-            - --kubeconfig=/etc/kubernetes/config/kubeconfig
+              --kubeconfig=/etc/kubernetes/config/kubeconfig \
 {{ if eq (toString .Values.cloudControllerManager.replicaCount) "1" }}
-            - --leader-elect=false
+              --leader-elect=false \
 {{- end }}
-            - --use-service-account-credentials=true
+              --use-service-account-credentials=true
+{{ if .Values.controllerManager.rejectProxy.enabled }}
+          env:
+            - name: http_proxy
+              value: http://127.0.0.1:8080
+            - name: https_proxy
+              value: http://127.0.0.1:8080
+            - name: no_proxy
+              value: 127.0.0.1
+{{ end }}
           livenessProbe:
             httpGet:
               path: /healthz
@@ -88,7 +125,34 @@ spec:
             - mountPath: /etc/kubernetes/cloudprovider
               name: cloudprovider
               readOnly: true
+{{ if .Values.controllerManager.rejectProxy.enabled }}
+            - mountPath: /tmp/reject-cert
+              name: reject-cert-exchange
+{{ end }}
           resources:
 {{ toYaml .Values.cloudControllerManager.resources | indent 12 }}
-{{- end }}
-{{- end }}
+{{ if .Values.controllerManager.rejectProxy.enabled }}
+        - name: reject-proxy
+          command:
+            - /bin/sh
+          args:
+            - -ce
+            - |-
+              /reject-proxy \
+              -v=true \
+              -namespace={{ .Release.Namespace }} \
+              -cert-dir=/tmp/reject-cert \
+              -config-map={{ include "master.fullname" . }}-reject-proxy
+          image: "{{ .Values.controllerManager.rejectProxy.image.repository }}:{{ .Values.controllerManager.rejectProxy.image.tag }}"
+          ports:
+            - containerPort: 8080
+              name: reject-proxy
+              protocol: TCP
+          volumeMounts:
+            - mountPath: /tmp/reject-cert
+              name: reject-cert-exchange
+          resources:
+{{ toYaml .Values.controllerManager.rejectProxy.resources | indent 12 }}
+{{ end }}
+{{ end }}
+{{ end }}

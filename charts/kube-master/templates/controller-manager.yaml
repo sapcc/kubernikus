@@ -61,9 +61,11 @@ spec:
           configMap:
             name: {{ include "master.fullname" . }}-os-hacks
         {{- end }}
+        {{- if (semverCompare "< 1.13" .Values.version.kubernetes) }}
         {{- if .Values.controllerManager.rejectProxy.enabled }}
         - name: reject-cert-exchange
           emptyDir: {}
+        {{- end }}
         {{- end }}
       initContainers:
         - name: apiserver-wait
@@ -80,6 +82,7 @@ spec:
             - mountPath: /etc/kubernetes/config
               name: config
               readOnly: true
+{{ if (semverCompare "< 1.13" .Values.version.kubernetes) }}
 {{ if .Values.controllerManager.rejectProxy.enabled }}
         - name: generate-ca
           image: "{{ .Values.controllerManager.rejectProxy.image.repository }}:{{ .Values.controllerManager.rejectProxy.image.tag }}"
@@ -95,6 +98,7 @@ spec:
             - mountPath: /tmp/reject-cert
               name: reject-cert-exchange
 {{ end }}
+{{ end }}
       containers:
         - name: controller-manager
           image: {{ include "hyperkube.image" . | quote }}
@@ -103,9 +107,11 @@ spec:
           args:
             - -ce
             - |-
+{{ if (semverCompare "< 1.13" .Values.version.kubernetes) }}
 {{ if .Values.controllerManager.rejectProxy.enabled }}
               cp /tmp/reject-cert/ca.crt /usr/local/share/ca-certificates/reject-proxy-ca.crt
               update-ca-certificates
+{{ end }}
 {{ end }}
               exec /hyperkube \
 {{- if (semverCompare ">= 1.15" .Values.version.kubernetes) }}
@@ -142,6 +148,7 @@ spec:
               --service-account-private-key-file=/etc/kubernetes/certs/apiserver-clients-ca-key.pem \
               --service-cluster-ip-range={{ .Values.serviceCIDR }} \
               --use-service-account-credentials
+{{ if (semverCompare "< 1.13" .Values.version.kubernetes) }}
 {{ if .Values.controllerManager.rejectProxy.enabled }}
           env:
             - name: http_proxy
@@ -150,6 +157,7 @@ spec:
               value: http://127.0.0.1:8080
             - name: no_proxy
               value: 127.0.0.1
+{{ end }}
 {{ end }}
           livenessProbe:
             httpGet:
@@ -178,13 +186,15 @@ spec:
               name: openstack-hacks
               readOnly: true
             {{- end }}
+{{ if (semverCompare "< 1.13" .Values.version.kubernetes) }}            
 {{ if .Values.controllerManager.rejectProxy.enabled }}
             - mountPath: /tmp/reject-cert
               name: reject-cert-exchange
 {{ end }}
+{{ end }}
           resources:
 {{ toYaml .Values.controllerManager.resources | indent 12 }}
-{{- if .Values.openstack }}
+{{ if (semverCompare "< 1.13" .Values.version.kubernetes) }}            
 {{ if .Values.controllerManager.rejectProxy.enabled }}
         - name: reject-proxy
           command:
@@ -208,6 +218,8 @@ spec:
           resources:
 {{ toYaml .Values.controllerManager.rejectProxy.resources | indent 12 }}
 {{ end }}
+{{ end }}
+{{- if .Values.openstack }}
 ---
 apiVersion: v1
 kind: ConfigMap
