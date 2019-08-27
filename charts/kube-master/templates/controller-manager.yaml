@@ -107,7 +107,7 @@ spec:
               cp /tmp/reject-cert/ca.crt /usr/local/share/ca-certificates/reject-proxy-ca.crt
               update-ca-certificates
 {{ end }}
-              /hyperkube \
+              exec /hyperkube \
 {{- if (semverCompare ">= 1.15" .Values.version.kubernetes) }}
               kube-controller-manager \
 {{- else }}
