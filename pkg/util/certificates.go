@@ -206,11 +206,16 @@ func (cf *CertificateFactory) UserCert(principal *models.Principal, apiURL strin
 	for _, role := range principal.Roles {
 		organizations = append(organizations, "os:"+role)
 	}
+	projectid := cf.kluster.Spec.Openstack.ProjectID
+	//nocloud clusters don't have the projectID in the spec
+	if projectid == "" {
+		projectid = cf.kluster.Account()
+	}
 
 	return caBundle.Sign(Config{
 		Sign:         fmt.Sprintf("%s@%s", principal.Name, principal.Domain),
 		Organization: organizations,
-		Province:     []string{principal.AuthURL, cf.kluster.Spec.Openstack.ProjectID},
+		Province:     []string{principal.AuthURL, projectid},
 		Locality:     []string{apiURL},
 		Usages:       []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth},
 		ValidFor:     24 * time.Hour,
