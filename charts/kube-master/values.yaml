@@ -74,7 +74,7 @@ rejectProxy:
   image:
     repository: sapcc/reject-proxy
     tag: 0.1.1
-    pullPolicy: Always
+    pullPolicy: IfNotPresent
   resources:
     requests:
       cpu: 50m
