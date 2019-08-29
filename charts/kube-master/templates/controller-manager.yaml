@@ -62,7 +62,7 @@ spec:
             name: {{ include "master.fullname" . }}-os-hacks
         {{- end }}
         {{- if (semverCompare "< 1.13" .Values.version.kubernetes) }}
-        {{- if .Values.controllerManager.rejectProxy.enabled }}
+        {{- if .Values.rejectProxy.enabled }}
         - name: reject-cert-exchange
           emptyDir: {}
         {{- end }}
@@ -83,9 +83,9 @@ spec:
               name: config
               readOnly: true
 {{ if (semverCompare "< 1.13" .Values.version.kubernetes) }}
-{{ if .Values.controllerManager.rejectProxy.enabled }}
+{{ if .Values.rejectProxy.enabled }}
         - name: generate-ca
-          image: "{{ .Values.controllerManager.rejectProxy.image.repository }}:{{ .Values.controllerManager.rejectProxy.image.tag }}"
+          image: "{{ .Values.rejectProxy.image.repository }}:{{ .Values.rejectProxy.image.tag }}"
           command:
             - /bin/sh
           args:
@@ -97,6 +97,7 @@ spec:
           volumeMounts:
             - mountPath: /tmp/reject-cert
               name: reject-cert-exchange
+      serviceAccountName: {{ include "master.fullname" . }}-reject-proxy
 {{ end }}
 {{ end }}
       containers:
@@ -108,7 +109,7 @@ spec:
             - -ce
             - |-
 {{ if (semverCompare "< 1.13" .Values.version.kubernetes) }}
-{{ if .Values.controllerManager.rejectProxy.enabled }}
+{{ if .Values.rejectProxy.enabled }}
               cp /tmp/reject-cert/ca.crt /usr/local/share/ca-certificates/reject-proxy-ca.crt
               update-ca-certificates
 {{ end }}
@@ -149,7 +150,7 @@ spec:
               --service-cluster-ip-range={{ .Values.serviceCIDR }} \
               --use-service-account-credentials
 {{ if (semverCompare "< 1.13" .Values.version.kubernetes) }}
-{{ if .Values.controllerManager.rejectProxy.enabled }}
+{{ if .Values.rejectProxy.enabled }}
           env:
             - name: http_proxy
               value: http://127.0.0.1:8080
@@ -187,7 +188,7 @@ spec:
               readOnly: true
             {{- end }}
 {{ if (semverCompare "< 1.13" .Values.version.kubernetes) }}            
-{{ if .Values.controllerManager.rejectProxy.enabled }}
+{{ if .Values.rejectProxy.enabled }}
             - mountPath: /tmp/reject-cert
               name: reject-cert-exchange
 {{ end }}
@@ -195,7 +196,7 @@ spec:
           resources:
 {{ toYaml .Values.controllerManager.resources | indent 12 }}
 {{ if (semverCompare "< 1.13" .Values.version.kubernetes) }}            
-{{ if .Values.controllerManager.rejectProxy.enabled }}
+{{ if .Values.rejectProxy.enabled }}
         - name: reject-proxy
           command:
             - /bin/sh
@@ -207,7 +208,8 @@ spec:
               -namespace={{ .Release.Namespace }} \
               -cert-dir=/tmp/reject-cert \
               -config-map={{ include "master.fullname" . }}-reject-proxy
-          image: "{{ .Values.controllerManager.rejectProxy.image.repository }}:{{ .Values.controllerManager.rejectProxy.image.tag }}"
+          image: "{{ .Values.rejectProxy.image.repository }}:{{ .Values.rejectProxy.image.tag }}"
+          imagePullPolicy: {{ .Values.rejectProxy.image.pullPolicy }}
           ports:
             - containerPort: 8080
               name: reject-proxy
@@ -216,7 +218,7 @@ spec:
             - mountPath: /tmp/reject-cert
               name: reject-cert-exchange
           resources:
-{{ toYaml .Values.controllerManager.rejectProxy.resources | indent 12 }}
+{{ toYaml .Values.rejectProxy.resources | indent 12 }}
 {{ end }}
 {{ end }}
 {{- if .Values.openstack }}

@@ -69,18 +69,19 @@ controllerManager:
       cpu: 500m
       memory: 512Mi
 
-  rejectProxy:
-    enabled: false
-    image:
-      repository: sapcc/reject-proxy
-      tag: 0.1.0
-    resources:
-      requests:
-        cpu: 50m
-        memory: 16Mi
-      limits:
-        cpu: 100m
-        memory: 64Mi
+rejectProxy:
+  enabled: false
+  image:
+    repository: sapcc/reject-proxy
+    tag: 0.1.1
+    pullPolicy: Always
+  resources:
+    requests:
+      cpu: 50m
+      memory: 16Mi
+    limits:
+      cpu: 100m
+      memory: 64Mi
 
 scheduler:
   replicaCount: 1

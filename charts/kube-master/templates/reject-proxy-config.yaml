@@ -1,4 +1,4 @@
-{{ if .Values.controllerManager.rejectProxy.enabled }}
+{{- if .Values.rejectProxy.enabled }}
 apiVersion: v1
 kind: ServiceAccount
 metadata:
@@ -34,9 +34,9 @@ metadata:
   namespace: {{ .Release.Namespace }}
 data:
 # Configuration example
-#  config: |-
-#    blockedUrls:
-#    - name: neutron-lbaas
-#      method: "POST"
-#      url: "https://someurl:443/v2.0/lbaas.*"
-{{ end }}
+# neutron-lbaas: |
+#   method: POST
+#   url: https://someurl:443/v2.0/lbaas.*
+#   code: 403 # optional
+#   message: URL is blocked! # optional
+{{- end }}
