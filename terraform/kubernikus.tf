@@ -339,7 +339,7 @@ resource "ccloud_quota" "kubernikus" {
   }
 
   objectstore {
-    capacity = 1073741824
+    capacity = 5368709120
   }
 }
 
