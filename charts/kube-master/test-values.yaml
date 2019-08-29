@@ -1,3 +1,5 @@
+global:
+  region: xy-xy-1
 domain: xyz.com
 bootstrapToken: xyz
 nodePassword: xyz
