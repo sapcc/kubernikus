@@ -69,7 +69,11 @@ spec:
       annotations:
         prometheus.io/scrape: "true"
         prometheus.io/port: "8080"
+{{- if eq .Values.global.region "admin" }}
         prometheus.io/targets: "kubernetes"
+{{- else }}
+        prometheus.io/targets: "kubernikus"
+{{- end }}
     spec:
       volumes:
         - name: data
