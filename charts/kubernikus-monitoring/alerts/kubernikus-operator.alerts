@@ -71,7 +71,7 @@ groups:
       context: operator
       meta: "{{ $labels.kluster }} is having Hammertime"
     annotations:
-      description: Hammertime for kluster {{ $labels.kluster }}. Controller manager scaled down because no node posted a status update recently. <https://dashboard.{{ $externalLabels.region }}.cloud.sap/_/{{ $labels.kluster | reReplaceAll ".*-" "" }}/webconsole|:terminal:>
+      description: Hammertime for kluster {{ $labels.kluster }}. Controller manager scaled down because no node posted a status update recently. <https://dashboard.REGION_MISSING.cloud.sap/_/{{ $labels.kluster | reReplaceAll ".*-" "" }}/webconsole|:terminal:>
       summary: Hammertime for kluster {{ $labels.kluster }}
 
   - alert: KubernikusMigrationErrors
