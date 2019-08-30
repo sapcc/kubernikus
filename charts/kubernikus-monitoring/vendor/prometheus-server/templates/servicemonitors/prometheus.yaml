@@ -19,3 +19,20 @@ spec:
       scrapeTimeout: 55s
       port: http
       scheme: http
+      relabelings:
+        - action: replace
+          targetLabel: region
+          replacement: {{ required ".Values.global.region undefined" .Values.global.region }}
+        - action: replace
+          targetLabel: prometheus
+          replacement: {{ include "prometheus.name" . }}
+        {{ if .Values.global.clusterType }}
+        - action: replace
+          targetLabel: cluster_type
+          replacement: {{ .Values.global.clusterType }}
+        {{ end }}
+        {{ if .Values.global.cluster }}
+        - action: replace
+          targetLabel: cluster
+          replacement: {{ .Values.global.cluster }}
+        {{ end }}

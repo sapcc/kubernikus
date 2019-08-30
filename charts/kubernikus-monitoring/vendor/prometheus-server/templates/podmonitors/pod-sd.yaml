@@ -48,7 +48,7 @@ spec:
             - __address__
             - __meta_kubernetes_pod_annotation_prometheus_io_port
           targetLabel: __address__
-          regex: '([^:]+)(?::\d+);(\d+)'
+          regex: '([^:]+)(?::\d+)?;(\d+)'
           replacement: ${1}:${2}
         - action: labelmap
           regex: '__meta_kubernetes_pod_label_(.+)'
@@ -58,6 +58,19 @@ spec:
         - sourceLabels:
             - __meta_kubernetes_pod_name
           targetLabel: kubernetes_pod_name
+        - action: replace
+          targetLabel: region
+          replacement: {{ required ".Values.global.region undefined" .Values.global.region }}
+        {{ if .Values.global.clusterType }}
+        - action: replace
+          targetLabel: cluster_type
+          replacement: {{ .Values.global.clusterType }}
+        {{ end }}
+        {{ if .Values.global.cluster }}
+        - action: replace
+          targetLabel: cluster
+          replacement: {{ .Values.global.cluster }}
+        {{ end }}
 
     - bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
       interval: 60s
@@ -89,7 +102,7 @@ spec:
             - __address__
             - __meta_kubernetes_pod_annotation_prometheus_io_port_1
           targetLabel: __address__
-          regex: '([^:]+)(?::\d+);(\d+)'
+          regex: '([^:]+)(?::\d+)?;(\d+)'
           replacement: ${1}:${2}
         - action: labelmap
           regex: '__meta_kubernetes_pod_label_(.+)'
@@ -99,4 +112,17 @@ spec:
         - sourceLabels:
             - __meta_kubernetes_pod_name
           targetLabel: kubernetes_pod_name
+        - action: replace
+          targetLabel: region
+          replacement: {{ required ".Values.global.region undefined" .Values.global.region }}
+        {{ if .Values.global.clusterType }}
+        - action: replace
+          targetLabel: cluster_type
+          replacement: {{ .Values.global.clusterType }}
+        {{ end }}
+        {{ if .Values.global.cluster }}
+        - action: replace
+          targetLabel: cluster
+          replacement: {{ .Values.global.cluster }}
+        {{ end }}
 {{ end }}
