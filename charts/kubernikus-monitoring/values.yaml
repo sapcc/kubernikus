@@ -1,3 +1,7 @@
+global:
+  # The alert tier.
+  tier: kks
+
 # Name of the Prometheus to which the alert and aggregation rules should be assigned to.
 prometheusName: kubernikus
 
