@@ -24,6 +24,7 @@
     target_label: kubernetes_namespace
   - source_labels: [__meta_kubernetes_service_name]
     target_label: kubernetes_name
+{{ include "prometheus.external-labels.relabel-config" . | indent 2 }}
 
 - job_name: 'pods'
   kubernetes_sd_configs:
@@ -48,6 +49,7 @@
     target_label: kubernetes_namespace
   - source_labels: [__meta_kubernetes_pod_name]
     target_label: kubernetes_pod_name
+{{ include "prometheus.external-labels.relabel-config" . | indent 2 }}
 
 - job_name: 'kube-system/dnsmasq'
   kubernetes_sd_configs:
@@ -68,6 +70,7 @@
   - action: replace
     source_labels: [__meta_kubernetes_pod_node_name]
     target_label: instance
+{{ include "prometheus.external-labels.relabel-config" . | indent 2 }}
 
 - job_name: 'kube-system/dns'
   kubernetes_sd_configs:
@@ -88,6 +91,7 @@
   - action: replace
     source_labels: [__meta_kubernetes_pod_node_name]
     target_label: instance
+{{ include "prometheus.external-labels.relabel-config" . | indent 2 }}
 
 - job_name: 'kubernikus-system/node'
   kubernetes_sd_configs:
@@ -109,6 +113,7 @@
     regex: '\/host(\/.*)'
     action: replace
     replacement: ${1}
+{{ include "prometheus.external-labels.relabel-config" . | indent 2 }}
 
 - job_name: kube-system/kubelet
   scheme: https
@@ -134,6 +139,7 @@
     target_label: instance
     replacement: $1
     action: replace
+{{ include "prometheus.external-labels.relabel-config" . | indent 2 }}
   metric_relabel_configs:
     - source_labels: [ id ]
       action: replace
@@ -165,6 +171,7 @@
   relabel_configs:
     - action: labelmap
       regex: __meta_kubernetes_node_label_(.+)
+{{ include "prometheus.external-labels.relabel-config" . | indent 4 }}
   metric_relabel_configs:
     - source_labels: [ id ]
       action: replace
@@ -201,5 +208,6 @@
   relabel_configs:
     - target_label: component
       replacement: apiserver
+{{ include "prometheus.external-labels.relabel-config" . | indent 4 }}
   metric_relabel_configs:
 {{ include "prometheus.keep-metrics.metric-relabel-config" .Values.allowedMetrics.kubeAPIServer | indent 4 }}
