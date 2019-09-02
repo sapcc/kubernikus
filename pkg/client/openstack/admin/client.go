@@ -85,6 +85,9 @@ func (c *adminClient) CreateKlusterServiceUser(username, password, domainName, p
 			Description:      "Kubernikus kluster service user",
 		}).Extract()
 	}
+	if err != nil {
+		return err
+	}
 
 	err = c.AssignUserRoles(projectID, username, domainName, c.GetDefaultServiceUserRoles())
 	if err != nil {
