@@ -117,6 +117,8 @@ func TestEnsureInstanceSecurityGroupAssignment(t *testing.T) {
 		instances,
 		nodes,
 		client,
+		nil,
+		nil,
 		log.NewNopLogger(),
 	}
 
@@ -167,6 +169,8 @@ func TestDeleteIncompletelySpawnedInstances(t *testing.T) {
 		instances,
 		nodes,
 		client,
+		nil,
+		nil,
 		log.NewNopLogger(),
 	}
 
@@ -202,6 +206,8 @@ func TestDeleteErroredInstances(t *testing.T) {
 		instances,
 		nodes,
 		client,
+		nil,
+		nil,
 		log.NewNopLogger(),
 	}
 
@@ -226,6 +232,8 @@ func TestEnsureKubernikusRuleInSecurityGroup(t *testing.T) {
 		instances,
 		nodes,
 		client,
+		nil,
+		nil,
 		log.NewNopLogger(),
 	}
 
