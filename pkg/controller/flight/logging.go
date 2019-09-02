@@ -1,6 +1,7 @@
 package flight
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/go-kit/kit/log"
@@ -56,4 +57,16 @@ func (f *LoggingFlightReconciler) EnsureKubernikusRuleInSecurityGroup() bool {
 		)
 	}
 	return ensured
+}
+
+func (f *LoggingFlightReconciler) EnsureServiceUserRoles() []string {
+	createdRoles := f.Reconciler.EnsureServiceUserRoles()
+	if len(createdRoles) > 0 {
+		f.Logger.Log(
+			"msg", "created missing service user roles",
+			"roles", fmt.Sprintf("%v", createdRoles),
+			"v", 2,
+		)
+	}
+	return createdRoles
 }

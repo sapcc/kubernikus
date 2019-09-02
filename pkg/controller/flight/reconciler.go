@@ -1,11 +1,11 @@
 package flight
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/go-kit/kit/log"
 	core_v1 "k8s.io/api/core/v1"
+	"k8s.io/client-go/kubernetes"
 
 	v1 "github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
 	"github.com/sapcc/kubernikus/pkg/client/openstack/admin"
@@ -22,16 +22,17 @@ type FlightReconciler interface {
 	DeleteIncompletelySpawnedInstances() []string
 	DeleteErroredInstances() []string
 	EnsureKubernikusRuleInSecurityGroup() bool
-	EnsureServiceUserRoles() error
+	EnsureServiceUserRoles() []string
 }
 
 type flightReconciler struct {
-	Kluster     *v1.Kluster
-	Instances   []Instance
-	Nodes       []*core_v1.Node
-	Client      openstack_kluster.KlusterClient
-	AdminClient admin.AdminClient
-	Logger      log.Logger
+	Kluster          *v1.Kluster
+	Instances        []Instance
+	Nodes            []*core_v1.Node
+	Client           openstack_kluster.KlusterClient
+	KubernetesClient kubernetes.Interface
+	AdminClient      admin.AdminClient
+	Logger           log.Logger
 }
 
 func (f *flightReconciler) EnsureInstanceSecurityGroupAssignment() []string {
@@ -119,23 +120,46 @@ func (f *flightReconciler) DeleteErroredInstances() []string {
 	return deletedInstanceIDs
 }
 
-func (f *flightReconciler) EnsureServiceUserRoles() {
-	secret, err := util.KlusterSecret(f.Kluster)
+func (f *flightReconciler) EnsureServiceUserRoles() []string {
+	secret, err := util.KlusterSecret(f.KubernetesClient, f.Kluster)
 	if err != nil {
-		return fmt.Errorf("Could not get kluster secret: %v", err)
+		f.Logger.Log(
+			"msg", "could not get kluster secret",
+			"err", err)
+		return []string{}
 	}
 
-	wantedUserRoles := f.AdminClient.ServiceUserRoles
+	wantedUserRoles := f.AdminClient.GetDefaultServiceUserRoles()
+	existingUserRoles, err := f.AdminClient.GetUserRoles(secret.Openstack.ProjectID, secret.Openstack.Username, secret.Openstack.DomainName)
+	if err != nil {
+		f.Logger.Log(
+			"msg", "could not get service user roles",
+			"err", err)
+		return []string{}
+	}
 
-	/*
-		userRoles := f.AdminClient.GetUserRoles(secret.Openstack.ProjectID, secret.Openstack.Username)
-		userRoles, err := roles.ExtractRoles(userRolePages)
-		if len(userRoles) != len(wantedUserRoles) {
+	rolesToCreate := []string{}
+	if len(existingUserRoles) != len(wantedUserRoles) {
+		for _, wantedUserRole := range wantedUserRoles {
+			exists := false
+			for _, existingUserRole := range existingUserRoles {
+				if existingUserRole == wantedUserRole {
+					exists = true
+					break
+				}
+			}
+			if !exists {
+				rolesToCreate = append(rolesToCreate, wantedUserRole)
+			}
 		}
-	*/
 
-	f.Logger.Log("msg", "Reconciling service user roles", "wanted user roles", wantedUserRoles)
-	return f.AdminClient.AssignUserRoles(secret.Openstack.ProjectID, secret.Openstack.Username, wantedUserRoles)
+		err = f.AdminClient.AssignUserRoles(secret.Openstack.ProjectID, secret.Openstack.Username, secret.Openstack.DomainName, wantedUserRoles)
+		if err != nil {
+			f.Logger.Log("msg", "couldn't reconcile service user roles", "err", err)
+		}
+	}
+
+	return rolesToCreate
 }
 
 func (f *flightReconciler) getErroredInstances() []Instance {

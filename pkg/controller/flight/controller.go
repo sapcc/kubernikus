@@ -67,7 +67,7 @@ type FlightController struct {
 func NewController(threadiness int, factories config.Factories, clients config.Clients, recorder record.EventRecorder, logger log.Logger) base.Controller {
 
 	logger = log.With(logger, "controller", "flight")
-	factory := NewFlightReconcilerFactory(factories.Openstack, factories.NodesObservatory.NodeInformer(), recorder, logger)
+	factory := NewFlightReconcilerFactory(factories.Openstack, clients.Kubernetes, factories.NodesObservatory.NodeInformer(), recorder, logger)
 
 	var controller base.Reconciler
 	controller = &FlightController{factory, logger}

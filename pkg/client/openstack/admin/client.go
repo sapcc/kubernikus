@@ -9,6 +9,7 @@ import (
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack"
 	"github.com/gophercloud/gophercloud/openstack/identity/v3/endpoints"
+	gc_roles "github.com/gophercloud/gophercloud/openstack/identity/v3/roles"
 	"github.com/gophercloud/gophercloud/openstack/identity/v3/services"
 	"github.com/gophercloud/gophercloud/openstack/identity/v3/tokens"
 	"github.com/gophercloud/gophercloud/openstack/identity/v3/users"
@@ -27,9 +28,9 @@ type AdminClient interface {
 	GetKubernikusCatalogEntry() (string, error)
 	GetRegion() (string, error)
 	CreateStorageContainer(projectID, containerName, serviceUserName, serviceUserDomainName string) error
-	AssignUserRoles(string, string, []string) error
+	AssignUserRoles(string, string, string, []string) error
+	GetUserRoles(string, string, string) ([]string, error)
 	GetDefaultServiceUserRoles() []string
-	//GetUserRoles(string, string) ([]string, error)
 }
 
 type adminClient struct {
@@ -85,7 +86,7 @@ func (c *adminClient) CreateKlusterServiceUser(username, password, domainName, p
 		}).Extract()
 	}
 
-	err = c.AssignUserRoles(projectID, user.ID, c.GetDefaultServiceUserRoles())
+	err = c.AssignUserRoles(projectID, username, domainName, c.GetDefaultServiceUserRoles())
 	if err != nil {
 		return fmt.Errorf("Failed to assign roles to service user: %s", err)
 	}
@@ -93,14 +94,24 @@ func (c *adminClient) CreateKlusterServiceUser(username, password, domainName, p
 	return nil
 }
 
-func (c *adminClient) AssignUserRoles(projectID, userID string, userRoles []string) error {
+func (c *adminClient) AssignUserRoles(projectID, userName, domainName string, userRoles []string) error {
+	domainID, err := c.getDomainID(domainName)
+	if err != nil {
+		return err
+	}
+
+	user, err := c.getUserByName(userName, domainID)
+	if err != nil {
+		return err
+	}
+
 	for _, roleName := range userRoles {
 		roleID, err := c.getRoleID(roleName)
 		if err != nil {
 			return err
 		}
 
-		err = roles.AssignToUserInProject(c.IdentityClient, projectID, userID, roleID)
+		err = roles.AssignToUserInProject(c.IdentityClient, projectID, user.ID, roleID)
 		if err != nil {
 			return err
 		}
@@ -109,26 +120,28 @@ func (c *adminClient) AssignUserRoles(projectID, userID string, userRoles []stri
 	return nil
 }
 
-/*
-func (c *adminClient) GetUserRoles(projectID, userID string) ([]string, error) {
-	domainID, err := c.getDomainID()
-	if err != nil {
-		return nil, err
-	}
-	user, err := c.getUser(user, domainID)
-	if err != nil {
-		return nil, err
-	}
-	listOpts := roles_gc.ListAssignmentsOnResourceOpts{
-		UserID:    user.ID,
-		ProjectID: projectID,
-	}
-	pages, err := roles_gc.ListAssignmentsOnResource(c.IdentityClient, listOpts).AllPages()
+func (c *adminClient) GetUserRoles(projectID, userName, domainName string) ([]string, error) {
+	domainID, err := c.getDomainID(domainName)
 	if err != nil {
 		return nil, err
 	}
 
-	userRoles, err := roles_gc.ExtractRoles(pages)
+	user, err := c.getUserByName(userName, domainID)
+	if err != nil {
+		return nil, err
+	}
+
+	listOpts := gc_roles.ListAssignmentsOnResourceOpts{
+		UserID:    user.ID,
+		ProjectID: projectID,
+	}
+
+	pages, err := gc_roles.ListAssignmentsOnResource(c.IdentityClient, listOpts).AllPages()
+	if err != nil {
+		return nil, err
+	}
+
+	userRoles, err := gc_roles.ExtractRoles(pages)
 	if err != nil {
 		return nil, err
 	}
@@ -140,7 +153,6 @@ func (c *adminClient) GetUserRoles(projectID, userID string) ([]string, error) {
 
 	return retRoles, nil
 }
-*/
 
 func (c *adminClient) GetDefaultServiceUserRoles() []string {
 	return serviceUserRoles

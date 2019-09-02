@@ -3,6 +3,7 @@ package flight
 import (
 	"github.com/go-kit/kit/log"
 	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/record"
 
 	v1 "github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
@@ -16,18 +17,24 @@ type FlightReconcilerFactory interface {
 }
 
 type flightReconcilerFactory struct {
-	Openstack       openstack.SharedOpenstackClientFactory
-	NodeObservatory *nodeobservatory.NodeObservatory
-	Recorder        record.EventRecorder
-	Logger          log.Logger
+	Openstack        openstack.SharedOpenstackClientFactory
+	KubernetesClient kubernetes.Interface
+	NodeObservatory  *nodeobservatory.NodeObservatory
+	Recorder         record.EventRecorder
+	Logger           log.Logger
 }
 
-func NewFlightReconcilerFactory(openstack openstack.SharedOpenstackClientFactory, nodeObservatory *nodeobservatory.NodeObservatory, recorder record.EventRecorder, logger log.Logger) FlightReconcilerFactory {
-	return &flightReconcilerFactory{openstack, nodeObservatory, recorder, logger}
+func NewFlightReconcilerFactory(openstack openstack.SharedOpenstackClientFactory, kubernetesClient kubernetes.Interface, nodeObservatory *nodeobservatory.NodeObservatory, recorder record.EventRecorder, logger log.Logger) FlightReconcilerFactory {
+	return &flightReconcilerFactory{openstack, kubernetesClient, nodeObservatory, recorder, logger}
 }
 
 func (f *flightReconcilerFactory) FlightReconciler(kluster *v1.Kluster) (FlightReconciler, error) {
 	client, err := f.Openstack.KlusterClientFor(kluster)
+	if err != nil {
+		return nil, err
+	}
+
+	adminClient, err := f.Openstack.AdminClient()
 	if err != nil {
 		return nil, err
 	}
@@ -48,7 +55,7 @@ func (f *flightReconcilerFactory) FlightReconciler(kluster *v1.Kluster) (FlightR
 	}
 
 	var reconciler FlightReconciler
-	reconciler = &flightReconciler{kluster, instances, nodes, client, f.Logger}
+	reconciler = &flightReconciler{kluster, instances, nodes, client, f.KubernetesClient, adminClient, f.Logger}
 	reconciler = &LoggingFlightReconciler{reconciler, f.Logger}
 	return reconciler, nil
 }
