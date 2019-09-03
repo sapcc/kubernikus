@@ -21,6 +21,7 @@ resources:
     memory: 2560Mi
 backup:
   enabled: true
+  storageProvider: Swift
   image:
     repository: sapcc/etcdbrctl
     tag: 0.5.2
