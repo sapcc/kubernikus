@@ -6,7 +6,7 @@ imagesForVersion:
       tag: 'v1.15.2'
     cloudControllerManager:
       repository: 'sapcc/openstack-cloud-controller-manager'
-      tag: 'v1.15.0'
+      tag: 'v1.15.0-sap.2'
   '1.14.5':
     supported: true
     hyperkube:
