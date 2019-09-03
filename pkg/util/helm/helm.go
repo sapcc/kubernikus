@@ -9,7 +9,6 @@ import (
 	yaml "gopkg.in/yaml.v2"
 
 	v1 "github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
-	"github.com/sapcc/kubernikus/pkg/util"
 	etcd_util "github.com/sapcc/kubernikus/pkg/util/etcd"
 	"github.com/sapcc/kubernikus/pkg/version"
 )
@@ -53,8 +52,9 @@ type etcdValues struct {
 }
 
 type etcdBackupValues struct {
-	Schedule string `yaml:"schedule,omitempty"`
-	Enabled  bool   `yaml:"enabled"`
+	Schedule        string `yaml:"schedule,omitempty"`
+	Enabled         bool   `yaml:"enabled"`
+	StorageProvider string `yaml:"storageProvider,omitempty"`
 }
 
 type apiValues struct {
@@ -112,8 +112,17 @@ func KlusterToHelmValues(kluster *v1.Kluster, secret *v1.Secret, kubernetesVersi
 		},
 		Etcd: etcdValues{
 			Backup: etcdBackupValues{
-				Enabled:  !util.DisabledValue(kluster.Annotations[ETCDBackupAnnotation]), //enabled by default
+				Enabled:  kluster.Spec.Backup == "on" || kluster.Spec.Backup == "externalAWS",
 				Schedule: fmt.Sprintf("%d * * * *", backupMinute),
+				StorageProvider: func(backupType string) string {
+					if backupType == "on" {
+						return "Swift"
+					}
+					if backupType == "externalAWS" {
+						return "S3"
+					}
+					return ""
+				}(kluster.Spec.Backup),
 			},
 			Persistence: persistenceValues{
 				AccessMode: accessMode,

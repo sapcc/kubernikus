@@ -442,6 +442,11 @@ definitions:
       name:
         type: string
         readOnly: true
+      backup:
+        type: string
+        x-nullable: false
+        enum: ["on", "off", "externalAWS"]
+        default: "on"
   OpenstackSpec:
     type: object
     x-nullable: false

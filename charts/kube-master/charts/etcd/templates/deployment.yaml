@@ -139,23 +139,26 @@ spec:
           env:
 {{- if eq .Values.backup.storageProvider "S3" }}
             - name: STORAGE_CONTAINER
-              value: {{ .Values.backup.storageContainer }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "fullname" . }}-aws
+                  key: bucket-name
             - name: AWS_REGION
               valueFrom:
                 secretKeyRef:
-                  name: {{ include "fullname" . }}
-                  key: s3-region
+                  name: {{ include "fullname" . }}-aws
+                  key: region
             - name: AWS_SECRET_ACCESS_KEY
               valueFrom:
                 secretKeyRef:
-                  name: {{ include "fullname" . }}
-                  key: s3-secret-access-key
+                  name: {{ include "fullname" . }}-aws
+                  key: secret-access-key
             - name: AWS_ACCESS_KEY_ID
               valueFrom:
                 secretKeyRef:
-                  name: {{ include "fullname" . }}
-                  key: s3-access-key-id
-{{- else }}{{/* Swift */}}
+                  name: {{ include "fullname" . }}-aws
+                  key: access-key-id
+{{- else if eq .Values.backup.storageProvider "Swift" }}
             - name: STORAGE_CONTAINER
               value: {{ .Values.storageContainer }}
             - name: OS_AUTH_URL

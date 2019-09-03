@@ -6,6 +6,7 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"strconv"
 
 	strfmt "github.com/go-openapi/strfmt"
@@ -21,6 +22,10 @@ type KlusterSpec struct {
 
 	// advertise address
 	AdvertiseAddress string `json:"advertiseAddress,omitempty"`
+
+	// backup
+	// Enum: [on off externalAWS]
+	Backup string `json:"backup,omitempty"`
 
 	// CIDR Range for Pods in the cluster. Can not be updated.
 	// Pattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$
@@ -62,6 +67,10 @@ type KlusterSpec struct {
 func (m *KlusterSpec) Validate(formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.validateBackup(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateClusterCIDR(formats); err != nil {
 		res = append(res, err)
 	}
@@ -89,6 +98,52 @@ func (m *KlusterSpec) Validate(formats strfmt.Registry) error {
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+var klusterSpecTypeBackupPropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["on","off","externalAWS"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		klusterSpecTypeBackupPropEnum = append(klusterSpecTypeBackupPropEnum, v)
+	}
+}
+
+const (
+
+	// KlusterSpecBackupOn captures enum value "on"
+	KlusterSpecBackupOn string = "on"
+
+	// KlusterSpecBackupOff captures enum value "off"
+	KlusterSpecBackupOff string = "off"
+
+	// KlusterSpecBackupExternalAWS captures enum value "externalAWS"
+	KlusterSpecBackupExternalAWS string = "externalAWS"
+)
+
+// prop value enum
+func (m *KlusterSpec) validateBackupEnum(path, location string, value string) error {
+	if err := validate.Enum(path, location, value, klusterSpecTypeBackupPropEnum); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *KlusterSpec) validateBackup(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.Backup) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateBackupEnum("backup", "body", m.Backup); err != nil {
+		return err
+	}
+
 	return nil
 }
 
