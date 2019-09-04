@@ -3,3 +3,7 @@ dependencies:
     repository: file://../k8sniff
     version: 0.1.0
     condition: k8sniff.enabled
+  - name: rbac
+    repository: file://vendor/rbac
+    version: 0.1.0
+    condition: includeRBAC

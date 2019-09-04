@@ -1,18 +1,7 @@
-{{ if .Values.useServiceAccount -}}
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: "kubernikus-operator"
----
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: "kubernikus-api"
----
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: "kubernikus:{{.Release.Name}}"
+  name: "kubernikus:{{ default .Release.Name .Values.name }}"
 rules:
 - apiGroups:
   - apiextensions.k8s.io
@@ -45,17 +34,17 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: "kubernikus:{{ .Release.Name }}"
+  name: "kubernikus:{{ default .Release.Name  .Values.name }}"
 subjects:
 - kind: ServiceAccount
   name: "kubernikus-operator"
-  namespace: "{{.Release.Namespace}}"
+  namespace: "{{ default .Release.Namespace .Values.saNamespace}}"
 - kind: ServiceAccount
   name: "kubernikus-api"
-  namespace: "{{.Release.Namespace}}"
+  namespace: "{{ default .Release.Namespace .Values.saNamespace }}"
 roleRef:
-  kind: ClusterRole
-  name: "kubernikus:{{.Release.Name}}"
+  kind: ClusterRole #this must be Role or ClusterRole
+  name: "kubernikus:{{ default .Release.Namespace .Values.name}}"
   apiGroup: rbac.authorization.k8s.io
 ---
 apiVersion: rbac.authorization.k8s.io/v1
@@ -110,6 +99,7 @@ metadata:
 subjects:
 - kind: ServiceAccount
   name: "kubernikus-operator"
+  namespace: {{ default .Release.Namespace .Values.saNamespace }}
 roleRef:
   kind: Role #this must be Role or ClusterRole
   name: "kubernikus:operator"
@@ -122,7 +112,7 @@ metadata:
 subjects:
 - kind: ServiceAccount
   name: "kubernikus-api"
-  namespace: "{{ .Release.Namespace }}"
+  namespace: {{default .Release.Namespace .Values.saNamespace}}
 roleRef:
   kind: Role #this must be Role or ClusterRole
   name: "kubernikus:api"
@@ -152,4 +142,3 @@ rules:
   - list
   - get
   - watch
-{{- end }}
