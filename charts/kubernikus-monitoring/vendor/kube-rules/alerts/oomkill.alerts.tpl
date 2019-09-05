@@ -35,7 +35,7 @@ groups:
       service: resources
       severity: info
       context: memory
-      meta: "{{`{{ $labels.namespace }}`}}/{{`{{ $labels.pod_name }}`}}"
+      meta: "{{`{{ $labels.namespace }}`}}/{{`{{ $labels.pod_name }}`}}/{{`{{ $labels.container_name }}`}}"
     annotations:
       summary: Pod will likely exceed memory limits in 8h
-      description: The pod {{`{{ $labels.namespace }}`}}/{{`{{ $labels.pod_name }}`}} will exceed its memory limit in 8h.
+      description: The {{`{{ $labels.container_name }}`}} container of pod {{`{{ $labels.namespace }}`}}/{{`{{ $labels.pod_name }}`}} will exceed its memory limit in 8h.
