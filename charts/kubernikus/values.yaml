@@ -30,3 +30,5 @@ operator:
   controllers: []
   nodeAffinity: true
   metrics_port: 9091
+
+includeRBAC: false

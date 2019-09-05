@@ -2,5 +2,8 @@ dependencies:
 - name: k8sniff
   repository: file://../k8sniff
   version: 0.1.0
-digest: sha256:49a6c477d10bf9b7197ca5803911aaf41cecf3534df4c18d661bdbaacd351872
-generated: 2017-10-02T10:21:29.037591+02:00
+- name: rbac
+  repository: file://vendor/rbac
+  version: 0.1.0
+digest: sha256:d971ca00147c2a69962441712b7bceb84b54f0f17a6968bc846bcdacd89ff2de
+generated: 2019-09-04T09:36:43.214912+02:00
