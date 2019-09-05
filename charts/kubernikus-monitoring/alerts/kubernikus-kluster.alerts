@@ -8,7 +8,6 @@ groups:
       tier: kks
       service: ground
       severity: info
-      context: kluster
       meta: "{{ $labels.kluster_id }} stuck in {{ $labels.phase }}"
     annotations:
       description: Kluster {{ $labels.kluster_id }} is stuck in {{ $labels.phase }} for 1h
@@ -21,7 +20,6 @@ groups:
       tier: kks
       service: ground
       severity: warning
-      context: kluster
       meta: "{{ $labels.kluster_id }} stuck in {{ $labels.phase }}"
     annotations:
       description: Kluster {{ $labels.kluster_id }} is stuck in {{ $labels.phase }} for 1h
@@ -34,7 +32,6 @@ groups:
       tier: kks
       service: ground
       severity: critical
-      context: kluster
       meta: "Investigate kubernikus control-plane {{ $labels.cluster }}"
     annotations:
       description: Klusters can't be created within 10min. There is a problem with the kubernikus control-plane {{ $labels.cluster }}. Most likely because volumes don't attach in time. Login to {{ $labels.cluster }} and investiage why pods in the `kubernikus` namespace can't start.
@@ -47,7 +44,6 @@ groups:
       tier: kks
       service: kubernikus
       severity: warning
-      context: kluster
       meta: "{{ $labels.kubernetes_name }} is unavailable"
     annotations:
       description: "{{ $labels.kubernetes_name }} is unavailable since 10m"
