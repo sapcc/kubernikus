@@ -8,8 +8,8 @@ RUN curl -Lf https://storage.googleapis.com/kubernetes-helm/helm-v2.10.0-linux-a
 		| tar --strip-components=1 -C /usr/local/bin -zxv \
 		&& helm version -c
 
-RUN curl -Lf https://github.com/prometheus/prometheus/releases/download/v2.4.2/prometheus-2.4.2.linux-amd64.tar.gz \
-		| tar --strip-components=1 -C /usr/local/bin -zxv prometheus-2.4.2.linux-amd64/promtool \
+RUN curl -Lf https://github.com/prometheus/prometheus/releases/download/v2.12.0/prometheus-2.12.0.linux-amd64.tar.gz \
+		| tar --strip-components=1 -C /usr/local/bin -zxv prometheus-2.12.0.linux-amd64/promtool \
 		&& promtool --version
 
 RUN curl -Lfo /usr/local/bin/yq https://github.com/mikefarah/yq/releases/download/2.2.1/yq_linux_amd64 \

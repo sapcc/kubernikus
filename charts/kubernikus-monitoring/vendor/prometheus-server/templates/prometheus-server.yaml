@@ -138,3 +138,15 @@ spec:
   tolerations:
 {{ toYaml .Values.tolerations | indent 4 }}
   {{ end }}
+
+  {{ if .Values.affinity }}
+  # Assign custom affinity rules to the prometheus instance.
+  affinity:
+{{ toYaml .Values.affinity | indent 4 }}
+  {{ end }}
+
+  {{ if .Values.nodeSelector }}
+  # Define which Nodes the Pods are scheduled on.
+  nodeSelector:
+{{ toYaml .Values.nodeSelector | indent 4 }}
+  {{ end }}

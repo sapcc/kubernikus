@@ -13,7 +13,7 @@ dependencies:
   version: 1.1.0
 - name: prometheus-server
   repository: file://vendor/prometheus-server
-  version: 1.1.13
+  version: 1.2.1
 - name: oomkill-exporter
   repository: file://vendor/oomkill-exporter
   version: 0.1.0
@@ -23,5 +23,5 @@ dependencies:
 - name: ping-exporter
   repository: file://vendor/ping-exporter
   version: 0.1.0
-digest: sha256:e8bd061f51835174a919e7307830a9e357fba8c4b1ebc7d564e40001dba05cf3
-generated: 2019-06-26T12:51:53.557951482+02:00
+digest: sha256:4756dff267e4027124e342e3e957c6f1b1d74fb0ff2859e2158e99f4ab150659
+generated: 2019-08-30T17:07:01.693171847+02:00

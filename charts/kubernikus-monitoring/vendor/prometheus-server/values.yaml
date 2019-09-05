@@ -13,10 +13,13 @@ global:
   # Defaults to region if not set.
   # cluster:
 
+  # Optional tier for Prometheus alerts.
+  # tier: k8s
+
 # The repository and tag of the Prometheus image.
 image:
   repository: prom/prometheus
-  tag: v2.9.2
+  tag: v2.12.0
 
 # Mandatory name for this Prometheus.
 # The name is used to find relevant aggregation and alerting rules.
@@ -78,6 +81,7 @@ ingress:
   # Client certificate authentication on ingress level.
   authentication:
     enabled: true
+
     # The key (<namespace>/<name>) of the secret containing the CA certificate (`ca.crt`) that is enabled to authenticate against this Ingress.
     authTLSSecret: kube-system/ingress-cacrt
 
@@ -112,15 +116,16 @@ rbac:
   create: true
 
 # ServiceAccount to use for the Prometheus server.
+# Note that a ServiceAccount with name `default` cannot be created.
+# Instead the generated name will be used.
 serviceAccount:
   create: true
 
   # Optional name of the service account.
   # If not provided one will be generated in the format: prometheus-<name>.
-  name:
+  name: ""
 
 # Thanos configuration.
-
 thanos:
   # Enable Thanos components and Prometheus sidecar.
   enabled: false
@@ -129,6 +134,19 @@ thanos:
   # If `thanos.spec.peers` is set this values is ignored
   # Defaults to `thanos-peers.{{ .Release.Namespace }}.svc:10900`
   peers: ""
+
+  # Deploy an OpenstackSeed custom resource triggering creation of an Openstack user and Swift container used to persist Prometheus metrics.
+  # See: https://github.com/sapcc/kubernetes-operators/tree/master/openstack-seeder
+  seed:
+    # If disabled the user and container need to exist.
+    enabled: true
+
+    # List of required OpenstackSeeds that need to be resolved before.
+    # Warning: This list is rather specific to SAP Converged Cloud.
+    requires:
+      - swift/swift-seed
+      - monsoon3/domain-ccadmin-seed
+      - monsoon3/domain-default-seed
 
   # Configuration for OpenStack Swift Thanos storage backend.
   swiftStorageConfig: {}
@@ -207,3 +225,16 @@ serviceDiscoveries:
 # The pod's tolerations.
 # See https://kubernetes.io/docs/concepts/configuration/taint-and-toleration
 tolerations: []
+
+# Assign custom affinity rules to the prometheus instance.
+# See https://kubernetes.io/docs/concepts/configuration/assign-pod-node
+affinity: {}
+
+# Define which Nodes the Pods are scheduled on.
+# See https://kubernetes.io/docs/user-guide/node-selection
+nodeSelector: {}
+
+# The tier of the alerts.
+# If set .Values.global.tier takes precedence.
+alerts:
+  tier: k8s

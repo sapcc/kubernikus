@@ -1,0 +1,46 @@
+global:
+  region: regionOne
+  domain: evil.corp
+  clusterType: controlplane
+  cluster: x-regionOne
+  tier: alertTierKubernetes
+
+externalLabels:
+  foo: bar
+
+name: regionOnePrometheus
+retentionTime: 7d
+
+ingress:
+  enabled: true
+  host: regionOnePrometheus
+
+persistence:
+  enabled: true
+  size: 300Gi
+
+serviceAccount:
+  create: true
+  name: default
+
+serviceDiscoveries:
+  endpoints:
+    enabled: true
+  pods:
+    enabled: true
+
+# Send alerts to these alertmanagers.
+alertmanagers:
+  - alertmanager.evil.corp
+
+thanos:
+  enabled: true
+  swiftStorageConfig:
+    authURL: https://keystone.evil.corp/v3
+    userName: prometheus
+    userDomainName: Default
+    password: topSecret!
+    domainName: Default
+    tenantName: master
+    regionName: regionOne
+    containerName: regionOnePrometheusThanos

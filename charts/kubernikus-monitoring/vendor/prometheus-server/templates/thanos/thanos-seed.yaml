@@ -1,4 +1,4 @@
-{{- if .Values.thanos.enabled }}
+{{- if and .Values.thanos.enabled .Values.thanos.seed.enabled }}
 apiVersion: "openstack.stable.sap.cc/v1"
 kind: OpenstackSeed
 metadata:
@@ -7,10 +7,10 @@ metadata:
     prometheus: {{ include "prometheus.name" . }}
 
 spec:
+  {{ if .Values.thanos.seed.requires }}
   requires:
-    - swift/swift-seed
-    - monsoon3/domain-ccadmin-seed
-    - monsoon3/domain-default-seed
+{{ toYaml .Values.thanos.seed.requires | indent 4 }}
+  {{ end }}
 
   domains:
     - name: {{ required ".Values.thanos.swiftStorageConfig.userDomainName missing" .Values.thanos.swiftStorageConfig.userDomainName }}
@@ -18,15 +18,15 @@ spec:
         - name: {{ required ".Values.thanos.swiftStorageConfig.userName missing" .Values.thanos.swiftStorageConfig.userName }}
           description: Thanos Service User
           password: {{ required ".Values.thanos.swiftStorageConfig.password missing" .Values.thanos.swiftStorageConfig.password | quote }}
-          roles:
+          role_assignments:
             - project: service
               role:    service
 
     - name: {{ required ".Values.thanos.swiftStorageConfig.domainName missing" .Values.thanos.swiftStorageConfig.domainName }}
       projects:
         - name: {{ include "thanos.projectName" . }}
-          roles:
-            # Permission to write to ccadmin/master containers.
+          role_assignments:
+            # Read/write permission to $domain/$project containers.
             - user: {{ required ".Values.thanos.swiftStorageConfig.userName missing" .Values.thanos.swiftStorageConfig.userName }}@{{ required ".Values.thanos.swiftStorageConfig.userDomainName missing" .Values.thanos.swiftStorageConfig.userDomainName }}
               role: swiftoperator
           swift:

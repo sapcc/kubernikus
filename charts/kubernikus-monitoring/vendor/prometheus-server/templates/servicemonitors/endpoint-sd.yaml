@@ -25,6 +25,7 @@ spec:
       interval: 60s
       scrapeTimeout: 55s
       scheme: http
+      honorLabels: true
       relabelings:
         - action: keep
           sourceLabels:
@@ -52,7 +53,7 @@ spec:
             - __address__
             - __meta_kubernetes_service_annotation_prometheus_io_port
           targetLabel: __address__
-          regex: '([^:]+)(?::\d+);(\d+)'
+          regex: '([^:]+)(?::\d+)?;(\d+)'
           replacement: $1:$2
         - action: labelmap
           regex: '__meta_kubernetes_service_label_(.+)'
@@ -65,11 +66,25 @@ spec:
         - action: labelmap
           replacement: __param_$1
           regex: '__meta_kubernetes_service_annotation_prometheus_io_scrape_param_(.+)'
+        - action: replace
+          targetLabel: region
+          replacement: {{ required ".Values.global.region undefined" .Values.global.region }}
+        {{ if .Values.global.clusterType }}
+        - action: replace
+          targetLabel: cluster_type
+          replacement: {{ .Values.global.clusterType }}
+        {{ end }}
+        {{ if .Values.global.cluster }}
+        - action: replace
+          targetLabel: cluster
+          replacement: {{ .Values.global.cluster }}
+        {{ end }}
 
     - bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
       interval: 60s
       scrapeTimeout: 55s
       scheme: http
+      honorLabels: true
       relabelings:
         - action: keep
           sourceLabels:
@@ -101,7 +116,7 @@ spec:
             - __address__
             - __meta_kubernetes_service_annotation_prometheus_io_port_1
           targetLabel: __address__
-          regex: '([^:]+)(?::\d+);(\d+)'
+          regex: '([^:]+)(?::\d+)?;(\d+)'
           replacement: $1:$2
         - action: labelmap
           regex: '__meta_kubernetes_service_label_(.+)'
@@ -114,4 +129,17 @@ spec:
         - action: labelmap
           replacement: __param_$1
           regex: '__meta_kubernetes_service_annotation_prometheus_io_scrape_param_(.+)'
+        - action: replace
+          targetLabel: region
+          replacement: {{ required ".Values.global.region undefined" .Values.global.region }}
+        {{ if .Values.global.clusterType }}
+        - action: replace
+          targetLabel: cluster_type
+          replacement: {{ .Values.global.clusterType }}
+        {{ end }}
+        {{ if .Values.global.cluster }}
+        - action: replace
+          targetLabel: cluster
+          replacement: {{ .Values.global.cluster }}
+        {{ end }}
 {{- end }}
