@@ -186,7 +186,7 @@ func NewKubernikusOperator(options *KubernikusOperatorOptions, logger log.Logger
 		case "deorbiter":
 			o.Config.Kubernikus.Controllers["deorbiter"] = deorbit.NewController(10, o.Factories, o.Clients, recorder, logger)
 		case "flight":
-			o.Config.Kubernikus.Controllers["flight"] = flight.NewController(5, o.Factories, o.Clients, recorder, logger)
+			o.Config.Kubernikus.Controllers["flight"] = flight.NewController(10, o.Factories, o.Clients, recorder, logger)
 		case "migration":
 			o.Config.Kubernikus.Controllers["migration"] = migration.NewController(10, o.Factories, o.Clients, recorder, logger)
 		case "hammertime":

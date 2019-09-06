@@ -28,8 +28,8 @@ type AdminClient interface {
 	GetKubernikusCatalogEntry() (string, error)
 	GetRegion() (string, error)
 	CreateStorageContainer(projectID, containerName, serviceUserName, serviceUserDomainName string) error
-	AssignUserRoles(string, string, string, []string) error
-	GetUserRoles(string, string, string) ([]string, error)
+	AssignUserRoles(projectID, userName, domainName string, userRoles []string) error
+	GetUserRoles(projectID, userName, domainName string) ([]string, error)
 	GetDefaultServiceUserRoles() []string
 }
 
