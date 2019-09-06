@@ -28,7 +28,9 @@ groups:
       description: The pod {{`{{ $labels.namespace }}`}}/{{`{{ $labels.pod_name }}`}} killed several times in short succession. This could be due to wrong resource limits.
 
   - alert: PodOOMExceedingLimits
-    expr: max(predict_linear(container_memory_working_set_bytes{pod_name=~".+"}[1h], 8 * 3600)) by (container_name, pod_name, namespace)  >  max(label_replace(label_replace(kube_pod_container_resource_limits_memory_bytes{pod=~".+"}, "pod_name", "$1", "pod", "(.*)"), "container_name", "$1", "container", "(.*)")) by (container_name, pod_name, namespace)
+    # return all containers that will exceed their memory limits in the next 8 hours
+    # exclude pods that have been created or restarted in the last hour to avoid false positives
+    expr: max by(container, pod, namespace) (label_replace(label_replace(predict_linear(container_memory_working_set_bytes{pod_name=~".+"}[1h], 8*3600), "pod", "$1", "pod_name", "(.*)"), "container", "$1", "container_name", "(.*)")) > max by(container, pod, namespace) (kube_pod_container_resource_limits_memory_bytes{pod=~".+"}) unless on(pod, container, namespace) (increase(kube_pod_container_status_restarts_total[1h]) > 0 or kube_pod_container_status_restarts_total unless kube_pod_container_status_restarts_total offset 1h)
     for: 5m
     labels:
       tier: {{ required ".Values.tier missing" .Values.tier }}
