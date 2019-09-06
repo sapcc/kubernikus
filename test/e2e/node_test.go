@@ -226,6 +226,7 @@ func (k *NodeTests) SameBuildingBlock(t *testing.T) {
 	serversListOpts := servers.ListOpts{
 		Name:     k.KlusterName,
 		TenantID: project.ID,
+		Status:   "ACTIVE",
 	}
 
 	allPages, err := servers.List(computeClient, serversListOpts).AllPages()
@@ -238,7 +239,7 @@ func (k *NodeTests) SameBuildingBlock(t *testing.T) {
 	err = servers.ExtractServersInto(allPages, &s)
 	require.NoError(t, err, "There should be no error extracting server info")
 
-	require.Len(t, s, k.ExpectedNodeCount, "Expeted to find %d building blocks", k.ExpectedNodeCount)
+	require.Len(t, s, k.ExpectedNodeCount, "Expected to find %d building blocks", k.ExpectedNodeCount)
 
 	bb := ""
 	for _, bbs := range s {
