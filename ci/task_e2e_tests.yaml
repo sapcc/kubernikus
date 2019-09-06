@@ -9,6 +9,8 @@ image_resource:
 inputs:
   - name: kubernikus.builds
     path: gopath/src/github.com/sapcc/kubernikus
+outputs:
+  - name: test-result
 caches:
   - path: cache
 run:
@@ -17,7 +19,6 @@ run:
     - -c
     - |
       set -o pipefail
-      SENTRY_CLI=$PWD/cache/sentry-cli-1.37.0
       export GOPATH=$PWD/gopath
       cd gopath/src/github.com/sapcc/kubernikus
 
@@ -25,14 +26,11 @@ run:
       export RUN_PARALLEL=false
       make test-e2e | tee test.output
       rc=$?
-      if [ "$SENTRY_DSN" != "" ] && [ $rc -ne 0 ] ; then
-        #Get the longest uniq (!) whitespace prefix of --- FAIL: lines
+      #Get the longest uniq (!) whitespace prefix of --- FAIL: lines
+      if [ $rc -ne 0 ] ; then
         ws_count=$(grep -- '--- FAIL:' test.output| grep -v -- '->'| awk '{ match($0, /^ */); printf("%d\n", RLENGTH, substr($0,RLENGTH+1)) }' | sort|uniq -u |tail -1)
         test_name=$(sed -n -E  "s/^ {$ws_count}--- FAIL: (.*) \([.0-9]*s\)$/\1/p" test.output)
-        curl -sLo $SENTRY_CLI -z $SENTRY_CLI https://github.com/getsentry/sentry-cli/releases/download/1.37.0/sentry-cli-Linux-x86_64
-        chmod +x $SENTRY_CLI
-        unset http_proxy https_proxy no_proxy
-        $SENTRY_CLI send-event -m "Failed to run $test_name" -E $OS_REGION_NAME --no-environ --logfile test.output
+        echo "Test $test_name has failed" > test-result/content
       fi
       exit $rc
 
@@ -44,7 +42,6 @@ params:
   OS_PROJECT_NAME:
   OS_PROJECT_DOMAIN_NAME:
   OS_REGION_NAME:
-  SENTRY_DSN:
   CP_OS_PROJECT_NAME:
   CP_OS_PROJECT_DOMAIN_NAME:
   CP_KUBERNIKUS_URL:

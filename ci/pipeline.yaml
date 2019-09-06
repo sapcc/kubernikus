@@ -691,6 +691,8 @@ task_e2e_tests: &task_e2e_tests
   inputs:
     - name: kubernikus.builds
       path: gopath/src/github.com/sapcc/kubernikus
+  outputs:
+    - name: test-result
   caches:
     - path: cache
   run:
@@ -699,7 +701,6 @@ task_e2e_tests: &task_e2e_tests
       - -c
       - |
         set -o pipefail
-        SENTRY_CLI=$PWD/cache/sentry-cli-1.37.0
         export GOPATH=$PWD/gopath
         cd gopath/src/github.com/sapcc/kubernikus
   
@@ -707,14 +708,11 @@ task_e2e_tests: &task_e2e_tests
         export RUN_PARALLEL=false
         make test-e2e | tee test.output
         rc=$?
-        if [ "$SENTRY_DSN" != "" ] && [ $rc -ne 0 ] ; then
-          #Get the longest uniq (!) whitespace prefix of --- FAIL: lines
+        #Get the longest uniq (!) whitespace prefix of --- FAIL: lines
+        if [ $rc -ne 0 ] ; then
           ws_count=$(grep -- '--- FAIL:' test.output| grep -v -- '->'| awk '{ match($0, /^ */); printf("%d\n", RLENGTH, substr($0,RLENGTH+1)) }' | sort|uniq -u |tail -1)
           test_name=$(sed -n -E  "s/^ {$ws_count}--- FAIL: (.*) \([.0-9]*s\)$/\1/p" test.output)
-          curl -sLo $SENTRY_CLI -z $SENTRY_CLI https://github.com/getsentry/sentry-cli/releases/download/1.37.0/sentry-cli-Linux-x86_64
-          chmod +x $SENTRY_CLI
-          unset http_proxy https_proxy no_proxy
-          $SENTRY_CLI send-event -m "Failed to run $test_name" -E $OS_REGION_NAME --no-environ --logfile test.output
+          echo "Test $test_name has failed" > test-result/content
         fi
         exit $rc
   
@@ -726,7 +724,6 @@ task_e2e_tests: &task_e2e_tests
     OS_PROJECT_NAME:
     OS_PROJECT_DOMAIN_NAME:
     OS_REGION_NAME:
-    SENTRY_DSN:
     CP_OS_PROJECT_NAME:
     CP_OS_PROJECT_DOMAIN_NAME:
     CP_KUBERNIKUS_URL:
@@ -764,7 +761,7 @@ task_helm-admin_kubernikus: &task_helm-admin_kubernikus
     type: docker-image
     source:
       repository: hub.global.cloud.sap/monsoon/kubectl
-      tag: 'v1.7.7'
+      tag: 'v1.8.15-v2.11.0'
   
   inputs:
     - name: kubernikus.builds
@@ -778,6 +775,13 @@ task_helm-admin_kubernikus: &task_helm-admin_kubernikus
         set -exo pipefail
         VERSION=$(cat kubernikus.builds/.git/HEAD)
         helm dep up --skip-refresh kubernikus.builds/charts/kubernikus/
+        helm diff upgrade $KUBERNIKUS_NAME kubernikus.builds/charts/kubernikus/ \
+          --values secrets.git/global/values/kubernikus.yaml \
+          --values secrets.git/kubernikus/$KUBERNIKUS_NAME/values/kubernikus.yaml \
+          --values secrets.git/admin/values/$KUBERNIKUS_NAME.yaml \
+          --set imageTag=$VERSION \
+          --suppress-secrets \
+          --allow-unreleased
         helm upgrade $KUBERNIKUS_NAME kubernikus.builds/charts/kubernikus/ \
           --namespace=$KUBERNIKUS_NAME \
           --values secrets.git/global/values/kubernikus.yaml \
@@ -1089,10 +1093,10 @@ task_tiller: &task_tiller
 
 
 slack: &slack
-  on_success: { put: slack, inputs: [], params: {alert_type: fixed } }
-  on_failure: { put: slack, inputs: [], params: {alert_type: broke } }
-  on_abort:   { put: slack, inputs: [], params: {alert_type: broke } }
-  on_error:   { put: slack, inputs: [], params: {alert_type: broke } }
+  on_success: { put: slack-alert, inputs: [], params: {alert_type: fixed } }
+  on_failure: { put: slack-alert, inputs: [], params: {alert_type: broke } }
+  on_abort:   { put: slack-alert, inputs: [], params: {alert_type: broke } }
+  on_error:   { put: slack-alert, inputs: [], params: {alert_type: broke } }
 
 
 resources:
@@ -1162,12 +1166,18 @@ resources:
       branch: master
       paths:  [ system/prometheus-operator/ ]
 
-  - name: slack
+  - name: slack-alert
     type: slack-alert
     icon: slack
     source:
       url: ((slack-webhook-url))
       channel: '#kubernikus-ci'
+
+  - name: slack-notification
+    type: slack-notification
+    icon: slack
+    source:
+      url: ((slack-webhook-url))
 
 
   - name: ASIA.tag
@@ -1201,6 +1211,12 @@ resource_types:
     type: docker-image
     source:
       repository: arbourd/concourse-slack-alert-resource
+  - name: slack-notification
+    type: docker-image
+    source:
+      repository: cfcommunity/slack-notification-resource
+      tag: latest
+
   - name: gh-status
     type: docker-image
     source:
@@ -1513,8 +1529,19 @@ jobs:
         timeout: 45m
         params:
           <<: *auth_e2e_ap-ae-1
-          #SENTRY_DSN: ((sentry-soak-tests))
-    <<: *slack
+        on_error:
+          put: slack-notification
+          params:
+            channel: '#kubernikus-ci'
+            text_file: test-result/content
+            text: |
+              Soak test in ap-ae-1 failed.
+              $TEXT_FILE_CONTENT
+              $ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME
+    on_success: { put: slack-alert, inputs: [], params: {alert_type: fixed } }
+    on_failure: { put: slack-alert, inputs: [], params: {alert_type: broke } }
+    on_abort:   { put: slack-alert, inputs: [], params: {alert_type: broke } }
+    #on_error:   { put: slack, inputs: [], params: {alert_type: broke } }
 
 
 
@@ -1646,8 +1673,19 @@ jobs:
         timeout: 45m
         params:
           <<: *auth_e2e_ap-au-1
-          #SENTRY_DSN: ((sentry-soak-tests))
-    <<: *slack
+        on_error:
+          put: slack-notification
+          params:
+            channel: '#kubernikus-ci'
+            text_file: test-result/content
+            text: |
+              Soak test in ap-au-1 failed.
+              $TEXT_FILE_CONTENT
+              $ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME
+    on_success: { put: slack-alert, inputs: [], params: {alert_type: fixed } }
+    on_failure: { put: slack-alert, inputs: [], params: {alert_type: broke } }
+    on_abort:   { put: slack-alert, inputs: [], params: {alert_type: broke } }
+    #on_error:   { put: slack, inputs: [], params: {alert_type: broke } }
 
 
 
@@ -1787,8 +1825,19 @@ jobs:
         timeout: 45m
         params:
           <<: *auth_e2e_ap-cn-1
-          #SENTRY_DSN: ((sentry-soak-tests))
-    <<: *slack
+        on_error:
+          put: slack-notification
+          params:
+            channel: '#kubernikus-ci'
+            text_file: test-result/content
+            text: |
+              Soak test in ap-cn-1 failed.
+              $TEXT_FILE_CONTENT
+              $ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME
+    on_success: { put: slack-alert, inputs: [], params: {alert_type: fixed } }
+    on_failure: { put: slack-alert, inputs: [], params: {alert_type: broke } }
+    on_abort:   { put: slack-alert, inputs: [], params: {alert_type: broke } }
+    #on_error:   { put: slack, inputs: [], params: {alert_type: broke } }
 
 
 
@@ -1928,8 +1977,19 @@ jobs:
         timeout: 45m
         params:
           <<: *auth_e2e_ap-jp-1
-          #SENTRY_DSN: ((sentry-soak-tests))
-    <<: *slack
+        on_error:
+          put: slack-notification
+          params:
+            channel: '#kubernikus-ci'
+            text_file: test-result/content
+            text: |
+              Soak test in ap-jp-1 failed.
+              $TEXT_FILE_CONTENT
+              $ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME
+    on_success: { put: slack-alert, inputs: [], params: {alert_type: fixed } }
+    on_failure: { put: slack-alert, inputs: [], params: {alert_type: broke } }
+    on_abort:   { put: slack-alert, inputs: [], params: {alert_type: broke } }
+    #on_error:   { put: slack, inputs: [], params: {alert_type: broke } }
 
 
 
@@ -2069,8 +2129,19 @@ jobs:
         timeout: 45m
         params:
           <<: *auth_e2e_ap-jp-2
-          #SENTRY_DSN: ((sentry-soak-tests))
-    <<: *slack
+        on_error:
+          put: slack-notification
+          params:
+            channel: '#kubernikus-ci'
+            text_file: test-result/content
+            text: |
+              Soak test in ap-jp-2 failed.
+              $TEXT_FILE_CONTENT
+              $ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME
+    on_success: { put: slack-alert, inputs: [], params: {alert_type: fixed } }
+    on_failure: { put: slack-alert, inputs: [], params: {alert_type: broke } }
+    on_abort:   { put: slack-alert, inputs: [], params: {alert_type: broke } }
+    #on_error:   { put: slack, inputs: [], params: {alert_type: broke } }
 
 
 
@@ -2210,8 +2281,19 @@ jobs:
         timeout: 45m
         params:
           <<: *auth_e2e_ap-sa-1
-          #SENTRY_DSN: ((sentry-soak-tests))
-    <<: *slack
+        on_error:
+          put: slack-notification
+          params:
+            channel: '#kubernikus-ci'
+            text_file: test-result/content
+            text: |
+              Soak test in ap-sa-1 failed.
+              $TEXT_FILE_CONTENT
+              $ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME
+    on_success: { put: slack-alert, inputs: [], params: {alert_type: fixed } }
+    on_failure: { put: slack-alert, inputs: [], params: {alert_type: broke } }
+    on_abort:   { put: slack-alert, inputs: [], params: {alert_type: broke } }
+    #on_error:   { put: slack, inputs: [], params: {alert_type: broke } }
 
 
 
@@ -2408,8 +2490,19 @@ jobs:
         timeout: 45m
         params:
           <<: *auth_e2e_eu-de-1
-          #SENTRY_DSN: ((sentry-soak-tests))
-    <<: *slack
+        on_error:
+          put: slack-notification
+          params:
+            channel: '#kubernikus-ci'
+            text_file: test-result/content
+            text: |
+              Soak test in eu-de-1 failed.
+              $TEXT_FILE_CONTENT
+              $ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME
+    on_success: { put: slack-alert, inputs: [], params: {alert_type: fixed } }
+    on_failure: { put: slack-alert, inputs: [], params: {alert_type: broke } }
+    on_abort:   { put: slack-alert, inputs: [], params: {alert_type: broke } }
+    #on_error:   { put: slack, inputs: [], params: {alert_type: broke } }
 
 
 
@@ -2541,8 +2634,19 @@ jobs:
         timeout: 45m
         params:
           <<: *auth_e2e_eu-de-2
-          #SENTRY_DSN: ((sentry-soak-tests))
-    <<: *slack
+        on_error:
+          put: slack-notification
+          params:
+            channel: '#kubernikus-ci'
+            text_file: test-result/content
+            text: |
+              Soak test in eu-de-2 failed.
+              $TEXT_FILE_CONTENT
+              $ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME
+    on_success: { put: slack-alert, inputs: [], params: {alert_type: fixed } }
+    on_failure: { put: slack-alert, inputs: [], params: {alert_type: broke } }
+    on_abort:   { put: slack-alert, inputs: [], params: {alert_type: broke } }
+    #on_error:   { put: slack, inputs: [], params: {alert_type: broke } }
 
 
 
@@ -2674,8 +2778,19 @@ jobs:
         timeout: 45m
         params:
           <<: *auth_e2e_eu-nl-1
-          #SENTRY_DSN: ((sentry-soak-tests))
-    <<: *slack
+        on_error:
+          put: slack-notification
+          params:
+            channel: '#kubernikus-ci'
+            text_file: test-result/content
+            text: |
+              Soak test in eu-nl-1 failed.
+              $TEXT_FILE_CONTENT
+              $ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME
+    on_success: { put: slack-alert, inputs: [], params: {alert_type: fixed } }
+    on_failure: { put: slack-alert, inputs: [], params: {alert_type: broke } }
+    on_abort:   { put: slack-alert, inputs: [], params: {alert_type: broke } }
+    #on_error:   { put: slack, inputs: [], params: {alert_type: broke } }
 
 
 
@@ -2815,8 +2930,19 @@ jobs:
         timeout: 45m
         params:
           <<: *auth_e2e_eu-ru-1
-          #SENTRY_DSN: ((sentry-soak-tests))
-    <<: *slack
+        on_error:
+          put: slack-notification
+          params:
+            channel: '#kubernikus-ci'
+            text_file: test-result/content
+            text: |
+              Soak test in eu-ru-1 failed.
+              $TEXT_FILE_CONTENT
+              $ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME
+    on_success: { put: slack-alert, inputs: [], params: {alert_type: fixed } }
+    on_failure: { put: slack-alert, inputs: [], params: {alert_type: broke } }
+    on_abort:   { put: slack-alert, inputs: [], params: {alert_type: broke } }
+    #on_error:   { put: slack, inputs: [], params: {alert_type: broke } }
 
 
 
@@ -3029,8 +3155,19 @@ jobs:
         timeout: 45m
         params:
           <<: *auth_e2e_la-br-1
-          #SENTRY_DSN: ((sentry-soak-tests))
-    <<: *slack
+        on_error:
+          put: slack-notification
+          params:
+            channel: '#kubernikus-ci'
+            text_file: test-result/content
+            text: |
+              Soak test in la-br-1 failed.
+              $TEXT_FILE_CONTENT
+              $ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME
+    on_success: { put: slack-alert, inputs: [], params: {alert_type: fixed } }
+    on_failure: { put: slack-alert, inputs: [], params: {alert_type: broke } }
+    on_abort:   { put: slack-alert, inputs: [], params: {alert_type: broke } }
+    #on_error:   { put: slack, inputs: [], params: {alert_type: broke } }
 
 
 
@@ -3170,8 +3307,19 @@ jobs:
         timeout: 45m
         params:
           <<: *auth_e2e_na-ca-1
-          #SENTRY_DSN: ((sentry-soak-tests))
-    <<: *slack
+        on_error:
+          put: slack-notification
+          params:
+            channel: '#kubernikus-ci'
+            text_file: test-result/content
+            text: |
+              Soak test in na-ca-1 failed.
+              $TEXT_FILE_CONTENT
+              $ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME
+    on_success: { put: slack-alert, inputs: [], params: {alert_type: fixed } }
+    on_failure: { put: slack-alert, inputs: [], params: {alert_type: broke } }
+    on_abort:   { put: slack-alert, inputs: [], params: {alert_type: broke } }
+    #on_error:   { put: slack, inputs: [], params: {alert_type: broke } }
 
 
 
@@ -3303,8 +3451,19 @@ jobs:
         timeout: 45m
         params:
           <<: *auth_e2e_na-us-1
-          #SENTRY_DSN: ((sentry-soak-tests))
-    <<: *slack
+        on_error:
+          put: slack-notification
+          params:
+            channel: '#kubernikus-ci'
+            text_file: test-result/content
+            text: |
+              Soak test in na-us-1 failed.
+              $TEXT_FILE_CONTENT
+              $ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME
+    on_success: { put: slack-alert, inputs: [], params: {alert_type: fixed } }
+    on_failure: { put: slack-alert, inputs: [], params: {alert_type: broke } }
+    on_abort:   { put: slack-alert, inputs: [], params: {alert_type: broke } }
+    #on_error:   { put: slack, inputs: [], params: {alert_type: broke } }
 
 
 
@@ -3444,8 +3603,19 @@ jobs:
         timeout: 45m
         params:
           <<: *auth_e2e_na-us-2
-          #SENTRY_DSN: ((sentry-soak-tests))
-    <<: *slack
+        on_error:
+          put: slack-notification
+          params:
+            channel: '#kubernikus-ci'
+            text_file: test-result/content
+            text: |
+              Soak test in na-us-2 failed.
+              $TEXT_FILE_CONTENT
+              $ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME
+    on_success: { put: slack-alert, inputs: [], params: {alert_type: fixed } }
+    on_failure: { put: slack-alert, inputs: [], params: {alert_type: broke } }
+    on_abort:   { put: slack-alert, inputs: [], params: {alert_type: broke } }
+    #on_error:   { put: slack, inputs: [], params: {alert_type: broke } }
 
 
 
@@ -3585,8 +3755,19 @@ jobs:
         timeout: 45m
         params:
           <<: *auth_e2e_na-us-3
-          #SENTRY_DSN: ((sentry-soak-tests))
-    <<: *slack
+        on_error:
+          put: slack-notification
+          params:
+            channel: '#kubernikus-ci'
+            text_file: test-result/content
+            text: |
+              Soak test in na-us-3 failed.
+              $TEXT_FILE_CONTENT
+              $ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME
+    on_success: { put: slack-alert, inputs: [], params: {alert_type: fixed } }
+    on_failure: { put: slack-alert, inputs: [], params: {alert_type: broke } }
+    on_abort:   { put: slack-alert, inputs: [], params: {alert_type: broke } }
+    #on_error:   { put: slack, inputs: [], params: {alert_type: broke } }
 
 
 
@@ -3775,8 +3956,19 @@ jobs:
         timeout: 45m
         params:
           <<: *auth_e2e_qa-de-1
-          #SENTRY_DSN: ((sentry-soak-tests))
-    <<: *slack
+        on_error:
+          put: slack-notification
+          params:
+            channel: '#kubernikus-ci'
+            text_file: test-result/content
+            text: |
+              Soak test in qa-de-1 failed.
+              $TEXT_FILE_CONTENT
+              $ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME
+    on_success: { put: slack-alert, inputs: [], params: {alert_type: fixed } }
+    on_failure: { put: slack-alert, inputs: [], params: {alert_type: broke } }
+    on_abort:   { put: slack-alert, inputs: [], params: {alert_type: broke } }
+    #on_error:   { put: slack, inputs: [], params: {alert_type: broke } }
 
 
 

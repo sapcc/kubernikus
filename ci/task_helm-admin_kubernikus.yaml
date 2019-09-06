@@ -4,7 +4,7 @@ image_resource:
   type: docker-image
   source:
     repository: hub.global.cloud.sap/monsoon/kubectl
-    tag: 'v1.7.7'
+    tag: 'v1.8.15-v2.11.0'
 
 inputs:
   - name: kubernikus.builds
@@ -18,6 +18,13 @@ run:
       set -exo pipefail
       VERSION=$(cat kubernikus.builds/.git/HEAD)
       helm dep up --skip-refresh kubernikus.builds/charts/kubernikus/
+      helm diff upgrade $KUBERNIKUS_NAME kubernikus.builds/charts/kubernikus/ \
+        --values secrets.git/global/values/kubernikus.yaml \
+        --values secrets.git/kubernikus/$KUBERNIKUS_NAME/values/kubernikus.yaml \
+        --values secrets.git/admin/values/$KUBERNIKUS_NAME.yaml \
+        --set imageTag=$VERSION \
+        --suppress-secrets \
+        --allow-unreleased
       helm upgrade $KUBERNIKUS_NAME kubernikus.builds/charts/kubernikus/ \
         --namespace=$KUBERNIKUS_NAME \
         --values secrets.git/global/values/kubernikus.yaml \
