@@ -19,6 +19,7 @@ run:
     - -c
     - |
       set -o pipefail
+      OUTPUT_DIR=$PWD/test-result
       export GOPATH=$PWD/gopath
       cd gopath/src/github.com/sapcc/kubernikus
 
@@ -30,7 +31,7 @@ run:
       if [ $rc -ne 0 ] ; then
         ws_count=$(grep -- '--- FAIL:' test.output| grep -v -- '->'| awk '{ match($0, /^ */); printf("%d\n", RLENGTH, substr($0,RLENGTH+1)) }' | sort|uniq -u |tail -1)
         test_name=$(sed -n -E  "s/^ {$ws_count}--- FAIL: (.*) \([.0-9]*s\)$/\1/p" test.output)
-        echo "Test $test_name has failed" > test-result/content
+        echo "Test $test_name has failed" > $OUTPUT_DIR/content
       fi
       exit $rc
 

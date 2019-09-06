@@ -701,6 +701,7 @@ task_e2e_tests: &task_e2e_tests
       - -c
       - |
         set -o pipefail
+        OUTPUT_DIR=$PWD/test-result
         export GOPATH=$PWD/gopath
         cd gopath/src/github.com/sapcc/kubernikus
   
@@ -712,7 +713,7 @@ task_e2e_tests: &task_e2e_tests
         if [ $rc -ne 0 ] ; then
           ws_count=$(grep -- '--- FAIL:' test.output| grep -v -- '->'| awk '{ match($0, /^ */); printf("%d\n", RLENGTH, substr($0,RLENGTH+1)) }' | sort|uniq -u |tail -1)
           test_name=$(sed -n -E  "s/^ {$ws_count}--- FAIL: (.*) \([.0-9]*s\)$/\1/p" test.output)
-          echo "Test $test_name has failed" > test-result/content
+          echo "Test $test_name has failed" > $OUTPUT_DIR/content
         fi
         exit $rc
   
@@ -1529,19 +1530,21 @@ jobs:
         timeout: 45m
         params:
           <<: *auth_e2e_ap-ae-1
-        on_error:
+        on_failure:
           put: slack-notification
           params:
             channel: '#kubernikus-ci'
+            text: Soak tests in ap-ae-1 failed
             text_file: test-result/content
-            text: |
-              Soak test in ap-ae-1 failed.
-              $TEXT_FILE_CONTENT
-              $ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME
+            attachments:
+              - text: $TEXT_FILE_CONTENT
+                color: "#d00000"
+                footer: $ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME
+                footer_icon: https://ci.concourse-ci.org/public/images/favicon-failed.png
+
     on_success: { put: slack-alert, inputs: [], params: {alert_type: fixed } }
-    on_failure: { put: slack-alert, inputs: [], params: {alert_type: broke } }
     on_abort:   { put: slack-alert, inputs: [], params: {alert_type: broke } }
-    #on_error:   { put: slack, inputs: [], params: {alert_type: broke } }
+    on_error:   { put: slack-alert, inputs: [], params: {alert_type: broke } }
 
 
 
@@ -1673,19 +1676,21 @@ jobs:
         timeout: 45m
         params:
           <<: *auth_e2e_ap-au-1
-        on_error:
+        on_failure:
           put: slack-notification
           params:
             channel: '#kubernikus-ci'
+            text: Soak tests in ap-au-1 failed
             text_file: test-result/content
-            text: |
-              Soak test in ap-au-1 failed.
-              $TEXT_FILE_CONTENT
-              $ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME
+            attachments:
+              - text: $TEXT_FILE_CONTENT
+                color: "#d00000"
+                footer: $ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME
+                footer_icon: https://ci.concourse-ci.org/public/images/favicon-failed.png
+
     on_success: { put: slack-alert, inputs: [], params: {alert_type: fixed } }
-    on_failure: { put: slack-alert, inputs: [], params: {alert_type: broke } }
     on_abort:   { put: slack-alert, inputs: [], params: {alert_type: broke } }
-    #on_error:   { put: slack, inputs: [], params: {alert_type: broke } }
+    on_error:   { put: slack-alert, inputs: [], params: {alert_type: broke } }
 
 
 
@@ -1825,19 +1830,21 @@ jobs:
         timeout: 45m
         params:
           <<: *auth_e2e_ap-cn-1
-        on_error:
+        on_failure:
           put: slack-notification
           params:
             channel: '#kubernikus-ci'
+            text: Soak tests in ap-cn-1 failed
             text_file: test-result/content
-            text: |
-              Soak test in ap-cn-1 failed.
-              $TEXT_FILE_CONTENT
-              $ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME
+            attachments:
+              - text: $TEXT_FILE_CONTENT
+                color: "#d00000"
+                footer: $ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME
+                footer_icon: https://ci.concourse-ci.org/public/images/favicon-failed.png
+
     on_success: { put: slack-alert, inputs: [], params: {alert_type: fixed } }
-    on_failure: { put: slack-alert, inputs: [], params: {alert_type: broke } }
     on_abort:   { put: slack-alert, inputs: [], params: {alert_type: broke } }
-    #on_error:   { put: slack, inputs: [], params: {alert_type: broke } }
+    on_error:   { put: slack-alert, inputs: [], params: {alert_type: broke } }
 
 
 
@@ -1977,19 +1984,21 @@ jobs:
         timeout: 45m
         params:
           <<: *auth_e2e_ap-jp-1
-        on_error:
+        on_failure:
           put: slack-notification
           params:
             channel: '#kubernikus-ci'
+            text: Soak tests in ap-jp-1 failed
             text_file: test-result/content
-            text: |
-              Soak test in ap-jp-1 failed.
-              $TEXT_FILE_CONTENT
-              $ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME
+            attachments:
+              - text: $TEXT_FILE_CONTENT
+                color: "#d00000"
+                footer: $ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME
+                footer_icon: https://ci.concourse-ci.org/public/images/favicon-failed.png
+
     on_success: { put: slack-alert, inputs: [], params: {alert_type: fixed } }
-    on_failure: { put: slack-alert, inputs: [], params: {alert_type: broke } }
     on_abort:   { put: slack-alert, inputs: [], params: {alert_type: broke } }
-    #on_error:   { put: slack, inputs: [], params: {alert_type: broke } }
+    on_error:   { put: slack-alert, inputs: [], params: {alert_type: broke } }
 
 
 
@@ -2129,19 +2138,21 @@ jobs:
         timeout: 45m
         params:
           <<: *auth_e2e_ap-jp-2
-        on_error:
+        on_failure:
           put: slack-notification
           params:
             channel: '#kubernikus-ci'
+            text: Soak tests in ap-jp-2 failed
             text_file: test-result/content
-            text: |
-              Soak test in ap-jp-2 failed.
-              $TEXT_FILE_CONTENT
-              $ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME
+            attachments:
+              - text: $TEXT_FILE_CONTENT
+                color: "#d00000"
+                footer: $ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME
+                footer_icon: https://ci.concourse-ci.org/public/images/favicon-failed.png
+
     on_success: { put: slack-alert, inputs: [], params: {alert_type: fixed } }
-    on_failure: { put: slack-alert, inputs: [], params: {alert_type: broke } }
     on_abort:   { put: slack-alert, inputs: [], params: {alert_type: broke } }
-    #on_error:   { put: slack, inputs: [], params: {alert_type: broke } }
+    on_error:   { put: slack-alert, inputs: [], params: {alert_type: broke } }
 
 
 
@@ -2281,19 +2292,21 @@ jobs:
         timeout: 45m
         params:
           <<: *auth_e2e_ap-sa-1
-        on_error:
+        on_failure:
           put: slack-notification
           params:
             channel: '#kubernikus-ci'
+            text: Soak tests in ap-sa-1 failed
             text_file: test-result/content
-            text: |
-              Soak test in ap-sa-1 failed.
-              $TEXT_FILE_CONTENT
-              $ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME
+            attachments:
+              - text: $TEXT_FILE_CONTENT
+                color: "#d00000"
+                footer: $ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME
+                footer_icon: https://ci.concourse-ci.org/public/images/favicon-failed.png
+
     on_success: { put: slack-alert, inputs: [], params: {alert_type: fixed } }
-    on_failure: { put: slack-alert, inputs: [], params: {alert_type: broke } }
     on_abort:   { put: slack-alert, inputs: [], params: {alert_type: broke } }
-    #on_error:   { put: slack, inputs: [], params: {alert_type: broke } }
+    on_error:   { put: slack-alert, inputs: [], params: {alert_type: broke } }
 
 
 
@@ -2490,19 +2503,21 @@ jobs:
         timeout: 45m
         params:
           <<: *auth_e2e_eu-de-1
-        on_error:
+        on_failure:
           put: slack-notification
           params:
             channel: '#kubernikus-ci'
+            text: Soak tests in eu-de-1 failed
             text_file: test-result/content
-            text: |
-              Soak test in eu-de-1 failed.
-              $TEXT_FILE_CONTENT
-              $ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME
+            attachments:
+              - text: $TEXT_FILE_CONTENT
+                color: "#d00000"
+                footer: $ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME
+                footer_icon: https://ci.concourse-ci.org/public/images/favicon-failed.png
+
     on_success: { put: slack-alert, inputs: [], params: {alert_type: fixed } }
-    on_failure: { put: slack-alert, inputs: [], params: {alert_type: broke } }
     on_abort:   { put: slack-alert, inputs: [], params: {alert_type: broke } }
-    #on_error:   { put: slack, inputs: [], params: {alert_type: broke } }
+    on_error:   { put: slack-alert, inputs: [], params: {alert_type: broke } }
 
 
 
@@ -2634,19 +2649,21 @@ jobs:
         timeout: 45m
         params:
           <<: *auth_e2e_eu-de-2
-        on_error:
+        on_failure:
           put: slack-notification
           params:
             channel: '#kubernikus-ci'
+            text: Soak tests in eu-de-2 failed
             text_file: test-result/content
-            text: |
-              Soak test in eu-de-2 failed.
-              $TEXT_FILE_CONTENT
-              $ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME
+            attachments:
+              - text: $TEXT_FILE_CONTENT
+                color: "#d00000"
+                footer: $ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME
+                footer_icon: https://ci.concourse-ci.org/public/images/favicon-failed.png
+
     on_success: { put: slack-alert, inputs: [], params: {alert_type: fixed } }
-    on_failure: { put: slack-alert, inputs: [], params: {alert_type: broke } }
     on_abort:   { put: slack-alert, inputs: [], params: {alert_type: broke } }
-    #on_error:   { put: slack, inputs: [], params: {alert_type: broke } }
+    on_error:   { put: slack-alert, inputs: [], params: {alert_type: broke } }
 
 
 
@@ -2778,19 +2795,21 @@ jobs:
         timeout: 45m
         params:
           <<: *auth_e2e_eu-nl-1
-        on_error:
+        on_failure:
           put: slack-notification
           params:
             channel: '#kubernikus-ci'
+            text: Soak tests in eu-nl-1 failed
             text_file: test-result/content
-            text: |
-              Soak test in eu-nl-1 failed.
-              $TEXT_FILE_CONTENT
-              $ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME
+            attachments:
+              - text: $TEXT_FILE_CONTENT
+                color: "#d00000"
+                footer: $ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME
+                footer_icon: https://ci.concourse-ci.org/public/images/favicon-failed.png
+
     on_success: { put: slack-alert, inputs: [], params: {alert_type: fixed } }
-    on_failure: { put: slack-alert, inputs: [], params: {alert_type: broke } }
     on_abort:   { put: slack-alert, inputs: [], params: {alert_type: broke } }
-    #on_error:   { put: slack, inputs: [], params: {alert_type: broke } }
+    on_error:   { put: slack-alert, inputs: [], params: {alert_type: broke } }
 
 
 
@@ -2930,19 +2949,21 @@ jobs:
         timeout: 45m
         params:
           <<: *auth_e2e_eu-ru-1
-        on_error:
+        on_failure:
           put: slack-notification
           params:
             channel: '#kubernikus-ci'
+            text: Soak tests in eu-ru-1 failed
             text_file: test-result/content
-            text: |
-              Soak test in eu-ru-1 failed.
-              $TEXT_FILE_CONTENT
-              $ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME
+            attachments:
+              - text: $TEXT_FILE_CONTENT
+                color: "#d00000"
+                footer: $ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME
+                footer_icon: https://ci.concourse-ci.org/public/images/favicon-failed.png
+
     on_success: { put: slack-alert, inputs: [], params: {alert_type: fixed } }
-    on_failure: { put: slack-alert, inputs: [], params: {alert_type: broke } }
     on_abort:   { put: slack-alert, inputs: [], params: {alert_type: broke } }
-    #on_error:   { put: slack, inputs: [], params: {alert_type: broke } }
+    on_error:   { put: slack-alert, inputs: [], params: {alert_type: broke } }
 
 
 
@@ -3155,19 +3176,21 @@ jobs:
         timeout: 45m
         params:
           <<: *auth_e2e_la-br-1
-        on_error:
+        on_failure:
           put: slack-notification
           params:
             channel: '#kubernikus-ci'
+            text: Soak tests in la-br-1 failed
             text_file: test-result/content
-            text: |
-              Soak test in la-br-1 failed.
-              $TEXT_FILE_CONTENT
-              $ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME
+            attachments:
+              - text: $TEXT_FILE_CONTENT
+                color: "#d00000"
+                footer: $ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME
+                footer_icon: https://ci.concourse-ci.org/public/images/favicon-failed.png
+
     on_success: { put: slack-alert, inputs: [], params: {alert_type: fixed } }
-    on_failure: { put: slack-alert, inputs: [], params: {alert_type: broke } }
     on_abort:   { put: slack-alert, inputs: [], params: {alert_type: broke } }
-    #on_error:   { put: slack, inputs: [], params: {alert_type: broke } }
+    on_error:   { put: slack-alert, inputs: [], params: {alert_type: broke } }
 
 
 
@@ -3307,19 +3330,21 @@ jobs:
         timeout: 45m
         params:
           <<: *auth_e2e_na-ca-1
-        on_error:
+        on_failure:
           put: slack-notification
           params:
             channel: '#kubernikus-ci'
+            text: Soak tests in na-ca-1 failed
             text_file: test-result/content
-            text: |
-              Soak test in na-ca-1 failed.
-              $TEXT_FILE_CONTENT
-              $ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME
+            attachments:
+              - text: $TEXT_FILE_CONTENT
+                color: "#d00000"
+                footer: $ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME
+                footer_icon: https://ci.concourse-ci.org/public/images/favicon-failed.png
+
     on_success: { put: slack-alert, inputs: [], params: {alert_type: fixed } }
-    on_failure: { put: slack-alert, inputs: [], params: {alert_type: broke } }
     on_abort:   { put: slack-alert, inputs: [], params: {alert_type: broke } }
-    #on_error:   { put: slack, inputs: [], params: {alert_type: broke } }
+    on_error:   { put: slack-alert, inputs: [], params: {alert_type: broke } }
 
 
 
@@ -3451,19 +3476,21 @@ jobs:
         timeout: 45m
         params:
           <<: *auth_e2e_na-us-1
-        on_error:
+        on_failure:
           put: slack-notification
           params:
             channel: '#kubernikus-ci'
+            text: Soak tests in na-us-1 failed
             text_file: test-result/content
-            text: |
-              Soak test in na-us-1 failed.
-              $TEXT_FILE_CONTENT
-              $ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME
+            attachments:
+              - text: $TEXT_FILE_CONTENT
+                color: "#d00000"
+                footer: $ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME
+                footer_icon: https://ci.concourse-ci.org/public/images/favicon-failed.png
+
     on_success: { put: slack-alert, inputs: [], params: {alert_type: fixed } }
-    on_failure: { put: slack-alert, inputs: [], params: {alert_type: broke } }
     on_abort:   { put: slack-alert, inputs: [], params: {alert_type: broke } }
-    #on_error:   { put: slack, inputs: [], params: {alert_type: broke } }
+    on_error:   { put: slack-alert, inputs: [], params: {alert_type: broke } }
 
 
 
@@ -3603,19 +3630,21 @@ jobs:
         timeout: 45m
         params:
           <<: *auth_e2e_na-us-2
-        on_error:
+        on_failure:
           put: slack-notification
           params:
             channel: '#kubernikus-ci'
+            text: Soak tests in na-us-2 failed
             text_file: test-result/content
-            text: |
-              Soak test in na-us-2 failed.
-              $TEXT_FILE_CONTENT
-              $ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME
+            attachments:
+              - text: $TEXT_FILE_CONTENT
+                color: "#d00000"
+                footer: $ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME
+                footer_icon: https://ci.concourse-ci.org/public/images/favicon-failed.png
+
     on_success: { put: slack-alert, inputs: [], params: {alert_type: fixed } }
-    on_failure: { put: slack-alert, inputs: [], params: {alert_type: broke } }
     on_abort:   { put: slack-alert, inputs: [], params: {alert_type: broke } }
-    #on_error:   { put: slack, inputs: [], params: {alert_type: broke } }
+    on_error:   { put: slack-alert, inputs: [], params: {alert_type: broke } }
 
 
 
@@ -3755,19 +3784,21 @@ jobs:
         timeout: 45m
         params:
           <<: *auth_e2e_na-us-3
-        on_error:
+        on_failure:
           put: slack-notification
           params:
             channel: '#kubernikus-ci'
+            text: Soak tests in na-us-3 failed
             text_file: test-result/content
-            text: |
-              Soak test in na-us-3 failed.
-              $TEXT_FILE_CONTENT
-              $ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME
+            attachments:
+              - text: $TEXT_FILE_CONTENT
+                color: "#d00000"
+                footer: $ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME
+                footer_icon: https://ci.concourse-ci.org/public/images/favicon-failed.png
+
     on_success: { put: slack-alert, inputs: [], params: {alert_type: fixed } }
-    on_failure: { put: slack-alert, inputs: [], params: {alert_type: broke } }
     on_abort:   { put: slack-alert, inputs: [], params: {alert_type: broke } }
-    #on_error:   { put: slack, inputs: [], params: {alert_type: broke } }
+    on_error:   { put: slack-alert, inputs: [], params: {alert_type: broke } }
 
 
 
@@ -3956,19 +3987,21 @@ jobs:
         timeout: 45m
         params:
           <<: *auth_e2e_qa-de-1
-        on_error:
+        on_failure:
           put: slack-notification
           params:
             channel: '#kubernikus-ci'
+            text: Soak tests in qa-de-1 failed
             text_file: test-result/content
-            text: |
-              Soak test in qa-de-1 failed.
-              $TEXT_FILE_CONTENT
-              $ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME
+            attachments:
+              - text: $TEXT_FILE_CONTENT
+                color: "#d00000"
+                footer: $ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME
+                footer_icon: https://ci.concourse-ci.org/public/images/favicon-failed.png
+
     on_success: { put: slack-alert, inputs: [], params: {alert_type: fixed } }
-    on_failure: { put: slack-alert, inputs: [], params: {alert_type: broke } }
     on_abort:   { put: slack-alert, inputs: [], params: {alert_type: broke } }
-    #on_error:   { put: slack, inputs: [], params: {alert_type: broke } }
+    on_error:   { put: slack-alert, inputs: [], params: {alert_type: broke } }
 
 
 
