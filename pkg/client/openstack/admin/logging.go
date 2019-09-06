@@ -1,6 +1,7 @@
 package admin
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/go-kit/kit/log"
@@ -80,4 +81,40 @@ func (c LoggingClient) CreateStorageContainer(projectID, containerName, serviceU
 		)
 	}(time.Now())
 	return c.Client.CreateStorageContainer(projectID, containerName, serviceUserName, serviceUserDomainName)
+}
+
+func (c LoggingClient) AssignUserRoles(projectID, userName, domainName string, userRoles []string) (err error) {
+	defer func(begin time.Time) {
+		c.Logger.Log(
+			"msg", "assign user roles",
+			"project_id", projectID,
+			"user_id", userName,
+			"domain_name", domainName,
+			"user_roles", fmt.Sprintf("%v", userRoles),
+			"took", time.Since(begin),
+			"v", 2,
+			"err", err,
+		)
+	}(time.Now())
+	return c.Client.AssignUserRoles(projectID, userName, domainName, userRoles)
+}
+
+func (c LoggingClient) GetUserRoles(projectID, userName, domainName string) (userRoles []string, err error) {
+	defer func(begin time.Time) {
+		c.Logger.Log(
+			"msg", "get user roles",
+			"project_id", projectID,
+			"user_id", userName,
+			"domain_name", domainName,
+			"roles", fmt.Sprintf("%v", userRoles),
+			"took", time.Since(begin),
+			"v", 2,
+			"err", err,
+		)
+	}(time.Now())
+	return c.Client.GetUserRoles(projectID, userName, domainName)
+}
+
+func (c LoggingClient) GetDefaultServiceUserRoles() (roles []string) {
+	return c.Client.GetDefaultServiceUserRoles()
 }
