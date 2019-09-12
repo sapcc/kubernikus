@@ -390,7 +390,7 @@ definitions:
         description: name of the cluster
         type: string
         pattern: '^[a-z]([-a-z0-9]*[a-z0-9])?$'
-        maxLength: 20
+        maxLength: 13
       spec:
         $ref: '#/definitions/KlusterSpec'
       status:
@@ -471,7 +471,7 @@ definitions:
         x-nullable: false
         type: string
         pattern: '^[a-z0-9]([-\.a-z0-9]*)?$'
-        maxLength: 20
+        maxLength: 13
       size:
         x-nullable: false
         type: integer
