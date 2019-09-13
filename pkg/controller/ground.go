@@ -511,7 +511,7 @@ func (op *GroundControl) createKluster(kluster *v1.Kluster) error {
 	}
 
 	certFactory := util.NewCertificateFactory(kluster, &klusterSecret.Certificates, op.Config.Kubernikus.Domain)
-	if err, _ := certFactory.Ensure(); err != nil {
+	if _, err := certFactory.Ensure(); err != nil {
 		return fmt.Errorf("Failed to generate certificates: %s", err)
 	}
 	klusterSecret.BootstrapToken = util.GenerateBootstrapToken()

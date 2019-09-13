@@ -39,7 +39,7 @@ func (cc *certsController) Reconcile(kluster *v1.Kluster) (err error) {
 	}
 
 	certFactory := util.NewCertificateFactory(kluster, &secret.Certificates, cc.config.Kubernikus.Domain)
-	err, updates := certFactory.Ensure()
+	updates, err := certFactory.Ensure()
 	if err != nil {
 		return fmt.Errorf("Certificate renewal failed: %s", err)
 	}

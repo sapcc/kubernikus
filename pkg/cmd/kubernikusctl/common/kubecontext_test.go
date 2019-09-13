@@ -19,7 +19,7 @@ func TestKubernikusContext(t *testing.T) {
 	certs := new(v1.Certificates)
 
 	factory := util.NewCertificateFactory(kluster, certs, "test.local")
-	err, _ := factory.Ensure()
+	_, err := factory.Ensure()
 	require.NoError(t, err)
 	bundle, err := factory.UserCert(&models.Principal{Name: "exampleuser", Domain: "exampledomain", AuthURL: "http://auth.url"}, "http://kubernikus.url")
 	require.NoError(t, err)

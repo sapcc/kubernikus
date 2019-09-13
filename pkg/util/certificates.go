@@ -121,46 +121,46 @@ func NewCertificateFactory(kluster *v1.Kluster, store *v1.Certificates, domain s
 	return &CertificateFactory{kluster, store, domain}
 }
 
-func (cf *CertificateFactory) Ensure() (error, []CertUpdates) {
+func (cf *CertificateFactory) Ensure() ([]CertUpdates, error) {
 	apiServiceIP, err := cf.kluster.ApiServiceIP()
 	if err != nil {
-		return err, nil
+		return nil, err
 	}
 
 	apiIP := net.ParseIP(cf.kluster.Spec.AdvertiseAddress)
 	if apiIP == nil {
-		return fmt.Errorf("Failed to parse clusters advertise address: %s", cf.kluster.Spec.AdvertiseAddress), nil
+		return nil, fmt.Errorf("Failed to parse clusters advertise address: %s", cf.kluster.Spec.AdvertiseAddress)
 	}
 
 	certUpdates := []CertUpdates{}
 
 	etcdClientsCA, err := loadOrCreateCA(cf.kluster, "Etcd Clients", &cf.store.EtcdClientsCACertificate, &cf.store.EtcdClientsCAPrivateKey)
 	if err != nil {
-		return err, nil
+		return nil, err
 	}
 	_, err = loadOrCreateCA(cf.kluster, "Etcd Peers", &cf.store.EtcdPeersCACertificate, &cf.store.EtcdPeersCAPrivateKey)
 	if err != nil {
-		return err, nil
+		return nil, err
 	}
 	apiserverClientsCA, err := loadOrCreateCA(cf.kluster, "ApiServer Clients", &cf.store.ApiserverClientsCACertifcate, &cf.store.ApiserverClientsCAPrivateKey)
 	if err != nil {
-		return err, nil
+		return nil, err
 	}
 	_, err = loadOrCreateCA(cf.kluster, "ApiServer Nodes", &cf.store.ApiserverNodesCACertificate, &cf.store.ApiserverNodesCAPrivateKey)
 	if err != nil {
-		return err, nil
+		return nil, err
 	}
 	kubeletClientsCA, err := loadOrCreateCA(cf.kluster, "Kubelet Clients", &cf.store.KubeletClientsCACertificate, &cf.store.KubeletClientsCAPrivateKey)
 	if err != nil {
-		return err, nil
+		return nil, err
 	}
 	tlsCA, err := loadOrCreateCA(cf.kluster, "TLS", &cf.store.TLSCACertificate, &cf.store.TLSCAPrivateKey)
 	if err != nil {
-		return err, nil
+		return nil, err
 	}
 	aggregationCA, err := loadOrCreateCA(cf.kluster, "Aggregation", &cf.store.AggregationCACertificate, &cf.store.AggregationCAPrivateKey)
 	if err != nil {
-		return err, nil
+		return nil, err
 	}
 
 	if err := ensureClientCertificate(
@@ -170,7 +170,7 @@ func (cf *CertificateFactory) Ensure() (error, []CertUpdates) {
 		&cf.store.EtcdClientsApiserverCertificate,
 		&cf.store.EtcdClientsApiserverPrivateKey,
 		&certUpdates); err != nil {
-		return err, nil
+		return nil, err
 	}
 	if err := ensureClientCertificate(apiserverClientsCA,
 		"cluster-admin",
@@ -178,7 +178,7 @@ func (cf *CertificateFactory) Ensure() (error, []CertUpdates) {
 		&cf.store.ApiserverClientsClusterAdminCertificate,
 		&cf.store.ApiserverClientsClusterAdminPrivateKey,
 		&certUpdates); err != nil {
-		return err, nil
+		return nil, err
 	}
 	if err := ensureClientCertificate(apiserverClientsCA,
 		"system:kube-controller-manager",
@@ -186,7 +186,7 @@ func (cf *CertificateFactory) Ensure() (error, []CertUpdates) {
 		&cf.store.ApiserverClientsKubeControllerManagerCertificate,
 		&cf.store.ApiserverClientsKubeControllerManagerPrivateKey,
 		&certUpdates); err != nil {
-		return err, nil
+		return nil, err
 	}
 	if err := ensureClientCertificate(
 		apiserverClientsCA,
@@ -195,7 +195,7 @@ func (cf *CertificateFactory) Ensure() (error, []CertUpdates) {
 		&cf.store.ApiserverClientsKubeProxyCertificate,
 		&cf.store.ApiserverClientsKubeProxyPrivateKey,
 		&certUpdates); err != nil {
-		return err, nil
+		return nil, err
 	}
 	if err := ensureClientCertificate(
 		apiserverClientsCA,
@@ -204,7 +204,7 @@ func (cf *CertificateFactory) Ensure() (error, []CertUpdates) {
 		&cf.store.ApiserverClientsKubeSchedulerCertificate,
 		&cf.store.ApiserverClientsKubeSchedulerPrivateKey,
 		&certUpdates); err != nil {
-		return err, nil
+		return nil, err
 	}
 	if err := ensureClientCertificate(
 		apiserverClientsCA,
@@ -213,7 +213,7 @@ func (cf *CertificateFactory) Ensure() (error, []CertUpdates) {
 		&cf.store.ApiserverClientsKubernikusWormholeCertificate,
 		&cf.store.ApiserverClientsKubernikusWormholePrivateKey,
 		&certUpdates); err != nil {
-		return err, nil
+		return nil, err
 	}
 	if err := ensureClientCertificate(
 		kubeletClientsCA,
@@ -222,7 +222,7 @@ func (cf *CertificateFactory) Ensure() (error, []CertUpdates) {
 		&cf.store.KubeletClientsApiserverCertificate,
 		&cf.store.KubeletClientsApiserverPrivateKey,
 		&certUpdates); err != nil {
-		return err, nil
+		return nil, err
 	}
 	if err := ensureClientCertificate(
 		aggregationCA,
@@ -231,7 +231,7 @@ func (cf *CertificateFactory) Ensure() (error, []CertUpdates) {
 		&cf.store.AggregationAggregatorCertificate,
 		&cf.store.AggregationAggregatorPrivateKey,
 		&certUpdates); err != nil {
-		return err, nil
+		return nil, err
 	}
 
 	if err := ensureServerCertificate(tlsCA, "apiserver",
@@ -240,7 +240,7 @@ func (cf *CertificateFactory) Ensure() (error, []CertUpdates) {
 		&cf.store.TLSApiserverCertificate,
 		&cf.store.TLSApiserverPrivateKey,
 		&certUpdates); err != nil {
-		return err, nil
+		return nil, err
 	}
 	if err := ensureServerCertificate(tlsCA, "wormhole",
 		[]string{fmt.Sprintf("%v-wormhole.%v", cf.kluster.Name, cf.domain)},
@@ -248,10 +248,10 @@ func (cf *CertificateFactory) Ensure() (error, []CertUpdates) {
 		&cf.store.TLSWormholeCertificate,
 		&cf.store.TLSWormholePrivateKey,
 		&certUpdates); err != nil {
-		return err, nil
+		return nil, err
 	}
 
-	return nil, certUpdates
+	return certUpdates, nil
 }
 
 func (cf *CertificateFactory) UserCert(principal *models.Principal, apiURL string) (*Bundle, error) {
