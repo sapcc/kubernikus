@@ -61,6 +61,11 @@ func (d *getClusterCredentials) Handle(params operations.GetClusterCredentialsPa
 		[]byte(secret.TLSCACertificate),
 		"",
 	)
+	//embed version number in cluster name
+	if kluster.Status.ApiserverVersion != "" {
+		config.Clusters[0].Name += "@" + kluster.Status.ApiserverVersion
+		config.Contexts[0].Context.Cluster = config.Clusters[0].Name
+	}
 
 	kubeconfig, err := yaml.Marshal(config)
 	if err != nil {
