@@ -19,6 +19,8 @@ version:
   kubernikus: xyz
   kubernetes: 1.0.0
 etcd:
+  backup:
+    storageProvider: Swift
   openstack:
     authURL: http://xyz.com
     username: xyz

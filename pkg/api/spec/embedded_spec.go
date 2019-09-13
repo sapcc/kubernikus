@@ -504,6 +504,16 @@ func init() {
           "default": "1.1.1.1",
           "x-nullable": false
         },
+        "backup": {
+          "type": "string",
+          "default": "on",
+          "enum": [
+            "on",
+            "off",
+            "externalAWS"
+          ],
+          "x-nullable": false
+        },
         "clusterCIDR": {
           "description": "CIDR Range for Pods in the cluster. Can not be updated.",
           "type": "string",
@@ -1409,6 +1419,16 @@ func init() {
         "advertiseAddress": {
           "type": "string",
           "default": "1.1.1.1",
+          "x-nullable": false
+        },
+        "backup": {
+          "type": "string",
+          "default": "on",
+          "enum": [
+            "on",
+            "off",
+            "externalAWS"
+          ],
           "x-nullable": false
         },
         "clusterCIDR": {

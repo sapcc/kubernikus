@@ -126,7 +126,7 @@ spec:
             {{- end }}
             - --data-dir=/var/lib/etcd/new.etcd
             - --insecure-transport=true
-            - --storage-provider=Swift
+            - --storage-provider={{ .Values.backup.storageProvider | default "Swift" }}
             - --delta-snapshot-period-seconds={{ .Values.backup.deltaSnapshotPeriod }}
             - --garbage-collection-period-seconds={{ .Values.backup.garbageCollectionPeriod }}
             - --garbage-collection-policy={{ .Values.backup.garbageCollectionPolicy }}
@@ -137,6 +137,28 @@ spec:
               name: server
               protocol: TCP
           env:
+{{- if eq .Values.backup.storageProvider "S3" }}
+            - name: STORAGE_CONTAINER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "fullname" . }}-aws
+                  key: bucket-name
+            - name: AWS_REGION
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "fullname" . }}-aws
+                  key: region
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "fullname" . }}-aws
+                  key: secret-access-key
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "fullname" . }}-aws
+                  key: access-key-id
+{{- else if eq .Values.backup.storageProvider "Swift" }}
             - name: STORAGE_CONTAINER
               value: {{ .Values.storageContainer }}
             - name: OS_AUTH_URL
@@ -161,6 +183,7 @@ spec:
                 secretKeyRef:
                   name: {{ include "fullname" . }}
                   key: openstack-project-id
+{{- end }}
           volumeMounts:
             - mountPath: /var/lib/etcd
               name: data

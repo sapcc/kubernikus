@@ -18,6 +18,7 @@ var (
 	DEFAULT_CLUSTER_CIDR      = spec.MustDefaultString("KlusterSpec", "clusterCIDR")
 	DEFAULT_SERVICE_CIDR      = spec.MustDefaultString("KlusterSpec", "serviceCIDR")
 	DEFAULT_ADVERTISE_ADDRESS = spec.MustDefaultString("KlusterSpec", "advertiseAddress")
+	DEFAULT_ETCD_BACKUP       = spec.MustDefaultString("KlusterSpec", "backup")
 )
 
 type KlusterFactory interface {
@@ -73,6 +74,10 @@ func (klusterFactory) KlusterFor(spec models.KlusterSpec) (*v1.Kluster, error) {
 
 	if k.Spec.DNSDomain == "" {
 		k.Spec.DNSDomain = dns.DEFAULT_DOMAIN
+	}
+
+	if k.Spec.Backup == "" {
+		k.Spec.Backup = DEFAULT_ETCD_BACKUP
 	}
 
 	if k.ObjectMeta.Name == "" {
