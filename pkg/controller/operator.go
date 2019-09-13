@@ -20,6 +20,7 @@ import (
 	kube "github.com/sapcc/kubernikus/pkg/client/kubernetes"
 	"github.com/sapcc/kubernikus/pkg/client/kubernikus"
 	"github.com/sapcc/kubernikus/pkg/client/openstack"
+	"github.com/sapcc/kubernikus/pkg/controller/certs"
 	"github.com/sapcc/kubernikus/pkg/controller/config"
 	"github.com/sapcc/kubernikus/pkg/controller/deorbit"
 	"github.com/sapcc/kubernikus/pkg/controller/flight"
@@ -193,6 +194,8 @@ func NewKubernikusOperator(options *KubernikusOperatorOptions, logger log.Logger
 			o.Config.Kubernikus.Controllers["hammertime"] = hammertime.New(10*time.Second, 20*time.Second, o.Factories, o.Clients, recorder, logger)
 		case "servicing":
 			o.Config.Kubernikus.Controllers["servicing"] = servicing.NewController(10, o.Factories, o.Clients, recorder, logger)
+		case "certs":
+			o.Config.Kubernikus.Controllers["certs"] = certs.New(12*time.Hour, o.Factories, o.Config, o.Clients, logger)
 		}
 	}
 
