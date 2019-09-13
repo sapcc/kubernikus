@@ -112,16 +112,14 @@ func KlusterToHelmValues(kluster *v1.Kluster, secret *v1.Secret, kubernetesVersi
 		},
 		Etcd: etcdValues{
 			Backup: etcdBackupValues{
-				Enabled:  kluster.Spec.Backup == "on" || kluster.Spec.Backup == "externalAWS",
+				Enabled:  kluster.Spec.Backup != "off",
 				Schedule: fmt.Sprintf("%d * * * *", backupMinute),
+				// Default storage provider is Swift, add more providers here
 				StorageProvider: func(backupType string) string {
-					if backupType == "on" {
-						return "Swift"
-					}
 					if backupType == "externalAWS" {
 						return "S3"
 					}
-					return ""
+					return "Swift"
 				}(kluster.Spec.Backup),
 			},
 			Persistence: persistenceValues{
