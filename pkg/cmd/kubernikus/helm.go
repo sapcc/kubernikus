@@ -114,7 +114,7 @@ func (o *HelmOptions) Run(c *cobra.Command) error {
 
 	var secret v1.Secret
 	certFactory := util.NewCertificateFactory(kluster, &secret.Certificates, nameA[1])
-	if err := certFactory.Ensure(); err != nil {
+	if err, _ := certFactory.Ensure(); err != nil {
 		return err
 	}
 

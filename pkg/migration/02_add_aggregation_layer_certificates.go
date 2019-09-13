@@ -26,7 +26,7 @@ func AddAggregationLayerCertificates(rawKluster []byte, kluster *v1.Kluster, cli
 
 	factory := util.NewCertificateFactory(kluster, &secret.Certificates, "")
 
-	if err := factory.Ensure(); err != nil {
+	if err, _ := factory.Ensure(); err != nil {
 		return err
 	}
 
