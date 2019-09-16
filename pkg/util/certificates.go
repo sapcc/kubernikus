@@ -24,8 +24,8 @@ const (
 	defaultCertValidity = 2 * time.Hour * 24 * 365
 	//out CAs are valid for 10 years
 	caValidity = 10 * time.Hour * 24 * 365
-	// renew cert two weeks before it is expired
-	certExpiration = 14 * 24 * time.Hour
+	// renew certs 90 days before they expire
+	certExpiration = 90 * 24 * time.Hour
 )
 
 type Bundle struct {
