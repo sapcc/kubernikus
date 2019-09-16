@@ -5,7 +5,6 @@ import (
 	"time"
 
 	kitlog "github.com/go-kit/kit/log"
-	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 
 	"github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
@@ -48,24 +47,6 @@ func (cc *certsController) Reconcile(kluster *v1.Kluster) (err error) {
 		err = util.UpdateKlusterSecret(cc.client, kluster, secret)
 		if err != nil {
 			return fmt.Errorf("Couldn't update kluster secret: %s", err)
-		}
-
-		listOpts := meta_v1.ListOptions{
-			LabelSelector: fmt.Sprintf("app in (%s-etcd,%s-apiserver)", kluster.Name, kluster.Name),
-			Limit:         2,
-		}
-		pods, err := cc.client.CoreV1().Pods(kluster.Namespace).List(listOpts)
-		if err != nil {
-			return fmt.Errorf("Couldn't list etcd/apiserver pods: %s", err)
-		}
-
-		deleteOpts := meta_v1.DeleteOptions{}
-		for _, pod := range pods.Items {
-			cc.logger.Log("msg", "Deleting pod", "pod", pod.Name)
-			err = cc.client.CoreV1().Pods(kluster.Namespace).Delete(pod.Name, &deleteOpts)
-			if err != nil {
-				return fmt.Errorf("Couldn't delete pod %s: %s", pod.Name, err)
-			}
 		}
 
 		cc.logger.Log("msg", "Certificates updated", "certificates", fmt.Sprintf("%v", updates))
