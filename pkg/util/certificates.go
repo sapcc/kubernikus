@@ -312,7 +312,7 @@ func ensureClientCertificate(ca *Bundle, cn string, groups []string, cert, key *
 			return fmt.Errorf("Failed parsing certificate bundle: %s", err)
 		}
 
-		reason, invalid := isCertChangedOrExpires(certBundle.Certificate, certificate.Certificate, certExpiration)
+		reason, invalid := isCertChangedOrExpires(certBundle.Certificate, certificate.Certificate, ca.Certificate, certExpiration)
 		if !invalid {
 			return nil
 		}
@@ -351,7 +351,7 @@ func ensureServerCertificate(ca *Bundle, cn string, dnsNames []string, ips []net
 			return fmt.Errorf("Failed parsing certificate bundle: %s", err)
 		}
 
-		reason, invalid := isCertChangedOrExpires(certBundle.Certificate, certificate.Certificate, certExpiration)
+		reason, invalid := isCertChangedOrExpires(certBundle.Certificate, certificate.Certificate, ca.Certificate, certExpiration)
 		if !invalid {
 			return nil
 		}
@@ -400,7 +400,7 @@ func createCA(klusterName, name string) (*Bundle, error) {
 	return &Bundle{PrivateKey: privateKey, Certificate: certificate}, nil
 }
 
-func isCertChangedOrExpires(origCert, newCert *x509.Certificate, duration time.Duration) (string, bool) {
+func isCertChangedOrExpires(origCert, newCert, caCert *x509.Certificate, duration time.Duration) (string, bool) {
 	if !reflect.DeepEqual(origCert.DNSNames, newCert.DNSNames) {
 		return "DNS changes", true
 	}
@@ -412,6 +412,11 @@ func isCertChangedOrExpires(origCert, newCert *x509.Certificate, duration time.D
 	expire := time.Now().Add(duration)
 	if expire.After(origCert.NotAfter) {
 		return fmt.Sprintf("Certificate expires at %s", origCert.NotAfter), true
+	}
+
+	err := origCert.CheckSignatureFrom(caCert)
+	if err != nil {
+		return fmt.Sprintf("CA certificate signature change: %s", err), true
 	}
 
 	return "", false
