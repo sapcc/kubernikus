@@ -204,7 +204,7 @@ eventexporter:
           - key: Source.Component
             expr: attachdetach.*
           - key: Message
-            expr: .*failed to attach ([-0-9a-f]+) volume to.*compute: Invalid request due to incorrect syntax or missing required parameters.
+            expr: ".*failed to attach ([-0-9a-f]+) volume to.*compute: Invalid request due to incorrect syntax or missing required parameters."
           labels:
             volume: Message[1]
 
