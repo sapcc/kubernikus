@@ -2,7 +2,7 @@ groups:
 - name: volume.alerts
   rules:
   - alert: VolumeAttachmentBadRequest
-    expr: increase(volume_mount_bad_request_total[5m])
+    expr: increase(volume_mount_bad_request_total[5m]) > 1
     for: 15m
     labels:
       tier: kks
