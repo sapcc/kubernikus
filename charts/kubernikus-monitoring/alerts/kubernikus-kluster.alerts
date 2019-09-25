@@ -58,5 +58,5 @@ groups:
       meta: "Kluster {{ $labels.kluster_name }} is low on object-store quota"
     annotations:
       summary: "Kluster {{ $labels.kluster_name }} is low on object-store quota"
-      description: "Kluster {{ $labels.kluster_name }} in `{{ $labels.domain }}/{{ $labels.project }}` has *{{ humanize1014 $value }}B* of object-store quota left. If the quota is exhausted the etcd backup of the cluster will fail. This can also cause an outage. The project admin needs to raise quota or free up space. <https://dashboard.{{ $externalLabels.region }}.cloud.sap/_/{{ $labels.project_id }}/masterdata-cockpit/project|Masterdata>, cluster creator:  <https://people.wdf.sap.corp/profiles/{{$labels.creator}}|{{$labels.creator}}>"
+      description: "Kluster {{ $labels.kluster_name }} in `{{ $labels.domain }}/{{ $labels.project }}` has *{{ humanize1024 $value }}B* of object-store quota left. If the quota is exhausted the etcd backup of the cluster will fail. This can also cause an outage. The project admin needs to raise quota or free up space. <https://dashboard.{{ $externalLabels.region }}.cloud.sap/_/{{ $labels.project_id }}/masterdata-cockpit/project|Masterdata>, cluster creator:  <https://people.wdf.sap.corp/profiles/{{$labels.creator}}|{{$labels.creator}}>"
 
