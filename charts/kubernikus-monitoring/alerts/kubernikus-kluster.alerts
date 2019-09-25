@@ -31,7 +31,7 @@ groups:
     labels:
       tier: kks
       service: ground
-      severity: critical
+      severity: warning
       meta: "Investigate kubernikus control-plane {{ $labels.cluster }}"
     annotations:
       description: Klusters can't be created within 10min. There is a problem with the kubernikus control-plane {{ $labels.cluster }}. Most likely because volumes don't attach in time. Login to {{ $labels.cluster }} and investiage why pods in the `kubernikus` namespace can't start.
