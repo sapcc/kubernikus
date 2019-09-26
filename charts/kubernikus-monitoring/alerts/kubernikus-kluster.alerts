@@ -49,7 +49,7 @@ groups:
       description: "{{ $labels.kubernetes_name }} is unavailable since 10m"
       summary: "{{ $labels.kubernetes_name }} is unavailable"
   - alert: KubernikusKlusterLowOnObjectStoreQuota
-    expr: kubernikus_kluster_info{phase="Running"}  * on(project_id) group_left(project, domain) ((limes_project_quota{service="object-store"} - limes_project_usage{service="object-store"}) < 90 * 1024 * 1024)
+    expr: label_replace(max(kubernikus_kluster_info{phase="Running"}) by (kluster_name, creator, project_id), "shortname", "$1", "kluster_name", "(.*)-[a-f0-9]{32}") * on(project_id) group_left(project, domain) ((limes_project_quota{service="object-store"} - limes_project_usage{service="object-store"}) < 90 * 1024 * 1024)
     for: 10m
     labels:
       tier: kks
@@ -59,4 +59,16 @@ groups:
     annotations:
       summary: "Kluster {{ $labels.kluster_name }} is low on object-store quota"
       description: "Kluster {{ $labels.kluster_name }} in `{{ $labels.domain }}/{{ $labels.project }}` has *{{ humanize1024 $value }}B* of object-store quota left. If the quota is exhausted the etcd backup of the cluster will fail. This can also cause an outage. The project admin needs to raise quota or free up space. <https://dashboard.{{ $externalLabels.region }}.cloud.sap/_/{{ $labels.project_id }}/masterdata-cockpit/project|Masterdata>, cluster creator:  <https://people.wdf.sap.corp/profiles/{{$labels.creator}}|{{$labels.creator}}>"
+      mail_subject: "ACTION REQUIRED: Object store capacity low in project {{ $labels.domain }}/{{ $labels.project }} in {{ $externalLabels.region }}" 
+      mail_body: |
+        Dear Converged Cloud customer,
+        the project {{ $labels.domain }}/{{ $labels.project }} has {{ humanize1024 $value }}B of object-store capacity left.
 
+        https://dashboard.{{ $externalLabels.region }}.cloud.sap/_/{{ $labels.project_id }}/object-storage/
+
+        The kubernetes cluster {{ $labels.shortname }} relies on the object store to continously backup its etcd data.
+        If the quota is exhausted the backup will fail and recovering the cluster from data loss or corruption will be impossible.
+        For the correct functionining of the provisioned cluster please make sure you always have >200MB of object-store capacity available.
+
+        Kind regards,
+        Converged Cloud support team
