@@ -538,7 +538,7 @@ func (op *GroundControl) createKluster(kluster *v1.Kluster) error {
 	klusterSecret.Openstack.Username = fmt.Sprintf("kubernikus-%s", kluster.Name)
 	klusterSecret.Openstack.DomainName = "kubernikus"
 	klusterSecret.Openstack.Region = region
-	klusterSecret.Openstack.ProjectID = kluster.Spec.Openstack.ProjectID
+	klusterSecret.Openstack.ProjectID = kluster.Account()
 	//TODO: remove once the backup credentials are disentageled from the service user (e.g. backup to s3)
 	if klusterSecret.Openstack.ProjectID == "" {
 		klusterSecret.Openstack.ProjectID = kluster.Account()
@@ -687,8 +687,7 @@ func (op *GroundControl) requiresOpenstackInfo(kluster *v1.Kluster) bool {
 	if kluster.Spec.NoCloud {
 		return false
 	}
-	return kluster.Spec.Openstack.ProjectID == "" ||
-		kluster.Spec.Openstack.RouterID == "" ||
+	return kluster.Spec.Openstack.RouterID == "" ||
 		kluster.Spec.Openstack.NetworkID == "" ||
 		kluster.Spec.Openstack.LBSubnetID == "" ||
 		kluster.Spec.Openstack.LBFloatingNetworkID == ""
@@ -749,16 +748,7 @@ func (op *GroundControl) discoverOpenstackInfo(kluster *v1.Kluster) error {
 		"project", kluster.Account(),
 		"v", 5)
 
-	if kluster.Spec.Openstack.ProjectID == "" {
-		kluster.Spec.Openstack.ProjectID = kluster.Account()
-		op.Logger.Log(
-			"msg", "discovered ProjectID",
-			"id", kluster.Spec.Openstack.ProjectID,
-			"kluster", kluster.GetName(),
-			"project", kluster.Account())
-	}
-
-	client, err := op.Factories.Openstack.ProjectAdminClientFor(kluster.Spec.Openstack.ProjectID)
+	client, err := op.Factories.Openstack.ProjectAdminClientFor(kluster.Account())
 	if err != nil {
 		return err
 	}

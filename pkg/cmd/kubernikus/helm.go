@@ -104,9 +104,6 @@ func (o *HelmOptions) Run(c *cobra.Command) error {
 
 	kluster, err := kubernikus.NewKlusterFactory().KlusterFor(models.KlusterSpec{
 		Name: nameA[0],
-		Openstack: models.OpenstackSpec{
-			ProjectID: o.ProjectID,
-		},
 	})
 	if err != nil {
 		return err

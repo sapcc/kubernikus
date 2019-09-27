@@ -32,7 +32,7 @@ func CreateEtcdBackupStorageContainer(rawKluster []byte, current *v1.Kluster, cl
 	}
 
 	err = adminClient.CreateStorageContainer(
-		current.Spec.Openstack.ProjectID,
+		current.Account(),
 		etcd_util.DefaultStorageContainer(current),
 		string(username),
 		string(domain),

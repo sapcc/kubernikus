@@ -479,8 +479,6 @@ definitions:
     type: object
     x-nullable: false
     properties:
-      projectID:
-        type: string
       routerID:
         type: string
       networkID:

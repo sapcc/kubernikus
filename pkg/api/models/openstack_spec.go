@@ -24,9 +24,6 @@ type OpenstackSpec struct {
 	// network ID
 	NetworkID string `json:"networkID,omitempty"`
 
-	// project ID
-	ProjectID string `json:"projectID,omitempty"`
-
 	// router ID
 	RouterID string `json:"routerID,omitempty"`
 
