@@ -49,7 +49,7 @@ groups:
       description: "{{ $labels.kubernetes_name }} is unavailable since 10m"
       summary: "{{ $labels.kubernetes_name }} is unavailable"
   - alert: KubernikusKlusterLowOnObjectStoreQuota
-    expr: label_replace(max(kubernikus_kluster_info{phase="Running"}) by (kluster_name, creator, project_id), "shortname", "$1", "kluster_name", "(.*)-[a-f0-9]{32}") * on(project_id) group_left(project, domain) ((limes_project_quota{service="object-store"} - limes_project_usage{service="object-store"}) < 90 * 1024 * 1024)
+    expr: label_replace(max(kubernikus_kluster_info{phase="Running"}) by (kluster_name, creator, project_id), "shortname", "$1", "kluster_name", "(.*)-[a-f0-9]{32}") * on(project_id) group_left(project, domain) (min(limes_project_quota{service="object-store"} - limes_project_usage{service="object-store"}) by (project_id, project, domain) < 90 * 1024 * 1024)
     for: 10m
     labels:
       tier: kks
