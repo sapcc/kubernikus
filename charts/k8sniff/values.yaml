@@ -4,4 +4,8 @@ metrics_port: 9091
 log_level: 2
 replicas: 2
 
-# loadBalancerIP
+service:
+  type: LoadBalancer
+  #nodePort:
+  #loadBalancerIP:
+  #externalIP:
