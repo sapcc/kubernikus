@@ -5,6 +5,7 @@ import (
 	"crypto/rsa"
 	"crypto/x509"
 	"crypto/x509/pkix"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"math"
@@ -25,7 +26,8 @@ const (
 	//out CAs are valid for 10 years
 	caValidity = 10 * time.Hour * 24 * 365
 	// renew certs 90 days before they expire
-	certExpiration = 90 * 24 * time.Hour
+	certExpiration                    = 90 * 24 * time.Hour
+	AdditionalApiserverSANsAnnotation = "kubernikus.cloud.sap/additional-apiserver-sans"
 )
 
 type Bundle struct {
@@ -234,9 +236,28 @@ func (cf *CertificateFactory) Ensure() ([]CertUpdates, error) {
 		return nil, err
 	}
 
+	apiServerDNSNames := []string{"kubernetes", "kubernetes.default", "kubernetes.default.svc", "apiserver", cf.kluster.Name, fmt.Sprintf("%s.%s", cf.kluster.Name, cf.kluster.Namespace), fmt.Sprintf("%v.%v", cf.kluster.Name, cf.domain)}
+	apiServerIPs := []net.IP{net.IPv4(127, 0, 0, 1), apiServiceIP, apiIP}
+	if ann := cf.kluster.Annotations[AdditionalApiserverSANsAnnotation]; ann != "" {
+		var additionalValues []IPOrDNSName
+		if err := json.Unmarshal([]byte(ann), &additionalValues); err != nil {
+			return nil, fmt.Errorf("Failed to parse annotation %s: %v", AdditionalApiserverSANsAnnotation, err)
+		}
+		for _, ipOrName := range additionalValues {
+			switch ipOrName.Type {
+			case IPType:
+				apiServerIPs = append(apiServerIPs, ipOrName.IPVal)
+			case DNSNameType:
+				apiServerDNSNames = append(apiServerDNSNames, ipOrName.DNSNameVal)
+			default:
+				return nil, fmt.Errorf("impossible IPOrDNSName.Type")
+			}
+		}
+	}
+
 	if err := ensureServerCertificate(tlsCA, "apiserver",
-		[]string{"kubernetes", "kubernetes.default", "kubernetes.default.svc", "apiserver", cf.kluster.Name, fmt.Sprintf("%s.%s", cf.kluster.Name, cf.kluster.Namespace), fmt.Sprintf("%v.%v", cf.kluster.Name, cf.domain)},
-		[]net.IP{net.IPv4(127, 0, 0, 1), apiServiceIP, apiIP},
+		apiServerDNSNames,
+		apiServerIPs,
 		&cf.store.TLSApiserverCertificate,
 		&cf.store.TLSApiserverPrivateKey,
 		&certUpdates); err != nil {

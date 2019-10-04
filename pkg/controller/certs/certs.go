@@ -7,7 +7,7 @@ import (
 	kitlog "github.com/go-kit/kit/log"
 	"k8s.io/client-go/kubernetes"
 
-	"github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
+	v1 "github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
 	"github.com/sapcc/kubernikus/pkg/controller/base"
 	"github.com/sapcc/kubernikus/pkg/controller/config"
 	"github.com/sapcc/kubernikus/pkg/util"
