@@ -80,3 +80,41 @@ scheduler:
       memory: 512Mi
 
 revisionHistoryLimit: 3
+
+dex:
+  enabled: false 
+  connectors:
+    keystone: 
+      enabled: true
+      secret: kubernikus-dex-keystone
+    ldap:
+      enabled: false
+      #config:
+      #  host: 
+      #  bindDN: 
+      #userSearch:
+      #  baseDN: 
+      #  filter: 
+      #groupSearch: 
+      #  baseDN: 
+      #  filter: 
+      secret: kubernikus-dex-ldap
+  staticPasword:
+    enabled: false
+    email: kubernikus@cloud.sap
+    # hashedPassword:
+  #staticClientSecret: 
+  dns:
+    zone: ingress.kubernikus
+    domain: cloud.sap
+  ingressSecret: kubernikus-dex
+
+dashboard:
+  enabled: false
+
+  ingressSecret: kubernikus-dex
+
+  dns:
+    zone: ingress.kubernikus
+    domain: cloud.sap
+    

@@ -7,6 +7,15 @@ imagesForVersion:
     cloudControllerManager:
       repository: 'sapcc/openstack-cloud-controller-manager'
       tag: 'v1.15.0-sap.2'
+    dex:
+      repository: 'hub.global.cloud.sap/monsoon/dex'
+      tag: '7abab130c718576e93f7a7cc233dfd90cb8783bb'
+    dashboardProxy:
+      repository: 'quay.io/keycloak/keycloak-gatekeeper'
+      tag: '6.0.1'
+    dashboard:
+      repository: 'kubernetesui/dashboard'
+      tag: 'v2.0.0-beta4'
   '1.14.5':
     supported: true
     hyperkube:
@@ -15,6 +24,15 @@ imagesForVersion:
     cloudControllerManager:
       repository: 'sapcc/openstack-cloud-controller-manager'
       tag: 'v1.14.0-sap.0'
+    dex:
+      repository: 'hub.global.cloud.sap/monsoon/dex'
+      tag: '7abab130c718576e93f7a7cc233dfd90cb8783bb'
+    dashboardProxy:
+      repository: 'quay.io/keycloak/keycloak-gatekeeper'
+      tag: '6.0.1'
+    dashboard:
+      repository: 'kubernetesui/dashboard'
+      tag: 'v2.0.0-beta1'
   '1.13.9':
     supported: true
     hyperkube:
@@ -23,17 +41,44 @@ imagesForVersion:
     cloudControllerManager:
       repository: 'sapcc/openstack-cloud-controller-manager'
       tag: 'v1.13.1'
+    dex:
+      repository: 'hub.global.cloud.sap/monsoon/dex'
+      tag: '7abab130c718576e93f7a7cc233dfd90cb8783bb'
+    dashboardProxy:
+      repository: 'quay.io/keycloak/keycloak-gatekeeper'
+      tag: '6.0.1'
+    dashboard:
+      repository: 'kubernetesui/dashboard'
+      tag: 'v2.0.0-beta1'
   '1.12.10':
     supported: true
     hyperkube:
       repository: 'sapcc/hyperkube'
       tag: 'v1.12.10'
+    dex:
+      repository: 'hub.global.cloud.sap/monsoon/dex'
+      tag: '7abab130c718576e93f7a7cc233dfd90cb8783bb'
+    dashboardProxy:
+      repository: 'quay.io/keycloak/keycloak-gatekeeper'
+      tag: '6.0.1'
+    dashboard:
+      repository: 'kubernetesui/dashboard'
+      tag: 'v2.0.0-beta1'
   '1.11.9':
     default: true
     supported: true
     hyperkube:
       repository: 'sapcc/hyperkube'
       tag: 'v1.11.9'
+    dex:
+      repository: 'hub.global.cloud.sap/monsoon/dex'
+      tag: '7abab130c718576e93f7a7cc233dfd90cb8783bb'
+    dashboardProxy:
+      repository: 'quay.io/keycloak/keycloak-gatekeeper'
+      tag: '6.0.1'
+    dashboard:
+      repository: 'k8s.gcr.io/kubernetes-dashboard-amd64'
+      tag: 'v1.10.1'
   '1.10.11':
     hyperkube:
       repository: 'sapcc/hyperkube'

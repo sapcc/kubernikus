@@ -92,6 +92,48 @@ func NewClientConfigV1(name, user, url string, key, cert, ca []byte, token strin
 	}
 }
 
+func NewClientConfigV1OIDC(name, user, url, secret, issuer string, ca []byte) clientcmdapiv1.Config {
+	return clientcmdapiv1.Config{
+		APIVersion:     "v1",
+		Kind:           "Config",
+		CurrentContext: name,
+		Clusters: []clientcmdapiv1.NamedCluster{
+			{
+				Name: name,
+				Cluster: clientcmdapiv1.Cluster{
+					Server:                   url,
+					CertificateAuthorityData: ca,
+				},
+			},
+		},
+		Contexts: []clientcmdapiv1.NamedContext{
+			{
+				Name: name,
+				Context: clientcmdapiv1.Context{
+					Cluster:  name,
+					AuthInfo: user,
+				},
+			},
+		},
+		AuthInfos: []clientcmdapiv1.NamedAuthInfo{
+			{
+				Name: user,
+
+				AuthInfo: clientcmdapiv1.AuthInfo{
+					AuthProvider: &clientcmdapiv1.AuthProviderConfig{
+						Name: "oidc",
+						Config: map[string]string{
+							"client-id":      "kubernetes",
+							"client-secret":  secret,
+							"idp-issuer-url": issuer,
+						},
+					},
+				},
+			},
+		},
+	}
+}
+
 func EnsureCRD(clientset apiextensionsclient.Interface, logger kitlog.Logger) error {
 	klusterCRDName := kubernikus_v1.KlusterResourcePlural + "." + kubernikus_v1.GroupName
 	crd := &apiextensionsv1beta1.CustomResourceDefinition{

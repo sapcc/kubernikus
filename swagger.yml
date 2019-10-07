@@ -138,6 +138,23 @@ paths:
             $ref: '#/definitions/Credentials'
         default:
           $ref: '#/responses/errorResponse'
+  '/api/v1/clusters/{name}/credentials/oidc':
+    parameters:
+      - uniqueItems: true
+        type: string
+        name: name
+        required: true
+        in: path
+    get:
+      operationId: GetClusterCredentialsOIDC
+      summary: Get user specific credentials to access the cluster with OIDC
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/Credentials'
+        default:
+          $ref: '#/responses/errorResponse'
   '/api/v1/clusters/{name}/bootstrap':
     parameters:
       - uniqueItems: true
@@ -403,6 +420,10 @@ definitions:
         $ref: '#/definitions/OpenstackSpec'
       noCloud:
         type: boolean
+      dashboard:
+        type: boolean
+      dex:
+        type: boolean
       serviceCIDR:
         description: CIDR Range for Services in the cluster. Can not be updated.
         default: 198.18.128.0/17
@@ -538,6 +559,8 @@ definitions:
           $ref: '#/definitions/NodePoolInfo'
       apiserver:
         type: string
+      dashboard:
+        type: string
       apiserverVersion:
         type: string
       chartName:
@@ -627,4 +650,3 @@ definitions:
         description: link to help page explaining the error in more detail
         type: string
         format: uri
-

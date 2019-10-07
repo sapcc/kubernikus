@@ -48,6 +48,9 @@ func NewKubernikusAPI(spec *loads.Document) *KubernikusAPI {
 		GetClusterCredentialsHandler: GetClusterCredentialsHandlerFunc(func(params GetClusterCredentialsParams, principal *models.Principal) middleware.Responder {
 			return middleware.NotImplemented("operation GetClusterCredentials has not yet been implemented")
 		}),
+		GetClusterCredentialsOIDCHandler: GetClusterCredentialsOIDCHandlerFunc(func(params GetClusterCredentialsOIDCParams, principal *models.Principal) middleware.Responder {
+			return middleware.NotImplemented("operation GetClusterCredentialsOIDC has not yet been implemented")
+		}),
 		GetClusterEventsHandler: GetClusterEventsHandlerFunc(func(params GetClusterEventsParams, principal *models.Principal) middleware.Responder {
 			return middleware.NotImplemented("operation GetClusterEvents has not yet been implemented")
 		}),
@@ -130,6 +133,8 @@ type KubernikusAPI struct {
 	GetBootstrapConfigHandler GetBootstrapConfigHandler
 	// GetClusterCredentialsHandler sets the operation handler for the get cluster credentials operation
 	GetClusterCredentialsHandler GetClusterCredentialsHandler
+	// GetClusterCredentialsOIDCHandler sets the operation handler for the get cluster credentials o ID c operation
+	GetClusterCredentialsOIDCHandler GetClusterCredentialsOIDCHandler
 	// GetClusterEventsHandler sets the operation handler for the get cluster events operation
 	GetClusterEventsHandler GetClusterEventsHandler
 	// GetClusterInfoHandler sets the operation handler for the get cluster info operation
@@ -227,6 +232,10 @@ func (o *KubernikusAPI) Validate() error {
 
 	if o.GetClusterCredentialsHandler == nil {
 		unregistered = append(unregistered, "GetClusterCredentialsHandler")
+	}
+
+	if o.GetClusterCredentialsOIDCHandler == nil {
+		unregistered = append(unregistered, "GetClusterCredentialsOIDCHandler")
 	}
 
 	if o.GetClusterEventsHandler == nil {
@@ -393,6 +402,11 @@ func (o *KubernikusAPI) initHandlerCache() {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/api/v1/clusters/{name}/credentials"] = NewGetClusterCredentials(o.context, o.GetClusterCredentialsHandler)
+
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/api/v1/clusters/{name}/credentials/oidc"] = NewGetClusterCredentialsOIDC(o.context, o.GetClusterCredentialsOIDCHandler)
 
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)

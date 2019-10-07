@@ -251,6 +251,13 @@ func (op *GroundControl) handler(key string) error {
 				expectedPods = 5
 			}
 
+			if kluster.Spec.Dex {
+				expectedPods = expectedPods + 1
+				if kluster.Spec.Dashboard {
+					expectedPods = expectedPods + 1
+				}
+			}
+
 			op.Logger.Log(
 				"msg", "pod readiness",
 				"kluster", kluster.GetName(),
@@ -324,6 +331,7 @@ func (op *GroundControl) handler(key string) error {
 					return err
 				}
 			}
+
 		case models.KlusterPhaseUpgrading:
 			updated, err := op.updateVersionStatus(kluster)
 			if err != nil {
@@ -510,6 +518,17 @@ func (op *GroundControl) createKluster(kluster *v1.Kluster) error {
 		return fmt.Errorf("Failed to generate node password: %s", err)
 	}
 
+	klusterSecret.DexClientSecret, err = goutils.Random(16, 0, 0, true, true, randomPasswordChars...)
+	if err != nil {
+		return fmt.Errorf("Failed to generate dex client secret: %s", err)
+	}
+
+	klusterSecret.DexStaticPassword, err = goutils.Random(16, 0, 0, true, true, randomPasswordChars...)
+	if err != nil {
+		return fmt.Errorf("Failed to generate dex static password: %s", err)
+
+	}
+
 	certFactory := util.NewCertificateFactory(kluster, &klusterSecret.Certificates, op.Config.Kubernikus.Domain)
 	if _, err := certFactory.Ensure(); err != nil {
 		return fmt.Errorf("Failed to generate certificates: %s", err)
@@ -673,7 +692,7 @@ func (op *GroundControl) requiresOpenstackInfo(kluster *v1.Kluster) bool {
 }
 
 func (op *GroundControl) requiresKubernikusInfo(kluster *v1.Kluster) bool {
-	return kluster.Status.Apiserver == "" || kluster.Status.Wormhole == "" || kluster.Spec.Version == ""
+	return kluster.Status.Apiserver == "" || kluster.Status.Wormhole == "" || kluster.Spec.Version == "" || (kluster.Spec.Dashboard && kluster.Status.Dashboard == "")
 }
 
 func (op *GroundControl) discoverKubernikusInfo(kluster *v1.Kluster) error {
@@ -703,6 +722,15 @@ func (op *GroundControl) discoverKubernikusInfo(kluster *v1.Kluster) error {
 		kluster.Status.Wormhole = fmt.Sprintf("https://%s-wormhole.%s", kluster.GetName(), op.Config.Kubernikus.Domain)
 		op.Logger.Log(
 			"msg", "discovered WormholeURL",
+			"url", kluster.Status.Wormhole,
+			"kluster", kluster.GetName(),
+			"project", kluster.Account())
+	}
+
+	if kluster.Spec.Dashboard && kluster.Status.Dashboard == "" {
+		kluster.Status.Dashboard = fmt.Sprintf("https://dashboard-%s.ingress.%s", kluster.GetName(), op.Config.Kubernikus.Domain)
+		op.Logger.Log(
+			"msg", "discovered dashboard URL",
 			"url", kluster.Status.Wormhole,
 			"kluster", kluster.GetName(),
 			"project", kluster.Account())

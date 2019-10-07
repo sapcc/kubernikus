@@ -487,6 +487,15 @@ resource "openstack_dns_recordset_v2" "wildcard-kubernikus" {
   records = ["kubernikus-k8sniff.${var.region}.cloud.sap."]
 }
 
+resource "openstack_dns_recordset_v2" "wildcard-kubernikus-ingress" {
+  provider = "openstack.master"
+  zone_id = "${data.openstack_dns_zone_v2.region_cloud_sap.id}"
+  name    = "*.ingress.kubernikus.${var.region}.cloud.sap."
+  type    = "CNAME"
+  ttl     = 1800
+  records = ["kubernikus-ingress.${var.region}.cloud.sap."]
+}
+
 resource "openstack_dns_recordset_v2" "kubernikus" {
   provider = "openstack.master"
   zone_id = "${data.openstack_dns_zone_v2.region_cloud_sap.id}"

@@ -1,0 +1,154 @@
+{{/* vim: set filetype=gotexttmpl: */ -}}
+{{ if and .Values.dex.enabled .Values.dashboard.enabled }}
+kind: Deployment
+apiVersion: extensions/v1beta1
+metadata:
+  labels:
+    chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+    release: {{ .Release.Name }}
+  name: {{ include "master.fullname" . }}-dashboard 
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ include "master.fullname" . }}-dashboard 
+      release: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ include "master.fullname" . }}-dashboard 
+        release: {{ .Release.Name }}
+    spec:
+      containers:
+        - image: {{ include "dashboardProxy.image" . | quote }} 
+          name: proxy
+          args:
+            - --discovery-url=https://{{ include "dex.url" . }} # ingress of dex
+            - --listen=0.0.0.0:3000 # proxy address
+            - --enable-refresh-tokens=true
+            - --enable-authorization-header=true
+            - "--resources=uri=/*"
+            - --scopes=groups
+            - --client-id=kubernetes
+            - --upstream-url=http://localhost:9090 # kubernetes-dashboard in sidecar 
+            - --redirection-url=https://{{ include "dashboard.url" . }} # ingress of dashboard
+            - --encryption-key={{ randAlphaNum 32 }} 
+          env:
+          - name: PROXY_CLIENT_SECRET
+            valueFrom:
+              secretKeyRef:
+                name: {{ include "master.fullname" . }}-secret
+                key: dex-client-secret
+          ports:
+          - containerPort: 3000
+          livenessProbe:
+            httpGet:
+              path: /oauth/health
+              port: 3000
+            initialDelaySeconds: 60
+            periodSeconds: 15
+          readinessProbe:
+            httpGet:
+              path: /oauth/health
+              port: 3000
+            initialDelaySeconds: 60
+            periodSeconds: 15
+        - name: dashboard
+          image: {{ include "dashboard.image" . | quote }} 
+          ports:
+            - containerPort: 9090
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 9090
+            initialDelaySeconds: 15
+            periodSeconds: 15
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 9090
+            initialDelaySeconds: 15
+            periodSeconds: 15
+          args:
+          {{- if (semverCompare ">= 1.12.10" .Values.version.kubernetes) }}
+            - --namespace=kube-system # creates dashboard resources in the namespace, introduced in v2.0.0-beta1
+          {{- end }}
+            - --kubeconfig=/etc/kubernetes/config/kubeconfig 
+          {{- if (semverCompare ">= 1.15.2" .Values.version.kubernetes) }}
+            - --metrics-provider=none  #introduced in v2.0.0-beta3
+          {{- else }}
+            - --metric-client-check-period=2592000 # 30 days in seconds, since heapster is not installed
+          {{- end }}
+            - --enable-insecure-login # for login via header http port
+          volumeMounts:
+              # Create on-disk volume to store exec logs
+            - mountPath: /tmp
+              name: tmp-volume
+            - mountPath: /etc/kubernetes/certs
+              name: certs
+              readOnly: true
+            - mountPath: /etc/kubernetes/config
+              name: config
+              readOnly: true
+      volumes:
+        - name: tmp-volume
+          emptyDir: {}
+        - name: certs
+          secret:
+            defaultMode: 420
+            items:
+            - key: tls-ca.pem
+              path: tls-ca.pem
+            - key: apiserver-clients-cluster-admin.pem
+              path: kube-client.pem
+            - key: apiserver-clients-cluster-admin-key.pem
+              path: kube-client.key
+            secretName: {{ include "master.fullname" . }}-secret
+        - configMap:
+            defaultMode: 420
+            name: {{ include "master.fullname" . }}
+          name: config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "master.fullname" . }}-dashboard
+  labels:
+    app: {{ include "master.fullname" . }}-dashboard 
+    chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+    release: {{ .Release.Name }}
+spec:
+  type: ClusterIP
+  ports:
+  - protocol: TCP
+    port: 3000
+    targetPort: 3000
+    name: proxy
+  selector:
+    app: {{ include "master.fullname" . }}-dashboard 
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+  labels:
+    app: {{ include "master.fullname" . }}-dashboard 
+    chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+    release: {{ .Release.Name }}
+  name: {{ include "master.fullname" . }}-dashboard  
+spec:
+  rules:
+  - host: {{ include "dashboard.url" . }} 
+    http:
+      paths:
+      - backend:
+          serviceName: {{ include "master.fullname" . }}-dashboard  
+          servicePort: 3000
+        path: /
+  tls:
+  - hosts:
+    -  {{ include "dashboard.url" . }} 
+    secretName: {{ required "dashboard.ingressSecret undefined" .Values.dashboard.ingressSecret }}
+{{ end }}

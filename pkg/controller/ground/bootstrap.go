@@ -70,6 +70,11 @@ func SeedKluster(clients config.Clients, factories config.Factories, kluster *v1
 			return errors.Wrap(err, "seed GPU support")
 		}
 	}
+
+	if err := SeedOpenStackClusterRoleBindings(kubernetes); err != nil {
+		return errors.Wrap(err, "seed openstack cluster role bindings")
+	}
+
 	return nil
 }
 
@@ -309,4 +314,59 @@ func SeedAutoRenewalNodeCertificates(client clientset.Interface) error {
 			},
 		},
 	})
+}
+
+func SeedOpenStackClusterRoleBindings(client clientset.Interface) error {
+
+	err := bootstrap.CreateOrUpdateClusterRoleBinding(client, &rbac.ClusterRoleBinding{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "kubernikus:openstack-kubernetes-admin",
+		},
+		RoleRef: rbac.RoleRef{
+			APIGroup: rbac.GroupName,
+			Kind:     "ClusterRole",
+			Name:     "cluster-admin",
+		},
+		Subjects: []rbac.Subject{
+			{
+				Kind: "Group",
+				Name: "openstack_role:kubernetes_admin",
+			},
+			{
+				Kind: "User",
+				// It is the marshall & b64enc of the protobuf message IDTokenSubject: https://github.com/dexidp/dex/blob/master/server/oauth2.go#L300
+				// User ID: 00000000-0000-0000-0000-000000000001 ConnID: local
+				Name: "CiQwMDAwMDAwMC0wMDAwLTAwMDAtMDAwMC0wMDAwMDAwMDAwMDESBWxvY2Fs",
+				// For claims, we are using "sub" instead of "email" since some technical users missing emails
+				// If we switch to email, we can directly use email as Name field above
+			},
+		},
+	})
+
+	if err != nil {
+		return err
+	}
+
+	err = bootstrap.CreateOrUpdateClusterRoleBinding(client, &rbac.ClusterRoleBinding{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "kubernikus:openstack-kubernetes-member",
+		},
+		RoleRef: rbac.RoleRef{
+			APIGroup: rbac.GroupName,
+			Kind:     "ClusterRole",
+			Name:     "view",
+		},
+		Subjects: []rbac.Subject{
+			{
+				Kind: "Group",
+				Name: "openstack_role:kubernetes_member",
+			},
+		},
+	})
+
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

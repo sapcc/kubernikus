@@ -23,6 +23,7 @@ func init() {
 		CleanupSuppositoryNamespaces,
 		ReconcileNodePoolConfigDefaults,
 		FixUpdateConf,
+		AddDexSecretAndRoleBindings,
 		// <-- Insert new migrations at the end only!
 	}
 }
