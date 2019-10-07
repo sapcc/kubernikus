@@ -25,6 +25,9 @@ type KlusterVersion struct {
 	Supported              bool         `yaml:"supported"`
 	Hyperkube              ImageVersion `yaml:"hyperkube"`
 	CloudControllerManager ImageVersion `yaml:"cloudControllerManager"`
+	Dex                    ImageVersion `yaml:"dex,omitempty"`
+	Dashboard              ImageVersion `yaml:"dashboard,omitempty"`
+	DashboardProxy         ImageVersion `yaml:"dashboardProxy,omitempty"`
 }
 
 type ImageRegistry struct {

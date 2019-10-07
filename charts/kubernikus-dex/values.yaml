@@ -1,0 +1,21 @@
+# secrets/$REGION/values/global.yaml
+#global:
+#  region: eu-nl-1
+#  tld: cloud.sap
+
+dex:
+  connectors: 
+    keystone:
+       enabled: true
+    ldap: 
+       enabled: false 
+       # bindPW:   
+  dns:
+    zone: ingress.kubernikus
+
+api:
+# adminPassword: # from secrets/$REGION/values/keystone.yaml
+# adminUsername: admin # from secrets/$REGION/values/keystone.yaml
+  adminUserDomain: Default
+  adminProject: admin
+  adminDomain: Default

@@ -13,6 +13,9 @@ type Secret struct {
 	NodePassword   string `json:"node-password,omitempty"`
 	BootstrapToken string `json:"bootstrapToken"`
 
+	DexClientSecret   string `json:"dex-client-secret,omitempty"`
+	DexStaticPassword string `json:"dex-static-password,omitempty"`
+
 	Certificates
 }
 

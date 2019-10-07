@@ -455,6 +455,22 @@ jobs:
           <<: *task_helm_kubernikus-monitoring
         params:
           <<: *auth_<%= region %>
+  
+  - name: kubernikus-dex_<%= region %>
+    serial: true
+    plan:
+    - in_parallel:
+      - get: secrets.git
+      - get: kubernikus.builds
+        trigger: true
+        resource: master.builds
+    - in_parallel:
+      - task: kubernikus-dex_<%= region %>
+        config:
+          <<: *task_helm_kubernikus-dex
+        params:
+          - REGION: <%= region %>
+          <<: *auth_<%= region %>
 
   - name: deploy_<%= region %>
     serial: true
@@ -562,6 +578,7 @@ groups:
       - tiller_<%= region %>
       - deploy_<%= region %>
       - soak_<%= region %>
+      - kubernikus-dex_<%= region %>
 <% end %>
 
   - name: monitoring

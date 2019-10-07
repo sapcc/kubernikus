@@ -40,6 +40,10 @@ func (klusterFactory) KlusterFor(spec models.KlusterSpec) (*v1.Kluster, error) {
 		spec.NodePools = []models.NodePool{}
 	}
 
+	// Enable dex and dashboard for new clusters
+	spec.Dex = true
+	spec.Dashboard = true
+
 	k := &v1.Kluster{
 		Spec: spec,
 		Status: models.KlusterStatus{

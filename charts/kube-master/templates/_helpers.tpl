@@ -36,3 +36,38 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
 {{- required (printf "repository for cloudControllerManager missing for version %s" $version) $cloudControllerManager.repository }}:
   {{- required (printf "tag for cloudControllerManager missing for version %s" $version) $cloudControllerManager.tag }}
 {{- end -}}
+
+{{- define "dex.image" }}
+{{- $images := required "imagesForVersion undefined" .Values.imagesForVersion}}
+{{- $version := required "version.kubernetes undefined" .Values.version.kubernetes }}
+{{- $imagesForVersion := required (printf "unsupported kubernetes version %s" $version) (index $images $version) }}
+{{- $dex := required (printf "No dex image found for version %s" $imagesForVersion) (index $imagesForVersion "dex") }}
+{{- required (printf "repository for dex missing for version %s" $version) $dex.repository }}:
+  {{- required (printf "tag for dex missing for version %s" $version) $dex.tag }}
+{{- end -}}
+
+{{- define "dashboard.image" }}
+{{- $images := required "imagesForVersion undefined" .Values.imagesForVersion}}
+{{- $version := required "version.kubernetes undefined" .Values.version.kubernetes }}
+{{- $imagesForVersion := required (printf "unsupported kubernetes version %s" $version) (index $images $version) }}
+{{- $dashboard := required (printf "No dashboard image found for version %s" $imagesForVersion) (index $imagesForVersion "dashboard") }}
+{{- required (printf "repository for dashboard missing for version %s" $version) $dashboard.repository }}:
+  {{- required (printf "tag for dashboard missing for version %s" $version) $dashboard.tag }}
+{{- end -}}
+
+{{- define "dashboardProxy.image" }}
+{{- $images := required "imagesForVersion undefined" .Values.imagesForVersion}}
+{{- $version := required "version.kubernetes undefined" .Values.version.kubernetes }}
+{{- $imagesForVersion := required (printf "unsupported kubernetes version %s" $version) (index $images $version) }}
+{{- $dashboardProxy := required (printf "No dashboardProxy image found for version %s" $imagesForVersion) (index $imagesForVersion "dashboardProxy") }}
+{{- required (printf "repository for dashboardProxy missing for version %s" $version) $dashboardProxy.repository }}:
+  {{- required (printf "tag for dashboardProxy missing for version %s" $version) $dashboardProxy.tag }}
+{{- end -}}
+
+{{- define "dashboard.url" -}}
+{{- printf "dashboard-%s.%s.%s.%s" (include "master.fullname" .)  .Values.dashboard.dns.zone .Values.openstack.region .Values.dashboard.dns.domain -}}
+{{- end -}}
+
+{{- define "dex.url" -}}
+{{- printf "auth-%s.%s.%s.%s" (include "master.fullname" .) .Values.dex.dns.zone .Values.openstack.region .Values.dex.dns.domain -}}
+{{- end -}}

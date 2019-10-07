@@ -1,0 +1,111 @@
+{{/* vim: set filetype=gotexttmpl: */ -}}
+{{ if .Values.dex.enabled }}
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  labels:
+    app: {{ include "master.fullname" . }}-dex 
+    chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+    release: {{ .Release.Name }}
+  name: {{ include "master.fullname" . }}-dex
+data:
+  config.yaml: |
+    issuer: https://{{ include "dex.url" . }}
+    
+    storage:
+      type: etcd
+      config:
+        endpoints:
+          - http://{{ include "etcd.fullname" . }}:2379
+        namespace: dex/
+    
+    web:
+      http: 0.0.0.0:80
+    
+    frontend:
+      theme: ccloud
+      issuer: "Converged Cloud Kubernetes"
+
+    expiry:
+      signingKeys: "6h"
+      idTokens: "1h"
+    
+    logger:
+      level: debug
+
+    connectors:
+    {{ if .Values.dex.connectors.keystone.enabled }}
+    - type: keystone
+      id: keystone
+      name: Converged Cloud
+      config:
+        host:  {{ required "openstack.authURL undefined" .Values.openstack.authURL }}
+        domain: monsoon3
+        adminUsername: $KEYSTONE_ADMIN_USERNAME
+        adminPassword:  $KEYSTONE_ADMIN_PASSWORD
+        adminUserDomain: $KEYSTONE_ADMIN_USER_DOMAIN
+        adminProject: $KEYSTONE_ADMIN_PROJECT
+        adminDomain: $KEYSTONE_ADMIN_DOMAIN
+        authScope:
+          projectID: {{ required "openstack.projectID undefined" .Values.openstack.projectID }} # kluster project
+        includeRolesInGroups: true
+      {{ end }}
+
+      {{ if .Values.dex.connectors.ldap.enabled }}
+      - type: ldap
+        id: ldap
+        name: Active Directory
+        config:
+          host: {{ required ".dex.connectors.ldap.config.host" .Values.dex.connectors.ldap.config.host }}
+          bindDN: {{ required "dex.connectors.ldap.config.bindDN" .Values.dex.connectors.ldap.config.bindDN }}
+          bindPW: $LDAP_BIND_PW
+          insecureSkipVerify: true
+
+          userSearch:
+            baseDN: {{ required "dex.connectors.ldap.userSearch.baseDN" .Values.dex.connectors.ldap.userSearch.baseDN }}
+            filter:  {{ required "dex.connectors.ldap.userSearch.filter" .Values.dex.connectors.ldap.userSearch.filter }}
+            username: cn
+            idAttr: distinguishedName
+            emailAttr: mail
+            nameAttr: displayName
+
+          # Group search queries for groups given a user entry.
+          groupSearch:
+            baseDN: {{ required "dex.connectors.ldap.groupSearch.baseDN" .Values.dex.connectors.ldap.groupSearch.baseDN }}
+            filter: {{ required "dex.connectors.ldap.groupSearch.filter" .Values.dex.connectors.ldap.groupSearch.filter }}
+
+            userAttr: distinguishedName
+            groupAttr: member
+            nameAttr: cn
+       {{ end }}
+
+    oauth2:
+      skipApprovalScreen: true
+      responseTypes: ["code", "token", "id_token"]
+      {{ if .Values.dex.connectors.keystone.enabled }}
+      passwordConnector: keystone 
+      {{ else if .Values.dex.connectors.ldap.enabled }}
+      passwordConnector: ldap 
+      {{ else if .Values.dex.staticPasword.enabled }}
+      passwordConnector: local 
+      {{ end }}
+    
+    staticClients:
+    - id: kubernetes 
+      redirectURIs:
+      - https://{{ include "dashboard.url" . }}/oauth/callback # for dashboard access
+      - http://localhost:33768/auth/callback
+      name: kubernetes 
+      secret: {{ required "dex.staticClientSecret" .Values.dex.staticClientSecret }}
+    
+    {{ if .Values.dex.staticPasword.enabled }}
+    staticPasswords:
+    - email: {{ required "dex.staticPasword.email" .Values.dex.staticPasword.email }}
+      hash: {{ required "dex.staticPasword.hashedPassword" .Values.dex.staticPasword.hashedPassword }}
+      username: kubernikus
+      userID: "00000000-0000-0000-0000-000000000001"
+    enablePasswordDB: true
+    {{ else }}
+    enablePasswordDB: false
+    {{ end }}
+{{ end }}
