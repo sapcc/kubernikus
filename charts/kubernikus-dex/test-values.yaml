@@ -15,7 +15,7 @@ dex:
 
 api:
  adminPassword: xyz
- adminUsername: xyz
+ adminUser: xyz
  adminUserDomain: xyz
  adminProject: xyz
  adminDomain: xyz
