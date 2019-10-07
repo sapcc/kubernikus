@@ -29,11 +29,13 @@ run:
       helm diff upgrade kubernikus-dex kubernikus-copy.builds/charts/kubernikus-dex/ \
         --values secrets.git/$REGION/values/keystone.yaml \
         --values secrets.git/$REGION/values/globals.yaml \
+        --values secrets.git/kubernikus/$KUBERNIKUS_NAME/values/kubernikus-dex.yaml \
         --suppress-secrets --allow-unreleased --context 5
 
       helm upgrade kubernikus-dex kubernikus-copy.builds/charts/kubernikus-dex/ \
         --values secrets.git/$REGION/values/keystone.yaml \
         --values secrets.git/$REGION/values/globals.yaml \
+        --values secrets.git/kubernikus/$KUBERNIKUS_NAME/values/kubernikus-dex.yaml \
         --namespace=kubernikus \
         --install
 
