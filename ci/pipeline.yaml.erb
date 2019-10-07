@@ -260,6 +260,12 @@ jobs:
             <<: *task_helm_kubernikus-system
           params:
             <<: *auth_master
+        - task: kubernikus-dex
+          config:
+            <<: *task_helm_kubernikus-dex
+          params:
+            REGION: "eu-nl-1"
+            <<: *auth_master
     <<: *slack
 
   - name: cli
@@ -455,22 +461,6 @@ jobs:
           <<: *task_helm_kubernikus-monitoring
         params:
           <<: *auth_<%= region %>
-  
-  - name: kubernikus-dex_<%= region %>
-    serial: true
-    plan:
-    - in_parallel:
-      - get: secrets.git
-      - get: kubernikus.builds
-        trigger: true
-        resource: master.builds
-    - in_parallel:
-      - task: kubernikus-dex_<%= region %>
-        config:
-          <<: *task_helm_kubernikus-dex
-        params:
-          - REGION: <%= region %>
-          <<: *auth_<%= region %>
 
   - name: deploy_<%= region %>
     serial: true
@@ -494,6 +484,12 @@ jobs:
           config:
             <<: *task_helm_kubernikus-system
           params:
+            <<: *auth_<%= region %>
+        - task: kubernikus-dex_<%= region %>
+          config:
+            <<: *task_helm_kubernikus-dex
+          params:
+            REGION: <%= region %>
             <<: *auth_<%= region %>
     <<: *slack
 
@@ -578,7 +574,6 @@ groups:
       - tiller_<%= region %>
       - deploy_<%= region %>
       - soak_<%= region %>
-      - kubernikus-dex_<%= region %>
 <% end %>
 
   - name: monitoring

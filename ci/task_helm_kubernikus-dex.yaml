@@ -1,10 +1,10 @@
-platform: 'linux'
+platform: "linux"
 
 image_resource:
   type: registry-image
   source:
     repository: sapcc/kubernikus-kubectl
-    tag: 'v1.10.9'
+    tag: "v1.10.9"
 
 inputs:
   - name: kubernikus.builds
@@ -28,12 +28,12 @@ run:
 
       helm diff upgrade kubernikus-dex kubernikus-copy.builds/charts/kubernikus-dex/ \
         --values secrets.git/$REGION/values/keystone.yaml \
-        --values secrets.git/$REGION/values/global.yaml \
+        --values secrets.git/$REGION/values/globals.yaml \
         --suppress-secrets --allow-unreleased --context 5
 
       helm upgrade kubernikus-dex kubernikus-copy.builds/charts/kubernikus-dex/ \
         --values secrets.git/$REGION/values/keystone.yaml \
-        --values secrets.git/$REGION/values/global.yaml \
+        --values secrets.git/$REGION/values/globals.yaml \
         --namespace=kubernikus \
         --install
 

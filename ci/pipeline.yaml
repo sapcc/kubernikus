@@ -800,13 +800,13 @@ task_helm-admin_kubernikus: &task_helm-admin_kubernikus
   
 
 task_helm_kubernikus-dex: &task_helm_kubernikus-dex
-  platform: 'linux'
+  platform: "linux"
   
   image_resource:
     type: registry-image
     source:
       repository: sapcc/kubernikus-kubectl
-      tag: 'v1.10.9'
+      tag: "v1.10.9"
   
   inputs:
     - name: kubernikus.builds
@@ -830,12 +830,12 @@ task_helm_kubernikus-dex: &task_helm_kubernikus-dex
   
         helm diff upgrade kubernikus-dex kubernikus-copy.builds/charts/kubernikus-dex/ \
           --values secrets.git/$REGION/values/keystone.yaml \
-          --values secrets.git/$REGION/values/global.yaml \
+          --values secrets.git/$REGION/values/globals.yaml \
           --suppress-secrets --allow-unreleased --context 5
   
         helm upgrade kubernikus-dex kubernikus-copy.builds/charts/kubernikus-dex/ \
           --values secrets.git/$REGION/values/keystone.yaml \
-          --values secrets.git/$REGION/values/global.yaml \
+          --values secrets.git/$REGION/values/globals.yaml \
           --namespace=kubernikus \
           --install
   
@@ -1315,6 +1315,12 @@ jobs:
             <<: *task_helm_kubernikus-system
           params:
             <<: *auth_master
+        - task: kubernikus-dex
+          config:
+            <<: *task_helm_kubernikus-dex
+          params:
+            REGION: "eu-nl-1"
+            <<: *auth_master
     <<: *slack
 
   - name: cli
@@ -1537,22 +1543,6 @@ jobs:
           <<: *task_helm_kubernikus-monitoring
         params:
           <<: *auth_ap-ae-1
-  
-  - name: kubernikus-dex_ap-ae-1
-    serial: true
-    plan:
-    - in_parallel:
-      - get: secrets.git
-      - get: kubernikus.builds
-        trigger: true
-        resource: master.builds
-    - in_parallel:
-      - task: kubernikus-dex_ap-ae-1
-        config:
-          <<: *task_helm_kubernikus-dex
-        params:
-          - REGION: ap-ae-1
-          <<: *auth_ap-ae-1
 
   - name: deploy_ap-ae-1
     serial: true
@@ -1576,6 +1566,12 @@ jobs:
           config:
             <<: *task_helm_kubernikus-system
           params:
+            <<: *auth_ap-ae-1
+        - task: kubernikus-dex_ap-ae-1
+          config:
+            <<: *task_helm_kubernikus-dex
+          params:
+            REGION: ap-ae-1
             <<: *auth_ap-ae-1
     <<: *slack
 
@@ -1699,22 +1695,6 @@ jobs:
           <<: *task_helm_kubernikus-monitoring
         params:
           <<: *auth_ap-au-1
-  
-  - name: kubernikus-dex_ap-au-1
-    serial: true
-    plan:
-    - in_parallel:
-      - get: secrets.git
-      - get: kubernikus.builds
-        trigger: true
-        resource: master.builds
-    - in_parallel:
-      - task: kubernikus-dex_ap-au-1
-        config:
-          <<: *task_helm_kubernikus-dex
-        params:
-          - REGION: ap-au-1
-          <<: *auth_ap-au-1
 
   - name: deploy_ap-au-1
     serial: true
@@ -1738,6 +1718,12 @@ jobs:
           config:
             <<: *task_helm_kubernikus-system
           params:
+            <<: *auth_ap-au-1
+        - task: kubernikus-dex_ap-au-1
+          config:
+            <<: *task_helm_kubernikus-dex
+          params:
+            REGION: ap-au-1
             <<: *auth_ap-au-1
     <<: *slack
 
@@ -1869,22 +1855,6 @@ jobs:
           <<: *task_helm_kubernikus-monitoring
         params:
           <<: *auth_ap-cn-1
-  
-  - name: kubernikus-dex_ap-cn-1
-    serial: true
-    plan:
-    - in_parallel:
-      - get: secrets.git
-      - get: kubernikus.builds
-        trigger: true
-        resource: master.builds
-    - in_parallel:
-      - task: kubernikus-dex_ap-cn-1
-        config:
-          <<: *task_helm_kubernikus-dex
-        params:
-          - REGION: ap-cn-1
-          <<: *auth_ap-cn-1
 
   - name: deploy_ap-cn-1
     serial: true
@@ -1908,6 +1878,12 @@ jobs:
           config:
             <<: *task_helm_kubernikus-system
           params:
+            <<: *auth_ap-cn-1
+        - task: kubernikus-dex_ap-cn-1
+          config:
+            <<: *task_helm_kubernikus-dex
+          params:
+            REGION: ap-cn-1
             <<: *auth_ap-cn-1
     <<: *slack
 
@@ -2039,22 +2015,6 @@ jobs:
           <<: *task_helm_kubernikus-monitoring
         params:
           <<: *auth_ap-jp-1
-  
-  - name: kubernikus-dex_ap-jp-1
-    serial: true
-    plan:
-    - in_parallel:
-      - get: secrets.git
-      - get: kubernikus.builds
-        trigger: true
-        resource: master.builds
-    - in_parallel:
-      - task: kubernikus-dex_ap-jp-1
-        config:
-          <<: *task_helm_kubernikus-dex
-        params:
-          - REGION: ap-jp-1
-          <<: *auth_ap-jp-1
 
   - name: deploy_ap-jp-1
     serial: true
@@ -2078,6 +2038,12 @@ jobs:
           config:
             <<: *task_helm_kubernikus-system
           params:
+            <<: *auth_ap-jp-1
+        - task: kubernikus-dex_ap-jp-1
+          config:
+            <<: *task_helm_kubernikus-dex
+          params:
+            REGION: ap-jp-1
             <<: *auth_ap-jp-1
     <<: *slack
 
@@ -2209,22 +2175,6 @@ jobs:
           <<: *task_helm_kubernikus-monitoring
         params:
           <<: *auth_ap-jp-2
-  
-  - name: kubernikus-dex_ap-jp-2
-    serial: true
-    plan:
-    - in_parallel:
-      - get: secrets.git
-      - get: kubernikus.builds
-        trigger: true
-        resource: master.builds
-    - in_parallel:
-      - task: kubernikus-dex_ap-jp-2
-        config:
-          <<: *task_helm_kubernikus-dex
-        params:
-          - REGION: ap-jp-2
-          <<: *auth_ap-jp-2
 
   - name: deploy_ap-jp-2
     serial: true
@@ -2248,6 +2198,12 @@ jobs:
           config:
             <<: *task_helm_kubernikus-system
           params:
+            <<: *auth_ap-jp-2
+        - task: kubernikus-dex_ap-jp-2
+          config:
+            <<: *task_helm_kubernikus-dex
+          params:
+            REGION: ap-jp-2
             <<: *auth_ap-jp-2
     <<: *slack
 
@@ -2379,22 +2335,6 @@ jobs:
           <<: *task_helm_kubernikus-monitoring
         params:
           <<: *auth_ap-sa-1
-  
-  - name: kubernikus-dex_ap-sa-1
-    serial: true
-    plan:
-    - in_parallel:
-      - get: secrets.git
-      - get: kubernikus.builds
-        trigger: true
-        resource: master.builds
-    - in_parallel:
-      - task: kubernikus-dex_ap-sa-1
-        config:
-          <<: *task_helm_kubernikus-dex
-        params:
-          - REGION: ap-sa-1
-          <<: *auth_ap-sa-1
 
   - name: deploy_ap-sa-1
     serial: true
@@ -2418,6 +2358,12 @@ jobs:
           config:
             <<: *task_helm_kubernikus-system
           params:
+            <<: *auth_ap-sa-1
+        - task: kubernikus-dex_ap-sa-1
+          config:
+            <<: *task_helm_kubernikus-dex
+          params:
+            REGION: ap-sa-1
             <<: *auth_ap-sa-1
     <<: *slack
 
@@ -2606,22 +2552,6 @@ jobs:
           <<: *task_helm_kubernikus-monitoring
         params:
           <<: *auth_eu-de-1
-  
-  - name: kubernikus-dex_eu-de-1
-    serial: true
-    plan:
-    - in_parallel:
-      - get: secrets.git
-      - get: kubernikus.builds
-        trigger: true
-        resource: master.builds
-    - in_parallel:
-      - task: kubernikus-dex_eu-de-1
-        config:
-          <<: *task_helm_kubernikus-dex
-        params:
-          - REGION: eu-de-1
-          <<: *auth_eu-de-1
 
   - name: deploy_eu-de-1
     serial: true
@@ -2645,6 +2575,12 @@ jobs:
           config:
             <<: *task_helm_kubernikus-system
           params:
+            <<: *auth_eu-de-1
+        - task: kubernikus-dex_eu-de-1
+          config:
+            <<: *task_helm_kubernikus-dex
+          params:
+            REGION: eu-de-1
             <<: *auth_eu-de-1
     <<: *slack
 
@@ -2768,22 +2704,6 @@ jobs:
           <<: *task_helm_kubernikus-monitoring
         params:
           <<: *auth_eu-de-2
-  
-  - name: kubernikus-dex_eu-de-2
-    serial: true
-    plan:
-    - in_parallel:
-      - get: secrets.git
-      - get: kubernikus.builds
-        trigger: true
-        resource: master.builds
-    - in_parallel:
-      - task: kubernikus-dex_eu-de-2
-        config:
-          <<: *task_helm_kubernikus-dex
-        params:
-          - REGION: eu-de-2
-          <<: *auth_eu-de-2
 
   - name: deploy_eu-de-2
     serial: true
@@ -2807,6 +2727,12 @@ jobs:
           config:
             <<: *task_helm_kubernikus-system
           params:
+            <<: *auth_eu-de-2
+        - task: kubernikus-dex_eu-de-2
+          config:
+            <<: *task_helm_kubernikus-dex
+          params:
+            REGION: eu-de-2
             <<: *auth_eu-de-2
     <<: *slack
 
@@ -2930,22 +2856,6 @@ jobs:
           <<: *task_helm_kubernikus-monitoring
         params:
           <<: *auth_eu-nl-1
-  
-  - name: kubernikus-dex_eu-nl-1
-    serial: true
-    plan:
-    - in_parallel:
-      - get: secrets.git
-      - get: kubernikus.builds
-        trigger: true
-        resource: master.builds
-    - in_parallel:
-      - task: kubernikus-dex_eu-nl-1
-        config:
-          <<: *task_helm_kubernikus-dex
-        params:
-          - REGION: eu-nl-1
-          <<: *auth_eu-nl-1
 
   - name: deploy_eu-nl-1
     serial: true
@@ -2969,6 +2879,12 @@ jobs:
           config:
             <<: *task_helm_kubernikus-system
           params:
+            <<: *auth_eu-nl-1
+        - task: kubernikus-dex_eu-nl-1
+          config:
+            <<: *task_helm_kubernikus-dex
+          params:
+            REGION: eu-nl-1
             <<: *auth_eu-nl-1
     <<: *slack
 
@@ -3100,22 +3016,6 @@ jobs:
           <<: *task_helm_kubernikus-monitoring
         params:
           <<: *auth_eu-ru-1
-  
-  - name: kubernikus-dex_eu-ru-1
-    serial: true
-    plan:
-    - in_parallel:
-      - get: secrets.git
-      - get: kubernikus.builds
-        trigger: true
-        resource: master.builds
-    - in_parallel:
-      - task: kubernikus-dex_eu-ru-1
-        config:
-          <<: *task_helm_kubernikus-dex
-        params:
-          - REGION: eu-ru-1
-          <<: *auth_eu-ru-1
 
   - name: deploy_eu-ru-1
     serial: true
@@ -3139,6 +3039,12 @@ jobs:
           config:
             <<: *task_helm_kubernikus-system
           params:
+            <<: *auth_eu-ru-1
+        - task: kubernikus-dex_eu-ru-1
+          config:
+            <<: *task_helm_kubernikus-dex
+          params:
+            REGION: eu-ru-1
             <<: *auth_eu-ru-1
     <<: *slack
 
@@ -3343,22 +3249,6 @@ jobs:
           <<: *task_helm_kubernikus-monitoring
         params:
           <<: *auth_la-br-1
-  
-  - name: kubernikus-dex_la-br-1
-    serial: true
-    plan:
-    - in_parallel:
-      - get: secrets.git
-      - get: kubernikus.builds
-        trigger: true
-        resource: master.builds
-    - in_parallel:
-      - task: kubernikus-dex_la-br-1
-        config:
-          <<: *task_helm_kubernikus-dex
-        params:
-          - REGION: la-br-1
-          <<: *auth_la-br-1
 
   - name: deploy_la-br-1
     serial: true
@@ -3382,6 +3272,12 @@ jobs:
           config:
             <<: *task_helm_kubernikus-system
           params:
+            <<: *auth_la-br-1
+        - task: kubernikus-dex_la-br-1
+          config:
+            <<: *task_helm_kubernikus-dex
+          params:
+            REGION: la-br-1
             <<: *auth_la-br-1
     <<: *slack
 
@@ -3513,22 +3409,6 @@ jobs:
           <<: *task_helm_kubernikus-monitoring
         params:
           <<: *auth_na-ca-1
-  
-  - name: kubernikus-dex_na-ca-1
-    serial: true
-    plan:
-    - in_parallel:
-      - get: secrets.git
-      - get: kubernikus.builds
-        trigger: true
-        resource: master.builds
-    - in_parallel:
-      - task: kubernikus-dex_na-ca-1
-        config:
-          <<: *task_helm_kubernikus-dex
-        params:
-          - REGION: na-ca-1
-          <<: *auth_na-ca-1
 
   - name: deploy_na-ca-1
     serial: true
@@ -3552,6 +3432,12 @@ jobs:
           config:
             <<: *task_helm_kubernikus-system
           params:
+            <<: *auth_na-ca-1
+        - task: kubernikus-dex_na-ca-1
+          config:
+            <<: *task_helm_kubernikus-dex
+          params:
+            REGION: na-ca-1
             <<: *auth_na-ca-1
     <<: *slack
 
@@ -3675,22 +3561,6 @@ jobs:
           <<: *task_helm_kubernikus-monitoring
         params:
           <<: *auth_na-us-1
-  
-  - name: kubernikus-dex_na-us-1
-    serial: true
-    plan:
-    - in_parallel:
-      - get: secrets.git
-      - get: kubernikus.builds
-        trigger: true
-        resource: master.builds
-    - in_parallel:
-      - task: kubernikus-dex_na-us-1
-        config:
-          <<: *task_helm_kubernikus-dex
-        params:
-          - REGION: na-us-1
-          <<: *auth_na-us-1
 
   - name: deploy_na-us-1
     serial: true
@@ -3714,6 +3584,12 @@ jobs:
           config:
             <<: *task_helm_kubernikus-system
           params:
+            <<: *auth_na-us-1
+        - task: kubernikus-dex_na-us-1
+          config:
+            <<: *task_helm_kubernikus-dex
+          params:
+            REGION: na-us-1
             <<: *auth_na-us-1
     <<: *slack
 
@@ -3845,22 +3721,6 @@ jobs:
           <<: *task_helm_kubernikus-monitoring
         params:
           <<: *auth_na-us-2
-  
-  - name: kubernikus-dex_na-us-2
-    serial: true
-    plan:
-    - in_parallel:
-      - get: secrets.git
-      - get: kubernikus.builds
-        trigger: true
-        resource: master.builds
-    - in_parallel:
-      - task: kubernikus-dex_na-us-2
-        config:
-          <<: *task_helm_kubernikus-dex
-        params:
-          - REGION: na-us-2
-          <<: *auth_na-us-2
 
   - name: deploy_na-us-2
     serial: true
@@ -3884,6 +3744,12 @@ jobs:
           config:
             <<: *task_helm_kubernikus-system
           params:
+            <<: *auth_na-us-2
+        - task: kubernikus-dex_na-us-2
+          config:
+            <<: *task_helm_kubernikus-dex
+          params:
+            REGION: na-us-2
             <<: *auth_na-us-2
     <<: *slack
 
@@ -4015,22 +3881,6 @@ jobs:
           <<: *task_helm_kubernikus-monitoring
         params:
           <<: *auth_na-us-3
-  
-  - name: kubernikus-dex_na-us-3
-    serial: true
-    plan:
-    - in_parallel:
-      - get: secrets.git
-      - get: kubernikus.builds
-        trigger: true
-        resource: master.builds
-    - in_parallel:
-      - task: kubernikus-dex_na-us-3
-        config:
-          <<: *task_helm_kubernikus-dex
-        params:
-          - REGION: na-us-3
-          <<: *auth_na-us-3
 
   - name: deploy_na-us-3
     serial: true
@@ -4054,6 +3904,12 @@ jobs:
           config:
             <<: *task_helm_kubernikus-system
           params:
+            <<: *auth_na-us-3
+        - task: kubernikus-dex_na-us-3
+          config:
+            <<: *task_helm_kubernikus-dex
+          params:
+            REGION: na-us-3
             <<: *auth_na-us-3
     <<: *slack
 
@@ -4234,22 +4090,6 @@ jobs:
           <<: *task_helm_kubernikus-monitoring
         params:
           <<: *auth_qa-de-1
-  
-  - name: kubernikus-dex_qa-de-1
-    serial: true
-    plan:
-    - in_parallel:
-      - get: secrets.git
-      - get: kubernikus.builds
-        trigger: true
-        resource: master.builds
-    - in_parallel:
-      - task: kubernikus-dex_qa-de-1
-        config:
-          <<: *task_helm_kubernikus-dex
-        params:
-          - REGION: qa-de-1
-          <<: *auth_qa-de-1
 
   - name: deploy_qa-de-1
     serial: true
@@ -4273,6 +4113,12 @@ jobs:
           config:
             <<: *task_helm_kubernikus-system
           params:
+            <<: *auth_qa-de-1
+        - task: kubernikus-dex_qa-de-1
+          config:
+            <<: *task_helm_kubernikus-dex
+          params:
+            REGION: qa-de-1
             <<: *auth_qa-de-1
     <<: *slack
 
@@ -4527,112 +4373,96 @@ groups:
       - tiller_ap-ae-1
       - deploy_ap-ae-1
       - soak_ap-ae-1
-      - kubernikus-dex_ap-ae-1
 
       - seed_ap-au-1
       - terraform_ap-au-1
       - tiller_ap-au-1
       - deploy_ap-au-1
       - soak_ap-au-1
-      - kubernikus-dex_ap-au-1
 
       - seed_ap-cn-1
       - terraform_ap-cn-1
       - tiller_ap-cn-1
       - deploy_ap-cn-1
       - soak_ap-cn-1
-      - kubernikus-dex_ap-cn-1
 
       - seed_ap-jp-1
       - terraform_ap-jp-1
       - tiller_ap-jp-1
       - deploy_ap-jp-1
       - soak_ap-jp-1
-      - kubernikus-dex_ap-jp-1
 
       - seed_ap-jp-2
       - terraform_ap-jp-2
       - tiller_ap-jp-2
       - deploy_ap-jp-2
       - soak_ap-jp-2
-      - kubernikus-dex_ap-jp-2
 
       - seed_ap-sa-1
       - terraform_ap-sa-1
       - tiller_ap-sa-1
       - deploy_ap-sa-1
       - soak_ap-sa-1
-      - kubernikus-dex_ap-sa-1
 
       - seed_eu-de-1
       - terraform_eu-de-1
       - tiller_eu-de-1
       - deploy_eu-de-1
       - soak_eu-de-1
-      - kubernikus-dex_eu-de-1
 
       - seed_eu-de-2
       - terraform_eu-de-2
       - tiller_eu-de-2
       - deploy_eu-de-2
       - soak_eu-de-2
-      - kubernikus-dex_eu-de-2
 
       - seed_eu-nl-1
       - terraform_eu-nl-1
       - tiller_eu-nl-1
       - deploy_eu-nl-1
       - soak_eu-nl-1
-      - kubernikus-dex_eu-nl-1
 
       - seed_eu-ru-1
       - terraform_eu-ru-1
       - tiller_eu-ru-1
       - deploy_eu-ru-1
       - soak_eu-ru-1
-      - kubernikus-dex_eu-ru-1
 
       - seed_la-br-1
       - terraform_la-br-1
       - tiller_la-br-1
       - deploy_la-br-1
       - soak_la-br-1
-      - kubernikus-dex_la-br-1
 
       - seed_na-ca-1
       - terraform_na-ca-1
       - tiller_na-ca-1
       - deploy_na-ca-1
       - soak_na-ca-1
-      - kubernikus-dex_na-ca-1
 
       - seed_na-us-1
       - terraform_na-us-1
       - tiller_na-us-1
       - deploy_na-us-1
       - soak_na-us-1
-      - kubernikus-dex_na-us-1
 
       - seed_na-us-2
       - terraform_na-us-2
       - tiller_na-us-2
       - deploy_na-us-2
       - soak_na-us-2
-      - kubernikus-dex_na-us-2
 
       - seed_na-us-3
       - terraform_na-us-3
       - tiller_na-us-3
       - deploy_na-us-3
       - soak_na-us-3
-      - kubernikus-dex_na-us-3
 
       - seed_qa-de-1
       - terraform_qa-de-1
       - tiller_qa-de-1
       - deploy_qa-de-1
       - soak_qa-de-1
-      - kubernikus-dex_qa-de-1
 
 
   - name: monitoring
