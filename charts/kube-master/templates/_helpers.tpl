@@ -65,9 +65,9 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
 {{- end -}}
 
 {{- define "dashboard.url" -}}
-{{- printf "dashboard-%s.ingress.%s" (include "master.fullname" .) .Values.api.apiserverHost -}}
+{{- printf "auth-%s" ( .Values.api.apiserverHost | replace (include "master.fullname" .) (printf "%s.ingress" (include "master.fullname" .) ) ) -}}
 {{- end -}}
 
 {{- define "dex.url" -}}
-{{- printf "auth-%s.ingress.%s" (include "master.fullname" .) .Values.api.apiserverHost -}}
+{{- printf "auth-%s" ( .Values.api.apiserverHost | replace (include "master.fullname" .) (printf "%s.ingress" (include "master.fullname" .) ) ) -}}
 {{- end -}}

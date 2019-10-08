@@ -104,17 +104,8 @@ dex:
     email: kubernikus@cloud.sap
     # hashedPassword:
   #staticClientSecret: 
-  dns:
-    zone: ingress.kubernikus
-    domain: cloud.sap
   ingressSecret: kubernikus-dex
 
 dashboard:
   enabled: false
-
   ingressSecret: kubernikus-dex
-
-  dns:
-    zone: ingress.kubernikus
-    domain: cloud.sap
-    
