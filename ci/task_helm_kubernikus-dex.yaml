@@ -27,7 +27,7 @@ run:
       helm dep up kubernikus-copy.builds/charts/kubernikus-dex/
 
       touch /tmp/kubernikus-dex.yaml
-      [[ "${REGION}" == "master" ]] && printf "dex:\n  dns:\n    zone: ingress.kubernikus-master" > /tmp/kubernikus-dex.yaml
+      [[ "${KUBERNIKUS_NAME}" == "k-master" ]] && printf "dex:\n  dns:\n    zone: ingress.kubernikus-master" > /tmp/kubernikus-dex.yaml
 
       helm diff upgrade kubernikus-dex kubernikus-copy.builds/charts/kubernikus-dex/ \
         --values secrets.git/$REGION/values/keystone.yaml \
