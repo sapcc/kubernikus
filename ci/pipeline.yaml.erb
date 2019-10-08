@@ -475,11 +475,6 @@ jobs:
             <<: *task_helm_kubernikus
           params:
             <<: *auth_<%= region %>
-        - task: kubernikus-system_<%= region %>
-          config:
-            <<: *task_helm_kubernikus-system
-          params:
-            <<: *auth_<%= region %>
         - task: kubernikus-dex_<%= region %>
           config:
             <<: *task_helm_kubernikus-dex

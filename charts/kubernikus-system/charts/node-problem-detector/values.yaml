@@ -1,5 +1,0 @@
-image:
-  repository: sapcc/node-problem-detector
-  tag: v0.5.0
-
-logMonitors: "/config/kernel-monitor.json"
