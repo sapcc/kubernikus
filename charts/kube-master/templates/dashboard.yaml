@@ -19,6 +19,21 @@ spec:
         app: {{ include "master.fullname" . }}-dashboard 
         release: {{ .Release.Name }}
     spec:
+      initContainers:
+        - name: apiserver-wait
+          image: {{ include "hyperkube.image" . }}
+          command:
+            - sh
+            - -c
+          args:
+            - until kubectl cluster-info --kubeconfig /etc/kubernetes/config/kubeconfig --request-timeout=4s; do sleep 5; done;
+          volumeMounts:
+            - mountPath: /etc/kubernetes/certs/
+              name: certs
+              readOnly: true
+            - mountPath: /etc/kubernetes/config
+              name: config
+              readOnly: true
       containers:
         - image: {{ include "dashboardProxy.image" . | quote }} 
           name: proxy
