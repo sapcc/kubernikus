@@ -12,4 +12,4 @@ groups:
       playbook: docs/support/playbook/cinder/error_deleting.html
     annotations:
       summary: Volume attachment failing with bad request
-      description: The Volume {{ $labels.volume }} is having continous problems attaching. The "bad request" error returned by compute suggests there is an inconsitency between nova/cinder related to the attachment state. A nanny should fix this in the next hours. In urgent cases use the playbook.
+      description: The Volume {{ $labels.volume }} is having continuous problems attaching. The "bad request" error returned by compute suggests there is an inconsitency between nova/cinder related to the attachment state. A nanny should fix this in the next hours. In urgent cases use the playbook.
