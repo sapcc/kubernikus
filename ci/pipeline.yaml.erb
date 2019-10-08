@@ -255,11 +255,6 @@ jobs:
             <<: *task_helm_kubernikus
           params:
             <<: *auth_master
-        - task: kubernikus-system
-          config:
-            <<: *task_helm_kubernikus-system
-          params:
-            <<: *auth_master
         - task: kubernikus-dex
           config:
             <<: *task_helm_kubernikus-dex
