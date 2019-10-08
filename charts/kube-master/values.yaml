@@ -17,6 +17,7 @@ openstack: {}
   #lbFloatingNetworkID
   #routerID:
   #region
+  #projectDomainName:
 
 # specify a different certsSecretName if you want to use
 # an exiting secret

@@ -36,6 +36,7 @@ type openstackValues struct {
 	Password            string `yaml:"password"`
 	DomainName          string `yaml:"domainName"`
 	ProjectID           string `yaml:"projectID"`
+	ProjectDomainName   string `yaml:"projectDomainName"`
 	Region              string `yaml:"region,omitempty"`
 	LbSubnetID          string `yaml:"lbSubnetID,omitempty"`
 	LbFloatingNetworkID string `yaml:"lbFloatingNetworkID,omitempty"`
@@ -155,11 +156,12 @@ func KlusterToHelmValues(kluster *v1.Kluster, secret *v1.Secret, kubernetesVersi
 			},
 			StorageContainer: etcd_util.DefaultStorageContainer(kluster),
 			Openstack: openstackValues{
-				AuthURL:    secret.Openstack.AuthURL,
-				Username:   secret.Openstack.Username,
-				Password:   secret.Openstack.Password,
-				DomainName: secret.Openstack.DomainName,
-				ProjectID:  secret.Openstack.ProjectID,
+				AuthURL:           secret.Openstack.AuthURL,
+				Username:          secret.Openstack.Username,
+				Password:          secret.Openstack.Password,
+				DomainName:        secret.Openstack.DomainName,
+				ProjectID:         secret.Openstack.ProjectID,
+				ProjectDomainName: secret.Openstack.ProjectDomainName,
 			},
 		},
 		Api: apiValues{
@@ -185,6 +187,7 @@ func KlusterToHelmValues(kluster *v1.Kluster, secret *v1.Secret, kubernetesVersi
 			DomainName:          secret.Openstack.DomainName,
 			Region:              secret.Openstack.Region,
 			ProjectID:           kluster.Spec.Openstack.ProjectID,
+			ProjectDomainName:   secret.ProjectDomainName,
 			LbSubnetID:          kluster.Spec.Openstack.LBSubnetID,
 			LbFloatingNetworkID: kluster.Spec.Openstack.LBFloatingNetworkID,
 			RouterID:            kluster.Spec.Openstack.RouterID,
