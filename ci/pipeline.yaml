@@ -828,16 +828,19 @@ task_helm_kubernikus-dex: &task_helm_kubernikus-dex
         # helm repo add sapcc https://charts.global.cloud.sap
         helm dep up kubernikus-copy.builds/charts/kubernikus-dex/
   
+        touch /tmp/kubernikus-dex.yaml
+        [[ "${REGION}" == "master" ]] && printf "dex:\n  dns:\n    zone: ingress.kubernikus-master" > /tmp/kubernikus-dex.yaml
+  
         helm diff upgrade kubernikus-dex kubernikus-copy.builds/charts/kubernikus-dex/ \
           --values secrets.git/$REGION/values/keystone.yaml \
           --values secrets.git/$REGION/values/globals.yaml \
-          --values secrets.git/kubernikus/$KUBERNIKUS_NAME/values/kubernikus-dex.yaml \
+          --values /tmp/kubernikus-dex.yaml \
           --suppress-secrets --allow-unreleased --context 5
   
         helm upgrade kubernikus-dex kubernikus-copy.builds/charts/kubernikus-dex/ \
           --values secrets.git/$REGION/values/keystone.yaml \
           --values secrets.git/$REGION/values/globals.yaml \
-          --values secrets.git/kubernikus/$KUBERNIKUS_NAME/values/kubernikus-dex.yaml \
+          --values /tmp/kubernikus-dex.yaml \
           --namespace=kubernikus \
           --install
   
