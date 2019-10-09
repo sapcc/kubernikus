@@ -124,7 +124,7 @@ func (d *createCluster) Handle(params operations.CreateClusterParams, principal 
 
 	kluster.ObjectMeta = metav1.ObjectMeta{
 		Name:        qualifiedName(name, principal.Account),
-		Labels:      map[string]string{"account": principal.Account},
+		Labels:      map[string]string{"account": principal.Account, "domain": principal.Domain},
 		Annotations: map[string]string{"creator": principal.Name},
 	}
 

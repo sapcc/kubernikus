@@ -543,6 +543,7 @@ func (op *GroundControl) createKluster(kluster *v1.Kluster) error {
 	if klusterSecret.Openstack.ProjectID == "" {
 		klusterSecret.Openstack.ProjectID = kluster.Account()
 	}
+	klusterSecret.Openstack.ProjectDomainName = kluster.Domain()
 	if klusterSecret.Openstack.Password, err = goutils.Random(20, 32, 127, true, true); err != nil {
 		return fmt.Errorf("Failed to generated password for cluster service user: %s", err)
 	}

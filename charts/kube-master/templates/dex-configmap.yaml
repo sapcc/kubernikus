@@ -40,7 +40,7 @@ data:
       name: Converged Cloud
       config:
         host:  {{ required "openstack.authURL undefined" .Values.openstack.authURL }}
-        domain: {{ required "openstack.domainName undefined" .Values.openstack.domainName }}
+        domain: {{ required "openstack.projectDomainName undefined" .Values.openstack.projectDomainName }}
         adminUsername: $KEYSTONE_ADMIN_USERNAME
         adminPassword:  $KEYSTONE_ADMIN_PASSWORD
         adminUserDomain: $KEYSTONE_ADMIN_USER_DOMAIN
