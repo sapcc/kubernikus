@@ -899,55 +899,6 @@ task_helm_kubernikus-monitoring: &task_helm_kubernikus-monitoring
     KUBERNIKUS_URL:
   
 
-task_helm_kubernikus-system: &task_helm_kubernikus-system
-  platform: 'linux'
-  
-  image_resource:
-    type: registry-image
-    source:
-      repository: sapcc/kubernikus-kubectl
-      tag: 'v1.10.9'
-  
-  inputs:
-    - name: kubernikus.builds
-    - name: secrets.git
-  
-  run:
-    path: /bin/sh
-    args:
-      - -c
-      - |
-        set -exo pipefail
-  
-        # recent helm versions fails with `invalid cross-device link` when trying to rename charts.git
-        # rename(2) for a directory is allowed only when both the source and the destination path are on the top layer
-        # https://github.com/kubernetes/helm/issues/2998
-        cp -a kubernikus.builds kubernikus-copy.builds
-  
-        helm dep up kubernikus-copy.builds/charts/kubernikus-system/
-  
-        helm diff upgrade kubernikus-system kubernikus-copy.builds/charts/kubernikus-system/ \
-          --suppress-secrets --allow-unreleased --context 5 \
-          --values secrets.git/global/values/kubernikus-system.yaml \
-          --values secrets.git/kubernikus/$KUBERNIKUS_NAME/values/kubernikus-system.yaml
-  
-        helm upgrade kubernikus-system kubernikus-copy.builds/charts/kubernikus-system/ \
-          --namespace=kubernikus-system \
-          --values secrets.git/global/values/kubernikus-system.yaml \
-          --values secrets.git/kubernikus/$KUBERNIKUS_NAME/values/kubernikus-system.yaml \
-          --install
-  
-  params:
-    OS_AUTH_URL:
-    OS_USERNAME:
-    OS_PASSWORD:
-    OS_USER_DOMAIN_NAME:
-    OS_PROJECT_NAME:
-    OS_PROJECT_DOMAIN_NAME:
-    KUBERNIKUS_NAME:
-    KUBERNIKUS_URL:
-  
-
 task_helm_kubernikus: &task_helm_kubernikus
   platform: 'linux'
   
@@ -1489,11 +1440,6 @@ jobs:
             <<: *task_helm_kubernikus
           params:
             <<: *auth_ap-ae-1
-        - task: kubernikus-system_ap-ae-1
-          config:
-            <<: *task_helm_kubernikus-system
-          params:
-            <<: *auth_ap-ae-1
         - task: kubernikus-dex_ap-ae-1
           config:
             <<: *task_helm_kubernikus-dex
@@ -1625,11 +1571,6 @@ jobs:
         - task: kubernikus_ap-au-1
           config:
             <<: *task_helm_kubernikus
-          params:
-            <<: *auth_ap-au-1
-        - task: kubernikus-system_ap-au-1
-          config:
-            <<: *task_helm_kubernikus-system
           params:
             <<: *auth_ap-au-1
         - task: kubernikus-dex_ap-au-1
@@ -1773,11 +1714,6 @@ jobs:
             <<: *task_helm_kubernikus
           params:
             <<: *auth_ap-cn-1
-        - task: kubernikus-system_ap-cn-1
-          config:
-            <<: *task_helm_kubernikus-system
-          params:
-            <<: *auth_ap-cn-1
         - task: kubernikus-dex_ap-cn-1
           config:
             <<: *task_helm_kubernikus-dex
@@ -1917,11 +1853,6 @@ jobs:
         - task: kubernikus_ap-jp-1
           config:
             <<: *task_helm_kubernikus
-          params:
-            <<: *auth_ap-jp-1
-        - task: kubernikus-system_ap-jp-1
-          config:
-            <<: *task_helm_kubernikus-system
           params:
             <<: *auth_ap-jp-1
         - task: kubernikus-dex_ap-jp-1
@@ -2065,11 +1996,6 @@ jobs:
             <<: *task_helm_kubernikus
           params:
             <<: *auth_ap-jp-2
-        - task: kubernikus-system_ap-jp-2
-          config:
-            <<: *task_helm_kubernikus-system
-          params:
-            <<: *auth_ap-jp-2
         - task: kubernikus-dex_ap-jp-2
           config:
             <<: *task_helm_kubernikus-dex
@@ -2209,11 +2135,6 @@ jobs:
         - task: kubernikus_ap-sa-1
           config:
             <<: *task_helm_kubernikus
-          params:
-            <<: *auth_ap-sa-1
-        - task: kubernikus-system_ap-sa-1
-          config:
-            <<: *task_helm_kubernikus-system
           params:
             <<: *auth_ap-sa-1
         - task: kubernikus-dex_ap-sa-1
@@ -2414,11 +2335,6 @@ jobs:
             <<: *task_helm_kubernikus
           params:
             <<: *auth_eu-de-1
-        - task: kubernikus-system_eu-de-1
-          config:
-            <<: *task_helm_kubernikus-system
-          params:
-            <<: *auth_eu-de-1
         - task: kubernikus-dex_eu-de-1
           config:
             <<: *task_helm_kubernikus-dex
@@ -2552,11 +2468,6 @@ jobs:
             <<: *task_helm_kubernikus
           params:
             <<: *auth_eu-de-2
-        - task: kubernikus-system_eu-de-2
-          config:
-            <<: *task_helm_kubernikus-system
-          params:
-            <<: *auth_eu-de-2
         - task: kubernikus-dex_eu-de-2
           config:
             <<: *task_helm_kubernikus-dex
@@ -2688,11 +2599,6 @@ jobs:
         - task: kubernikus_eu-nl-1
           config:
             <<: *task_helm_kubernikus
-          params:
-            <<: *auth_eu-nl-1
-        - task: kubernikus-system_eu-nl-1
-          config:
-            <<: *task_helm_kubernikus-system
           params:
             <<: *auth_eu-nl-1
         - task: kubernikus-dex_eu-nl-1
@@ -2834,11 +2740,6 @@ jobs:
         - task: kubernikus_eu-ru-1
           config:
             <<: *task_helm_kubernikus
-          params:
-            <<: *auth_eu-ru-1
-        - task: kubernikus-system_eu-ru-1
-          config:
-            <<: *task_helm_kubernikus-system
           params:
             <<: *auth_eu-ru-1
         - task: kubernikus-dex_eu-ru-1
@@ -3055,11 +2956,6 @@ jobs:
             <<: *task_helm_kubernikus
           params:
             <<: *auth_la-br-1
-        - task: kubernikus-system_la-br-1
-          config:
-            <<: *task_helm_kubernikus-system
-          params:
-            <<: *auth_la-br-1
         - task: kubernikus-dex_la-br-1
           config:
             <<: *task_helm_kubernikus-dex
@@ -3201,11 +3097,6 @@ jobs:
             <<: *task_helm_kubernikus
           params:
             <<: *auth_na-ca-1
-        - task: kubernikus-system_na-ca-1
-          config:
-            <<: *task_helm_kubernikus-system
-          params:
-            <<: *auth_na-ca-1
         - task: kubernikus-dex_na-ca-1
           config:
             <<: *task_helm_kubernikus-dex
@@ -3337,11 +3228,6 @@ jobs:
         - task: kubernikus_na-us-1
           config:
             <<: *task_helm_kubernikus
-          params:
-            <<: *auth_na-us-1
-        - task: kubernikus-system_na-us-1
-          config:
-            <<: *task_helm_kubernikus-system
           params:
             <<: *auth_na-us-1
         - task: kubernikus-dex_na-us-1
@@ -3485,11 +3371,6 @@ jobs:
             <<: *task_helm_kubernikus
           params:
             <<: *auth_na-us-2
-        - task: kubernikus-system_na-us-2
-          config:
-            <<: *task_helm_kubernikus-system
-          params:
-            <<: *auth_na-us-2
         - task: kubernikus-dex_na-us-2
           config:
             <<: *task_helm_kubernikus-dex
@@ -3629,11 +3510,6 @@ jobs:
         - task: kubernikus_na-us-3
           config:
             <<: *task_helm_kubernikus
-          params:
-            <<: *auth_na-us-3
-        - task: kubernikus-system_na-us-3
-          config:
-            <<: *task_helm_kubernikus-system
           params:
             <<: *auth_na-us-3
         - task: kubernikus-dex_na-us-3
@@ -3824,11 +3700,6 @@ jobs:
         - task: kubernikus_qa-de-1
           config:
             <<: *task_helm_kubernikus
-          params:
-            <<: *auth_qa-de-1
-        - task: kubernikus-system_qa-de-1
-          config:
-            <<: *task_helm_kubernikus-system
           params:
             <<: *auth_qa-de-1
         - task: kubernikus-dex_qa-de-1

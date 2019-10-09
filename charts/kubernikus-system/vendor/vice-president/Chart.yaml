@@ -1,4 +1,0 @@
-apiVersion: v1
-description: Automated certificate management by a kubernetes operator using the Symantec VICE API
-name: vice-president
-version: 0.1.4
