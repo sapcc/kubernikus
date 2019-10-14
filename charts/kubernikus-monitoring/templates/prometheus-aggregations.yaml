@@ -1,5 +1,5 @@
 {{- $values := .Values }}
-{{- range $path, $bytes := .Files.Glob "alerts/*.alerts" }}
+{{- range $path, $bytes := .Files.Glob "aggregations/*.rules" }}
 ---
 apiVersion: monitoring.coreos.com/v1
 kind: PrometheusRule
@@ -7,8 +7,6 @@ kind: PrometheusRule
 metadata:
   name: kubernikus-{{ printf "%s" $path | replace "/" "-"  }}
   labels:
-    tier: kks
-    type: alerting-rules
     prometheus: {{ required ".Values.prometheusName missing" $values.prometheusName }}
 
 spec:

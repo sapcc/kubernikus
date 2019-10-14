@@ -1,7 +1,10 @@
 kubernikus-monitoring
 ---------------------
 
-This is an umbrella chart for monitoring Kubernikus.
+This chart contains Prometheus alert and aggregation rules and Grafana dashboards and datasources for Kubernikus.  
+The underlying infrastructure (Prometheus, exporters, Grafana, etc.) are deployed via [kube-monitoring-kubernikus Helm chart](https://github.com/sapcc/helm-charts/tree/master/system/kube-monitoring-kubernikus).
+
+## Prometheus
 
 Prometheus alert and aggregation rules are provided in the respective subfolder and are deployed as a [PrometheusRule](https://github.com/coreos/prometheus-operator/blob/master/Documentation/api.md#prometheusrule).  
 Rules are mapped to the respective Prometheus server instance via labels. Per convention a kubernikus Prometheus rule must have the following label:
@@ -11,7 +14,20 @@ metadata:
     prometheus: kubernikus
 ```
 
+## Grafana
 
-**TODO:**  
-This chart uses the Kubernetes Prometheus alert- and aggregation rules as deployed in the controlplane via [kube-rules](https://github.com/sapcc/helm-charts/tree/master/system/kube-monitoring/charts/kube-rules) sub-chart.
-Re-use the entire [kube-monitoring chart](https://github.com/sapcc/helm-charts/tree/master/system/kube-monitoring) once all openstack and infrastructure parts have been cleansed from it.
+Grafana dashboards and datasources are deployed via ConfigMaps and considered if they are labeled as shown below:
+
+Dashboards:
+```
+metadata:
+  labels:
+    kubernikus-grafana-dashboard: "true"
+```
+
+Datasources:
+```
+metadata:
+  labels:
+    kubernikus-grafana-datasource: "true"
+```

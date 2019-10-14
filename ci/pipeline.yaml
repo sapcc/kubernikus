@@ -881,19 +881,11 @@ task_helm_kubernikus-monitoring: &task_helm_kubernikus-monitoring
         # https://github.com/kubernetes/helm/issues/2998
         cp -a kubernikus.builds kubernikus-copy.builds
   
-        # Dependencies are currently vendored.
-        # helm repo add sapcc https://charts.global.cloud.sap
-        helm dep up kubernikus-copy.builds/charts/kubernikus-monitoring/
-  
         helm diff upgrade kubernikus-monitoring kubernikus-copy.builds/charts/kubernikus-monitoring/ \
-          --values secrets.git/global/values/kubernikus-monitoring.yaml \
-          --values secrets.git/kubernikus/$KUBERNIKUS_NAME/values/kubernikus-monitoring.yaml \
           --suppress-secrets --allow-unreleased --context 5
   
         helm upgrade kubernikus-monitoring kubernikus-copy.builds/charts/kubernikus-monitoring/ \
-          --values secrets.git/global/values/kubernikus-monitoring.yaml \
-          --values secrets.git/kubernikus/$KUBERNIKUS_NAME/values/kubernikus-monitoring.yaml \
-          --namespace=kubernikus-system \
+          --namespace=kubernikus-monitoring \
           --install
   
   params:
@@ -945,50 +937,6 @@ task_helm_kubernikus: &task_helm_kubernikus
         kubectl rollout status deployment/kubernikus-api --namespace=kubernikus-system
         kubectl rollout status deployment/kubernikus-operator --namespace=kubernikus-system
         kubectl rollout status deployment/k8sniff-ingress-lb --namespace=kubernikus-system
-  
-  params:
-    OS_AUTH_URL:
-    OS_USERNAME:
-    OS_PASSWORD:
-    OS_USER_DOMAIN_NAME:
-    OS_PROJECT_NAME:
-    OS_PROJECT_DOMAIN_NAME:
-    KUBERNIKUS_NAME:
-    KUBERNIKUS_URL:
-  
-
-task_helm_prometheus-operator: &task_helm_prometheus-operator
-  platform: 'linux'
-  
-  image_resource:
-    type: registry-image
-    source:
-      repository: sapcc/kubernikus-kubectl
-      tag: 'v1.10.9'
-  
-  inputs:
-    - name: helm-charts.git
-    - name: secrets.git
-  
-  run:
-    path: /bin/sh
-    args:
-      - -c
-      - |
-        set -exo pipefail
-  
-        helm dep up helm-charts.git/system/prometheus-operator
-  
-        helm diff upgrade prometheus-operator helm-charts.git/system/prometheus-operator/ \
-          --suppress-secrets --allow-unreleased --context 5 \
-          --values secrets.git/global/values/prometheus-operator.yaml
-  
-        helm upgrade prometheus-operator helm-charts.git/system/prometheus-operator/ \
-          --namespace=prometheus-operator \
-          --values secrets.git/global/values/prometheus-operator.yaml \
-          --install
-  
-        kubectl rollout status deployment/prometheus-operator --namespace=prometheus-operator
   
   params:
     OS_AUTH_URL:
@@ -1167,13 +1115,6 @@ resources:
       uri:    https://github.com/sapcc/helm-charts.git
       branch: master
       paths:  [ openstack/kubernikus/ ]
-
-  - name: helm-charts-prometheus-operator.git
-    type: git
-    source:
-      uri: https://github.com/sapcc/helm-charts.git
-      branch: master
-      paths:  [ system/prometheus-operator/ ]
 
   - name: slack-alert
     type: slack-alert
@@ -1466,20 +1407,6 @@ jobs:
             <<: *auth_ap-ae-1
     <<: *slack
 
-  - name: prometheus-operator_ap-ae-1
-    plan:
-    - in_parallel:
-      - get: helm-charts-prometheus-operator.git
-        trigger: true
-      - get: secrets.git
-    - in_parallel:
-      - task: prometheus-operator_ap-ae-1
-        input_mapping: {helm-charts.git: helm-charts-prometheus-operator.git}
-        config:
-          <<: *task_helm_prometheus-operator
-        params:
-          <<: *auth_ap-ae-1
-
   - name: kubernikus-monitoring_ap-ae-1
     serial: true
     plan:
@@ -1612,20 +1539,6 @@ jobs:
           params:
             <<: *auth_ap-au-1
     <<: *slack
-
-  - name: prometheus-operator_ap-au-1
-    plan:
-    - in_parallel:
-      - get: helm-charts-prometheus-operator.git
-        trigger: true
-      - get: secrets.git
-    - in_parallel:
-      - task: prometheus-operator_ap-au-1
-        input_mapping: {helm-charts.git: helm-charts-prometheus-operator.git}
-        config:
-          <<: *task_helm_prometheus-operator
-        params:
-          <<: *auth_ap-au-1
 
   - name: kubernikus-monitoring_ap-au-1
     serial: true
@@ -1768,20 +1681,6 @@ jobs:
             <<: *auth_ap-cn-1
     <<: *slack
 
-  - name: prometheus-operator_ap-cn-1
-    plan:
-    - in_parallel:
-      - get: helm-charts-prometheus-operator.git
-        trigger: true
-      - get: secrets.git
-    - in_parallel:
-      - task: prometheus-operator_ap-cn-1
-        input_mapping: {helm-charts.git: helm-charts-prometheus-operator.git}
-        config:
-          <<: *task_helm_prometheus-operator
-        params:
-          <<: *auth_ap-cn-1
-
   - name: kubernikus-monitoring_ap-cn-1
     serial: true
     plan:
@@ -1922,20 +1821,6 @@ jobs:
           params:
             <<: *auth_ap-jp-1
     <<: *slack
-
-  - name: prometheus-operator_ap-jp-1
-    plan:
-    - in_parallel:
-      - get: helm-charts-prometheus-operator.git
-        trigger: true
-      - get: secrets.git
-    - in_parallel:
-      - task: prometheus-operator_ap-jp-1
-        input_mapping: {helm-charts.git: helm-charts-prometheus-operator.git}
-        config:
-          <<: *task_helm_prometheus-operator
-        params:
-          <<: *auth_ap-jp-1
 
   - name: kubernikus-monitoring_ap-jp-1
     serial: true
@@ -2078,20 +1963,6 @@ jobs:
             <<: *auth_ap-jp-2
     <<: *slack
 
-  - name: prometheus-operator_ap-jp-2
-    plan:
-    - in_parallel:
-      - get: helm-charts-prometheus-operator.git
-        trigger: true
-      - get: secrets.git
-    - in_parallel:
-      - task: prometheus-operator_ap-jp-2
-        input_mapping: {helm-charts.git: helm-charts-prometheus-operator.git}
-        config:
-          <<: *task_helm_prometheus-operator
-        params:
-          <<: *auth_ap-jp-2
-
   - name: kubernikus-monitoring_ap-jp-2
     serial: true
     plan:
@@ -2232,20 +2103,6 @@ jobs:
           params:
             <<: *auth_ap-sa-1
     <<: *slack
-
-  - name: prometheus-operator_ap-sa-1
-    plan:
-    - in_parallel:
-      - get: helm-charts-prometheus-operator.git
-        trigger: true
-      - get: secrets.git
-    - in_parallel:
-      - task: prometheus-operator_ap-sa-1
-        input_mapping: {helm-charts.git: helm-charts-prometheus-operator.git}
-        config:
-          <<: *task_helm_prometheus-operator
-        params:
-          <<: *auth_ap-sa-1
 
   - name: kubernikus-monitoring_ap-sa-1
     serial: true
@@ -2445,20 +2302,6 @@ jobs:
             <<: *auth_eu-de-1
     <<: *slack
 
-  - name: prometheus-operator_eu-de-1
-    plan:
-    - in_parallel:
-      - get: helm-charts-prometheus-operator.git
-        trigger: true
-      - get: secrets.git
-    - in_parallel:
-      - task: prometheus-operator_eu-de-1
-        input_mapping: {helm-charts.git: helm-charts-prometheus-operator.git}
-        config:
-          <<: *task_helm_prometheus-operator
-        params:
-          <<: *auth_eu-de-1
-
   - name: kubernikus-monitoring_eu-de-1
     serial: true
     plan:
@@ -2592,20 +2435,6 @@ jobs:
             <<: *auth_eu-de-2
     <<: *slack
 
-  - name: prometheus-operator_eu-de-2
-    plan:
-    - in_parallel:
-      - get: helm-charts-prometheus-operator.git
-        trigger: true
-      - get: secrets.git
-    - in_parallel:
-      - task: prometheus-operator_eu-de-2
-        input_mapping: {helm-charts.git: helm-charts-prometheus-operator.git}
-        config:
-          <<: *task_helm_prometheus-operator
-        params:
-          <<: *auth_eu-de-2
-
   - name: kubernikus-monitoring_eu-de-2
     serial: true
     plan:
@@ -2738,20 +2567,6 @@ jobs:
           params:
             <<: *auth_eu-nl-1
     <<: *slack
-
-  - name: prometheus-operator_eu-nl-1
-    plan:
-    - in_parallel:
-      - get: helm-charts-prometheus-operator.git
-        trigger: true
-      - get: secrets.git
-    - in_parallel:
-      - task: prometheus-operator_eu-nl-1
-        input_mapping: {helm-charts.git: helm-charts-prometheus-operator.git}
-        config:
-          <<: *task_helm_prometheus-operator
-        params:
-          <<: *auth_eu-nl-1
 
   - name: kubernikus-monitoring_eu-nl-1
     serial: true
@@ -2893,20 +2708,6 @@ jobs:
           params:
             <<: *auth_eu-ru-1
     <<: *slack
-
-  - name: prometheus-operator_eu-ru-1
-    plan:
-    - in_parallel:
-      - get: helm-charts-prometheus-operator.git
-        trigger: true
-      - get: secrets.git
-    - in_parallel:
-      - task: prometheus-operator_eu-ru-1
-        input_mapping: {helm-charts.git: helm-charts-prometheus-operator.git}
-        config:
-          <<: *task_helm_prometheus-operator
-        params:
-          <<: *auth_eu-ru-1
 
   - name: kubernikus-monitoring_eu-ru-1
     serial: true
@@ -3122,20 +2923,6 @@ jobs:
             <<: *auth_la-br-1
     <<: *slack
 
-  - name: prometheus-operator_la-br-1
-    plan:
-    - in_parallel:
-      - get: helm-charts-prometheus-operator.git
-        trigger: true
-      - get: secrets.git
-    - in_parallel:
-      - task: prometheus-operator_la-br-1
-        input_mapping: {helm-charts.git: helm-charts-prometheus-operator.git}
-        config:
-          <<: *task_helm_prometheus-operator
-        params:
-          <<: *auth_la-br-1
-
   - name: kubernikus-monitoring_la-br-1
     serial: true
     plan:
@@ -3277,20 +3064,6 @@ jobs:
             <<: *auth_na-ca-1
     <<: *slack
 
-  - name: prometheus-operator_na-ca-1
-    plan:
-    - in_parallel:
-      - get: helm-charts-prometheus-operator.git
-        trigger: true
-      - get: secrets.git
-    - in_parallel:
-      - task: prometheus-operator_na-ca-1
-        input_mapping: {helm-charts.git: helm-charts-prometheus-operator.git}
-        config:
-          <<: *task_helm_prometheus-operator
-        params:
-          <<: *auth_na-ca-1
-
   - name: kubernikus-monitoring_na-ca-1
     serial: true
     plan:
@@ -3423,20 +3196,6 @@ jobs:
           params:
             <<: *auth_na-us-1
     <<: *slack
-
-  - name: prometheus-operator_na-us-1
-    plan:
-    - in_parallel:
-      - get: helm-charts-prometheus-operator.git
-        trigger: true
-      - get: secrets.git
-    - in_parallel:
-      - task: prometheus-operator_na-us-1
-        input_mapping: {helm-charts.git: helm-charts-prometheus-operator.git}
-        config:
-          <<: *task_helm_prometheus-operator
-        params:
-          <<: *auth_na-us-1
 
   - name: kubernikus-monitoring_na-us-1
     serial: true
@@ -3579,20 +3338,6 @@ jobs:
             <<: *auth_na-us-2
     <<: *slack
 
-  - name: prometheus-operator_na-us-2
-    plan:
-    - in_parallel:
-      - get: helm-charts-prometheus-operator.git
-        trigger: true
-      - get: secrets.git
-    - in_parallel:
-      - task: prometheus-operator_na-us-2
-        input_mapping: {helm-charts.git: helm-charts-prometheus-operator.git}
-        config:
-          <<: *task_helm_prometheus-operator
-        params:
-          <<: *auth_na-us-2
-
   - name: kubernikus-monitoring_na-us-2
     serial: true
     plan:
@@ -3733,20 +3478,6 @@ jobs:
           params:
             <<: *auth_na-us-3
     <<: *slack
-
-  - name: prometheus-operator_na-us-3
-    plan:
-    - in_parallel:
-      - get: helm-charts-prometheus-operator.git
-        trigger: true
-      - get: secrets.git
-    - in_parallel:
-      - task: prometheus-operator_na-us-3
-        input_mapping: {helm-charts.git: helm-charts-prometheus-operator.git}
-        config:
-          <<: *task_helm_prometheus-operator
-        params:
-          <<: *auth_na-us-3
 
   - name: kubernikus-monitoring_na-us-3
     serial: true
@@ -3937,20 +3668,6 @@ jobs:
           params:
             <<: *auth_qa-de-1
     <<: *slack
-
-  - name: prometheus-operator_qa-de-1
-    plan:
-    - in_parallel:
-      - get: helm-charts-prometheus-operator.git
-        trigger: true
-      - get: secrets.git
-    - in_parallel:
-      - task: prometheus-operator_qa-de-1
-        input_mapping: {helm-charts.git: helm-charts-prometheus-operator.git}
-        config:
-          <<: *task_helm_prometheus-operator
-        params:
-          <<: *auth_qa-de-1
 
   - name: kubernikus-monitoring_qa-de-1
     serial: true
