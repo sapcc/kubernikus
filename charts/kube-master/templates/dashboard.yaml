@@ -1,4 +1,3 @@
-{{ if (semverCompare ">= 1.11.9" .Values.version.kubernetes) }}
 {{/* vim: set filetype=gotexttmpl: */ -}}
 {{ if and .Values.dex.enabled .Values.dashboard.enabled }}
 kind: Deployment
@@ -167,5 +166,4 @@ spec:
   - hosts:
     -  {{ include "dashboard.url" . }} 
     secretName: {{ required "dashboard.ingressSecret undefined" .Values.dashboard.ingressSecret }}
-{{ end }}
 {{ end }}
