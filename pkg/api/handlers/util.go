@@ -138,6 +138,10 @@ func getDefaultAvailabilityZone(metadata *models.OpenstackMetadata) (string, err
 	if len(metadata.AvailabilityZones) == 0 {
 		return "", errors.New("couldn't determine default availability zone")
 	}
+	//eu-de2b is full, default to different az
+	if metadata.AvailabilityZones[0].Name == "eu-de-2b" && len(metadata.AvailabilityZones) > 1 {
+		return metadata.AvailabilityZones[1].Name, nil
+	}
 
 	return metadata.AvailabilityZones[0].Name, nil
 }
