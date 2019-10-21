@@ -78,6 +78,19 @@ type dexValues struct {
 	Enabled            bool           `yaml:"enabled,omitempty"`
 	StaticClientSecret string         `yaml:"staticClientSecret,omitempty"`
 	StaticPassword     staticPassword `yaml:"staticPasword,omitempty"`
+	Connectors         dexConnectors  `yaml:"connectors,omitempty"`
+}
+
+type dexConnectors struct {
+	Keystone dexKeystoneConnector `yaml:"keystone"`
+	LDAP     dexLDAPConnector     `yaml:"ldap"`
+}
+
+type dexKeystoneConnector struct {
+	Enabled bool `yaml:"enabled"`
+}
+type dexLDAPConnector struct {
+	Enabled bool `yaml:"enabled"`
 }
 
 type staticPassword struct {
@@ -127,6 +140,21 @@ func KlusterToHelmValues(kluster *v1.Kluster, secret *v1.Secret, kubernetesVersi
 		hashedPassword = string(hashedBytes)
 	}
 
+	dex := dexValues{
+		Enabled: kluster.Spec.Dex,
+		StaticPassword: staticPassword{
+			HashedPassword: hashedPassword,
+		},
+		StaticClientSecret: secret.DexClientSecret,
+	}
+
+	if kluster.Spec.NoCloud {
+		dex.Connectors = dexConnectors{
+			Keystone: dexKeystoneConnector{Enabled: false},
+			LDAP:     dexLDAPConnector{Enabled: true},
+		}
+	}
+
 	values := kubernikusHelmValues{
 		Account:          kluster.Account(),
 		BoostrapToken:    secret.BootstrapToken,
@@ -171,13 +199,7 @@ func KlusterToHelmValues(kluster *v1.Kluster, secret *v1.Secret, kubernetesVersi
 		Dashboard: dashboardValues{
 			Enabled: kluster.Spec.Dashboard,
 		},
-		Dex: dexValues{
-			Enabled: kluster.Spec.Dex,
-			StaticPassword: staticPassword{
-				HashedPassword: hashedPassword,
-			},
-			StaticClientSecret: secret.DexClientSecret,
-		},
+		Dex: dex,
 	}
 	if !kluster.Spec.NoCloud {
 		values.Openstack = openstackValues{

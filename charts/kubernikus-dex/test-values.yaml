@@ -9,7 +9,6 @@ dex:
        enabled: true
     ldap: 
        enabled: false
-       bindPW: xyz
   dns:
     zone: xyz
 

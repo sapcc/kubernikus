@@ -56,14 +56,14 @@ data:
         id: ldap
         name: Active Directory
         config:
-          host: {{ required ".dex.connectors.ldap.config.host" .Values.dex.connectors.ldap.config.host }}
-          bindDN: {{ required "dex.connectors.ldap.config.bindDN" .Values.dex.connectors.ldap.config.bindDN }}
-          bindPW: $LDAP_BIND_PW
+          host: $LDAP_CONFIG_HOST
+          bindDN: $LDAP_CONFIG_BIND_DN
+          bindPW: $LDAP_CONFIG_BIND_PW
           insecureSkipVerify: true
 
           userSearch:
-            baseDN: {{ required "dex.connectors.ldap.userSearch.baseDN" .Values.dex.connectors.ldap.userSearch.baseDN }}
-            filter:  {{ required "dex.connectors.ldap.userSearch.filter" .Values.dex.connectors.ldap.userSearch.filter }}
+            baseDN: $LDAP_USER_SEARCH_BASEDN
+            filter: $LDAP_USER_SEARCH_FILTER
             username: cn
             idAttr: distinguishedName
             emailAttr: mail
@@ -71,9 +71,8 @@ data:
 
           # Group search queries for groups given a user entry.
           groupSearch:
-            baseDN: {{ required "dex.connectors.ldap.groupSearch.baseDN" .Values.dex.connectors.ldap.groupSearch.baseDN }}
-            filter: {{ required "dex.connectors.ldap.groupSearch.filter" .Values.dex.connectors.ldap.groupSearch.filter }}
-
+            baseDN: $LDAP_GROUP_SEARCH_BASEDN
+            filter: $LDAP_GROUP_SEARCH_FILTER
             userAttr: distinguishedName
             groupAttr: member
             nameAttr: cn

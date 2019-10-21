@@ -90,15 +90,6 @@ dex:
       secret: kubernikus-dex-keystone
     ldap:
       enabled: false
-      #config:
-      #  host: 
-      #  bindDN: 
-      #userSearch:
-      #  baseDN: 
-      #  filter: 
-      #groupSearch: 
-      #  baseDN: 
-      #  filter: 
       secret: kubernikus-dex-ldap
   staticPasword:
     enabled: false
