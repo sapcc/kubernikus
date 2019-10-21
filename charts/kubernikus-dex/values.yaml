@@ -4,12 +4,12 @@
 #  tld: cloud.sap
 
 dex:
-  connectors: 
+  connectors:
     keystone:
        enabled: true
-    ldap: 
-       enabled: false 
-       # bindPW:   
+    ldap:
+       enabled: false
+       # bindPW:
   dns:
     zone: ingress.kubernikus
 

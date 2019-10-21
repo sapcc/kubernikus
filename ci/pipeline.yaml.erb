@@ -421,21 +421,6 @@ jobs:
             <<: *auth_<%= region %>
     <<: *slack
 
-  - name: kubernikus-monitoring_<%= region %>
-    serial: true
-    plan:
-    - in_parallel:
-      - get: secrets.git
-      - get: kubernikus.builds
-        trigger: true
-        resource: master.builds
-    - in_parallel:
-      - task: kubernikus-monitoring_<%= region %>
-        config:
-          <<: *task_helm_kubernikus-monitoring
-        params:
-          <<: *auth_<%= region %>
-
   - name: deploy_<%= region %>
     serial: true
     plan:
@@ -543,10 +528,4 @@ groups:
       - tiller_<%= region %>
       - deploy_<%= region %>
       - soak_<%= region %>
-<% end %>
-
-  - name: monitoring
-    jobs:
-<% DEPLOYABLE_REGIONS.each do |region, meta| %>
-      - kubernikus-monitoring_<%= region %>
 <% end %>
