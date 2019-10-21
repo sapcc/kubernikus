@@ -146,13 +146,10 @@ func KlusterToHelmValues(kluster *v1.Kluster, secret *v1.Secret, kubernetesVersi
 			HashedPassword: hashedPassword,
 		},
 		StaticClientSecret: secret.DexClientSecret,
-	}
-
-	if kluster.Spec.NoCloud {
-		dex.Connectors = dexConnectors{
-			Keystone: dexKeystoneConnector{Enabled: false},
-			LDAP:     dexLDAPConnector{Enabled: true},
-		}
+		Connectors: dexConnectors{
+			Keystone: dexKeystoneConnector{Enabled: !kluster.Spec.NoCloud},
+			LDAP:     dexLDAPConnector{Enabled: kluster.Spec.NoCloud},
+		},
 	}
 
 	values := kubernikusHelmValues{
