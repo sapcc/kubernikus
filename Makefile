@@ -150,10 +150,6 @@ endif
 test-charts:
 	docker run -ti --rm -v $(shell pwd):/go/src/github.com/sapcc/kubernikus --entrypoint "/go/src/github.com/sapcc/kubernikus/test/charts/charts.sh" sapcc/kubernikus-tests:latest
 
-.PHONY: test-alerts
-test-alerts:
-	docker run -ti --rm -v $(shell pwd):/go/src/github.com/sapcc/kubernikus --entrypoint "/go/src/github.com/sapcc/kubernikus/test/alerts/alerts.sh" sapcc/kubernikus-tests:latest
-
 include code-generate.mk
 code-gen: client-gen informer-gen lister-gen deepcopy-gen
 
