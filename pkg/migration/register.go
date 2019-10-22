@@ -24,6 +24,7 @@ func init() {
 		ReconcileNodePoolConfigDefaults,
 		FixUpdateConf,
 		AddDexSecretAndRoleBindings,
+		SeedCertRotationRoles,
 		// <-- Insert new migrations at the end only!
 	}
 }
