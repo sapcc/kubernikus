@@ -932,37 +932,6 @@ task_helm_seed: &task_helm_seed
     RELEASE: kubernikus 
   
 
-task_terraform: &task_terraform
-  platform: 'linux'
-  
-  image_resource:
-    type: registry-image
-    source:
-      repository: sapcc/kubernikus-terraform
-      tag: 'v20190711170237'
-  
-  inputs:
-    - name: secrets.git
-    - name: terraform.git
-  
-  
-  run:
-    path: /bin/sh
-    args:
-      - -c
-      - |
-        set -exo pipefail
-        cd terraform.git/terraform
-        TF_VARS_DIR=../../secrets.git/$TF_REGION/terraform \
-          make init plan apply
-  
-  params:
-    TF_REGION:
-    TF_PLUGIN_DIR: /usr/local/bin
-    TF_VARS_DIR:
-    TF_PASSWORD:
-  
-
 task_tiller: &task_tiller
   platform: 'linux'
   
@@ -1055,15 +1024,6 @@ resources:
       branch:      master
       depth: 1
       paths: [ kubernikus/tiller.version, kubernikus/*/tiller.version ]
-
-  - name: terraform.git
-    type: git
-    icon: github-circle
-    source:
-      uri: https://github.com/sapcc/kubernikus.git
-      branch: master
-      depth: 1
-      paths: [ terraform ]
 
   - name: helm-charts.git
     type: git
@@ -1227,8 +1187,6 @@ jobs:
       - in_parallel:
         - get: helm-charts.git
           trigger: true
-        - get: terraform.git
-          trigger: true
         - get: secrets.git
         - get: kubernikus.builds
           resource: master.builds
@@ -1324,35 +1282,12 @@ jobs:
           GITHUB_TOKEN: ((github-access-token))
     <<: *slack
 
-
-  - name: terraform_ap-ae-1
-    serial: true
-    plan:
-      - in_parallel:
-        - get: ASIA.tag
-          trigger: true
-          passed: [seed_ap-ae-1]
-        - get: secrets.git
-          passed: [seed_ap-ae-1]
-        - get: terraform.git
-          passed: [ASIA]
-      - task: terraform
-        config:
-          <<: *task_terraform
-        timeout: 45m
-        attempts: 5
-        params:
-          TF_REGION: ap-ae-1
-          TF_PASSWORD: ((kubernikus-terraform-password))
-    <<: *slack
-
-
   - name: tiller_ap-ae-1
     plan:
       - in_parallel:
         - get: ASIA.tag
           trigger: true
-          passed: [terraform_ap-ae-1]
+          passed: [seed_ap-ae-1]
         - get: tiller-version.git
           trigger: true
       - in_parallel:
@@ -1372,7 +1307,7 @@ jobs:
           trigger: true
           passed: [tiller_ap-ae-1]
         - get: secrets.git
-          passed: [terraform_ap-ae-1]
+          passed: [seed_ap-ae-1]
         - get: kubernikus.builds
           resource: master.builds
           passed: [admin_ASIA]
@@ -1450,27 +1385,12 @@ jobs:
           GITHUB_TOKEN: ((github-access-token))
     <<: *slack
 
-
-  - name: terraform_ap-au-1
-    serial: true
-    plan:
-      - in_parallel:
-        - get: ASIA.tag
-          trigger: true
-          passed: [seed_ap-au-1]
-        - get: secrets.git
-          passed: [seed_ap-au-1]
-        - get: terraform.git
-          passed: [ASIA]
-    <<: *slack
-
-
   - name: tiller_ap-au-1
     plan:
       - in_parallel:
         - get: ASIA.tag
           trigger: true
-          passed: [terraform_ap-au-1]
+          passed: [seed_ap-au-1]
         - get: tiller-version.git
           trigger: true
       - in_parallel:
@@ -1490,7 +1410,7 @@ jobs:
           trigger: true
           passed: [tiller_ap-au-1]
         - get: secrets.git
-          passed: [terraform_ap-au-1]
+          passed: [seed_ap-au-1]
         - get: kubernikus.builds
           resource: master.builds
           passed: [admin_ASIA]
@@ -1568,35 +1488,12 @@ jobs:
           GITHUB_TOKEN: ((github-access-token))
     <<: *slack
 
-
-  - name: terraform_ap-cn-1
-    serial: true
-    plan:
-      - in_parallel:
-        - get: ASIA.tag
-          trigger: true
-          passed: [seed_ap-cn-1]
-        - get: secrets.git
-          passed: [seed_ap-cn-1]
-        - get: terraform.git
-          passed: [ASIA]
-      - task: terraform
-        config:
-          <<: *task_terraform
-        timeout: 45m
-        attempts: 5
-        params:
-          TF_REGION: ap-cn-1
-          TF_PASSWORD: ((kubernikus-terraform-password))
-    <<: *slack
-
-
   - name: tiller_ap-cn-1
     plan:
       - in_parallel:
         - get: ASIA.tag
           trigger: true
-          passed: [terraform_ap-cn-1]
+          passed: [seed_ap-cn-1]
         - get: tiller-version.git
           trigger: true
       - in_parallel:
@@ -1616,7 +1513,7 @@ jobs:
           trigger: true
           passed: [tiller_ap-cn-1]
         - get: secrets.git
-          passed: [terraform_ap-cn-1]
+          passed: [seed_ap-cn-1]
         - get: kubernikus.builds
           resource: master.builds
           passed: [admin_ASIA]
@@ -1694,35 +1591,12 @@ jobs:
           GITHUB_TOKEN: ((github-access-token))
     <<: *slack
 
-
-  - name: terraform_ap-jp-1
-    serial: true
-    plan:
-      - in_parallel:
-        - get: ASIA.tag
-          trigger: true
-          passed: [seed_ap-jp-1]
-        - get: secrets.git
-          passed: [seed_ap-jp-1]
-        - get: terraform.git
-          passed: [ASIA]
-      - task: terraform
-        config:
-          <<: *task_terraform
-        timeout: 45m
-        attempts: 5
-        params:
-          TF_REGION: ap-jp-1
-          TF_PASSWORD: ((kubernikus-terraform-password))
-    <<: *slack
-
-
   - name: tiller_ap-jp-1
     plan:
       - in_parallel:
         - get: ASIA.tag
           trigger: true
-          passed: [terraform_ap-jp-1]
+          passed: [seed_ap-jp-1]
         - get: tiller-version.git
           trigger: true
       - in_parallel:
@@ -1742,7 +1616,7 @@ jobs:
           trigger: true
           passed: [tiller_ap-jp-1]
         - get: secrets.git
-          passed: [terraform_ap-jp-1]
+          passed: [seed_ap-jp-1]
         - get: kubernikus.builds
           resource: master.builds
           passed: [admin_ASIA]
@@ -1820,35 +1694,12 @@ jobs:
           GITHUB_TOKEN: ((github-access-token))
     <<: *slack
 
-
-  - name: terraform_ap-jp-2
-    serial: true
-    plan:
-      - in_parallel:
-        - get: ASIA.tag
-          trigger: true
-          passed: [seed_ap-jp-2]
-        - get: secrets.git
-          passed: [seed_ap-jp-2]
-        - get: terraform.git
-          passed: [ASIA]
-      - task: terraform
-        config:
-          <<: *task_terraform
-        timeout: 45m
-        attempts: 5
-        params:
-          TF_REGION: ap-jp-2
-          TF_PASSWORD: ((kubernikus-terraform-password))
-    <<: *slack
-
-
   - name: tiller_ap-jp-2
     plan:
       - in_parallel:
         - get: ASIA.tag
           trigger: true
-          passed: [terraform_ap-jp-2]
+          passed: [seed_ap-jp-2]
         - get: tiller-version.git
           trigger: true
       - in_parallel:
@@ -1868,7 +1719,7 @@ jobs:
           trigger: true
           passed: [tiller_ap-jp-2]
         - get: secrets.git
-          passed: [terraform_ap-jp-2]
+          passed: [seed_ap-jp-2]
         - get: kubernikus.builds
           resource: master.builds
           passed: [admin_ASIA]
@@ -1946,35 +1797,12 @@ jobs:
           GITHUB_TOKEN: ((github-access-token))
     <<: *slack
 
-
-  - name: terraform_ap-sa-1
-    serial: true
-    plan:
-      - in_parallel:
-        - get: ASIA.tag
-          trigger: true
-          passed: [seed_ap-sa-1]
-        - get: secrets.git
-          passed: [seed_ap-sa-1]
-        - get: terraform.git
-          passed: [ASIA]
-      - task: terraform
-        config:
-          <<: *task_terraform
-        timeout: 45m
-        attempts: 5
-        params:
-          TF_REGION: ap-sa-1
-          TF_PASSWORD: ((kubernikus-terraform-password))
-    <<: *slack
-
-
   - name: tiller_ap-sa-1
     plan:
       - in_parallel:
         - get: ASIA.tag
           trigger: true
-          passed: [terraform_ap-sa-1]
+          passed: [seed_ap-sa-1]
         - get: tiller-version.git
           trigger: true
       - in_parallel:
@@ -1994,7 +1822,7 @@ jobs:
           trigger: true
           passed: [tiller_ap-sa-1]
         - get: secrets.git
-          passed: [terraform_ap-sa-1]
+          passed: [seed_ap-sa-1]
         - get: kubernikus.builds
           resource: master.builds
           passed: [admin_ASIA]
@@ -2055,8 +1883,6 @@ jobs:
     plan:
       - in_parallel:
         - get: helm-charts.git
-          trigger: true
-        - get: terraform.git
           trigger: true
         - get: secrets.git
         - get: kubernikus.builds
@@ -2137,27 +1963,12 @@ jobs:
           GITHUB_TOKEN: ((github-access-token))
     <<: *slack
 
-
-  - name: terraform_eu-de-1
-    serial: true
-    plan:
-      - in_parallel:
-        - get: EMEA.tag
-          trigger: true
-          passed: [seed_eu-de-1]
-        - get: secrets.git
-          passed: [seed_eu-de-1]
-        - get: terraform.git
-          passed: [EMEA]
-    <<: *slack
-
-
   - name: tiller_eu-de-1
     plan:
       - in_parallel:
         - get: EMEA.tag
           trigger: true
-          passed: [terraform_eu-de-1]
+          passed: [seed_eu-de-1]
         - get: tiller-version.git
           trigger: true
       - in_parallel:
@@ -2177,7 +1988,7 @@ jobs:
           trigger: true
           passed: [tiller_eu-de-1]
         - get: secrets.git
-          passed: [terraform_eu-de-1]
+          passed: [seed_eu-de-1]
         - get: kubernikus.builds
           resource: master.builds
           passed: [admin_EMEA]
@@ -2255,27 +2066,12 @@ jobs:
           GITHUB_TOKEN: ((github-access-token))
     <<: *slack
 
-
-  - name: terraform_eu-de-2
-    serial: true
-    plan:
-      - in_parallel:
-        - get: EMEA.tag
-          trigger: true
-          passed: [seed_eu-de-2]
-        - get: secrets.git
-          passed: [seed_eu-de-2]
-        - get: terraform.git
-          passed: [EMEA]
-    <<: *slack
-
-
   - name: tiller_eu-de-2
     plan:
       - in_parallel:
         - get: EMEA.tag
           trigger: true
-          passed: [terraform_eu-de-2]
+          passed: [seed_eu-de-2]
         - get: tiller-version.git
           trigger: true
       - in_parallel:
@@ -2295,7 +2091,7 @@ jobs:
           trigger: true
           passed: [tiller_eu-de-2]
         - get: secrets.git
-          passed: [terraform_eu-de-2]
+          passed: [seed_eu-de-2]
         - get: kubernikus.builds
           resource: master.builds
           passed: [admin_EMEA]
@@ -2373,27 +2169,12 @@ jobs:
           GITHUB_TOKEN: ((github-access-token))
     <<: *slack
 
-
-  - name: terraform_eu-nl-1
-    serial: true
-    plan:
-      - in_parallel:
-        - get: EMEA.tag
-          trigger: true
-          passed: [seed_eu-nl-1]
-        - get: secrets.git
-          passed: [seed_eu-nl-1]
-        - get: terraform.git
-          passed: [EMEA]
-    <<: *slack
-
-
   - name: tiller_eu-nl-1
     plan:
       - in_parallel:
         - get: EMEA.tag
           trigger: true
-          passed: [terraform_eu-nl-1]
+          passed: [seed_eu-nl-1]
         - get: tiller-version.git
           trigger: true
       - in_parallel:
@@ -2413,7 +2194,7 @@ jobs:
           trigger: true
           passed: [tiller_eu-nl-1]
         - get: secrets.git
-          passed: [terraform_eu-nl-1]
+          passed: [seed_eu-nl-1]
         - get: kubernikus.builds
           resource: master.builds
           passed: [admin_EMEA]
@@ -2491,35 +2272,12 @@ jobs:
           GITHUB_TOKEN: ((github-access-token))
     <<: *slack
 
-
-  - name: terraform_eu-ru-1
-    serial: true
-    plan:
-      - in_parallel:
-        - get: EMEA.tag
-          trigger: true
-          passed: [seed_eu-ru-1]
-        - get: secrets.git
-          passed: [seed_eu-ru-1]
-        - get: terraform.git
-          passed: [EMEA]
-      - task: terraform
-        config:
-          <<: *task_terraform
-        timeout: 45m
-        attempts: 5
-        params:
-          TF_REGION: eu-ru-1
-          TF_PASSWORD: ((kubernikus-terraform-password))
-    <<: *slack
-
-
   - name: tiller_eu-ru-1
     plan:
       - in_parallel:
         - get: EMEA.tag
           trigger: true
-          passed: [terraform_eu-ru-1]
+          passed: [seed_eu-ru-1]
         - get: tiller-version.git
           trigger: true
       - in_parallel:
@@ -2539,7 +2297,7 @@ jobs:
           trigger: true
           passed: [tiller_eu-ru-1]
         - get: secrets.git
-          passed: [terraform_eu-ru-1]
+          passed: [seed_eu-ru-1]
         - get: kubernikus.builds
           resource: master.builds
           passed: [admin_EMEA]
@@ -2600,8 +2358,6 @@ jobs:
     plan:
       - in_parallel:
         - get: helm-charts.git
-          trigger: true
-        - get: terraform.git
           trigger: true
         - get: secrets.git
         - get: kubernikus.builds
@@ -2690,35 +2446,12 @@ jobs:
           GITHUB_TOKEN: ((github-access-token))
     <<: *slack
 
-
-  - name: terraform_la-br-1
-    serial: true
-    plan:
-      - in_parallel:
-        - get: AMERICAS.tag
-          trigger: true
-          passed: [seed_la-br-1]
-        - get: secrets.git
-          passed: [seed_la-br-1]
-        - get: terraform.git
-          passed: [AMERICAS]
-      - task: terraform
-        config:
-          <<: *task_terraform
-        timeout: 45m
-        attempts: 5
-        params:
-          TF_REGION: la-br-1
-          TF_PASSWORD: ((kubernikus-terraform-password))
-    <<: *slack
-
-
   - name: tiller_la-br-1
     plan:
       - in_parallel:
         - get: AMERICAS.tag
           trigger: true
-          passed: [terraform_la-br-1]
+          passed: [seed_la-br-1]
         - get: tiller-version.git
           trigger: true
       - in_parallel:
@@ -2738,7 +2471,7 @@ jobs:
           trigger: true
           passed: [tiller_la-br-1]
         - get: secrets.git
-          passed: [terraform_la-br-1]
+          passed: [seed_la-br-1]
         - get: kubernikus.builds
           resource: master.builds
           passed: [admin_AMERICAS]
@@ -2816,35 +2549,12 @@ jobs:
           GITHUB_TOKEN: ((github-access-token))
     <<: *slack
 
-
-  - name: terraform_na-ca-1
-    serial: true
-    plan:
-      - in_parallel:
-        - get: AMERICAS.tag
-          trigger: true
-          passed: [seed_na-ca-1]
-        - get: secrets.git
-          passed: [seed_na-ca-1]
-        - get: terraform.git
-          passed: [AMERICAS]
-      - task: terraform
-        config:
-          <<: *task_terraform
-        timeout: 45m
-        attempts: 5
-        params:
-          TF_REGION: na-ca-1
-          TF_PASSWORD: ((kubernikus-terraform-password))
-    <<: *slack
-
-
   - name: tiller_na-ca-1
     plan:
       - in_parallel:
         - get: AMERICAS.tag
           trigger: true
-          passed: [terraform_na-ca-1]
+          passed: [seed_na-ca-1]
         - get: tiller-version.git
           trigger: true
       - in_parallel:
@@ -2864,7 +2574,7 @@ jobs:
           trigger: true
           passed: [tiller_na-ca-1]
         - get: secrets.git
-          passed: [terraform_na-ca-1]
+          passed: [seed_na-ca-1]
         - get: kubernikus.builds
           resource: master.builds
           passed: [admin_AMERICAS]
@@ -2942,27 +2652,12 @@ jobs:
           GITHUB_TOKEN: ((github-access-token))
     <<: *slack
 
-
-  - name: terraform_na-us-1
-    serial: true
-    plan:
-      - in_parallel:
-        - get: AMERICAS.tag
-          trigger: true
-          passed: [seed_na-us-1]
-        - get: secrets.git
-          passed: [seed_na-us-1]
-        - get: terraform.git
-          passed: [AMERICAS]
-    <<: *slack
-
-
   - name: tiller_na-us-1
     plan:
       - in_parallel:
         - get: AMERICAS.tag
           trigger: true
-          passed: [terraform_na-us-1]
+          passed: [seed_na-us-1]
         - get: tiller-version.git
           trigger: true
       - in_parallel:
@@ -2982,7 +2677,7 @@ jobs:
           trigger: true
           passed: [tiller_na-us-1]
         - get: secrets.git
-          passed: [terraform_na-us-1]
+          passed: [seed_na-us-1]
         - get: kubernikus.builds
           resource: master.builds
           passed: [admin_AMERICAS]
@@ -3060,35 +2755,12 @@ jobs:
           GITHUB_TOKEN: ((github-access-token))
     <<: *slack
 
-
-  - name: terraform_na-us-2
-    serial: true
-    plan:
-      - in_parallel:
-        - get: AMERICAS.tag
-          trigger: true
-          passed: [seed_na-us-2]
-        - get: secrets.git
-          passed: [seed_na-us-2]
-        - get: terraform.git
-          passed: [AMERICAS]
-      - task: terraform
-        config:
-          <<: *task_terraform
-        timeout: 45m
-        attempts: 5
-        params:
-          TF_REGION: na-us-2
-          TF_PASSWORD: ((kubernikus-terraform-password))
-    <<: *slack
-
-
   - name: tiller_na-us-2
     plan:
       - in_parallel:
         - get: AMERICAS.tag
           trigger: true
-          passed: [terraform_na-us-2]
+          passed: [seed_na-us-2]
         - get: tiller-version.git
           trigger: true
       - in_parallel:
@@ -3108,7 +2780,7 @@ jobs:
           trigger: true
           passed: [tiller_na-us-2]
         - get: secrets.git
-          passed: [terraform_na-us-2]
+          passed: [seed_na-us-2]
         - get: kubernikus.builds
           resource: master.builds
           passed: [admin_AMERICAS]
@@ -3186,35 +2858,12 @@ jobs:
           GITHUB_TOKEN: ((github-access-token))
     <<: *slack
 
-
-  - name: terraform_na-us-3
-    serial: true
-    plan:
-      - in_parallel:
-        - get: AMERICAS.tag
-          trigger: true
-          passed: [seed_na-us-3]
-        - get: secrets.git
-          passed: [seed_na-us-3]
-        - get: terraform.git
-          passed: [AMERICAS]
-      - task: terraform
-        config:
-          <<: *task_terraform
-        timeout: 45m
-        attempts: 5
-        params:
-          TF_REGION: na-us-3
-          TF_PASSWORD: ((kubernikus-terraform-password))
-    <<: *slack
-
-
   - name: tiller_na-us-3
     plan:
       - in_parallel:
         - get: AMERICAS.tag
           trigger: true
-          passed: [terraform_na-us-3]
+          passed: [seed_na-us-3]
         - get: tiller-version.git
           trigger: true
       - in_parallel:
@@ -3234,7 +2883,7 @@ jobs:
           trigger: true
           passed: [tiller_na-us-3]
         - get: secrets.git
-          passed: [terraform_na-us-3]
+          passed: [seed_na-us-3]
         - get: kubernikus.builds
           resource: master.builds
           passed: [admin_AMERICAS]
@@ -3295,8 +2944,6 @@ jobs:
     plan:
       - in_parallel:
         - get: helm-charts.git
-          trigger: true
-        - get: terraform.git
           trigger: true
         - get: secrets.git
         - get: kubernikus.builds
@@ -3361,35 +3008,12 @@ jobs:
           GITHUB_TOKEN: ((github-access-token))
     <<: *slack
 
-
-  - name: terraform_qa-de-1
-    serial: true
-    plan:
-      - in_parallel:
-        - get: INFRA.tag
-          trigger: true
-          passed: [seed_qa-de-1]
-        - get: secrets.git
-          passed: [seed_qa-de-1]
-        - get: terraform.git
-          passed: [INFRA]
-      - task: terraform
-        config:
-          <<: *task_terraform
-        timeout: 45m
-        attempts: 5
-        params:
-          TF_REGION: qa-de-1
-          TF_PASSWORD: ((kubernikus-terraform-password))
-    <<: *slack
-
-
   - name: tiller_qa-de-1
     plan:
       - in_parallel:
         - get: INFRA.tag
           trigger: true
-          passed: [terraform_qa-de-1]
+          passed: [seed_qa-de-1]
         - get: tiller-version.git
           trigger: true
       - in_parallel:
@@ -3409,7 +3033,7 @@ jobs:
           trigger: true
           passed: [tiller_qa-de-1]
         - get: secrets.git
-          passed: [terraform_qa-de-1]
+          passed: [seed_qa-de-1]
         - get: kubernikus.builds
           resource: master.builds
           passed: [admin_INFRA]
@@ -3496,7 +3120,6 @@ groups:
       - ASIA
       - admin_ASIA
       - seed_ap-ae-1
-      - terraform_ap-ae-1
       - tiller_ap-ae-1
       - deploy_ap-ae-1
       - soak_ap-ae-1
@@ -3506,7 +3129,6 @@ groups:
       - ASIA
       - admin_ASIA
       - seed_ap-au-1
-      - terraform_ap-au-1
       - tiller_ap-au-1
       - deploy_ap-au-1
       - soak_ap-au-1
@@ -3516,7 +3138,6 @@ groups:
       - ASIA
       - admin_ASIA
       - seed_ap-cn-1
-      - terraform_ap-cn-1
       - tiller_ap-cn-1
       - deploy_ap-cn-1
       - soak_ap-cn-1
@@ -3526,7 +3147,6 @@ groups:
       - ASIA
       - admin_ASIA
       - seed_ap-jp-1
-      - terraform_ap-jp-1
       - tiller_ap-jp-1
       - deploy_ap-jp-1
       - soak_ap-jp-1
@@ -3536,7 +3156,6 @@ groups:
       - ASIA
       - admin_ASIA
       - seed_ap-jp-2
-      - terraform_ap-jp-2
       - tiller_ap-jp-2
       - deploy_ap-jp-2
       - soak_ap-jp-2
@@ -3546,7 +3165,6 @@ groups:
       - ASIA
       - admin_ASIA
       - seed_ap-sa-1
-      - terraform_ap-sa-1
       - tiller_ap-sa-1
       - deploy_ap-sa-1
       - soak_ap-sa-1
@@ -3556,7 +3174,6 @@ groups:
       - EMEA
       - admin_EMEA
       - seed_eu-de-1
-      - terraform_eu-de-1
       - tiller_eu-de-1
       - deploy_eu-de-1
       - soak_eu-de-1
@@ -3566,7 +3183,6 @@ groups:
       - EMEA
       - admin_EMEA
       - seed_eu-de-2
-      - terraform_eu-de-2
       - tiller_eu-de-2
       - deploy_eu-de-2
       - soak_eu-de-2
@@ -3576,7 +3192,6 @@ groups:
       - EMEA
       - admin_EMEA
       - seed_eu-nl-1
-      - terraform_eu-nl-1
       - tiller_eu-nl-1
       - deploy_eu-nl-1
       - soak_eu-nl-1
@@ -3586,7 +3201,6 @@ groups:
       - EMEA
       - admin_EMEA
       - seed_eu-ru-1
-      - terraform_eu-ru-1
       - tiller_eu-ru-1
       - deploy_eu-ru-1
       - soak_eu-ru-1
@@ -3596,7 +3210,6 @@ groups:
       - AMERICAS
       - admin_AMERICAS
       - seed_la-br-1
-      - terraform_la-br-1
       - tiller_la-br-1
       - deploy_la-br-1
       - soak_la-br-1
@@ -3606,7 +3219,6 @@ groups:
       - AMERICAS
       - admin_AMERICAS
       - seed_na-ca-1
-      - terraform_na-ca-1
       - tiller_na-ca-1
       - deploy_na-ca-1
       - soak_na-ca-1
@@ -3616,7 +3228,6 @@ groups:
       - AMERICAS
       - admin_AMERICAS
       - seed_na-us-1
-      - terraform_na-us-1
       - tiller_na-us-1
       - deploy_na-us-1
       - soak_na-us-1
@@ -3626,7 +3237,6 @@ groups:
       - AMERICAS
       - admin_AMERICAS
       - seed_na-us-2
-      - terraform_na-us-2
       - tiller_na-us-2
       - deploy_na-us-2
       - soak_na-us-2
@@ -3636,7 +3246,6 @@ groups:
       - AMERICAS
       - admin_AMERICAS
       - seed_na-us-3
-      - terraform_na-us-3
       - tiller_na-us-3
       - deploy_na-us-3
       - soak_na-us-3
@@ -3646,7 +3255,6 @@ groups:
       - INFRA
       - admin_INFRA
       - seed_qa-de-1
-      - terraform_qa-de-1
       - tiller_qa-de-1
       - deploy_qa-de-1
       - soak_qa-de-1
@@ -3674,97 +3282,81 @@ groups:
 
 
       - seed_ap-ae-1
-      - terraform_ap-ae-1
       - tiller_ap-ae-1
       - deploy_ap-ae-1
       - soak_ap-ae-1
 
       - seed_ap-au-1
-      - terraform_ap-au-1
       - tiller_ap-au-1
       - deploy_ap-au-1
       - soak_ap-au-1
 
       - seed_ap-cn-1
-      - terraform_ap-cn-1
       - tiller_ap-cn-1
       - deploy_ap-cn-1
       - soak_ap-cn-1
 
       - seed_ap-jp-1
-      - terraform_ap-jp-1
       - tiller_ap-jp-1
       - deploy_ap-jp-1
       - soak_ap-jp-1
 
       - seed_ap-jp-2
-      - terraform_ap-jp-2
       - tiller_ap-jp-2
       - deploy_ap-jp-2
       - soak_ap-jp-2
 
       - seed_ap-sa-1
-      - terraform_ap-sa-1
       - tiller_ap-sa-1
       - deploy_ap-sa-1
       - soak_ap-sa-1
 
       - seed_eu-de-1
-      - terraform_eu-de-1
       - tiller_eu-de-1
       - deploy_eu-de-1
       - soak_eu-de-1
 
       - seed_eu-de-2
-      - terraform_eu-de-2
       - tiller_eu-de-2
       - deploy_eu-de-2
       - soak_eu-de-2
 
       - seed_eu-nl-1
-      - terraform_eu-nl-1
       - tiller_eu-nl-1
       - deploy_eu-nl-1
       - soak_eu-nl-1
 
       - seed_eu-ru-1
-      - terraform_eu-ru-1
       - tiller_eu-ru-1
       - deploy_eu-ru-1
       - soak_eu-ru-1
 
       - seed_la-br-1
-      - terraform_la-br-1
       - tiller_la-br-1
       - deploy_la-br-1
       - soak_la-br-1
 
       - seed_na-ca-1
-      - terraform_na-ca-1
       - tiller_na-ca-1
       - deploy_na-ca-1
       - soak_na-ca-1
 
       - seed_na-us-1
-      - terraform_na-us-1
       - tiller_na-us-1
       - deploy_na-us-1
       - soak_na-us-1
 
       - seed_na-us-2
-      - terraform_na-us-2
       - tiller_na-us-2
       - deploy_na-us-2
       - soak_na-us-2
 
       - seed_na-us-3
-      - terraform_na-us-3
       - tiller_na-us-3
       - deploy_na-us-3
       - soak_na-us-3
 
       - seed_qa-de-1
-      - terraform_qa-de-1
       - tiller_qa-de-1
       - deploy_qa-de-1
       - soak_qa-de-1

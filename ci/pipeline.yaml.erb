@@ -152,15 +152,6 @@ resources:
       depth: 1
       paths: [ kubernikus/tiller.version, kubernikus/*/tiller.version ]
 
-  - name: terraform.git
-    type: git
-    icon: github-circle
-    source:
-      uri: https://github.com/sapcc/kubernikus.git
-      branch: master
-      depth: 1
-      paths: [ terraform ]
-
   - name: helm-charts.git
     type: git
     icon: github-circle
@@ -311,8 +302,6 @@ jobs:
       - in_parallel:
         - get: helm-charts.git
           trigger: true
-        - get: terraform.git
-          trigger: true
         - get: secrets.git
         - get: kubernikus.builds
           resource: master.builds
@@ -368,48 +357,12 @@ jobs:
           GITHUB_TOKEN: ((github-access-token))
     <<: *slack
 
-<% if meta[:install] == "terraform" %>
-  - name: terraform_<%= region %>
-    serial: true
-    plan:
-      - in_parallel:
-        - get: <%= group %>.tag
-          trigger: true
-          passed: [seed_<%= region %>]
-        - get: secrets.git
-          passed: [seed_<%= region %>]
-        - get: terraform.git
-          passed: [<%= group %>]
-      - task: terraform
-        config:
-          <<: *task_terraform
-        timeout: 45m
-        attempts: 5
-        params:
-          TF_REGION: <%= region %>
-          TF_PASSWORD: ((kubernikus-terraform-password))
-    <<: *slack
-<% else %>
-  - name: terraform_<%= region %>
-    serial: true
-    plan:
-      - in_parallel:
-        - get: <%= group %>.tag
-          trigger: true
-          passed: [seed_<%= region %>]
-        - get: secrets.git
-          passed: [seed_<%= region %>]
-        - get: terraform.git
-          passed: [<%= group %>]
-    <<: *slack
-<% end %>
-
   - name: tiller_<%= region %>
     plan:
       - in_parallel:
         - get: <%= group %>.tag
           trigger: true
-          passed: [terraform_<%= region %>]
+          passed: [seed_<%= region %>]
         - get: tiller-version.git
           trigger: true
       - in_parallel:
@@ -429,7 +382,7 @@ jobs:
           trigger: true
           passed: [tiller_<%= region %>]
         - get: secrets.git
-          passed: [terraform_<%= region %>]
+          passed: [seed_<%= region %>]
         - get: kubernikus.builds
           resource: master.builds
           passed: [admin_<%= group %>]
@@ -505,7 +458,6 @@ groups:
       - <%= meta.fetch(:continent) %>
       - admin_<%= meta.fetch(:continent) %>
       - seed_<%= region %>
-      - terraform_<%= region %>
       - tiller_<%= region %>
       - deploy_<%= region %>
       - soak_<%= region %>
@@ -524,7 +476,6 @@ groups:
 <% end %>
 <% DEPLOYABLE_REGIONS.each do |region, meta| %>
       - seed_<%= region %>
-      - terraform_<%= region %>
       - tiller_<%= region %>
       - deploy_<%= region %>
       - soak_<%= region %>
