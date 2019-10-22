@@ -9,7 +9,17 @@ dex:
        enabled: true
     ldap:
        enabled: false
-       # bindPW:
+      #config:
+      #  host: 
+      #  bindDN: 
+      #  bindPW:
+      #userSearch:
+      #  baseDN: 
+      #  filter: 
+      #groupSearch: 
+      #  baseDN: 
+      #  filter: 
+       
   dns:
     zone: ingress.kubernikus
 

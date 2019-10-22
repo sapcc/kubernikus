@@ -65,11 +65,41 @@ spec:
               key: adminDomain
         {{ end }}
         {{ if .Values.dex.connectors.ldap.enabled }}
-        - name: LDAP_BIND_PW
+        - name: LDAP_CONFIG_HOST
+          valueFrom:
+            secretKeyRef:
+              name: {{ required "dex.connectors.ldap.secret undefined" .Values.dex.connectors.ldap.secret }}
+              key: host
+        - name: LDAP_CONFIG_BIND_DN
+          valueFrom:
+            secretKeyRef:
+              name: {{ required "dex.connectors.ldap.secret undefined" .Values.dex.connectors.ldap.secret }}
+              key: bindDN
+        - name: LDAP_CONFIG_BIND_PW
           valueFrom:
             secretKeyRef:
               name: {{ required "dex.connectors.ldap.secret undefined" .Values.dex.connectors.ldap.secret }}
               key: bindPW
+        - name: LDAP_USER_SEARCH_BASEDN
+          valueFrom:
+            secretKeyRef:
+              name: {{ required "dex.connectors.ldap.secret undefined" .Values.dex.connectors.ldap.secret }}
+              key: userSearchBaseDN
+        - name: LDAP_USER_SEARCH_FILTER
+          valueFrom:
+            secretKeyRef:
+              name: {{ required "dex.connectors.ldap.secret undefined" .Values.dex.connectors.ldap.secret }}
+              key: userSearchFilter
+        - name: LDAP_GROUP_SEARCH_BASEDN
+          valueFrom:
+            secretKeyRef:
+              name: {{ required "dex.connectors.ldap.secret undefined" .Values.dex.connectors.ldap.secret }}
+              key: groupSearchBaseDN
+        - name: LDAP_GROUP_SEARCH_FILTER
+          valueFrom:
+            secretKeyRef:
+              name: {{ required "dex.connectors.ldap.secret undefined" .Values.dex.connectors.ldap.secret }}
+              key: groupSearchFilter
         {{ end }}
         livenessProbe:
           httpGet:
