@@ -27,7 +27,7 @@ func UpdateKlusterWithRetries(klusterClient client.KlusterInterface, klusterList
 		kluster = kluster.DeepCopy()
 		// Apply the update, then attempt to push it to the apiserver.
 		if applyErr := applyUpdate(kluster); applyErr != nil {
-			if err == KlusterNotUpdated {
+			if applyErr == KlusterNotUpdated {
 				return nil
 			}
 			return applyErr
