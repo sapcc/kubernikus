@@ -130,6 +130,7 @@ rules:
   - secrets
   verbs:
   - get
+  - list
 - apiGroups:
   - kubernikus.sap.cc
   resources:

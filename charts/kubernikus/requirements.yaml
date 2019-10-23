@@ -5,5 +5,5 @@ dependencies:
     condition: k8sniff.enabled
   - name: rbac
     repository: file://vendor/rbac
-    version: 0.1.0
+    version: 0.1.1
     condition: includeRBAC
