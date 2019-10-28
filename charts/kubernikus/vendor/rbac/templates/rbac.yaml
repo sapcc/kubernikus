@@ -38,7 +38,7 @@ metadata:
 subjects:
 - kind: ServiceAccount
   name: "kubernikus-operator"
-  namespace: "{{ default .Release.Namespace .Values.saNamespace}}"
+  namespace: "{{ default .Release.Namespace .Values.saNamespace }}"
 - kind: ServiceAccount
   name: "kubernikus-api"
   namespace: "{{ default .Release.Namespace .Values.saNamespace }}"
@@ -51,6 +51,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   name: "kubernikus:operator"
+  namespace: {{ default .Release.Namespace .Values.roleNamespace }}
 rules:
 - apiGroups:
   - kubernikus.sap.cc
@@ -96,6 +97,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   name: "kubernikus:operator"
+  namespace: {{ default .Release.Namespace .Values.roleNamespace }}
 subjects:
 - kind: ServiceAccount
   name: "kubernikus-operator"
@@ -109,6 +111,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   name: "kubernikus:api"
+  namespace: {{ default .Release.Namespace .Values.roleNamespace }}
 subjects:
 - kind: ServiceAccount
   name: "kubernikus-api"
@@ -122,6 +125,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   name: "kubernikus:api"
+  namespace: {{ default .Release.Namespace .Values.roleNamespace }}
 rules:
 - apiGroups:
   - ""
