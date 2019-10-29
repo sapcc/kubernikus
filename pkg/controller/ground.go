@@ -567,13 +567,15 @@ func (op *GroundControl) createKluster(kluster *v1.Kluster) error {
 		return fmt.Errorf("Failed to update kluster secret: %s", err)
 	}
 
-	if err := op.Clients.OpenstackAdmin.CreateStorageContainer(
-		klusterSecret.Openstack.ProjectID,
-		etcd_util.DefaultStorageContainer(kluster),
-		klusterSecret.Openstack.Username,
-		klusterSecret.Openstack.DomainName,
-	); err != nil {
-		return fmt.Errorf("Failed to create container for etcd backups. Check if the project has quota for object-store usage: %s", err)
+	if kluster.Spec.Backup == "on" {
+		if err := op.Clients.OpenstackAdmin.CreateStorageContainer(
+			klusterSecret.Openstack.ProjectID,
+			etcd_util.DefaultStorageContainer(kluster),
+			klusterSecret.Openstack.Username,
+			klusterSecret.Openstack.DomainName,
+		); err != nil {
+			return fmt.Errorf("Failed to create container for etcd backups. Check if the project has quota for object-store usage: %s", err)
+		}
 	}
 
 	rawValues, err := helm_util.KlusterToHelmValues(kluster, klusterSecret, kluster.Spec.Version, &op.Config.Images, accessMode)
