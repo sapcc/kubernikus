@@ -6,18 +6,6 @@ metadata:
     role: k8sniff-ingress-lb
 
 spec:
-  affinity:
-    podAntiAffinity:
-      preferredDuringSchedulingIgnoredDuringExecution:
-      - weight: 100
-        podAffinityTerm:
-          labelSelector:
-            matchExpressions:
-            - key: role
-              operator: In
-              values:
-              - k8sniff-ingress-lb
-          topologyKey: kubernetes.io/hostname
   replicas: {{ .Values.replicas }}
   selector:
     matchLabels:
@@ -30,6 +18,18 @@ spec:
         prometheus.io/scrape: "true"
         prometheus.io/port: {{ .Values.metrics_port | quote }}
     spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: role
+                  operator: In
+                  values:
+                  - k8sniff-ingress-lb
+              topologyKey: kubernetes.io/hostname
       containers:
       - image: "{{ .Values.image }}:{{ .Values.tag }}"
         name: k8sniff-ingress-lb
