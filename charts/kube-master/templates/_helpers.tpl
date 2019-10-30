@@ -38,30 +38,36 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
 {{- end -}}
 
 {{- define "dex.image" }}
+{{ if .Values.dex.enabled }}
 {{- $images := required "imagesForVersion undefined" .Values.imagesForVersion}}
 {{- $version := required "version.kubernetes undefined" .Values.version.kubernetes }}
 {{- $imagesForVersion := required (printf "unsupported kubernetes version %s" $version) (index $images $version) }}
 {{- $dex := required (printf "No dex image found for version %s" $imagesForVersion) (index $imagesForVersion "dex") }}
 {{- required (printf "repository for dex missing for version %s" $version) $dex.repository }}:
   {{- required (printf "tag for dex missing for version %s" $version) $dex.tag }}
+{{ end }}
 {{- end -}}
 
 {{- define "dashboard.image" }}
+{{ if and .Values.dex.enabled .Values.dashboard.enabled }}
 {{- $images := required "imagesForVersion undefined" .Values.imagesForVersion}}
 {{- $version := required "version.kubernetes undefined" .Values.version.kubernetes }}
 {{- $imagesForVersion := required (printf "unsupported kubernetes version %s" $version) (index $images $version) }}
 {{- $dashboard := required (printf "No dashboard image found for version %s" $imagesForVersion) (index $imagesForVersion "dashboard") }}
 {{- required (printf "repository for dashboard missing for version %s" $version) $dashboard.repository }}:
   {{- required (printf "tag for dashboard missing for version %s" $version) $dashboard.tag }}
+{{ end }}
 {{- end -}}
 
 {{- define "dashboardProxy.image" }}
+{{ if and .Values.dex.enabled .Values.dashboard.enabled }}
 {{- $images := required "imagesForVersion undefined" .Values.imagesForVersion}}
 {{- $version := required "version.kubernetes undefined" .Values.version.kubernetes }}
 {{- $imagesForVersion := required (printf "unsupported kubernetes version %s" $version) (index $images $version) }}
 {{- $dashboardProxy := required (printf "No dashboardProxy image found for version %s" $imagesForVersion) (index $imagesForVersion "dashboardProxy") }}
 {{- required (printf "repository for dashboardProxy missing for version %s" $version) $dashboardProxy.repository }}:
   {{- required (printf "tag for dashboardProxy missing for version %s" $version) $dashboardProxy.tag }}
+{{ end }}
 {{- end -}}
 
 {{- define "dashboard.url" -}}
