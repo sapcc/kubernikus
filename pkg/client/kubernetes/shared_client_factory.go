@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net"
 	"os"
+	"strconv"
 	"sync"
 	"time"
 
@@ -80,7 +81,7 @@ func (f *sharedClientFactory) ClientFor(k *kubernikus_v1.Kluster) (clientset kub
 	// We need to provide a custom dialer to add the kluster namespace to the dns resolution because the
 	// apiserver cert is missing an SAN for $kluster.$namespace
 	if os.Getenv("KUBERNETES_SERVICE_HOST") != "" {
-		port := os.Getenv("KUBERNETES_SERVICE_PORT")
+		port := strconv.FormatInt(k.Spec.AdvertisePort, 10)
 		apiHost = fmt.Sprintf("https://%s:%s", k.Name, port)
 		dialer := net.Dialer{
 			Timeout:   30 * time.Second,
