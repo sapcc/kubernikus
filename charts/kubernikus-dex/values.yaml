@@ -2,6 +2,7 @@
 #global:
 #  region: eu-nl-1
 #  tld: cloud.sap
+#namespaceOverride:
 
 dex:
   connectors:

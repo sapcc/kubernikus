@@ -4,7 +4,8 @@ metadata:
   annotations:
     vice-president: "true"
     kubernetes.io/ingress.class: "nginx"
-  name: kubernikus-dex 
+  name: kubernikus-dex
+  namespace: {{ default .Release.Namespace .Values.namespaceOverride }}
 spec:
   rules:
   - host: {{ include "dex.url" . | quote }} 
