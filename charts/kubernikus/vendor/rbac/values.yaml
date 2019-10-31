@@ -1,2 +1,3 @@
 #name: (default: .Release.Name)
 #saNamespace: (default: .Release.Namespace)
+#roleNamespace: (default: .Release.Namespace)

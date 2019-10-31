@@ -10,6 +10,7 @@
   "TerminateCluster": "rule:kubernetes_admin",
   "UpdateCluster": "rule:kubernetes_admin",
   "GetClusterCredentials": "rule:kubernetes_user",
+  "GetClusterCredentialsOIDC": "rule:kubernetes_user",
   "GetClusterEvents": "rule:kubernetes_user",
   "GetClusterInfo": "rule:kubernetes_user",
   "GetBootstrapConfig": "rule:kubernetes_admin",

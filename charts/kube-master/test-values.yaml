@@ -12,6 +12,7 @@ openstack:
   routerID: xyz
   projectID: xy
   region: xy-xy-1
+  projectDomainName: xyz
 api:
   apiserverHost: xyz.com
   wormholeHost: xyz.com
@@ -32,3 +33,7 @@ imagesForVersion:
     hyperkube:
       repository: abc
       tag: xyz
+dashboard:
+  enabled: false
+dex:
+  enabled: false

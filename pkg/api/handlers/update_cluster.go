@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/Masterminds/semver"
 	"github.com/go-openapi/runtime/middleware"
@@ -138,6 +139,38 @@ func (d *updateCluster) Handle(params operations.UpdateClusterParams, principal 
 			}
 			kluster.Spec.Version = params.Body.Spec.Version
 
+		}
+
+		// If dex is disabled
+		if !kluster.Spec.Dex {
+
+			// Check for dashboard
+			if params.Body.Spec.Dashboard && !params.Body.Spec.Dex {
+				return apierrors.NewBadRequest(fmt.Sprintf("Dashboard cannot be enabled while Dex is disabled"))
+			}
+
+			// Enable dex
+			if params.Body.Spec.Dex {
+				kluster.Spec.Dex = params.Body.Spec.Dex
+			}
+
+			// Enable dashboard
+			if params.Body.Spec.Dashboard {
+				kluster.Spec.Dashboard = params.Body.Spec.Dashboard
+				if kluster.Status.Apiserver != "" {
+					apiURL := kluster.Status.Apiserver
+					kluster.Status.Dashboard = strings.Replace(apiURL, kluster.GetName(), fmt.Sprintf("dashboard-%s.ingress", kluster.GetName()), -1)
+				}
+			}
+		} else {
+			// Enable dashboard if dex is enabled
+			if params.Body.Spec.Dashboard {
+				kluster.Spec.Dashboard = params.Body.Spec.Dashboard
+				if kluster.Status.Apiserver != "" {
+					apiURL := kluster.Status.Apiserver
+					kluster.Status.Dashboard = strings.Replace(apiURL, kluster.GetName(), fmt.Sprintf("dashboard-%s.ingress", kluster.GetName()), -1)
+				}
+			}
 		}
 
 		return nil

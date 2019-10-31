@@ -176,6 +176,13 @@ spec:
             - --tls-cert-file=/etc/kubernetes/certs/tls-apiserver.pem
             - --tls-private-key-file=/etc/kubernetes/certs/tls-apiserver-key.pem
             # --tls-sni-cert-key=/etc/kubernetes/certs/tls-sni.pem,/etc/kubernetes/certs/tls-sni.key
+            {{ if .Values.dex.enabled }}
+            - --oidc-issuer-url=https://{{ include "dex.url" . }} 
+            - --oidc-client-id=kubernetes
+            - --oidc-groups-claim=groups
+            - --oidc-username-prefix=-
+            - --oidc-username-claim=sub
+            {{ end }}
           volumeMounts:
             - mountPath: /etc/kubernetes/certs
               name: certs

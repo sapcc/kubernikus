@@ -112,6 +112,35 @@ func (a *Client) GetClusterCredentials(params *GetClusterCredentialsParams, auth
 }
 
 /*
+GetClusterCredentialsOIDC gets user specific credentials to access the cluster with o ID c
+*/
+func (a *Client) GetClusterCredentialsOIDC(params *GetClusterCredentialsOIDCParams, authInfo runtime.ClientAuthInfoWriter) (*GetClusterCredentialsOIDCOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewGetClusterCredentialsOIDCParams()
+	}
+
+	result, err := a.transport.Submit(&runtime.ClientOperation{
+		ID:                 "GetClusterCredentialsOIDC",
+		Method:             "GET",
+		PathPattern:        "/api/v1/clusters/{name}/credentials/oidc",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &GetClusterCredentialsOIDCReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return result.(*GetClusterCredentialsOIDCOK), nil
+
+}
+
+/*
 GetClusterEvents gets recent events about the cluster
 */
 func (a *Client) GetClusterEvents(params *GetClusterEventsParams, authInfo runtime.ClientAuthInfoWriter) (*GetClusterEventsOK, error) {

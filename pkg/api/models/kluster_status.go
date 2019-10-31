@@ -30,6 +30,9 @@ type KlusterStatus struct {
 	// chart version
 	ChartVersion string `json:"chartVersion,omitempty"`
 
+	// dashboard
+	Dashboard string `json:"dashboard,omitempty"`
+
 	// migrations pending
 	MigrationsPending bool `json:"migrationsPending,omitempty"`
 

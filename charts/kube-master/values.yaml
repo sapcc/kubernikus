@@ -17,6 +17,7 @@ openstack: {}
   #lbFloatingNetworkID
   #routerID:
   #region
+  #projectDomainName:
 
 # specify a different certsSecretName if you want to use
 # an exiting secret
@@ -80,3 +81,23 @@ scheduler:
       memory: 512Mi
 
 revisionHistoryLimit: 3
+
+dex:
+  enabled: false 
+  connectors:
+    keystone: 
+      enabled: true
+      secret: kubernikus-dex-keystone
+    ldap:
+      enabled: false
+      secret: kubernikus-dex-ldap
+  staticPasword:
+    enabled: false
+    email: kubernikus@cloud.sap
+    # hashedPassword:
+  #staticClientSecret: 
+  ingressSecret: kubernikus-dex
+
+dashboard:
+  enabled: false
+  ingressSecret: kubernikus-dex

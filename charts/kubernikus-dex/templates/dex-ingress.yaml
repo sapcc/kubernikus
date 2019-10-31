@@ -1,0 +1,21 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  annotations:
+    vice-president: "true"
+    kubernetes.io/ingress.class: "nginx"
+  name: kubernikus-dex
+  namespace: {{ default .Release.Namespace .Values.namespaceOverride }}
+spec:
+  rules:
+  - host: {{ include "dex.url" . | quote }} 
+  tls:
+  - hosts:
+    -  {{ include "dex.url" . | quote }} 
+    secretName: kubernikus-dex
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: kubernikus-dex
+type: Opaque

@@ -205,6 +205,32 @@ func init() {
         }
       ]
     },
+    "/api/v1/clusters/{name}/credentials/oidc": {
+      "get": {
+        "summary": "Get user specific credentials to access the cluster with OIDC",
+        "operationId": "GetClusterCredentialsOIDC",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/Credentials"
+            }
+          },
+          "default": {
+            "$ref": "#/responses/errorResponse"
+          }
+        }
+      },
+      "parameters": [
+        {
+          "uniqueItems": true,
+          "type": "string",
+          "name": "name",
+          "in": "path",
+          "required": true
+        }
+      ]
+    },
     "/api/v1/clusters/{name}/events": {
       "get": {
         "summary": "Get recent events about the cluster",
@@ -521,6 +547,9 @@ func init() {
           "pattern": "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\\/([0-9]|[1-2][0-9]|3[0-2]))$",
           "x-nullable": false
         },
+        "dashboard": {
+          "type": "boolean"
+        },
         "dnsAddress": {
           "type": "string",
           "pattern": "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$"
@@ -578,6 +607,9 @@ func init() {
           "type": "string"
         },
         "chartVersion": {
+          "type": "string"
+        },
+        "dashboard": {
           "type": "string"
         },
         "migrationsPending": {
@@ -1139,6 +1171,35 @@ func init() {
         }
       ]
     },
+    "/api/v1/clusters/{name}/credentials/oidc": {
+      "get": {
+        "summary": "Get user specific credentials to access the cluster with OIDC",
+        "operationId": "GetClusterCredentialsOIDC",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/Credentials"
+            }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      },
+      "parameters": [
+        {
+          "uniqueItems": true,
+          "type": "string",
+          "name": "name",
+          "in": "path",
+          "required": true
+        }
+      ]
+    },
     "/api/v1/clusters/{name}/events": {
       "get": {
         "summary": "Get recent events about the cluster",
@@ -1438,6 +1499,9 @@ func init() {
           "pattern": "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\\/([0-9]|[1-2][0-9]|3[0-2]))$",
           "x-nullable": false
         },
+        "dashboard": {
+          "type": "boolean"
+        },
         "dnsAddress": {
           "type": "string",
           "pattern": "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$"
@@ -1495,6 +1559,9 @@ func init() {
           "type": "string"
         },
         "chartVersion": {
+          "type": "string"
+        },
+        "dashboard": {
           "type": "string"
         },
         "migrationsPending": {
