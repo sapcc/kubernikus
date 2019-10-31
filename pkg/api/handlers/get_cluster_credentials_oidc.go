@@ -2,11 +2,11 @@ package handlers
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/ghodss/yaml"
 	"github.com/go-openapi/runtime/middleware"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
-	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/sapcc/kubernikus/pkg/api"
 	"github.com/sapcc/kubernikus/pkg/api/models"
@@ -45,18 +45,12 @@ func (d *getClusterCredentialsOIDC) Handle(params operations.GetClusterCredentia
 		return NewErrorResponse(&operations.GetClusterCredentialsDefault{}, 500, err.Error())
 	}
 
-	ingress, err := d.Runtime.Kubernetes.ExtensionsV1beta1().Ingresses(d.Namespace).Get(fmt.Sprintf("%s-dex", kluster.Name), meta_v1.GetOptions{})
-	if err != nil {
-		if apierrors.IsNotFound(err) {
-			return NewErrorResponse(&operations.GetClusterCredentialsDefault{}, 404, "Ingress not found")
-		}
-		return NewErrorResponse(&operations.GetClusterCredentialsDefault{}, 500, err.Error())
-	}
-	idpHost := ""
-	if len(ingress.Spec.Rules) == 0 {
-		return NewErrorResponse(&operations.GetClusterCredentialsDefault{}, 500, "no rule found in ingress")
+	idpURL := ""
+	if kluster.Status.Apiserver != "" {
+		apiURL := kluster.Status.Apiserver
+		idpURL = strings.Replace(apiURL, kluster.GetName(), fmt.Sprintf("auth-%s.ingress", kluster.GetName()), -1)
 	} else {
-		idpHost = ingress.Spec.Rules[0].Host
+		return NewErrorResponse(&operations.GetClusterCredentialsOIDCDefault{}, 500, "no apiserver url in kluster status")
 	}
 
 	config := kubernetes.NewClientConfigV1OIDC(
@@ -64,7 +58,7 @@ func (d *getClusterCredentialsOIDC) Handle(params operations.GetClusterCredentia
 		fmt.Sprintf("oidc@%v", params.Name),
 		kluster.Status.Apiserver,
 		secret.DexClientSecret,
-		fmt.Sprintf("https://%s", idpHost),
+		idpURL,
 		[]byte(secret.TLSCACertificate),
 	)
 
