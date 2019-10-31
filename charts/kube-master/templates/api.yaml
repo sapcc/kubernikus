@@ -126,7 +126,7 @@ spec:
             - apiserver
 {{- end }}
             - --etcd-servers=http://{{ include "etcd.fullname" . }}:2379
-            - --secure-port=6443
+            - --secure-port={{ required "missing advertisePort" .Values.advertisePort }}
             - --advertise-address={{ .Values.advertiseAddress }}
             - --allow-privileged=true
             - --authorization-mode=Node,RBAC
