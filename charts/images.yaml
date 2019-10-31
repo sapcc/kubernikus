@@ -77,7 +77,7 @@ imagesForVersion:
       repository: 'quay.io/keycloak/keycloak-gatekeeper'
       tag: '6.0.1'
     dashboard:
-      repository: 'k8s.gcr.io/kubernetes-dashboard-amd64'
+      repository: 'sapcc/kubernetes-dashboard-amd64'
       tag: 'v1.10.1'
   '1.10.11':
     hyperkube:
