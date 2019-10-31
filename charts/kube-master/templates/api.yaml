@@ -206,7 +206,7 @@ spec:
           readinessProbe:
             httpGet:
               path: /healthz
-              port: 6443
+              port: {{ .Values.advertisePort }}
               scheme: HTTPS
             initialDelaySeconds: 15
             timeoutSeconds: 3
