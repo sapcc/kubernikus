@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net"
+	"strconv"
 	"sync"
 
 	"github.com/databus23/guttle"
@@ -51,7 +52,7 @@ func NewTunnel(options *Options) (*Tunnel, error) {
 	opts := guttle.ServerOptions{
 		Listener:   listener,
 		HijackAddr: "127.0.0.1:9191",
-		ProxyFunc:  guttle.StaticProxy("127.0.0.1:6443"),
+		ProxyFunc:  guttle.StaticProxy("127.0.0.1:"+ strconv.Itoa(options.ApiPort)),
 	}
 
 	return &Tunnel{Server: guttle.NewServer(&opts), Logger: logger}, nil

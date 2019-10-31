@@ -227,6 +227,7 @@ spec:
             - --cert=/etc/kubernetes/certs/tls-wormhole.pem
             - --key=/etc/kubernetes/certs/tls-wormhole-key.pem
             - --service-cidr={{ .Values.serviceCIDR }}
+            - --api-port={{ .Values.advertisePort }}
             - --v=5
           securityContext:
             capabilities:
