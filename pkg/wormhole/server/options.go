@@ -15,5 +15,5 @@ type Options struct {
 	Certificate string
 	PrivateKey  string
 
-	ApiPort     int
+	ApiPort int
 }
