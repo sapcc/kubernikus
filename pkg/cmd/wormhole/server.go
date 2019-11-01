@@ -51,6 +51,7 @@ func (o *ServerOptions) BindFlags(flags *pflag.FlagSet) {
 	flags.StringVar(&o.Certificate, "cert", o.Certificate, "Certificate for the tunnel server")
 	flags.StringVar(&o.PrivateKey, "key", o.PrivateKey, "Key for the tunnel server")
 	flags.StringVar(&o.ServiceCIDR, "service-cidr", "", "Cluster service IP range")
+	flags.IntVar(&o.ApiPort, "api-port", 6443, "Port the API listens to")
 	flags.IntVar(&o.LogLevel, "v", 0, "log level")
 }
 

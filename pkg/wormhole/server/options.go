@@ -14,4 +14,6 @@ type Options struct {
 	ClientCA    string
 	Certificate string
 	PrivateKey  string
+
+	ApiPort int
 }
