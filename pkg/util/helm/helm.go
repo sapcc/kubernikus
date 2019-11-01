@@ -102,6 +102,7 @@ type kubernikusHelmValues struct {
 	ClusterCIDR      string                `yaml:"clusterCIDR,omitempty"`
 	ServiceCIDR      string                `yaml:"serviceCIDR,omitempty"`
 	AdvertiseAddress string                `yaml:"advertiseAddress,omitempty"`
+	AdvertisePort    int64                 `yaml:"advertisePort,omitempty"`
 	BoostrapToken    string                `yaml:"bootstrapToken,omitempty"`
 	Version          versionValues         `yaml:"version,omitempty"`
 	Etcd             etcdValues            `yaml:"etcd,omitempty"`
@@ -159,6 +160,7 @@ func KlusterToHelmValues(kluster *v1.Kluster, secret *v1.Secret, kubernetesVersi
 		SecretName:       kluster.Name + "-secret",
 		ServiceCIDR:      kluster.Spec.ServiceCIDR,
 		AdvertiseAddress: kluster.Spec.AdvertiseAddress,
+		AdvertisePort:    kluster.Spec.AdvertisePort,
 		Name:             kluster.Spec.Name,
 		Version: versionValues{
 			Kubernetes: kubernetesVersion,
