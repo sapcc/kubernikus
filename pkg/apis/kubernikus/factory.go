@@ -18,6 +18,7 @@ var (
 	DEFAULT_CLUSTER_CIDR      = spec.MustDefaultString("KlusterSpec", "clusterCIDR")
 	DEFAULT_SERVICE_CIDR      = spec.MustDefaultString("KlusterSpec", "serviceCIDR")
 	DEFAULT_ADVERTISE_ADDRESS = spec.MustDefaultString("KlusterSpec", "advertiseAddress")
+	DEFAULT_ADVERTISE_PORT    = spec.MustDefaultInt64("KlusterSpec", "advertisePort")
 	DEFAULT_ETCD_BACKUP       = spec.MustDefaultString("KlusterSpec", "backup")
 )
 
@@ -62,6 +63,9 @@ func (klusterFactory) KlusterFor(spec models.KlusterSpec) (*v1.Kluster, error) {
 
 	if k.Spec.AdvertiseAddress == "" {
 		k.Spec.AdvertiseAddress = DEFAULT_ADVERTISE_ADDRESS
+	}
+	if k.Spec.AdvertisePort == 0 {
+		k.Spec.AdvertisePort = DEFAULT_ADVERTISE_PORT
 	}
 	_, serviceCIDR, err := net.ParseCIDR(k.Spec.ServiceCIDR)
 	if err != nil {
