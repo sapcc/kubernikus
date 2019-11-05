@@ -86,8 +86,9 @@ spec:
 {{- else }}
             - controller-manager
 {{- end }}
-            - --allocate-node-cidrs=true
             {{- if .Values.openstack }}
+            - --cluster-cidr={{ .Values.clusterCIDR }}
+            - --allocate-node-cidrs=true
             - --cloud-config=/etc/kubernetes/cloudprovider/openstack.config
 {{- if (semverCompare ">= 1.13" .Values.version.kubernetes) }}
             - --cloud-provider=external
@@ -97,7 +98,6 @@ spec:
             - --configure-cloud-routes=true
 {{- end }}
             {{- end }}
-            - --cluster-cidr={{ .Values.clusterCIDR }}
             - --cluster-name={{ .Values.name }}
             - --cluster-signing-cert-file=/etc/kubernetes/certs/apiserver-nodes-ca.pem
             - --cluster-signing-key-file=/etc/kubernetes/certs/apiserver-nodes-ca-key.pem
