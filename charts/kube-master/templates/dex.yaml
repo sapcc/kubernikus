@@ -1,0 +1,169 @@
+{{/* vim: set filetype=gotexttmpl: */ -}}
+{{ if .Values.dex.enabled }}
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  labels:
+    chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+    release: {{ .Release.Name }}
+  name: {{ include "master.fullname" . }}-dex 
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ include "master.fullname" . }}-dex 
+      release: {{ .Release.Name }}  
+  template:
+    metadata:
+      labels:
+        app: {{ include "master.fullname" . }}-dex 
+        release: {{ .Release.Name }}
+    annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/dex-configmap.yaml") . | sha256sum }}
+    spec:
+      initContainers:
+      - name: etcd-wait
+        image: "{{ required "etcd.image.repository undefined" .Values.etcd.image.repository }}:{{ required "etcd.image.tag undefined" .Values.etcd.image.tag }}"
+        command:
+          - sh
+          - -c
+        args:
+          - until etcdctl --total-timeout=4s --endpoints http://{{ include "etcd.fullname" . }}:2379 cluster-health; do sleep 5; done;
+      containers:
+      - image: {{ include "dex.image" . | quote }}
+        name: dex
+        command: ["/usr/local/bin/dex", "serve", "/etc/dex/cfg/config.yaml"]
+        ports:
+        - name: http
+          containerPort: 80
+        env:
+        {{ if .Values.dex.connectors.keystone.enabled }}
+        - name: KEYSTONE_ADMIN_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: {{ required "dex.connectors.keystone.secret undefined" .Values.dex.connectors.keystone.secret }}
+              key: adminUsername
+        - name: KEYSTONE_ADMIN_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ required "dex.connectors.keystone.secret undefined" .Values.dex.connectors.keystone.secret }}
+              key: adminPassword
+        - name: KEYSTONE_ADMIN_USER_DOMAIN
+          valueFrom:
+            secretKeyRef:
+              name: {{ required "dex.connectors.keystone.secret undefined" .Values.dex.connectors.keystone.secret }}
+              key: adminUserDomain
+        - name: KEYSTONE_ADMIN_PROJECT
+          valueFrom:
+            secretKeyRef:
+              name: {{ required "dex.connectors.keystone.secret undefined" .Values.dex.connectors.keystone.secret }}
+              key: adminProject
+        - name: KEYSTONE_ADMIN_DOMAIN
+          valueFrom:
+            secretKeyRef:
+              name: {{ required "dex.connectors.keystone.secret undefined" .Values.dex.connectors.keystone.secret }}
+              key: adminDomain
+        {{ end }}
+        {{ if .Values.dex.connectors.ldap.enabled }}
+        - name: LDAP_CONFIG_HOST
+          valueFrom:
+            secretKeyRef:
+              name: {{ required "dex.connectors.ldap.secret undefined" .Values.dex.connectors.ldap.secret }}
+              key: host
+        - name: LDAP_CONFIG_BIND_DN
+          valueFrom:
+            secretKeyRef:
+              name: {{ required "dex.connectors.ldap.secret undefined" .Values.dex.connectors.ldap.secret }}
+              key: bindDN
+        - name: LDAP_CONFIG_BIND_PW
+          valueFrom:
+            secretKeyRef:
+              name: {{ required "dex.connectors.ldap.secret undefined" .Values.dex.connectors.ldap.secret }}
+              key: bindPW
+        - name: LDAP_USER_SEARCH_BASEDN
+          valueFrom:
+            secretKeyRef:
+              name: {{ required "dex.connectors.ldap.secret undefined" .Values.dex.connectors.ldap.secret }}
+              key: userSearchBaseDN
+        - name: LDAP_USER_SEARCH_FILTER
+          valueFrom:
+            secretKeyRef:
+              name: {{ required "dex.connectors.ldap.secret undefined" .Values.dex.connectors.ldap.secret }}
+              key: userSearchFilter
+        - name: LDAP_GROUP_SEARCH_BASEDN
+          valueFrom:
+            secretKeyRef:
+              name: {{ required "dex.connectors.ldap.secret undefined" .Values.dex.connectors.ldap.secret }}
+              key: groupSearchBaseDN
+        - name: LDAP_GROUP_SEARCH_FILTER
+          valueFrom:
+            secretKeyRef:
+              name: {{ required "dex.connectors.ldap.secret undefined" .Values.dex.connectors.ldap.secret }}
+              key: groupSearchFilter
+        {{ end }}
+        livenessProbe:
+          httpGet:
+            path: /keys
+            port: 80
+          initialDelaySeconds: 3
+          timeoutSeconds: 2
+        readinessProbe:
+          httpGet:
+            path: /keys
+            port: 80
+          initialDelaySeconds: 3
+          timeoutSeconds: 2
+        volumeMounts:
+        - name: config
+          mountPath: /etc/dex/cfg 
+      volumes:
+      - name: config
+        defaultMode: 420
+        configMap:
+          name: {{ include "master.fullname" . }}-dex
+          items:
+          - key: config.yaml
+            path: config.yaml
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "master.fullname" . }}-dex
+  labels:
+    app: {{ include "master.fullname" . }}-dex 
+    chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+    release: {{ .Release.Name }}
+spec:
+  type: ClusterIP
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 80
+    name: http
+  selector:
+    app: {{ include "master.fullname" . }}-dex
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+  labels:
+    app: {{ include "master.fullname" . }}-dex 
+    chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+    release: {{ .Release.Name }}
+  name: {{ include "master.fullname" . }}-dex 
+spec:
+  rules:
+  - host: {{ include "dex.url" . }} 
+    http:
+      paths:
+      - backend:
+          serviceName: {{ include "master.fullname" . }}-dex
+          servicePort: 80
+        path: /
+  tls:
+  - hosts:
+    -  {{ include "dex.url" . }}
+    secretName:  {{ required "dex.ingressSecret undefined" .Values.dex.ingressSecret }}
+{{ end }}

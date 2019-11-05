@@ -14,6 +14,11 @@ api:
   log_level: 1
   policyFile: /etc/kubernikus/policy.json
 
+ingress:
+  annotations:
+    vice-president: "true"
+    prometheus.io/probe: "true"
+
 groundctl:
   log_level: 1
 

@@ -115,6 +115,7 @@ func (i *ignition) GenerateNode(kluster *kubernikusv1.Kluster, pool *models.Node
 		ClusterCIDR                        string
 		ApiserverURL                       string
 		ApiserverIP                        string
+		ApiserverPort                      int64
 		BootstrapToken                     string
 		OpenstackAuthURL                   string
 		OpenstackUsername                  string
@@ -145,6 +146,7 @@ func (i *ignition) GenerateNode(kluster *kubernikusv1.Kluster, pool *models.Node
 		ClusterDomain:                      kluster.Spec.DNSDomain,
 		ApiserverURL:                       kluster.Status.Apiserver,
 		ApiserverIP:                        kluster.Spec.AdvertiseAddress,
+		ApiserverPort:                      kluster.Spec.AdvertisePort,
 		OpenstackAuthURL:                   secret.Openstack.AuthURL,
 		OpenstackUsername:                  secret.Openstack.Username,
 		OpenstackPassword:                  secret.Openstack.Password,

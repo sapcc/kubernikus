@@ -13,6 +13,9 @@ type Secret struct {
 	NodePassword   string `json:"node-password,omitempty"`
 	BootstrapToken string `json:"bootstrapToken"`
 
+	DexClientSecret   string `json:"dex-client-secret,omitempty"`
+	DexStaticPassword string `json:"dex-static-password,omitempty"`
+
 	Certificates
 }
 
@@ -58,12 +61,13 @@ func (s *Secret) ToStringData() (map[string]string, error) {
 }
 
 type Openstack struct {
-	AuthURL    string `json:"openstack-auth-url"`
-	Region     string `json:"openstack-region"`
-	Username   string `json:"openstack-username,omitempty"`
-	DomainName string `json:"openstack-domain-name,omitempty"`
-	Password   string `json:"openstack-password"`
-	ProjectID  string `json:"openstack-project-id"`
+	AuthURL           string `json:"openstack-auth-url"`
+	Region            string `json:"openstack-region"`
+	Username          string `json:"openstack-username,omitempty"`
+	DomainName        string `json:"openstack-domain-name,omitempty"`
+	Password          string `json:"openstack-password"`
+	ProjectID         string `json:"openstack-project-id"`
+	ProjectDomainName string `json:"openstack-project-domain-name,omitempty"`
 }
 
 type Certificates struct {

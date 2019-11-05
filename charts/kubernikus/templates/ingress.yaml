@@ -4,8 +4,11 @@ kind: Ingress
 metadata:
   name: kubernikus-api
   annotations:
-    vice-president: "true"
-    prometheus.io/probe: "true"
+{{- range $key, $val := .Values.ingress.annotations }}
+{{- if typeIs "string" $val }}
+    {{ $key }}: {{ $val | quote }}
+{{- end }}
+{{- end}}
 
 spec:
   tls:

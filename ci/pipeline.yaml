@@ -799,14 +799,14 @@ task_helm-admin_kubernikus: &task_helm-admin_kubernikus
     GITHUB_TOKEN:
   
 
-task_helm_kubernikus-monitoring: &task_helm_kubernikus-monitoring
-  platform: 'linux'
+task_helm_kubernikus-dex: &task_helm_kubernikus-dex
+  platform: "linux"
   
   image_resource:
     type: registry-image
     source:
       repository: sapcc/kubernikus-kubectl
-      tag: 'v1.10.9'
+      tag: "v1.10.9"
   
   inputs:
     - name: kubernikus.builds
@@ -826,69 +826,26 @@ task_helm_kubernikus-monitoring: &task_helm_kubernikus-monitoring
   
         # Dependencies are currently vendored.
         # helm repo add sapcc https://charts.global.cloud.sap
-        helm dep up kubernikus-copy.builds/charts/kubernikus-monitoring/
+        helm dep up kubernikus-copy.builds/charts/kubernikus-dex/
   
-        helm diff upgrade kubernikus-monitoring kubernikus-copy.builds/charts/kubernikus-monitoring/ \
-          --values secrets.git/global/values/kubernikus-monitoring.yaml \
-          --values secrets.git/kubernikus/$KUBERNIKUS_NAME/values/kubernikus-monitoring.yaml \
+        touch /tmp/kubernikus-dex.yaml
+        [[ "${KUBERNIKUS_NAME}" == "k-master" ]] && printf "dex:\n  dns:\n    zone: ingress.kubernikus-master" > /tmp/kubernikus-dex.yaml
+  
+        helm diff upgrade kubernikus-dex kubernikus-copy.builds/charts/kubernikus-dex/ \
+          --values secrets.git/$REGION/values/keystone.yaml \
+          --values secrets.git/$REGION/values/globals.yaml \
+          --values /tmp/kubernikus-dex.yaml \
           --suppress-secrets --allow-unreleased --context 5
   
-        helm upgrade kubernikus-monitoring kubernikus-copy.builds/charts/kubernikus-monitoring/ \
-          --values secrets.git/global/values/kubernikus-monitoring.yaml \
-          --values secrets.git/kubernikus/$KUBERNIKUS_NAME/values/kubernikus-monitoring.yaml \
-          --namespace=kubernikus-system \
+        helm upgrade kubernikus-dex kubernikus-copy.builds/charts/kubernikus-dex/ \
+          --values secrets.git/$REGION/values/keystone.yaml \
+          --values secrets.git/$REGION/values/globals.yaml \
+          --values /tmp/kubernikus-dex.yaml \
+          --namespace=kubernikus \
           --install
   
   params:
-    OS_AUTH_URL:
-    OS_USERNAME:
-    OS_PASSWORD:
-    OS_USER_DOMAIN_NAME:
-    OS_PROJECT_NAME:
-    OS_PROJECT_DOMAIN_NAME:
-    KUBERNIKUS_NAME:
-    KUBERNIKUS_URL:
-  
-
-task_helm_kubernikus-system: &task_helm_kubernikus-system
-  platform: 'linux'
-  
-  image_resource:
-    type: registry-image
-    source:
-      repository: sapcc/kubernikus-kubectl
-      tag: 'v1.10.9'
-  
-  inputs:
-    - name: kubernikus.builds
-    - name: secrets.git
-  
-  run:
-    path: /bin/sh
-    args:
-      - -c
-      - |
-        set -exo pipefail
-  
-        # recent helm versions fails with `invalid cross-device link` when trying to rename charts.git
-        # rename(2) for a directory is allowed only when both the source and the destination path are on the top layer
-        # https://github.com/kubernetes/helm/issues/2998
-        cp -a kubernikus.builds kubernikus-copy.builds
-  
-        helm dep up kubernikus-copy.builds/charts/kubernikus-system/
-  
-        helm diff upgrade kubernikus-system kubernikus-copy.builds/charts/kubernikus-system/ \
-          --suppress-secrets --allow-unreleased --context 5 \
-          --values secrets.git/global/values/kubernikus-system.yaml \
-          --values secrets.git/kubernikus/$KUBERNIKUS_NAME/values/kubernikus-system.yaml
-  
-        helm upgrade kubernikus-system kubernikus-copy.builds/charts/kubernikus-system/ \
-          --namespace=kubernikus-system \
-          --values secrets.git/global/values/kubernikus-system.yaml \
-          --values secrets.git/kubernikus/$KUBERNIKUS_NAME/values/kubernikus-system.yaml \
-          --install
-  
-  params:
+    REGION:
     OS_AUTH_URL:
     OS_USERNAME:
     OS_PASSWORD:
@@ -949,50 +906,6 @@ task_helm_kubernikus: &task_helm_kubernikus
     KUBERNIKUS_URL:
   
 
-task_helm_prometheus-operator: &task_helm_prometheus-operator
-  platform: 'linux'
-  
-  image_resource:
-    type: registry-image
-    source:
-      repository: sapcc/kubernikus-kubectl
-      tag: 'v1.10.9'
-  
-  inputs:
-    - name: helm-charts.git
-    - name: secrets.git
-  
-  run:
-    path: /bin/sh
-    args:
-      - -c
-      - |
-        set -exo pipefail
-  
-        helm dep up helm-charts.git/system/prometheus-operator
-  
-        helm diff upgrade prometheus-operator helm-charts.git/system/prometheus-operator/ \
-          --suppress-secrets --allow-unreleased --context 5 \
-          --values secrets.git/global/values/prometheus-operator.yaml
-  
-        helm upgrade prometheus-operator helm-charts.git/system/prometheus-operator/ \
-          --namespace=prometheus-operator \
-          --values secrets.git/global/values/prometheus-operator.yaml \
-          --install
-  
-        kubectl rollout status deployment/prometheus-operator --namespace=prometheus-operator
-  
-  params:
-    OS_AUTH_URL:
-    OS_USERNAME:
-    OS_PASSWORD:
-    OS_USER_DOMAIN_NAME:
-    OS_PROJECT_NAME:
-    OS_PROJECT_DOMAIN_NAME:
-    KUBERNIKUS_NAME:
-    KUBERNIKUS_URL:
-  
-
 task_helm_seed: &task_helm_seed
   platform: linux
   
@@ -1017,37 +930,6 @@ task_helm_seed: &task_helm_seed
     GITHUB_TOKEN:
     NAMESPACE: monsoon3 
     RELEASE: kubernikus 
-  
-
-task_terraform: &task_terraform
-  platform: 'linux'
-  
-  image_resource:
-    type: registry-image
-    source:
-      repository: sapcc/kubernikus-terraform
-      tag: 'v20190711170237'
-  
-  inputs:
-    - name: secrets.git
-    - name: terraform.git
-  
-  
-  run:
-    path: /bin/sh
-    args:
-      - -c
-      - |
-        set -exo pipefail
-        cd terraform.git/terraform
-        TF_VARS_DIR=../../secrets.git/$TF_REGION/terraform \
-          make init plan apply
-  
-  params:
-    TF_REGION:
-    TF_PLUGIN_DIR: /usr/local/bin
-    TF_VARS_DIR:
-    TF_PASSWORD:
   
 
 task_tiller: &task_tiller
@@ -1143,15 +1025,6 @@ resources:
       depth: 1
       paths: [ kubernikus/tiller.version, kubernikus/*/tiller.version ]
 
-  - name: terraform.git
-    type: git
-    icon: github-circle
-    source:
-      uri: https://github.com/sapcc/kubernikus.git
-      branch: master
-      depth: 1
-      paths: [ terraform ]
-
   - name: helm-charts.git
     type: git
     icon: github-circle
@@ -1159,13 +1032,6 @@ resources:
       uri:    https://github.com/sapcc/helm-charts.git
       branch: master
       paths:  [ openstack/kubernikus/ ]
-
-  - name: helm-charts-prometheus-operator.git
-    type: git
-    source:
-      uri: https://github.com/sapcc/helm-charts.git
-      branch: master
-      paths:  [ system/prometheus-operator/ ]
 
   - name: slack-alert
     type: slack-alert
@@ -1258,10 +1124,11 @@ jobs:
             <<: *task_helm_kubernikus
           params:
             <<: *auth_master
-        - task: kubernikus-system
+        - task: kubernikus-dex
           config:
-            <<: *task_helm_kubernikus-system
+            <<: *task_helm_kubernikus-dex
           params:
+            REGION: "eu-nl-1"
             <<: *auth_master
     <<: *slack
 
@@ -1319,8 +1186,6 @@ jobs:
     plan:
       - in_parallel:
         - get: helm-charts.git
-          trigger: true
-        - get: terraform.git
           trigger: true
         - get: secrets.git
         - get: kubernikus.builds
@@ -1417,35 +1282,12 @@ jobs:
           GITHUB_TOKEN: ((github-access-token))
     <<: *slack
 
-
-  - name: terraform_ap-ae-1
-    serial: true
-    plan:
-      - in_parallel:
-        - get: ASIA.tag
-          trigger: true
-          passed: [seed_ap-ae-1]
-        - get: secrets.git
-          passed: [seed_ap-ae-1]
-        - get: terraform.git
-          passed: [ASIA]
-      - task: terraform
-        config:
-          <<: *task_terraform
-        timeout: 45m
-        attempts: 5
-        params:
-          TF_REGION: ap-ae-1
-          TF_PASSWORD: ((kubernikus-terraform-password))
-    <<: *slack
-
-
   - name: tiller_ap-ae-1
     plan:
       - in_parallel:
         - get: ASIA.tag
           trigger: true
-          passed: [terraform_ap-ae-1]
+          passed: [seed_ap-ae-1]
         - get: tiller-version.git
           trigger: true
       - in_parallel:
@@ -1457,35 +1299,6 @@ jobs:
             <<: *auth_ap-ae-1
     <<: *slack
 
-  - name: prometheus-operator_ap-ae-1
-    plan:
-    - in_parallel:
-      - get: helm-charts-prometheus-operator.git
-        trigger: true
-      - get: secrets.git
-    - in_parallel:
-      - task: prometheus-operator_ap-ae-1
-        input_mapping: {helm-charts.git: helm-charts-prometheus-operator.git}
-        config:
-          <<: *task_helm_prometheus-operator
-        params:
-          <<: *auth_ap-ae-1
-
-  - name: kubernikus-monitoring_ap-ae-1
-    serial: true
-    plan:
-    - in_parallel:
-      - get: secrets.git
-      - get: kubernikus.builds
-        trigger: true
-        resource: master.builds
-    - in_parallel:
-      - task: kubernikus-monitoring_ap-ae-1
-        config:
-          <<: *task_helm_kubernikus-monitoring
-        params:
-          <<: *auth_ap-ae-1
-
   - name: deploy_ap-ae-1
     serial: true
     plan:
@@ -1494,7 +1307,7 @@ jobs:
           trigger: true
           passed: [tiller_ap-ae-1]
         - get: secrets.git
-          passed: [terraform_ap-ae-1]
+          passed: [seed_ap-ae-1]
         - get: kubernikus.builds
           resource: master.builds
           passed: [admin_ASIA]
@@ -1504,10 +1317,11 @@ jobs:
             <<: *task_helm_kubernikus
           params:
             <<: *auth_ap-ae-1
-        - task: kubernikus-system_ap-ae-1
+        - task: kubernikus-dex_ap-ae-1
           config:
-            <<: *task_helm_kubernikus-system
+            <<: *task_helm_kubernikus-dex
           params:
+            REGION: ap-ae-1
             <<: *auth_ap-ae-1
     <<: *slack
 
@@ -1571,27 +1385,12 @@ jobs:
           GITHUB_TOKEN: ((github-access-token))
     <<: *slack
 
-
-  - name: terraform_ap-au-1
-    serial: true
-    plan:
-      - in_parallel:
-        - get: ASIA.tag
-          trigger: true
-          passed: [seed_ap-au-1]
-        - get: secrets.git
-          passed: [seed_ap-au-1]
-        - get: terraform.git
-          passed: [ASIA]
-    <<: *slack
-
-
   - name: tiller_ap-au-1
     plan:
       - in_parallel:
         - get: ASIA.tag
           trigger: true
-          passed: [terraform_ap-au-1]
+          passed: [seed_ap-au-1]
         - get: tiller-version.git
           trigger: true
       - in_parallel:
@@ -1603,35 +1402,6 @@ jobs:
             <<: *auth_ap-au-1
     <<: *slack
 
-  - name: prometheus-operator_ap-au-1
-    plan:
-    - in_parallel:
-      - get: helm-charts-prometheus-operator.git
-        trigger: true
-      - get: secrets.git
-    - in_parallel:
-      - task: prometheus-operator_ap-au-1
-        input_mapping: {helm-charts.git: helm-charts-prometheus-operator.git}
-        config:
-          <<: *task_helm_prometheus-operator
-        params:
-          <<: *auth_ap-au-1
-
-  - name: kubernikus-monitoring_ap-au-1
-    serial: true
-    plan:
-    - in_parallel:
-      - get: secrets.git
-      - get: kubernikus.builds
-        trigger: true
-        resource: master.builds
-    - in_parallel:
-      - task: kubernikus-monitoring_ap-au-1
-        config:
-          <<: *task_helm_kubernikus-monitoring
-        params:
-          <<: *auth_ap-au-1
-
   - name: deploy_ap-au-1
     serial: true
     plan:
@@ -1640,7 +1410,7 @@ jobs:
           trigger: true
           passed: [tiller_ap-au-1]
         - get: secrets.git
-          passed: [terraform_ap-au-1]
+          passed: [seed_ap-au-1]
         - get: kubernikus.builds
           resource: master.builds
           passed: [admin_ASIA]
@@ -1650,10 +1420,11 @@ jobs:
             <<: *task_helm_kubernikus
           params:
             <<: *auth_ap-au-1
-        - task: kubernikus-system_ap-au-1
+        - task: kubernikus-dex_ap-au-1
           config:
-            <<: *task_helm_kubernikus-system
+            <<: *task_helm_kubernikus-dex
           params:
+            REGION: ap-au-1
             <<: *auth_ap-au-1
     <<: *slack
 
@@ -1717,35 +1488,12 @@ jobs:
           GITHUB_TOKEN: ((github-access-token))
     <<: *slack
 
-
-  - name: terraform_ap-cn-1
-    serial: true
-    plan:
-      - in_parallel:
-        - get: ASIA.tag
-          trigger: true
-          passed: [seed_ap-cn-1]
-        - get: secrets.git
-          passed: [seed_ap-cn-1]
-        - get: terraform.git
-          passed: [ASIA]
-      - task: terraform
-        config:
-          <<: *task_terraform
-        timeout: 45m
-        attempts: 5
-        params:
-          TF_REGION: ap-cn-1
-          TF_PASSWORD: ((kubernikus-terraform-password))
-    <<: *slack
-
-
   - name: tiller_ap-cn-1
     plan:
       - in_parallel:
         - get: ASIA.tag
           trigger: true
-          passed: [terraform_ap-cn-1]
+          passed: [seed_ap-cn-1]
         - get: tiller-version.git
           trigger: true
       - in_parallel:
@@ -1757,35 +1505,6 @@ jobs:
             <<: *auth_ap-cn-1
     <<: *slack
 
-  - name: prometheus-operator_ap-cn-1
-    plan:
-    - in_parallel:
-      - get: helm-charts-prometheus-operator.git
-        trigger: true
-      - get: secrets.git
-    - in_parallel:
-      - task: prometheus-operator_ap-cn-1
-        input_mapping: {helm-charts.git: helm-charts-prometheus-operator.git}
-        config:
-          <<: *task_helm_prometheus-operator
-        params:
-          <<: *auth_ap-cn-1
-
-  - name: kubernikus-monitoring_ap-cn-1
-    serial: true
-    plan:
-    - in_parallel:
-      - get: secrets.git
-      - get: kubernikus.builds
-        trigger: true
-        resource: master.builds
-    - in_parallel:
-      - task: kubernikus-monitoring_ap-cn-1
-        config:
-          <<: *task_helm_kubernikus-monitoring
-        params:
-          <<: *auth_ap-cn-1
-
   - name: deploy_ap-cn-1
     serial: true
     plan:
@@ -1794,7 +1513,7 @@ jobs:
           trigger: true
           passed: [tiller_ap-cn-1]
         - get: secrets.git
-          passed: [terraform_ap-cn-1]
+          passed: [seed_ap-cn-1]
         - get: kubernikus.builds
           resource: master.builds
           passed: [admin_ASIA]
@@ -1804,10 +1523,11 @@ jobs:
             <<: *task_helm_kubernikus
           params:
             <<: *auth_ap-cn-1
-        - task: kubernikus-system_ap-cn-1
+        - task: kubernikus-dex_ap-cn-1
           config:
-            <<: *task_helm_kubernikus-system
+            <<: *task_helm_kubernikus-dex
           params:
+            REGION: ap-cn-1
             <<: *auth_ap-cn-1
     <<: *slack
 
@@ -1871,35 +1591,12 @@ jobs:
           GITHUB_TOKEN: ((github-access-token))
     <<: *slack
 
-
-  - name: terraform_ap-jp-1
-    serial: true
-    plan:
-      - in_parallel:
-        - get: ASIA.tag
-          trigger: true
-          passed: [seed_ap-jp-1]
-        - get: secrets.git
-          passed: [seed_ap-jp-1]
-        - get: terraform.git
-          passed: [ASIA]
-      - task: terraform
-        config:
-          <<: *task_terraform
-        timeout: 45m
-        attempts: 5
-        params:
-          TF_REGION: ap-jp-1
-          TF_PASSWORD: ((kubernikus-terraform-password))
-    <<: *slack
-
-
   - name: tiller_ap-jp-1
     plan:
       - in_parallel:
         - get: ASIA.tag
           trigger: true
-          passed: [terraform_ap-jp-1]
+          passed: [seed_ap-jp-1]
         - get: tiller-version.git
           trigger: true
       - in_parallel:
@@ -1911,35 +1608,6 @@ jobs:
             <<: *auth_ap-jp-1
     <<: *slack
 
-  - name: prometheus-operator_ap-jp-1
-    plan:
-    - in_parallel:
-      - get: helm-charts-prometheus-operator.git
-        trigger: true
-      - get: secrets.git
-    - in_parallel:
-      - task: prometheus-operator_ap-jp-1
-        input_mapping: {helm-charts.git: helm-charts-prometheus-operator.git}
-        config:
-          <<: *task_helm_prometheus-operator
-        params:
-          <<: *auth_ap-jp-1
-
-  - name: kubernikus-monitoring_ap-jp-1
-    serial: true
-    plan:
-    - in_parallel:
-      - get: secrets.git
-      - get: kubernikus.builds
-        trigger: true
-        resource: master.builds
-    - in_parallel:
-      - task: kubernikus-monitoring_ap-jp-1
-        config:
-          <<: *task_helm_kubernikus-monitoring
-        params:
-          <<: *auth_ap-jp-1
-
   - name: deploy_ap-jp-1
     serial: true
     plan:
@@ -1948,7 +1616,7 @@ jobs:
           trigger: true
           passed: [tiller_ap-jp-1]
         - get: secrets.git
-          passed: [terraform_ap-jp-1]
+          passed: [seed_ap-jp-1]
         - get: kubernikus.builds
           resource: master.builds
           passed: [admin_ASIA]
@@ -1958,10 +1626,11 @@ jobs:
             <<: *task_helm_kubernikus
           params:
             <<: *auth_ap-jp-1
-        - task: kubernikus-system_ap-jp-1
+        - task: kubernikus-dex_ap-jp-1
           config:
-            <<: *task_helm_kubernikus-system
+            <<: *task_helm_kubernikus-dex
           params:
+            REGION: ap-jp-1
             <<: *auth_ap-jp-1
     <<: *slack
 
@@ -2025,35 +1694,12 @@ jobs:
           GITHUB_TOKEN: ((github-access-token))
     <<: *slack
 
-
-  - name: terraform_ap-jp-2
-    serial: true
-    plan:
-      - in_parallel:
-        - get: ASIA.tag
-          trigger: true
-          passed: [seed_ap-jp-2]
-        - get: secrets.git
-          passed: [seed_ap-jp-2]
-        - get: terraform.git
-          passed: [ASIA]
-      - task: terraform
-        config:
-          <<: *task_terraform
-        timeout: 45m
-        attempts: 5
-        params:
-          TF_REGION: ap-jp-2
-          TF_PASSWORD: ((kubernikus-terraform-password))
-    <<: *slack
-
-
   - name: tiller_ap-jp-2
     plan:
       - in_parallel:
         - get: ASIA.tag
           trigger: true
-          passed: [terraform_ap-jp-2]
+          passed: [seed_ap-jp-2]
         - get: tiller-version.git
           trigger: true
       - in_parallel:
@@ -2065,35 +1711,6 @@ jobs:
             <<: *auth_ap-jp-2
     <<: *slack
 
-  - name: prometheus-operator_ap-jp-2
-    plan:
-    - in_parallel:
-      - get: helm-charts-prometheus-operator.git
-        trigger: true
-      - get: secrets.git
-    - in_parallel:
-      - task: prometheus-operator_ap-jp-2
-        input_mapping: {helm-charts.git: helm-charts-prometheus-operator.git}
-        config:
-          <<: *task_helm_prometheus-operator
-        params:
-          <<: *auth_ap-jp-2
-
-  - name: kubernikus-monitoring_ap-jp-2
-    serial: true
-    plan:
-    - in_parallel:
-      - get: secrets.git
-      - get: kubernikus.builds
-        trigger: true
-        resource: master.builds
-    - in_parallel:
-      - task: kubernikus-monitoring_ap-jp-2
-        config:
-          <<: *task_helm_kubernikus-monitoring
-        params:
-          <<: *auth_ap-jp-2
-
   - name: deploy_ap-jp-2
     serial: true
     plan:
@@ -2102,7 +1719,7 @@ jobs:
           trigger: true
           passed: [tiller_ap-jp-2]
         - get: secrets.git
-          passed: [terraform_ap-jp-2]
+          passed: [seed_ap-jp-2]
         - get: kubernikus.builds
           resource: master.builds
           passed: [admin_ASIA]
@@ -2112,10 +1729,11 @@ jobs:
             <<: *task_helm_kubernikus
           params:
             <<: *auth_ap-jp-2
-        - task: kubernikus-system_ap-jp-2
+        - task: kubernikus-dex_ap-jp-2
           config:
-            <<: *task_helm_kubernikus-system
+            <<: *task_helm_kubernikus-dex
           params:
+            REGION: ap-jp-2
             <<: *auth_ap-jp-2
     <<: *slack
 
@@ -2179,35 +1797,12 @@ jobs:
           GITHUB_TOKEN: ((github-access-token))
     <<: *slack
 
-
-  - name: terraform_ap-sa-1
-    serial: true
-    plan:
-      - in_parallel:
-        - get: ASIA.tag
-          trigger: true
-          passed: [seed_ap-sa-1]
-        - get: secrets.git
-          passed: [seed_ap-sa-1]
-        - get: terraform.git
-          passed: [ASIA]
-      - task: terraform
-        config:
-          <<: *task_terraform
-        timeout: 45m
-        attempts: 5
-        params:
-          TF_REGION: ap-sa-1
-          TF_PASSWORD: ((kubernikus-terraform-password))
-    <<: *slack
-
-
   - name: tiller_ap-sa-1
     plan:
       - in_parallel:
         - get: ASIA.tag
           trigger: true
-          passed: [terraform_ap-sa-1]
+          passed: [seed_ap-sa-1]
         - get: tiller-version.git
           trigger: true
       - in_parallel:
@@ -2219,35 +1814,6 @@ jobs:
             <<: *auth_ap-sa-1
     <<: *slack
 
-  - name: prometheus-operator_ap-sa-1
-    plan:
-    - in_parallel:
-      - get: helm-charts-prometheus-operator.git
-        trigger: true
-      - get: secrets.git
-    - in_parallel:
-      - task: prometheus-operator_ap-sa-1
-        input_mapping: {helm-charts.git: helm-charts-prometheus-operator.git}
-        config:
-          <<: *task_helm_prometheus-operator
-        params:
-          <<: *auth_ap-sa-1
-
-  - name: kubernikus-monitoring_ap-sa-1
-    serial: true
-    plan:
-    - in_parallel:
-      - get: secrets.git
-      - get: kubernikus.builds
-        trigger: true
-        resource: master.builds
-    - in_parallel:
-      - task: kubernikus-monitoring_ap-sa-1
-        config:
-          <<: *task_helm_kubernikus-monitoring
-        params:
-          <<: *auth_ap-sa-1
-
   - name: deploy_ap-sa-1
     serial: true
     plan:
@@ -2256,7 +1822,7 @@ jobs:
           trigger: true
           passed: [tiller_ap-sa-1]
         - get: secrets.git
-          passed: [terraform_ap-sa-1]
+          passed: [seed_ap-sa-1]
         - get: kubernikus.builds
           resource: master.builds
           passed: [admin_ASIA]
@@ -2266,10 +1832,11 @@ jobs:
             <<: *task_helm_kubernikus
           params:
             <<: *auth_ap-sa-1
-        - task: kubernikus-system_ap-sa-1
+        - task: kubernikus-dex_ap-sa-1
           config:
-            <<: *task_helm_kubernikus-system
+            <<: *task_helm_kubernikus-dex
           params:
+            REGION: ap-sa-1
             <<: *auth_ap-sa-1
     <<: *slack
 
@@ -2316,8 +1883,6 @@ jobs:
     plan:
       - in_parallel:
         - get: helm-charts.git
-          trigger: true
-        - get: terraform.git
           trigger: true
         - get: secrets.git
         - get: kubernikus.builds
@@ -2398,27 +1963,12 @@ jobs:
           GITHUB_TOKEN: ((github-access-token))
     <<: *slack
 
-
-  - name: terraform_eu-de-1
-    serial: true
-    plan:
-      - in_parallel:
-        - get: EMEA.tag
-          trigger: true
-          passed: [seed_eu-de-1]
-        - get: secrets.git
-          passed: [seed_eu-de-1]
-        - get: terraform.git
-          passed: [EMEA]
-    <<: *slack
-
-
   - name: tiller_eu-de-1
     plan:
       - in_parallel:
         - get: EMEA.tag
           trigger: true
-          passed: [terraform_eu-de-1]
+          passed: [seed_eu-de-1]
         - get: tiller-version.git
           trigger: true
       - in_parallel:
@@ -2430,35 +1980,6 @@ jobs:
             <<: *auth_eu-de-1
     <<: *slack
 
-  - name: prometheus-operator_eu-de-1
-    plan:
-    - in_parallel:
-      - get: helm-charts-prometheus-operator.git
-        trigger: true
-      - get: secrets.git
-    - in_parallel:
-      - task: prometheus-operator_eu-de-1
-        input_mapping: {helm-charts.git: helm-charts-prometheus-operator.git}
-        config:
-          <<: *task_helm_prometheus-operator
-        params:
-          <<: *auth_eu-de-1
-
-  - name: kubernikus-monitoring_eu-de-1
-    serial: true
-    plan:
-    - in_parallel:
-      - get: secrets.git
-      - get: kubernikus.builds
-        trigger: true
-        resource: master.builds
-    - in_parallel:
-      - task: kubernikus-monitoring_eu-de-1
-        config:
-          <<: *task_helm_kubernikus-monitoring
-        params:
-          <<: *auth_eu-de-1
-
   - name: deploy_eu-de-1
     serial: true
     plan:
@@ -2467,7 +1988,7 @@ jobs:
           trigger: true
           passed: [tiller_eu-de-1]
         - get: secrets.git
-          passed: [terraform_eu-de-1]
+          passed: [seed_eu-de-1]
         - get: kubernikus.builds
           resource: master.builds
           passed: [admin_EMEA]
@@ -2477,10 +1998,11 @@ jobs:
             <<: *task_helm_kubernikus
           params:
             <<: *auth_eu-de-1
-        - task: kubernikus-system_eu-de-1
+        - task: kubernikus-dex_eu-de-1
           config:
-            <<: *task_helm_kubernikus-system
+            <<: *task_helm_kubernikus-dex
           params:
+            REGION: eu-de-1
             <<: *auth_eu-de-1
     <<: *slack
 
@@ -2544,27 +2066,12 @@ jobs:
           GITHUB_TOKEN: ((github-access-token))
     <<: *slack
 
-
-  - name: terraform_eu-de-2
-    serial: true
-    plan:
-      - in_parallel:
-        - get: EMEA.tag
-          trigger: true
-          passed: [seed_eu-de-2]
-        - get: secrets.git
-          passed: [seed_eu-de-2]
-        - get: terraform.git
-          passed: [EMEA]
-    <<: *slack
-
-
   - name: tiller_eu-de-2
     plan:
       - in_parallel:
         - get: EMEA.tag
           trigger: true
-          passed: [terraform_eu-de-2]
+          passed: [seed_eu-de-2]
         - get: tiller-version.git
           trigger: true
       - in_parallel:
@@ -2576,35 +2083,6 @@ jobs:
             <<: *auth_eu-de-2
     <<: *slack
 
-  - name: prometheus-operator_eu-de-2
-    plan:
-    - in_parallel:
-      - get: helm-charts-prometheus-operator.git
-        trigger: true
-      - get: secrets.git
-    - in_parallel:
-      - task: prometheus-operator_eu-de-2
-        input_mapping: {helm-charts.git: helm-charts-prometheus-operator.git}
-        config:
-          <<: *task_helm_prometheus-operator
-        params:
-          <<: *auth_eu-de-2
-
-  - name: kubernikus-monitoring_eu-de-2
-    serial: true
-    plan:
-    - in_parallel:
-      - get: secrets.git
-      - get: kubernikus.builds
-        trigger: true
-        resource: master.builds
-    - in_parallel:
-      - task: kubernikus-monitoring_eu-de-2
-        config:
-          <<: *task_helm_kubernikus-monitoring
-        params:
-          <<: *auth_eu-de-2
-
   - name: deploy_eu-de-2
     serial: true
     plan:
@@ -2613,7 +2091,7 @@ jobs:
           trigger: true
           passed: [tiller_eu-de-2]
         - get: secrets.git
-          passed: [terraform_eu-de-2]
+          passed: [seed_eu-de-2]
         - get: kubernikus.builds
           resource: master.builds
           passed: [admin_EMEA]
@@ -2623,10 +2101,11 @@ jobs:
             <<: *task_helm_kubernikus
           params:
             <<: *auth_eu-de-2
-        - task: kubernikus-system_eu-de-2
+        - task: kubernikus-dex_eu-de-2
           config:
-            <<: *task_helm_kubernikus-system
+            <<: *task_helm_kubernikus-dex
           params:
+            REGION: eu-de-2
             <<: *auth_eu-de-2
     <<: *slack
 
@@ -2690,27 +2169,12 @@ jobs:
           GITHUB_TOKEN: ((github-access-token))
     <<: *slack
 
-
-  - name: terraform_eu-nl-1
-    serial: true
-    plan:
-      - in_parallel:
-        - get: EMEA.tag
-          trigger: true
-          passed: [seed_eu-nl-1]
-        - get: secrets.git
-          passed: [seed_eu-nl-1]
-        - get: terraform.git
-          passed: [EMEA]
-    <<: *slack
-
-
   - name: tiller_eu-nl-1
     plan:
       - in_parallel:
         - get: EMEA.tag
           trigger: true
-          passed: [terraform_eu-nl-1]
+          passed: [seed_eu-nl-1]
         - get: tiller-version.git
           trigger: true
       - in_parallel:
@@ -2722,35 +2186,6 @@ jobs:
             <<: *auth_eu-nl-1
     <<: *slack
 
-  - name: prometheus-operator_eu-nl-1
-    plan:
-    - in_parallel:
-      - get: helm-charts-prometheus-operator.git
-        trigger: true
-      - get: secrets.git
-    - in_parallel:
-      - task: prometheus-operator_eu-nl-1
-        input_mapping: {helm-charts.git: helm-charts-prometheus-operator.git}
-        config:
-          <<: *task_helm_prometheus-operator
-        params:
-          <<: *auth_eu-nl-1
-
-  - name: kubernikus-monitoring_eu-nl-1
-    serial: true
-    plan:
-    - in_parallel:
-      - get: secrets.git
-      - get: kubernikus.builds
-        trigger: true
-        resource: master.builds
-    - in_parallel:
-      - task: kubernikus-monitoring_eu-nl-1
-        config:
-          <<: *task_helm_kubernikus-monitoring
-        params:
-          <<: *auth_eu-nl-1
-
   - name: deploy_eu-nl-1
     serial: true
     plan:
@@ -2759,7 +2194,7 @@ jobs:
           trigger: true
           passed: [tiller_eu-nl-1]
         - get: secrets.git
-          passed: [terraform_eu-nl-1]
+          passed: [seed_eu-nl-1]
         - get: kubernikus.builds
           resource: master.builds
           passed: [admin_EMEA]
@@ -2769,10 +2204,11 @@ jobs:
             <<: *task_helm_kubernikus
           params:
             <<: *auth_eu-nl-1
-        - task: kubernikus-system_eu-nl-1
+        - task: kubernikus-dex_eu-nl-1
           config:
-            <<: *task_helm_kubernikus-system
+            <<: *task_helm_kubernikus-dex
           params:
+            REGION: eu-nl-1
             <<: *auth_eu-nl-1
     <<: *slack
 
@@ -2836,35 +2272,12 @@ jobs:
           GITHUB_TOKEN: ((github-access-token))
     <<: *slack
 
-
-  - name: terraform_eu-ru-1
-    serial: true
-    plan:
-      - in_parallel:
-        - get: EMEA.tag
-          trigger: true
-          passed: [seed_eu-ru-1]
-        - get: secrets.git
-          passed: [seed_eu-ru-1]
-        - get: terraform.git
-          passed: [EMEA]
-      - task: terraform
-        config:
-          <<: *task_terraform
-        timeout: 45m
-        attempts: 5
-        params:
-          TF_REGION: eu-ru-1
-          TF_PASSWORD: ((kubernikus-terraform-password))
-    <<: *slack
-
-
   - name: tiller_eu-ru-1
     plan:
       - in_parallel:
         - get: EMEA.tag
           trigger: true
-          passed: [terraform_eu-ru-1]
+          passed: [seed_eu-ru-1]
         - get: tiller-version.git
           trigger: true
       - in_parallel:
@@ -2876,35 +2289,6 @@ jobs:
             <<: *auth_eu-ru-1
     <<: *slack
 
-  - name: prometheus-operator_eu-ru-1
-    plan:
-    - in_parallel:
-      - get: helm-charts-prometheus-operator.git
-        trigger: true
-      - get: secrets.git
-    - in_parallel:
-      - task: prometheus-operator_eu-ru-1
-        input_mapping: {helm-charts.git: helm-charts-prometheus-operator.git}
-        config:
-          <<: *task_helm_prometheus-operator
-        params:
-          <<: *auth_eu-ru-1
-
-  - name: kubernikus-monitoring_eu-ru-1
-    serial: true
-    plan:
-    - in_parallel:
-      - get: secrets.git
-      - get: kubernikus.builds
-        trigger: true
-        resource: master.builds
-    - in_parallel:
-      - task: kubernikus-monitoring_eu-ru-1
-        config:
-          <<: *task_helm_kubernikus-monitoring
-        params:
-          <<: *auth_eu-ru-1
-
   - name: deploy_eu-ru-1
     serial: true
     plan:
@@ -2913,7 +2297,7 @@ jobs:
           trigger: true
           passed: [tiller_eu-ru-1]
         - get: secrets.git
-          passed: [terraform_eu-ru-1]
+          passed: [seed_eu-ru-1]
         - get: kubernikus.builds
           resource: master.builds
           passed: [admin_EMEA]
@@ -2923,10 +2307,11 @@ jobs:
             <<: *task_helm_kubernikus
           params:
             <<: *auth_eu-ru-1
-        - task: kubernikus-system_eu-ru-1
+        - task: kubernikus-dex_eu-ru-1
           config:
-            <<: *task_helm_kubernikus-system
+            <<: *task_helm_kubernikus-dex
           params:
+            REGION: eu-ru-1
             <<: *auth_eu-ru-1
     <<: *slack
 
@@ -2973,8 +2358,6 @@ jobs:
     plan:
       - in_parallel:
         - get: helm-charts.git
-          trigger: true
-        - get: terraform.git
           trigger: true
         - get: secrets.git
         - get: kubernikus.builds
@@ -3063,35 +2446,12 @@ jobs:
           GITHUB_TOKEN: ((github-access-token))
     <<: *slack
 
-
-  - name: terraform_la-br-1
-    serial: true
-    plan:
-      - in_parallel:
-        - get: AMERICAS.tag
-          trigger: true
-          passed: [seed_la-br-1]
-        - get: secrets.git
-          passed: [seed_la-br-1]
-        - get: terraform.git
-          passed: [AMERICAS]
-      - task: terraform
-        config:
-          <<: *task_terraform
-        timeout: 45m
-        attempts: 5
-        params:
-          TF_REGION: la-br-1
-          TF_PASSWORD: ((kubernikus-terraform-password))
-    <<: *slack
-
-
   - name: tiller_la-br-1
     plan:
       - in_parallel:
         - get: AMERICAS.tag
           trigger: true
-          passed: [terraform_la-br-1]
+          passed: [seed_la-br-1]
         - get: tiller-version.git
           trigger: true
       - in_parallel:
@@ -3103,35 +2463,6 @@ jobs:
             <<: *auth_la-br-1
     <<: *slack
 
-  - name: prometheus-operator_la-br-1
-    plan:
-    - in_parallel:
-      - get: helm-charts-prometheus-operator.git
-        trigger: true
-      - get: secrets.git
-    - in_parallel:
-      - task: prometheus-operator_la-br-1
-        input_mapping: {helm-charts.git: helm-charts-prometheus-operator.git}
-        config:
-          <<: *task_helm_prometheus-operator
-        params:
-          <<: *auth_la-br-1
-
-  - name: kubernikus-monitoring_la-br-1
-    serial: true
-    plan:
-    - in_parallel:
-      - get: secrets.git
-      - get: kubernikus.builds
-        trigger: true
-        resource: master.builds
-    - in_parallel:
-      - task: kubernikus-monitoring_la-br-1
-        config:
-          <<: *task_helm_kubernikus-monitoring
-        params:
-          <<: *auth_la-br-1
-
   - name: deploy_la-br-1
     serial: true
     plan:
@@ -3140,7 +2471,7 @@ jobs:
           trigger: true
           passed: [tiller_la-br-1]
         - get: secrets.git
-          passed: [terraform_la-br-1]
+          passed: [seed_la-br-1]
         - get: kubernikus.builds
           resource: master.builds
           passed: [admin_AMERICAS]
@@ -3150,10 +2481,11 @@ jobs:
             <<: *task_helm_kubernikus
           params:
             <<: *auth_la-br-1
-        - task: kubernikus-system_la-br-1
+        - task: kubernikus-dex_la-br-1
           config:
-            <<: *task_helm_kubernikus-system
+            <<: *task_helm_kubernikus-dex
           params:
+            REGION: la-br-1
             <<: *auth_la-br-1
     <<: *slack
 
@@ -3217,35 +2549,12 @@ jobs:
           GITHUB_TOKEN: ((github-access-token))
     <<: *slack
 
-
-  - name: terraform_na-ca-1
-    serial: true
-    plan:
-      - in_parallel:
-        - get: AMERICAS.tag
-          trigger: true
-          passed: [seed_na-ca-1]
-        - get: secrets.git
-          passed: [seed_na-ca-1]
-        - get: terraform.git
-          passed: [AMERICAS]
-      - task: terraform
-        config:
-          <<: *task_terraform
-        timeout: 45m
-        attempts: 5
-        params:
-          TF_REGION: na-ca-1
-          TF_PASSWORD: ((kubernikus-terraform-password))
-    <<: *slack
-
-
   - name: tiller_na-ca-1
     plan:
       - in_parallel:
         - get: AMERICAS.tag
           trigger: true
-          passed: [terraform_na-ca-1]
+          passed: [seed_na-ca-1]
         - get: tiller-version.git
           trigger: true
       - in_parallel:
@@ -3257,35 +2566,6 @@ jobs:
             <<: *auth_na-ca-1
     <<: *slack
 
-  - name: prometheus-operator_na-ca-1
-    plan:
-    - in_parallel:
-      - get: helm-charts-prometheus-operator.git
-        trigger: true
-      - get: secrets.git
-    - in_parallel:
-      - task: prometheus-operator_na-ca-1
-        input_mapping: {helm-charts.git: helm-charts-prometheus-operator.git}
-        config:
-          <<: *task_helm_prometheus-operator
-        params:
-          <<: *auth_na-ca-1
-
-  - name: kubernikus-monitoring_na-ca-1
-    serial: true
-    plan:
-    - in_parallel:
-      - get: secrets.git
-      - get: kubernikus.builds
-        trigger: true
-        resource: master.builds
-    - in_parallel:
-      - task: kubernikus-monitoring_na-ca-1
-        config:
-          <<: *task_helm_kubernikus-monitoring
-        params:
-          <<: *auth_na-ca-1
-
   - name: deploy_na-ca-1
     serial: true
     plan:
@@ -3294,7 +2574,7 @@ jobs:
           trigger: true
           passed: [tiller_na-ca-1]
         - get: secrets.git
-          passed: [terraform_na-ca-1]
+          passed: [seed_na-ca-1]
         - get: kubernikus.builds
           resource: master.builds
           passed: [admin_AMERICAS]
@@ -3304,10 +2584,11 @@ jobs:
             <<: *task_helm_kubernikus
           params:
             <<: *auth_na-ca-1
-        - task: kubernikus-system_na-ca-1
+        - task: kubernikus-dex_na-ca-1
           config:
-            <<: *task_helm_kubernikus-system
+            <<: *task_helm_kubernikus-dex
           params:
+            REGION: na-ca-1
             <<: *auth_na-ca-1
     <<: *slack
 
@@ -3371,27 +2652,12 @@ jobs:
           GITHUB_TOKEN: ((github-access-token))
     <<: *slack
 
-
-  - name: terraform_na-us-1
-    serial: true
-    plan:
-      - in_parallel:
-        - get: AMERICAS.tag
-          trigger: true
-          passed: [seed_na-us-1]
-        - get: secrets.git
-          passed: [seed_na-us-1]
-        - get: terraform.git
-          passed: [AMERICAS]
-    <<: *slack
-
-
   - name: tiller_na-us-1
     plan:
       - in_parallel:
         - get: AMERICAS.tag
           trigger: true
-          passed: [terraform_na-us-1]
+          passed: [seed_na-us-1]
         - get: tiller-version.git
           trigger: true
       - in_parallel:
@@ -3403,35 +2669,6 @@ jobs:
             <<: *auth_na-us-1
     <<: *slack
 
-  - name: prometheus-operator_na-us-1
-    plan:
-    - in_parallel:
-      - get: helm-charts-prometheus-operator.git
-        trigger: true
-      - get: secrets.git
-    - in_parallel:
-      - task: prometheus-operator_na-us-1
-        input_mapping: {helm-charts.git: helm-charts-prometheus-operator.git}
-        config:
-          <<: *task_helm_prometheus-operator
-        params:
-          <<: *auth_na-us-1
-
-  - name: kubernikus-monitoring_na-us-1
-    serial: true
-    plan:
-    - in_parallel:
-      - get: secrets.git
-      - get: kubernikus.builds
-        trigger: true
-        resource: master.builds
-    - in_parallel:
-      - task: kubernikus-monitoring_na-us-1
-        config:
-          <<: *task_helm_kubernikus-monitoring
-        params:
-          <<: *auth_na-us-1
-
   - name: deploy_na-us-1
     serial: true
     plan:
@@ -3440,7 +2677,7 @@ jobs:
           trigger: true
           passed: [tiller_na-us-1]
         - get: secrets.git
-          passed: [terraform_na-us-1]
+          passed: [seed_na-us-1]
         - get: kubernikus.builds
           resource: master.builds
           passed: [admin_AMERICAS]
@@ -3450,10 +2687,11 @@ jobs:
             <<: *task_helm_kubernikus
           params:
             <<: *auth_na-us-1
-        - task: kubernikus-system_na-us-1
+        - task: kubernikus-dex_na-us-1
           config:
-            <<: *task_helm_kubernikus-system
+            <<: *task_helm_kubernikus-dex
           params:
+            REGION: na-us-1
             <<: *auth_na-us-1
     <<: *slack
 
@@ -3517,35 +2755,12 @@ jobs:
           GITHUB_TOKEN: ((github-access-token))
     <<: *slack
 
-
-  - name: terraform_na-us-2
-    serial: true
-    plan:
-      - in_parallel:
-        - get: AMERICAS.tag
-          trigger: true
-          passed: [seed_na-us-2]
-        - get: secrets.git
-          passed: [seed_na-us-2]
-        - get: terraform.git
-          passed: [AMERICAS]
-      - task: terraform
-        config:
-          <<: *task_terraform
-        timeout: 45m
-        attempts: 5
-        params:
-          TF_REGION: na-us-2
-          TF_PASSWORD: ((kubernikus-terraform-password))
-    <<: *slack
-
-
   - name: tiller_na-us-2
     plan:
       - in_parallel:
         - get: AMERICAS.tag
           trigger: true
-          passed: [terraform_na-us-2]
+          passed: [seed_na-us-2]
         - get: tiller-version.git
           trigger: true
       - in_parallel:
@@ -3557,35 +2772,6 @@ jobs:
             <<: *auth_na-us-2
     <<: *slack
 
-  - name: prometheus-operator_na-us-2
-    plan:
-    - in_parallel:
-      - get: helm-charts-prometheus-operator.git
-        trigger: true
-      - get: secrets.git
-    - in_parallel:
-      - task: prometheus-operator_na-us-2
-        input_mapping: {helm-charts.git: helm-charts-prometheus-operator.git}
-        config:
-          <<: *task_helm_prometheus-operator
-        params:
-          <<: *auth_na-us-2
-
-  - name: kubernikus-monitoring_na-us-2
-    serial: true
-    plan:
-    - in_parallel:
-      - get: secrets.git
-      - get: kubernikus.builds
-        trigger: true
-        resource: master.builds
-    - in_parallel:
-      - task: kubernikus-monitoring_na-us-2
-        config:
-          <<: *task_helm_kubernikus-monitoring
-        params:
-          <<: *auth_na-us-2
-
   - name: deploy_na-us-2
     serial: true
     plan:
@@ -3594,7 +2780,7 @@ jobs:
           trigger: true
           passed: [tiller_na-us-2]
         - get: secrets.git
-          passed: [terraform_na-us-2]
+          passed: [seed_na-us-2]
         - get: kubernikus.builds
           resource: master.builds
           passed: [admin_AMERICAS]
@@ -3604,10 +2790,11 @@ jobs:
             <<: *task_helm_kubernikus
           params:
             <<: *auth_na-us-2
-        - task: kubernikus-system_na-us-2
+        - task: kubernikus-dex_na-us-2
           config:
-            <<: *task_helm_kubernikus-system
+            <<: *task_helm_kubernikus-dex
           params:
+            REGION: na-us-2
             <<: *auth_na-us-2
     <<: *slack
 
@@ -3671,35 +2858,12 @@ jobs:
           GITHUB_TOKEN: ((github-access-token))
     <<: *slack
 
-
-  - name: terraform_na-us-3
-    serial: true
-    plan:
-      - in_parallel:
-        - get: AMERICAS.tag
-          trigger: true
-          passed: [seed_na-us-3]
-        - get: secrets.git
-          passed: [seed_na-us-3]
-        - get: terraform.git
-          passed: [AMERICAS]
-      - task: terraform
-        config:
-          <<: *task_terraform
-        timeout: 45m
-        attempts: 5
-        params:
-          TF_REGION: na-us-3
-          TF_PASSWORD: ((kubernikus-terraform-password))
-    <<: *slack
-
-
   - name: tiller_na-us-3
     plan:
       - in_parallel:
         - get: AMERICAS.tag
           trigger: true
-          passed: [terraform_na-us-3]
+          passed: [seed_na-us-3]
         - get: tiller-version.git
           trigger: true
       - in_parallel:
@@ -3711,35 +2875,6 @@ jobs:
             <<: *auth_na-us-3
     <<: *slack
 
-  - name: prometheus-operator_na-us-3
-    plan:
-    - in_parallel:
-      - get: helm-charts-prometheus-operator.git
-        trigger: true
-      - get: secrets.git
-    - in_parallel:
-      - task: prometheus-operator_na-us-3
-        input_mapping: {helm-charts.git: helm-charts-prometheus-operator.git}
-        config:
-          <<: *task_helm_prometheus-operator
-        params:
-          <<: *auth_na-us-3
-
-  - name: kubernikus-monitoring_na-us-3
-    serial: true
-    plan:
-    - in_parallel:
-      - get: secrets.git
-      - get: kubernikus.builds
-        trigger: true
-        resource: master.builds
-    - in_parallel:
-      - task: kubernikus-monitoring_na-us-3
-        config:
-          <<: *task_helm_kubernikus-monitoring
-        params:
-          <<: *auth_na-us-3
-
   - name: deploy_na-us-3
     serial: true
     plan:
@@ -3748,7 +2883,7 @@ jobs:
           trigger: true
           passed: [tiller_na-us-3]
         - get: secrets.git
-          passed: [terraform_na-us-3]
+          passed: [seed_na-us-3]
         - get: kubernikus.builds
           resource: master.builds
           passed: [admin_AMERICAS]
@@ -3758,10 +2893,11 @@ jobs:
             <<: *task_helm_kubernikus
           params:
             <<: *auth_na-us-3
-        - task: kubernikus-system_na-us-3
+        - task: kubernikus-dex_na-us-3
           config:
-            <<: *task_helm_kubernikus-system
+            <<: *task_helm_kubernikus-dex
           params:
+            REGION: na-us-3
             <<: *auth_na-us-3
     <<: *slack
 
@@ -3808,8 +2944,6 @@ jobs:
     plan:
       - in_parallel:
         - get: helm-charts.git
-          trigger: true
-        - get: terraform.git
           trigger: true
         - get: secrets.git
         - get: kubernikus.builds
@@ -3874,35 +3008,12 @@ jobs:
           GITHUB_TOKEN: ((github-access-token))
     <<: *slack
 
-
-  - name: terraform_qa-de-1
-    serial: true
-    plan:
-      - in_parallel:
-        - get: INFRA.tag
-          trigger: true
-          passed: [seed_qa-de-1]
-        - get: secrets.git
-          passed: [seed_qa-de-1]
-        - get: terraform.git
-          passed: [INFRA]
-      - task: terraform
-        config:
-          <<: *task_terraform
-        timeout: 45m
-        attempts: 5
-        params:
-          TF_REGION: qa-de-1
-          TF_PASSWORD: ((kubernikus-terraform-password))
-    <<: *slack
-
-
   - name: tiller_qa-de-1
     plan:
       - in_parallel:
         - get: INFRA.tag
           trigger: true
-          passed: [terraform_qa-de-1]
+          passed: [seed_qa-de-1]
         - get: tiller-version.git
           trigger: true
       - in_parallel:
@@ -3914,35 +3025,6 @@ jobs:
             <<: *auth_qa-de-1
     <<: *slack
 
-  - name: prometheus-operator_qa-de-1
-    plan:
-    - in_parallel:
-      - get: helm-charts-prometheus-operator.git
-        trigger: true
-      - get: secrets.git
-    - in_parallel:
-      - task: prometheus-operator_qa-de-1
-        input_mapping: {helm-charts.git: helm-charts-prometheus-operator.git}
-        config:
-          <<: *task_helm_prometheus-operator
-        params:
-          <<: *auth_qa-de-1
-
-  - name: kubernikus-monitoring_qa-de-1
-    serial: true
-    plan:
-    - in_parallel:
-      - get: secrets.git
-      - get: kubernikus.builds
-        trigger: true
-        resource: master.builds
-    - in_parallel:
-      - task: kubernikus-monitoring_qa-de-1
-        config:
-          <<: *task_helm_kubernikus-monitoring
-        params:
-          <<: *auth_qa-de-1
-
   - name: deploy_qa-de-1
     serial: true
     plan:
@@ -3951,7 +3033,7 @@ jobs:
           trigger: true
           passed: [tiller_qa-de-1]
         - get: secrets.git
-          passed: [terraform_qa-de-1]
+          passed: [seed_qa-de-1]
         - get: kubernikus.builds
           resource: master.builds
           passed: [admin_INFRA]
@@ -3961,10 +3043,11 @@ jobs:
             <<: *task_helm_kubernikus
           params:
             <<: *auth_qa-de-1
-        - task: kubernikus-system_qa-de-1
+        - task: kubernikus-dex_qa-de-1
           config:
-            <<: *task_helm_kubernikus-system
+            <<: *task_helm_kubernikus-dex
           params:
+            REGION: qa-de-1
             <<: *auth_qa-de-1
     <<: *slack
 
@@ -4037,7 +3120,6 @@ groups:
       - ASIA
       - admin_ASIA
       - seed_ap-ae-1
-      - terraform_ap-ae-1
       - tiller_ap-ae-1
       - deploy_ap-ae-1
       - soak_ap-ae-1
@@ -4047,7 +3129,6 @@ groups:
       - ASIA
       - admin_ASIA
       - seed_ap-au-1
-      - terraform_ap-au-1
       - tiller_ap-au-1
       - deploy_ap-au-1
       - soak_ap-au-1
@@ -4057,7 +3138,6 @@ groups:
       - ASIA
       - admin_ASIA
       - seed_ap-cn-1
-      - terraform_ap-cn-1
       - tiller_ap-cn-1
       - deploy_ap-cn-1
       - soak_ap-cn-1
@@ -4067,7 +3147,6 @@ groups:
       - ASIA
       - admin_ASIA
       - seed_ap-jp-1
-      - terraform_ap-jp-1
       - tiller_ap-jp-1
       - deploy_ap-jp-1
       - soak_ap-jp-1
@@ -4077,7 +3156,6 @@ groups:
       - ASIA
       - admin_ASIA
       - seed_ap-jp-2
-      - terraform_ap-jp-2
       - tiller_ap-jp-2
       - deploy_ap-jp-2
       - soak_ap-jp-2
@@ -4087,7 +3165,6 @@ groups:
       - ASIA
       - admin_ASIA
       - seed_ap-sa-1
-      - terraform_ap-sa-1
       - tiller_ap-sa-1
       - deploy_ap-sa-1
       - soak_ap-sa-1
@@ -4097,7 +3174,6 @@ groups:
       - EMEA
       - admin_EMEA
       - seed_eu-de-1
-      - terraform_eu-de-1
       - tiller_eu-de-1
       - deploy_eu-de-1
       - soak_eu-de-1
@@ -4107,7 +3183,6 @@ groups:
       - EMEA
       - admin_EMEA
       - seed_eu-de-2
-      - terraform_eu-de-2
       - tiller_eu-de-2
       - deploy_eu-de-2
       - soak_eu-de-2
@@ -4117,7 +3192,6 @@ groups:
       - EMEA
       - admin_EMEA
       - seed_eu-nl-1
-      - terraform_eu-nl-1
       - tiller_eu-nl-1
       - deploy_eu-nl-1
       - soak_eu-nl-1
@@ -4127,7 +3201,6 @@ groups:
       - EMEA
       - admin_EMEA
       - seed_eu-ru-1
-      - terraform_eu-ru-1
       - tiller_eu-ru-1
       - deploy_eu-ru-1
       - soak_eu-ru-1
@@ -4137,7 +3210,6 @@ groups:
       - AMERICAS
       - admin_AMERICAS
       - seed_la-br-1
-      - terraform_la-br-1
       - tiller_la-br-1
       - deploy_la-br-1
       - soak_la-br-1
@@ -4147,7 +3219,6 @@ groups:
       - AMERICAS
       - admin_AMERICAS
       - seed_na-ca-1
-      - terraform_na-ca-1
       - tiller_na-ca-1
       - deploy_na-ca-1
       - soak_na-ca-1
@@ -4157,7 +3228,6 @@ groups:
       - AMERICAS
       - admin_AMERICAS
       - seed_na-us-1
-      - terraform_na-us-1
       - tiller_na-us-1
       - deploy_na-us-1
       - soak_na-us-1
@@ -4167,7 +3237,6 @@ groups:
       - AMERICAS
       - admin_AMERICAS
       - seed_na-us-2
-      - terraform_na-us-2
       - tiller_na-us-2
       - deploy_na-us-2
       - soak_na-us-2
@@ -4177,7 +3246,6 @@ groups:
       - AMERICAS
       - admin_AMERICAS
       - seed_na-us-3
-      - terraform_na-us-3
       - tiller_na-us-3
       - deploy_na-us-3
       - soak_na-us-3
@@ -4187,7 +3255,6 @@ groups:
       - INFRA
       - admin_INFRA
       - seed_qa-de-1
-      - terraform_qa-de-1
       - tiller_qa-de-1
       - deploy_qa-de-1
       - soak_qa-de-1
@@ -4215,150 +3282,81 @@ groups:
 
 
       - seed_ap-ae-1
-      - terraform_ap-ae-1
       - tiller_ap-ae-1
       - deploy_ap-ae-1
       - soak_ap-ae-1
 
       - seed_ap-au-1
-      - terraform_ap-au-1
       - tiller_ap-au-1
       - deploy_ap-au-1
       - soak_ap-au-1
 
       - seed_ap-cn-1
-      - terraform_ap-cn-1
       - tiller_ap-cn-1
       - deploy_ap-cn-1
       - soak_ap-cn-1
 
       - seed_ap-jp-1
-      - terraform_ap-jp-1
       - tiller_ap-jp-1
       - deploy_ap-jp-1
       - soak_ap-jp-1
 
       - seed_ap-jp-2
-      - terraform_ap-jp-2
       - tiller_ap-jp-2
       - deploy_ap-jp-2
       - soak_ap-jp-2
 
       - seed_ap-sa-1
-      - terraform_ap-sa-1
       - tiller_ap-sa-1
       - deploy_ap-sa-1
       - soak_ap-sa-1
 
       - seed_eu-de-1
-      - terraform_eu-de-1
       - tiller_eu-de-1
       - deploy_eu-de-1
       - soak_eu-de-1
 
       - seed_eu-de-2
-      - terraform_eu-de-2
       - tiller_eu-de-2
       - deploy_eu-de-2
       - soak_eu-de-2
 
       - seed_eu-nl-1
-      - terraform_eu-nl-1
       - tiller_eu-nl-1
       - deploy_eu-nl-1
       - soak_eu-nl-1
 
       - seed_eu-ru-1
-      - terraform_eu-ru-1
       - tiller_eu-ru-1
       - deploy_eu-ru-1
       - soak_eu-ru-1
 
       - seed_la-br-1
-      - terraform_la-br-1
       - tiller_la-br-1
       - deploy_la-br-1
       - soak_la-br-1
 
       - seed_na-ca-1
-      - terraform_na-ca-1
       - tiller_na-ca-1
       - deploy_na-ca-1
       - soak_na-ca-1
 
       - seed_na-us-1
-      - terraform_na-us-1
       - tiller_na-us-1
       - deploy_na-us-1
       - soak_na-us-1
 
       - seed_na-us-2
-      - terraform_na-us-2
       - tiller_na-us-2
       - deploy_na-us-2
       - soak_na-us-2
 
       - seed_na-us-3
-      - terraform_na-us-3
       - tiller_na-us-3
       - deploy_na-us-3
       - soak_na-us-3
 
       - seed_qa-de-1
-      - terraform_qa-de-1
       - tiller_qa-de-1
       - deploy_qa-de-1
       - soak_qa-de-1
-
-
-  - name: monitoring
-    jobs:
-
-      - kubernikus-monitoring_ap-ae-1
-      - prometheus-operator_ap-ae-1
-
-      - kubernikus-monitoring_ap-au-1
-      - prometheus-operator_ap-au-1
-
-      - kubernikus-monitoring_ap-cn-1
-      - prometheus-operator_ap-cn-1
-
-      - kubernikus-monitoring_ap-jp-1
-      - prometheus-operator_ap-jp-1
-
-      - kubernikus-monitoring_ap-jp-2
-      - prometheus-operator_ap-jp-2
-
-      - kubernikus-monitoring_ap-sa-1
-      - prometheus-operator_ap-sa-1
-
-      - kubernikus-monitoring_eu-de-1
-      - prometheus-operator_eu-de-1
-
-      - kubernikus-monitoring_eu-de-2
-      - prometheus-operator_eu-de-2
-
-      - kubernikus-monitoring_eu-nl-1
-      - prometheus-operator_eu-nl-1
-
-      - kubernikus-monitoring_eu-ru-1
-      - prometheus-operator_eu-ru-1
-
-      - kubernikus-monitoring_la-br-1
-      - prometheus-operator_la-br-1
-
-      - kubernikus-monitoring_na-ca-1
-      - prometheus-operator_na-ca-1
-
-      - kubernikus-monitoring_na-us-1
-      - prometheus-operator_na-us-1
-
-      - kubernikus-monitoring_na-us-2
-      - prometheus-operator_na-us-2
-
-      - kubernikus-monitoring_na-us-3
-      - prometheus-operator_na-us-3
-
-      - kubernikus-monitoring_qa-de-1
-      - prometheus-operator_qa-de-1
-

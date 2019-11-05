@@ -9,6 +9,7 @@ import (
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack"
 	"github.com/gophercloud/gophercloud/openstack/identity/v3/endpoints"
+	"github.com/gophercloud/gophercloud/openstack/identity/v3/projects"
 	gc_roles "github.com/gophercloud/gophercloud/openstack/identity/v3/roles"
 	"github.com/gophercloud/gophercloud/openstack/identity/v3/services"
 	"github.com/gophercloud/gophercloud/openstack/identity/v3/tokens"
@@ -31,6 +32,7 @@ type AdminClient interface {
 	AssignUserRoles(projectID, userName, domainName string, userRoles []string) error
 	GetUserRoles(projectID, userName, domainName string) ([]string, error)
 	GetDefaultServiceUserRoles() []string
+	GetDomainNameByProject(projectID string) (string, error)
 }
 
 type adminClient struct {
@@ -155,6 +157,21 @@ func (c *adminClient) GetUserRoles(projectID, userName, domainName string) ([]st
 	}
 
 	return retRoles, nil
+}
+
+func (c *adminClient) GetDomainNameByProject(projectID string) (string, error) {
+
+	project, err := projects.Get(c.IdentityClient, projectID).Extract()
+	if err != nil {
+		return "", err
+	}
+
+	domain, err := domains.Get(c.IdentityClient, project.DomainID).Extract()
+	if err != nil {
+		return "", err
+	}
+
+	return domain.Name, nil
 }
 
 func (c *adminClient) GetDefaultServiceUserRoles() []string {

@@ -8,7 +8,6 @@ In the secret repository create values:
 
   * `admin/values/$REGION.yaml`
   * `kubernikus/$REGION/values/kubernikus.yaml`
-  * `kubernikus/$REGION/values/kubernikus-system.yaml`
 
 Create a random password for authentication. Everything else should be a simple
 copy/search/replace job.
@@ -125,7 +124,7 @@ helm init --service-account tiller --history-max 5
 ### Adapt Pipeline 
 
 Check the regional `$CONTINENT` jobs. Add tasks for `kubernikus` and
-`kubernikus-system` using the authentication blob from earlier. Run the
+using the authentication blob from earlier. Run the
 installation of the continent.
 
 ### Load Balancer Config

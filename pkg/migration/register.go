@@ -23,6 +23,8 @@ func init() {
 		CleanupSuppositoryNamespaces,
 		ReconcileNodePoolConfigDefaults,
 		FixUpdateConf,
+		AddDexSecretAndRoleBindings,
+		ReconcileAdvertisePortConfigDefault,
 		// <-- Insert new migrations at the end only!
 	}
 }

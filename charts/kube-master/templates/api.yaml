@@ -126,7 +126,7 @@ spec:
             - apiserver
 {{- end }}
             - --etcd-servers=http://{{ include "etcd.fullname" . }}:2379
-            - --secure-port=6443
+            - --secure-port={{ required "missing advertisePort" .Values.advertisePort }}
             - --advertise-address={{ .Values.advertiseAddress }}
             - --allow-privileged=true
             - --authorization-mode=Node,RBAC
@@ -176,6 +176,13 @@ spec:
             - --tls-cert-file=/etc/kubernetes/certs/tls-apiserver.pem
             - --tls-private-key-file=/etc/kubernetes/certs/tls-apiserver-key.pem
             # --tls-sni-cert-key=/etc/kubernetes/certs/tls-sni.pem,/etc/kubernetes/certs/tls-sni.key
+            {{ if .Values.dex.enabled }}
+            - --oidc-issuer-url=https://{{ include "dex.url" . }} 
+            - --oidc-client-id=kubernetes
+            - --oidc-groups-claim=groups
+            - --oidc-username-prefix=-
+            - --oidc-username-claim=sub
+            {{ end }}
           volumeMounts:
             - mountPath: /etc/kubernetes/certs
               name: certs
@@ -199,7 +206,7 @@ spec:
           readinessProbe:
             httpGet:
               path: /healthz
-              port: 6443
+              port: {{ .Values.advertisePort }}
               scheme: HTTPS
             initialDelaySeconds: 15
             timeoutSeconds: 3
@@ -220,6 +227,7 @@ spec:
             - --cert=/etc/kubernetes/certs/tls-wormhole.pem
             - --key=/etc/kubernetes/certs/tls-wormhole-key.pem
             - --service-cidr={{ .Values.serviceCIDR }}
+            - --api-port={{ .Values.advertisePort }}
             - --v=5
           securityContext:
             capabilities:

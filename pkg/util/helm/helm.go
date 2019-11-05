@@ -6,6 +6,8 @@ import (
 	"math/rand"
 	"net/url"
 
+	"golang.org/x/crypto/bcrypt"
+
 	yaml "gopkg.in/yaml.v2"
 
 	v1 "github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
@@ -34,6 +36,7 @@ type openstackValues struct {
 	Password            string `yaml:"password"`
 	DomainName          string `yaml:"domainName"`
 	ProjectID           string `yaml:"projectID"`
+	ProjectDomainName   string `yaml:"projectDomainName"`
 	Region              string `yaml:"region,omitempty"`
 	LbSubnetID          string `yaml:"lbSubnetID,omitempty"`
 	LbFloatingNetworkID string `yaml:"lbFloatingNetworkID,omitempty"`
@@ -67,11 +70,39 @@ type versionValues struct {
 	Kubernikus string `yaml:"kubernikus,omitempty"`
 }
 
+type dashboardValues struct {
+	Enabled bool `yaml:"enabled,omitempty"`
+}
+
+type dexValues struct {
+	Enabled            bool           `yaml:"enabled,omitempty"`
+	StaticClientSecret string         `yaml:"staticClientSecret,omitempty"`
+	StaticPassword     staticPassword `yaml:"staticPasword,omitempty"`
+	Connectors         dexConnectors  `yaml:"connectors,omitempty"`
+}
+
+type dexConnectors struct {
+	Keystone dexKeystoneConnector `yaml:"keystone"`
+	LDAP     dexLDAPConnector     `yaml:"ldap"`
+}
+
+type dexKeystoneConnector struct {
+	Enabled bool `yaml:"enabled"`
+}
+type dexLDAPConnector struct {
+	Enabled bool `yaml:"enabled"`
+}
+
+type staticPassword struct {
+	HashedPassword string `yaml:"hashedPassword,omitempty"`
+}
+
 type kubernikusHelmValues struct {
 	Openstack        openstackValues       `yaml:"openstack,omitempty"`
 	ClusterCIDR      string                `yaml:"clusterCIDR,omitempty"`
 	ServiceCIDR      string                `yaml:"serviceCIDR,omitempty"`
 	AdvertiseAddress string                `yaml:"advertiseAddress,omitempty"`
+	AdvertisePort    int64                 `yaml:"advertisePort,omitempty"`
 	BoostrapToken    string                `yaml:"bootstrapToken,omitempty"`
 	Version          versionValues         `yaml:"version,omitempty"`
 	Etcd             etcdValues            `yaml:"etcd,omitempty"`
@@ -80,6 +111,8 @@ type kubernikusHelmValues struct {
 	Account          string                `yaml:"account"`
 	SecretName       string                `yaml:"secretName"`
 	ImageRegistry    version.ImageRegistry `yaml:",inline"`
+	Dex              dexValues             `yaml:"dex,omitempty"`
+	Dashboard        dashboardValues       `yaml:"dashboard,omitempty"`
 }
 
 func KlusterToHelmValues(kluster *v1.Kluster, secret *v1.Secret, kubernetesVersion string, registry *version.ImageRegistry, accessMode string) ([]byte, error) {
@@ -98,6 +131,28 @@ func KlusterToHelmValues(kluster *v1.Kluster, secret *v1.Secret, kubernetesVersi
 	uidChecksum := crc64.Checksum([]byte(kluster.UID), crc64ISOTable)
 	backupMinute := rand.New(rand.NewSource(int64(uidChecksum))).Intn(60)
 
+	hashedPassword := ""
+	if kluster.Spec.Dex {
+
+		hashedBytes, err := bcrypt.GenerateFromPassword([]byte(secret.DexStaticPassword), bcrypt.DefaultCost)
+		if err != nil {
+			return nil, fmt.Errorf("Failed to hash dex static password: %v", err)
+		}
+		hashedPassword = string(hashedBytes)
+	}
+
+	dex := dexValues{
+		Enabled: kluster.Spec.Dex,
+		StaticPassword: staticPassword{
+			HashedPassword: hashedPassword,
+		},
+		StaticClientSecret: secret.DexClientSecret,
+		Connectors: dexConnectors{
+			Keystone: dexKeystoneConnector{Enabled: !kluster.Spec.NoCloud},
+			LDAP:     dexLDAPConnector{Enabled: kluster.Spec.NoCloud},
+		},
+	}
+
 	values := kubernikusHelmValues{
 		Account:          kluster.Account(),
 		BoostrapToken:    secret.BootstrapToken,
@@ -105,6 +160,7 @@ func KlusterToHelmValues(kluster *v1.Kluster, secret *v1.Secret, kubernetesVersi
 		SecretName:       kluster.Name + "-secret",
 		ServiceCIDR:      kluster.Spec.ServiceCIDR,
 		AdvertiseAddress: kluster.Spec.AdvertiseAddress,
+		AdvertisePort:    kluster.Spec.AdvertisePort,
 		Name:             kluster.Spec.Name,
 		Version: versionValues{
 			Kubernetes: kubernetesVersion,
@@ -127,17 +183,22 @@ func KlusterToHelmValues(kluster *v1.Kluster, secret *v1.Secret, kubernetesVersi
 			},
 			StorageContainer: etcd_util.DefaultStorageContainer(kluster),
 			Openstack: openstackValues{
-				AuthURL:    secret.Openstack.AuthURL,
-				Username:   secret.Openstack.Username,
-				Password:   secret.Openstack.Password,
-				DomainName: secret.Openstack.DomainName,
-				ProjectID:  secret.Openstack.ProjectID,
+				AuthURL:           secret.Openstack.AuthURL,
+				Username:          secret.Openstack.Username,
+				Password:          secret.Openstack.Password,
+				DomainName:        secret.Openstack.DomainName,
+				ProjectID:         secret.Openstack.ProjectID,
+				ProjectDomainName: secret.Openstack.ProjectDomainName,
 			},
 		},
 		Api: apiValues{
 			ApiserverHost: apiserverURL.Hostname(),
 			WormholeHost:  wormholeURL.Hostname(),
 		},
+		Dashboard: dashboardValues{
+			Enabled: kluster.Spec.Dashboard,
+		},
+		Dex: dex,
 	}
 	if !kluster.Spec.NoCloud {
 		values.Openstack = openstackValues{
@@ -147,6 +208,7 @@ func KlusterToHelmValues(kluster *v1.Kluster, secret *v1.Secret, kubernetesVersi
 			DomainName:          secret.Openstack.DomainName,
 			Region:              secret.Openstack.Region,
 			ProjectID:           kluster.Spec.Openstack.ProjectID,
+			ProjectDomainName:   secret.ProjectDomainName,
 			LbSubnetID:          kluster.Spec.Openstack.LBSubnetID,
 			LbFloatingNetworkID: kluster.Spec.Openstack.LBFloatingNetworkID,
 			RouterID:            kluster.Spec.Openstack.RouterID,

@@ -17,6 +17,7 @@ openstack: {}
   #lbFloatingNetworkID
   #routerID:
   #region
+  #projectDomainName:
 
 # specify a different certsSecretName if you want to use
 # an exiting secret
@@ -28,6 +29,7 @@ certs: {}
 clusterCIDR: 198.19.0.0/16
 serviceCIDR: 198.18.128.0/17
 advertiseAddress: 198.18.128.1
+advertisePort: 6443
 #bootstrapToken
 #nodePassword:
 #name:
@@ -80,3 +82,23 @@ scheduler:
       memory: 512Mi
 
 revisionHistoryLimit: 3
+
+dex:
+  enabled: false 
+  connectors:
+    keystone: 
+      enabled: true
+      secret: kubernikus-dex-keystone
+    ldap:
+      enabled: false
+      secret: kubernikus-dex-ldap
+  staticPasword:
+    enabled: false
+    email: kubernikus@cloud.sap
+    # hashedPassword:
+  #staticClientSecret: 
+  ingressSecret: kubernikus-dex
+
+dashboard:
+  enabled: false
+  ingressSecret: kubernikus-dex

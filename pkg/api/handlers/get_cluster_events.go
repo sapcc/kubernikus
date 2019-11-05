@@ -18,7 +18,7 @@ type getClusterEvents struct {
 }
 
 func (d *getClusterEvents) Handle(params operations.GetClusterEventsParams, principal *models.Principal) middleware.Responder {
-	eventsInterface := d.Kubernetes.Core().Events("")
+	eventsInterface := d.Kubernetes.Core().Events(d.Namespace)
 	klusterName := qualifiedName(params.Name, principal.Account)
 	selector := eventsInterface.GetFieldSelector(&klusterName, &d.Namespace, nil, nil)
 	kEvents, err := eventsInterface.List(metav1.ListOptions{FieldSelector: selector.String()})

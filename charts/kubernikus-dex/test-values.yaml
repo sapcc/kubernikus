@@ -1,0 +1,20 @@
+# secrets/$REGION/values/global.yaml
+global:
+  region: xyz
+  tld: xyz.com
+
+dex:
+  connectors: 
+    keystone:
+       enabled: true
+    ldap: 
+       enabled: false
+  dns:
+    zone: xyz
+
+api:
+ adminPassword: xyz
+ adminUser: xyz
+ adminUserDomain: xyz
+ adminProject: xyz
+ adminDomain: xyz
