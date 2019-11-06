@@ -40,6 +40,28 @@ func DefaultString(definition, property string) (string, error) {
 	return defaultString, nil
 }
 
+func MustDefaultInt64(definition, property string) int64 {
+	d, err := DefaultInt64(definition, property)
+	if err != nil {
+		panic(err)
+	}
+	return d
+}
+
+func DefaultInt64(definition, property string) (int64, error) {
+	defaultVal, err := lookupDefault(definition, property)
+	if err != nil {
+		return 0, err
+	}
+	defaultFloat, ok := defaultVal.(float64)
+	if !ok {
+		return 0, fmt.Errorf("default value is not of expected type float64: %T", defaultVal)
+	}
+
+	//round damn json float to int64
+	return int64(defaultFloat + 0.5), nil
+}
+
 func lookupDefault(definition, property string) (interface{}, error) {
 	document, err := Spec()
 	if err != nil {

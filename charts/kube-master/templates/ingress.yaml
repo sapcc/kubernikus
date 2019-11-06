@@ -20,7 +20,7 @@ spec:
         - path: /
           backend:
             serviceName: {{ include "master.fullname" . }}
-            servicePort: 6443
+            servicePort: {{ .Values.advertisePort }}
     - host: {{ required "missing .api.wormholeHost" .Values.api.wormholeHost }}
       http:
         paths:

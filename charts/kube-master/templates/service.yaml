@@ -10,7 +10,7 @@ spec:
   type: ClusterIP
   ports:
     - name: apiserver
-      port: 6443
+      port: {{ .Values.advertisePort }}
     - name: wormhole
       port: 6553
   selector:

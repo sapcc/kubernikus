@@ -530,6 +530,11 @@ func init() {
           "default": "1.1.1.1",
           "x-nullable": false
         },
+        "advertisePort": {
+          "type": "integer",
+          "default": 6443,
+          "x-nullable": false
+        },
         "backup": {
           "type": "string",
           "default": "on",
@@ -548,6 +553,9 @@ func init() {
           "x-nullable": false
         },
         "dashboard": {
+          "type": "boolean"
+        },
+        "dex": {
           "type": "boolean"
         },
         "dnsAddress": {
@@ -1482,6 +1490,11 @@ func init() {
           "default": "1.1.1.1",
           "x-nullable": false
         },
+        "advertisePort": {
+          "type": "integer",
+          "default": 6443,
+          "x-nullable": false
+        },
         "backup": {
           "type": "string",
           "default": "on",
@@ -1500,6 +1513,9 @@ func init() {
           "x-nullable": false
         },
         "dashboard": {
+          "type": "boolean"
+        },
+        "dex": {
           "type": "boolean"
         },
         "dnsAddress": {
