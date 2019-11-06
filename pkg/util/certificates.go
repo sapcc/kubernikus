@@ -12,6 +12,7 @@ import (
 	"math/big"
 	"net"
 	"reflect"
+	"strings"
 	"time"
 
 	certutil "k8s.io/client-go/util/cert"
@@ -114,9 +115,9 @@ type CertificateFactory struct {
 }
 
 type CertUpdates struct {
-	Certificate *x509.Certificate
-	Type        string
-	Reason      string
+	Type   string
+	CN     string
+	Reason string
 }
 
 func NewCertificateFactory(kluster *v1.Kluster, store *v1.Certificates, domain string) *CertificateFactory {
@@ -339,9 +340,9 @@ func ensureClientCertificate(ca *Bundle, cn string, groups []string, cert, key *
 		}
 
 		update := CertUpdates{
-			Certificate: certBundle.Certificate,
-			Type:        "Client Certificate",
-			Reason:      reason,
+			Type:   "Client Certificate",
+			CN:     cn,
+			Reason: reason,
 		}
 		*certUpdates = append(*certUpdates, update)
 	}
@@ -378,9 +379,9 @@ func ensureServerCertificate(ca *Bundle, cn string, dnsNames []string, ips []net
 		}
 
 		update := CertUpdates{
-			Certificate: certBundle.Certificate,
-			Type:        "Server Certificate",
-			Reason:      reason,
+			Type:   "Server Certificate",
+			CN:     cn,
+			Reason: reason,
 		}
 		*certUpdates = append(*certUpdates, update)
 	}
@@ -423,11 +424,11 @@ func createCA(klusterName, name string) (*Bundle, error) {
 
 func isCertChangedOrExpires(origCert, newCert *x509.Certificate, duration time.Duration) (string, bool) {
 	if !reflect.DeepEqual(origCert.DNSNames, newCert.DNSNames) {
-		return "DNS changes", true
+		return "SAN DNS changes: " + strings.Join(StringSliceDiff(origCert.DNSNames, newCert.DNSNames), " "), true
 	}
 
 	if !reflect.DeepEqual(origCert.IPAddresses, newCert.IPAddresses) {
-		return "IP changes", true
+		return "SAN IP changes: " + strings.Join(IPSliceDiff(origCert.IPAddresses, newCert.IPAddresses), " "), true
 	}
 
 	expire := time.Now().Add(duration)
@@ -436,4 +437,52 @@ func isCertChangedOrExpires(origCert, newCert *x509.Certificate, duration time.D
 	}
 
 	return "", false
+}
+
+func StringSliceDiff(o, n []string) []string {
+	oInt := make([]interface{}, len(o), len(o))
+	for i := range o {
+		oInt[i] = o[i]
+	}
+	nInt := make([]interface{}, len(n), len(n))
+	for i := range n {
+		nInt[i] = n[i]
+	}
+	return SliceDiff(oInt, nInt)
+}
+
+func IPSliceDiff(o, n []net.IP) []string {
+	oInt := make([]interface{}, len(o), len(o))
+	for i := range o {
+		oInt[i] = o[i]
+	}
+	nInt := make([]interface{}, len(n), len(n))
+	for i := range n {
+		nInt[i] = n[i]
+	}
+	return SliceDiff(oInt, nInt)
+}
+
+func SliceDiff(oldSlice, newSlice []interface{}) []string {
+	diff := []string{}
+	//addtions
+OUTER:
+	for _, n := range newSlice {
+		for _, o := range oldSlice {
+			if reflect.DeepEqual(n, o) {
+				continue OUTER
+			}
+		}
+		diff = append(diff, fmt.Sprintf("+%v", n))
+	}
+OUTER2:
+	for _, o := range oldSlice {
+		for _, n := range newSlice {
+			if reflect.DeepEqual(o, n) {
+				continue OUTER2
+			}
+		}
+		diff = append(diff, fmt.Sprintf("-%v", o))
+	}
+	return diff
 }

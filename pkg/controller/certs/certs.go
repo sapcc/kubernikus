@@ -49,7 +49,7 @@ func (cc *certsController) Reconcile(kluster *v1.Kluster) (err error) {
 			return fmt.Errorf("Couldn't update kluster secret: %s", err)
 		}
 
-		cc.logger.Log("msg", "Certificates updated", "certificates", fmt.Sprintf("%v", updates))
+		cc.logger.Log("msg", "Certificates updated", "kluster", kluster.Name, "changes", fmt.Sprintf("%#v", updates))
 	}
 
 	return nil
