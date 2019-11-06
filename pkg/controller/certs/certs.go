@@ -7,7 +7,7 @@ import (
 	kitlog "github.com/go-kit/kit/log"
 	"k8s.io/client-go/kubernetes"
 
-	"github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
+	v1 "github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
 	"github.com/sapcc/kubernikus/pkg/controller/base"
 	"github.com/sapcc/kubernikus/pkg/controller/config"
 	"github.com/sapcc/kubernikus/pkg/util"
@@ -49,7 +49,7 @@ func (cc *certsController) Reconcile(kluster *v1.Kluster) (err error) {
 			return fmt.Errorf("Couldn't update kluster secret: %s", err)
 		}
 
-		cc.logger.Log("msg", "Certificates updated", "certificates", fmt.Sprintf("%v", updates))
+		cc.logger.Log("msg", "Certificates updated", "kluster", kluster.Name, "changes", fmt.Sprintf("%#v", updates))
 	}
 
 	return nil

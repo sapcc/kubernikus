@@ -5,12 +5,14 @@ import (
 	"crypto/rsa"
 	"crypto/x509"
 	"crypto/x509/pkix"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"math"
 	"math/big"
 	"net"
 	"reflect"
+	"strings"
 	"time"
 
 	certutil "k8s.io/client-go/util/cert"
@@ -25,7 +27,8 @@ const (
 	//out CAs are valid for 10 years
 	caValidity = 10 * time.Hour * 24 * 365
 	// renew certs 90 days before they expire
-	certExpiration = 90 * 24 * time.Hour
+	certExpiration                    = 90 * 24 * time.Hour
+	AdditionalApiserverSANsAnnotation = "kubernikus.cloud.sap/additional-apiserver-sans"
 )
 
 type Bundle struct {
@@ -112,9 +115,9 @@ type CertificateFactory struct {
 }
 
 type CertUpdates struct {
-	Certificate *x509.Certificate
-	Type        string
-	Reason      string
+	Type   string
+	CN     string
+	Reason string
 }
 
 func NewCertificateFactory(kluster *v1.Kluster, store *v1.Certificates, domain string) *CertificateFactory {
@@ -234,9 +237,28 @@ func (cf *CertificateFactory) Ensure() ([]CertUpdates, error) {
 		return nil, err
 	}
 
+	apiServerDNSNames := []string{"kubernetes", "kubernetes.default", "kubernetes.default.svc", "apiserver", cf.kluster.Name, fmt.Sprintf("%s.%s", cf.kluster.Name, cf.kluster.Namespace), fmt.Sprintf("%v.%v", cf.kluster.Name, cf.domain)}
+	apiServerIPs := []net.IP{net.IPv4(127, 0, 0, 1), apiServiceIP, apiIP}
+	if ann := cf.kluster.Annotations[AdditionalApiserverSANsAnnotation]; ann != "" {
+		var additionalValues []IPOrDNSName
+		if err := json.Unmarshal([]byte(ann), &additionalValues); err != nil {
+			return nil, fmt.Errorf("Failed to parse annotation %s: %v", AdditionalApiserverSANsAnnotation, err)
+		}
+		for _, ipOrName := range additionalValues {
+			switch ipOrName.Type {
+			case IPType:
+				apiServerIPs = append(apiServerIPs, ipOrName.IPVal)
+			case DNSNameType:
+				apiServerDNSNames = append(apiServerDNSNames, ipOrName.DNSNameVal)
+			default:
+				return nil, fmt.Errorf("impossible IPOrDNSName.Type")
+			}
+		}
+	}
+
 	if err := ensureServerCertificate(tlsCA, "apiserver",
-		[]string{"kubernetes", "kubernetes.default", "kubernetes.default.svc", "apiserver", cf.kluster.Name, fmt.Sprintf("%s.%s", cf.kluster.Name, cf.kluster.Namespace), fmt.Sprintf("%v.%v", cf.kluster.Name, cf.domain)},
-		[]net.IP{net.IPv4(127, 0, 0, 1), apiServiceIP, apiIP},
+		apiServerDNSNames,
+		apiServerIPs,
 		&cf.store.TLSApiserverCertificate,
 		&cf.store.TLSApiserverPrivateKey,
 		&certUpdates); err != nil {
@@ -318,9 +340,9 @@ func ensureClientCertificate(ca *Bundle, cn string, groups []string, cert, key *
 		}
 
 		update := CertUpdates{
-			Certificate: certBundle.Certificate,
-			Type:        "Client Certificate",
-			Reason:      reason,
+			Type:   "Client Certificate",
+			CN:     cn,
+			Reason: reason,
 		}
 		*certUpdates = append(*certUpdates, update)
 	}
@@ -357,9 +379,9 @@ func ensureServerCertificate(ca *Bundle, cn string, dnsNames []string, ips []net
 		}
 
 		update := CertUpdates{
-			Certificate: certBundle.Certificate,
-			Type:        "Server Certificate",
-			Reason:      reason,
+			Type:   "Server Certificate",
+			CN:     cn,
+			Reason: reason,
 		}
 		*certUpdates = append(*certUpdates, update)
 	}
@@ -402,11 +424,11 @@ func createCA(klusterName, name string) (*Bundle, error) {
 
 func isCertChangedOrExpires(origCert, newCert, caCert *x509.Certificate, duration time.Duration) (string, bool) {
 	if !reflect.DeepEqual(origCert.DNSNames, newCert.DNSNames) {
-		return "DNS changes", true
+		return "SAN DNS changes: " + strings.Join(StringSliceDiff(origCert.DNSNames, newCert.DNSNames), " "), true
 	}
 
 	if !reflect.DeepEqual(origCert.IPAddresses, newCert.IPAddresses) {
-		return "IP changes", true
+		return "SAN IP changes: " + strings.Join(IPSliceDiff(origCert.IPAddresses, newCert.IPAddresses), " "), true
 	}
 
 	expire := time.Now().Add(duration)
@@ -420,4 +442,52 @@ func isCertChangedOrExpires(origCert, newCert, caCert *x509.Certificate, duratio
 	}
 
 	return "", false
+}
+
+func StringSliceDiff(o, n []string) []string {
+	oInt := make([]interface{}, len(o), len(o))
+	for i := range o {
+		oInt[i] = o[i]
+	}
+	nInt := make([]interface{}, len(n), len(n))
+	for i := range n {
+		nInt[i] = n[i]
+	}
+	return SliceDiff(oInt, nInt)
+}
+
+func IPSliceDiff(o, n []net.IP) []string {
+	oInt := make([]interface{}, len(o), len(o))
+	for i := range o {
+		oInt[i] = o[i]
+	}
+	nInt := make([]interface{}, len(n), len(n))
+	for i := range n {
+		nInt[i] = n[i]
+	}
+	return SliceDiff(oInt, nInt)
+}
+
+func SliceDiff(oldSlice, newSlice []interface{}) []string {
+	diff := []string{}
+	//addtions
+OUTER:
+	for _, n := range newSlice {
+		for _, o := range oldSlice {
+			if reflect.DeepEqual(n, o) {
+				continue OUTER
+			}
+		}
+		diff = append(diff, fmt.Sprintf("+%v", n))
+	}
+OUTER2:
+	for _, o := range oldSlice {
+		for _, n := range newSlice {
+			if reflect.DeepEqual(o, n) {
+				continue OUTER2
+			}
+		}
+		diff = append(diff, fmt.Sprintf("-%v", o))
+	}
+	return diff
 }
