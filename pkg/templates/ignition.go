@@ -141,7 +141,7 @@ func (i *ignition) GenerateNode(kluster *kubernikusv1.Kluster, pool *models.Node
 		ApiserverClientsSystemKubeProxy:    secret.ApiserverClientsKubeProxyCertificate,
 		ApiserverClientsSystemKubeProxyKey: secret.ApiserverClientsKubeProxyPrivateKey,
 		BootstrapToken:                     secret.BootstrapToken,
-		ClusterCIDR:                        kluster.Spec.ClusterCIDR,
+		ClusterCIDR:                        kluster.ClusterCIDR(),
 		ClusterDNSAddress:                  kluster.Spec.DNSAddress,
 		ClusterDomain:                      kluster.Spec.DNSDomain,
 		ApiserverURL:                       kluster.Status.Apiserver,

@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/go-kit/kit/log"
+	"github.com/go-openapi/swag"
 	"github.com/stretchr/testify/assert"
 	"github.com/tredoe/osutil/user/crypt/sha512_crypt"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -33,7 +34,7 @@ func init() {
 		Spec: models.KlusterSpec{
 			SSHPublicKey:     "ssh-rsa nasenbaer bla@fasel",
 			AdvertiseAddress: "1.1.1.1",
-			ClusterCIDR:      "3.3.3.3/24",
+			ClusterCIDR:      swag.String("3.3.3.3/24"),
 			DNSAddress:       "2.2.2.2",
 			DNSDomain:        "cluster.local",
 			Openstack: models.OpenstackSpec{

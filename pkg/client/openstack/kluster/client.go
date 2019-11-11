@@ -1,6 +1,7 @@
 package kluster
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"strings"
@@ -155,6 +156,10 @@ func (c *klusterClient) EnsureKubernikusRuleInSecurityGroup(kluster *v1.Kluster)
 		return false, fmt.Errorf("SecurityGroup %v not found: %s", sgName, err)
 	}
 
+	if kluster.ClusterCIDR() == "" {
+		return false, errors.New("Cluster CIDR for kluster not set")
+	}
+
 	groups, err := securitygroups.ExtractGroups(page)
 	if err != nil {
 		return false, err
@@ -176,7 +181,7 @@ func (c *klusterClient) EnsureKubernikusRuleInSecurityGroup(kluster *v1.Kluster)
 			continue
 		}
 
-		if rule.RemoteIPPrefix != kluster.Spec.ClusterCIDR {
+		if rule.RemoteIPPrefix != *kluster.Spec.ClusterCIDR {
 			continue
 		}
 
@@ -204,7 +209,7 @@ func (c *klusterClient) EnsureKubernikusRuleInSecurityGroup(kluster *v1.Kluster)
 		Direction:      rules.DirIngress,
 		EtherType:      rules.EtherType4,
 		SecGroupID:     groups[0].ID,
-		RemoteIPPrefix: kluster.Spec.ClusterCIDR,
+		RemoteIPPrefix: *kluster.Spec.ClusterCIDR,
 	}
 
 	if !udp {
