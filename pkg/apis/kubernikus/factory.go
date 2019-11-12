@@ -54,13 +54,8 @@ func (klusterFactory) KlusterFor(spec models.KlusterSpec) (*v1.Kluster, error) {
 	}
 
 	//If the cluster CIDR was not set at all we default it,
-	//if was set to empty string explicitly we null it
 	if k.Spec.ClusterCIDR == nil {
 		k.Spec.ClusterCIDR = &DEFAULT_CLUSTER_CIDR
-	} else {
-		if *k.Spec.ClusterCIDR == "" {
-			k.Spec.ClusterCIDR = nil
-		}
 	}
 
 	if k.Spec.ServiceCIDR == "" {

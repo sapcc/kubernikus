@@ -171,15 +171,14 @@ func TestCreateCluster(t *testing.T) {
 		assert.Contains(t, string(body), "CIDR")
 	}
 
-	rt.Kubernetes = fake.NewSimpleClientset()
 	//Ensure specifying a different router doesn't obverlap
-	req = createRequest("POST", "/api/v1/clusters", `{"name": "nocidr", "spec": { "clusterCIDR": "", "serviceCIDR":"5.5.5.5/24"}}`)
+	req = createRequest("POST", "/api/v1/clusters", `{"name": "nocidr", "spec": { "clusterCIDR": "", "noCloud": true, "serviceCIDR":"5.5.5.5/24"}}`)
 
 	code, _, body = result(handler, req)
 	assert.Equal(t, 201, code, "Creating a cluster with empty clusterCIDR should not fail. response: %s", string(body))
 	k, err := rt.Kubernikus.KubernikusV1().Klusters(NAMESPACE).Get("nocidr-"+ACCOUNT, metav1.GetOptions{})
 	assert.NoError(t, err)
-	assert.Nil(t, k.Spec.ClusterCIDR)
+	assert.Empty(t, k.Spec.ClusterCIDR)
 
 }
 
