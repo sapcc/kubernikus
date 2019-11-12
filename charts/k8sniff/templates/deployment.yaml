@@ -18,6 +18,9 @@ spec:
         prometheus.io/scrape: "true"
         prometheus.io/port: {{ .Values.metrics_port | quote }}
     spec:
+      {{- if .Values.useRBAC }}
+      serviceAccountName: k8sniff
+      {{- end }}
       affinity:
         podAntiAffinity:
           preferredDuringSchedulingIgnoredDuringExecution:
