@@ -101,6 +101,10 @@ func (d *createCluster) Handle(params operations.CreateClusterParams, principal 
 		return NewErrorResponse(&operations.CreateClusterDefault{}, 400, err.Error())
 	}
 
+	if kluster.ClusterCIDR() == "" && !kluster.Spec.NoCloud {
+		return NewErrorResponse(&operations.CreateClusterDefault{}, 400, "Specifying an empty ClusterCIDR is only allowed with noCloud: true")
+	}
+
 	//Ensure that the service CIDR range does not overlap with any control plane CIDR
 	//Otherwise the wormhole server will prevent the kluster apiserver from functioning properly
 	if overlap, err := d.overlapWithControlPlane(kluster.Spec.ServiceCIDR); overlap {
