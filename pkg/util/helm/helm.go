@@ -156,7 +156,7 @@ func KlusterToHelmValues(kluster *v1.Kluster, secret *v1.Secret, kubernetesVersi
 	values := kubernikusHelmValues{
 		Account:          kluster.Account(),
 		BoostrapToken:    secret.BootstrapToken,
-		ClusterCIDR:      kluster.Spec.ClusterCIDR,
+		ClusterCIDR:      kluster.ClusterCIDR(),
 		SecretName:       kluster.Name + "-secret",
 		ServiceCIDR:      kluster.Spec.ServiceCIDR,
 		AdvertiseAddress: kluster.Spec.AdvertiseAddress,

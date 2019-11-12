@@ -101,24 +101,31 @@ func (d *createCluster) Handle(params operations.CreateClusterParams, principal 
 		return NewErrorResponse(&operations.CreateClusterDefault{}, 400, err.Error())
 	}
 
+	if kluster.ClusterCIDR() == "" && !kluster.Spec.NoCloud {
+		return NewErrorResponse(&operations.CreateClusterDefault{}, 400, "Specifying an empty ClusterCIDR is only allowed with noCloud: true")
+	}
+
 	//Ensure that the service CIDR range does not overlap with any control plane CIDR
 	//Otherwise the wormhole server will prevent the kluster apiserver from functioning properly
 	if overlap, err := d.overlapWithControlPlane(kluster.Spec.ServiceCIDR); overlap {
 		return NewErrorResponse(&operations.CreateClusterDefault{}, 409, "Service CIDR %s not allowed: %s", kluster.Spec.ServiceCIDR, err)
 	}
-	//Ensure that the cluster CIDR range does not overlap with any control plane CIDR
-	//Otherwise the wormhole server will prevent the kluster apiserver from functioning properly
-	if overlap, err := d.overlapWithControlPlane(kluster.Spec.ClusterCIDR); overlap {
-		return NewErrorResponse(&operations.CreateClusterDefault{}, 409, "Cluster CIDR %s not allowed: %s", kluster.Spec.ClusterCIDR, err)
-	}
 
-	//Ensure that the clust CIDR range does not overlap with other clusters in the same project
-	if !kluster.Spec.NoCloud {
-		if overlap, err := d.overlapWithSiblingCluster(kluster.Spec.ClusterCIDR, kluster.Spec.Openstack.RouterID, principal); overlap || err != nil {
-			if overlap {
-				return NewErrorResponse(&operations.CreateClusterDefault{}, 409, err.Error())
+	if kluster.ClusterCIDR() != "" {
+		//Ensure that the cluster CIDR range does not overlap with any control plane CIDR
+		//Otherwise the wormhole server will prevent the kluster apiserver from functioning properly
+		if overlap, err := d.overlapWithControlPlane(*kluster.Spec.ClusterCIDR); overlap {
+			return NewErrorResponse(&operations.CreateClusterDefault{}, 409, "Cluster CIDR %s not allowed: %s", kluster.ClusterCIDR(), err)
+		}
+
+		//Ensure that the clust CIDR range does not overlap with other clusters in the same project
+		if !kluster.Spec.NoCloud {
+			if overlap, err := d.overlapWithSiblingCluster(kluster.ClusterCIDR(), kluster.Spec.Openstack.RouterID, principal); overlap || err != nil {
+				if overlap {
+					return NewErrorResponse(&operations.CreateClusterDefault{}, 409, err.Error())
+				}
+				return NewErrorResponse(&operations.CreateClusterDefault{}, 500, err.Error())
 			}
-			return NewErrorResponse(&operations.CreateClusterDefault{}, 500, err.Error())
 		}
 	}
 
@@ -178,17 +185,20 @@ func (d *createCluster) overlapWithSiblingCluster(cidr string, routerID string, 
 		return false, err
 	}
 	for _, other := range klusterList.Items {
+		if other.ClusterCIDR() == "" {
+			continue
+		}
 		if routerID == "" || routerID == other.Spec.Openstack.RouterID {
 			_, ourCIDR, err := net.ParseCIDR(cidr)
 			if err != nil {
 				return false, err
 			}
-			_, otherCIDR, err := net.ParseCIDR(other.Spec.ClusterCIDR)
+			_, otherCIDR, err := net.ParseCIDR(*other.Spec.ClusterCIDR)
 			if err != nil {
 				return false, err
 			}
 			if ip.CIDROverlap(ourCIDR, otherCIDR) {
-				return true, fmt.Errorf("Cluster CIDR %s overlaps with cluster CIDR %s from cluster '%s'. Specify a different CIDR Range or use a dedicated router for this cluster", cidr, other.Spec.ClusterCIDR, other.Spec.Name)
+				return true, fmt.Errorf("Cluster CIDR %s overlaps with cluster CIDR %s from cluster '%s'. Specify a different CIDR Range or use a dedicated router for this cluster", cidr, other.ClusterCIDR(), other.Spec.Name)
 			}
 		}
 	}
