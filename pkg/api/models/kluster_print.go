@@ -31,7 +31,7 @@ func (k Kluster) Print(format printers.PrintFormat, options printers.PrintOption
 func (k Kluster) printHuman(options printers.PrintOptions) {
 	fmt.Println("Cluster name: ", k.Name)
 	fmt.Println("Cluster state: ", k.Status.Phase)
-	if k.Spec.ClusterCIDR != nil && *k.Spec.ClusterCIDR != "" {
+	if k.Spec.ClusterCIDR != nil {
 		fmt.Println("Cluster CIDR: ", *k.Spec.ClusterCIDR)
 	}
 
