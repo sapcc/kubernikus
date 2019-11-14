@@ -10,6 +10,7 @@ import (
 
 	"github.com/Masterminds/goutils"
 	"github.com/go-kit/kit/log"
+	"github.com/go-openapi/swag"
 	"github.com/pkg/errors"
 	"google.golang.org/grpc"
 	api_v1 "k8s.io/api/core/v1"
@@ -251,9 +252,9 @@ func (op *GroundControl) handler(key string) error {
 				expectedPods = 5
 			}
 
-			if kluster.Spec.Dex {
+			if swag.BoolValue(kluster.Spec.Dex) {
 				expectedPods = expectedPods + 1
-				if kluster.Spec.Dashboard {
+				if swag.BoolValue(kluster.Spec.Dashboard) {
 					expectedPods = expectedPods + 1
 				}
 			}
@@ -695,7 +696,7 @@ func (op *GroundControl) requiresOpenstackInfo(kluster *v1.Kluster) bool {
 }
 
 func (op *GroundControl) requiresKubernikusInfo(kluster *v1.Kluster) bool {
-	return kluster.Status.Apiserver == "" || kluster.Status.Wormhole == "" || kluster.Spec.Version == "" || (kluster.Spec.Dashboard && kluster.Status.Dashboard == "")
+	return kluster.Status.Apiserver == "" || kluster.Status.Wormhole == "" || kluster.Spec.Version == "" || (swag.BoolValue(kluster.Spec.Dashboard) && kluster.Status.Dashboard == "")
 }
 
 func (op *GroundControl) discoverKubernikusInfo(kluster *v1.Kluster) error {
@@ -730,7 +731,7 @@ func (op *GroundControl) discoverKubernikusInfo(kluster *v1.Kluster) error {
 			"project", kluster.Account())
 	}
 
-	if kluster.Spec.Dashboard && kluster.Status.Dashboard == "" {
+	if swag.BoolValue(kluster.Spec.Dashboard) && kluster.Status.Dashboard == "" {
 		kluster.Status.Dashboard = fmt.Sprintf("https://dashboard-%s.ingress.%s", kluster.GetName(), op.Config.Kubernikus.Domain)
 		op.Logger.Log(
 			"msg", "discovered dashboard URL",

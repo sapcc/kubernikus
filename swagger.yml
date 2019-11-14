@@ -422,8 +422,12 @@ definitions:
         type: boolean
       dashboard:
         type: boolean
+        x-nullable: true 
+        x-omitempty: false
       dex:
         type: boolean
+        x-nullable: true 
+        x-omitempty: false
       serviceCIDR:
         description: CIDR Range for Services in the cluster. Can not be updated.
         default: 198.18.128.0/17
