@@ -164,7 +164,7 @@ func KlusterToHelmValues(kluster *v1.Kluster, secret *v1.Secret, kubernetesVersi
 		Name:             kluster.Spec.Name,
 		Version: versionValues{
 			Kubernetes: kubernetesVersion,
-			Kubernikus: kluster.Status.Version,
+			Kubernikus: version.GitCommit,
 		},
 		Etcd: etcdValues{
 			Backup: etcdBackupValues{
