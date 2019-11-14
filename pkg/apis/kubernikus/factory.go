@@ -42,8 +42,15 @@ func (klusterFactory) KlusterFor(spec models.KlusterSpec) (*v1.Kluster, error) {
 	}
 
 	// Enable dex and dashboard for new clusters
-	spec.Dex = true
-	spec.Dashboard = true
+	if spec.Dex == nil {
+		dex := true
+		spec.Dex = &dex
+	}
+
+	if spec.Dashboard == nil {
+		dashboard := true
+		spec.Dashboard = &dashboard
+	}
 
 	k := &v1.Kluster{
 		Spec: spec,

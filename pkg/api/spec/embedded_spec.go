@@ -552,10 +552,14 @@ func init() {
           "pattern": "^((([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\\/([0-9]|[1-2][0-9]|3[0-2])))?$"
         },
         "dashboard": {
-          "type": "boolean"
+          "type": "boolean",
+          "x-nullable": true,
+          "x-omitempty": false
         },
         "dex": {
-          "type": "boolean"
+          "type": "boolean",
+          "x-nullable": true,
+          "x-omitempty": false
         },
         "dnsAddress": {
           "type": "string",
@@ -1511,10 +1515,14 @@ func init() {
           "pattern": "^((([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\\/([0-9]|[1-2][0-9]|3[0-2])))?$"
         },
         "dashboard": {
-          "type": "boolean"
+          "type": "boolean",
+          "x-nullable": true,
+          "x-omitempty": false
         },
         "dex": {
-          "type": "boolean"
+          "type": "boolean",
+          "x-nullable": true,
+          "x-omitempty": false
         },
         "dnsAddress": {
           "type": "string",
