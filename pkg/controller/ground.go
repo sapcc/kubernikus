@@ -25,7 +25,6 @@ import (
 
 	"github.com/sapcc/kubernikus/pkg/api/models"
 	v1 "github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
-	"github.com/sapcc/kubernikus/pkg/client/kubernetes"
 	"github.com/sapcc/kubernikus/pkg/controller/config"
 	"github.com/sapcc/kubernikus/pkg/controller/ground"
 	"github.com/sapcc/kubernikus/pkg/controller/metrics"
@@ -493,7 +492,7 @@ func (op *GroundControl) updatePhase(kluster *v1.Kluster, phase models.KlusterPh
 }
 
 func (op *GroundControl) createKluster(kluster *v1.Kluster) error {
-	accessMode, err := kubernetes.PVAccessMode(op.Clients.Kubernetes)
+	accessMode, err := util.PVAccessMode(op.Clients.Kubernetes, nil)
 	if err != nil {
 		return fmt.Errorf("Couldn't determine access mode for pvc: %s", err)
 	}
@@ -599,7 +598,7 @@ func (op *GroundControl) createKluster(kluster *v1.Kluster) error {
 }
 
 func (op *GroundControl) upgradeKluster(kluster *v1.Kluster, toVersion string) error {
-	accessMode, err := kubernetes.PVAccessMode(op.Clients.Kubernetes)
+	accessMode, err := util.PVAccessMode(op.Clients.Kubernetes, kluster)
 	if err != nil {
 		return fmt.Errorf("Couldn't determine access mode for pvc: %s", err)
 	}

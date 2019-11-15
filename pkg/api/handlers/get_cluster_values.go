@@ -8,7 +8,6 @@ import (
 	"github.com/sapcc/kubernikus/pkg/api"
 	"github.com/sapcc/kubernikus/pkg/api/models"
 	"github.com/sapcc/kubernikus/pkg/api/rest/operations"
-	"github.com/sapcc/kubernikus/pkg/client/kubernetes"
 	"github.com/sapcc/kubernikus/pkg/util"
 	"github.com/sapcc/kubernikus/pkg/util/helm"
 )
@@ -39,7 +38,7 @@ func (d *getClusterValues) Handle(params operations.GetClusterValuesParams, prin
 		return NewErrorResponse(&operations.GetClusterCredentialsDefault{}, 500, "Failed to retrieve cluster secret: %s", err)
 	}
 
-	accessMode, err := kubernetes.PVAccessMode(d.Kubernetes)
+	accessMode, err := util.PVAccessMode(d.Kubernetes, kluster)
 	if err != nil {
 		return NewErrorResponse(&operations.GetClusterCredentialsDefault{}, 500, "Couldn't determine access mode for pvc: %s", err)
 	}

@@ -1,17 +1,26 @@
-package kubernetes
+package util
 
 import (
+	"fmt"
+
 	api_v1 "k8s.io/api/core/v1"
 	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
+
+	v1 "github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
 )
 
 //PVAccessMode is a helper that tries to determine which access mode
 //to use for pvc.
 //It default to ReadWriteOnce and only returns ReadWriteMany when
 //there are no storage classes and at least one ReadWriteMany PV
-func PVAccessMode(client kubernetes.Interface) (string, error) {
+func PVAccessMode(client kubernetes.Interface, kluster *v1.Kluster) (string, error) {
 
+	if kluster != nil {
+		if pvcList, err := client.CoreV1().PersistentVolumeClaims(kluster.Namespace).List(meta_v1.ListOptions{LabelSelector: fmt.Sprintf("release=%s", kluster.Name)}); err == nil && len(pvcList.Items) > 0 && len(pvcList.Items[0].Spec.AccessModes) > 0 {
+			return string(pvcList.Items[0].Spec.AccessModes[0]), nil
+		}
+	}
 	sClasses, err := client.StorageV1().StorageClasses().List(meta_v1.ListOptions{})
 	if err != nil {
 		return "", err
