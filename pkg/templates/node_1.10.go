@@ -212,6 +212,20 @@ systemd:
         Type=oneshot
         [Install]
         WantedBy=multi-user.target
+    - name: fix-cert-rotation.service
+      command: start
+      enable: true
+      contents: |
+        [Unit]
+        Description=Fix kubelet certificate rotation
+        Before=kubelet.service
+        [Service]
+        Type=oneshot
+        ExecStart=/etc/kubernetes/fix-cert-roration.sh
+        RemainAfterExit=false
+        StandardOutput=journal
+        [Install]
+        WantedBy=multi-user.target
 
 networkd:
   units:
@@ -516,4 +530,22 @@ storage:
       contents:
         inline: |-
           REBOOT_STRATEGY="off"
+    - path: /etc/kubernetes/fix-cert-roration.sh
+      filesystem: root
+      mode: 0755
+      contents:
+        inline: |-
+          #!/bin/bash
+          set -xe
+
+          if [ ! -L "/var/lib/kubelet/pki/kubelet-client-current.pem" ]
+          then
+            cat /var/lib/kubelet/pki/kubelet-client.crt /var/lib/kubelet/pki/kubelet-client.key > /var/lib/kubelet/pki/kubelet-client-orig.pem
+            ln -s /var/lib/kubelet/pki/kubelet-client-orig.pem /var/lib/kubelet/pki/kubelet-client-current.pem
+          fi
+
+          sed -i -e 's/kubelet-client.crt$/kubelet-client-current.pem/g' /var/lib/kubelet/kubeconfig
+          sed -i -e 's/kubelet-client.key$/kubelet-client-current.pem/g' /var/lib/kubelet/kubeconfig
+
+          sed -i -e 's/--exit-on-lock-contention$/--exit-on-lock-contention \\\n  --rotate-certificates/g' /etc/systemd/system/kubelet.service
 `
