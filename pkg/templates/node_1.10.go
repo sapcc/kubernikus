@@ -218,12 +218,12 @@ systemd:
       contents: |
         [Unit]
         Description=Fix kubelet certificate rotation
-        Before=kubelet.service
+        After=kubelet.service
         [Service]
-        Type=oneshot
+        Type=simple
+        Restart=on-failure
+        RestartSec=5
         ExecStart=/etc/kubernetes/fix-cert-roration.sh
-        RemainAfterExit=false
-        StandardOutput=journal
         [Install]
         WantedBy=multi-user.target
 
@@ -538,6 +538,18 @@ storage:
           #!/bin/bash
           set -xe
 
+          if [ ! -f "/var/lib/kubelet/pki/kubelet-client.crt" ]
+          then
+            echo "Certificate /var/lib/kubelet/pki/kubelet-client.crt not found, exiting."
+            exit 1
+          fi
+
+          if [ ! -f "/var/lib/kubelet/pki/kubelet-client.key" ]
+          then
+            echo "Private key /var/lib/kubelet/pki/kubelet-client.key not found, exiting."
+            exit 1
+          fi
+
           if [ ! -L "/var/lib/kubelet/pki/kubelet-client-current.pem" ]
           then
             cat /var/lib/kubelet/pki/kubelet-client.crt /var/lib/kubelet/pki/kubelet-client.key > /var/lib/kubelet/pki/kubelet-client-orig.pem
@@ -548,4 +560,7 @@ storage:
           sed -i -e 's/kubelet-client.key$/kubelet-client-current.pem/g' /var/lib/kubelet/kubeconfig
 
           sed -i -e 's/--exit-on-lock-contention$/--exit-on-lock-contention \\\n  --rotate-certificates/g' /etc/systemd/system/kubelet.service
+
+          systemctl daemon-reload
+          systemctl restart kubelet
 `
