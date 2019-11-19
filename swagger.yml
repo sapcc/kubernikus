@@ -535,6 +535,13 @@ definitions:
           type: string
           # validate [valid label name]=[valid label value]
           pattern: '^([a-z0-9]([-a-z0-9]*[a-z0-9])(\.[a-z0-9]([-a-z0-9]*[a-z0-9]))*/)?[A-Za-z0-9][-A-Za-z0-9_.]{0,62}=[A-Za-z0-9][-A-Za-z0-9_.]{0,62}$'
+      annotations:
+        description: The specified annotations will be added to members of this pool once during initial registration of the node
+        type: array
+        items:
+          type: string
+          # validate [valid annotation name]=[valid annotation value]
+          pattern: '^([a-z0-9]([-a-z0-9]*[a-z0-9])(\.[a-z0-9]([-a-z0-9]*[a-z0-9]))*/)?[A-Za-z0-9][-A-Za-z0-9_.]{0,62}=[A-Za-z0-9][-A-Za-z0-9_.]{0,62}$'
       config:
         $ref: '#/definitions/NodePoolConfig'
   NodePoolConfig:

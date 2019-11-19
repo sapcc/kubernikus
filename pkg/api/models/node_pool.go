@@ -19,6 +19,9 @@ import (
 // swagger:model NodePool
 type NodePool struct {
 
+	// The specified annotations will be added to members of this pool once during initial registration of the node
+	Annotations []string `json:"annotations"`
+
 	// availability zone
 	AvailabilityZone string `json:"availabilityZone,omitempty"`
 
@@ -54,6 +57,10 @@ type NodePool struct {
 func (m *NodePool) Validate(formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.validateAnnotations(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateConfig(formats); err != nil {
 		res = append(res, err)
 	}
@@ -81,6 +88,23 @@ func (m *NodePool) Validate(formats strfmt.Registry) error {
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *NodePool) validateAnnotations(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.Annotations) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.Annotations); i++ {
+
+		if err := validate.Pattern("annotations"+"."+strconv.Itoa(i), "body", string(m.Annotations[i]), `^([a-z0-9]([-a-z0-9]*[a-z0-9])(\.[a-z0-9]([-a-z0-9]*[a-z0-9]))*/)?[A-Za-z0-9][-A-Za-z0-9_.]{0,62}=[A-Za-z0-9][-A-Za-z0-9_.]{0,62}$`); err != nil {
+			return err
+		}
+
+	}
+
 	return nil
 }
 

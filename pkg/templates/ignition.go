@@ -82,8 +82,11 @@ func (i *ignition) GenerateNode(kluster *kubernikusv1.Kluster, pool *models.Node
 			return nil, fmt.Errorf("Faied to generate salted password: %s", err)
 		}
 	}
-	var nodeLabels []string
-	var nodeTaints []string
+	var (
+		nodeAnnotations []string
+		nodeLabels      []string
+		nodeTaints      []string
+	)
 	if pool != nil {
 		nodeLabels = append(nodeLabels, "ccloud.sap.com/nodepool="+pool.Name)
 		if strings.HasPrefix(pool.Flavor, "zg") {
@@ -97,6 +100,9 @@ func (i *ignition) GenerateNode(kluster *kubernikusv1.Kluster, pool *models.Node
 		}
 		for _, userLabel := range pool.Labels {
 			nodeLabels = append(nodeLabels, userLabel)
+		}
+		for _, userAnnotation := range pool.Annotations {
+			nodeAnnotations = append(nodeAnnotations, userAnnotation)
 		}
 	}
 
