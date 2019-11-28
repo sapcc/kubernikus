@@ -17,6 +17,8 @@ type Secret struct {
 	DexStaticPassword string `json:"dex-static-password,omitempty"`
 
 	Certificates
+
+	ExtraValues map[interface{}]interface{} `json:"extra-values,omitempty"`
 }
 
 func NewSecret(secret *corev1.Secret) (*Secret, error) {
