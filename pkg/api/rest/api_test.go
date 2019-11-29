@@ -12,6 +12,7 @@ import (
 
 	kitlog "github.com/go-kit/kit/log"
 	errors "github.com/go-openapi/errors"
+	"github.com/go-openapi/swag"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"gopkg.in/yaml.v2"
@@ -27,6 +28,7 @@ import (
 	"github.com/sapcc/kubernikus/pkg/api/models"
 	"github.com/sapcc/kubernikus/pkg/api/rest/operations"
 	"github.com/sapcc/kubernikus/pkg/api/spec"
+	"github.com/sapcc/kubernikus/pkg/apis/kubernikus"
 	kubernikusv1 "github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
 	"github.com/sapcc/kubernikus/pkg/client/kubernetes"
 	kubernikusfake "github.com/sapcc/kubernikus/pkg/generated/clientset/fake"
@@ -126,6 +128,7 @@ func TestCreateCluster(t *testing.T) {
 	assert.Equal(t, "nase", kluster.Name)
 	assert.Equal(t, "nase", kluster.Spec.Name)
 	assert.Equal(t, models.KlusterPhasePending, kluster.Status.Phase)
+	assert.Equal(t, kubernikus.DEFAULT_CLUSTER_CIDR, *kluster.Spec.ClusterCIDR)
 
 	//Ensure authentication is required
 	req = createRequest("POST", "/api/v1/clusters", `{"name": "nase2"}`)
@@ -167,6 +170,15 @@ func TestCreateCluster(t *testing.T) {
 	if assert.Equal(t, 409, code) {
 		assert.Contains(t, string(body), "CIDR")
 	}
+
+	//Ensure specifying a different router doesn't obverlap
+	req = createRequest("POST", "/api/v1/clusters", `{"name": "nocidr", "spec": { "clusterCIDR": "", "noCloud": true, "serviceCIDR":"5.5.5.5/24"}}`)
+
+	code, _, body = result(handler, req)
+	assert.Equal(t, 201, code, "Creating a cluster with empty clusterCIDR should not fail. response: %s", string(body))
+	k, err := rt.Kubernikus.KubernikusV1().Klusters(NAMESPACE).Get("nocidr-"+ACCOUNT, metav1.GetOptions{})
+	assert.NoError(t, err)
+	assert.Empty(t, k.Spec.ClusterCIDR)
 
 }
 
@@ -269,7 +281,7 @@ func TestClusterUpdate(t *testing.T) {
 		},
 		Spec: models.KlusterSpec{
 			AdvertiseAddress: "0.0.0.0",
-			ClusterCIDR:      "1.1.1.1/24",
+			ClusterCIDR:      swag.String("1.1.1.1/24"),
 			DNSAddress:       "2.2.2.254",
 			DNSDomain:        "cluster.local",
 			Name:             "nase",
@@ -304,7 +316,7 @@ func TestClusterUpdate(t *testing.T) {
 		Name: "mund",
 		Spec: models.KlusterSpec{
 			AdvertiseAddress: "7.7.7.7",
-			ClusterCIDR:      "8.8.8.8/24",
+			ClusterCIDR:      swag.String("8.8.8.8/24"),
 			DNSAddress:       "9.9.9.9",
 			DNSDomain:        "changed",
 			Name:             "mund",
@@ -358,7 +370,7 @@ func TestClusterUpdate(t *testing.T) {
 	//assert fields are immutable
 	assert.Equal(t, "nase", apiResponse.Name)
 	assert.Equal(t, "0.0.0.0", apiResponse.Spec.AdvertiseAddress)
-	assert.Equal(t, "1.1.1.1/24", apiResponse.Spec.ClusterCIDR)
+	assert.Equal(t, "1.1.1.1/24", *apiResponse.Spec.ClusterCIDR)
 	assert.Equal(t, "2.2.2.254", apiResponse.Spec.DNSAddress)
 	assert.Equal(t, "cluster.local", apiResponse.Spec.DNSDomain)
 	assert.Equal(t, "nase", apiResponse.Spec.Name)

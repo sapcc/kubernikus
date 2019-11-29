@@ -107,3 +107,10 @@ func (k *Kluster) Disabled() bool {
 func (k *Kluster) TerminationProtection() bool {
 	return k.Annotations[TerminationProtectionAnnotationKey] != ""
 }
+
+func (k *Kluster) ClusterCIDR() string {
+	if k.Spec.ClusterCIDR == nil {
+		return ""
+	}
+	return *k.Spec.ClusterCIDR
+}

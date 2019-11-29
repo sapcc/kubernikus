@@ -1,0 +1,42 @@
+{{ if .Values.useRBAC -}}
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: "k8sniff"
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: "k8sniff"
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - services
+  verbs:
+  - watch
+  - list
+  - get
+- apiGroups:
+  - extensions
+  - networking.k8s.io
+  resources:
+  - ingresses
+  verbs:
+  - watch
+  - list
+  - get
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: "k8sniff"
+subjects:
+- kind: ServiceAccount
+  name: "k8sniff"
+  namespace: "{{ .Release.Namespace }}"
+roleRef:
+  kind: ClusterRole
+  name: "k8sniff"
+  apiGroup: rbac.authorization.k8s.io
+{{ end }}

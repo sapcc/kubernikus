@@ -67,7 +67,7 @@ func (w *routeGarbageCollector) Reconcile(kluster *v1.Kluster) (err error) {
 		return fmt.Errorf("Failed to setup openstack network client: %s", err)
 	}
 
-	_, clusterCIDR, err := net.ParseCIDR(kluster.Spec.ClusterCIDR)
+	_, clusterCIDR, err := net.ParseCIDR(kluster.ClusterCIDR())
 	if err != nil {
 		return fmt.Errorf("Failed to parse clusterCIDR: %s", err)
 	}

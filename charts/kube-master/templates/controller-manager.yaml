@@ -86,9 +86,11 @@ spec:
 {{- else }}
             - controller-manager
 {{- end }}
-            {{- if .Values.openstack }}
+            {{- if .Values.clusterCIDR }}
             - --cluster-cidr={{ .Values.clusterCIDR }}
             - --allocate-node-cidrs=true
+            {{- end }}
+            {{- if .Values.openstack }}
             - --cloud-config=/etc/kubernetes/cloudprovider/openstack.config
 {{- if (semverCompare ">= 1.13" .Values.version.kubernetes) }}
             - --cloud-provider=external

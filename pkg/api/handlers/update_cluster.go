@@ -6,6 +6,7 @@ import (
 
 	"github.com/Masterminds/semver"
 	"github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/swag"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 
 	"github.com/sapcc/kubernikus/pkg/api"
@@ -142,20 +143,20 @@ func (d *updateCluster) Handle(params operations.UpdateClusterParams, principal 
 		}
 
 		// If dex is disabled
-		if !kluster.Spec.Dex {
+		if !swag.BoolValue(kluster.Spec.Dex) {
 
 			// Check for dashboard
-			if params.Body.Spec.Dashboard && !params.Body.Spec.Dex {
+			if swag.BoolValue(params.Body.Spec.Dashboard) && !swag.BoolValue(params.Body.Spec.Dex) {
 				return apierrors.NewBadRequest(fmt.Sprintf("Dashboard cannot be enabled while Dex is disabled"))
 			}
 
 			// Enable dex
-			if params.Body.Spec.Dex {
+			if swag.BoolValue(params.Body.Spec.Dex) {
 				kluster.Spec.Dex = params.Body.Spec.Dex
 			}
 
 			// Enable dashboard
-			if params.Body.Spec.Dashboard {
+			if swag.BoolValue(params.Body.Spec.Dashboard) {
 				kluster.Spec.Dashboard = params.Body.Spec.Dashboard
 				if kluster.Status.Apiserver != "" {
 					apiURL := kluster.Status.Apiserver
@@ -164,7 +165,7 @@ func (d *updateCluster) Handle(params operations.UpdateClusterParams, principal 
 			}
 		} else {
 			// Enable dashboard if dex is enabled
-			if params.Body.Spec.Dashboard {
+			if swag.BoolValue(params.Body.Spec.Dashboard) {
 				kluster.Spec.Dashboard = params.Body.Spec.Dashboard
 				if kluster.Status.Apiserver != "" {
 					apiURL := kluster.Status.Apiserver

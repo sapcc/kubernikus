@@ -6,6 +6,7 @@ import (
 
 	"github.com/ghodss/yaml"
 	"github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/swag"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 
 	"github.com/sapcc/kubernikus/pkg/api"
@@ -33,7 +34,7 @@ func (d *getClusterCredentialsOIDC) Handle(params operations.GetClusterCredentia
 		return NewErrorResponse(&operations.GetClusterCredentialsDefault{}, 500, err.Error())
 	}
 
-	if !kluster.Spec.Dex {
+	if !swag.BoolValue(kluster.Spec.Dex) {
 		return NewErrorResponse(&operations.GetClusterCredentialsDefault{}, 404, "Dex not enabled, no OIDC credentials")
 	}
 
