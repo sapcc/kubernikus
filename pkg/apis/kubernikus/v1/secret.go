@@ -18,7 +18,7 @@ type Secret struct {
 
 	Certificates
 
-	ExtraValues map[interface{}]interface{} `json:"extra-values,omitempty"`
+	ExtraValues string `json:"extra-values,omitempty"`
 }
 
 func NewSecret(secret *corev1.Secret) (*Secret, error) {
