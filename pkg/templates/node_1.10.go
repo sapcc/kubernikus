@@ -222,7 +222,7 @@ systemd:
         [Service]
         Type=simple
         Restart=on-failure
-        RestartSec=5
+        RestartSec=300
         ExecStart=/etc/kubernetes/fix-cert-roration.sh
         [Install]
         WantedBy=multi-user.target
