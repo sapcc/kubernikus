@@ -12,6 +12,9 @@ func TestSecretMarsheling(t *testing.T) {
 	secret := Secret{
 		NodePassword:   "bla",
 		BootstrapToken: "blu",
+		ExtraValues: "joker: joker\n" +
+			"- one: two\n" +
+			"- two: three",
 	}
 
 	data, err := secret.ToData()

@@ -224,5 +224,24 @@ func KlusterToHelmValues(kluster *v1.Kluster, secret *v1.Secret, kubernetesVersi
 		return nil, err
 	}
 
+	// Unmarshal string inside ExtraValues into map
+	extraValues := make(map[interface{}]interface{})
+	err = yaml.Unmarshal([]byte(secret.ExtraValues), &extraValues)
+	if err != nil {
+		return nil, err
+	}
+	// Temporary unmarshal values as well
+	m := make(map[interface{}]interface{})
+	err = yaml.Unmarshal(result, &m)
+	if err != nil {
+		return nil, err
+	}
+	// Merge extra values via deep merge
+	r := MergeMaps(m, extraValues)
+	// Re-marshal to byte[]
+	result, err = yaml.Marshal(r)
+	if err != nil {
+		return nil, err
+	}
 	return result, nil
 }
