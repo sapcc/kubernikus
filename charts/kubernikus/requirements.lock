@@ -4,6 +4,6 @@ dependencies:
   version: 0.1.5
 - name: rbac
   repository: file://vendor/rbac
-  version: 0.1.3
-digest: sha256:d6856b6763209773af27877c3e82b5196a05c087c882ac71b7d06199b87b0d84
-generated: 2019-11-12T14:38:04.896694+01:00
+  version: 0.1.4
+digest: sha256:2c1f12f6de48eca2af578277db4ffab8faa49eda23c6a076ad8cfc7d77066121
+generated: 2019-12-06T15:06:20.762085+01:00
