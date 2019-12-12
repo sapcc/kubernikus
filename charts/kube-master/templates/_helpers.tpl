@@ -71,3 +71,18 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
 {{- define "dex.url" -}}
 {{- printf "auth-%s" ( .Values.api.apiserverHost | replace (include "master.fullname" .) (printf "%s.ingress" (include "master.fullname" .) ) ) -}}
 {{- end -}}
+
+
+{{- define "resource.requirements" -}}
+{{ if or .limits .requests -}}
+resources:
+{{- with .limits }}
+  limits:
+{{ toYaml . | trim | indent 4 }}
+{{- end }}
+{{- with .requests }}
+  requests:
+{{ toYaml . | trim | indent 4 }}
+{{- end }}
+{{- end }}
+{{- end -}}

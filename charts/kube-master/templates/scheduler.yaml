@@ -74,5 +74,4 @@ spec:
             - mountPath: /etc/kubernetes/config
               name: config
               readOnly: true
-          resources:
-{{ toYaml .Values.scheduler.resources | indent 12 }}
+{{ include "resource.requirements" .Values.scheduler.resources | indent 10 }}

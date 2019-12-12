@@ -88,7 +88,6 @@ spec:
             - mountPath: /etc/kubernetes/cloudprovider
               name: cloudprovider
               readOnly: true
-          resources:
-{{ toYaml .Values.cloudControllerManager.resources | indent 12 }}
+{{ include "resource.requirements" .Values.cloudControllerManager.resources | indent 10 }}
 {{- end }}
 {{- end }}

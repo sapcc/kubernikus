@@ -113,8 +113,7 @@ spec:
                 - ETCDCTL_API=3 etcdctl get foo
             initialDelaySeconds: 5
             periodSeconds: 5
-          resources:
-{{ toYaml .Values.resources | indent 12 }}
+{{ include "resource.requirements" .Values.resources | indent 10 }}
 {{- if .Values.backup.enabled }}
         - name: backup
           command:

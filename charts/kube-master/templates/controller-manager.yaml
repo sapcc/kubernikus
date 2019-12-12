@@ -144,8 +144,7 @@ spec:
               name: openstack-hacks
               readOnly: true
             {{- end }}
-          resources:
-{{ toYaml .Values.controllerManager.resources | indent 12 }}
+{{ include "resource.requirements" .Values.controllerManager.resources | indent 10 }}
 {{- if .Values.openstack }}
 ---
 apiVersion: v1
