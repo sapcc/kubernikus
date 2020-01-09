@@ -346,6 +346,13 @@ storage:
       contents:
         inline: |-
           net.ipv4.conf.all.accept_redirects=1
+    - path: /etc/sysctl.d/20-inotify-max-user.conf
+      filesystem: root
+      mode: 0644
+      contents:
+        inline: |-
+          fs.inotify.max_user_instances=8192
+          fs.inotify.max_user_watches=524288
     - path: /etc/kube-flannel/net-conf.json
       filesystem: root
       mode: 0644
