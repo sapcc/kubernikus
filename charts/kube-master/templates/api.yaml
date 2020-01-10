@@ -116,7 +116,7 @@ spec:
             - sh
             - -c
           args:
-{{- if .Values.api.secureEtcd }}
+{{- if .Values.etcd.secure.enabled }}
             - until etcdctl --endpoints https://{{ include "etcd.fullname" . }}:2379 --cacert=/etc/kubernetes/certs/tls-etcd-ca.pem --cert=/etc/kubernetes/certs/etcd-clients-apiserver.pem --key=/etc/kubernetes/certs/etcd-clients-apiserver-key.pem --insecure-transport=false endpoint health; do sleep 5; done;
           env:
             - name: ETCDCTL_API
@@ -138,7 +138,7 @@ spec:
 {{- else }}
             - apiserver
 {{- end }}
-            {{- if .Values.api.secureEtcd }}
+            {{- if .Values.etcd.secure.enabled }}
             - --etcd-servers=https://{{ include "etcd.fullname" . }}:2379
             {{- else }}
             - --etcd-servers=http://{{ include "etcd.fullname" . }}:2379
