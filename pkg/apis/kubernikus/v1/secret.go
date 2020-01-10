@@ -93,6 +93,8 @@ type Certificates struct {
 	EtcdClientsCACertificate        string `json:"etcd-clients-ca.pem"`
 	EtcdClientsApiserverPrivateKey  string `json:"etcd-clients-apiserver-key.pem"`
 	EtcdClientsApiserverCertificate string `json:"etcd-clients-apiserver.pem"`
+	EtcdClientsDexPrivateKey        string `json:"etcd-clients-dex-key.pem"`
+	EtcdClientsDexCertificate       string `json:"etcd-clients-dex.pem"`
 
 	EtcdPeersCAPrivateKey  string `json:"etcd-peers-ca-key.pem"`
 	EtcdPeersCACertificate string `json:"etcd-peers-ca.pem"`

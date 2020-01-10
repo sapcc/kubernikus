@@ -175,6 +175,15 @@ func (cf *CertificateFactory) Ensure() ([]CertUpdates, error) {
 		&certUpdates); err != nil {
 		return nil, err
 	}
+	if err := ensureClientCertificate(
+		etcdClientsCA,
+		"dex",
+		nil,
+		&cf.store.EtcdClientsDexCertificate,
+		&cf.store.EtcdClientsDexPrivateKey,
+		&certUpdates); err != nil {
+		return nil, err
+	}
 	if err := ensureClientCertificate(apiserverClientsCA,
 		"cluster-admin",
 		[]string{"system:masters"},
@@ -327,6 +336,8 @@ func ensureClientCertificate(ca *Bundle, cn string, groups []string, cert, key *
 		return err
 	}
 
+	reason := ""
+
 	if *cert != "" && *key != "" {
 		certBundle, err := NewBundle([]byte(*key), []byte(*cert))
 
@@ -334,18 +345,23 @@ func ensureClientCertificate(ca *Bundle, cn string, groups []string, cert, key *
 			return fmt.Errorf("Failed parsing certificate bundle: %s", err)
 		}
 
-		reason, invalid := isCertChangedOrExpires(certBundle.Certificate, certificate.Certificate, ca.Certificate, certExpiration)
+		var invalid bool
+		reason, invalid = isCertChangedOrExpires(certBundle.Certificate, certificate.Certificate, ca.Certificate, certExpiration)
 		if !invalid {
 			return nil
 		}
-
-		update := CertUpdates{
-			Type:   "Client Certificate",
-			CN:     cn,
-			Reason: reason,
-		}
-		*certUpdates = append(*certUpdates, update)
 	}
+
+	if reason == "" {
+		reason = "Client certificate missing"
+	}
+
+	update := CertUpdates{
+		Type:   "Client Certificate",
+		CN:     cn,
+		Reason: reason,
+	}
+	*certUpdates = append(*certUpdates, update)
 
 	*cert = string(certutil.EncodeCertPEM(certificate.Certificate))
 	*key = string(certutil.EncodePrivateKeyPEM(certificate.PrivateKey))
@@ -366,6 +382,8 @@ func ensureServerCertificate(ca *Bundle, cn string, dnsNames []string, ips []net
 		return err
 	}
 
+	reason := ""
+
 	if *cert != "" && *key != "" {
 		certBundle, err := NewBundle([]byte(*key), []byte(*cert))
 
@@ -373,18 +391,23 @@ func ensureServerCertificate(ca *Bundle, cn string, dnsNames []string, ips []net
 			return fmt.Errorf("Failed parsing certificate bundle: %s", err)
 		}
 
-		reason, invalid := isCertChangedOrExpires(certBundle.Certificate, certificate.Certificate, ca.Certificate, certExpiration)
+		var invalid bool
+		reason, invalid = isCertChangedOrExpires(certBundle.Certificate, certificate.Certificate, ca.Certificate, certExpiration)
 		if !invalid {
 			return nil
 		}
-
-		update := CertUpdates{
-			Type:   "Server Certificate",
-			CN:     cn,
-			Reason: reason,
-		}
-		*certUpdates = append(*certUpdates, update)
 	}
+
+	if reason == "" {
+		reason = "Server certificate missing"
+	}
+
+	update := CertUpdates{
+		Type:   "Server Certificate",
+		CN:     cn,
+		Reason: reason,
+	}
+	*certUpdates = append(*certUpdates, update)
 
 	*cert = string(certutil.EncodeCertPEM(certificate.Certificate))
 	*key = string(certutil.EncodePrivateKeyPEM(certificate.PrivateKey))
