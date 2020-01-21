@@ -1,6 +1,6 @@
 imagesForVersion:
   '1.15.8':
-    supported: true
+    supported: false
     hyperkube:
       repository: 'sapcc/hyperkube'
       tag: 'v1.15.8'
@@ -17,7 +17,7 @@ imagesForVersion:
       repository: 'kubernetesui/dashboard'
       tag: 'v2.0.0-beta4'
   '1.15.2':
-    supported: false
+    supported: true
     hyperkube:
       repository: 'sapcc/hyperkube'
       tag: 'v1.15.2'
