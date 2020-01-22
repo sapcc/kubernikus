@@ -1,5 +1,5 @@
 imagesForVersion:
-    '1.15.9':
+  '1.15.9':
     supported: true
     hyperkube:
       repository: 'sapcc/hyperkube'
