@@ -18,7 +18,7 @@ spec:
       labels:
         app: {{ include "master.fullname" . }}-dex 
         release: {{ .Release.Name }}
-    annotations:
+      annotations:
         checksum/config: {{ include (print $.Template.BasePath "/dex-configmap.yaml") . | sha256sum }}
     spec:
       initContainers:
