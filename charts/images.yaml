@@ -1,9 +1,9 @@
 imagesForVersion:
-  '1.15.8':
-    supported: false
+  '1.15.9':
+    supported: true
     hyperkube:
       repository: 'sapcc/hyperkube'
-      tag: 'v1.15.8'
+      tag: 'v1.15.9'
     cloudControllerManager:
       repository: 'sapcc/openstack-cloud-controller-manager'
       tag: 'v1.15.0-sap.2'
@@ -17,7 +17,7 @@ imagesForVersion:
       repository: 'kubernetesui/dashboard'
       tag: 'v2.0.0-beta4'
   '1.15.2':
-    supported: true
+    supported: false
     hyperkube:
       repository: 'sapcc/hyperkube'
       tag: 'v1.15.2'
