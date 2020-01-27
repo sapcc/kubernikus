@@ -456,6 +456,7 @@ storage:
           rotateCertificates: true
           featureGates:
             NodeLease: false
+            CSIInlineVolume: true
     - path: /etc/kubernetes/kube-proxy/config
       filesystem: root
       mode: 0644

@@ -163,7 +163,7 @@ spec:
             - --enable-admission-plugins=PersistentVolumeLabel
 {{- end }}
 {{- if (semverCompare ">= 1.14" .Values.version.kubernetes) }}
-            - --feature-gates=NodeLease=false
+            - --feature-gates=NodeLease=false,CSIInlineVolume=true
 {{- end }}
             #Cert Spratz
             - --client-ca-file=/etc/kubernetes/certs/apiserver-clients-and-nodes-ca.pem
