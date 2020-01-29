@@ -181,7 +181,7 @@ spec:
             - --oidc-client-id=kubernetes
             - --oidc-groups-claim=groups
             - --oidc-username-prefix=-
-            - --oidc-username-claim=sub
+            - --oidc-username-claim=name
             {{ end }}
           volumeMounts:
             - mountPath: /etc/kubernetes/certs
