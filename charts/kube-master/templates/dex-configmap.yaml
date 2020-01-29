@@ -67,7 +67,9 @@ data:
             username: cn
             idAttr: distinguishedName
             emailAttr: mail
-            nameAttr: displayName
+            nameAttr: cn
+            # workaround for technical users without email address in LDAP:
+            emailSuffix: cloud.sap 
 
           # Group search queries for groups given a user entry.
           groupSearch:
