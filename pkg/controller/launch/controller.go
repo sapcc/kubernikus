@@ -157,6 +157,11 @@ func (lr *LaunchReconciler) reconcilePool(kluster *v1.Kluster, pool *models.Node
 		return
 	}
 
+	err = pm.SetStatus(status)
+	if err != nil {
+		return
+	}
+
 	switch {
 	case status.Needed > 0:
 		for i := 0; i < int(status.Needed); i++ {
@@ -180,6 +185,5 @@ func (lr *LaunchReconciler) reconcilePool(kluster *v1.Kluster, pool *models.Node
 		requeue = true
 	}
 
-	err = pm.SetStatus(status)
 	return
 }
