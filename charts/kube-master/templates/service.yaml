@@ -15,3 +15,32 @@ spec:
       port: 6553
   selector:
     app: {{ include "master.fullname" . }}-apiserver
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "master.fullname" . }}-cmanager
+  labels:
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}"
+    release: {{ .Release.Name }}
+spec:
+  type: ClusterIP
+  ports:
+    - port: 10252
+  selector:
+    app: controller-manager
+    kluster: {{ .Values.name }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "master.fullname" . }}-scheduler
+  labels:
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}"
+    release: {{ .Release.Name }}
+spec:
+  type: ClusterIP
+  ports:
+    - port: 10251
+  selector:
+    app: {{ include "master.fullname" . }}-scheduler

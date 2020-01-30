@@ -229,6 +229,16 @@ spec:
             - --service-cidr={{ .Values.serviceCIDR }}
             - --api-port={{ .Values.advertisePort }}
             - --v=5
+          lifecycle:
+            postStart:
+              exec:
+                command:
+                  - /bin/sh
+                  - -c
+                  - |
+                    iptables -t nat -A OUTPUT -m addrtype --src-type LOCAL --dst-type LOCAL -p tcp --dport 10252 -j DNAT --to-destination ${{ include "master.fullname" . | replace "-" "_" | upper}}_CMANAGER_SERVICE_HOST
+                    iptables -t nat -A OUTPUT -m addrtype --src-type LOCAL --dst-type LOCAL -p tcp --dport 10251 -j DNAT --to-destination ${{ include "master.fullname" . | replace "-" "_" | upper}}_SCHEDULER_SERVICE_HOST
+                    iptables -t nat -A POSTROUTING -m addrtype --src-type LOCAL --dst-type UNICAST -j MASQUERADE
           securityContext:
             capabilities:
               add:
