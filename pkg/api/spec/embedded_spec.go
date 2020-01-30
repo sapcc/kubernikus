@@ -877,9 +877,6 @@ func init() {
         "networkID": {
           "type": "string"
         },
-        "projectID": {
-          "type": "string"
-        },
         "routerID": {
           "type": "string"
         },
@@ -1752,9 +1749,6 @@ func init() {
           "x-go-name": "LBSubnetID"
         },
         "networkID": {
-          "type": "string"
-        },
-        "projectID": {
           "type": "string"
         },
         "routerID": {

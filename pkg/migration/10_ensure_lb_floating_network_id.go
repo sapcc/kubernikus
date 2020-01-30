@@ -14,7 +14,7 @@ import (
 func EnsureLBFloatingNetworkID(rawKluster []byte, current *v1.Kluster, clients config.Clients, factories config.Factories) (err error) {
 
 	if current.Spec.Openstack.LBFloatingNetworkID == "" {
-		client, err := factories.Openstack.ProjectAdminClientFor(current.Spec.Openstack.ProjectID)
+		client, err := factories.Openstack.ProjectAdminClientFor(current.Account())
 		if err != nil {
 			return err
 		}

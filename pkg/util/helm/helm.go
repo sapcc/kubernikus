@@ -208,7 +208,7 @@ func KlusterToHelmValues(kluster *v1.Kluster, secret *v1.Secret, kubernetesVersi
 			Password:            secret.Openstack.Password,
 			DomainName:          secret.Openstack.DomainName,
 			Region:              secret.Openstack.Region,
-			ProjectID:           kluster.Spec.Openstack.ProjectID,
+			ProjectID:           kluster.Account(),
 			ProjectDomainName:   secret.ProjectDomainName,
 			LbSubnetID:          kluster.Spec.Openstack.LBSubnetID,
 			LbFloatingNetworkID: kluster.Spec.Openstack.LBFloatingNetworkID,

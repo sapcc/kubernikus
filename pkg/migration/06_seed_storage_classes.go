@@ -12,7 +12,7 @@ func SeedCinderStorageClasses(rawKluster []byte, current *v1.Kluster, clients co
 		return err
 	}
 
-	openstack, err := factories.Openstack.ProjectAdminClientFor(current.Spec.Openstack.ProjectID)
+	openstack, err := factories.Openstack.ProjectAdminClientFor(current.Account())
 	if err != nil {
 		return err
 	}
