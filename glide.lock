@@ -1,5 +1,5 @@
 hash: 6f94eb6b8817ada4d7587f2287cf21e36f0e3168c7659353084b084cc208c036
-updated: 2019-08-05T14:53:00.076714+02:00
+updated: 2020-01-24T13:28:03.333676+01:00
 imports:
 - name: github.com/ajeddeloh/yaml
   version: 1072abfea31191db507785e2e0c1b8d1440d35a5
@@ -56,7 +56,7 @@ imports:
 - name: github.com/databus23/requestutil
   version: 5ff8e981f38fcabfc52ff8fd7fc7cf401d6bec67
 - name: github.com/davecgh/go-spew
-  version: ecdeabc65495df2dec95d7c4a4c3e021903035e5
+  version: 782f4967f2dc4564575ca782fe2d04090b5faca8
   subpackages:
   - spew
 - name: github.com/docker/go-units
@@ -178,6 +178,7 @@ imports:
   - openstack/identity/v3/endpoints
   - openstack/identity/v3/groups
   - openstack/identity/v3/projects
+  - openstack/identity/v3/roles
   - openstack/identity/v3/services
   - openstack/identity/v3/tokens
   - openstack/identity/v3/users
@@ -245,7 +246,7 @@ imports:
 - name: github.com/pkg/errors
   version: 645ef00459ed84a119197bfb8d8205042c6df63d
 - name: github.com/pmezard/go-difflib
-  version: 792786c7400a136282c1664665ae0a8db921c6c2
+  version: d8ed2627bdf02c080bf22230dbb337003b7aba2d
   subpackages:
   - difflib
 - name: github.com/pmylund/go-cache
@@ -284,7 +285,7 @@ imports:
 - name: github.com/stretchr/objx
   version: 8a3f7159479fbc75b30357fbc48f380b7320f08e
 - name: github.com/stretchr/testify
-  version: ffdc059bfe9ce6a4e144ba849dbedead332c6053
+  version: 221dbe5ed46703ee255b1da0dec05086f5035f62
   subpackages:
   - assert
   - mock
@@ -305,6 +306,8 @@ imports:
 - name: golang.org/x/crypto
   version: 81e90905daefcd6fd217b62423c0908922eadb30
   subpackages:
+  - bcrypt
+  - blowfish
   - pbkdf2
   - scrypt
   - ssh/terminal
@@ -326,6 +329,13 @@ imports:
   - lex/httplex
   - netutil
   - trace
+- name: golang.org/x/oauth2
+  version: a6bd8cefa1811bd24b86f8902872e4e8225f74c4
+  subpackages:
+  - google
+  - internal
+  - jws
+  - jwt
 - name: golang.org/x/sys
   version: 95c6576299259db960f6c5b9b69ea52422860fce
   subpackages:
@@ -345,6 +355,16 @@ imports:
   - unicode/bidi
   - unicode/norm
   - width
+- name: google.golang.org/appengine
+  version: 54a98f90d1c46b7731eb8fb305d2a321c30ef610
+  subpackages:
+  - internal
+  - internal/base
+  - internal/datastore
+  - internal/log
+  - internal/remote_api
+  - internal/urlfetch
+  - urlfetch
 - name: google.golang.org/genproto
   version: 09f6ed296fc66555a25fe4ce95173148778dfa85
   subpackages:
@@ -587,6 +607,7 @@ imports:
   - listers/storage/v1alpha1
   - listers/storage/v1beta1
   - pkg/version
+  - plugin/pkg/client/auth/oidc
   - rest
   - rest/watch
   - testing

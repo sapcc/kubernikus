@@ -8,6 +8,8 @@ import (
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
 	certutil "k8s.io/client-go/util/cert"
 
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
 	"github.com/sapcc/kubernikus/pkg/api/models"
 	v1 "github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
 	"github.com/sapcc/kubernikus/pkg/util"
@@ -15,7 +17,7 @@ import (
 
 func TestKubernikusContext(t *testing.T) {
 
-	kluster := &v1.Kluster{Spec: models.KlusterSpec{AdvertiseAddress: "1.1.1.1", ServiceCIDR: "192.168.0.0/24", Openstack: models.OpenstackSpec{ProjectID: "12345678"}}}
+	kluster := &v1.Kluster{ObjectMeta: metav1.ObjectMeta{Labels: map[string]string{"account": "12345678"}}, Spec: models.KlusterSpec{AdvertiseAddress: "1.1.1.1", ServiceCIDR: "192.168.0.0/24"}}
 	certs := new(v1.Certificates)
 
 	factory := util.NewCertificateFactory(kluster, certs, "test.local")

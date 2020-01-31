@@ -143,13 +143,15 @@ func (r *KlusterReconciler) Do() error {
 		return nil
 	}
 
+	if err := r.updateLastServicingTime(); err != nil {
+		return errors.Wrap(err, "Failed to update servicing timestamp")
+	}
+
 	update := r.Lister.Updating()
 	if len(update) > 0 {
 		if err := r.LifeCycler.Reboot(update[0]); err != nil {
 			return errors.Wrap(err, "Failed to reboot node")
 		}
-
-		return r.updateLastServicingTime()
 	}
 
 	replace := r.Lister.Replace()
@@ -162,8 +164,6 @@ func (r *KlusterReconciler) Do() error {
 		if err := r.LifeCycler.Replace(replace[0]); err != nil {
 			return errors.Wrap(err, "Failed to replace node")
 		}
-
-		r.updateLastServicingTime()
 	}
 
 	if len(reboot) > 0 {
@@ -176,7 +176,7 @@ func (r *KlusterReconciler) Do() error {
 		}
 	}
 
-	return r.updateLastServicingTime()
+	return nil
 }
 
 // Do log it

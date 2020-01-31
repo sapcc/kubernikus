@@ -27,8 +27,8 @@ data:
       issuer: "Converged Cloud Kubernetes"
 
     expiry:
-      signingKeys: "6h"
-      idTokens: "1h"
+      signingKeys: "48h"
+      idTokens: "24h"
     
     logger:
       level: debug

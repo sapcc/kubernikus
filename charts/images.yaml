@@ -1,6 +1,23 @@
 imagesForVersion:
-  '1.15.2':
+  '1.15.9':
     supported: true
+    hyperkube:
+      repository: 'sapcc/hyperkube'
+      tag: 'v1.15.9'
+    cloudControllerManager:
+      repository: 'sapcc/openstack-cloud-controller-manager'
+      tag: 'v1.15.0-sap.2'
+    dex:
+      repository: 'hub.global.cloud.sap/monsoon/dex'
+      tag: '8373c31b3e2d96ad3a7313227aa1bb8c59ddca39'
+    dashboardProxy:
+      repository: 'quay.io/keycloak/keycloak-gatekeeper'
+      tag: '6.0.1'
+    dashboard:
+      repository: 'kubernetesui/dashboard'
+      tag: 'v2.0.0-beta4'
+  '1.15.2':
+    supported: false
     hyperkube:
       repository: 'sapcc/hyperkube'
       tag: 'v1.15.2'
