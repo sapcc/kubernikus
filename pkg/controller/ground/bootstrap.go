@@ -41,7 +41,7 @@ func SeedKluster(clients config.Clients, factories config.Factories, kluster *v1
 		return errors.Wrap(err, "seed kubernikus member")
 	}
 	if !kluster.Spec.NoCloud {
-		openstack, err := factories.Openstack.ProjectAdminClientFor(kluster.Spec.Openstack.ProjectID)
+		openstack, err := factories.Openstack.ProjectAdminClientFor(kluster.Account())
 		if err != nil {
 			return err
 		}

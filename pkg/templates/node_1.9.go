@@ -155,6 +155,20 @@ systemd:
         Type=oneshot
         [Install]
         WantedBy=multi-user.target
+    - name: fix-cert-rotation.service
+      command: start
+      enable: true
+      contents: |
+        [Unit]
+        Description=Fix kubelet certificate rotation
+        After=kubelet.service
+        [Service]
+        Type=simple
+        Restart=on-failure
+        RestartSec=300
+        ExecStart=/etc/kubernetes/fix-cert-roration.sh
+        [Install]
+        WantedBy=multi-user.target
 
 networkd:
   units:
@@ -434,4 +448,37 @@ storage:
       contents:
         inline: |-
           REBOOT_STRATEGY="off"
+    - path: /etc/kubernetes/fix-cert-roration.sh
+      filesystem: root
+      mode: 0755
+      contents:
+        inline: |-
+          #!/bin/bash
+          set -xe
+
+          if [ ! -f "/var/lib/kubelet/pki/kubelet-client.crt" ]
+          then
+            echo "Certificate /var/lib/kubelet/pki/kubelet-client.crt not found, exiting."
+            exit 1
+          fi
+
+          if [ ! -f "/var/lib/kubelet/pki/kubelet-client.key" ]
+          then
+            echo "Private key /var/lib/kubelet/pki/kubelet-client.key not found, exiting."
+            exit 1
+          fi
+
+          if [ ! -L "/var/lib/kubelet/pki/kubelet-client-current.pem" ]
+          then
+            cat /var/lib/kubelet/pki/kubelet-client.crt /var/lib/kubelet/pki/kubelet-client.key > /var/lib/kubelet/pki/kubelet-client-orig.pem
+            ln -s /var/lib/kubelet/pki/kubelet-client-orig.pem /var/lib/kubelet/pki/kubelet-client-current.pem
+          fi
+
+          sed -i -e 's/kubelet-client.crt$/kubelet-client-current.pem/g' /var/lib/kubelet/kubeconfig
+          sed -i -e 's/kubelet-client.key$/kubelet-client-current.pem/g' /var/lib/kubelet/kubeconfig
+
+          sed -i -e 's/--exit-on-lock-contention$/--exit-on-lock-contention \\\n  --rotate-certificates/g' /etc/systemd/system/kubelet.service
+
+          systemctl daemon-reload
+          systemctl restart kubelet
 `
