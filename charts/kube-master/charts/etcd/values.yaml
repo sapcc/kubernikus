@@ -44,4 +44,4 @@ backup:
       cpu: 500m
       memory: 1.5Gi
 secure:
-  enabled: false
+  enabled: true
