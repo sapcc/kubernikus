@@ -93,6 +93,10 @@ type Certificates struct {
 	EtcdClientsCACertificate        string `json:"etcd-clients-ca.pem"`
 	EtcdClientsApiserverPrivateKey  string `json:"etcd-clients-apiserver-key.pem"`
 	EtcdClientsApiserverCertificate string `json:"etcd-clients-apiserver.pem"`
+	EtcdClientsBackupPrivateKey     string `json:"etcd-clients-backup-key.pem"`
+	EtcdClientsBackupCertificate    string `json:"etcd-clients-backup.pem"`
+	EtcdClientsDexPrivateKey        string `json:"etcd-clients-dex-key.pem"`
+	EtcdClientsDexCertificate       string `json:"etcd-clients-dex.pem"`
 
 	EtcdPeersCAPrivateKey  string `json:"etcd-peers-ca-key.pem"`
 	EtcdPeersCACertificate string `json:"etcd-peers-ca.pem"`
@@ -108,6 +112,11 @@ type Certificates struct {
 	TLSApiserverCertificate string `json:"tls-apiserver.pem"`
 	TLSWormholePrivateKey   string `json:"tls-wormhole-key.pem"`
 	TLSWormholeCertificate  string `json:"tls-wormhole.pem"`
+
+	TLSEtcdCAPrivateKey  string `json:"tls-etcd-ca-key.pem"`
+	TLSEtcdCACertificate string `json:"tls-etcd-ca.pem"`
+	TLSEtcdPrivateKey    string `json:"tls-etcd-key.pem"`
+	TLSEtcdCertificate   string `json:"tls-etcd.pem"`
 
 	AggregationCAPrivateKey          string `json:"aggregation-ca-key.pem"`
 	AggregationCACertificate         string `json:"aggregation-ca.pem"`

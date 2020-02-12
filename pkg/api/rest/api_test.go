@@ -289,7 +289,6 @@ func TestClusterUpdate(t *testing.T) {
 			Openstack: models.OpenstackSpec{
 				LBSubnetID: "lbid",
 				NetworkID:  "networkid",
-				ProjectID:  ACCOUNT,
 				RouterID:   "routerid",
 			},
 			NodePools: []models.NodePool{
@@ -324,7 +323,6 @@ func TestClusterUpdate(t *testing.T) {
 			Openstack: models.OpenstackSpec{
 				LBSubnetID: "changed",
 				NetworkID:  "changed",
-				ProjectID:  "changed",
 				RouterID:   "changed",
 			},
 			NodePools: []models.NodePool{
@@ -377,7 +375,6 @@ func TestClusterUpdate(t *testing.T) {
 	assert.Equal(t, "2.2.2.2/24", apiResponse.Spec.ServiceCIDR)
 	assert.Equal(t, "lbid", apiResponse.Spec.Openstack.LBSubnetID)
 	assert.Equal(t, "networkid", apiResponse.Spec.Openstack.NetworkID)
-	assert.Equal(t, ACCOUNT, apiResponse.Spec.Openstack.ProjectID)
 	assert.Equal(t, "routerid", apiResponse.Spec.Openstack.RouterID)
 	assert.Equal(t, models.KlusterPhaseRunning, apiResponse.Status.Phase)
 	assert.Equal(t, "someversion", apiResponse.Status.Version)

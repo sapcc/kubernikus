@@ -33,7 +33,7 @@ standalone: true
 
 operator:
   controllers: []
-  nodeAffinity: true
+  nodeAffinity: false
   metrics_port: 9091
 
 includeRBAC: false

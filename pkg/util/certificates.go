@@ -116,7 +116,7 @@ type CertificateFactory struct {
 
 type CertUpdates struct {
 	Type   string
-	CN     string
+	Name   string
 	Reason string
 }
 
@@ -137,31 +137,35 @@ func (cf *CertificateFactory) Ensure() ([]CertUpdates, error) {
 
 	certUpdates := []CertUpdates{}
 
-	etcdClientsCA, err := loadOrCreateCA(cf.kluster, "Etcd Clients", &cf.store.EtcdClientsCACertificate, &cf.store.EtcdClientsCAPrivateKey)
+	tlsEtcdCA, err := loadOrCreateCA(cf.kluster, "TLSEtcd", &cf.store.TLSEtcdCACertificate, &cf.store.TLSEtcdCAPrivateKey, &certUpdates)
 	if err != nil {
 		return nil, err
 	}
-	_, err = loadOrCreateCA(cf.kluster, "Etcd Peers", &cf.store.EtcdPeersCACertificate, &cf.store.EtcdPeersCAPrivateKey)
+	etcdClientsCA, err := loadOrCreateCA(cf.kluster, "Etcd Clients", &cf.store.EtcdClientsCACertificate, &cf.store.EtcdClientsCAPrivateKey, &certUpdates)
 	if err != nil {
 		return nil, err
 	}
-	apiserverClientsCA, err := loadOrCreateCA(cf.kluster, "ApiServer Clients", &cf.store.ApiserverClientsCACertifcate, &cf.store.ApiserverClientsCAPrivateKey)
+	_, err = loadOrCreateCA(cf.kluster, "Etcd Peers", &cf.store.EtcdPeersCACertificate, &cf.store.EtcdPeersCAPrivateKey, &certUpdates)
 	if err != nil {
 		return nil, err
 	}
-	_, err = loadOrCreateCA(cf.kluster, "ApiServer Nodes", &cf.store.ApiserverNodesCACertificate, &cf.store.ApiserverNodesCAPrivateKey)
+	apiserverClientsCA, err := loadOrCreateCA(cf.kluster, "ApiServer Clients", &cf.store.ApiserverClientsCACertifcate, &cf.store.ApiserverClientsCAPrivateKey, &certUpdates)
 	if err != nil {
 		return nil, err
 	}
-	kubeletClientsCA, err := loadOrCreateCA(cf.kluster, "Kubelet Clients", &cf.store.KubeletClientsCACertificate, &cf.store.KubeletClientsCAPrivateKey)
+	_, err = loadOrCreateCA(cf.kluster, "ApiServer Nodes", &cf.store.ApiserverNodesCACertificate, &cf.store.ApiserverNodesCAPrivateKey, &certUpdates)
 	if err != nil {
 		return nil, err
 	}
-	tlsCA, err := loadOrCreateCA(cf.kluster, "TLS", &cf.store.TLSCACertificate, &cf.store.TLSCAPrivateKey)
+	kubeletClientsCA, err := loadOrCreateCA(cf.kluster, "Kubelet Clients", &cf.store.KubeletClientsCACertificate, &cf.store.KubeletClientsCAPrivateKey, &certUpdates)
 	if err != nil {
 		return nil, err
 	}
-	aggregationCA, err := loadOrCreateCA(cf.kluster, "Aggregation", &cf.store.AggregationCACertificate, &cf.store.AggregationCAPrivateKey)
+	tlsCA, err := loadOrCreateCA(cf.kluster, "TLS", &cf.store.TLSCACertificate, &cf.store.TLSCAPrivateKey, &certUpdates)
+	if err != nil {
+		return nil, err
+	}
+	aggregationCA, err := loadOrCreateCA(cf.kluster, "Aggregation", &cf.store.AggregationCACertificate, &cf.store.AggregationCAPrivateKey, &certUpdates)
 	if err != nil {
 		return nil, err
 	}
@@ -175,11 +179,28 @@ func (cf *CertificateFactory) Ensure() ([]CertUpdates, error) {
 		&certUpdates); err != nil {
 		return nil, err
 	}
+	if err := ensureClientCertificate(
+		etcdClientsCA,
+		"dex",
+		nil,
+		&cf.store.EtcdClientsDexCertificate,
+		&cf.store.EtcdClientsDexPrivateKey,
+		&certUpdates); err != nil {
+		return nil, err
+	}
 	if err := ensureClientCertificate(apiserverClientsCA,
 		"cluster-admin",
 		[]string{"system:masters"},
 		&cf.store.ApiserverClientsClusterAdminCertificate,
 		&cf.store.ApiserverClientsClusterAdminPrivateKey,
+		&certUpdates); err != nil {
+		return nil, err
+	}
+	if err := ensureClientCertificate(etcdClientsCA,
+		"backup",
+		nil,
+		&cf.store.EtcdClientsBackupCertificate,
+		&cf.store.EtcdClientsBackupPrivateKey,
 		&certUpdates); err != nil {
 		return nil, err
 	}
@@ -272,6 +293,14 @@ func (cf *CertificateFactory) Ensure() ([]CertUpdates, error) {
 		&certUpdates); err != nil {
 		return nil, err
 	}
+	if err := ensureServerCertificate(tlsEtcdCA, "etcd",
+		[]string{fmt.Sprintf("%v-etcd", cf.kluster.Name), fmt.Sprintf("%v-etcd.%v", cf.kluster.Name, cf.domain), "localhost"},
+		[]net.IP{net.IPv4(127, 0, 0, 1)},
+		&cf.store.TLSEtcdCertificate,
+		&cf.store.TLSEtcdPrivateKey,
+		&certUpdates); err != nil {
+		return nil, err
+	}
 
 	return certUpdates, nil
 }
@@ -287,11 +316,7 @@ func (cf *CertificateFactory) UserCert(principal *models.Principal, apiURL strin
 	for _, role := range principal.Roles {
 		organizations = append(organizations, "os:"+role)
 	}
-	projectid := cf.kluster.Spec.Openstack.ProjectID
-	//nocloud clusters don't have the projectID in the spec
-	if projectid == "" {
-		projectid = cf.kluster.Account()
-	}
+	projectid := cf.kluster.Account()
 
 	return caBundle.Sign(Config{
 		Sign:         fmt.Sprintf("%s@%s", principal.Name, principal.Domain),
@@ -304,7 +329,7 @@ func (cf *CertificateFactory) UserCert(principal *models.Principal, apiURL strin
 
 }
 
-func loadOrCreateCA(kluster *v1.Kluster, name string, cert, key *string) (*Bundle, error) {
+func loadOrCreateCA(kluster *v1.Kluster, name string, cert, key *string, certUpdates *[]CertUpdates) (*Bundle, error) {
 	if *cert != "" && *key != "" {
 		return NewBundle([]byte(*key), []byte(*cert))
 	}
@@ -312,6 +337,14 @@ func loadOrCreateCA(kluster *v1.Kluster, name string, cert, key *string) (*Bundl
 	if err != nil {
 		return nil, err
 	}
+
+	update := CertUpdates{
+		Type:   "CA certificate",
+		Name:   name,
+		Reason: "CA missing",
+	}
+	*certUpdates = append(*certUpdates, update)
+
 	*cert = string(certutil.EncodeCertPEM(caBundle.Certificate))
 	*key = string(certutil.EncodePrivateKeyPEM(caBundle.PrivateKey))
 	return caBundle, nil
@@ -327,6 +360,8 @@ func ensureClientCertificate(ca *Bundle, cn string, groups []string, cert, key *
 		return err
 	}
 
+	reason := ""
+
 	if *cert != "" && *key != "" {
 		certBundle, err := NewBundle([]byte(*key), []byte(*cert))
 
@@ -334,18 +369,23 @@ func ensureClientCertificate(ca *Bundle, cn string, groups []string, cert, key *
 			return fmt.Errorf("Failed parsing certificate bundle: %s", err)
 		}
 
-		reason, invalid := isCertChangedOrExpires(certBundle.Certificate, certificate.Certificate, ca.Certificate, certExpiration)
+		var invalid bool
+		reason, invalid = isCertChangedOrExpires(certBundle.Certificate, certificate.Certificate, ca.Certificate, certExpiration)
 		if !invalid {
 			return nil
 		}
-
-		update := CertUpdates{
-			Type:   "Client Certificate",
-			CN:     cn,
-			Reason: reason,
-		}
-		*certUpdates = append(*certUpdates, update)
 	}
+
+	if reason == "" {
+		reason = "Client certificate missing"
+	}
+
+	update := CertUpdates{
+		Type:   "Client Certificate",
+		Name:   cn,
+		Reason: reason,
+	}
+	*certUpdates = append(*certUpdates, update)
 
 	*cert = string(certutil.EncodeCertPEM(certificate.Certificate))
 	*key = string(certutil.EncodePrivateKeyPEM(certificate.PrivateKey))
@@ -366,6 +406,8 @@ func ensureServerCertificate(ca *Bundle, cn string, dnsNames []string, ips []net
 		return err
 	}
 
+	reason := ""
+
 	if *cert != "" && *key != "" {
 		certBundle, err := NewBundle([]byte(*key), []byte(*cert))
 
@@ -373,18 +415,23 @@ func ensureServerCertificate(ca *Bundle, cn string, dnsNames []string, ips []net
 			return fmt.Errorf("Failed parsing certificate bundle: %s", err)
 		}
 
-		reason, invalid := isCertChangedOrExpires(certBundle.Certificate, certificate.Certificate, ca.Certificate, certExpiration)
+		var invalid bool
+		reason, invalid = isCertChangedOrExpires(certBundle.Certificate, certificate.Certificate, ca.Certificate, certExpiration)
 		if !invalid {
 			return nil
 		}
-
-		update := CertUpdates{
-			Type:   "Server Certificate",
-			CN:     cn,
-			Reason: reason,
-		}
-		*certUpdates = append(*certUpdates, update)
 	}
+
+	if reason == "" {
+		reason = "Server certificate missing"
+	}
+
+	update := CertUpdates{
+		Type:   "Server Certificate",
+		Name:   cn,
+		Reason: reason,
+	}
+	*certUpdates = append(*certUpdates, update)
 
 	*cert = string(certutil.EncodeCertPEM(certificate.Certificate))
 	*key = string(certutil.EncodePrivateKeyPEM(certificate.PrivateKey))
