@@ -10,6 +10,7 @@ import (
 	"github.com/sapcc/kubernikus/pkg/controller/config"
 	"github.com/sapcc/kubernikus/pkg/controller/nodeobservatory"
 	"github.com/sapcc/kubernikus/pkg/controller/servicing/coreos"
+	"github.com/sapcc/kubernikus/pkg/controller/servicing/flatcar"
 
 	"github.com/go-kit/kit/log"
 	core_v1 "k8s.io/api/core/v1"
@@ -45,15 +46,19 @@ type (
 		NodeObservatory *nodeobservatory.NodeObservatory
 		CoreOSVersion   *coreos.Version
 		CoreOSRelease   *coreos.Release
+		FlatcarVersion  *flatcar.Version
+		FlatcarRelease  *flatcar.Release
 	}
 
 	// NodeLister knows how to figure out the state of Nodes
 	NodeLister struct {
-		Logger        log.Logger
-		Kluster       *v1.Kluster
-		Lister        listers_core_v1.NodeLister
-		CoreOSVersion *coreos.Version
-		CoreOSRelease *coreos.Release
+		Logger         log.Logger
+		Kluster        *v1.Kluster
+		Lister         listers_core_v1.NodeLister
+		CoreOSVersion  *coreos.Version
+		CoreOSRelease  *coreos.Release
+		FlatcarVersion *flatcar.Version
+		FlatcarRelease *flatcar.Release
 	}
 
 	// LoggingLister writes log messages
@@ -70,6 +75,8 @@ func NewNodeListerFactory(logger log.Logger, recorder record.EventRecorder, fact
 		NodeObservatory: factories.NodesObservatory.NodeInformer(),
 		CoreOSVersion:   &coreos.Version{},
 		CoreOSRelease:   &coreos.Release{},
+		FlatcarVersion:  &flatcar.Version{},
+		FlatcarRelease:  &flatcar.Release{},
 	}
 }
 
@@ -84,11 +91,13 @@ func (f *NodeListerFactory) Make(k *v1.Kluster) (Lister, error) {
 	}
 
 	lister = &NodeLister{
-		Logger:        logger,
-		Kluster:       k,
-		Lister:        klusterLister,
-		CoreOSVersion: f.CoreOSVersion,
-		CoreOSRelease: f.CoreOSRelease,
+		Logger:         logger,
+		Kluster:        k,
+		Lister:         klusterLister,
+		CoreOSVersion:  f.CoreOSVersion,
+		CoreOSRelease:  f.CoreOSRelease,
+		FlatcarVersion: f.FlatcarVersion,
+		FlatcarRelease: f.FlatcarRelease,
 	}
 
 	lister = &LoggingLister{
@@ -112,11 +121,11 @@ func (d *NodeLister) All() []*core_v1.Node {
 	return nodes
 }
 
-// Reboot lists nodes that have an outdated CoreOS version
+// Reboot lists nodes that have an outdated OS version
 func (d *NodeLister) Reboot() []*core_v1.Node {
 	var rebootable, found []*core_v1.Node
 
-	latest, err := d.CoreOSVersion.Stable()
+	latestCoreOS, err := d.CoreOSVersion.Stable()
 	if err != nil {
 		d.Logger.Log(
 			"msg", "Couldn't get CoreOS version.",
@@ -125,15 +134,29 @@ func (d *NodeLister) Reboot() []*core_v1.Node {
 		return found
 	}
 
-	released, err := d.CoreOSRelease.GrownUp(latest)
+	releasedCoreOS, err := d.CoreOSRelease.GrownUp(latestCoreOS)
 	if err != nil {
 		d.Logger.Log(
 			"msg", "Couldn't get CoreOS releases.",
 			"err", err,
 		)
 	}
-	if !released {
+
+	latestFlatcar, err := d.FlatcarVersion.Stable()
+	if err != nil {
+		d.Logger.Log(
+			"msg", "Couldn't get Flatcar version.",
+			"err", err,
+		)
 		return found
+	}
+
+	releasedFlatcar, err := d.FlatcarRelease.GrownUp(latestFlatcar)
+	if err != nil {
+		d.Logger.Log(
+			"msg", "Couldn't get Flatcar releases.",
+			"err", err,
+		)
 	}
 
 	for _, pool := range d.Kluster.Spec.NodePools {
@@ -153,10 +176,27 @@ func (d *NodeLister) Reboot() []*core_v1.Node {
 	}
 
 	for _, node := range rebootable {
-		uptodate, err := d.CoreOSVersion.IsNodeUptodate(node)
+		uptodate := true
+		var err error
+
+		if strings.HasPrefix(node.Status.NodeInfo.OSImage, "Flatcar Container Linux") {
+			if releasedFlatcar {
+				uptodate, err = d.FlatcarVersion.IsNodeUptodate(node)
+			}
+		} else if strings.HasPrefix(node.Status.NodeInfo.OSImage, "Container Linux by CoreOS") {
+			if releasedCoreOS {
+				uptodate, err = d.CoreOSVersion.IsNodeUptodate(node)
+			}
+		} else {
+			d.Logger.Log(
+				"msg", "Unsupported OS on node. Skipping OS upgrade.",
+				"os", node.Status.NodeInfo.OSImage,
+			)
+			continue
+		}
 		if err != nil {
 			d.Logger.Log(
-				"msg", "Couldn't get CoreOS version from Node. Skipping OS upgrade.",
+				"msg", "Couldn't get OS version from Node. Skipping OS upgrade.",
 				"err", err,
 			)
 			continue
