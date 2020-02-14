@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
+
 	"github.com/sapcc/kubernikus/pkg/util/version"
 )
 
