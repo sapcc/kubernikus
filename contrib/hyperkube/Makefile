@@ -1,9 +1,9 @@
 IMAGE?=sapcc/hyperkube
 
 ARCH=amd64
-CNI_PLUGINS_RELEASE=v0.8.4
+CNI_PLUGINS_RELEASE=v0.8.5
 CNI_DEDUP_BRIDGE_RELEASE=v0.1.0
-MULTUS_RELEASE=3.4
+MULTUS_RELEASE=3.2
 BASEIMAGE?=k8s.gcr.io/hyperkube-$(ARCH):$(VERSION)
 
 TEMP_DIR:=$(shell mktemp -d -t hyperkubeXXXXXX)
