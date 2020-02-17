@@ -48,21 +48,11 @@ data:
       --key-file=/etc/kubernetes/certs/tls-etcd-key.pem \
       --client-cert-auth=true \
       --trusted-ca-file=/etc/kubernetes/certs/etcd-clients-ca.pem \
-      --peer-cert-file=/etc/kubernetes/certs/tls-etcd.pem \
-      --peer-key-file=/etc/kubernetes/certs/tls-etcd-key.pem \
-      --peer-client-cert-auth=true \
-      --peer-trusted-ca-file=/etc/kubernetes/certs/etcd-peers-ca.pem \
       --advertise-client-urls=https://${ETCD_IP}:2379 \
-      --initial-advertise-peer-urls=https://${ETCD_IP}:2380 \
-      --initial-cluster=kubernikus=https://${ETCD_IP}:2380 \
-      --listen-client-urls=https://0.0.0.0:2379 \
-      --listen-peer-urls=https://${ETCD_IP}:2380
+      --listen-client-urls=https://0.0.0.0:2379
 {{- else }}
       --advertise-client-urls=http://${ETCD_IP}:2379 \
-      --initial-advertise-peer-urls=http://${ETCD_IP}:2380 \
-      --initial-cluster=kubernikus=http://${ETCD_IP}:2380 \
-      --listen-client-urls=http://0.0.0.0:2379 \
-      --listen-peer-urls=http://${ETCD_IP}:2380
+      --listen-client-urls=http://0.0.0.0:2379
 {{- end }}
 ---
 apiVersion: extensions/v1beta1
@@ -105,8 +95,6 @@ spec:
             items:
               - key: etcd-clients-ca.pem
                 path: etcd-clients-ca.pem
-              - key: etcd-peers-ca.pem
-                path: etcd-peers-ca.pem
               - key: tls-etcd-ca.pem
                 path: tls-etcd-ca.pem
               - key: tls-etcd.pem
