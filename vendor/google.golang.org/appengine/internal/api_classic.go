@@ -59,13 +59,10 @@ func IncomingHeaders(ctx netcontext.Context) http.Header {
 	return nil
 }
 
-<<<<<<< HEAD
 func ReqContext(req *http.Request) netcontext.Context {
 	return WithContext(netcontext.Background(), req)
 }
 
-=======
->>>>>>> Update kubernetes deps to k8s 1.12, helm to 2.11.0
 func WithContext(parent netcontext.Context, req *http.Request) netcontext.Context {
 	c := appengine.NewContext(req)
 	return withContext(parent, c)

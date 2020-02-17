@@ -44,10 +44,7 @@ var (
 	curNamespaceHeader = http.CanonicalHeaderKey("X-AppEngine-Current-Namespace")
 	userIPHeader       = http.CanonicalHeaderKey("X-AppEngine-User-IP")
 	remoteAddrHeader   = http.CanonicalHeaderKey("X-AppEngine-Remote-Addr")
-<<<<<<< HEAD
 	devRequestIdHeader = http.CanonicalHeaderKey("X-Appengine-Dev-Request-Id")
-=======
->>>>>>> Update kubernetes deps to k8s 1.12, helm to 2.11.0
 
 	// Outgoing headers.
 	apiEndpointHeader      = http.CanonicalHeaderKey("X-Google-RPC-Service-Endpoint")
@@ -66,15 +63,10 @@ var (
 		},
 	}
 
-<<<<<<< HEAD
 	defaultTicketOnce     sync.Once
 	defaultTicket         string
 	backgroundContextOnce sync.Once
 	backgroundContext     netcontext.Context
-=======
-	defaultTicketOnce sync.Once
-	defaultTicket     string
->>>>>>> Update kubernetes deps to k8s 1.12, helm to 2.11.0
 )
 
 func apiURL() *url.URL {
@@ -98,25 +90,11 @@ func handleHTTP(w http.ResponseWriter, r *http.Request) {
 		outHeader: w.Header(),
 		apiURL:    apiURL(),
 	}
-<<<<<<< HEAD
 	r = r.WithContext(withContext(r.Context(), c))
 	c.req = r
 
 	stopFlushing := make(chan int)
 
-=======
-	stopFlushing := make(chan int)
-
-	ctxs.Lock()
-	ctxs.m[r] = c
-	ctxs.Unlock()
-	defer func() {
-		ctxs.Lock()
-		delete(ctxs.m, r)
-		ctxs.Unlock()
-	}()
-
->>>>>>> Update kubernetes deps to k8s 1.12, helm to 2.11.0
 	// Patch up RemoteAddr so it looks reasonable.
 	if addr := r.Header.Get(userIPHeader); addr != "" {
 		r.RemoteAddr = addr
@@ -152,7 +130,6 @@ func handleHTTP(w http.ResponseWriter, r *http.Request) {
 		flushes++
 	}
 	c.pendingLogs.Unlock()
-<<<<<<< HEAD
 	flushed := make(chan struct{})
 	go func() {
 		defer close(flushed)
@@ -160,9 +137,6 @@ func handleHTTP(w http.ResponseWriter, r *http.Request) {
 		// may not ever flush logs.
 		c.flushLog(true)
 	}()
-=======
-	go c.flushLog(false)
->>>>>>> Update kubernetes deps to k8s 1.12, helm to 2.11.0
 	w.Header().Set(logFlushHeader, strconv.Itoa(flushes))
 
 	// Avoid nil Write call if c.Write is never called.
@@ -172,12 +146,9 @@ func handleHTTP(w http.ResponseWriter, r *http.Request) {
 	if c.outBody != nil {
 		w.Write(c.outBody)
 	}
-<<<<<<< HEAD
 	// Wait for the last flush to complete before returning,
 	// otherwise the security ticket will not be valid.
 	<-flushed
-=======
->>>>>>> Update kubernetes deps to k8s 1.12, helm to 2.11.0
 }
 
 func executeRequestSafely(c *context, r *http.Request) {
@@ -230,21 +201,6 @@ func renderPanic(x interface{}) string {
 	return string(buf)
 }
 
-<<<<<<< HEAD
-=======
-var ctxs = struct {
-	sync.Mutex
-	m  map[*http.Request]*context
-	bg *context // background context, lazily initialized
-	// dec is used by tests to decorate the netcontext.Context returned
-	// for a given request. This allows tests to add overrides (such as
-	// WithAppIDOverride) to the context. The map is nil outside tests.
-	dec map[*http.Request]func(netcontext.Context) netcontext.Context
-}{
-	m: make(map[*http.Request]*context),
-}
-
->>>>>>> Update kubernetes deps to k8s 1.12, helm to 2.11.0
 // context represents the context of an in-flight HTTP request.
 // It implements the appengine.Context and http.ResponseWriter interfaces.
 type context struct {
@@ -265,7 +221,6 @@ type context struct {
 
 var contextKey = "holds a *context"
 
-<<<<<<< HEAD
 // jointContext joins two contexts in a superficial way.
 // It takes values and timeouts from a base context, and only values from another context.
 type jointContext struct {
@@ -292,8 +247,6 @@ func (c jointContext) Value(key interface{}) interface{} {
 	return c.valuesOnly.Value(key)
 }
 
-=======
->>>>>>> Update kubernetes deps to k8s 1.12, helm to 2.11.0
 // fromContext returns the App Engine context or nil if ctx is not
 // derived from an App Engine context.
 func fromContext(ctx netcontext.Context) *context {
@@ -320,7 +273,6 @@ func IncomingHeaders(ctx netcontext.Context) http.Header {
 	return nil
 }
 
-<<<<<<< HEAD
 func ReqContext(req *http.Request) netcontext.Context {
 	return req.Context()
 }
@@ -330,25 +282,6 @@ func WithContext(parent netcontext.Context, req *http.Request) netcontext.Contex
 		base:       parent,
 		valuesOnly: req.Context(),
 	}
-=======
-func WithContext(parent netcontext.Context, req *http.Request) netcontext.Context {
-	ctxs.Lock()
-	c := ctxs.m[req]
-	d := ctxs.dec[req]
-	ctxs.Unlock()
-
-	if d != nil {
-		parent = d(parent)
-	}
-
-	if c == nil {
-		// Someone passed in an http.Request that is not in-flight.
-		// We panic here rather than panicking at a later point
-		// so that stack traces will be more sensible.
-		log.Panic("appengine: NewContext passed an unknown http.Request")
-	}
-	return withContext(parent, c)
->>>>>>> Update kubernetes deps to k8s 1.12, helm to 2.11.0
 }
 
 // DefaultTicket returns a ticket used for background context or dev_appserver.
@@ -370,7 +303,6 @@ func DefaultTicket() string {
 }
 
 func BackgroundContext() netcontext.Context {
-<<<<<<< HEAD
 	backgroundContextOnce.Do(func() {
 		// Compute background security ticket.
 		ticket := DefaultTicket()
@@ -390,73 +322,21 @@ func BackgroundContext() netcontext.Context {
 	})
 
 	return backgroundContext
-=======
-	ctxs.Lock()
-	defer ctxs.Unlock()
-
-	if ctxs.bg != nil {
-		return toContext(ctxs.bg)
-	}
-
-	// Compute background security ticket.
-	ticket := DefaultTicket()
-
-	ctxs.bg = &context{
-		req: &http.Request{
-			Header: http.Header{
-				ticketHeader: []string{ticket},
-			},
-		},
-		apiURL: apiURL(),
-	}
-
-	// TODO(dsymonds): Wire up the shutdown handler to do a final flush.
-	go ctxs.bg.logFlusher(make(chan int))
-
-	return toContext(ctxs.bg)
->>>>>>> Update kubernetes deps to k8s 1.12, helm to 2.11.0
 }
 
 // RegisterTestRequest registers the HTTP request req for testing, such that
 // any API calls are sent to the provided URL. It returns a closure to delete
 // the registration.
 // It should only be used by aetest package.
-<<<<<<< HEAD
 func RegisterTestRequest(req *http.Request, apiURL *url.URL, decorate func(netcontext.Context) netcontext.Context) (*http.Request, func()) {
-=======
-func RegisterTestRequest(req *http.Request, apiURL *url.URL, decorate func(netcontext.Context) netcontext.Context) func() {
->>>>>>> Update kubernetes deps to k8s 1.12, helm to 2.11.0
 	c := &context{
 		req:    req,
 		apiURL: apiURL,
 	}
-<<<<<<< HEAD
 	ctx := withContext(decorate(req.Context()), c)
 	req = req.WithContext(ctx)
 	c.req = req
 	return req, func() {}
-=======
-	ctxs.Lock()
-	defer ctxs.Unlock()
-	if _, ok := ctxs.m[req]; ok {
-		log.Panic("req already associated with context")
-	}
-	if _, ok := ctxs.dec[req]; ok {
-		log.Panic("req already associated with context")
-	}
-	if ctxs.dec == nil {
-		ctxs.dec = make(map[*http.Request]func(netcontext.Context) netcontext.Context)
-	}
-	ctxs.m[req] = c
-	ctxs.dec[req] = decorate
-
-	return func() {
-		ctxs.Lock()
-		delete(ctxs.m, req)
-		delete(ctxs.dec, req)
-		ctxs.Unlock()
-	}
->>>>>>> Update kubernetes deps to k8s 1.12, helm to 2.11.0
 }
 
 var errTimeout = &CallError{
@@ -615,12 +495,9 @@ func Call(ctx netcontext.Context, service, method string, in, out proto.Message)
 	if ticket == "" {
 		ticket = DefaultTicket()
 	}
-<<<<<<< HEAD
 	if dri := c.req.Header.Get(devRequestIdHeader); IsDevAppServer() && dri != "" {
 		ticket = dri
 	}
-=======
->>>>>>> Update kubernetes deps to k8s 1.12, helm to 2.11.0
 	req := &remotepb.Request{
 		ServiceName: &service,
 		Method:      &method,
@@ -706,14 +583,10 @@ func logf(c *context, level int64, format string, args ...interface{}) {
 		Level:         &level,
 		Message:       &s,
 	})
-<<<<<<< HEAD
 	// Only duplicate log to stderr if not running on App Engine second generation
 	if !IsSecondGen() {
 		log.Print(logLevelName[level] + ": " + s)
 	}
-=======
-	log.Print(logLevelName[level] + ": " + s)
->>>>>>> Update kubernetes deps to k8s 1.12, helm to 2.11.0
 }
 
 // flushLog attempts to flush any pending logs to the appserver.

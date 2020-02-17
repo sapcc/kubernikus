@@ -12,13 +12,10 @@ import (
 	netcontext "golang.org/x/net/context"
 )
 
-<<<<<<< HEAD
 func init() {
 	appengineStandard = true
 }
 
-=======
->>>>>>> Update kubernetes deps to k8s 1.12, helm to 2.11.0
 func DefaultVersionHostname(ctx netcontext.Context) string {
 	c := fromContext(ctx)
 	if c == nil {

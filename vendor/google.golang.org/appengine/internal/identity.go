@@ -4,7 +4,6 @@
 
 package internal
 
-<<<<<<< HEAD
 import (
 	"os"
 
@@ -54,13 +53,3 @@ func IsFlex() bool {
 func IsAppEngine() bool {
 	return IsStandard() || IsFlex()
 }
-=======
-import netcontext "golang.org/x/net/context"
-
-// These functions are implementations of the wrapper functions
-// in ../appengine/identity.go. See that file for commentary.
-
-func AppID(c netcontext.Context) string {
-	return appID(FullyQualifiedAppID(c))
-}
->>>>>>> Update kubernetes deps to k8s 1.12, helm to 2.11.0

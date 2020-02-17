@@ -54,15 +54,9 @@ type transaction struct {
 
 var ErrConcurrentTransaction = errors.New("internal: concurrent transaction")
 
-<<<<<<< HEAD
 func RunTransactionOnce(c netcontext.Context, f func(netcontext.Context) error, xg bool, readOnly bool, previousTransaction *pb.Transaction) (*pb.Transaction, error) {
 	if transactionFromContext(c) != nil {
 		return nil, errors.New("nested transactions are not supported")
-=======
-func RunTransactionOnce(c netcontext.Context, f func(netcontext.Context) error, xg bool) error {
-	if transactionFromContext(c) != nil {
-		return errors.New("nested transactions are not supported")
->>>>>>> Update kubernetes deps to k8s 1.12, helm to 2.11.0
 	}
 
 	// Begin the transaction.
@@ -73,7 +67,6 @@ func RunTransactionOnce(c netcontext.Context, f func(netcontext.Context) error, 
 	if xg {
 		req.AllowMultipleEg = proto.Bool(true)
 	}
-<<<<<<< HEAD
 	if previousTransaction != nil {
 		req.PreviousTransaction = previousTransaction
 	}
@@ -84,10 +77,6 @@ func RunTransactionOnce(c netcontext.Context, f func(netcontext.Context) error, 
 	}
 	if err := Call(c, "datastore_v3", "BeginTransaction", req, &t.transaction); err != nil {
 		return nil, err
-=======
-	if err := Call(c, "datastore_v3", "BeginTransaction", req, &t.transaction); err != nil {
-		return err
->>>>>>> Update kubernetes deps to k8s 1.12, helm to 2.11.0
 	}
 
 	// Call f, rolling back the transaction if f returns a non-nil error, or panics.
@@ -102,11 +91,7 @@ func RunTransactionOnce(c netcontext.Context, f func(netcontext.Context) error, 
 		Call(c, "datastore_v3", "Rollback", &t.transaction, &basepb.VoidProto{})
 	}()
 	if err := f(withTransaction(c, t)); err != nil {
-<<<<<<< HEAD
 		return &t.transaction, err
-=======
-		return err
->>>>>>> Update kubernetes deps to k8s 1.12, helm to 2.11.0
 	}
 	t.finished = true
 
@@ -120,7 +105,6 @@ func RunTransactionOnce(c netcontext.Context, f func(netcontext.Context) error, 
 		// The Python Dev AppServer raises an ApplicationError with error code 2 (which is
 		// Error.CONCURRENT_TRANSACTION) and message "Concurrency exception.".
 		if ae.Code == int32(pb.Error_BAD_REQUEST) && ae.Detail == "ApplicationError: 2 Concurrency exception." {
-<<<<<<< HEAD
 			return &t.transaction, ErrConcurrentTransaction
 		}
 		if ae.Code == int32(pb.Error_CONCURRENT_TRANSACTION) {
@@ -128,13 +112,4 @@ func RunTransactionOnce(c netcontext.Context, f func(netcontext.Context) error, 
 		}
 	}
 	return &t.transaction, err
-=======
-			return ErrConcurrentTransaction
-		}
-		if ae.Code == int32(pb.Error_CONCURRENT_TRANSACTION) {
-			return ErrConcurrentTransaction
-		}
-	}
-	return err
->>>>>>> Update kubernetes deps to k8s 1.12, helm to 2.11.0
 }

@@ -12,18 +12,12 @@ import (
 	"net/http"
 	"net/url"
 	"os"
-<<<<<<< HEAD
 	"path/filepath"
 	"runtime"
 )
 
 func Main() {
 	MainPath = filepath.Dir(findMainPath())
-=======
-)
-
-func Main() {
->>>>>>> Update kubernetes deps to k8s 1.12, helm to 2.11.0
 	installHealthChecker(http.DefaultServeMux)
 
 	port := "8080"
@@ -40,7 +34,6 @@ func Main() {
 	}
 }
 
-<<<<<<< HEAD
 // Find the path to package main by looking at the root Caller.
 func findMainPath() string {
 	pc := make([]uintptr, 100)
@@ -59,8 +52,6 @@ func findMainPath() string {
 	return ""
 }
 
-=======
->>>>>>> Update kubernetes deps to k8s 1.12, helm to 2.11.0
 func installHealthChecker(mux *http.ServeMux) {
 	// If no health check handler has been installed by this point, add a trivial one.
 	const healthPath = "/_ah/health"
