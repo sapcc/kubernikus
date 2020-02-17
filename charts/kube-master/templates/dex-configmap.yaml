@@ -16,7 +16,16 @@ data:
       type: etcd
       config:
         endpoints:
+{{- if .Values.etcd.secure.enabled }}
+          - https://{{ include "etcd.fullname" . }}:2379
+        ssl:
+          serverName: {{ include "etcd.fullname" . }}
+          caFile: /etc/kubernetes/certs/tls-etcd-ca.pem
+          keyFile: /etc/kubernetes/certs/etcd-clients-dex-key.pem
+          certFile: /etc/kubernetes/certs/etcd-clients-dex.pem
+{{- else }}
           - http://{{ include "etcd.fullname" . }}:2379
+{{- end }}
         namespace: dex/
     
     web:
