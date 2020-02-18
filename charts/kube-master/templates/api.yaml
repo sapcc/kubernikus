@@ -181,6 +181,9 @@ spec:
 {{- end }}
 {{- if (semverCompare ">= 1.14" .Values.version.kubernetes) }}
             - --feature-gates=NodeLease=false
+{{- else if (semverCompare ">= 1.12" .Values.version.kubernetes)}}
+            # https://github.com/kubernetes/kubernetes/issues/85867
+            - --feature-gates=ValidateProxyRedirects=true
 {{- end }}
             #Cert Spratz
             - --client-ca-file=/etc/kubernetes/certs/apiserver-clients-and-nodes-ca.pem

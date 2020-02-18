@@ -40,6 +40,13 @@ func (d *createCluster) Handle(params operations.CreateClusterParams, principal 
 		return NewErrorResponse(&operations.CreateClusterDefault{}, int(err.Code()), err.Error())
 	}
 
+	if params.Body.Spec.Version != "" {
+		selectedVersion, found := d.Images.Versions[params.Body.Spec.Version]
+		if !found || !selectedVersion.Supported {
+			return NewErrorResponse(&operations.CreateClusterDefault{}, 400, "Specified cluster version %s not supported", params.Body.Spec.Version)
+		}
+	}
+
 	var metadata *models.OpenstackMetadata
 	var defaultAVZ string
 	if len(spec.NodePools) > 0 {

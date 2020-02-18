@@ -1,5 +1,6 @@
 imagesForVersion:
   '1.15.9':
+    default: true
     supported: true
     hyperkube:
       repository: 'sapcc/hyperkube'
@@ -82,8 +83,6 @@ imagesForVersion:
       repository: 'kubernetesui/dashboard'
       tag: 'v2.0.0-beta1'
   '1.11.9':
-    default: true
-    supported: true
     hyperkube:
       repository: 'sapcc/hyperkube'
       tag: 'v1.11.9'
