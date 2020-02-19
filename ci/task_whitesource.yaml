@@ -1,7 +1,7 @@
 platform: 'linux'
 
 image_resource:
-  type: registry-image
+  type: docker-image
   source:
     repository: hub.global.cloud.sap/d074427/wss-agent
     tag: 20.1.3-kubernikus
