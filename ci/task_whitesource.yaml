@@ -15,7 +15,6 @@ run:
     - |
       set -e
       export TZ=UTC
-      set -uo pipefail
 
       cat >/wss-unified-agent.config <<EOF
       ####################################################################
