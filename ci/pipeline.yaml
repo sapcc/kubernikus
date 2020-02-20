@@ -974,6 +974,115 @@ task_tiller: &task_tiller
     KUBERNIKUS_URL:
   
 
+task_whitesource: &task_whitesource
+  platform: 'linux'
+  
+  image_resource:
+    type: registry-image
+    source:
+      repository: hub.global.cloud.sap/d074427/wss-agent
+      tag: 20.1.3-kubernikus
+  inputs:
+    - name: kubernikus.builds
+  
+  run:
+    path: /bin/sh
+    args:
+      - -c
+      - |
+        set -e
+        export TZ=UTC
+        set -uo pipefail
+  
+        cat >/wss-unified-agent.config <<EOF
+        ####################################################################
+        # WhiteSource Unified-Agent configuration file for GO
+        # GENERAL SCAN MODE: Package Managers only
+        ####################################################################
+  
+        # !!! Important for WhiteSource "DIST - *" Products:
+        # Please set
+        #   checkPolicies=false
+        #   forceCheckAllDependencies=false
+        # since Policy checks are not applicable for Security scans and also
+        # not suitable for DIST category. CheckPolicies just cover IP scan
+        # related license checks for SAP hosted cloud products only ("SHC - *").
+        checkPolicies=false
+        forceCheckAllDependencies=false
+        
+        # forceUpdate is important and need to be true
+        forceUpdate=true
+        # failBuildOnPolicyViolation:
+        # If the flag is true, the Unified Agent exit code will be the result of the policy check.
+        # If the flag is false, the Unified Agent exit code will be the result of the scan.
+        forceUpdate.failBuildOnPolicyViolation=false
+        # offline parameter is important and need to be false
+        offline=false
+        
+        # ignoreSourceFiles is important and need to be true
+        ignoreSourceFiles=true
+        # resolveAllDependencies is important and need to be false
+        resolveAllDependencies=false
+        
+        #wss.connectionTimeoutMinutes=60
+        # URL to your WhiteSource server.
+        wss.url=https://saas.whitesourcesoftware.com/agent
+        
+        # resolveDependencies parameter is important and need to be true
+        go.resolveDependencies=true
+        # ignoreSourceFiles parameter is important and need to be true
+        go.ignoreSourceFiles=true
+        go.collectDependenciesAtRuntime=false
+        # dependencyManager: Determines the Go dependency manager to use when scanning a Go project.
+        # Valid values are 'dep', 'godep', 'vndr', 'gogradle', 'glide', 'govendor', and 'gopm'.
+        # If empty, then the Unified Agent will try to resolve the dependencies using each one
+        # of the package managers above.
+        go.dependencyManager=glide
+        go.glide.ignoreTestPackages=false
+        #go.gogradle.enableTaskAlias=true
+        ##################################
+        # Organization tokens:
+        ##################################
+        # ! In case of PIPER, apiKey may not be used in this configuration, 
+        #   but set in configuration of piper. 
+        #   Please look at PIPER documentation for more information.
+        # ! For CoDePipes you may look at CoDePipes for more information.
+        apiKey=${API_KEY}
+        
+        # userKey is required if WhiteSource administrator has enabled "Enforce user level access" option.
+        # ! In case of PIPER, apiKey may not be used in this configuration,
+        #   but set in configuration of piper.
+        #   Please look at PIPER documentation for more information.
+        # ! For CoDePipes you may look at CoDePipes for more information.
+        userKey=${USER_KEY}
+        
+        projectName=${PROJECT_NAME}
+        #projectVersion=
+        #projectToken=
+        
+        #productName=
+        #productVersion=
+        productToken=${PRODUCT_TOKEN}
+        #updateType=APPEND
+        updateType=OVERRIDE
+        
+        #requesterEmail=
+        
+        #########################################################################################
+        # Includes/Excludes Glob patterns - PLEASE USE ONLY ONE EXCLUDE LINE AND ONE INCLUDE LINE
+        #########################################################################################
+        includes=**/*.lock
+        
+        ## Exclude file extensions or specific directories by adding **/*.<extension> or **<excluded_dir>/**
+        excludes=**/*sources.jar **/*javadoc.jar
+        
+        case.sensitive.glob=false
+        followSymbolicLinks=true
+        EOF
+        
+        java -jar /wss-unified-agent.jar -c /wss-unified-agent.config -d kubernikus.builds
+  
+
 
 slack: &slack
   on_success: { put: slack-alert, inputs: [], params: {alert_type: fixed } }
@@ -1150,6 +1259,21 @@ jobs:
             - binaries/kubernikusctl*
         get_params:
           globs: []
+    <<: *slack
+
+  - name: whitesource
+    plan:
+      - in_parallel:
+        - get: kubernikus.builds
+          resource: master.builds
+          trigger: true
+      - task: build
+        file: kubernikus.builds/ci/task_whitesource.yaml
+        params:
+          API_KEY: ((whitesource-api-key))
+          USER_KEY: ((whitesource-user-key))
+          PROJECT_NAME: CCloud Kubernikus
+          PRODUCT_TOKEN: ((whitesource-product-token))
     <<: *slack
 
   - name: e2e
@@ -3097,6 +3221,7 @@ groups:
     jobs:
       - master
       - cli
+      - whitesource
       - tiller_master
       - e2e
       - prod
@@ -3264,6 +3389,7 @@ groups:
     jobs:
       - master
       - cli
+      - whitesource
       - tiller_master
       - e2e
       - prod

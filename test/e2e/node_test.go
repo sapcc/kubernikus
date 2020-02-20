@@ -51,8 +51,8 @@ func (k *NodeTests) Run(t *testing.T) {
 		t.Run("Healthy", k.StateHealthy) &&
 		t.Run("Ready", k.ConditionReady) &&
 		t.Run("Labeled", k.Labeled) &&
-		t.Run("Sufficient", k.Sufficient) &&
-		t.Run("SameBuildingBlock", k.SameBuildingBlock)
+		t.Run("Sufficient", k.Sufficient)
+	//t.Run("SameBuildingBlock", k.SameBuildingBlock)
 }
 
 func (k *NodeTests) StateRunning(t *testing.T) {

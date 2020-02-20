@@ -267,6 +267,21 @@ jobs:
           globs: []
     <<: *slack
 
+  - name: whitesource
+    plan:
+      - in_parallel:
+        - get: kubernikus.builds
+          resource: master.builds
+          trigger: true
+      - task: build
+        file: kubernikus.builds/ci/task_whitesource.yaml
+        params:
+          API_KEY: ((whitesource-api-key))
+          USER_KEY: ((whitesource-user-key))
+          PROJECT_NAME: CCloud Kubernikus
+          PRODUCT_TOKEN: ((whitesource-product-token))
+    <<: *slack
+
   - name: e2e
     serial: true
     plan:
@@ -444,6 +459,7 @@ groups:
     jobs:
       - master
       - cli
+      - whitesource
       - tiller_master
       - e2e
       - prod
@@ -467,6 +483,7 @@ groups:
     jobs:
       - master
       - cli
+      - whitesource
       - tiller_master
       - e2e
       - prod
