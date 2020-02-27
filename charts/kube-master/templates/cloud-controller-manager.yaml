@@ -1,7 +1,11 @@
 {{- if .Values.openstack }}
 {{- if (semverCompare ">= 1.13" .Values.version.kubernetes) }}
 {{/* vim: set filetype=gotexttmpl: */ -}}
+{{- if semverCompare ">=1.16-0" .Capabilities.KubeVersion.GitVersion }}
+apiVersion: "apps/v1"
+{{- else }}
 apiVersion: "extensions/v1beta1"
+{{- end }}
 kind: Deployment
 metadata:
   name: {{ include "master.fullname" . }}-ccmanager
@@ -48,7 +52,11 @@ spec:
           secret:
             secretName: {{ include "master.fullname" . }}-generated
             items:
+{{- if (semverCompare ">= 1.16" .Values.version.kubernetes) }}
+              - key: openstack-ccmanager.config
+{{- else }}
               - key: openstack.config
+{{- end }}
                 path: openstack.config
       containers:
         - name: cloud-controller-manager
