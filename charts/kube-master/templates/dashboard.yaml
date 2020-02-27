@@ -1,7 +1,11 @@
 {{/* vim: set filetype=gotexttmpl: */ -}}
 {{ if and .Values.dex.enabled .Values.dashboard.enabled }}
 kind: Deployment
-apiVersion: extensions/v1beta1
+{{- if semverCompare ">=1.16-0" .Capabilities.KubeVersion.GitVersion }}
+apiVersion: "apps/v1"
+{{- else }}
+apiVersion: "extensions/v1beta1"
+{{- end }}
 metadata:
   labels:
     chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}

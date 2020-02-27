@@ -2,6 +2,7 @@ package dns
 
 import (
 	"github.com/pkg/errors"
+	apps "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
 	extensions "k8s.io/api/extensions/v1beta1"
 	rbac "k8s.io/api/rbac/v1beta1"
@@ -36,6 +37,33 @@ func SeedCoreDNS(client clientset.Interface, repository, version, domain, cluste
 		return errors.Wrap(err, "Failed to ensure coredns service")
 	}
 	if err := createCoreDNSDeployment(client, repository, version); err != nil {
+		return errors.Wrap(err, "Failed to ensure coredns deployment")
+	}
+
+	return nil
+}
+
+func SeedCoreDNS116(client clientset.Interface, repository, version, domain, clusterIP string) error {
+	if err := createCoreDNSServiceAccount(client); err != nil {
+		return errors.Wrap(err, "Failed to ensure coredns service account")
+	}
+
+	if err := createCoreDNSClusterRole(client); err != nil {
+		return errors.Wrap(err, "Failed to ensure coredns cluster role")
+	}
+
+	if err := createCoreDNSClusterRoleBinding(client); err != nil {
+		return errors.Wrap(err, "Failed to ensure coredns cluster role binding")
+	}
+
+	if err := createCoreDNSConfigMap(client, domain); err != nil {
+		return errors.Wrap(err, "Failed to ensure coredns config map")
+	}
+
+	if err := createCoreDNSService(client, clusterIP); err != nil {
+		return errors.Wrap(err, "Failed to ensure coredns service")
+	}
+	if err := createCoreDNSDeployment116(client, repository, version); err != nil {
 		return errors.Wrap(err, "Failed to ensure coredns deployment")
 	}
 
@@ -313,4 +341,135 @@ spec:
 	}
 
 	return bootstrap.CreateOrUpdateDeployment(client, deployment.(*extensions.Deployment))
+}
+
+func createCoreDNSDeployment116(client clientset.Interface, repository, version string) error {
+	if repository == "" {
+		repository = "sapcc"
+	}
+
+	if version == "" {
+		version = "1.6.2"
+	}
+
+	manifest := `
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: coredns
+  namespace: kube-system
+  labels:
+    k8s-app: kube-dns
+    kubernetes.io/cluster-service: "true"
+    addonmanager.kubernetes.io/mode: Reconcile
+    kubernetes.io/name: "CoreDNS"
+spec:
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+  selector:
+    matchLabels:
+      k8s-app: kube-dns
+  template:
+    metadata:
+      labels:
+        k8s-app: kube-dns
+      annotations:
+        seccomp.security.alpha.kubernetes.io/pod: 'docker/default'
+    spec:
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: k8s-app
+                operator: In
+                values:
+                - kube-dns
+            topologyKey: kubernetes.io/hostname
+      priorityClassName: system-cluster-critical
+      serviceAccountName: coredns
+      tolerations:
+        - key: "CriticalAddonsOnly"
+          operator: "Exists"
+      nodeSelector:
+        beta.kubernetes.io/os: linux
+      containers:
+      - name: coredns
+        image: {{ .Repository }}/coredns:{{ .Version }}
+        imagePullPolicy: IfNotPresent
+        resources:
+          limits:
+            memory: 170Mi
+          requests:
+            cpu: 100m
+            memory: 70Mi
+        args: [ "-conf", "/etc/coredns/Corefile" ]
+        volumeMounts:
+        - name: config-volume
+          mountPath: /etc/coredns
+          readOnly: true
+        ports:
+        - containerPort: 53
+          name: dns
+          protocol: UDP
+        - containerPort: 53
+          name: dns-tcp
+          protocol: TCP
+        - containerPort: 9153
+          name: metrics
+          protocol: TCP
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+            scheme: HTTP
+          initialDelaySeconds: 60
+          timeoutSeconds: 5
+          successThreshold: 1
+          failureThreshold: 5
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+            scheme: HTTP
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            add:
+            - NET_BIND_SERVICE
+            drop:
+            - all
+          readOnlyRootFilesystem: true
+      dnsPolicy: Default
+      volumes:
+        - name: config-volume
+          configMap:
+            name: coredns
+            items:
+            - key: Corefile
+              path: Corefile
+`
+
+	data := struct {
+		Repository string
+		Version    string
+	}{
+		repository,
+		version,
+	}
+
+	template, err := bootstrap.RenderManifest(manifest, data)
+	if err != nil {
+		return err
+	}
+
+	deployment, _, err := serializer.NewCodecFactory(clientsetscheme.Scheme).UniversalDeserializer().Decode(template, nil, &apps.Deployment{})
+	if err != nil {
+		return err
+	}
+
+	return bootstrap.CreateOrUpdateDeployment116(client, deployment.(*apps.Deployment))
 }

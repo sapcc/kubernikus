@@ -55,7 +55,11 @@ data:
       --listen-client-urls=http://0.0.0.0:2379
 {{- end }}
 ---
-apiVersion: extensions/v1beta1
+{{- if semverCompare ">=1.16-0" .Capabilities.KubeVersion.GitVersion }}
+apiVersion: "apps/v1"
+{{- else }}
+apiVersion: "extensions/v1beta1"
+{{- end }}
 kind: Deployment
 metadata:
   name: {{ include "fullname" . }}
