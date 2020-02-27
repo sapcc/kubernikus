@@ -46,7 +46,6 @@ func (s *SetupTests) CreateCluster(t *testing.T) {
 				{
 					Name:             "small",
 					Flavor:           "m1.small",
-					Image:            "coreos-stable-amd64",
 					Size:             SmokeTestNodeCount,
 					AvailabilityZone: os.Getenv("NODEPOOL_AVZ"),
 				},
