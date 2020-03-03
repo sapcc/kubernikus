@@ -5,20 +5,20 @@ import (
 	"strings"
 	"time"
 
-	"github.com/pkg/errors"
-
-	"github.com/sapcc/kubernikus/pkg/controller/config"
-	"github.com/sapcc/kubernikus/pkg/controller/nodeobservatory"
-	"github.com/sapcc/kubernikus/pkg/controller/servicing/coreos"
-	"github.com/sapcc/kubernikus/pkg/controller/servicing/flatcar"
-
 	"github.com/go-kit/kit/log"
+	"github.com/pkg/errors"
 	core_v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	listers_core_v1 "k8s.io/client-go/listers/core/v1"
 	"k8s.io/client-go/tools/record"
 
+	"github.com/sapcc/kubernikus/pkg/api/models"
 	v1 "github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
+	"github.com/sapcc/kubernikus/pkg/controller/config"
+	"github.com/sapcc/kubernikus/pkg/controller/nodeobservatory"
+	"github.com/sapcc/kubernikus/pkg/controller/servicing/coreos"
+	"github.com/sapcc/kubernikus/pkg/controller/servicing/flatcar"
+	"github.com/sapcc/kubernikus/pkg/util"
 	"github.com/sapcc/kubernikus/pkg/util/generator"
 	"github.com/sapcc/kubernikus/pkg/util/version"
 )
@@ -213,6 +213,8 @@ func (d *NodeLister) Reboot() []*core_v1.Node {
 // Replacement lists nodes that have an outdated Kubelet/Kube-Proxy
 func (d *NodeLister) Replace() []*core_v1.Node {
 	var upgradable, found []*core_v1.Node
+	var nodeNameToPool map[string]*models.NodePool
+	nodeNameToPool = make(map[string]*models.NodePool)
 
 	for _, pool := range d.Kluster.Spec.NodePools {
 		if *pool.Config.AllowReplace == false {
@@ -226,6 +228,7 @@ func (d *NodeLister) Replace() []*core_v1.Node {
 			}
 
 			if len(node.GetName()) == len(prefix)+generator.RandomLength {
+				nodeNameToPool[node.GetName()] = &pool
 				upgradable = append(upgradable, node)
 			}
 
@@ -234,14 +237,24 @@ func (d *NodeLister) Replace() []*core_v1.Node {
 
 	klusterVersion, err := version.ParseSemantic(d.Kluster.Status.ApiserverVersion)
 	if err != nil {
-		d.Logger.Log(
-			"msg", "Couldn't parse Kluster version. Skipping node upgrade.",
-			"err", err,
-		)
-		return found
+		klusterVersion = nil
 	}
 
 	for _, node := range upgradable {
+		if util.IsCoreOSNode(node) && util.IsFlatcarNodePool(nodeNameToPool[node.GetName()]) {
+			found = append(found, node)
+			continue
+		}
+
+		if klusterVersion == nil {
+			d.Logger.Log(
+				"msg", "Couldn't parse Kluster version. Skipping node upgrades because of missing api version.",
+				"node", node.GetName(),
+				"err", err,
+			)
+			continue
+		}
+
 		kubeletVersion, err := getKubeletVersion(node)
 		if err != nil {
 			d.Logger.Log(
