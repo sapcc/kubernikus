@@ -549,6 +549,21 @@ definitions:
         x-nullable: true
         x-omitempty: false
         type: boolean
+      allowAutoScale:
+        description: Allow automatic scaling of the node pool.
+        x-nullable: true
+        x-omitempty: false
+        type: boolean
+      minSize:
+        description: Minimal number of nodes in this node pool.
+        x-nullable: true
+        x-omitempty: 0
+        type: integer
+      maxSize:
+        description: Maximal number of nodes in this node pool.
+        x-nullable: true
+        x-omitempty: 127
+        type: integer
   KlusterStatus:
     readOnly: true
     x-nullable: false

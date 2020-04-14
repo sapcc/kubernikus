@@ -15,11 +15,20 @@ import (
 // swagger:model NodePoolConfig
 type NodePoolConfig struct {
 
+	// Allow automatic scaling of the node pool.
+	AllowAutoScale *bool `json:"allowAutoScale"`
+
 	// Allow automatic drain and reboot of nodes. Enables OS updates. Required by security policy.
 	AllowReboot *bool `json:"allowReboot"`
 
 	// Allow automatic drain and replacement of nodes. Enables Kubernetes upgrades.
 	AllowReplace *bool `json:"allowReplace"`
+
+	// Maximal number of nodes in this node pool.
+	MaxSize *int64 `json:"maxSize"`
+
+	// Minimal number of nodes in this node pool.
+	MinSize *int64 `json:"minSize"`
 }
 
 // Validate validates this node pool config

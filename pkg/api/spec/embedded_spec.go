@@ -705,6 +705,12 @@ func init() {
     "NodePoolConfig": {
       "type": "object",
       "properties": {
+        "allowAutoScale": {
+          "description": "Allow automatic scaling of the node pool.",
+          "type": "boolean",
+          "x-nullable": true,
+          "x-omitempty": false
+        },
         "allowReboot": {
           "description": "Allow automatic drain and reboot of nodes. Enables OS updates. Required by security policy.",
           "type": "boolean",
@@ -716,6 +722,18 @@ func init() {
           "type": "boolean",
           "x-nullable": true,
           "x-omitempty": false
+        },
+        "maxSize": {
+          "description": "Maximal number of nodes in this node pool.",
+          "type": "integer",
+          "x-nullable": true,
+          "x-omitempty": 127
+        },
+        "minSize": {
+          "description": "Minimal number of nodes in this node pool.",
+          "type": "integer",
+          "x-nullable": true,
+          "x-omitempty": 0
         }
       },
       "x-nullable": true
@@ -1666,6 +1684,12 @@ func init() {
     "NodePoolConfig": {
       "type": "object",
       "properties": {
+        "allowAutoScale": {
+          "description": "Allow automatic scaling of the node pool.",
+          "type": "boolean",
+          "x-nullable": true,
+          "x-omitempty": false
+        },
         "allowReboot": {
           "description": "Allow automatic drain and reboot of nodes. Enables OS updates. Required by security policy.",
           "type": "boolean",
@@ -1677,6 +1701,18 @@ func init() {
           "type": "boolean",
           "x-nullable": true,
           "x-omitempty": false
+        },
+        "maxSize": {
+          "description": "Maximal number of nodes in this node pool.",
+          "type": "integer",
+          "x-nullable": true,
+          "x-omitempty": 127
+        },
+        "minSize": {
+          "description": "Minimal number of nodes in this node pool.",
+          "type": "integer",
+          "x-nullable": true,
+          "x-omitempty": 0
         }
       },
       "x-nullable": true
