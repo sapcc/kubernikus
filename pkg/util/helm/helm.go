@@ -61,8 +61,10 @@ type etcdBackupValues struct {
 }
 
 type apiValues struct {
-	ApiserverHost string `yaml:"apiserverHost,omitempty"`
-	WormholeHost  string `yaml:"wormholeHost,omitempty"`
+	ApiserverHost      string `yaml:"apiserverHost,omitempty"`
+	WormholeHost       string `yaml:"wormholeHost,omitempty"`
+	CORSAllowedOrigins string `yaml:"corsAllowedOrigins,omitempty"`
+	SNICertSecret      string `yaml:"sniCertSecret,omitempty"`
 }
 
 type versionValues struct {

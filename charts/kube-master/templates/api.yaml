@@ -61,6 +61,11 @@ spec:
                 path: aggregation-aggregator.pem
               - key: aggregation-aggregator-key.pem
                 path: aggregation-aggregator-key.pem
+{{- if .Values.api.sniCertSecret }}
+        - name: sni-certs
+          secret:
+            secretName: {{ .Values.api.sniCertSecret }}
+{{- end }}
         - name: wormhole-certs
           secret:
             secretName: {{ required "secretName undefined" .Values.secretName }}
@@ -195,7 +200,12 @@ spec:
             - --service-account-key-file=/etc/kubernetes/certs/apiserver-clients-ca-key.pem
             - --tls-cert-file=/etc/kubernetes/certs/tls-apiserver.pem
             - --tls-private-key-file=/etc/kubernetes/certs/tls-apiserver-key.pem
-            # --tls-sni-cert-key=/etc/kubernetes/certs/tls-sni.pem,/etc/kubernetes/certs/tls-sni.key
+{{- if .Values.api.sniCertSecret }}
+            - --tls-sni-cert-key=/etc/kubernetes/sni-certs/tls.crt,/etc/kubernetes/sni-certs/tls.key
+{{- end }}
+{{- if .Values.api.corsAllowedOrigins }}
+            - --cors-allowed-origins={{ .Values.api.corsAllowedOrigins }}
+{{- end }}
             {{ if .Values.dex.enabled }}
             - --oidc-issuer-url=https://{{ include "dex.url" . }} 
             - --oidc-client-id=kubernetes
@@ -207,6 +217,11 @@ spec:
             - mountPath: /etc/kubernetes/certs
               name: certs
               readOnly: true
+{{- if .Values.api.sniCertSecret }}
+            - mountPath: /etc/kubernetes/sni-certs
+              name: sni-certs
+              readOnly: true
+{{- end }}
             {{- if .Values.openstack }}
             - mountPath: /etc/kubernetes/cloudprovider
               name: cloudprovider
