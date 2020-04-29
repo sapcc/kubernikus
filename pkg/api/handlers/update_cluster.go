@@ -126,7 +126,7 @@ func (d *updateCluster) Handle(params operations.UpdateClusterParams, principal 
 		if params.Body.Spec.Version != "" && params.Body.Spec.Version != kluster.Status.ApiserverVersion {
 			newVersion, err := semver.NewVersion(params.Body.Spec.Version)
 			if err != nil {
-				return apierrors.NewBadRequest(fmt.Sprintf("Invalid version (%s) specified for kluser: %s", params.Body.Spec.Version, err))
+				return apierrors.NewBadRequest(fmt.Sprintf("Invalid version (%s) specified for kluster: %s", params.Body.Spec.Version, err))
 			}
 			currentVersion, err := semver.NewVersion(kluster.Status.ApiserverVersion)
 			if err != nil {
@@ -140,6 +140,12 @@ func (d *updateCluster) Handle(params operations.UpdateClusterParams, principal 
 			}
 			kluster.Spec.Version = params.Body.Spec.Version
 
+			// Update existing nodepools to use flatcar image
+			for i, specPool := range kluster.Spec.NodePools {
+				if specPool.Image == "coreos-stable-amd64" {
+					kluster.Spec.NodePools[i].Image = DEFAULT_IMAGE
+				}
+			}
 		}
 
 		// If dex is disabled
