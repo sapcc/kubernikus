@@ -668,7 +668,7 @@ func init() {
         },
         "image": {
           "type": "string",
-          "default": "coreos-stable-amd64",
+          "default": "flatcar-stable-amd64",
           "x-nullable": false
         },
         "labels": {
@@ -1628,7 +1628,7 @@ func init() {
         },
         "image": {
           "type": "string",
-          "default": "coreos-stable-amd64",
+          "default": "flatcar-stable-amd64",
           "x-nullable": false
         },
         "labels": {
