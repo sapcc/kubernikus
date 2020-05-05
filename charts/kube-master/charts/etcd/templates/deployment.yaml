@@ -187,7 +187,7 @@ spec:
             - --cert=/etc/kubernetes/certs/etcd-clients-backup.pem
             - --key=/etc/kubernetes/certs/etcd-clients-backup-key.pem
             - --insecure-transport=false
-            - {{- else }}
+            {{- else }}
             - --insecure-transport=true
             {{- end }}
           image: "{{ .Values.backup.image.repository }}:{{ .Values.backup.image.tag }}"
