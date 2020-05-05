@@ -13,6 +13,7 @@ import (
 	v1 "github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
 	"github.com/sapcc/kubernikus/pkg/controller/nodeobservatory"
 	"github.com/sapcc/kubernikus/pkg/controller/servicing/coreos"
+	"github.com/sapcc/kubernikus/pkg/controller/servicing/flatcar"
 )
 
 type MockNodeListerFactory struct {
@@ -28,11 +29,13 @@ func NewFakeNodeLister(t *testing.T, logger log.Logger, kluster *v1.Kluster, nod
 
 	var lister Lister
 	lister = &NodeLister{
-		Logger:        logger,
-		Kluster:       kluster,
-		Lister:        kl,
-		CoreOSVersion: coreos.NewFakeVersion(t, "2023.4.0"),
-		CoreOSRelease: coreos.NewFakeRelease(t, "2023.4.0"),
+		Logger:         logger,
+		Kluster:        kluster,
+		Lister:         kl,
+		CoreOSVersion:  coreos.NewFakeVersion(t, "2023.4.0"),
+		CoreOSRelease:  coreos.NewFakeRelease(t, "2023.4.0"),
+		FlatcarVersion: flatcar.NewFakeVersion(t, "2303.4.0"),
+		FlatcarRelease: flatcar.NewFakeRelease(t, "2303.4.0"),
 	}
 
 	lister = &LoggingLister{

@@ -515,7 +515,7 @@ definitions:
       image:
         x-nullable: false
         type: string
-        default: coreos-stable-amd64
+        default: flatcar-stable-amd64
       availabilityZone:
         type: string
         x-nullable: false
