@@ -5,19 +5,20 @@ import (
 	"strings"
 	"time"
 
-	"github.com/pkg/errors"
-
-	"github.com/sapcc/kubernikus/pkg/controller/config"
-	"github.com/sapcc/kubernikus/pkg/controller/nodeobservatory"
-	"github.com/sapcc/kubernikus/pkg/controller/servicing/coreos"
-
 	"github.com/go-kit/kit/log"
+	"github.com/pkg/errors"
 	core_v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	listers_core_v1 "k8s.io/client-go/listers/core/v1"
 	"k8s.io/client-go/tools/record"
 
+	"github.com/sapcc/kubernikus/pkg/api/models"
 	v1 "github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
+	"github.com/sapcc/kubernikus/pkg/controller/config"
+	"github.com/sapcc/kubernikus/pkg/controller/nodeobservatory"
+	"github.com/sapcc/kubernikus/pkg/controller/servicing/coreos"
+	"github.com/sapcc/kubernikus/pkg/controller/servicing/flatcar"
+	"github.com/sapcc/kubernikus/pkg/util"
 	"github.com/sapcc/kubernikus/pkg/util/generator"
 	"github.com/sapcc/kubernikus/pkg/util/version"
 )
@@ -45,15 +46,19 @@ type (
 		NodeObservatory *nodeobservatory.NodeObservatory
 		CoreOSVersion   *coreos.Version
 		CoreOSRelease   *coreos.Release
+		FlatcarVersion  *flatcar.Version
+		FlatcarRelease  *flatcar.Release
 	}
 
 	// NodeLister knows how to figure out the state of Nodes
 	NodeLister struct {
-		Logger        log.Logger
-		Kluster       *v1.Kluster
-		Lister        listers_core_v1.NodeLister
-		CoreOSVersion *coreos.Version
-		CoreOSRelease *coreos.Release
+		Logger         log.Logger
+		Kluster        *v1.Kluster
+		Lister         listers_core_v1.NodeLister
+		CoreOSVersion  *coreos.Version
+		CoreOSRelease  *coreos.Release
+		FlatcarVersion *flatcar.Version
+		FlatcarRelease *flatcar.Release
 	}
 
 	// LoggingLister writes log messages
@@ -70,6 +75,8 @@ func NewNodeListerFactory(logger log.Logger, recorder record.EventRecorder, fact
 		NodeObservatory: factories.NodesObservatory.NodeInformer(),
 		CoreOSVersion:   &coreos.Version{},
 		CoreOSRelease:   &coreos.Release{},
+		FlatcarVersion:  &flatcar.Version{},
+		FlatcarRelease:  &flatcar.Release{},
 	}
 }
 
@@ -84,11 +91,13 @@ func (f *NodeListerFactory) Make(k *v1.Kluster) (Lister, error) {
 	}
 
 	lister = &NodeLister{
-		Logger:        logger,
-		Kluster:       k,
-		Lister:        klusterLister,
-		CoreOSVersion: f.CoreOSVersion,
-		CoreOSRelease: f.CoreOSRelease,
+		Logger:         logger,
+		Kluster:        k,
+		Lister:         klusterLister,
+		CoreOSVersion:  f.CoreOSVersion,
+		CoreOSRelease:  f.CoreOSRelease,
+		FlatcarVersion: f.FlatcarVersion,
+		FlatcarRelease: f.FlatcarRelease,
 	}
 
 	lister = &LoggingLister{
@@ -112,11 +121,11 @@ func (d *NodeLister) All() []*core_v1.Node {
 	return nodes
 }
 
-// Reboot lists nodes that have an outdated CoreOS version
+// Reboot lists nodes that have an outdated OS version
 func (d *NodeLister) Reboot() []*core_v1.Node {
 	var rebootable, found []*core_v1.Node
 
-	latest, err := d.CoreOSVersion.Stable()
+	latestCoreOS, err := d.CoreOSVersion.Stable()
 	if err != nil {
 		d.Logger.Log(
 			"msg", "Couldn't get CoreOS version.",
@@ -125,15 +134,29 @@ func (d *NodeLister) Reboot() []*core_v1.Node {
 		return found
 	}
 
-	released, err := d.CoreOSRelease.GrownUp(latest)
+	releasedCoreOS, err := d.CoreOSRelease.GrownUp(latestCoreOS)
 	if err != nil {
 		d.Logger.Log(
 			"msg", "Couldn't get CoreOS releases.",
 			"err", err,
 		)
 	}
-	if !released {
+
+	latestFlatcar, err := d.FlatcarVersion.Stable()
+	if err != nil {
+		d.Logger.Log(
+			"msg", "Couldn't get Flatcar version.",
+			"err", err,
+		)
 		return found
+	}
+
+	releasedFlatcar, err := d.FlatcarRelease.GrownUp(latestFlatcar)
+	if err != nil {
+		d.Logger.Log(
+			"msg", "Couldn't get Flatcar releases.",
+			"err", err,
+		)
 	}
 
 	for _, pool := range d.Kluster.Spec.NodePools {
@@ -153,10 +176,27 @@ func (d *NodeLister) Reboot() []*core_v1.Node {
 	}
 
 	for _, node := range rebootable {
-		uptodate, err := d.CoreOSVersion.IsNodeUptodate(node)
+		uptodate := true
+		var err error
+
+		if strings.HasPrefix(node.Status.NodeInfo.OSImage, "Flatcar Container Linux") {
+			if releasedFlatcar {
+				uptodate, err = d.FlatcarVersion.IsNodeUptodate(node)
+			}
+		} else if strings.HasPrefix(node.Status.NodeInfo.OSImage, "Container Linux by CoreOS") {
+			if releasedCoreOS {
+				uptodate, err = d.CoreOSVersion.IsNodeUptodate(node)
+			}
+		} else {
+			d.Logger.Log(
+				"msg", "Unsupported OS on node. Skipping OS upgrade.",
+				"os", node.Status.NodeInfo.OSImage,
+			)
+			continue
+		}
 		if err != nil {
 			d.Logger.Log(
-				"msg", "Couldn't get CoreOS version from Node. Skipping OS upgrade.",
+				"msg", "Couldn't get OS version from Node. Skipping OS upgrade.",
 				"err", err,
 			)
 			continue
@@ -173,6 +213,8 @@ func (d *NodeLister) Reboot() []*core_v1.Node {
 // Replacement lists nodes that have an outdated Kubelet/Kube-Proxy
 func (d *NodeLister) Replace() []*core_v1.Node {
 	var upgradable, found []*core_v1.Node
+	var nodeNameToPool map[string]*models.NodePool
+	nodeNameToPool = make(map[string]*models.NodePool)
 
 	for _, pool := range d.Kluster.Spec.NodePools {
 		if *pool.Config.AllowReplace == false {
@@ -186,6 +228,7 @@ func (d *NodeLister) Replace() []*core_v1.Node {
 			}
 
 			if len(node.GetName()) == len(prefix)+generator.RandomLength {
+				nodeNameToPool[node.GetName()] = &pool
 				upgradable = append(upgradable, node)
 			}
 
@@ -194,14 +237,24 @@ func (d *NodeLister) Replace() []*core_v1.Node {
 
 	klusterVersion, err := version.ParseSemantic(d.Kluster.Status.ApiserverVersion)
 	if err != nil {
-		d.Logger.Log(
-			"msg", "Couldn't parse Kluster version. Skipping node upgrade.",
-			"err", err,
-		)
-		return found
+		klusterVersion = nil
 	}
 
 	for _, node := range upgradable {
+		if util.IsCoreOSNode(node) && util.IsFlatcarNodePool(nodeNameToPool[node.GetName()]) {
+			found = append(found, node)
+			continue
+		}
+
+		if klusterVersion == nil {
+			d.Logger.Log(
+				"msg", "Couldn't parse Kluster version. Skipping node upgrades because of missing api version.",
+				"node", node.GetName(),
+				"err", err,
+			)
+			continue
+		}
+
 		kubeletVersion, err := getKubeletVersion(node)
 		if err != nil {
 			d.Logger.Log(
