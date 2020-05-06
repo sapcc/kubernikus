@@ -3,8 +3,8 @@ platform: "linux"
 image_resource:
   type: registry-image
   source:
-    repository: sapcc/kubernikus-kubectl
-    tag: "v1.10.9"
+    repository: sapcc/unified-kubernetes-toolbox
+    tag: 'latest'
 
 inputs:
   - name: kubernikus.builds
@@ -44,11 +44,9 @@ run:
 
 params:
   REGION:
-  OS_AUTH_URL:
-  OS_USERNAME:
-  OS_PASSWORD:
-  OS_USER_DOMAIN_NAME:
-  OS_PROJECT_NAME:
-  OS_PROJECT_DOMAIN_NAME:
+  CONTEXT:
+  KUBELOGON_USER:
+  KUBELOGON_PASSWORD:
   KUBERNIKUS_NAME:
   KUBERNIKUS_URL:
+  HELM_VERSION: 2.11.0
