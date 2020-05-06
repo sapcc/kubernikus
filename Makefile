@@ -56,20 +56,16 @@ build:
 
 pull:
 	docker pull sapcc/kubernikus-docs-builder:latest
-	docker pull sapcc/kubernikus-kubectl:latest
 
 tag:
 	docker tag sapcc/kubernikus:$(VERSION)         sapcc/kubernikus:latest
 	docker tag sapcc/kubernikusctl:$(VERSION)      sapcc/kubernikusctl:latest
-	docker tag sapcc/kubernikus-kubectl:$(VERSION) sapcc/kubernikus-kubectl:latest
 
 push:
 	docker push sapcc/kubernikus:$(VERSION)
 	docker push sapcc/kubernikus:latest
 	docker push sapcc/kubernikusctl:$(VERSION)
 	docker push sapcc/kubernikusctl:latest
-	docker push sapcc/kubernikus-kubectl:$(VERSION)
-	docker push sapcc/kubernikus-kubectl:latest
 
 CHANGELOG.md:
 ifndef GITHUB_TOKEN
