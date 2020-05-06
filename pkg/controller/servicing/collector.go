@@ -3,6 +3,7 @@ package servicing
 import (
 	"github.com/go-kit/kit/log"
 	"github.com/prometheus/client_golang/prometheus"
+	"github.com/sapcc/kubernikus/pkg/controller/servicing/flatcar"
 	"k8s.io/apimachinery/pkg/labels"
 
 	"github.com/sapcc/kubernikus/pkg/controller/config"
@@ -59,6 +60,8 @@ func RegisterServicingNodesCollector(logger log.Logger, factories config.Factori
 			NodeObservatory: factories.NodesObservatory.NodeInformer(),
 			CoreOSVersion:   &coreos.Version{},
 			CoreOSRelease:   &coreos.Release{},
+			FlatcarVersion:  &flatcar.Version{},
+			FlatcarRelease:  &flatcar.Release{},
 		},
 	}
 
