@@ -3,11 +3,11 @@ package servicing
 import (
 	"github.com/go-kit/kit/log"
 	"github.com/prometheus/client_golang/prometheus"
-	"github.com/sapcc/kubernikus/pkg/controller/servicing/flatcar"
 	"k8s.io/apimachinery/pkg/labels"
 
 	"github.com/sapcc/kubernikus/pkg/controller/config"
 	"github.com/sapcc/kubernikus/pkg/controller/servicing/coreos"
+	"github.com/sapcc/kubernikus/pkg/controller/servicing/flatcar"
 	kubernikus_lister "github.com/sapcc/kubernikus/pkg/generated/listers/kubernikus/v1"
 )
 
