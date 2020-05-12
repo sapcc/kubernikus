@@ -144,25 +144,25 @@ func (lc *NodeLifeCycler) Drain(node *core_v1.Node) error {
 	logger := log.With(lc.Logger, "node", node.GetName())
 
 	drainer := &drain.Helper{
-		Client: lc.Kubernetes,
-		Force: true,
-		GracePeriodSeconds: -1,
+		Client:              lc.Kubernetes,
+		Force:               true,
+		GracePeriodSeconds:  -1,
 		IgnoreAllDaemonSets: true,
-		Timeout: EvictionTimeout,
-		DeleteLocalData: true,
-		Selector: "",
-		PodSelector: "",
-		Out: drain.LogWriter{logger},
-		ErrOut: drain.LogWriter{logger},
+		Timeout:             EvictionTimeout,
+		DeleteLocalData:     true,
+		Selector:            "",
+		PodSelector:         "",
+		Out:                 drain.LogWriter{logger},
+		ErrOut:              drain.LogWriter{logger},
 		OnPodDeletedOrEvicted: func(pod *core_v1.Pod, usingEviction bool) {
 			logger.Log("eviction", usingEviction, "pod", pod.Name, "v", 2)
 		},
 	}
-	if err := drain.Cordon(drainer, node); err != nil  {
+	if err := drain.Cordon(drainer, node); err != nil {
 		return errors.Wrap(err, "failed to cordon node")
 	}
 	if err := drain.RunNodeDrain(drainer, node.Name); err != nil {
-	 	return errors.Wrap(err, "Failed to drain node")
+		return errors.Wrap(err, "Failed to drain node")
 	}
 
 	return nil
@@ -203,21 +203,21 @@ func (lc *NodeLifeCycler) Uncordon(node *core_v1.Node) error {
 	logger := log.With(lc.Logger, "node", node.GetName())
 
 	drainer := &drain.Helper{
-		Client: lc.Kubernetes,
-		Force: true,
-		GracePeriodSeconds: -1,
+		Client:              lc.Kubernetes,
+		Force:               true,
+		GracePeriodSeconds:  -1,
 		IgnoreAllDaemonSets: true,
-		Timeout: EvictionTimeout,
-		DeleteLocalData: true,
-		Selector: "",
-		PodSelector: "",
-		Out: drain.LogWriter{logger},
-		ErrOut: drain.LogWriter{logger},
+		Timeout:             EvictionTimeout,
+		DeleteLocalData:     true,
+		Selector:            "",
+		PodSelector:         "",
+		Out:                 drain.LogWriter{logger},
+		ErrOut:              drain.LogWriter{logger},
 		OnPodDeletedOrEvicted: func(pod *core_v1.Pod, usingEviction bool) {
 			logger.Log("eviction", usingEviction, "pod", pod.Name, "v", 2)
 		},
 	}
-	if err := drain.Uncordon(drainer, node); err != nil  {
+	if err := drain.Uncordon(drainer, node); err != nil {
 		return errors.Wrap(err, "failed to uncordon node")
 	}
 

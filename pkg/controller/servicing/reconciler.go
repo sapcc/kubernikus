@@ -168,8 +168,8 @@ func (r *KlusterReconciler) Do() error {
 		for _, tbRebooted := range reboot {
 			if tbRebooted == update[0] {
 				if err := r.LifeCycler.Reboot(update[0]); err != nil {
-																 return errors.Wrap(err, "Failed to reboot node")
-																 }
+					return errors.Wrap(err, "Failed to reboot node")
+				}
 			}
 		}
 	}
