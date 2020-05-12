@@ -148,17 +148,35 @@ func (r *KlusterReconciler) Do() error {
 	}
 
 	update := r.Lister.Updating()
+	replace := r.Lister.Replace()
+	reboot := r.Lister.Reboot()
 	if len(update) > 0 {
-		if err := r.LifeCycler.Reboot(update[0]); err != nil {
-			return errors.Wrap(err, "Failed to reboot node")
+		for _, tbReplaced := range replace {
+			if tbReplaced == update[0] {
+				if err := r.LifeCycler.Drain(update[0]); err != nil {
+					return errors.Wrap(err, "Failed to drain node that is about to be replaced")
+				}
+
+				if err := r.LifeCycler.Replace(update[0]); err != nil {
+					return errors.Wrap(err, "Failed to replace node")
+				}
+
+				return nil
+			}
+		}
+
+		for _, tbRebooted := range reboot {
+			if tbRebooted == update[0] {
+				if err := r.LifeCycler.Reboot(update[0]); err != nil {
+					return errors.Wrap(err, "Failed to reboot node")
+				}
+			}
 		}
 	}
 
-	replace := r.Lister.Replace()
-	reboot := r.Lister.Reboot()
 	if len(replace) > 0 {
 		if err := r.LifeCycler.Drain(replace[0]); err != nil {
-			return errors.Wrap(err, "Failed to drain node that is about to be replaces")
+			return errors.Wrap(err, "Failed to drain node that is about to be replaced")
 		}
 
 		if err := r.LifeCycler.Replace(replace[0]); err != nil {

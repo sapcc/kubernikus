@@ -3,7 +3,7 @@ platform: 'linux'
 image_resource:
   type: registry-image
   source:
-    repository: sapcc/kubernikus-kubectl
+    repository: sapcc/unified-kubernetes-toolbox
     tag: 'latest'
 
 inputs:
@@ -19,7 +19,6 @@ run:
       if [ -f tiller-version.git/kubernikus/$KUBERNIKUS_NAME/tiller.version ]; then
         tag=$(cat tiller-version.git/kubernikus/$KUBERNIKUS_NAME/tiller.version )
       fi
-      kubernikusctl auth init
       if kubectl get deployment tiller-deploy --namespace=kube-system >/dev/null ; then
         kubectl set image --namespace=kube-system deployment/tiller-deploy tiller=sapcc/tiller:$tag
       else
@@ -29,11 +28,10 @@ run:
       fi
 
 params:
-  OS_AUTH_URL:
-  OS_USERNAME:
-  OS_PASSWORD:
-  OS_USER_DOMAIN_NAME:
-  OS_PROJECT_NAME:
-  OS_PROJECT_DOMAIN_NAME:
+  REGION:
+  CONTEXT:
+  KUBELOGON_USER:
+  KUBELOGON_PASSWORD:
   KUBERNIKUS_NAME:
   KUBERNIKUS_URL:
+  HELM_VERSION: 2.11.0

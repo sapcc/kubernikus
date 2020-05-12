@@ -49,6 +49,19 @@ func CreateOrUpdateDeployment(client clientset.Interface, deploy *extensions.Dep
 	return nil
 }
 
+func CreateOrUpdateDeployment116(client clientset.Interface, deploy *apps.Deployment) error {
+	if _, err := client.AppsV1().Deployments(deploy.ObjectMeta.Namespace).Create(deploy); err != nil {
+		if !apierrors.IsAlreadyExists(err) {
+			return errors.Wrap(err, "unable to create deployment")
+		}
+
+		if _, err := client.AppsV1().Deployments(deploy.ObjectMeta.Namespace).Update(deploy); err != nil {
+			return errors.Wrap(err, "unable to update deployment")
+		}
+	}
+	return nil
+}
+
 func CreateOrUpdateService(client clientset.Interface, service *v1.Service) error {
 
 	if _, err := client.CoreV1().Services(metav1.NamespaceSystem).Get(service.Name, metav1.GetOptions{}); err == nil {

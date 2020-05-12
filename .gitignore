@@ -3,3 +3,4 @@ _scratch
 _output
 *.swp
 .envrc
+.idea

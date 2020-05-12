@@ -2,18 +2,10 @@
 
 
 auth_ap-ae-1: &auth_ap-ae-1
-
-
-  OS_AUTH_URL: https://identity-3.ap-ae-1.cloud.sap/v3
-  OS_USERNAME: kubernikus-pipeline
-  OS_PASSWORD: ((kubernikus-pipeline-password))
-  OS_USER_DOMAIN_NAME: Default
-  OS_PROJECT_NAME: kubernikus
-  OS_PROJECT_DOMAIN_NAME: ccadmin
+  KUBELOGON_USER:     ((KUBELOGON_USER))
+  KUBELOGON_PASSWORD: ((KUBELOGON_PASSWORD))
   KUBERNIKUS_NAME: k-ap-ae-1
   KUBERNIKUS_URL: https://k-ap-ae-1.admin.cloud.sap
-
-
 
 auth_e2e_ap-ae-1: &auth_e2e_ap-ae-1
   CP_KLUSTER: k-ap-ae-1
@@ -36,18 +28,10 @@ auth_e2e_ap-ae-1: &auth_e2e_ap-ae-1
 
 
 auth_ap-au-1: &auth_ap-au-1
-
-  OS_AUTH_URL: https://identity-3.ap-au-1.cloud.sap/v3
-  OS_USERNAME: ((kubernikus-prod-username))
-  OS_PASSWORD: ((kubernikus-prod-password))
-  OS_USER_DOMAIN_NAME: ccadmin
-  OS_PROJECT_NAME: kubernikus
-  OS_PROJECT_DOMAIN_NAME: ccadmin
+  KUBELOGON_USER:     ((KUBELOGON_USER))
+  KUBELOGON_PASSWORD: ((KUBELOGON_PASSWORD))
   KUBERNIKUS_NAME: k-ap-au-1
   KUBERNIKUS_URL: https://k-ap-au-1.admin.cloud.sap
-
-
-
 
 auth_e2e_ap-au-1: &auth_e2e_ap-au-1
   CP_KLUSTER: k-ap-au-1
@@ -70,18 +54,10 @@ auth_e2e_ap-au-1: &auth_e2e_ap-au-1
 
 
 auth_ap-cn-1: &auth_ap-cn-1
-
-
-  OS_AUTH_URL: https://identity-3.ap-cn-1.cloud.sap/v3
-  OS_USERNAME: kubernikus-pipeline
-  OS_PASSWORD: ((kubernikus-pipeline-password))
-  OS_USER_DOMAIN_NAME: Default
-  OS_PROJECT_NAME: kubernikus
-  OS_PROJECT_DOMAIN_NAME: ccadmin
+  KUBELOGON_USER:     ((KUBELOGON_USER))
+  KUBELOGON_PASSWORD: ((KUBELOGON_PASSWORD))
   KUBERNIKUS_NAME: k-ap-cn-1
   KUBERNIKUS_URL: https://k-ap-cn-1.admin.cloud.sap
-
-
 
 auth_e2e_ap-cn-1: &auth_e2e_ap-cn-1
   CP_KLUSTER: k-ap-cn-1
@@ -104,18 +80,10 @@ auth_e2e_ap-cn-1: &auth_e2e_ap-cn-1
 
 
 auth_ap-jp-1: &auth_ap-jp-1
-
-
-  OS_AUTH_URL: https://identity-3.ap-jp-1.cloud.sap/v3
-  OS_USERNAME: kubernikus-pipeline
-  OS_PASSWORD: ((kubernikus-pipeline-password))
-  OS_USER_DOMAIN_NAME: Default
-  OS_PROJECT_NAME: kubernikus
-  OS_PROJECT_DOMAIN_NAME: ccadmin
+  KUBELOGON_USER:     ((KUBELOGON_USER))
+  KUBELOGON_PASSWORD: ((KUBELOGON_PASSWORD))
   KUBERNIKUS_NAME: k-ap-jp-1
   KUBERNIKUS_URL: https://k-ap-jp-1.admin.cloud.sap
-
-
 
 auth_e2e_ap-jp-1: &auth_e2e_ap-jp-1
   CP_KLUSTER: k-ap-jp-1
@@ -138,18 +106,10 @@ auth_e2e_ap-jp-1: &auth_e2e_ap-jp-1
 
 
 auth_ap-jp-2: &auth_ap-jp-2
-
-
-  OS_AUTH_URL: https://identity-3.ap-jp-2.cloud.sap/v3
-  OS_USERNAME: kubernikus-pipeline
-  OS_PASSWORD: ((kubernikus-pipeline-password))
-  OS_USER_DOMAIN_NAME: Default
-  OS_PROJECT_NAME: kubernikus
-  OS_PROJECT_DOMAIN_NAME: ccadmin
+  KUBELOGON_USER:     ((KUBELOGON_USER))
+  KUBELOGON_PASSWORD: ((KUBELOGON_PASSWORD))
   KUBERNIKUS_NAME: k-ap-jp-2
   KUBERNIKUS_URL: https://k-ap-jp-2.admin.cloud.sap
-
-
 
 auth_e2e_ap-jp-2: &auth_e2e_ap-jp-2
   CP_KLUSTER: k-ap-jp-2
@@ -172,18 +132,10 @@ auth_e2e_ap-jp-2: &auth_e2e_ap-jp-2
 
 
 auth_ap-sa-1: &auth_ap-sa-1
-
-
-  OS_AUTH_URL: https://identity-3.ap-sa-1.cloud.sap/v3
-  OS_USERNAME: kubernikus-pipeline
-  OS_PASSWORD: ((kubernikus-pipeline-password))
-  OS_USER_DOMAIN_NAME: Default
-  OS_PROJECT_NAME: kubernikus
-  OS_PROJECT_DOMAIN_NAME: ccadmin
+  KUBELOGON_USER:     ((KUBELOGON_USER))
+  KUBELOGON_PASSWORD: ((KUBELOGON_PASSWORD))
   KUBERNIKUS_NAME: k-ap-sa-1
   KUBERNIKUS_URL: https://k-ap-sa-1.admin.cloud.sap
-
-
 
 auth_e2e_ap-sa-1: &auth_e2e_ap-sa-1
   CP_KLUSTER: k-ap-sa-1
@@ -206,18 +158,10 @@ auth_e2e_ap-sa-1: &auth_e2e_ap-sa-1
 
 
 auth_eu-de-1: &auth_eu-de-1
-
-  OS_AUTH_URL: https://identity-3.eu-de-1.cloud.sap/v3
-  OS_USERNAME: ((kubernikus-prod-username))
-  OS_PASSWORD: ((kubernikus-prod-password))
-  OS_USER_DOMAIN_NAME: ccadmin
-  OS_PROJECT_NAME: kubernikus
-  OS_PROJECT_DOMAIN_NAME: ccadmin
+  KUBELOGON_USER:     ((KUBELOGON_USER))
+  KUBELOGON_PASSWORD: ((KUBELOGON_PASSWORD))
   KUBERNIKUS_NAME: k-eu-de-1
   KUBERNIKUS_URL: https://k-eu-de-1.admin.cloud.sap
-
-
-
 
 auth_e2e_eu-de-1: &auth_e2e_eu-de-1
   CP_KLUSTER: k-eu-de-1
@@ -240,18 +184,10 @@ auth_e2e_eu-de-1: &auth_e2e_eu-de-1
 
 
 auth_eu-de-2: &auth_eu-de-2
-
-  OS_AUTH_URL: https://identity-3.eu-de-2.cloud.sap/v3
-  OS_USERNAME: ((kubernikus-prod-username))
-  OS_PASSWORD: ((kubernikus-prod-password))
-  OS_USER_DOMAIN_NAME: ccadmin
-  OS_PROJECT_NAME: kubernikus
-  OS_PROJECT_DOMAIN_NAME: ccadmin
+  KUBELOGON_USER:     ((KUBELOGON_USER))
+  KUBELOGON_PASSWORD: ((KUBELOGON_PASSWORD))
   KUBERNIKUS_NAME: k-eu-de-2
   KUBERNIKUS_URL: https://k-eu-de-2.admin.cloud.sap
-
-
-
 
 auth_e2e_eu-de-2: &auth_e2e_eu-de-2
   CP_KLUSTER: k-eu-de-2
@@ -274,18 +210,10 @@ auth_e2e_eu-de-2: &auth_e2e_eu-de-2
 
 
 auth_eu-nl-1: &auth_eu-nl-1
-
-  OS_AUTH_URL: https://identity-3.eu-nl-1.cloud.sap/v3
-  OS_USERNAME: ((kubernikus-prod-username))
-  OS_PASSWORD: ((kubernikus-prod-password))
-  OS_USER_DOMAIN_NAME: ccadmin
-  OS_PROJECT_NAME: kubernikus
-  OS_PROJECT_DOMAIN_NAME: ccadmin
+  KUBELOGON_USER:     ((KUBELOGON_USER))
+  KUBELOGON_PASSWORD: ((KUBELOGON_PASSWORD))
   KUBERNIKUS_NAME: k-eu-nl-1
   KUBERNIKUS_URL: https://k-eu-nl-1.admin.cloud.sap
-
-
-
 
 auth_e2e_eu-nl-1: &auth_e2e_eu-nl-1
   CP_KLUSTER: k-eu-nl-1
@@ -308,18 +236,10 @@ auth_e2e_eu-nl-1: &auth_e2e_eu-nl-1
 
 
 auth_eu-ru-1: &auth_eu-ru-1
-
-
-  OS_AUTH_URL: https://identity-3.eu-ru-1.cloud.sap/v3
-  OS_USERNAME: kubernikus-pipeline
-  OS_PASSWORD: ((kubernikus-pipeline-password))
-  OS_USER_DOMAIN_NAME: Default
-  OS_PROJECT_NAME: kubernikus
-  OS_PROJECT_DOMAIN_NAME: ccadmin
+  KUBELOGON_USER:     ((KUBELOGON_USER))
+  KUBELOGON_PASSWORD: ((KUBELOGON_PASSWORD))
   KUBERNIKUS_NAME: k-eu-ru-1
   KUBERNIKUS_URL: https://k-eu-ru-1.admin.cloud.sap
-
-
 
 auth_e2e_eu-ru-1: &auth_e2e_eu-ru-1
   CP_KLUSTER: k-eu-ru-1
@@ -342,18 +262,10 @@ auth_e2e_eu-ru-1: &auth_e2e_eu-ru-1
 
 
 auth_la-br-1: &auth_la-br-1
-
-
-  OS_AUTH_URL: https://identity-3.la-br-1.cloud.sap/v3
-  OS_USERNAME: kubernikus-pipeline
-  OS_PASSWORD: ((kubernikus-pipeline-password))
-  OS_USER_DOMAIN_NAME: Default
-  OS_PROJECT_NAME: kubernikus
-  OS_PROJECT_DOMAIN_NAME: ccadmin
+  KUBELOGON_USER:     ((KUBELOGON_USER))
+  KUBELOGON_PASSWORD: ((KUBELOGON_PASSWORD))
   KUBERNIKUS_NAME: k-la-br-1
   KUBERNIKUS_URL: https://k-la-br-1.admin.cloud.sap
-
-
 
 auth_e2e_la-br-1: &auth_e2e_la-br-1
   CP_KLUSTER: k-la-br-1
@@ -376,18 +288,10 @@ auth_e2e_la-br-1: &auth_e2e_la-br-1
 
 
 auth_na-ca-1: &auth_na-ca-1
-
-
-  OS_AUTH_URL: https://identity-3.na-ca-1.cloud.sap/v3
-  OS_USERNAME: kubernikus-pipeline
-  OS_PASSWORD: ((kubernikus-pipeline-password))
-  OS_USER_DOMAIN_NAME: Default
-  OS_PROJECT_NAME: kubernikus
-  OS_PROJECT_DOMAIN_NAME: ccadmin
+  KUBELOGON_USER:     ((KUBELOGON_USER))
+  KUBELOGON_PASSWORD: ((KUBELOGON_PASSWORD))
   KUBERNIKUS_NAME: k-na-ca-1
   KUBERNIKUS_URL: https://k-na-ca-1.admin.cloud.sap
-
-
 
 auth_e2e_na-ca-1: &auth_e2e_na-ca-1
   CP_KLUSTER: k-na-ca-1
@@ -410,18 +314,10 @@ auth_e2e_na-ca-1: &auth_e2e_na-ca-1
 
 
 auth_na-us-1: &auth_na-us-1
-
-  OS_AUTH_URL: https://identity-3.na-us-1.cloud.sap/v3
-  OS_USERNAME: ((kubernikus-prod-username))
-  OS_PASSWORD: ((kubernikus-prod-password))
-  OS_USER_DOMAIN_NAME: ccadmin
-  OS_PROJECT_NAME: kubernikus
-  OS_PROJECT_DOMAIN_NAME: ccadmin
+  KUBELOGON_USER:     ((KUBELOGON_USER))
+  KUBELOGON_PASSWORD: ((KUBELOGON_PASSWORD))
   KUBERNIKUS_NAME: k-na-us-1
   KUBERNIKUS_URL: https://k-na-us-1.admin.cloud.sap
-
-
-
 
 auth_e2e_na-us-1: &auth_e2e_na-us-1
   CP_KLUSTER: k-na-us-1
@@ -444,18 +340,10 @@ auth_e2e_na-us-1: &auth_e2e_na-us-1
 
 
 auth_na-us-2: &auth_na-us-2
-
-
-  OS_AUTH_URL: https://identity-3.na-us-2.cloud.sap/v3
-  OS_USERNAME: kubernikus-pipeline
-  OS_PASSWORD: ((kubernikus-pipeline-password))
-  OS_USER_DOMAIN_NAME: Default
-  OS_PROJECT_NAME: kubernikus
-  OS_PROJECT_DOMAIN_NAME: ccadmin
+  KUBELOGON_USER:     ((KUBELOGON_USER))
+  KUBELOGON_PASSWORD: ((KUBELOGON_PASSWORD))
   KUBERNIKUS_NAME: k-na-us-2
   KUBERNIKUS_URL: https://k-na-us-2.admin.cloud.sap
-
-
 
 auth_e2e_na-us-2: &auth_e2e_na-us-2
   CP_KLUSTER: k-na-us-2
@@ -478,18 +366,10 @@ auth_e2e_na-us-2: &auth_e2e_na-us-2
 
 
 auth_na-us-3: &auth_na-us-3
-
-
-  OS_AUTH_URL: https://identity-3.na-us-3.cloud.sap/v3
-  OS_USERNAME: kubernikus-pipeline
-  OS_PASSWORD: ((kubernikus-pipeline-password))
-  OS_USER_DOMAIN_NAME: Default
-  OS_PROJECT_NAME: kubernikus
-  OS_PROJECT_DOMAIN_NAME: ccadmin
+  KUBELOGON_USER:     ((KUBELOGON_USER))
+  KUBELOGON_PASSWORD: ((KUBELOGON_PASSWORD))
   KUBERNIKUS_NAME: k-na-us-3
   KUBERNIKUS_URL: https://k-na-us-3.admin.cloud.sap
-
-
 
 auth_e2e_na-us-3: &auth_e2e_na-us-3
   CP_KLUSTER: k-na-us-3
@@ -512,18 +392,10 @@ auth_e2e_na-us-3: &auth_e2e_na-us-3
 
 
 auth_qa-de-1: &auth_qa-de-1
-
-
-  OS_AUTH_URL: https://identity-3.qa-de-1.cloud.sap/v3
-  OS_USERNAME: kubernikus-pipeline
-  OS_PASSWORD: ((kubernikus-pipeline-password))
-  OS_USER_DOMAIN_NAME: Default
-  OS_PROJECT_NAME: kubernikus
-  OS_PROJECT_DOMAIN_NAME: ccadmin
+  KUBELOGON_USER:     ((KUBELOGON_USER))
+  KUBELOGON_PASSWORD: ((KUBELOGON_PASSWORD))
   KUBERNIKUS_NAME: k-qa-de-1
   KUBERNIKUS_URL: https://k-qa-de-1.admin.cloud.sap
-
-
 
 auth_e2e_qa-de-1: &auth_e2e_qa-de-1
   CP_KLUSTER: k-qa-de-1
@@ -548,18 +420,10 @@ auth_e2e_qa-de-1: &auth_e2e_qa-de-1
 
 
 auth_master: &auth_master
-
-
-
-  OS_AUTH_URL: https://identity-3.eu-nl-1.cloud.sap/v3
-  OS_USERNAME: ((kubernikus-prod-username))
-  OS_PASSWORD: ((kubernikus-prod-password))
-  OS_USER_DOMAIN_NAME: ccadmin
-  OS_PROJECT_NAME: kubernikus-master
-  OS_PROJECT_DOMAIN_NAME: ccadmin
+  KUBELOGON_USER:     ((KUBELOGON_USER))
+  KUBELOGON_PASSWORD: ((KUBELOGON_PASSWORD))
   KUBERNIKUS_NAME: k-master
   KUBERNIKUS_URL: https://k-master.admin.cloud.sap
-
 
 auth_e2e_master: &auth_e2e_master
   CP_KLUSTER: k-master
@@ -761,8 +625,8 @@ task_helm-admin_kubernikus: &task_helm-admin_kubernikus
   image_resource:
     type: docker-image
     source:
-      repository: hub.global.cloud.sap/monsoon/kubectl
-      tag: 'v1.8.15-v2.11.0'
+      repository: sapcc/unified-kubernetes-toolbox
+      tag: 'latest'
   
   inputs:
     - name: kubernikus.builds
@@ -795,8 +659,11 @@ task_helm-admin_kubernikus: &task_helm-admin_kubernikus
   
   params:
     REGION:
+    CONTEXT:
     KUBERNIKUS_NAME:
-    GITHUB_TOKEN:
+    KUBELOGON_USER:
+    KUBELOGON_PASSWORD:
+    HELM_VERSION: 2.11.0
   
 
 task_helm_kubernikus-dex: &task_helm_kubernikus-dex
@@ -805,8 +672,8 @@ task_helm_kubernikus-dex: &task_helm_kubernikus-dex
   image_resource:
     type: registry-image
     source:
-      repository: sapcc/kubernikus-kubectl
-      tag: "v1.10.9"
+      repository: sapcc/unified-kubernetes-toolbox
+      tag: 'latest'
   
   inputs:
     - name: kubernikus.builds
@@ -846,14 +713,12 @@ task_helm_kubernikus-dex: &task_helm_kubernikus-dex
   
   params:
     REGION:
-    OS_AUTH_URL:
-    OS_USERNAME:
-    OS_PASSWORD:
-    OS_USER_DOMAIN_NAME:
-    OS_PROJECT_NAME:
-    OS_PROJECT_DOMAIN_NAME:
+    CONTEXT:
+    KUBELOGON_USER:
+    KUBELOGON_PASSWORD:
     KUBERNIKUS_NAME:
     KUBERNIKUS_URL:
+    HELM_VERSION: 2.11.0
   
 
 task_helm_kubernikus: &task_helm_kubernikus
@@ -862,9 +727,8 @@ task_helm_kubernikus: &task_helm_kubernikus
   image_resource:
     type: registry-image
     source:
-      repository: sapcc/kubernikus-kubectl
-      tag: 'v1.10.9'
-  
+      repository: sapcc/unified-kubernetes-toolbox
+      tag: 'latest'
   
   inputs:
     - name: kubernikus.builds
@@ -896,14 +760,13 @@ task_helm_kubernikus: &task_helm_kubernikus
         kubectl rollout status deployment/k8sniff-ingress-lb --namespace=kubernikus-system
   
   params:
-    OS_AUTH_URL:
-    OS_USERNAME:
-    OS_PASSWORD:
-    OS_USER_DOMAIN_NAME:
-    OS_PROJECT_NAME:
-    OS_PROJECT_DOMAIN_NAME:
+    REGION:
+    CONTEXT:
+    KUBELOGON_USER:
+    KUBELOGON_PASSWORD:
     KUBERNIKUS_NAME:
     KUBERNIKUS_URL:
+    HELM_VERSION: 2.11.0
   
 
 task_helm_seed: &task_helm_seed
@@ -911,7 +774,9 @@ task_helm_seed: &task_helm_seed
   
   image_resource:
     type: docker-image
-    source: { repository: hub.global.cloud.sap/monsoon/kubectl, tag: 'v1.7.7'}
+    source:
+      repository: sapcc/unified-kubernetes-toolbox
+      tag: 'latest'
   
   inputs:
     - name: secrets.git
@@ -927,9 +792,12 @@ task_helm_seed: &task_helm_seed
   
   params:
     REGION:
-    GITHUB_TOKEN:
-    NAMESPACE: monsoon3 
-    RELEASE: kubernikus 
+    CONTEXT:
+    KUBELOGON_USER:
+    KUBELOGON_PASSWORD:
+    NAMESPACE: monsoon3
+    RELEASE: kubernikus
+    HELM_VERSION: 2.11.0
   
 
 task_tiller: &task_tiller
@@ -938,7 +806,7 @@ task_tiller: &task_tiller
   image_resource:
     type: registry-image
     source:
-      repository: sapcc/kubernikus-kubectl
+      repository: sapcc/unified-kubernetes-toolbox
       tag: 'latest'
   
   inputs:
@@ -954,7 +822,6 @@ task_tiller: &task_tiller
         if [ -f tiller-version.git/kubernikus/$KUBERNIKUS_NAME/tiller.version ]; then
           tag=$(cat tiller-version.git/kubernikus/$KUBERNIKUS_NAME/tiller.version )
         fi
-        kubernikusctl auth init
         if kubectl get deployment tiller-deploy --namespace=kube-system >/dev/null ; then
           kubectl set image --namespace=kube-system deployment/tiller-deploy tiller=sapcc/tiller:$tag
         else
@@ -964,21 +831,20 @@ task_tiller: &task_tiller
         fi
   
   params:
-    OS_AUTH_URL:
-    OS_USERNAME:
-    OS_PASSWORD:
-    OS_USER_DOMAIN_NAME:
-    OS_PROJECT_NAME:
-    OS_PROJECT_DOMAIN_NAME:
+    REGION:
+    CONTEXT:
+    KUBELOGON_USER:
+    KUBELOGON_PASSWORD:
     KUBERNIKUS_NAME:
     KUBERNIKUS_URL:
+    HELM_VERSION: 2.11.0
   
 
 task_whitesource: &task_whitesource
   platform: 'linux'
   
   image_resource:
-    type: registry-image
+    type: docker-image
     source:
       repository: hub.global.cloud.sap/d074427/wss-agent
       tag: 20.1.3-kubernikus
@@ -992,7 +858,6 @@ task_whitesource: &task_whitesource
       - |
         set -e
         export TZ=UTC
-        set -uo pipefail
   
         cat >/wss-unified-agent.config <<EOF
         ####################################################################
@@ -1216,6 +1081,7 @@ jobs:
             <<: *task_tiller
           timeout: 10m
           params:
+            REGION: "k-master"
             <<: *auth_master
     <<: *slack
 
@@ -1232,12 +1098,14 @@ jobs:
           config:
             <<: *task_helm_kubernikus
           params:
+            REGION: "k-master"
             <<: *auth_master
         - task: kubernikus-dex
           config:
             <<: *task_helm_kubernikus-dex
           params:
             REGION: "eu-nl-1"
+            CONTEXT: "k-master"
             <<: *auth_master
     <<: *slack
 
@@ -1337,48 +1205,60 @@ jobs:
             <<: *task_helm-admin_kubernikus
           params:
             REGION: admin
+            CONTEXT: admin
             KUBERNIKUS_NAME: k-ap-ae-1
-            GITHUB_TOKEN: ((github-access-token))
+            KUBELOGON_USER:     ((KUBELOGON_USER))
+            KUBELOGON_PASSWORD: ((KUBELOGON_PASSWORD))
 
         - task: k-ap-au-1
           config:
             <<: *task_helm-admin_kubernikus
           params:
             REGION: admin
+            CONTEXT: admin
             KUBERNIKUS_NAME: k-ap-au-1
-            GITHUB_TOKEN: ((github-access-token))
+            KUBELOGON_USER:     ((KUBELOGON_USER))
+            KUBELOGON_PASSWORD: ((KUBELOGON_PASSWORD))
 
         - task: k-ap-cn-1
           config:
             <<: *task_helm-admin_kubernikus
           params:
             REGION: admin
+            CONTEXT: admin
             KUBERNIKUS_NAME: k-ap-cn-1
-            GITHUB_TOKEN: ((github-access-token))
+            KUBELOGON_USER:     ((KUBELOGON_USER))
+            KUBELOGON_PASSWORD: ((KUBELOGON_PASSWORD))
 
         - task: k-ap-jp-1
           config:
             <<: *task_helm-admin_kubernikus
           params:
             REGION: admin
+            CONTEXT: admin
             KUBERNIKUS_NAME: k-ap-jp-1
-            GITHUB_TOKEN: ((github-access-token))
+            KUBELOGON_USER:     ((KUBELOGON_USER))
+            KUBELOGON_PASSWORD: ((KUBELOGON_PASSWORD))
 
         - task: k-ap-jp-2
           config:
             <<: *task_helm-admin_kubernikus
           params:
             REGION: admin
+            CONTEXT: admin
             KUBERNIKUS_NAME: k-ap-jp-2
-            GITHUB_TOKEN: ((github-access-token))
+            KUBELOGON_USER:     ((KUBELOGON_USER))
+            KUBELOGON_PASSWORD: ((KUBELOGON_PASSWORD))
 
         - task: k-ap-sa-1
           config:
             <<: *task_helm-admin_kubernikus
           params:
             REGION: admin
+            CONTEXT: admin
             KUBERNIKUS_NAME: k-ap-sa-1
-            GITHUB_TOKEN: ((github-access-token))
+            KUBELOGON_USER:     ((KUBELOGON_USER))
+            KUBELOGON_PASSWORD: ((KUBELOGON_PASSWORD))
 
     <<: *slack
 
@@ -1402,8 +1282,9 @@ jobs:
         input_mapping:
           charts.git: helm-charts.git
         params:
-          REGION:       ap-ae-1
-          GITHUB_TOKEN: ((github-access-token))
+          REGION: ap-ae-1
+          CONTEXT: ap-ae-1
+          <<: *auth_ap-ae-1
     <<: *slack
 
   - name: tiller_ap-ae-1
@@ -1420,6 +1301,8 @@ jobs:
             <<: *task_tiller
           timeout: 10m
           params:
+            REGION: ap-ae-1
+            CONTEXT: k-ap-ae-1
             <<: *auth_ap-ae-1
     <<: *slack
 
@@ -1440,12 +1323,15 @@ jobs:
           config:
             <<: *task_helm_kubernikus
           params:
+            REGION: ap-ae-1
+            CONTEXT: k-ap-ae-1
             <<: *auth_ap-ae-1
         - task: kubernikus-dex_ap-ae-1
           config:
             <<: *task_helm_kubernikus-dex
           params:
             REGION: ap-ae-1
+            CONTEXT: k-ap-ae-1
             <<: *auth_ap-ae-1
     <<: *slack
 
@@ -1505,8 +1391,9 @@ jobs:
         input_mapping:
           charts.git: helm-charts.git
         params:
-          REGION:       ap-au-1
-          GITHUB_TOKEN: ((github-access-token))
+          REGION: ap-au-1
+          CONTEXT: ap-au-1
+          <<: *auth_ap-au-1
     <<: *slack
 
   - name: tiller_ap-au-1
@@ -1523,6 +1410,8 @@ jobs:
             <<: *task_tiller
           timeout: 10m
           params:
+            REGION: ap-au-1
+            CONTEXT: k-ap-au-1
             <<: *auth_ap-au-1
     <<: *slack
 
@@ -1543,12 +1432,15 @@ jobs:
           config:
             <<: *task_helm_kubernikus
           params:
+            REGION: ap-au-1
+            CONTEXT: k-ap-au-1
             <<: *auth_ap-au-1
         - task: kubernikus-dex_ap-au-1
           config:
             <<: *task_helm_kubernikus-dex
           params:
             REGION: ap-au-1
+            CONTEXT: k-ap-au-1
             <<: *auth_ap-au-1
     <<: *slack
 
@@ -1608,8 +1500,9 @@ jobs:
         input_mapping:
           charts.git: helm-charts.git
         params:
-          REGION:       ap-cn-1
-          GITHUB_TOKEN: ((github-access-token))
+          REGION: ap-cn-1
+          CONTEXT: ap-cn-1
+          <<: *auth_ap-cn-1
     <<: *slack
 
   - name: tiller_ap-cn-1
@@ -1626,6 +1519,8 @@ jobs:
             <<: *task_tiller
           timeout: 10m
           params:
+            REGION: ap-cn-1
+            CONTEXT: k-ap-cn-1
             <<: *auth_ap-cn-1
     <<: *slack
 
@@ -1646,12 +1541,15 @@ jobs:
           config:
             <<: *task_helm_kubernikus
           params:
+            REGION: ap-cn-1
+            CONTEXT: k-ap-cn-1
             <<: *auth_ap-cn-1
         - task: kubernikus-dex_ap-cn-1
           config:
             <<: *task_helm_kubernikus-dex
           params:
             REGION: ap-cn-1
+            CONTEXT: k-ap-cn-1
             <<: *auth_ap-cn-1
     <<: *slack
 
@@ -1711,8 +1609,9 @@ jobs:
         input_mapping:
           charts.git: helm-charts.git
         params:
-          REGION:       ap-jp-1
-          GITHUB_TOKEN: ((github-access-token))
+          REGION: ap-jp-1
+          CONTEXT: ap-jp-1
+          <<: *auth_ap-jp-1
     <<: *slack
 
   - name: tiller_ap-jp-1
@@ -1729,6 +1628,8 @@ jobs:
             <<: *task_tiller
           timeout: 10m
           params:
+            REGION: ap-jp-1
+            CONTEXT: k-ap-jp-1
             <<: *auth_ap-jp-1
     <<: *slack
 
@@ -1749,12 +1650,15 @@ jobs:
           config:
             <<: *task_helm_kubernikus
           params:
+            REGION: ap-jp-1
+            CONTEXT: k-ap-jp-1
             <<: *auth_ap-jp-1
         - task: kubernikus-dex_ap-jp-1
           config:
             <<: *task_helm_kubernikus-dex
           params:
             REGION: ap-jp-1
+            CONTEXT: k-ap-jp-1
             <<: *auth_ap-jp-1
     <<: *slack
 
@@ -1814,8 +1718,9 @@ jobs:
         input_mapping:
           charts.git: helm-charts.git
         params:
-          REGION:       ap-jp-2
-          GITHUB_TOKEN: ((github-access-token))
+          REGION: ap-jp-2
+          CONTEXT: ap-jp-2
+          <<: *auth_ap-jp-2
     <<: *slack
 
   - name: tiller_ap-jp-2
@@ -1832,6 +1737,8 @@ jobs:
             <<: *task_tiller
           timeout: 10m
           params:
+            REGION: ap-jp-2
+            CONTEXT: k-ap-jp-2
             <<: *auth_ap-jp-2
     <<: *slack
 
@@ -1852,12 +1759,15 @@ jobs:
           config:
             <<: *task_helm_kubernikus
           params:
+            REGION: ap-jp-2
+            CONTEXT: k-ap-jp-2
             <<: *auth_ap-jp-2
         - task: kubernikus-dex_ap-jp-2
           config:
             <<: *task_helm_kubernikus-dex
           params:
             REGION: ap-jp-2
+            CONTEXT: k-ap-jp-2
             <<: *auth_ap-jp-2
     <<: *slack
 
@@ -1917,8 +1827,9 @@ jobs:
         input_mapping:
           charts.git: helm-charts.git
         params:
-          REGION:       ap-sa-1
-          GITHUB_TOKEN: ((github-access-token))
+          REGION: ap-sa-1
+          CONTEXT: ap-sa-1
+          <<: *auth_ap-sa-1
     <<: *slack
 
   - name: tiller_ap-sa-1
@@ -1935,6 +1846,8 @@ jobs:
             <<: *task_tiller
           timeout: 10m
           params:
+            REGION: ap-sa-1
+            CONTEXT: k-ap-sa-1
             <<: *auth_ap-sa-1
     <<: *slack
 
@@ -1955,12 +1868,15 @@ jobs:
           config:
             <<: *task_helm_kubernikus
           params:
+            REGION: ap-sa-1
+            CONTEXT: k-ap-sa-1
             <<: *auth_ap-sa-1
         - task: kubernikus-dex_ap-sa-1
           config:
             <<: *task_helm_kubernikus-dex
           params:
             REGION: ap-sa-1
+            CONTEXT: k-ap-sa-1
             <<: *auth_ap-sa-1
     <<: *slack
 
@@ -2034,32 +1950,40 @@ jobs:
             <<: *task_helm-admin_kubernikus
           params:
             REGION: admin
+            CONTEXT: admin
             KUBERNIKUS_NAME: k-eu-de-1
-            GITHUB_TOKEN: ((github-access-token))
+            KUBELOGON_USER:     ((KUBELOGON_USER))
+            KUBELOGON_PASSWORD: ((KUBELOGON_PASSWORD))
 
         - task: k-eu-de-2
           config:
             <<: *task_helm-admin_kubernikus
           params:
             REGION: admin
+            CONTEXT: admin
             KUBERNIKUS_NAME: k-eu-de-2
-            GITHUB_TOKEN: ((github-access-token))
+            KUBELOGON_USER:     ((KUBELOGON_USER))
+            KUBELOGON_PASSWORD: ((KUBELOGON_PASSWORD))
 
         - task: k-eu-nl-1
           config:
             <<: *task_helm-admin_kubernikus
           params:
             REGION: admin
+            CONTEXT: admin
             KUBERNIKUS_NAME: k-eu-nl-1
-            GITHUB_TOKEN: ((github-access-token))
+            KUBELOGON_USER:     ((KUBELOGON_USER))
+            KUBELOGON_PASSWORD: ((KUBELOGON_PASSWORD))
 
         - task: k-eu-ru-1
           config:
             <<: *task_helm-admin_kubernikus
           params:
             REGION: admin
+            CONTEXT: admin
             KUBERNIKUS_NAME: k-eu-ru-1
-            GITHUB_TOKEN: ((github-access-token))
+            KUBELOGON_USER:     ((KUBELOGON_USER))
+            KUBELOGON_PASSWORD: ((KUBELOGON_PASSWORD))
 
     <<: *slack
 
@@ -2083,8 +2007,9 @@ jobs:
         input_mapping:
           charts.git: helm-charts.git
         params:
-          REGION:       eu-de-1
-          GITHUB_TOKEN: ((github-access-token))
+          REGION: eu-de-1
+          CONTEXT: eu-de-1
+          <<: *auth_eu-de-1
     <<: *slack
 
   - name: tiller_eu-de-1
@@ -2101,6 +2026,8 @@ jobs:
             <<: *task_tiller
           timeout: 10m
           params:
+            REGION: eu-de-1
+            CONTEXT: k-eu-de-1
             <<: *auth_eu-de-1
     <<: *slack
 
@@ -2121,12 +2048,15 @@ jobs:
           config:
             <<: *task_helm_kubernikus
           params:
+            REGION: eu-de-1
+            CONTEXT: k-eu-de-1
             <<: *auth_eu-de-1
         - task: kubernikus-dex_eu-de-1
           config:
             <<: *task_helm_kubernikus-dex
           params:
             REGION: eu-de-1
+            CONTEXT: k-eu-de-1
             <<: *auth_eu-de-1
     <<: *slack
 
@@ -2186,8 +2116,9 @@ jobs:
         input_mapping:
           charts.git: helm-charts.git
         params:
-          REGION:       eu-de-2
-          GITHUB_TOKEN: ((github-access-token))
+          REGION: eu-de-2
+          CONTEXT: eu-de-2
+          <<: *auth_eu-de-2
     <<: *slack
 
   - name: tiller_eu-de-2
@@ -2204,6 +2135,8 @@ jobs:
             <<: *task_tiller
           timeout: 10m
           params:
+            REGION: eu-de-2
+            CONTEXT: k-eu-de-2
             <<: *auth_eu-de-2
     <<: *slack
 
@@ -2224,12 +2157,15 @@ jobs:
           config:
             <<: *task_helm_kubernikus
           params:
+            REGION: eu-de-2
+            CONTEXT: k-eu-de-2
             <<: *auth_eu-de-2
         - task: kubernikus-dex_eu-de-2
           config:
             <<: *task_helm_kubernikus-dex
           params:
             REGION: eu-de-2
+            CONTEXT: k-eu-de-2
             <<: *auth_eu-de-2
     <<: *slack
 
@@ -2289,8 +2225,9 @@ jobs:
         input_mapping:
           charts.git: helm-charts.git
         params:
-          REGION:       eu-nl-1
-          GITHUB_TOKEN: ((github-access-token))
+          REGION: eu-nl-1
+          CONTEXT: eu-nl-1
+          <<: *auth_eu-nl-1
     <<: *slack
 
   - name: tiller_eu-nl-1
@@ -2307,6 +2244,8 @@ jobs:
             <<: *task_tiller
           timeout: 10m
           params:
+            REGION: eu-nl-1
+            CONTEXT: k-eu-nl-1
             <<: *auth_eu-nl-1
     <<: *slack
 
@@ -2327,12 +2266,15 @@ jobs:
           config:
             <<: *task_helm_kubernikus
           params:
+            REGION: eu-nl-1
+            CONTEXT: k-eu-nl-1
             <<: *auth_eu-nl-1
         - task: kubernikus-dex_eu-nl-1
           config:
             <<: *task_helm_kubernikus-dex
           params:
             REGION: eu-nl-1
+            CONTEXT: k-eu-nl-1
             <<: *auth_eu-nl-1
     <<: *slack
 
@@ -2392,8 +2334,9 @@ jobs:
         input_mapping:
           charts.git: helm-charts.git
         params:
-          REGION:       eu-ru-1
-          GITHUB_TOKEN: ((github-access-token))
+          REGION: eu-ru-1
+          CONTEXT: eu-ru-1
+          <<: *auth_eu-ru-1
     <<: *slack
 
   - name: tiller_eu-ru-1
@@ -2410,6 +2353,8 @@ jobs:
             <<: *task_tiller
           timeout: 10m
           params:
+            REGION: eu-ru-1
+            CONTEXT: k-eu-ru-1
             <<: *auth_eu-ru-1
     <<: *slack
 
@@ -2430,12 +2375,15 @@ jobs:
           config:
             <<: *task_helm_kubernikus
           params:
+            REGION: eu-ru-1
+            CONTEXT: k-eu-ru-1
             <<: *auth_eu-ru-1
         - task: kubernikus-dex_eu-ru-1
           config:
             <<: *task_helm_kubernikus-dex
           params:
             REGION: eu-ru-1
+            CONTEXT: k-eu-ru-1
             <<: *auth_eu-ru-1
     <<: *slack
 
@@ -2509,40 +2457,50 @@ jobs:
             <<: *task_helm-admin_kubernikus
           params:
             REGION: admin
+            CONTEXT: admin
             KUBERNIKUS_NAME: k-la-br-1
-            GITHUB_TOKEN: ((github-access-token))
+            KUBELOGON_USER:     ((KUBELOGON_USER))
+            KUBELOGON_PASSWORD: ((KUBELOGON_PASSWORD))
 
         - task: k-na-ca-1
           config:
             <<: *task_helm-admin_kubernikus
           params:
             REGION: admin
+            CONTEXT: admin
             KUBERNIKUS_NAME: k-na-ca-1
-            GITHUB_TOKEN: ((github-access-token))
+            KUBELOGON_USER:     ((KUBELOGON_USER))
+            KUBELOGON_PASSWORD: ((KUBELOGON_PASSWORD))
 
         - task: k-na-us-1
           config:
             <<: *task_helm-admin_kubernikus
           params:
             REGION: admin
+            CONTEXT: admin
             KUBERNIKUS_NAME: k-na-us-1
-            GITHUB_TOKEN: ((github-access-token))
+            KUBELOGON_USER:     ((KUBELOGON_USER))
+            KUBELOGON_PASSWORD: ((KUBELOGON_PASSWORD))
 
         - task: k-na-us-2
           config:
             <<: *task_helm-admin_kubernikus
           params:
             REGION: admin
+            CONTEXT: admin
             KUBERNIKUS_NAME: k-na-us-2
-            GITHUB_TOKEN: ((github-access-token))
+            KUBELOGON_USER:     ((KUBELOGON_USER))
+            KUBELOGON_PASSWORD: ((KUBELOGON_PASSWORD))
 
         - task: k-na-us-3
           config:
             <<: *task_helm-admin_kubernikus
           params:
             REGION: admin
+            CONTEXT: admin
             KUBERNIKUS_NAME: k-na-us-3
-            GITHUB_TOKEN: ((github-access-token))
+            KUBELOGON_USER:     ((KUBELOGON_USER))
+            KUBELOGON_PASSWORD: ((KUBELOGON_PASSWORD))
 
     <<: *slack
 
@@ -2566,8 +2524,9 @@ jobs:
         input_mapping:
           charts.git: helm-charts.git
         params:
-          REGION:       la-br-1
-          GITHUB_TOKEN: ((github-access-token))
+          REGION: la-br-1
+          CONTEXT: la-br-1
+          <<: *auth_la-br-1
     <<: *slack
 
   - name: tiller_la-br-1
@@ -2584,6 +2543,8 @@ jobs:
             <<: *task_tiller
           timeout: 10m
           params:
+            REGION: la-br-1
+            CONTEXT: k-la-br-1
             <<: *auth_la-br-1
     <<: *slack
 
@@ -2604,12 +2565,15 @@ jobs:
           config:
             <<: *task_helm_kubernikus
           params:
+            REGION: la-br-1
+            CONTEXT: k-la-br-1
             <<: *auth_la-br-1
         - task: kubernikus-dex_la-br-1
           config:
             <<: *task_helm_kubernikus-dex
           params:
             REGION: la-br-1
+            CONTEXT: k-la-br-1
             <<: *auth_la-br-1
     <<: *slack
 
@@ -2669,8 +2633,9 @@ jobs:
         input_mapping:
           charts.git: helm-charts.git
         params:
-          REGION:       na-ca-1
-          GITHUB_TOKEN: ((github-access-token))
+          REGION: na-ca-1
+          CONTEXT: na-ca-1
+          <<: *auth_na-ca-1
     <<: *slack
 
   - name: tiller_na-ca-1
@@ -2687,6 +2652,8 @@ jobs:
             <<: *task_tiller
           timeout: 10m
           params:
+            REGION: na-ca-1
+            CONTEXT: k-na-ca-1
             <<: *auth_na-ca-1
     <<: *slack
 
@@ -2707,12 +2674,15 @@ jobs:
           config:
             <<: *task_helm_kubernikus
           params:
+            REGION: na-ca-1
+            CONTEXT: k-na-ca-1
             <<: *auth_na-ca-1
         - task: kubernikus-dex_na-ca-1
           config:
             <<: *task_helm_kubernikus-dex
           params:
             REGION: na-ca-1
+            CONTEXT: k-na-ca-1
             <<: *auth_na-ca-1
     <<: *slack
 
@@ -2772,8 +2742,9 @@ jobs:
         input_mapping:
           charts.git: helm-charts.git
         params:
-          REGION:       na-us-1
-          GITHUB_TOKEN: ((github-access-token))
+          REGION: na-us-1
+          CONTEXT: na-us-1
+          <<: *auth_na-us-1
     <<: *slack
 
   - name: tiller_na-us-1
@@ -2790,6 +2761,8 @@ jobs:
             <<: *task_tiller
           timeout: 10m
           params:
+            REGION: na-us-1
+            CONTEXT: k-na-us-1
             <<: *auth_na-us-1
     <<: *slack
 
@@ -2810,12 +2783,15 @@ jobs:
           config:
             <<: *task_helm_kubernikus
           params:
+            REGION: na-us-1
+            CONTEXT: k-na-us-1
             <<: *auth_na-us-1
         - task: kubernikus-dex_na-us-1
           config:
             <<: *task_helm_kubernikus-dex
           params:
             REGION: na-us-1
+            CONTEXT: k-na-us-1
             <<: *auth_na-us-1
     <<: *slack
 
@@ -2875,8 +2851,9 @@ jobs:
         input_mapping:
           charts.git: helm-charts.git
         params:
-          REGION:       na-us-2
-          GITHUB_TOKEN: ((github-access-token))
+          REGION: na-us-2
+          CONTEXT: na-us-2
+          <<: *auth_na-us-2
     <<: *slack
 
   - name: tiller_na-us-2
@@ -2893,6 +2870,8 @@ jobs:
             <<: *task_tiller
           timeout: 10m
           params:
+            REGION: na-us-2
+            CONTEXT: k-na-us-2
             <<: *auth_na-us-2
     <<: *slack
 
@@ -2913,12 +2892,15 @@ jobs:
           config:
             <<: *task_helm_kubernikus
           params:
+            REGION: na-us-2
+            CONTEXT: k-na-us-2
             <<: *auth_na-us-2
         - task: kubernikus-dex_na-us-2
           config:
             <<: *task_helm_kubernikus-dex
           params:
             REGION: na-us-2
+            CONTEXT: k-na-us-2
             <<: *auth_na-us-2
     <<: *slack
 
@@ -2978,8 +2960,9 @@ jobs:
         input_mapping:
           charts.git: helm-charts.git
         params:
-          REGION:       na-us-3
-          GITHUB_TOKEN: ((github-access-token))
+          REGION: na-us-3
+          CONTEXT: na-us-3
+          <<: *auth_na-us-3
     <<: *slack
 
   - name: tiller_na-us-3
@@ -2996,6 +2979,8 @@ jobs:
             <<: *task_tiller
           timeout: 10m
           params:
+            REGION: na-us-3
+            CONTEXT: k-na-us-3
             <<: *auth_na-us-3
     <<: *slack
 
@@ -3016,12 +3001,15 @@ jobs:
           config:
             <<: *task_helm_kubernikus
           params:
+            REGION: na-us-3
+            CONTEXT: k-na-us-3
             <<: *auth_na-us-3
         - task: kubernikus-dex_na-us-3
           config:
             <<: *task_helm_kubernikus-dex
           params:
             REGION: na-us-3
+            CONTEXT: k-na-us-3
             <<: *auth_na-us-3
     <<: *slack
 
@@ -3095,16 +3083,20 @@ jobs:
             <<: *task_helm-admin_kubernikus
           params:
             REGION: admin
+            CONTEXT: admin
             KUBERNIKUS_NAME: k-qa-de-1
-            GITHUB_TOKEN: ((github-access-token))
+            KUBELOGON_USER:     ((KUBELOGON_USER))
+            KUBELOGON_PASSWORD: ((KUBELOGON_PASSWORD))
 
         - task: k-master
           config:
             <<: *task_helm-admin_kubernikus
           params:
             REGION: admin
+            CONTEXT: admin
             KUBERNIKUS_NAME: k-master
-            GITHUB_TOKEN: ((github-access-token))
+            KUBELOGON_USER:     ((KUBELOGON_USER))
+            KUBELOGON_PASSWORD: ((KUBELOGON_PASSWORD))
 
     <<: *slack
 
@@ -3128,8 +3120,9 @@ jobs:
         input_mapping:
           charts.git: helm-charts.git
         params:
-          REGION:       qa-de-1
-          GITHUB_TOKEN: ((github-access-token))
+          REGION: qa-de-1
+          CONTEXT: qa-de-1
+          <<: *auth_qa-de-1
     <<: *slack
 
   - name: tiller_qa-de-1
@@ -3146,6 +3139,8 @@ jobs:
             <<: *task_tiller
           timeout: 10m
           params:
+            REGION: qa-de-1
+            CONTEXT: k-qa-de-1
             <<: *auth_qa-de-1
     <<: *slack
 
@@ -3166,12 +3161,15 @@ jobs:
           config:
             <<: *task_helm_kubernikus
           params:
+            REGION: qa-de-1
+            CONTEXT: k-qa-de-1
             <<: *auth_qa-de-1
         - task: kubernikus-dex_qa-de-1
           config:
             <<: *task_helm_kubernikus-dex
           params:
             REGION: qa-de-1
+            CONTEXT: k-qa-de-1
             <<: *auth_qa-de-1
     <<: *slack
 

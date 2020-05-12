@@ -55,7 +55,11 @@ data:
       --listen-client-urls=http://0.0.0.0:2379
 {{- end }}
 ---
-apiVersion: extensions/v1beta1
+{{- if semverCompare ">=1.16-0" .Capabilities.KubeVersion.GitVersion }}
+apiVersion: "apps/v1"
+{{- else }}
+apiVersion: "extensions/v1beta1"
+{{- end }}
 kind: Deployment
 metadata:
   name: {{ include "fullname" . }}
@@ -183,7 +187,7 @@ spec:
             - --cert=/etc/kubernetes/certs/etcd-clients-backup.pem
             - --key=/etc/kubernetes/certs/etcd-clients-backup-key.pem
             - --insecure-transport=false
-            - {{- else }}
+            {{- else }}
             - --insecure-transport=true
             {{- end }}
           image: "{{ .Values.backup.image.repository }}:{{ .Values.backup.image.tag }}"

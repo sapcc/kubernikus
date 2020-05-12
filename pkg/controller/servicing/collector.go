@@ -7,6 +7,7 @@ import (
 
 	"github.com/sapcc/kubernikus/pkg/controller/config"
 	"github.com/sapcc/kubernikus/pkg/controller/servicing/coreos"
+	"github.com/sapcc/kubernikus/pkg/controller/servicing/flatcar"
 	kubernikus_lister "github.com/sapcc/kubernikus/pkg/generated/listers/kubernikus/v1"
 )
 
@@ -59,6 +60,8 @@ func RegisterServicingNodesCollector(logger log.Logger, factories config.Factori
 			NodeObservatory: factories.NodesObservatory.NodeInformer(),
 			CoreOSVersion:   &coreos.Version{},
 			CoreOSRelease:   &coreos.Release{},
+			FlatcarVersion:  &flatcar.Version{},
+			FlatcarRelease:  &flatcar.Release{},
 		},
 	}
 

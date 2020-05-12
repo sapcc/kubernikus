@@ -2,7 +2,9 @@ platform: linux
 
 image_resource:
   type: docker-image
-  source: { repository: hub.global.cloud.sap/monsoon/kubectl, tag: 'v1.7.7'}
+  source:
+    repository: sapcc/unified-kubernetes-toolbox
+    tag: 'latest'
 
 inputs:
   - name: secrets.git
@@ -18,6 +20,9 @@ run:
 
 params:
   REGION:
-  GITHUB_TOKEN:
-  NAMESPACE: monsoon3 
-  RELEASE: kubernikus 
+  CONTEXT:
+  KUBELOGON_USER:
+  KUBELOGON_PASSWORD:
+  NAMESPACE: monsoon3
+  RELEASE: kubernikus
+  HELM_VERSION: 2.11.0
