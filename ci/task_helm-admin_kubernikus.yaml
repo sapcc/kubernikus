@@ -3,8 +3,8 @@ platform: 'linux'
 image_resource:
   type: docker-image
   source:
-    repository: hub.global.cloud.sap/monsoon/kubectl
-    tag: 'v1.8.15-v2.11.0'
+    repository: sapcc/unified-kubernetes-toolbox
+    tag: 'latest'
 
 inputs:
   - name: kubernikus.builds
@@ -37,5 +37,8 @@ run:
 
 params:
   REGION:
+  CONTEXT:
   KUBERNIKUS_NAME:
-  GITHUB_TOKEN:
+  KUBELOGON_USER:
+  KUBELOGON_PASSWORD:
+  HELM_VERSION: 2.11.0

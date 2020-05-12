@@ -51,8 +51,8 @@ func (k *NodeTests) Run(t *testing.T) {
 		t.Run("Healthy", k.StateHealthy) &&
 		t.Run("Ready", k.ConditionReady) &&
 		t.Run("Labeled", k.Labeled) &&
-		t.Run("Sufficient", k.Sufficient) &&
-		t.Run("SameBuildingBlock", k.SameBuildingBlock)
+		t.Run("Sufficient", k.Sufficient)
+	//t.Run("SameBuildingBlock", k.SameBuildingBlock)
 }
 
 func (k *NodeTests) StateRunning(t *testing.T) {
@@ -117,7 +117,7 @@ func (k NodeTests) LatestStableContainerLinux(t *testing.T) {
 	if !assert.NoError(t, err) {
 		return
 	}
-	resp, err := http.Get("https://stable.release.core-os.net/amd64-usr/current/version.txt")
+	resp, err := http.Get("https://stable.release.flatcar-linux.net/amd64-usr/current/version.txt")
 	if !assert.NoError(t, err) {
 		return
 	}
@@ -131,14 +131,14 @@ func (k NodeTests) LatestStableContainerLinux(t *testing.T) {
 	for scanner.Scan() {
 		keyval := strings.Split(scanner.Text(), "=")
 
-		if len(keyval) == 2 && keyval[0] == "COREOS_VERSION" {
+		if len(keyval) == 2 && keyval[0] == "FLATCAR_VERSION" {
 			version = keyval[1]
 			if !assert.NotEmpty(t, version, "Failed to detect latest stable Container Linux version") {
 				return
 			}
 		}
 
-		if len(keyval) == 2 && keyval[0] == "COREOS_BUILD_ID" {
+		if len(keyval) == 2 && keyval[0] == "FLATCAR_BUILD_ID" {
 			date, err = time.Parse("2006-01-02", keyval[1][1:11])
 			if !assert.NoError(t, err) {
 				return

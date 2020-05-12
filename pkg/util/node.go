@@ -12,7 +12,15 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes"
 
+	"github.com/sapcc/kubernikus/pkg/api/models"
 	"github.com/sapcc/kubernikus/pkg/util/netutil"
+)
+
+const (
+	NODE_COREOS_PREFIX     = "Container Linux by CoreOS"
+	NODE_FLATCAR_PREFIX    = "Flatcar Container Linux"
+	NODEPOOL_COREOS_IMAGE  = "coreos-stable-amd64"
+	NODEPOOL_FLATCAR_IMAGE = "flatcar-stable-amd64"
 )
 
 //Taken from https://github.com/kubernetes/kubernetes/blob/886e04f1fffbb04faf8a9f9ee141143b2684ae68/pkg/api/v1/node/util.go
@@ -123,4 +131,20 @@ func RemoveNodeAnnotation(nodeName, key string, client kubernetes.Interface) err
 	}
 	_, err = client.CoreV1().Nodes().Patch(nodeName, types.MergePatchType, data)
 	return err
+}
+
+func IsCoreOSNode(node *v1.Node) bool {
+	return strings.HasPrefix(node.Status.NodeInfo.OSImage, NODE_COREOS_PREFIX)
+}
+
+func IsFlatcarNode(node *v1.Node) bool {
+	return strings.HasPrefix(node.Status.NodeInfo.OSImage, NODE_FLATCAR_PREFIX)
+}
+
+func IsCoreOSNodePool(pool *models.NodePool) bool {
+	return pool.Image == NODEPOOL_COREOS_IMAGE
+}
+
+func IsFlatcarNodePool(pool *models.NodePool) bool {
+	return pool.Image == NODEPOOL_FLATCAR_IMAGE
 }

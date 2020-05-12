@@ -1,6 +1,10 @@
 {{/* vim: set filetype=gotexttmpl: */ -}}
 {{ if .Values.dex.enabled }}
-apiVersion: extensions/v1beta1
+{{- if semverCompare ">=1.16-0" .Capabilities.KubeVersion.GitVersion }}
+apiVersion: "apps/v1"
+{{- else }}
+apiVersion: "extensions/v1beta1"
+{{- end }}
 kind: Deployment
 metadata:
   labels:
@@ -28,7 +32,18 @@ spec:
           - sh
           - -c
         args:
+{{- if .Values.etcd.secure.enabled }}
+          - until etcdctl --dial-timeout=4s --endpoints https://{{ include "etcd.fullname" . }}:2379 --cacert=/etc/kubernetes/certs/tls-etcd-ca.pem --cert=/etc/kubernetes/certs/etcd-clients-dex.pem --key=/etc/kubernetes/certs/etcd-clients-dex-key.pem --insecure-transport=false endpoint health; do sleep 5; done;
+        env:
+        - name: ETCDCTL_API
+          value: "3"
+        volumeMounts:
+        - name: certs
+          mountPath: /etc/kubernetes/certs
+          readOnly: true
+{{- else }}
           - until etcdctl --total-timeout=4s --endpoints http://{{ include "etcd.fullname" . }}:2379 cluster-health; do sleep 5; done;
+{{- end }}
       containers:
       - image: {{ include "dex.image" . | quote }}
         name: dex
@@ -115,7 +130,12 @@ spec:
           timeoutSeconds: 2
         volumeMounts:
         - name: config
-          mountPath: /etc/dex/cfg 
+          mountPath: /etc/dex/cfg
+{{- if .Values.etcd.secure.enabled }}
+        - name: certs
+          mountPath: /etc/kubernetes/certs
+          readOnly: true
+{{- end }}
       volumes:
       - name: config
         defaultMode: 420
@@ -124,6 +144,18 @@ spec:
           items:
           - key: config.yaml
             path: config.yaml
+{{- if .Values.etcd.secure.enabled }}
+      - name: certs
+        secret:
+          secretName: {{ required "secretName undefined" .Values.secretName }}
+          items:
+            - key: tls-etcd-ca.pem
+              path: tls-etcd-ca.pem
+            - key: etcd-clients-dex.pem
+              path: etcd-clients-dex.pem
+            - key: etcd-clients-dex-key.pem
+              path: etcd-clients-dex-key.pem
+{{- end }}
 ---
 apiVersion: v1
 kind: Service

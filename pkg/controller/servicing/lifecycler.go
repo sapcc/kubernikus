@@ -9,7 +9,6 @@ import (
 	"github.com/pkg/errors"
 	"github.com/prometheus/client_golang/prometheus"
 	core_v1 "k8s.io/api/core/v1"
-	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/record"
 
@@ -26,7 +25,7 @@ import (
 
 const (
 	// EvictionTimeout defines when to abort the draining of a node
-	EvictionTimeout = 4 * time.Minute
+	EvictionTimeout = 5 * time.Minute
 )
 
 type (
@@ -135,27 +134,37 @@ func (l *NodeLifeCyclerFactory) Make(k *v1.Kluster) (LifeCycler, error) {
 	return lifeCycler, nil
 }
 
-// Drain uses a copy of openshift/kubernetes-drain to drain a node
+// Drain uses a copy of kubernetes/kubectl to drain a node
 // It is based on code extracted from kubectl, modified with kit-log
 // compliant logging
 func (lc *NodeLifeCycler) Drain(node *core_v1.Node) error {
 	if err := lc.setUpdatingAnnotation(node); err != nil {
 		return errors.Wrap(err, "Failed to drain node")
 	}
+	logger := log.With(lc.Logger, "node", node.GetName())
 
-	options := &drain.DrainOptions{
-		Force:              true,
-		IgnoreDaemonsets:   true,
-		GracePeriodSeconds: -1,
-		Timeout:            EvictionTimeout,
-		DeleteLocalData:    true,
-		Namespace:          meta_v1.NamespaceAll,
-		Selector:           nil,
-		Logger:             log.With(lc.Logger, "node", node.GetName()),
+	drainer := &drain.Helper{
+		Client:              lc.Kubernetes,
+		Force:               true,
+		GracePeriodSeconds:  -1,
+		IgnoreAllDaemonSets: true,
+		Timeout:             EvictionTimeout,
+		DeleteLocalData:     true,
+		Selector:            "",
+		PodSelector:         "",
+		Out:                 drain.LogWriter{logger},
+		ErrOut:              drain.LogWriter{logger},
+		OnPodDeletedOrEvicted: func(pod *core_v1.Pod, usingEviction bool) {
+			logger.Log("eviction", usingEviction, "pod", pod.Name, "v", 2)
+		},
 	}
-	if err := drain.Drain(lc.Kubernetes, []*core_v1.Node{node}, options); err != nil {
+	if err := drain.Cordon(drainer, node); err != nil {
+		return errors.Wrap(err, "failed to cordon node")
+	}
+	if err := drain.RunNodeDrain(drainer, node.Name); err != nil {
 		return errors.Wrap(err, "Failed to drain node")
 	}
+
 	return nil
 }
 
@@ -191,9 +200,27 @@ func (lc *NodeLifeCycler) Uncordon(node *core_v1.Node) error {
 	if err := lc.removeUpdatingAnnotation(node); err != nil {
 		return errors.Wrap(err, "failed to uncordon node")
 	}
-	if err := drain.Uncordon(lc.Kubernetes.Core().Nodes(), node, lc.Logger); err != nil {
+	logger := log.With(lc.Logger, "node", node.GetName())
+
+	drainer := &drain.Helper{
+		Client:              lc.Kubernetes,
+		Force:               true,
+		GracePeriodSeconds:  -1,
+		IgnoreAllDaemonSets: true,
+		Timeout:             EvictionTimeout,
+		DeleteLocalData:     true,
+		Selector:            "",
+		PodSelector:         "",
+		Out:                 drain.LogWriter{logger},
+		ErrOut:              drain.LogWriter{logger},
+		OnPodDeletedOrEvicted: func(pod *core_v1.Pod, usingEviction bool) {
+			logger.Log("eviction", usingEviction, "pod", pod.Name, "v", 2)
+		},
+	}
+	if err := drain.Uncordon(drainer, node); err != nil {
 		return errors.Wrap(err, "failed to uncordon node")
 	}
+
 	return nil
 }
 

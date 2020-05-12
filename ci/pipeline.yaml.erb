@@ -25,36 +25,10 @@ DEPLOYABLE_REGIONS = REGIONS.select{ |k, v| ["terraform", "manual"].include?(v[:
 
 <% REGIONS.each do |region, meta| %>
 auth_<%= region %>: &auth_<%= region %>
-<% if meta[:install] == "manual" %>
-  OS_AUTH_URL: https://identity-3.<%= region %>.cloud.sap/v3
-  OS_USERNAME: ((kubernikus-prod-username))
-  OS_PASSWORD: ((kubernikus-prod-password))
-  OS_USER_DOMAIN_NAME: ccadmin
-  OS_PROJECT_NAME: kubernikus
-  OS_PROJECT_DOMAIN_NAME: ccadmin
+  KUBELOGON_USER:     ((KUBELOGON_USER))
+  KUBELOGON_PASSWORD: ((KUBELOGON_PASSWORD))
   KUBERNIKUS_NAME: k-<%= region %>
   KUBERNIKUS_URL: https://k-<%= region %>.admin.cloud.sap
-<% end %>
-<% if meta[:install] == "terraform" %>
-  OS_AUTH_URL: https://identity-3.<%= region %>.cloud.sap/v3
-  OS_USERNAME: kubernikus-pipeline
-  OS_PASSWORD: ((kubernikus-pipeline-password))
-  OS_USER_DOMAIN_NAME: Default
-  OS_PROJECT_NAME: kubernikus
-  OS_PROJECT_DOMAIN_NAME: ccadmin
-  KUBERNIKUS_NAME: k-<%= region %>
-  KUBERNIKUS_URL: https://k-<%= region %>.admin.cloud.sap
-<% end %>
-<% if meta[:install] == "virtual" %>
-  OS_AUTH_URL: https://identity-3.eu-nl-1.cloud.sap/v3
-  OS_USERNAME: ((kubernikus-prod-username))
-  OS_PASSWORD: ((kubernikus-prod-password))
-  OS_USER_DOMAIN_NAME: ccadmin
-  OS_PROJECT_NAME: kubernikus-<%= region %>
-  OS_PROJECT_DOMAIN_NAME: ccadmin
-  KUBERNIKUS_NAME: k-<%= region %>
-  KUBERNIKUS_URL: https://k-<%= region %>.admin.cloud.sap
-<% end %>
 
 auth_e2e_<%= region %>: &auth_e2e_<%= region %>
   CP_KLUSTER: k-<%= region %>
@@ -222,6 +196,7 @@ jobs:
             <<: *task_tiller
           timeout: 10m
           params:
+            REGION: "k-master"
             <<: *auth_master
     <<: *slack
 
@@ -238,12 +213,14 @@ jobs:
           config:
             <<: *task_helm_kubernikus
           params:
+            REGION: "k-master"
             <<: *auth_master
         - task: kubernikus-dex
           config:
             <<: *task_helm_kubernikus-dex
           params:
             REGION: "eu-nl-1"
+            CONTEXT: "k-master"
             <<: *auth_master
     <<: *slack
 
@@ -265,6 +242,21 @@ jobs:
             - binaries/kubernikusctl*
         get_params:
           globs: []
+    <<: *slack
+
+  - name: whitesource
+    plan:
+      - in_parallel:
+        - get: kubernikus.builds
+          resource: master.builds
+          trigger: true
+      - task: build
+        file: kubernikus.builds/ci/task_whitesource.yaml
+        params:
+          API_KEY: ((whitesource-api-key))
+          USER_KEY: ((whitesource-user-key))
+          PROJECT_NAME: CCloud Kubernikus
+          PRODUCT_TOKEN: ((whitesource-product-token))
     <<: *slack
 
   - name: e2e
@@ -328,8 +320,10 @@ jobs:
             <<: *task_helm-admin_kubernikus
           params:
             REGION: admin
+            CONTEXT: admin
             KUBERNIKUS_NAME: k-<%= region %>
-            GITHUB_TOKEN: ((github-access-token))
+            KUBELOGON_USER:     ((KUBELOGON_USER))
+            KUBELOGON_PASSWORD: ((KUBELOGON_PASSWORD))
 <% end %>
     <<: *slack
 
@@ -353,8 +347,9 @@ jobs:
         input_mapping:
           charts.git: helm-charts.git
         params:
-          REGION:       <%= region %>
-          GITHUB_TOKEN: ((github-access-token))
+          REGION: <%= region %>
+          CONTEXT: <%= region %>
+          <<: *auth_<%= region %>
     <<: *slack
 
   - name: tiller_<%= region %>
@@ -371,6 +366,8 @@ jobs:
             <<: *task_tiller
           timeout: 10m
           params:
+            REGION: <%= region %>
+            CONTEXT: k-<%= region %>
             <<: *auth_<%= region %>
     <<: *slack
 
@@ -391,12 +388,15 @@ jobs:
           config:
             <<: *task_helm_kubernikus
           params:
+            REGION: <%= region %>
+            CONTEXT: k-<%= region %>
             <<: *auth_<%= region %>
         - task: kubernikus-dex_<%= region %>
           config:
             <<: *task_helm_kubernikus-dex
           params:
             REGION: <%= region %>
+            CONTEXT: k-<%= region %>
             <<: *auth_<%= region %>
     <<: *slack
 
@@ -444,6 +444,7 @@ groups:
     jobs:
       - master
       - cli
+      - whitesource
       - tiller_master
       - e2e
       - prod
@@ -467,6 +468,7 @@ groups:
     jobs:
       - master
       - cli
+      - whitesource
       - tiller_master
       - e2e
       - prod

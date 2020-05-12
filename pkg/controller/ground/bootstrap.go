@@ -55,7 +55,11 @@ func SeedKluster(clients config.Clients, factories config.Factories, kluster *v1
 	if err := SeedAllowApiserverToAccessKubeletAPI(kubernetes); err != nil {
 		return errors.Wrap(err, "seed allow apiserver access to kubelet api")
 	}
-	if ok, _ := util.KlusterVersionConstraint(kluster, ">= 1.13"); ok {
+	if ok, _ := util.KlusterVersionConstraint(kluster, ">= 1.16"); ok {
+		if err := dns.SeedCoreDNS116(kubernetes, "", "", kluster.Spec.DNSDomain, kluster.Spec.DNSAddress); err != nil {
+			return errors.Wrap(err, "seed coredns")
+		}
+	} else if ok, _ := util.KlusterVersionConstraint(kluster, ">= 1.13"); ok {
 		if err := dns.SeedCoreDNS(kubernetes, "", "", kluster.Spec.DNSDomain, kluster.Spec.DNSAddress); err != nil {
 			return errors.Wrap(err, "seed coredns")
 		}

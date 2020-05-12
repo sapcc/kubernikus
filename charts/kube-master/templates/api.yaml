@@ -1,5 +1,9 @@
 {{/* vim: set filetype=gotexttmpl: */ -}}
+{{- if semverCompare ">=1.16-0" .Capabilities.KubeVersion.GitVersion }}
+apiVersion: "apps/v1"
+{{- else }}
 apiVersion: "extensions/v1beta1"
+{{- end }}
 kind: Deployment
 metadata:
   name: {{ include "master.fullname" . }}-apiserver
@@ -33,6 +37,8 @@ spec:
                 path: apiserver-clients-and-nodes-ca.pem
               - key: apiserver-clients-ca-key.pem
                 path: apiserver-clients-ca-key.pem
+              - key: tls-etcd-ca.pem
+                path: tls-etcd-ca.pem
               - key: etcd-clients-ca.pem
                 path: etcd-clients-ca.pem
               - key: etcd-clients-apiserver.pem
@@ -59,6 +65,11 @@ spec:
                 path: aggregation-aggregator.pem
               - key: aggregation-aggregator-key.pem
                 path: aggregation-aggregator-key.pem
+{{- if .Values.api.sniCertSecret }}
+        - name: sni-certs
+          secret:
+            secretName: {{ .Values.api.sniCertSecret }}
+{{- end }}
         - name: wormhole-certs
           secret:
             secretName: {{ required "secretName undefined" .Values.secretName }}
@@ -114,7 +125,18 @@ spec:
             - sh
             - -c
           args:
+{{- if .Values.etcd.secure.enabled }}
+            - until etcdctl --endpoints https://{{ include "etcd.fullname" . }}:2379 --cacert=/etc/kubernetes/certs/tls-etcd-ca.pem --cert=/etc/kubernetes/certs/etcd-clients-apiserver.pem --key=/etc/kubernetes/certs/etcd-clients-apiserver-key.pem --insecure-transport=false endpoint health; do sleep 5; done;
+          env:
+            - name: ETCDCTL_API
+              value: "3"
+          volumeMounts:
+            - mountPath: /etc/kubernetes/certs
+              name: certs
+              readOnly: true
+{{- else }}
             - until etcdctl --total-timeout=4s --endpoints http://{{ include "etcd.fullname" . }}:2379 cluster-health; do sleep 5; done;
+{{- end }}
       containers:
         - name: apiserver
           image: {{ include "hyperkube.image" . | quote }}
@@ -125,7 +147,11 @@ spec:
 {{- else }}
             - apiserver
 {{- end }}
+            {{- if .Values.etcd.secure.enabled }}
+            - --etcd-servers=https://{{ include "etcd.fullname" . }}:2379
+            {{- else }}
             - --etcd-servers=http://{{ include "etcd.fullname" . }}:2379
+            {{- end }}
             - --secure-port={{ required "missing advertisePort" .Values.advertisePort }}
             - --advertise-address={{ .Values.advertiseAddress }}
             - --allow-privileged=true
@@ -164,10 +190,13 @@ spec:
 {{- end }}
 {{- if (semverCompare ">= 1.14" .Values.version.kubernetes) }}
             - --feature-gates=NodeLease=false
+{{- else if (semverCompare ">= 1.12" .Values.version.kubernetes)}}
+            # https://github.com/kubernetes/kubernetes/issues/85867
+            - --feature-gates=ValidateProxyRedirects=true
 {{- end }}
             #Cert Spratz
             - --client-ca-file=/etc/kubernetes/certs/apiserver-clients-and-nodes-ca.pem
-            - --etcd-cafile=/etc/kubernetes/certs/etcd-clients-ca.pem
+            - --etcd-cafile=/etc/kubernetes/certs/tls-etcd-ca.pem
             - --etcd-certfile=/etc/kubernetes/certs/etcd-clients-apiserver.pem
             - --etcd-keyfile=/etc/kubernetes/certs/etcd-clients-apiserver-key.pem
             - --kubelet-client-certificate=/etc/kubernetes/certs/kubelet-clients-apiserver.pem
@@ -175,18 +204,33 @@ spec:
             - --service-account-key-file=/etc/kubernetes/certs/apiserver-clients-ca-key.pem
             - --tls-cert-file=/etc/kubernetes/certs/tls-apiserver.pem
             - --tls-private-key-file=/etc/kubernetes/certs/tls-apiserver-key.pem
-            # --tls-sni-cert-key=/etc/kubernetes/certs/tls-sni.pem,/etc/kubernetes/certs/tls-sni.key
+{{- if (semverCompare ">= 1.12" .Values.version.kubernetes) }}
+            - --service-account-issuer=https://{{ required "missing .api.apiserverHost" .Values.api.apiserverHost }}
+            - --service-account-signing-key-file=/etc/kubernetes/certs/apiserver-clients-ca-key.pem
+            - --api-audiences=kubernetes
+{{- end }}
+{{- if .Values.api.sniCertSecret }}
+            - --tls-sni-cert-key=/etc/kubernetes/sni-certs/tls.crt,/etc/kubernetes/sni-certs/tls.key
+{{- end }}
+{{- if .Values.api.corsAllowedOrigins }}
+            - --cors-allowed-origins={{ .Values.api.corsAllowedOrigins }}
+{{- end }}
             {{ if .Values.dex.enabled }}
-            - --oidc-issuer-url=https://{{ include "dex.url" . }} 
+            - --oidc-issuer-url=https://{{ include "dex.url" . }}
             - --oidc-client-id=kubernetes
             - --oidc-groups-claim=groups
             - --oidc-username-prefix=-
-            - --oidc-username-claim=sub
+            - --oidc-username-claim=name
             {{ end }}
           volumeMounts:
             - mountPath: /etc/kubernetes/certs
               name: certs
               readOnly: true
+{{- if .Values.api.sniCertSecret }}
+            - mountPath: /etc/kubernetes/sni-certs
+              name: sni-certs
+              readOnly: true
+{{- end }}
             {{- if .Values.openstack }}
             - mountPath: /etc/kubernetes/cloudprovider
               name: cloudprovider
@@ -214,7 +258,7 @@ spec:
             - name: ETCD_HOST
               value: {{ include "etcd.fullname" . }}
             - name: ETCD_BACKUP_PORT
-              value: "8080" 
+              value: "8080"
           resources:
 {{ toYaml .Values.api.resources | indent 12 }}
         - name: wormhole
