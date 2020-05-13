@@ -204,7 +204,7 @@ spec:
             - --service-account-key-file=/etc/kubernetes/certs/apiserver-clients-ca-key.pem
             - --tls-cert-file=/etc/kubernetes/certs/tls-apiserver.pem
             - --tls-private-key-file=/etc/kubernetes/certs/tls-apiserver-key.pem
-{{- if (semverCompare ">= 1.12" .Values.version.kubernetes) }}
+{{- if (semverCompare ">= 1.13" .Values.version.kubernetes) }}
             - --service-account-issuer=https://{{ required "missing .api.apiserverHost" .Values.api.apiserverHost }}
             - --service-account-signing-key-file=/etc/kubernetes/certs/apiserver-clients-ca-key.pem
             - --api-audiences=kubernetes
