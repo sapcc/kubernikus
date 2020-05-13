@@ -103,11 +103,14 @@ func SeedCinderStorageClasses(client clientset.Interface, openstack openstack_pr
 }
 
 func createStorageClass(client clientset.Interface, name, avz string, isDefault bool) error {
+	mode := storage.VolumeBindingWaitForFirstConsumer
+
 	storageClass := storage.StorageClass{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: name,
 		},
-		Provisioner: "kubernetes.io/cinder",
+		Provisioner:       "kubernetes.io/cinder",
+		VolumeBindingMode: &mode,
 	}
 
 	if isDefault {
