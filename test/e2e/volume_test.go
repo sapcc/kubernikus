@@ -40,8 +40,8 @@ func (v *VolumeTests) Run(t *testing.T) {
 	t.Run("CreateNamespace", v.CreateNamespace)
 	t.Run("WaitNamespace", v.WaitForNamespace)
 	t.Run("CreatePVC", v.CreatePVC)
-	t.Run("WaitPVCBound", v.WaitForPVCBound)
 	t.Run("CreatePod", v.CreatePod)
+	t.Run("WaitPVCBound", v.WaitForPVCBound)
 	t.Run("WaitPodRunning", v.WaitForPVCPodsRunning)
 }
 
