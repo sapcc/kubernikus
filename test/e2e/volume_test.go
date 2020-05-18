@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"testing"
 	"time"
 
@@ -61,18 +60,15 @@ func (p *VolumeTests) DeleteNamespace(t *testing.T) {
 }
 
 func (p *VolumeTests) CreatePod(t *testing.T) {
-	nodeName := p.Nodes.Items[0].Name
 	_, err := p.Kubernetes.ClientSet.CoreV1().Pods(p.Namespace).Create(&v1.Pod{
 		ObjectMeta: meta_v1.ObjectMeta{
-			GenerateName: fmt.Sprintf("%s-", nodeName),
-			Namespace:    p.Namespace,
+			Name:      "pvc-hostname",
+			Namespace: p.Namespace,
 			Labels: map[string]string{
-				"app":  "pvc-hostname",
-				"node": nodeName,
+				"app": "pvc-hostname",
 			},
 		},
 		Spec: v1.PodSpec{
-			NodeName: nodeName,
 			Containers: []v1.Container{
 				{
 					Image: ServeHostnameImage,
