@@ -31,6 +31,20 @@ featureGates:
   NodeLease: false
 `))
 
+var kubeletConfigurationTemplate117 = template.Must(template.New("config").Parse(`kind: KubeletConfiguration
+apiVersion: kubelet.config.k8s.io/v1beta1
+readOnlyPort: 0
+clusterDomain: {{ .ClusterDomain }}
+clusterDNS: [{{ .ClusterDNS }}]
+authentication:
+  x509:
+    clientCAFile: {{ .KubeletClientsCAFile }}
+  anonymous:
+    enabled: true
+rotateCertificates: true
+featureGates:
+`))
+
 func NewGetBootstrapConfig(rt *api.Runtime) operations.GetBootstrapConfigHandler {
 	return &getBootstrapConfig{rt}
 }
@@ -95,8 +109,15 @@ func (d *getBootstrapConfig) Handle(params operations.GetBootstrapConfigParams, 
 		KubeletClientsCAFile: "/etc/kubernetes/certs/kubelet-clients-ca.pem",
 	}
 	var kubeletConfigYAML strings.Builder
-	if err := kubeletConfigurationTemplate.Execute(&kubeletConfigYAML, kubeletConfig); err != nil {
-		return NewErrorResponse(&operations.GetBootstrapConfigDefault{}, 500, "Failed to generate kubelet config YAML document: %s", err)
+
+	if ok, _ := util.KlusterVersionConstraint(kluster, ">= 1.17"); ok {
+		if err := kubeletConfigurationTemplate117.Execute(&kubeletConfigYAML, kubeletConfig); err != nil {
+			return NewErrorResponse(&operations.GetBootstrapConfigDefault{}, 500, "Failed to generate kubelet config YAML document: %s", err)
+		}
+	} else {
+		if err := kubeletConfigurationTemplate.Execute(&kubeletConfigYAML, kubeletConfig); err != nil {
+			return NewErrorResponse(&operations.GetBootstrapConfigDefault{}, 500, "Failed to generate kubelet config YAML document: %s", err)
+		}
 	}
 
 	credentials := models.BootstrapConfig{

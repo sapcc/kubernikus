@@ -146,7 +146,9 @@ spec:
             protocol: TCP
           image: {{ include "hyperkube.image" . | quote }}
           args:
+{{- if (semverCompare "< 1.17" .Values.version.kubernetes) }}
             - /hyperkube
+{{- end }}
 {{- if (semverCompare ">= 1.15" .Values.version.kubernetes) }}
             - kube-apiserver
 {{- else }}
@@ -194,7 +196,9 @@ spec:
             - --enable-admission-plugins=PersistentVolumeLabel
 {{- end }}
 {{- if (semverCompare ">= 1.14" .Values.version.kubernetes) }}
+{{- if (semverCompare "< 1.17" .Values.version.kubernetes) }}
             - --feature-gates=NodeLease=false
+{{- end }}
 {{- else if (semverCompare ">= 1.12" .Values.version.kubernetes)}}
             # https://github.com/kubernetes/kubernetes/issues/85867
             - --feature-gates=ValidateProxyRedirects=true
