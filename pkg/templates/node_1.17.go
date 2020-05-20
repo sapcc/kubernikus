@@ -97,7 +97,7 @@ systemd:
           --insecure-options=image"
         Environment="KUBELET_IMAGE_TAG={{ .HyperkubeImageTag }}"
         Environment="KUBELET_IMAGE_URL=docker://{{ .HyperkubeImage }}"
-        Environment="KUBELET_IMAGE_ARGS=--name=kubelet --exec=/kubelet"
+        Environment="KUBELET_IMAGE_ARGS=--name=kubelet --exec=/usr/local/bin/kubelet"
 {{- if .CalicoNetworking }}
         ExecStartPre=/bin/mkdir -p /etc/cni /opt/cni /var/lib/calico
  {{- end }}
