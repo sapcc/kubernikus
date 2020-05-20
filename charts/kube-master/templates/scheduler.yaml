@@ -54,7 +54,9 @@ spec:
 {{- end }}
           image: {{ include "hyperkube.image" . | quote }}
           args:
+{{- if (semverCompare "< 1.17" .Values.version.kubernetes) }}
             - /hyperkube
+{{- end }}
 {{- if (semverCompare ">= 1.15" .Values.version.kubernetes) }}
             - kube-scheduler
 {{- else }}

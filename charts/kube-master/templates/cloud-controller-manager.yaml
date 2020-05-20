@@ -71,7 +71,7 @@ spec:
             - --cluster-cidr={{ .Values.clusterCIDR }}
             - --cluster-name={{ .Values.name }}
             - --configure-cloud-routes=true
-{{- if (semverCompare ">= 1.14" .Values.version.kubernetes) }}
+{{- if and (semverCompare ">= 1.14" .Values.version.kubernetes) (semverCompare "< 1.17" .Values.version.kubernetes) }}
             - --feature-gates=NodeLease=false
 {{- end }}
             - --kubeconfig=/etc/kubernetes/config/kubeconfig
