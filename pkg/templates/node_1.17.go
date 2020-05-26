@@ -454,6 +454,7 @@ storage:
             anonymous:
               enabled: true
           rotateCertificates: true
+          nodeLeaseDurationSeconds: 20
           featureGates:
     - path: /etc/kubernetes/kube-proxy/config
       filesystem: root

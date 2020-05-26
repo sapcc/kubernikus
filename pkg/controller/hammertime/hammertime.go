@@ -5,6 +5,7 @@ import (
 	"time"
 
 	kitlog "github.com/go-kit/kit/log"
+	coord_v1beta1 "k8s.io/api/coordination/v1beta1"
 	core_v1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/labels"
@@ -81,12 +82,20 @@ func (hc *hammertimeController) Reconcile(kluster *v1.Kluster) error {
 	//var oldestHeartbeat time.Time = time.Now()
 	var newestHearbeat time.Time = time.Time{}
 	for _, node := range nodes {
-		ready := nodeReadyCondition(node)
-		if ready == nil {
-			continue
-		}
-		if ready.LastHeartbeatTime.After(newestHearbeat) {
-			newestHearbeat = ready.LastHeartbeatTime.Time
+		if ok, _ := util.KlusterVersionConstraint(kluster, ">= 1.17"); ok {
+			nodeLease, err := getNodeLease(node, hc.client)
+			if err != nil {
+				continue
+			}
+			newestHearbeat = nodeLease.Spec.RenewTime.Time
+		} else {
+			ready := nodeReadyCondition(node)
+			if ready == nil {
+				continue
+			}
+			if ready.LastHeartbeatTime.After(newestHearbeat) {
+				newestHearbeat = ready.LastHeartbeatTime.Time
+			}
 		}
 	}
 
@@ -105,8 +114,12 @@ func (hc *hammertimeController) scaleDeployment(kluster *v1.Kluster, disable boo
 
 	scaleClient := NewScaleClient(hc.client, kluster.Namespace)
 
-	deploymentName := fmt.Sprintf("%s-cmanager", kluster.GetName())
-	replicas, err := scaleClient.GetScale(deploymentName)
+	deploymentName := fmt.Sprintf("%s-ccmanager", kluster.GetName())
+	replicas, err := scaleClient.GetScale(deploymentName, meta_v1.GetOptions{})
+	if apierrors.IsNotFound(err) {
+		deploymentName := fmt.Sprintf("%s-cmanager", kluster.GetName())
+		replicas, err = scaleClient.GetScale(deploymentName, meta_v1.GetOptions{})
+	}
 	if apierrors.IsNotFound(err) {
 		deploymentName = fmt.Sprintf("%s-controller-manager", kluster.GetName())
 		replicas, err = scaleClient.GetScale(deploymentName)
@@ -136,4 +149,9 @@ func nodeReadyCondition(node *core_v1.Node) *core_v1.NodeCondition {
 		}
 	}
 	return nil
+}
+
+func getNodeLease(node *core_v1.Node, client kubernetes.Interface) (*coord_v1beta1.Lease, error) {
+	leaseClient := client.CoordinationV1beta1().Leases(core_v1.NamespaceNodeLease)
+	return leaseClient.Get(node.Name, meta_v1.GetOptions{})
 }
