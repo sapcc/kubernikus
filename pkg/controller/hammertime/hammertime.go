@@ -14,6 +14,7 @@ import (
 
 	"github.com/sapcc/kubernikus/pkg/api/models"
 	v1 "github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
+	kube "github.com/sapcc/kubernikus/pkg/client/kubernetes"
 	"github.com/sapcc/kubernikus/pkg/controller/base"
 	"github.com/sapcc/kubernikus/pkg/controller/config"
 	"github.com/sapcc/kubernikus/pkg/controller/metrics"
@@ -24,6 +25,7 @@ import (
 type hammertimeController struct {
 	nodeObervatory *nodeobservatory.NodeObservatory
 	client         kubernetes.Interface
+	satellites     kube.SharedClientFactory
 	timeout        time.Duration
 	logger         kitlog.Logger
 	recorder       record.EventRecorder
@@ -40,6 +42,7 @@ func New(syncPeriod time.Duration, timeout time.Duration, factories config.Facto
 	controller := hammertimeController{
 		nodeObervatory: factories.NodesObservatory.NodeInformer(),
 		client:         clients.Kubernetes,
+		satellites:     clients.Satellites,
 		timeout:        timeout,
 		logger:         logger,
 		recorder:       recorder,
@@ -83,11 +86,18 @@ func (hc *hammertimeController) Reconcile(kluster *v1.Kluster) error {
 	var newestHearbeat time.Time = time.Time{}
 	for _, node := range nodes {
 		if ok, _ := util.KlusterVersionConstraint(kluster, ">= 1.17"); ok {
-			nodeLease, err := getNodeLease(node, hc.client)
+			clientset, err := hc.satellites.ClientFor(kluster)
 			if err != nil {
+				return fmt.Errorf("Failed to get client for kluster: %s", err)
+			}
+			nodeLease, err := getNodeLease(node, clientset)
+			if err != nil {
+				logger.Log("msg", "Node lease not found", "node", node.Name, "err", err)
 				continue
 			}
-			newestHearbeat = nodeLease.Spec.RenewTime.Time
+			if nodeLease.Spec.RenewTime.After(newestHearbeat) {
+				newestHearbeat = nodeLease.Spec.RenewTime.Time
+			}
 		} else {
 			ready := nodeReadyCondition(node)
 			if ready == nil {
@@ -102,7 +112,6 @@ func (hc *hammertimeController) Reconcile(kluster *v1.Kluster) error {
 	timeout_exeeded := time.Now().Sub(newestHearbeat) > hc.timeout
 
 	return hc.scaleDeployment(kluster, timeout_exeeded, logger)
-
 }
 
 func (hc *hammertimeController) scaleDeployment(kluster *v1.Kluster, disable bool, logger kitlog.Logger) error {
@@ -151,7 +160,7 @@ func nodeReadyCondition(node *core_v1.Node) *core_v1.NodeCondition {
 	return nil
 }
 
-func getNodeLease(node *core_v1.Node, client kubernetes.Interface) (*coord_v1beta1.Lease, error) {
-	leaseClient := client.CoordinationV1beta1().Leases(core_v1.NamespaceNodeLease)
+func getNodeLease(node *core_v1.Node, clientset kubernetes.Interface) (*coord_v1beta1.Lease, error) {
+	leaseClient := clientset.CoordinationV1beta1().Leases(core_v1.NamespaceNodeLease)
 	return leaseClient.Get(node.Name, meta_v1.GetOptions{})
 }
