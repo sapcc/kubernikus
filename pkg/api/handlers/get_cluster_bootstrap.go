@@ -42,6 +42,7 @@ authentication:
   anonymous:
     enabled: true
 rotateCertificates: true
+nodeLeaseDurationSeconds: 20
 featureGates:
 `))
 
