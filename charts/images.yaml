@@ -142,8 +142,8 @@ imagesForVersion:
       tag: '8373c31b3e2d96ad3a7313227aa1bb8c59ddca39'
   '1.9.11':
     hyperkube:
-      repository: 'quay.io/coreos/hyperkube'
-      tag: 'v1.9.11_coreos.1'
+      repository: 'sapcc/hyperkube'
+      tag: 'v1.9.11'
     dex:
       repository: 'hub.global.cloud.sap/monsoon/dex'
       tag: '8373c31b3e2d96ad3a7313227aa1bb8c59ddca39'
