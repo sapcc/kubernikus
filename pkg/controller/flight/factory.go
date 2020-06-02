@@ -67,6 +67,7 @@ func (d *flightReconcilerFactory) getInstances(kluster *v1.Kluster, client opens
 			return nil, err
 		} else {
 			for _, n := range poolNodes {
+				n := n
 				instances = append(instances, &n)
 			}
 		}
