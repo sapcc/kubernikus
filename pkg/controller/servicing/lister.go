@@ -216,7 +216,7 @@ func (d *NodeLister) Replace() []*core_v1.Node {
 	var nodeNameToPool map[string]*models.NodePool
 	nodeNameToPool = make(map[string]*models.NodePool)
 
-	for _, pool := range d.Kluster.Spec.NodePools {
+	for i, pool := range d.Kluster.Spec.NodePools {
 		if *pool.Config.AllowReplace == false {
 			continue
 		}
@@ -228,7 +228,7 @@ func (d *NodeLister) Replace() []*core_v1.Node {
 			}
 
 			if len(node.GetName()) == len(prefix)+generator.RandomLength {
-				nodeNameToPool[node.GetName()] = &pool
+				nodeNameToPool[node.GetName()] = &d.Kluster.Spec.NodePools[i]
 				upgradable = append(upgradable, node)
 			}
 
