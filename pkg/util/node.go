@@ -77,6 +77,7 @@ func ThisNode(nodes []v1.Node) (*v1.Node, error) {
 						candidate = nil
 						break Loop
 					}
+					node := node // copy to avoid referencing the loop variable
 					candidate = &node
 					break
 				}
