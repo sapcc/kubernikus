@@ -35,5 +35,6 @@ operator:
   controllers: []
   nodeAffinity: false
   metrics_port: 9091
+  useOctavia: false
 
 includeRBAC: false

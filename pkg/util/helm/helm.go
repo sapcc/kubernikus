@@ -5,6 +5,7 @@ import (
 	"hash/crc64"
 	"math/rand"
 	"net/url"
+	"os"
 
 	"github.com/go-openapi/swag"
 	"golang.org/x/crypto/bcrypt"
@@ -41,6 +42,7 @@ type openstackValues struct {
 	LbSubnetID          string `yaml:"lbSubnetID,omitempty"`
 	LbFloatingNetworkID string `yaml:"lbFloatingNetworkID,omitempty"`
 	RouterID            string `yaml:"routerID,omitempty"`
+	UseOctavia          bool   `yaml:"useOctavia"`
 }
 
 type persistenceValues struct {
@@ -192,6 +194,7 @@ func KlusterToHelmValues(kluster *v1.Kluster, secret *v1.Secret, kubernetesVersi
 				DomainName:        secret.Openstack.DomainName,
 				ProjectID:         secret.Openstack.ProjectID,
 				ProjectDomainName: secret.Openstack.ProjectDomainName,
+				UseOctavia:        os.Getenv("USE_OCTAVIA") != "",
 			},
 		},
 		Api: apiValues{

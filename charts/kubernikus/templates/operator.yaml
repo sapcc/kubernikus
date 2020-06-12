@@ -50,6 +50,10 @@ spec:
             - name: NODEPOOL_AFFINITY
               value: "true"
             {{- end }}
+            {{- if .Values.operator.useOctavia }}
+            - name: USE_OCTAVIA
+              value: "true"
+            {{- end }}
             - name: OS_PASSWORD
               valueFrom:
                 secretKeyRef:

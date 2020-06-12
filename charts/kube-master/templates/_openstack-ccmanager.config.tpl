@@ -12,6 +12,7 @@ region = {{ .Values.openstack.region }}
 {{- end }}
 [LoadBalancer]
 lb-version=v2
+use-octavia = {{ default "no" .Values.openstack.useOctavia }}
 subnet-id= {{ required "missing openstack.lbSubnetID" .Values.openstack.lbSubnetID }}
 floating-network-id= {{ required "missing openstack.lbFloatingNetworkID" .Values.openstack.lbFloatingNetworkID }}
 create-monitor = yes
