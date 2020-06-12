@@ -194,7 +194,6 @@ func KlusterToHelmValues(kluster *v1.Kluster, secret *v1.Secret, kubernetesVersi
 				DomainName:        secret.Openstack.DomainName,
 				ProjectID:         secret.Openstack.ProjectID,
 				ProjectDomainName: secret.Openstack.ProjectDomainName,
-				UseOctavia:        os.Getenv("USE_OCTAVIA") != "",
 			},
 		},
 		Api: apiValues{
@@ -218,6 +217,7 @@ func KlusterToHelmValues(kluster *v1.Kluster, secret *v1.Secret, kubernetesVersi
 			LbSubnetID:          kluster.Spec.Openstack.LBSubnetID,
 			LbFloatingNetworkID: kluster.Spec.Openstack.LBFloatingNetworkID,
 			RouterID:            kluster.Spec.Openstack.RouterID,
+			UseOctavia:          os.Getenv("USE_OCTAVIA") != "",
 		}
 	}
 	if registry != nil {
