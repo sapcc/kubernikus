@@ -1,0 +1,44 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    component: cmanager-metrics
+  name: cmanager-metrics
+spec:
+  ports:
+  - name: metrics
+    port: 10252
+    protocol: TCP
+    targetPort: 10252
+  selector:
+    component: controller-manager
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    component: scheduler-metrics
+  name: scheduler-metrics
+spec:
+  ports:
+  - name: metrics
+    port: 10259
+    protocol: TCP
+    targetPort: 10259
+  selector:
+    component: scheduler
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    component: etcd-metrics
+  name: etcd-metrics
+spec:
+  ports:
+  - name: metrics
+    port: 8081
+    protocol: TCP
+    targetPort: 8081
+  selector:
+    component: etcd

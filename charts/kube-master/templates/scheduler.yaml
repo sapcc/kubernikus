@@ -24,6 +24,7 @@ spec:
   template:
     metadata:
       labels:
+        component: scheduler
         app: {{ include "master.fullname" . }}-scheduler
         release: {{ .Release.Name }}
       annotations:
@@ -45,6 +46,10 @@ spec:
             name: {{ include "master.fullname" . }}
       containers:
         - name: scheduler
+          ports:
+          - containerPort: 10259
+            name: metrics
+            protocol: TCP
           image: {{ include "hyperkube.image" . | quote }}
           args:
             - /hyperkube

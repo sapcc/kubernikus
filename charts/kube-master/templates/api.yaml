@@ -25,6 +25,7 @@ spec:
       labels:
         app: {{ include "master.fullname" . }}-apiserver
         release: {{ .Release.Name }}
+        component: apiserver
       annotations:
         checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
     spec:
@@ -139,6 +140,10 @@ spec:
 {{- end }}
       containers:
         - name: apiserver
+          ports:
+          - containerPort: 443
+            name: server
+            protocol: TCP
           image: {{ include "hyperkube.image" . | quote }}
           args:
             - /hyperkube
