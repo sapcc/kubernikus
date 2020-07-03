@@ -46,7 +46,7 @@ spec:
             name: {{ include "master.fullname" . }}
       containers:
         - name: scheduler
-{{- if semverCompare ">=1.12-0" .Capabilities.KubeVersion.GitVersion }}
+{{- if (semverCompare ">= 1.12" .Values.version.kubernetes) }}
           ports:
           - containerPort: 10259
             name: metrics
