@@ -29,6 +29,7 @@ spec:
   selector:
     component: scheduler
 ---
+{{- end }}
 apiVersion: v1
 kind: Service
 metadata:
@@ -43,4 +44,3 @@ spec:
     targetPort: 8081
   selector:
     component: etcd
-{{- end }}
