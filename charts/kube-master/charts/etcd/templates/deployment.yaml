@@ -49,10 +49,12 @@ data:
       --client-cert-auth=true \
       --trusted-ca-file=/etc/kubernetes/certs/etcd-clients-ca.pem \
       --advertise-client-urls=https://${ETCD_IP}:2379 \
-      --listen-client-urls=https://0.0.0.0:2379
+      --listen-client-urls=https://0.0.0.0:2379 \
+      --listen-metrics-urls=http://0.0.0.0:8081
 {{- else }}
       --advertise-client-urls=http://${ETCD_IP}:2379 \
-      --listen-client-urls=http://0.0.0.0:2379
+      --listen-client-urls=http://0.0.0.0:2379 \
+      --listen-metrics-urls=http://0.0.0.0:8081
 {{- end }}
 ---
 {{- if semverCompare ">=1.16-0" .Capabilities.KubeVersion.GitVersion }}
@@ -76,6 +78,7 @@ spec:
       labels:
         app: {{ include "fullname" . }}
         release: {{ .Release.Name }}
+        component: etcd
       annotations:
         prometheus.io/scrape: "true"
         prometheus.io/port: "8080"
@@ -124,6 +127,13 @@ spec:
 {{- end }}
       containers:
         - name: etcd
+          ports:
+          - containerPort: 2379
+            name: etcd
+            protocol: TCP
+          - containerPort: 8081
+            name: metrics
+            protocol: TCP
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           env:
             - name: ETCD_IP

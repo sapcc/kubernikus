@@ -25,6 +25,7 @@ spec:
   template:
     metadata:
       labels:
+        component: controller-manager
         app: controller-manager
         kluster: {{ .Values.name }}
         account: {{ .Values.account }}
@@ -82,6 +83,12 @@ spec:
               readOnly: true
       containers:
         - name: controller-manager
+{{- if (semverCompare ">= 1.12" .Values.version.kubernetes) }}
+          ports:
+          - containerPort: 10257
+            name: metrics
+            protocol: TCP
+{{- end }}
           image: {{ include "hyperkube.image" . | quote }}
           args:
             - /hyperkube

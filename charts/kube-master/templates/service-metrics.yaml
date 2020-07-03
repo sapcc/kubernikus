@@ -1,0 +1,46 @@
+{{- if (semverCompare ">= 1.12" .Values.version.kubernetes) }}
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    component: controller-manager-metrics
+  name: controller-manager-metrics
+spec:
+  ports:
+  - name: metrics
+    port: 10257
+    protocol: TCP
+    targetPort: 10257
+  selector:
+    component: controller-manager
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    component: scheduler-metrics
+  name: scheduler-metrics
+spec:
+  ports:
+  - name: metrics
+    port: 10259
+    protocol: TCP
+    targetPort: 10259
+  selector:
+    component: scheduler
+---
+{{- end }}
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    component: etcd-metrics
+  name: etcd-metrics
+spec:
+  ports:
+  - name: metrics
+    port: 8081
+    protocol: TCP
+    targetPort: 8081
+  selector:
+    component: etcd
