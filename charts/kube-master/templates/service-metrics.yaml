@@ -1,15 +1,16 @@
+{{- if semverCompare ">=1.12-0" .Capabilities.KubeVersion.GitVersion }}
 apiVersion: v1
 kind: Service
 metadata:
   labels:
-    component: cmanager-metrics
-  name: cmanager-metrics
+    component: controller-manager-metrics
+  name: controller-manager-metrics
 spec:
   ports:
   - name: metrics
-    port: 10252
+    port: 10257
     protocol: TCP
-    targetPort: 10252
+    targetPort: 10257
   selector:
     component: controller-manager
 ---
@@ -42,3 +43,4 @@ spec:
     targetPort: 8081
   selector:
     component: etcd
+{{- end }}

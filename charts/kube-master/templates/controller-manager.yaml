@@ -83,10 +83,12 @@ spec:
               readOnly: true
       containers:
         - name: controller-manager
+{{- if semverCompare ">=1.12-0" .Capabilities.KubeVersion.GitVersion }}
           ports:
-          - containerPort: 10252
+          - containerPort: 10257
             name: metrics
             protocol: TCP
+{{- end }}
           image: {{ include "hyperkube.image" . | quote }}
           args:
             - /hyperkube
