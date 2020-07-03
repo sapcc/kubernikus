@@ -49,7 +49,8 @@ data:
       --client-cert-auth=true \
       --trusted-ca-file=/etc/kubernetes/certs/etcd-clients-ca.pem \
       --advertise-client-urls=https://${ETCD_IP}:2379 \
-      --listen-client-urls=https://0.0.0.0:2379
+      --listen-client-urls=https://0.0.0.0:2379 \
+      --listen-metrics-urls=http://0.0.0.0:8081
 {{- else }}
       --advertise-client-urls=http://${ETCD_IP}:2379 \
       --listen-client-urls=http://0.0.0.0:2379 \
