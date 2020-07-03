@@ -127,6 +127,9 @@ spec:
       containers:
         - name: etcd
           ports:
+          - containerPort: 2379
+            name: etcd
+            protocol: TCP
           - containerPort: 8081
             name: metrics
             protocol: TCP
