@@ -1,4 +1,4 @@
-{{- if semverCompare ">=1.16-0" .Capabilities.KubeVersion.GitVersion }}
+{{- if .Capabilities.APIVersions.Has "apps/v1" }}
 apiVersion: "apps/v1"
 {{- else }}
 apiVersion: "extensions/v1beta1"
@@ -17,6 +17,10 @@ spec:
       maxSurge: 1
       maxUnavailable: 0
   revisionHistoryLimit: {{ .Values.revisionHistoryLimit }}
+  selector:
+    matchLabels:
+      app: kubernikus
+      type: api
   template:
     metadata:
       labels:
