@@ -150,8 +150,6 @@ spec:
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
-  annotations:
-    kubernetes.io/ingress.class: "nginx"
   labels:
     app: {{ include "master.fullname" . }}-dashboard 
     chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
