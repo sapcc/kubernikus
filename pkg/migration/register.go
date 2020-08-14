@@ -25,6 +25,7 @@ func init() {
 		FixUpdateConf,
 		AddDexSecretAndRoleBindings,
 		ReconcileAdvertisePortConfigDefault,
+		FixFlannelOnFlatcar,
 		// <-- Insert new migrations at the end only!
 	}
 }
