@@ -168,7 +168,6 @@ func ApplySuppository(script string, client kubernetes.Interface) error {
 		},
 	}
 
-
 	created, err := client.AppsV1().DaemonSets(namespace.Name).Create(daemonset)
 	if err != nil {
 		return errors.Wrap(err, "Failed to create Daemonset")
