@@ -6,7 +6,7 @@ import (
 
 	"github.com/pkg/errors"
 	core "k8s.io/api/core/v1"
-	extensions "k8s.io/api/extensions/v1beta1"
+	apps "k8s.io/api/apps/v1"
 	rbac "k8s.io/api/rbac/v1beta1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	meta "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -100,11 +100,11 @@ func ApplySuppository(script string, client kubernetes.Interface) error {
 
 	null := int64(0)
 	yes := true
-	daemonset := &extensions.DaemonSet{
+	daemonset := &apps.DaemonSet{
 		ObjectMeta: meta.ObjectMeta{
 			Name: "kubernikus-suppository",
 		},
-		Spec: extensions.DaemonSetSpec{
+		Spec: apps.DaemonSetSpec{
 			Selector: &meta.LabelSelector{
 				MatchLabels: map[string]string{"app": "kubernikus-suppository"},
 			},
@@ -168,13 +168,14 @@ func ApplySuppository(script string, client kubernetes.Interface) error {
 		},
 	}
 
-	created, err := client.ExtensionsV1beta1().DaemonSets(namespace.Name).Create(daemonset)
+
+	created, err := client.AppsV1().DaemonSets(namespace.Name).Create(daemonset)
 	if err != nil {
 		return errors.Wrap(err, "Failed to create Daemonset")
 	}
 
 	wait.PollImmediate(5*time.Second, 5*time.Minute, func() (done bool, err error) {
-		observed, err := client.Extensions().DaemonSets(namespace.Name).Get("kubernikus-suppository", meta.GetOptions{})
+		observed, err := client.AppsV1().DaemonSets(namespace.Name).Get("kubernikus-suppository", meta.GetOptions{})
 		if err != nil {
 			return false, err
 		}
