@@ -4,7 +4,8 @@ kind: Service
 metadata:
   labels:
     component: controller-manager-metrics
-  name: controller-manager-metrics
+    release: {{ .Release.Name }}
+  name: {{ .Release.Name }}-cm-met
 spec:
   ports:
   - name: metrics
@@ -13,13 +14,15 @@ spec:
     targetPort: 10257
   selector:
     component: controller-manager
+    release: {{ .Release.Name }}
 ---
 apiVersion: v1
 kind: Service
 metadata:
   labels:
     component: scheduler-metrics
-  name: scheduler-metrics
+    release: {{ .Release.Name }}
+  name: {{ .Release.Name }}-sched-met
 spec:
   ports:
   - name: metrics
@@ -28,6 +31,7 @@ spec:
     targetPort: 10259
   selector:
     component: scheduler
+    release: {{ .Release.Name }}
 ---
 {{- end }}
 apiVersion: v1
@@ -35,7 +39,8 @@ kind: Service
 metadata:
   labels:
     component: etcd-metrics
-  name: etcd-metrics
+    release: {{ .Release.Name }}
+  name: {{ .Release.Name }}-etcd-met
 spec:
   ports:
   - name: metrics
@@ -44,3 +49,4 @@ spec:
     targetPort: 8081
   selector:
     component: etcd
+    release: {{ .Release.Name }}
