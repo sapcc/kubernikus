@@ -5,7 +5,7 @@ metadata:
   labels:
     component: controller-manager-metrics
     release: {{ .Release.Name }}
-  name: {{ .Release.Name }}-cm-metrics
+  name: {{ .Release.Name }}-cm-met
 spec:
   ports:
   - name: metrics
@@ -22,7 +22,7 @@ metadata:
   labels:
     component: scheduler-metrics
     release: {{ .Release.Name }}
-  name: {{ .Release.Name }}-sched-metrics
+  name: {{ .Release.Name }}-sched-met
 spec:
   ports:
   - name: metrics
@@ -40,7 +40,7 @@ metadata:
   labels:
     component: etcd-metrics
     release: {{ .Release.Name }}
-  name: {{ .Release.Name }}-etcd-metrics
+  name: {{ .Release.Name }}-etcd-met
 spec:
   ports:
   - name: metrics
