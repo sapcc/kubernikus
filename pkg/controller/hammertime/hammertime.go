@@ -7,7 +7,6 @@ import (
 	kitlog "github.com/go-kit/kit/log"
 	core_v1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
-	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/record"
@@ -104,28 +103,26 @@ func (hc *hammertimeController) scaleDeployment(kluster *v1.Kluster, disable boo
 		metrics.HammertimeStatus.WithLabelValues(kluster.Name).Set(0)
 	}
 
-	deploymentClient := hc.client.ExtensionsV1beta1().Deployments(kluster.Namespace)
+	scaleClient := NewScaleClient(hc.client, kluster.Namespace)
 
 	deploymentName := fmt.Sprintf("%s-cmanager", kluster.GetName())
-	scale, err := deploymentClient.GetScale(deploymentName, meta_v1.GetOptions{})
+	replicas, err := scaleClient.GetScale(deploymentName)
 	if apierrors.IsNotFound(err) {
 		deploymentName = fmt.Sprintf("%s-controller-manager", kluster.GetName())
-		scale, err = deploymentClient.GetScale(deploymentName, meta_v1.GetOptions{})
+		replicas, err = scaleClient.GetScale(deploymentName)
 	}
 	if err != nil {
 		return fmt.Errorf("Failed to get deployment scale: %s", err)
 	}
 
-	if scale.Spec.Replicas > 0 {
+	if replicas > 0 {
 		if disable {
-			scale.Spec.Replicas = 0
-			_, err = deploymentClient.UpdateScale(deploymentName, scale)
+			err = scaleClient.UpdateScale(deploymentName, 0)
 			logger.Log("msg", "Scaling down", "deployment", deploymentName, "err", err)
 		}
 	} else {
 		if !disable {
-			scale.Spec.Replicas = 1
-			_, err = deploymentClient.UpdateScale(deploymentName, scale)
+			err = scaleClient.UpdateScale(deploymentName, 1)
 			logger.Log("msg", "Scaling up", "deployment", deploymentName, "err", err)
 		}
 	}
