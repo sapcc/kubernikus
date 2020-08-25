@@ -71,6 +71,11 @@ type Decoder struct {
 
 // Decode decode JSON into interface{}
 func (adapter *Decoder) Decode(obj interface{}) error {
+	if adapter.iter.head == adapter.iter.tail && adapter.iter.reader != nil {
+		if !adapter.iter.loadMore() {
+			return io.EOF
+		}
+	}
 	adapter.iter.ReadVal(obj)
 	err := adapter.iter.Error
 	if err == io.EOF {
@@ -90,11 +95,21 @@ func (adapter *Decoder) Buffered() io.Reader {
 	return bytes.NewReader(remaining)
 }
 
-// UseNumber for number JSON element, use float64 or json.NumberValue (alias of string)
+// UseNumber causes the Decoder to unmarshal a number into an interface{} as a
+// Number instead of as a float64.
 func (adapter *Decoder) UseNumber() {
-	origCfg := adapter.iter.cfg.configBeforeFrozen
-	origCfg.UseNumber = true
-	adapter.iter.cfg = origCfg.Froze().(*frozenConfig)
+	cfg := adapter.iter.cfg.configBeforeFrozen
+	cfg.UseNumber = true
+	adapter.iter.cfg = cfg.frozeWithCacheReuse()
+}
+
+// DisallowUnknownFields causes the Decoder to return an error when the destination
+// is a struct and the input contains object keys which do not match any
+// non-ignored, exported fields in the destination.
+func (adapter *Decoder) DisallowUnknownFields() {
+	cfg := adapter.iter.cfg.configBeforeFrozen
+	cfg.DisallowUnknownFields = true
+	adapter.iter.cfg = cfg.frozeWithCacheReuse()
 }
 
 // NewEncoder same as json.NewEncoder
@@ -110,18 +125,26 @@ type Encoder struct {
 // Encode encode interface{} as JSON to io.Writer
 func (adapter *Encoder) Encode(val interface{}) error {
 	adapter.stream.WriteVal(val)
+	adapter.stream.WriteRaw("\n")
 	adapter.stream.Flush()
 	return adapter.stream.Error
 }
 
 // SetIndent set the indention. Prefix is not supported
 func (adapter *Encoder) SetIndent(prefix, indent string) {
-	adapter.stream.cfg.indentionStep = len(indent)
+	config := adapter.stream.cfg.configBeforeFrozen
+	config.IndentionStep = len(indent)
+	adapter.stream.cfg = config.frozeWithCacheReuse()
 }
 
 // SetEscapeHTML escape html by default, set to false to disable
 func (adapter *Encoder) SetEscapeHTML(escapeHTML bool) {
 	config := adapter.stream.cfg.configBeforeFrozen
 	config.EscapeHTML = escapeHTML
-	adapter.stream.cfg = config.Froze().(*frozenConfig)
+	adapter.stream.cfg = config.frozeWithCacheReuse()
+}
+
+// Valid reports whether data is a valid JSON encoding.
+func Valid(data []byte) bool {
+	return ConfigDefault.Valid(data)
 }

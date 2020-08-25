@@ -32,6 +32,11 @@ import:
 # overwrite gophercloud version given in k8s deps
 - package: github.com/gophercloud/gophercloud
   version: 077038c4f65ca6324adea7af6907d0d770131c32
+# upgrade from 1.0.0 to fix foo in newer version clusters
+- package: github.com/prometheus/client_golang
+  version: v0.9.0
+- package: github.com/json-iterator/go
+  version: 1.0.6
 # Dependencies extracted from go-swagger 0.18.0
 - package: github.com/go-openapi/errors
   version: 7a7ff1b7b8020f22574411a32f28b4d168d69237

@@ -1,5 +1,5 @@
-hash: 6f94eb6b8817ada4d7587f2287cf21e36f0e3168c7659353084b084cc208c036
-updated: 2020-01-24T13:28:03.333676+01:00
+hash: 04cc1c506e96bbbc5c43cf41036873d1cb8e9c3a245ae33892a06386b16fe697
+updated: 2020-08-24T11:20:55.03465+02:00
 imports:
 - name: github.com/ajeddeloh/yaml
   version: 1072abfea31191db507785e2e0c1b8d1440d35a5
@@ -214,7 +214,7 @@ imports:
 - name: github.com/joeshaw/envdecode
   version: 6326cbed175e32cd5183be1cc1027e0823c91edb
 - name: github.com/json-iterator/go
-  version: 36b14963da70d11297d313183d7e6388c8510e1e
+  version: e7c7f3b33712573affdcc7a107218e7926b9a05b
 - name: github.com/juju/ratelimit
   version: 5b9ff866471762aa2ab2dced63c9fb6f53921342
 - name: github.com/justinas/alice
@@ -252,9 +252,10 @@ imports:
 - name: github.com/pmylund/go-cache
   version: a3647f8e31d79543b2d0f0ae2fe5c379d72cedc0
 - name: github.com/prometheus/client_golang
-  version: fcc130e101e76c5d303513d0e28f4b6d732845c7
+  version: 1cafe34db7fdec6022e17e00e1c1ea501022f3e4
   subpackages:
   - prometheus
+  - prometheus/internal
   - prometheus/promhttp
 - name: github.com/prometheus/client_model
   version: 99fa1f4be8e564e8a6b613da7fa6f46c9edafc6c
