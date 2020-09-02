@@ -16,7 +16,7 @@ api:
 
 ingress:
   annotations:
-    vice-president: "true"
+    kubernetes.io/tls-acme: "true"
     prometheus.io/probe: "true"
 
 groundctl:
