@@ -6,6 +6,7 @@ RUN wget https://raw.githubusercontent.com/kubernetes/kubernetes/416974b8346bb1c
 RUN go build -o serve_hostname
 
 FROM alpine:3.8
+LABEL source_repository="https://github.com/sapcc/kubernikus"
 RUN apk add --no-cache curl bind-tools
 EXPOSE 9376
 ENTRYPOINT ["/serve_hostname"]

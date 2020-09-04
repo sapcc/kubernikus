@@ -1,4 +1,5 @@
 FROM alpine:3.8
+LABEL source_repository="https://github.com/sapcc/kubernikus"
 
 ENV GITHUB_CHANGELOG_GENERATOR_VERSION "1.14.3"
 
