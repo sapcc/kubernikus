@@ -71,6 +71,15 @@ func NewController(informer informers.NodeInformer, serviceCIDR string, tunnel *
 				c.queue.Add(key)
 			}
 		},
+		UpdateFunc: func(oldObj, newObj interface{}) {
+			oldNode := oldObj.(*v1.Node)
+			newNode := newObj.(*v1.Node)
+			if oldNode.Spec.PodCIDR != newNode.Spec.PodCIDR {
+				if key, err := cache.MetaNamespaceKeyFunc(newObj); err == nil {
+					c.queue.Add(key)
+				}
+			}
+		},
 	})
 
 	return c
@@ -87,8 +96,6 @@ func (c *Controller) Run(threadiness int, stopCh <-chan struct{}, wg *sync.WaitG
 	for i := 0; i < threadiness; i++ {
 		go wait.Until(c.runWorker, time.Second, stopCh)
 	}
-
-	c.redoIPTablesSpratz() // do the iptables thing at least once to make the service forward is set up
 
 	ticker := time.NewTicker(5 * time.Minute)
 	go func() {
@@ -176,10 +183,10 @@ func (c *Controller) addNode(key string, node *v1.Node) error {
 	podCIDR := node.Spec.PodCIDR
 	if podCIDR == "" {
 		c.Logger.Log(
-			"msg", "skipping node with empty spec.PodCIDR",
+			"msg", "removing tunnel routes for node with empty spec.PodCIDR",
 			"node", identifier,
 		)
-		return nil
+		return c.redoIPTablesSpratz()
 	}
 
 	c.Logger.Log(
