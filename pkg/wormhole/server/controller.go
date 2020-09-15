@@ -88,6 +88,8 @@ func (c *Controller) Run(threadiness int, stopCh <-chan struct{}, wg *sync.WaitG
 		go wait.Until(c.runWorker, time.Second, stopCh)
 	}
 
+	c.redoIPTablesSpratz() // do the iptables thing at least once to make the service forward is set up
+
 	ticker := time.NewTicker(5 * time.Minute)
 	go func() {
 		for {
@@ -170,11 +172,19 @@ func (c *Controller) reconcile(key string) error {
 func (c *Controller) addNode(key string, node *v1.Node) error {
 
 	identifier := fmt.Sprintf("system:node:%v", node.GetName())
+
+	podCIDR := node.Spec.PodCIDR
+	if podCIDR == "" {
+		c.Logger.Log(
+			"msg", "skipping node with empty spec.PodCIDR",
+			"node", identifier,
+		)
+		return nil
+	}
+
 	c.Logger.Log(
 		"msg", "adding tunnel routes",
 		"node", identifier)
-
-	podCIDR := node.Spec.PodCIDR
 
 	ip, err := GetNodeHostIP(node)
 	if err != nil {
