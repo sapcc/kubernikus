@@ -79,6 +79,7 @@ spec:
             - --leader-elect=false
 {{- end }}
             - --use-service-account-credentials=true
+            - --concurrent-service-syncs=10
           livenessProbe:
             httpGet:
               path: /healthz
