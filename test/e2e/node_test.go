@@ -146,8 +146,8 @@ func (k NodeTests) LatestStableContainerLinux(t *testing.T) {
 			if !assert.NotEmpty(t, date, "Could not get release date") {
 				return
 			}
-			// check if release is at least 72 old, otherwise image might not be up-to-date
-			if time.Since(date).Hours() < 72 {
+			// check if release is at least 4 days old, otherwise image might not be up-to-date
+			if time.Since(date).Hours() < 96 {
 				return
 			}
 		}
