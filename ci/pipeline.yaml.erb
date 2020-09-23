@@ -158,30 +158,29 @@ resources:
     source: {interval: 1h}
 
 resource_types:
-  - name: time-version
-    type: docker-image
-    source:
-      repository: hub.global.cloud.sap/concourse/time-version-resource
-      tag: v2
   - name: slack-alert
     type: docker-image
+    check_every: 24h
     source:
       repository: arbourd/concourse-slack-alert-resource
   - name: slack-notification
     type: docker-image
+    check_every: 24h
     source:
       repository: cfcommunity/slack-notification-resource
       tag: latest
 
   - name: gh-status
     type: docker-image
+    check_every: 24h
     source:
-      repository: hub.global.cloud.sap/concourse/ghstatus-resource
+      repository: keppel.eu-de-1.cloud.sap/ccloud/concourse-ghstatus-resource
       tag: latest
   - name: time-version-resource
     type: docker-image
+    check_every: 24h
     source:
-      repository: hub.global.cloud.sap/concourse/time-version-resource
+      repository: keppel.eu-de-1.cloud.sap/ccloud/concourse-time-version-resource
       tag: v2
 
 jobs:
