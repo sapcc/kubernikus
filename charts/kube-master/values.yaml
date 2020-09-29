@@ -7,7 +7,6 @@ image:
 
 # Settings for the openstack cloudprovider
 openstack:
-  useOctavia: "yes"
   #authURL:
   #username:
   #password:

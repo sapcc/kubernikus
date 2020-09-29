@@ -5,7 +5,6 @@ import (
 	"hash/crc64"
 	"math/rand"
 	"net/url"
-	"os"
 
 	"github.com/go-openapi/swag"
 	"golang.org/x/crypto/bcrypt"
@@ -217,7 +216,7 @@ func KlusterToHelmValues(kluster *v1.Kluster, secret *v1.Secret, kubernetesVersi
 			LbSubnetID:          kluster.Spec.Openstack.LBSubnetID,
 			LbFloatingNetworkID: kluster.Spec.Openstack.LBFloatingNetworkID,
 			RouterID:            kluster.Spec.Openstack.RouterID,
-			UseOctavia:          os.Getenv("USE_OCTAVIA") != "",
+			UseOctavia:          true,
 		}
 	}
 	if registry != nil {
