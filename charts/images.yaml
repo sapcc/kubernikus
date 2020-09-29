@@ -8,10 +8,10 @@ imagesForVersion:
       repository: 'sapcc/openstack-cloud-controller-manager'
       tag: 'v1.16.0'
     dex:
-      repository: 'hub.global.cloud.sap/monsoon/dex'
+      repository: 'keppel.eu-de-1.cloud.sap/ccloud/dex'
       tag: '8373c31b3e2d96ad3a7313227aa1bb8c59ddca39'
     dashboardProxy:
-      repository: 'hub.global.cloud.sap/monsoon/keycloak-gatekeeper'
+      repository: 'keppel.eu-de-1.cloud.sap/ccloud/keycloak-gatekeeper'
       tag: '6.0.1'
     dashboard:
       repository: 'kubernetesui/dashboard'
@@ -24,10 +24,10 @@ imagesForVersion:
       repository: 'sapcc/openstack-cloud-controller-manager'
       tag: 'v1.16.0'
     dex:
-      repository: 'hub.global.cloud.sap/monsoon/dex'
+      repository: 'keppel.eu-de-1.cloud.sap/ccloud/dex'
       tag: '8373c31b3e2d96ad3a7313227aa1bb8c59ddca39'
     dashboardProxy:
-      repository: 'hub.global.cloud.sap/monsoon/keycloak-gatekeeper'
+      repository: 'keppel.eu-de-1.cloud.sap/ccloud/keycloak-gatekeeper'
       tag: '6.0.1'
     dashboard:
       repository: 'kubernetesui/dashboard'
@@ -42,10 +42,10 @@ imagesForVersion:
       repository: 'sapcc/openstack-cloud-controller-manager'
       tag: 'v1.15.0-sap.2'
     dex:
-      repository: 'hub.global.cloud.sap/monsoon/dex'
+      repository: 'keppel.eu-de-1.cloud.sap/ccloud/dex'
       tag: '8373c31b3e2d96ad3a7313227aa1bb8c59ddca39'
     dashboardProxy:
-      repository: 'hub.global.cloud.sap/monsoon/keycloak-gatekeeper'
+      repository: 'keppel.eu-de-1.cloud.sap/ccloud/keycloak-gatekeeper'
       tag: '6.0.1'
     dashboard:
       repository: 'kubernetesui/dashboard'
@@ -59,10 +59,10 @@ imagesForVersion:
       repository: 'sapcc/openstack-cloud-controller-manager'
       tag: 'v1.15.0-sap.2'
     dex:
-      repository: 'hub.global.cloud.sap/monsoon/dex'
+      repository: 'keppel.eu-de-1.cloud.sap/ccloud/dex'
       tag: '8373c31b3e2d96ad3a7313227aa1bb8c59ddca39'
     dashboardProxy:
-      repository: 'hub.global.cloud.sap/monsoon/keycloak-gatekeeper'
+      repository: 'keppel.eu-de-1.cloud.sap/ccloud/keycloak-gatekeeper'
       tag: '6.0.1'
     dashboard:
       repository: 'kubernetesui/dashboard'
@@ -76,10 +76,10 @@ imagesForVersion:
       repository: 'sapcc/openstack-cloud-controller-manager'
       tag: 'v1.14.0-sap.0'
     dex:
-      repository: 'hub.global.cloud.sap/monsoon/dex'
+      repository: 'keppel.eu-de-1.cloud.sap/ccloud/dex'
       tag: '8373c31b3e2d96ad3a7313227aa1bb8c59ddca39'
     dashboardProxy:
-      repository: 'hub.global.cloud.sap/monsoon/keycloak-gatekeeper'
+      repository: 'keppel.eu-de-1.cloud.sap/ccloud/keycloak-gatekeeper'
       tag: '6.0.1'
     dashboard:
       repository: 'kubernetesui/dashboard'
@@ -93,10 +93,10 @@ imagesForVersion:
       repository: 'sapcc/openstack-cloud-controller-manager'
       tag: 'v1.13.1'
     dex:
-      repository: 'hub.global.cloud.sap/monsoon/dex'
+      repository: 'keppel.eu-de-1.cloud.sap/ccloud/dex'
       tag: '8373c31b3e2d96ad3a7313227aa1bb8c59ddca39'
     dashboardProxy:
-      repository: 'hub.global.cloud.sap/monsoon/keycloak-gatekeeper'
+      repository: 'keppel.eu-de-1.cloud.sap/ccloud/keycloak-gatekeeper'
       tag: '6.0.1'
     dashboard:
       repository: 'kubernetesui/dashboard'
@@ -107,10 +107,10 @@ imagesForVersion:
       repository: 'sapcc/hyperkube'
       tag: 'v1.12.10'
     dex:
-      repository: 'hub.global.cloud.sap/monsoon/dex'
+      repository: 'keppel.eu-de-1.cloud.sap/ccloud/dex'
       tag: '8373c31b3e2d96ad3a7313227aa1bb8c59ddca39'
     dashboardProxy:
-      repository: 'hub.global.cloud.sap/monsoon/keycloak-gatekeeper'
+      repository: 'keppel.eu-de-1.cloud.sap/ccloud/keycloak-gatekeeper'
       tag: '6.0.1'
     dashboard:
       repository: 'kubernetesui/dashboard'
@@ -120,10 +120,10 @@ imagesForVersion:
       repository: 'sapcc/hyperkube'
       tag: 'v1.11.9'
     dex:
-      repository: 'hub.global.cloud.sap/monsoon/dex'
+      repository: 'keppel.eu-de-1.cloud.sap/ccloud/dex'
       tag: '8373c31b3e2d96ad3a7313227aa1bb8c59ddca39'
     dashboardProxy:
-      repository: 'hub.global.cloud.sap/monsoon/keycloak-gatekeeper'
+      repository: 'keppel.eu-de-1.cloud.sap/ccloud/keycloak-gatekeeper'
       tag: '6.0.1'
     dashboard:
       repository: 'sapcc/kubernetes-dashboard-amd64'
@@ -133,26 +133,26 @@ imagesForVersion:
       repository: 'sapcc/hyperkube'
       tag: 'v1.10.11'
     dex:
-      repository: 'hub.global.cloud.sap/monsoon/dex'
+      repository: 'keppel.eu-de-1.cloud.sap/ccloud/dex'
       tag: '8373c31b3e2d96ad3a7313227aa1bb8c59ddca39'
   '1.10.8':
     hyperkube:
       repository: 'sapcc/hyperkube'
       tag: 'v1.10.8'
     dex:
-      repository: 'hub.global.cloud.sap/monsoon/dex'
+      repository: 'keppel.eu-de-1.cloud.sap/ccloud/dex'
       tag: '8373c31b3e2d96ad3a7313227aa1bb8c59ddca39'
   '1.10.7':
     hyperkube:
       repository: 'sapcc/hyperkube'
       tag: 'v1.10.7'
     dex:
-      repository: 'hub.global.cloud.sap/monsoon/dex'
+      repository: 'keppel.eu-de-1.cloud.sap/ccloud/dex'
       tag: '8373c31b3e2d96ad3a7313227aa1bb8c59ddca39'
   '1.10.1':
     hyperkube:
       repository: 'sapcc/hyperkube'
       tag: 'v1.10.1'
     dex:
-      repository: 'hub.global.cloud.sap/monsoon/dex'
+      repository: 'keppel.eu-de-1.cloud.sap/ccloud/dex'
       tag: '8373c31b3e2d96ad3a7313227aa1bb8c59ddca39'
