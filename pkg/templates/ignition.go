@@ -43,12 +43,6 @@ func (i *ignition) getIgnitionTemplate(kluster *kubernikusv1.Kluster) (string, e
 		return Node_1_11, nil
 	case strings.HasPrefix(kluster.Spec.Version, "1.10"):
 		return Node_1_10, nil
-	case strings.HasPrefix(kluster.Spec.Version, "1.9"):
-		return Node_1_9, nil
-	case strings.HasPrefix(kluster.Spec.Version, "1.8"):
-		return Node_1_8, nil
-	case strings.HasPrefix(kluster.Spec.Version, "1.7"):
-		return Node_1_7, nil
 	default:
 		return "", fmt.Errorf("Can't find iginition template for version %s", kluster.Spec.Version)
 	}
