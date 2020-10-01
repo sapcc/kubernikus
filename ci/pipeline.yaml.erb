@@ -15,7 +15,7 @@ REGIONS = {
   "na-us-1": { continent: 'AMERICAS', install: 'manual'   , e2e: 'manual'    },
   "na-us-2": { continent: 'AMERICAS', install: 'terraform', e2e: 'terraform' },
   "na-us-3": { continent: 'AMERICAS', install: 'terraform', e2e: 'terraform' },
-  "qa-de-1": { continent: 'INFRA',    install: 'terraform', e2e: 'terraform', nodepool_avz: 'qa-de-1a' },
+  "qa-de-1": { continent: 'INFRA',    install: 'terraform', e2e: 'terraform', nodepool_avz: 'qa-de-1a' , skip_admin: true},
   "master":  { continent: "INFRA",    install: 'virtual'  , e2e: 'virtual'   }
 }
 
@@ -28,11 +28,19 @@ auth_<%= region %>: &auth_<%= region %>
   KUBELOGON_USER:     ((KUBELOGON_USER))
   KUBELOGON_PASSWORD: ((KUBELOGON_PASSWORD))
   KUBERNIKUS_NAME: k-<%= region %>
+<% if meta[:skip_admin] %>
+  KUBERNIKUS_URL: https://kubernikus.admin.<%= region %>.cloud.sap
+<% else %>
   KUBERNIKUS_URL: https://k-<%= region %>.admin.cloud.sap
+<% end %>
 
 auth_e2e_<%= region %>: &auth_e2e_<%= region %>
   CP_KLUSTER: k-<%= region %>
+<% if meta[:skip_admin] %>
+  CP_KUBERNIKUS_URL: https://kubernikus.admin.<%= region %>.cloud.sap
+<% else %>
   CP_KUBERNIKUS_URL: https://k-<%= region %>.admin.cloud.sap
+<% end %>
   CP_OS_PROJECT_DOMAIN_NAME: ccadmin
   KUBERNIKUS_NAME: e2e
   OS_PROJECT_DOMAIN_NAME: ccadmin
@@ -151,6 +159,9 @@ resources:
   - name: <%= group %>.tag
     type: time-version-resource
     check_every: 525600h # basically never (only when triggered by a job)
+    source:
+      group: <%= group %>
+      pipeline: kubernikus # we do this so we don't get versions from other pipelines
 <% end %>
 
   - name: hourly
@@ -313,7 +324,7 @@ jobs:
           resource: master.builds
           passed: [<%= group %>]
       - in_parallel:
-<% REGIONS.select{ |k, v| v[:continent] == group }.each do |region, meta| %>
+<% REGIONS.select{ |k, v| v[:continent] == group && !v[:skip_admin] }.each do |region, meta| %>
         - task: k-<%= region %>
           config:
             <<: *task_helm-admin_kubernikus

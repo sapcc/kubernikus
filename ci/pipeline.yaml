@@ -5,11 +5,15 @@ auth_ap-ae-1: &auth_ap-ae-1
   KUBELOGON_USER:     ((KUBELOGON_USER))
   KUBELOGON_PASSWORD: ((KUBELOGON_PASSWORD))
   KUBERNIKUS_NAME: k-ap-ae-1
+
   KUBERNIKUS_URL: https://k-ap-ae-1.admin.cloud.sap
+
 
 auth_e2e_ap-ae-1: &auth_e2e_ap-ae-1
   CP_KLUSTER: k-ap-ae-1
+
   CP_KUBERNIKUS_URL: https://k-ap-ae-1.admin.cloud.sap
+
   CP_OS_PROJECT_DOMAIN_NAME: ccadmin
   KUBERNIKUS_NAME: e2e
   OS_PROJECT_DOMAIN_NAME: ccadmin
@@ -31,11 +35,15 @@ auth_ap-au-1: &auth_ap-au-1
   KUBELOGON_USER:     ((KUBELOGON_USER))
   KUBELOGON_PASSWORD: ((KUBELOGON_PASSWORD))
   KUBERNIKUS_NAME: k-ap-au-1
+
   KUBERNIKUS_URL: https://k-ap-au-1.admin.cloud.sap
+
 
 auth_e2e_ap-au-1: &auth_e2e_ap-au-1
   CP_KLUSTER: k-ap-au-1
+
   CP_KUBERNIKUS_URL: https://k-ap-au-1.admin.cloud.sap
+
   CP_OS_PROJECT_DOMAIN_NAME: ccadmin
   KUBERNIKUS_NAME: e2e
   OS_PROJECT_DOMAIN_NAME: ccadmin
@@ -57,11 +65,15 @@ auth_ap-cn-1: &auth_ap-cn-1
   KUBELOGON_USER:     ((KUBELOGON_USER))
   KUBELOGON_PASSWORD: ((KUBELOGON_PASSWORD))
   KUBERNIKUS_NAME: k-ap-cn-1
+
   KUBERNIKUS_URL: https://k-ap-cn-1.admin.cloud.sap
+
 
 auth_e2e_ap-cn-1: &auth_e2e_ap-cn-1
   CP_KLUSTER: k-ap-cn-1
+
   CP_KUBERNIKUS_URL: https://k-ap-cn-1.admin.cloud.sap
+
   CP_OS_PROJECT_DOMAIN_NAME: ccadmin
   KUBERNIKUS_NAME: e2e
   OS_PROJECT_DOMAIN_NAME: ccadmin
@@ -83,11 +95,15 @@ auth_ap-jp-1: &auth_ap-jp-1
   KUBELOGON_USER:     ((KUBELOGON_USER))
   KUBELOGON_PASSWORD: ((KUBELOGON_PASSWORD))
   KUBERNIKUS_NAME: k-ap-jp-1
+
   KUBERNIKUS_URL: https://k-ap-jp-1.admin.cloud.sap
+
 
 auth_e2e_ap-jp-1: &auth_e2e_ap-jp-1
   CP_KLUSTER: k-ap-jp-1
+
   CP_KUBERNIKUS_URL: https://k-ap-jp-1.admin.cloud.sap
+
   CP_OS_PROJECT_DOMAIN_NAME: ccadmin
   KUBERNIKUS_NAME: e2e
   OS_PROJECT_DOMAIN_NAME: ccadmin
@@ -109,11 +125,15 @@ auth_ap-jp-2: &auth_ap-jp-2
   KUBELOGON_USER:     ((KUBELOGON_USER))
   KUBELOGON_PASSWORD: ((KUBELOGON_PASSWORD))
   KUBERNIKUS_NAME: k-ap-jp-2
+
   KUBERNIKUS_URL: https://k-ap-jp-2.admin.cloud.sap
+
 
 auth_e2e_ap-jp-2: &auth_e2e_ap-jp-2
   CP_KLUSTER: k-ap-jp-2
+
   CP_KUBERNIKUS_URL: https://k-ap-jp-2.admin.cloud.sap
+
   CP_OS_PROJECT_DOMAIN_NAME: ccadmin
   KUBERNIKUS_NAME: e2e
   OS_PROJECT_DOMAIN_NAME: ccadmin
@@ -135,11 +155,15 @@ auth_ap-sa-1: &auth_ap-sa-1
   KUBELOGON_USER:     ((KUBELOGON_USER))
   KUBELOGON_PASSWORD: ((KUBELOGON_PASSWORD))
   KUBERNIKUS_NAME: k-ap-sa-1
+
   KUBERNIKUS_URL: https://k-ap-sa-1.admin.cloud.sap
+
 
 auth_e2e_ap-sa-1: &auth_e2e_ap-sa-1
   CP_KLUSTER: k-ap-sa-1
+
   CP_KUBERNIKUS_URL: https://k-ap-sa-1.admin.cloud.sap
+
   CP_OS_PROJECT_DOMAIN_NAME: ccadmin
   KUBERNIKUS_NAME: e2e
   OS_PROJECT_DOMAIN_NAME: ccadmin
@@ -161,11 +185,15 @@ auth_eu-de-1: &auth_eu-de-1
   KUBELOGON_USER:     ((KUBELOGON_USER))
   KUBELOGON_PASSWORD: ((KUBELOGON_PASSWORD))
   KUBERNIKUS_NAME: k-eu-de-1
+
   KUBERNIKUS_URL: https://k-eu-de-1.admin.cloud.sap
+
 
 auth_e2e_eu-de-1: &auth_e2e_eu-de-1
   CP_KLUSTER: k-eu-de-1
+
   CP_KUBERNIKUS_URL: https://k-eu-de-1.admin.cloud.sap
+
   CP_OS_PROJECT_DOMAIN_NAME: ccadmin
   KUBERNIKUS_NAME: e2e
   OS_PROJECT_DOMAIN_NAME: ccadmin
@@ -187,11 +215,15 @@ auth_eu-de-2: &auth_eu-de-2
   KUBELOGON_USER:     ((KUBELOGON_USER))
   KUBELOGON_PASSWORD: ((KUBELOGON_PASSWORD))
   KUBERNIKUS_NAME: k-eu-de-2
+
   KUBERNIKUS_URL: https://k-eu-de-2.admin.cloud.sap
+
 
 auth_e2e_eu-de-2: &auth_e2e_eu-de-2
   CP_KLUSTER: k-eu-de-2
+
   CP_KUBERNIKUS_URL: https://k-eu-de-2.admin.cloud.sap
+
   CP_OS_PROJECT_DOMAIN_NAME: ccadmin
   KUBERNIKUS_NAME: e2e
   OS_PROJECT_DOMAIN_NAME: ccadmin
@@ -213,11 +245,15 @@ auth_eu-nl-1: &auth_eu-nl-1
   KUBELOGON_USER:     ((KUBELOGON_USER))
   KUBELOGON_PASSWORD: ((KUBELOGON_PASSWORD))
   KUBERNIKUS_NAME: k-eu-nl-1
+
   KUBERNIKUS_URL: https://k-eu-nl-1.admin.cloud.sap
+
 
 auth_e2e_eu-nl-1: &auth_e2e_eu-nl-1
   CP_KLUSTER: k-eu-nl-1
+
   CP_KUBERNIKUS_URL: https://k-eu-nl-1.admin.cloud.sap
+
   CP_OS_PROJECT_DOMAIN_NAME: ccadmin
   KUBERNIKUS_NAME: e2e
   OS_PROJECT_DOMAIN_NAME: ccadmin
@@ -239,11 +275,15 @@ auth_eu-ru-1: &auth_eu-ru-1
   KUBELOGON_USER:     ((KUBELOGON_USER))
   KUBELOGON_PASSWORD: ((KUBELOGON_PASSWORD))
   KUBERNIKUS_NAME: k-eu-ru-1
+
   KUBERNIKUS_URL: https://k-eu-ru-1.admin.cloud.sap
+
 
 auth_e2e_eu-ru-1: &auth_e2e_eu-ru-1
   CP_KLUSTER: k-eu-ru-1
+
   CP_KUBERNIKUS_URL: https://k-eu-ru-1.admin.cloud.sap
+
   CP_OS_PROJECT_DOMAIN_NAME: ccadmin
   KUBERNIKUS_NAME: e2e
   OS_PROJECT_DOMAIN_NAME: ccadmin
@@ -265,11 +305,15 @@ auth_la-br-1: &auth_la-br-1
   KUBELOGON_USER:     ((KUBELOGON_USER))
   KUBELOGON_PASSWORD: ((KUBELOGON_PASSWORD))
   KUBERNIKUS_NAME: k-la-br-1
+
   KUBERNIKUS_URL: https://k-la-br-1.admin.cloud.sap
+
 
 auth_e2e_la-br-1: &auth_e2e_la-br-1
   CP_KLUSTER: k-la-br-1
+
   CP_KUBERNIKUS_URL: https://k-la-br-1.admin.cloud.sap
+
   CP_OS_PROJECT_DOMAIN_NAME: ccadmin
   KUBERNIKUS_NAME: e2e
   OS_PROJECT_DOMAIN_NAME: ccadmin
@@ -291,11 +335,15 @@ auth_na-ca-1: &auth_na-ca-1
   KUBELOGON_USER:     ((KUBELOGON_USER))
   KUBELOGON_PASSWORD: ((KUBELOGON_PASSWORD))
   KUBERNIKUS_NAME: k-na-ca-1
+
   KUBERNIKUS_URL: https://k-na-ca-1.admin.cloud.sap
+
 
 auth_e2e_na-ca-1: &auth_e2e_na-ca-1
   CP_KLUSTER: k-na-ca-1
+
   CP_KUBERNIKUS_URL: https://k-na-ca-1.admin.cloud.sap
+
   CP_OS_PROJECT_DOMAIN_NAME: ccadmin
   KUBERNIKUS_NAME: e2e
   OS_PROJECT_DOMAIN_NAME: ccadmin
@@ -317,11 +365,15 @@ auth_na-us-1: &auth_na-us-1
   KUBELOGON_USER:     ((KUBELOGON_USER))
   KUBELOGON_PASSWORD: ((KUBELOGON_PASSWORD))
   KUBERNIKUS_NAME: k-na-us-1
+
   KUBERNIKUS_URL: https://k-na-us-1.admin.cloud.sap
+
 
 auth_e2e_na-us-1: &auth_e2e_na-us-1
   CP_KLUSTER: k-na-us-1
+
   CP_KUBERNIKUS_URL: https://k-na-us-1.admin.cloud.sap
+
   CP_OS_PROJECT_DOMAIN_NAME: ccadmin
   KUBERNIKUS_NAME: e2e
   OS_PROJECT_DOMAIN_NAME: ccadmin
@@ -343,11 +395,15 @@ auth_na-us-2: &auth_na-us-2
   KUBELOGON_USER:     ((KUBELOGON_USER))
   KUBELOGON_PASSWORD: ((KUBELOGON_PASSWORD))
   KUBERNIKUS_NAME: k-na-us-2
+
   KUBERNIKUS_URL: https://k-na-us-2.admin.cloud.sap
+
 
 auth_e2e_na-us-2: &auth_e2e_na-us-2
   CP_KLUSTER: k-na-us-2
+
   CP_KUBERNIKUS_URL: https://k-na-us-2.admin.cloud.sap
+
   CP_OS_PROJECT_DOMAIN_NAME: ccadmin
   KUBERNIKUS_NAME: e2e
   OS_PROJECT_DOMAIN_NAME: ccadmin
@@ -369,11 +425,15 @@ auth_na-us-3: &auth_na-us-3
   KUBELOGON_USER:     ((KUBELOGON_USER))
   KUBELOGON_PASSWORD: ((KUBELOGON_PASSWORD))
   KUBERNIKUS_NAME: k-na-us-3
+
   KUBERNIKUS_URL: https://k-na-us-3.admin.cloud.sap
+
 
 auth_e2e_na-us-3: &auth_e2e_na-us-3
   CP_KLUSTER: k-na-us-3
+
   CP_KUBERNIKUS_URL: https://k-na-us-3.admin.cloud.sap
+
   CP_OS_PROJECT_DOMAIN_NAME: ccadmin
   KUBERNIKUS_NAME: e2e
   OS_PROJECT_DOMAIN_NAME: ccadmin
@@ -395,11 +455,15 @@ auth_qa-de-1: &auth_qa-de-1
   KUBELOGON_USER:     ((KUBELOGON_USER))
   KUBELOGON_PASSWORD: ((KUBELOGON_PASSWORD))
   KUBERNIKUS_NAME: k-qa-de-1
-  KUBERNIKUS_URL: https://k-qa-de-1.admin.cloud.sap
+
+  KUBERNIKUS_URL: https://kubernikus.admin.qa-de-1.cloud.sap
+
 
 auth_e2e_qa-de-1: &auth_e2e_qa-de-1
   CP_KLUSTER: k-qa-de-1
-  CP_KUBERNIKUS_URL: https://k-qa-de-1.admin.cloud.sap
+
+  CP_KUBERNIKUS_URL: https://kubernikus.admin.qa-de-1.cloud.sap
+
   CP_OS_PROJECT_DOMAIN_NAME: ccadmin
   KUBERNIKUS_NAME: e2e
   OS_PROJECT_DOMAIN_NAME: ccadmin
@@ -423,11 +487,15 @@ auth_master: &auth_master
   KUBELOGON_USER:     ((KUBELOGON_USER))
   KUBELOGON_PASSWORD: ((KUBELOGON_PASSWORD))
   KUBERNIKUS_NAME: k-master
+
   KUBERNIKUS_URL: https://k-master.admin.cloud.sap
+
 
 auth_e2e_master: &auth_e2e_master
   CP_KLUSTER: k-master
+
   CP_KUBERNIKUS_URL: https://k-master.admin.cloud.sap
+
   CP_OS_PROJECT_DOMAIN_NAME: ccadmin
   KUBERNIKUS_NAME: e2e
   OS_PROJECT_DOMAIN_NAME: ccadmin
@@ -1024,18 +1092,30 @@ resources:
   - name: ASIA.tag
     type: time-version-resource
     check_every: 525600h # basically never (only when triggered by a job)
+    source:
+      group: ASIA
+      pipeline: kubernikus # we do this so we don't get versions from other pipelines
 
   - name: EMEA.tag
     type: time-version-resource
     check_every: 525600h # basically never (only when triggered by a job)
+    source:
+      group: EMEA
+      pipeline: kubernikus # we do this so we don't get versions from other pipelines
 
   - name: AMERICAS.tag
     type: time-version-resource
     check_every: 525600h # basically never (only when triggered by a job)
+    source:
+      group: AMERICAS
+      pipeline: kubernikus # we do this so we don't get versions from other pipelines
 
   - name: INFRA.tag
     type: time-version-resource
     check_every: 525600h # basically never (only when triggered by a job)
+    source:
+      group: INFRA
+      pipeline: kubernikus # we do this so we don't get versions from other pipelines
 
 
   - name: hourly
@@ -3077,16 +3157,6 @@ jobs:
           passed: [INFRA]
       - in_parallel:
 
-        - task: k-qa-de-1
-          config:
-            <<: *task_helm-admin_kubernikus
-          params:
-            REGION: admin
-            CONTEXT: admin
-            KUBERNIKUS_NAME: k-qa-de-1
-            KUBELOGON_USER:     ((KUBELOGON_USER))
-            KUBELOGON_PASSWORD: ((KUBELOGON_PASSWORD))
-
         - task: k-master
           config:
             <<: *task_helm-admin_kubernikus
@@ -3483,3 +3553,4 @@ groups:
       - tiller_qa-de-1
       - deploy_qa-de-1
       - soak_qa-de-1
+
