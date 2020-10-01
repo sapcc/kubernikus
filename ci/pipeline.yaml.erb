@@ -16,7 +16,7 @@ REGIONS = {
   "na-us-2": { continent: 'AMERICAS', install: 'terraform', e2e: 'terraform' },
   "na-us-3": { continent: 'AMERICAS', install: 'terraform', e2e: 'terraform' },
   "qa-de-1": { continent: 'INFRA',    install: 'terraform', e2e: 'terraform', nodepool_avz: 'qa-de-1a' , skip_admin: true},
-  "master":  { continent: "INFRA",    install: 'virtual'  , e2e: 'virtual'   }
+  "master":  { continent: "INFRA",    install: 'virtual'  , e2e: 'virtual', skip_admin: true   }
 }
 
 GROUPS             = REGIONS.values.map{ |v| v[:continent]}.uniq
@@ -29,7 +29,7 @@ auth_<%= region %>: &auth_<%= region %>
   KUBELOGON_PASSWORD: ((KUBELOGON_PASSWORD))
   KUBERNIKUS_NAME: k-<%= region %>
 <% if meta[:skip_admin] %>
-  KUBERNIKUS_URL: https://kubernikus.admin.<%= region %>.cloud.sap
+  KUBERNIKUS_URL: https://kubernikus.admin.<%= region == :master ? "eu-nl-1": region %>.cloud.sap
 <% else %>
   KUBERNIKUS_URL: https://k-<%= region %>.admin.cloud.sap
 <% end %>
@@ -37,7 +37,7 @@ auth_<%= region %>: &auth_<%= region %>
 auth_e2e_<%= region %>: &auth_e2e_<%= region %>
   CP_KLUSTER: k-<%= region %>
 <% if meta[:skip_admin] %>
-  CP_KUBERNIKUS_URL: https://kubernikus.admin.<%= region %>.cloud.sap
+  CP_KUBERNIKUS_URL: https://kubernikus.admin.<%= region == :master ? "eu-nl-1" : region %>.cloud.sap
 <% else %>
   CP_KUBERNIKUS_URL: https://k-<%= region %>.admin.cloud.sap
 <% end %>
@@ -323,6 +323,7 @@ jobs:
         - get: kubernikus.builds
           resource: master.builds
           passed: [<%= group %>]
+<% if REGIONS.any?{ |k, v| v[:continent] == group && !v[:skip_admin] } %>
       - in_parallel:
 <% REGIONS.select{ |k, v| v[:continent] == group && !v[:skip_admin] }.each do |region, meta| %>
         - task: k-<%= region %>
@@ -334,6 +335,7 @@ jobs:
             KUBERNIKUS_NAME: k-<%= region %>
             KUBELOGON_USER:     ((KUBELOGON_USER))
             KUBELOGON_PASSWORD: ((KUBELOGON_PASSWORD))
+<% end %>
 <% end %>
     <<: *slack
 
