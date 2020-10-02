@@ -8,6 +8,7 @@ import (
 	coord_v1beta1 "k8s.io/api/coordination/v1beta1"
 	core_v1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/record"
@@ -124,10 +125,10 @@ func (hc *hammertimeController) scaleDeployment(kluster *v1.Kluster, disable boo
 	scaleClient := NewScaleClient(hc.client, kluster.Namespace)
 
 	deploymentName := fmt.Sprintf("%s-ccmanager", kluster.GetName())
-	replicas, err := scaleClient.GetScale(deploymentName, meta_v1.GetOptions{})
+	replicas, err := scaleClient.GetScale(deploymentName)
 	if apierrors.IsNotFound(err) {
 		deploymentName := fmt.Sprintf("%s-cmanager", kluster.GetName())
-		replicas, err = scaleClient.GetScale(deploymentName, meta_v1.GetOptions{})
+		replicas, err = scaleClient.GetScale(deploymentName)
 	}
 	if apierrors.IsNotFound(err) {
 		deploymentName = fmt.Sprintf("%s-controller-manager", kluster.GetName())
