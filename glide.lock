@@ -1,5 +1,5 @@
-hash: 04cc1c506e96bbbc5c43cf41036873d1cb8e9c3a245ae33892a06386b16fe697
-updated: 2020-08-24T11:20:55.03465+02:00
+hash: 04e8f42f93585a02494b99695a017aebd92ba6cc237c15c3e6e90915faa3048e
+updated: 2020-10-02T13:41:25.842783893+02:00
 imports:
 - name: github.com/ajeddeloh/yaml
   version: 1072abfea31191db507785e2e0c1b8d1440d35a5
@@ -14,7 +14,7 @@ imports:
   subpackages:
   - quantile
 - name: github.com/BurntSushi/toml
-  version: a368813c5e648fee92e5f6c30e3944ff9d5e8895
+  version: 3012a1dbe2e4bd1391d42b32f0577cb7bbc7f005
 - name: github.com/cenkalti/backoff
   version: 80e08cb804a3eb3e576876c777e957e874609a9a
 - name: github.com/coreos/container-linux-config-transpiler
@@ -27,7 +27,7 @@ imports:
   - config/types
   - config/types/util
 - name: github.com/coreos/go-semver
-  version: 5e3acbb5668c4c3deb4842615c4098eb61fb6b1e
+  version: e214231b295a8ea9479f11b70b35d5acf3556d9b
   subpackages:
   - semver
 - name: github.com/coreos/go-systemd
@@ -147,6 +147,8 @@ imports:
   version: 7d79101e329e5a3adf994758c578dab82b90c017
 - name: github.com/google/gofuzz
   version: 44d81051d367757e1c7c6a5a86423ece9afcf63c
+- name: github.com/google/uuid
+  version: 0e4e31197428a347842d152773b4cace4645ca25
 - name: github.com/googleapis/gnostic
   version: 0c5108395e2debce0d731cf0287ddf7242066aba
   subpackages:
@@ -202,7 +204,7 @@ imports:
 - name: github.com/howeyc/gopass
   version: bf9dde6d0d2c004a008c27aaee91170c786f6db8
 - name: github.com/huandu/xstrings
-  version: 37469d0c81a7910b49d64a0d308ded4823e90937
+  version: 52197b1fb3155666d9613b4eb4ed72a86d1f8ab6
 - name: github.com/imdario/mergo
   version: 3e95a51e0639b4cf372f2ccf74c86749d747fbdc
 - name: github.com/inconshreveable/mousetrap
@@ -210,9 +212,7 @@ imports:
 - name: github.com/joeshaw/envdecode
   version: 6326cbed175e32cd5183be1cc1027e0823c91edb
 - name: github.com/json-iterator/go
-  version: e7c7f3b33712573affdcc7a107218e7926b9a05b
-- name: github.com/juju/ratelimit
-  version: 5b9ff866471762aa2ab2dced63c9fb6f53921342
+  version: ab8a2e0c74be9d3be70b3184d9acc634935ded82
 - name: github.com/justinas/alice
   version: 03f45bd4b7dad4734bc4620e46a35789349abb20
 - name: github.com/kr/logfmt
@@ -224,17 +224,21 @@ imports:
   - jlexer
   - jwriter
 - name: github.com/Masterminds/goutils
-  version: 3391d3790d23d03408670993e957e8f408993c34
+  version: 41ac8693c5c10a92ea1ff5ac3a7f95646f6123b0
 - name: github.com/Masterminds/semver
   version: 517734cc7d6470c0d07130e40fd40bdeb9bcd3fd
 - name: github.com/Masterminds/sprig
-  version: b217b9c388de2cacde4354c536e520c52c055563
+  version: e4c0945838d570720d876a6ad9b4568ed32317b4
 - name: github.com/matttproud/golang_protobuf_extensions
   version: c12348ce28de40eed0136aa2b644d0ee0650e56c
   subpackages:
   - pbutil
+- name: github.com/mitchellh/copystructure
+  version: 9a1b6f44e8da0e0e374624fb0a825a231b00c537
 - name: github.com/mitchellh/mapstructure
   version: 3536a929edddb9a5b34bd6861dc4a9647cb459fe
+- name: github.com/mitchellh/reflectwalk
+  version: 3e2c75dfad4fbf904b58782a80fd595c760ad185
 - name: github.com/modern-go/concurrent
   version: bacd9c7ef1dd9b15be4a9909b8ac7a4e313eec94
 - name: github.com/modern-go/reflect2
@@ -258,7 +262,7 @@ imports:
   - prometheus/internal
   - prometheus/promhttp
 - name: github.com/prometheus/client_model
-  version: 99fa1f4be8e564e8a6b613da7fa6f46c9edafc6c
+  version: fa8ad6fec33561be4280a8f0514318c79d7f6cb6
   subpackages:
   - go
 - name: github.com/prometheus/common
@@ -286,7 +290,7 @@ imports:
 - name: github.com/stretchr/objx
   version: 8a3f7159479fbc75b30357fbc48f380b7320f08e
 - name: github.com/stretchr/testify
-  version: 221dbe5ed46703ee255b1da0dec05086f5035f62
+  version: f654a9112bbeac49ca2cd45bfbe11533c4666cf8
   subpackages:
   - assert
   - mock
@@ -398,6 +402,8 @@ imports:
   version: 3887ee99ecf07df5b447e9b00d9c0b2adaa9f3e4
 - name: gopkg.in/yaml.v2
   version: 51d6538a90f86fe93ac480b35f37b2be17fef232
+- name: gopkg.in/yaml.v3
+  version: eeeca48fe7764f320e4870d231902bf9c1be2c08
 - name: k8s.io/api
   version: 6db15a15d2d3874a6c3ddb2140ac9f3bc7058428
   subpackages:
