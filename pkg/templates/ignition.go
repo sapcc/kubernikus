@@ -29,6 +29,8 @@ var passwordHashRounds = 1000000
 
 func (i *ignition) getIgnitionTemplate(kluster *kubernikusv1.Kluster) (string, error) {
 	switch {
+	case strings.HasPrefix(kluster.Spec.Version, "1.18"):
+		return Node_1_17, nil // No changes to 1.17
 	case strings.HasPrefix(kluster.Spec.Version, "1.17"):
 		return Node_1_17, nil
 	case strings.HasPrefix(kluster.Spec.Version, "1.16"):
