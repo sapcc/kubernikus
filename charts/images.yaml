@@ -1,4 +1,33 @@
 imagesForVersion:
+  '1.19.2':
+    supported: true
+    apiserver:
+      repository: 'keppel.eu-de-1.cloud.sap/ccloud/kube-apiserver'
+      tag: 'v1.19.2'
+    controllerManager:
+      repository: 'keppel.eu-de-1.cloud.sap/ccloud/kube-controller-manager'
+      tag: 'v1.19.2'
+    scheduler:
+      repository: 'keppel.eu-de-1.cloud.sap/ccloud/kube-scheduler'
+      tag: 'v1.19.2'
+    kubelet:
+      repository: 'keppel.eu-de-1.cloud.sap/ccloud/kubelet'
+      tag: 'v1.19.2'
+    kubeProxy:
+      repository: 'keppel.eu-de-1.cloud.sap/ccloud/kube-proxy'
+      tag: 'v1.19.2'
+    cloudControllerManager:
+      repository: 'keppel.eu-de-1.cloud.sap/ccloud/openstack-cloud-controller-manager'
+      tag: 'v1.19.0'
+    dex:
+      repository: 'keppel.eu-de-1.cloud.sap/ccloud/dex'
+      tag: '38f4f8ea8d487470a1dd5b83d66b428d8b502f81'
+    dashboardProxy:
+      repository: 'keppel.eu-de-1.cloud.sap/ccloud/keycloak-gatekeeper'
+      tag: '6.0.1'
+    dashboard:
+      repository: 'kubernetesui/dashboard'
+      tag: 'v2.0.0-beta4'
   '1.18.9':
     supported: true
     hyperkube:

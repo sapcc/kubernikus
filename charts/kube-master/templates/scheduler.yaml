@@ -52,7 +52,11 @@ spec:
             name: metrics
             protocol: TCP
 {{- end }}
+{{- if (semverCompare ">= 1.19" .Values.version.kubernetes) }}
+          image: {{ include "scheduler.image" . | quote }}
+{{- else }}
           image: {{ include "hyperkube.image" . | quote }}
+{{- end }}
           args:
 {{- if (semverCompare "< 1.17" .Values.version.kubernetes) }}
             - /hyperkube
