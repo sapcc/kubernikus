@@ -20,12 +20,14 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
 {{- end -}}
 
 {{- define "hyperkube.image" }}
-{{- $images := required "imagesForVersion undefined" .Values.imagesForVersion}}
-{{- $version := required "version.kubernetes undefined" .Values.version.kubernetes }}
-{{- $imagesForVersion := required (printf "unsupported kubernetes version %s" $version) (index $images $version) }}
-{{- $hyperkube := required (printf "No hyperkube image found for version %s" $version) (index $imagesForVersion "hyperkube") }}
-{{- required (printf "repository for hyperkube missing for version %s" $version) $hyperkube.repository }}:
-  {{- required (printf "tag for hyperkube missing for version %s" $version) $hyperkube.tag }}
+{{- if (semverCompare "< 1.19" .Values.version.kubernetes) -}}
+  {{- $images := required "imagesForVersion undefined" .Values.imagesForVersion}}
+  {{- $version := required "version.kubernetes undefined" .Values.version.kubernetes }}
+  {{- $imagesForVersion := required (printf "unsupported kubernetes version %s" $version) (index $images $version) }}
+  {{- $hyperkube := required (printf "No hyperkube image found for version %s" $version) (index $imagesForVersion "hyperkube") }}
+  {{- required (printf "repository for hyperkube missing for version %s" $version) $hyperkube.repository }}:
+    {{- required (printf "tag for hyperkube missing for version %s" $version) $hyperkube.tag }}
+{{- end -}}
 {{- end -}}
 
 {{- define "cloudControllerManager.image" }}
@@ -62,6 +64,50 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
 {{- $dashboardProxy := required (printf "No dashboardProxy image found for version %s" $imagesForVersion) (index $imagesForVersion "dashboardProxy") }}
 {{- required (printf "repository for dashboardProxy missing for version %s" $version) $dashboardProxy.repository }}:
   {{- required (printf "tag for dashboardProxy missing for version %s" $version) $dashboardProxy.tag }}
+{{- end -}}
+
+{{- define "apiserver.image" }}
+{{- if (semverCompare ">= 1.19" .Values.version.kubernetes) -}}
+  {{- $images := required "imagesForVersion undefined" .Values.imagesForVersion}}
+  {{- $version := required "version.kubernetes undefined" .Values.version.kubernetes }}
+  {{- $imagesForVersion := required (printf "unsupported kubernetes version %s" $version) (index $images $version) }}
+  {{- $apiserver := required (printf "No apiserver image found for version %s" $version) (index $imagesForVersion "apiserver") }}
+  {{- required (printf "repository for apiserver missing for version %s" $version) $apiserver.repository }}:
+    {{- required (printf "tag for apiserver missing for version %s" $version) $apiserver.tag }}
+{{- end -}}
+{{- end -}}
+
+{{- define "controllerManager.image" }}
+{{- if (semverCompare ">= 1.19" .Values.version.kubernetes) -}}
+  {{- $images := required "imagesForVersion undefined" .Values.imagesForVersion}}
+  {{- $version := required "version.kubernetes undefined" .Values.version.kubernetes }}
+  {{- $imagesForVersion := required (printf "unsupported kubernetes version %s" $version) (index $images $version) }}
+  {{- $controllerManager := required (printf "No controllerManager image found for version %s" $version) (index $imagesForVersion "controllerManager") }}
+  {{- required (printf "repository for controllerManager missing for version %s" $version) $controllerManager.repository }}:
+    {{- required (printf "tag for controllerManager missing for version %s" $version) $controllerManager.tag }}
+{{- end -}}
+{{- end -}}
+
+{{- define "scheduler.image" }}
+{{- if (semverCompare ">= 1.19" .Values.version.kubernetes) -}}
+  {{- $images := required "imagesForVersion undefined" .Values.imagesForVersion}}
+  {{- $version := required "version.kubernetes undefined" .Values.version.kubernetes }}
+  {{- $imagesForVersion := required (printf "unsupported kubernetes version %s" $version) (index $images $version) }}
+  {{- $scheduler := required (printf "No scheduler image found for version %s" $version) (index $imagesForVersion "scheduler") }}
+  {{- required (printf "repository for scheduler missing for version %s" $version) $scheduler.repository }}:
+    {{- required (printf "tag for scheduler missing for version %s" $version) $scheduler.tag }}
+{{- end -}}
+{{- end -}}
+
+{{- define "kubelet.image" }}
+{{- if (semverCompare ">= 1.19" .Values.version.kubernetes) -}}
+  {{- $images := required "imagesForVersion undefined" .Values.imagesForVersion}}
+  {{- $version := required "version.kubernetes undefined" .Values.version.kubernetes }}
+  {{- $imagesForVersion := required (printf "unsupported kubernetes version %s" $version) (index $images $version) }}
+  {{- $kubelet := required (printf "No kubelet image found for version %s" $version) (index $imagesForVersion "kubelet") }}
+  {{- required (printf "repository for kubelet missing for version %s" $version) $kubelet.repository }}:
+    {{- required (printf "tag for kubelet missing for version %s" $version) $kubelet.tag }}
+{{- end -}}
 {{- end -}}
 
 {{- define "dashboard.url" -}}

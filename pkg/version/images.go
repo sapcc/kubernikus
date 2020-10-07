@@ -23,11 +23,16 @@ func (v ImageVersion) String() string {
 type KlusterVersion struct {
 	Default                bool         `yaml:"default"`
 	Supported              bool         `yaml:"supported"`
-	Hyperkube              ImageVersion `yaml:"hyperkube"`
+	Hyperkube              ImageVersion `yaml:"hyperkube,omitempty"`
 	CloudControllerManager ImageVersion `yaml:"cloudControllerManager"`
 	Dex                    ImageVersion `yaml:"dex,omitempty"`
 	Dashboard              ImageVersion `yaml:"dashboard,omitempty"`
 	DashboardProxy         ImageVersion `yaml:"dashboardProxy,omitempty"`
+	Apiserver              ImageVersion `yaml:"apiserver,omitempty"`
+	Scheduler              ImageVersion `yaml:"scheduler,omitempty"`
+	ControllerManager      ImageVersion `yaml:"controllerManager,omitempty"`
+	Kubelet                ImageVersion `yaml:"kubelet,omitempty"`
+	KubeProxy              ImageVersion `yaml:"kubeProxy,omitempty"`
 }
 
 type ImageRegistry struct {
@@ -57,11 +62,41 @@ func NewImageRegistry(filepath string) (*ImageRegistry, error) {
 			}
 			registry.DefaultVersion = v
 		}
-		if info.Hyperkube.Repository == "" {
-			return nil, fmt.Errorf("Repository for hyperkube image missing for version %s", v)
-		}
-		if info.Hyperkube.Tag == "" {
-			return nil, fmt.Errorf("Tag for hyperkube image missing for version %s", v)
+		if info.Apiserver.Repository != "" {
+			if info.Apiserver.Tag == "" {
+				return nil, fmt.Errorf("Tag for apiserver image missing for version %s", v)
+			}
+			if info.ControllerManager.Repository == "" {
+				return nil, fmt.Errorf("Repository for controller manager image missing for version %s", v)
+			}
+			if info.ControllerManager.Tag == "" {
+				return nil, fmt.Errorf("Tag for controller manager image missing for version %s", v)
+			}
+			if info.Scheduler.Repository == "" {
+				return nil, fmt.Errorf("Repository for scheduler image missing for version %s", v)
+			}
+			if info.Scheduler.Tag == "" {
+				return nil, fmt.Errorf("Tag for scheduler image missing for version %s", v)
+			}
+			if info.Kubelet.Repository == "" {
+				return nil, fmt.Errorf("Repository for kubelet image missing for version %s", v)
+			}
+			if info.Kubelet.Tag == "" {
+				return nil, fmt.Errorf("Tag for kubelet image missing for version %s", v)
+			}
+			if info.KubeProxy.Repository == "" {
+				return nil, fmt.Errorf("Repository for kube-proxy image missing for version %s", v)
+			}
+			if info.KubeProxy.Tag == "" {
+				return nil, fmt.Errorf("Tag for kube-proxy image missing for version %s", v)
+			}
+		} else {
+			if info.Hyperkube.Repository == "" {
+				return nil, fmt.Errorf("Repository for hyperkube image missing for version %s", v)
+			}
+			if info.Hyperkube.Tag == "" {
+				return nil, fmt.Errorf("Tag for hyperkube image missing for version %s", v)
+			}
 		}
 	}
 	if registry.DefaultVersion == "" {

@@ -29,6 +29,8 @@ var passwordHashRounds = 1000000
 
 func (i *ignition) getIgnitionTemplate(kluster *kubernikusv1.Kluster) (string, error) {
 	switch {
+	case strings.HasPrefix(kluster.Spec.Version, "1.19"):
+		return Node_1_19, nil
 	case strings.HasPrefix(kluster.Spec.Version, "1.18"):
 		return Node_1_17, nil // No changes to 1.17
 	case strings.HasPrefix(kluster.Spec.Version, "1.17"):
@@ -134,6 +136,10 @@ func (i *ignition) GenerateNode(kluster *kubernikusv1.Kluster, pool *models.Node
 		NodeName                           string
 		HyperkubeImage                     string
 		HyperkubeImageTag                  string
+		KubeletImage                       string
+		KubeletImageTag                    string
+		KubeProxy                          string
+		KubeProxyTag                       string
 		CalicoNetworking                   bool
 	}{
 		TLSCA:                              secret.TLSCACertificate,
@@ -164,6 +170,10 @@ func (i *ignition) GenerateNode(kluster *kubernikusv1.Kluster, pool *models.Node
 		NodeName:                           nodeName,
 		HyperkubeImage:                     images.Hyperkube.Repository,
 		HyperkubeImageTag:                  images.Hyperkube.Tag,
+		KubeletImage:                       images.Kubelet.Repository,
+		KubeletImageTag:                    images.Kubelet.Tag,
+		KubeProxy:                          images.KubeProxy.Repository,
+		KubeProxyTag:                       images.KubeProxy.Tag,
 		CalicoNetworking:                   calicoNetworking,
 	}
 

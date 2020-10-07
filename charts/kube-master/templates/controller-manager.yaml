@@ -68,7 +68,11 @@ spec:
         {{- end }}
       initContainers:
         - name: apiserver-wait
+{{- if (semverCompare ">= 1.19" .Values.version.kubernetes) }}
+          image: {{ include "kubelet.image" . | quote }}
+{{- else }}
           image: {{ include "hyperkube.image" . }}
+{{- end }}
           command:
             - sh
             - -c
@@ -89,7 +93,11 @@ spec:
             name: metrics
             protocol: TCP
 {{- end }}
+{{- if (semverCompare ">= 1.19" .Values.version.kubernetes) }}
+          image: {{ include "controllerManager.image" . | quote }}
+{{- else }}
           image: {{ include "hyperkube.image" . | quote }}
+{{- end }}
           args:
 {{- if (semverCompare "< 1.17" .Values.version.kubernetes) }}
             - /hyperkube
