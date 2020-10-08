@@ -68,7 +68,7 @@ func init() {
 
 	imageRegistry = version.ImageRegistry{
 		Versions: map[string]version.KlusterVersion{
-			"1.19": {Hyperkube: version.ImageVersion{Repository: "nase", Tag: "v1.19"}},
+			"1.19": {Kubelet: version.ImageVersion{Repository: "nase", Tag: "v1.19"}},
 			"1.18": {Hyperkube: version.ImageVersion{Repository: "nase", Tag: "v1.18"}},
 			"1.17": {Hyperkube: version.ImageVersion{Repository: "nase", Tag: "v1.17"}},
 			"1.16": {Hyperkube: version.ImageVersion{Repository: "nase", Tag: "v1.16"}},
