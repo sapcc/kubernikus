@@ -126,13 +126,13 @@ auth_ap-jp-2: &auth_ap-jp-2
   KUBELOGON_PASSWORD: ((KUBELOGON_PASSWORD))
   KUBERNIKUS_NAME: k-ap-jp-2
 
-  KUBERNIKUS_URL: https://k-ap-jp-2.admin.cloud.sap
+  KUBERNIKUS_URL: https://kubernikus.admin.ap-jp-2.cloud.sap
 
 
 auth_e2e_ap-jp-2: &auth_e2e_ap-jp-2
   CP_KLUSTER: k-ap-jp-2
 
-  CP_KUBERNIKUS_URL: https://k-ap-jp-2.admin.cloud.sap
+  CP_KUBERNIKUS_URL: https://kubernikus.admin.ap-jp-2.cloud.sap
 
   CP_OS_PROJECT_DOMAIN_NAME: ccadmin
   KUBERNIKUS_NAME: e2e
@@ -1317,16 +1317,6 @@ jobs:
             REGION: admin
             CONTEXT: admin
             KUBERNIKUS_NAME: k-ap-jp-1
-            KUBELOGON_USER:     ((KUBELOGON_USER))
-            KUBELOGON_PASSWORD: ((KUBELOGON_PASSWORD))
-
-        - task: k-ap-jp-2
-          config:
-            <<: *task_helm-admin_kubernikus
-          params:
-            REGION: admin
-            CONTEXT: admin
-            KUBERNIKUS_NAME: k-ap-jp-2
             KUBELOGON_USER:     ((KUBELOGON_USER))
             KUBELOGON_PASSWORD: ((KUBELOGON_PASSWORD))
 
