@@ -6,13 +6,13 @@ auth_ap-ae-1: &auth_ap-ae-1
   KUBELOGON_PASSWORD: ((KUBELOGON_PASSWORD))
   KUBERNIKUS_NAME: k-ap-ae-1
 
-  KUBERNIKUS_URL: https://k-ap-ae-1.admin.cloud.sap
+  KUBERNIKUS_URL: https://kubernikus.admin.ap-ae-1.cloud.sap
 
 
 auth_e2e_ap-ae-1: &auth_e2e_ap-ae-1
   CP_KLUSTER: k-ap-ae-1
 
-  CP_KUBERNIKUS_URL: https://k-ap-ae-1.admin.cloud.sap
+  CP_KUBERNIKUS_URL: https://kubernikus.admin.ap-ae-1.cloud.sap
 
   CP_OS_PROJECT_DOMAIN_NAME: ccadmin
   KUBERNIKUS_NAME: e2e
@@ -1279,16 +1279,6 @@ jobs:
           passed: [ASIA]
 
       - in_parallel:
-
-        - task: k-ap-ae-1
-          config:
-            <<: *task_helm-admin_kubernikus
-          params:
-            REGION: admin
-            CONTEXT: admin
-            KUBERNIKUS_NAME: k-ap-ae-1
-            KUBELOGON_USER:     ((KUBELOGON_USER))
-            KUBELOGON_PASSWORD: ((KUBELOGON_PASSWORD))
 
         - task: k-ap-au-1
           config:
