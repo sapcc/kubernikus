@@ -66,13 +66,13 @@ auth_ap-cn-1: &auth_ap-cn-1
   KUBELOGON_PASSWORD: ((KUBELOGON_PASSWORD))
   KUBERNIKUS_NAME: k-ap-cn-1
 
-  KUBERNIKUS_URL: https://k-ap-cn-1.admin.cloud.sap
+  KUBERNIKUS_URL: https://kubernikus.admin.ap-cn-1.cloud.sap
 
 
 auth_e2e_ap-cn-1: &auth_e2e_ap-cn-1
   CP_KLUSTER: k-ap-cn-1
 
-  CP_KUBERNIKUS_URL: https://k-ap-cn-1.admin.cloud.sap
+  CP_KUBERNIKUS_URL: https://kubernikus.admin.ap-cn-1.cloud.sap
 
   CP_OS_PROJECT_DOMAIN_NAME: ccadmin
   KUBERNIKUS_NAME: e2e
@@ -1277,19 +1277,6 @@ jobs:
         - get: kubernikus.builds
           resource: master.builds
           passed: [ASIA]
-
-      - in_parallel:
-
-        - task: k-ap-cn-1
-          config:
-            <<: *task_helm-admin_kubernikus
-          params:
-            REGION: admin
-            CONTEXT: admin
-            KUBERNIKUS_NAME: k-ap-cn-1
-            KUBELOGON_USER:     ((KUBELOGON_USER))
-            KUBELOGON_PASSWORD: ((KUBELOGON_PASSWORD))
-
 
     <<: *slack
 
