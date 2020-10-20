@@ -396,13 +396,13 @@ auth_na-us-2: &auth_na-us-2
   KUBELOGON_PASSWORD: ((KUBELOGON_PASSWORD))
   KUBERNIKUS_NAME: k-na-us-2
 
-  KUBERNIKUS_URL: https://k-na-us-2.admin.cloud.sap
+  KUBERNIKUS_URL: https://kubernikus.admin.na-us-2.cloud.sap
 
 
 auth_e2e_na-us-2: &auth_e2e_na-us-2
   CP_KLUSTER: k-na-us-2
 
-  CP_KUBERNIKUS_URL: https://k-na-us-2.admin.cloud.sap
+  CP_KUBERNIKUS_URL: https://kubernikus.admin.na-us-2.cloud.sap
 
   CP_OS_PROJECT_DOMAIN_NAME: ccadmin
   KUBERNIKUS_NAME: e2e
@@ -2472,16 +2472,6 @@ jobs:
           passed: [AMERICAS]
 
       - in_parallel:
-
-        - task: k-na-us-2
-          config:
-            <<: *task_helm-admin_kubernikus
-          params:
-            REGION: admin
-            CONTEXT: admin
-            KUBERNIKUS_NAME: k-na-us-2
-            KUBELOGON_USER:     ((KUBELOGON_USER))
-            KUBELOGON_PASSWORD: ((KUBELOGON_PASSWORD))
 
         - task: k-na-us-3
           config:
