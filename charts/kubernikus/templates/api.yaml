@@ -6,7 +6,7 @@ apiVersion: "extensions/v1beta1"
 kind: Deployment
 
 metadata:
-  name: kubernikus-api
+  name: kks-api
   labels:
     app: kubernikus
     type: api

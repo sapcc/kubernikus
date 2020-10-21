@@ -5,7 +5,7 @@ apiVersion: "extensions/v1beta1"
 {{- end }}
 kind: Deployment
 metadata:
-  name: k8sniff-ingress-lb
+  name: k8sniff-ingress
   labels:
     role: k8sniff-ingress-lb
 
