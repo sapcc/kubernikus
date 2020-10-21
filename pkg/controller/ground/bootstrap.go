@@ -169,7 +169,7 @@ func SeedKubernikusMember(client clientset.Interface) error {
 		},
 		RoleRef: rbac.RoleRef{
 			APIGroup: rbac.GroupName,
-			Kind:     "Role",
+			Kind:     "ClusterRole",
 			Name:     "edit",
 		},
 		Subjects: []rbac.Subject{
