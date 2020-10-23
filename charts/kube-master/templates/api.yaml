@@ -106,6 +106,7 @@ spec:
         - name: config
           configMap:
             name: {{ include "master.fullname" . }}
+{{- if (semverCompare "< 1.19" .Values.version.kubernetes) }}
         - name: liveness-probe
           configMap:
             name: {{ include "master.fullname" . }}
@@ -113,6 +114,7 @@ spec:
             items:
               - key: api-liveness-probe.py
                 path: api-liveness-probe.py
+{{- end }}
         - name: wormhole-config
           configMap:
             name: {{ include "master.fullname" . }}
@@ -252,12 +254,18 @@ spec:
             - mountPath: /etc/kubernetes/bootstrap
               name: bootstrap
               readOnly: true
+{{- if (semverCompare "< 1.19" .Values.version.kubernetes) }}
             - mountPath: /liveness-probe
               name: liveness-probe
+{{- end }}
           livenessProbe:
             exec:
               command:
+{{- if (semverCompare ">= 1.19" .Values.version.kubernetes) }}
+                - /api-liveness
+{{- else }}
                 - /liveness-probe/api-liveness-probe.py
+{{- end }}
             initialDelaySeconds: 60
             periodSeconds: 60
           readinessProbe:
