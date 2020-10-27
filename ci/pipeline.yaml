@@ -216,13 +216,13 @@ auth_eu-de-2: &auth_eu-de-2
   KUBELOGON_PASSWORD: ((KUBELOGON_PASSWORD))
   KUBERNIKUS_NAME: k-eu-de-2
 
-  KUBERNIKUS_URL: https://k-eu-de-2.admin.cloud.sap
+  KUBERNIKUS_URL: https://kubernikus.admin.eu-de-2.cloud.sap
 
 
 auth_e2e_eu-de-2: &auth_e2e_eu-de-2
   CP_KLUSTER: k-eu-de-2
 
-  CP_KUBERNIKUS_URL: https://k-eu-de-2.admin.cloud.sap
+  CP_KUBERNIKUS_URL: https://kubernikus.admin.eu-de-2.cloud.sap
 
   CP_OS_PROJECT_DOMAIN_NAME: ccadmin
   KUBERNIKUS_NAME: e2e
@@ -1961,19 +1961,6 @@ jobs:
         - get: kubernikus.builds
           resource: master.builds
           passed: [EMEA]
-
-      - in_parallel:
-
-        - task: k-eu-de-2
-          config:
-            <<: *task_helm-admin_kubernikus
-          params:
-            REGION: admin
-            CONTEXT: admin
-            KUBERNIKUS_NAME: k-eu-de-2
-            KUBELOGON_USER:     ((KUBELOGON_USER))
-            KUBELOGON_PASSWORD: ((KUBELOGON_PASSWORD))
-
 
     <<: *slack
 
