@@ -914,7 +914,7 @@ task_whitesource: &task_whitesource
   image_resource:
     type: docker-image
     source:
-      repository: hub.global.cloud.sap/d074427/wss-agent
+      repository: keppel.eu-de-1.cloud.sap/ccloud/whitesource-agent
       tag: 20.1.3-kubernikus
   inputs:
     - name: kubernikus.builds
