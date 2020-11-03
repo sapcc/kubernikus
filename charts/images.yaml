@@ -31,10 +31,10 @@ imagesForVersion:
   '1.18.10':
     supported: true
     hyperkube:
-      repository: 'sapcc/hyperkube'
-      tag: 'v1.18.9'
+      repository: 'keppel.eu-de-1.cloud.sap/ccloud/hyperkube'
+      tag: 'v1.18.10'
     cloudControllerManager:
-      repository: 'sapcc/openstack-cloud-controller-manager'
+      repository: 'keppel.eu-de-1.cloud.sap/ccloud/openstack-cloud-controller-manager'
       tag: 'v1.18.0'
     dex:
       repository: 'keppel.eu-de-1.cloud.sap/ccloud/dex'
@@ -43,15 +43,15 @@ imagesForVersion:
       repository: 'keppel.eu-de-1.cloud.sap/ccloud/keycloak-gatekeeper'
       tag: '6.0.1'
     dashboard:
-      repository: 'kubernetesui/dashboard'
+      repository: 'keppel.eu-de-1.cloud.sap/ccloud/kube-dashboard'
       tag: 'v2.0.0-beta4'
   '1.17.13':
     supported: true
     hyperkube:
-      repository: 'sapcc/hyperkube'
+      repository: 'keppel.eu-de-1.cloud.sap/ccloud/hyperkube'
       tag: 'v1.17.13'
     cloudControllerManager:
-      repository: 'sapcc/openstack-cloud-controller-manager'
+      repository: 'keppel.eu-de-1.cloud.sap/ccloud/openstack-cloud-controller-manager'
       tag: 'v1.17.0'
     dex:
       repository: 'keppel.eu-de-1.cloud.sap/ccloud/dex'
@@ -60,7 +60,7 @@ imagesForVersion:
       repository: 'keppel.eu-de-1.cloud.sap/ccloud/keycloak-gatekeeper'
       tag: '6.0.1'
     dashboard:
-      repository: 'kubernetesui/dashboard'
+      repository: 'keppel.eu-de-1.cloud.sap/ccloud/kube-dashboard'
       tag: 'v2.0.0-beta4'
   '1.16.14':
     supported: true
