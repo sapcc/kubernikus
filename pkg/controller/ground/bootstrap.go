@@ -49,9 +49,6 @@ func SeedKluster(clients config.Clients, factories config.Factories, kluster *v1
 			return errors.Wrap(err, "seed cinder storage classes")
 		}
 	}
-	if err := SeedAllowCertificateControllerToDeleteCSRs(kubernetes); err != nil {
-		return errors.Wrap(err, "seed allow certificate controller to delete CSRs")
-	}
 	if err := SeedAllowApiserverToAccessKubeletAPI(kubernetes); err != nil {
 		return errors.Wrap(err, "seed allow apiserver access to kubelet api")
 	}
@@ -214,43 +211,6 @@ func SeedAllowApiserverToAccessKubeletAPI(client clientset.Interface) error {
 			{
 				Kind: rbac.UserKind,
 				Name: "apiserver",
-			},
-		},
-	})
-}
-
-// addresses https://github.com/kubernetes/kubernetes/issues/59351
-func SeedAllowCertificateControllerToDeleteCSRs(client clientset.Interface) error {
-	return bootstrap.CreateOrUpdateClusterRole(client, &rbac.ClusterRole{
-		ObjectMeta: metav1.ObjectMeta{
-			Name: "system:controller:certificate-controller",
-			Annotations: map[string]string{
-				"rbac.authorization.kubernetes.io/autoupdate": "true",
-			},
-			Labels: map[string]string{
-				"kubernetes.io/bootstrapping": "rbac-defaults",
-			},
-		},
-		Rules: []rbac.PolicyRule{
-			{
-				Verbs:     []string{"delete", "get", "list", "watch"},
-				APIGroups: []string{"certificates.k8s.io"},
-				Resources: []string{"certificatesigningrequests"},
-			},
-			{
-				Verbs:     []string{"update"},
-				APIGroups: []string{"certificates.k8s.io"},
-				Resources: []string{"certificatesigningrequests/approval", "certificatesigningrequests/status"},
-			},
-			{
-				Verbs:     []string{"create"},
-				APIGroups: []string{"authorization.k8s.io"},
-				Resources: []string{"subjectaccessreviews"},
-			},
-			{
-				Verbs:     []string{"create", "patch", "update"},
-				APIGroups: []string{""}, //looks funny but is in the default rule ...
-				Resources: []string{"events"},
 			},
 		},
 	})
