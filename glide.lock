@@ -1,5 +1,5 @@
-hash: 04e8f42f93585a02494b99695a017aebd92ba6cc237c15c3e6e90915faa3048e
-updated: 2020-10-02T13:41:25.842783893+02:00
+hash: d68a4a034de18b09f0021e3591ddaa18e61bd4954ffcb75aebd0d373a4f88da8
+updated: 2020-11-06T14:45:00.159872378+01:00
 imports:
 - name: github.com/ajeddeloh/yaml
   version: 1072abfea31191db507785e2e0c1b8d1440d35a5
@@ -212,7 +212,7 @@ imports:
 - name: github.com/joeshaw/envdecode
   version: 6326cbed175e32cd5183be1cc1027e0823c91edb
 - name: github.com/json-iterator/go
-  version: ab8a2e0c74be9d3be70b3184d9acc634935ded82
+  version: f2b4162afba35581b6d4a50d3b8f34e33c144682
 - name: github.com/justinas/alice
   version: 03f45bd4b7dad4734bc4620e46a35789349abb20
 - name: github.com/kr/logfmt
