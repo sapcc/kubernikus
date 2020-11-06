@@ -618,7 +618,7 @@ task_e2e_tests: &task_e2e_tests
     type: docker-image
     source:
       repository: golang
-      tag: 1.9.2-alpine3.6
+      tag: 1.14-alpine
   
   inputs:
     - name: kubernikus.builds
@@ -639,6 +639,7 @@ task_e2e_tests: &task_e2e_tests
   
         apk add --no-progress --no-cache make git curl
         export RUN_PARALLEL=false
+        export CGO_ENABLED=0
         make test-e2e | tee test.output
         rc=$?
         #Get the longest uniq (!) whitespace prefix of --- FAIL: lines
@@ -914,7 +915,7 @@ task_whitesource: &task_whitesource
   image_resource:
     type: docker-image
     source:
-      repository: hub.global.cloud.sap/d074427/wss-agent
+      repository: keppel.eu-de-1.cloud.sap/ccloud/whitesource-agent
       tag: 20.1.3-kubernikus
   inputs:
     - name: kubernikus.builds
