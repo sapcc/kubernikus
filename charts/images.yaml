@@ -26,8 +26,8 @@ imagesForVersion:
       repository: 'keppel.eu-de-1.cloud.sap/ccloud/keycloak-gatekeeper'
       tag: '6.0.1'
     dashboard:
-      repository: 'keppel.eu-de-1.cloud.sap/ccloud/kube-dashboard'
-      tag: 'v2.0.0-beta4'
+      repository: 'keppel.eu-de-1.cloud.sap/ccloud-dockerhub-mirror/kubernetesui/dashboard'
+      tag: 'v2.0.4'
   '1.18.10':
     supported: true
     hyperkube:
@@ -43,8 +43,8 @@ imagesForVersion:
       repository: 'keppel.eu-de-1.cloud.sap/ccloud/keycloak-gatekeeper'
       tag: '6.0.1'
     dashboard:
-      repository: 'keppel.eu-de-1.cloud.sap/ccloud/kube-dashboard'
-      tag: 'v2.0.0-beta4'
+      repository: 'keppel.eu-de-1.cloud.sap/ccloud-dockerhub-mirror/kubernetesui/dashboard'
+      tag: 'v2.0.4'
   '1.17.13':
     supported: true
     hyperkube:
@@ -60,8 +60,8 @@ imagesForVersion:
       repository: 'keppel.eu-de-1.cloud.sap/ccloud/keycloak-gatekeeper'
       tag: '6.0.1'
     dashboard:
-      repository: 'keppel.eu-de-1.cloud.sap/ccloud/kube-dashboard'
-      tag: 'v2.0.0-beta4'
+      repository: 'keppel.eu-de-1.cloud.sap/ccloud-dockerhub-mirror/kubernetesui/dashboard'
+      tag: 'v2.0.4'
   '1.16.14':
     supported: true
     hyperkube:
