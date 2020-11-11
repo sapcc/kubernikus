@@ -9,7 +9,6 @@ import (
 
 	"github.com/sapcc/kubernikus/pkg/api/models"
 	"github.com/sapcc/kubernikus/pkg/controller/nodeobservatory"
-	"github.com/sapcc/kubernikus/pkg/controller/servicing/coreos"
 	"github.com/sapcc/kubernikus/pkg/controller/servicing/flatcar"
 	kubernikusfake "github.com/sapcc/kubernikus/pkg/generated/clientset/fake"
 )
@@ -304,8 +303,6 @@ func TestServicingControllerReconcile(t *testing.T) {
 			listers := &NodeListerFactory{
 				Logger:          logger,
 				NodeObservatory: nodeobservatory.NewFakeController(kluster, nodes...),
-				CoreOSVersion:   coreos.NewFakeVersion(t, "2023.4.0"),
-				CoreOSRelease:   coreos.NewFakeRelease(t, "2023.4.0"),
 				FlatcarVersion:  flatcar.NewFakeVersion(t, "2303.4.0"),
 				FlatcarRelease:  flatcar.NewFakeRelease(t, "2303.4.0"),
 			}

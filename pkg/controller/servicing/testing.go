@@ -115,9 +115,9 @@ func NewFakeKluster(opts *FakeKlusterOptions) (*v1.Kluster, []runtime.Object) {
 			}
 
 			if p.NodeOSOutdated {
-				node.Status.NodeInfo.OSImage = "Container Linux by CoreOS 1800.6.0 (Rhyolite)"
+				node.Status.NodeInfo.OSImage = "Flatcar Container Linux by Kinvolk 1000.0.0 (Oklo)"
 			} else {
-				node.Status.NodeInfo.OSImage = "Container Linux by CoreOS 2023.4.0 (Rhyolite)"
+				node.Status.NodeInfo.OSImage = "Flatcar Container Linux by Kinvolk 2605.7.0 (Oklo)"
 			}
 
 			if p.NodeKubeletOutdated {
