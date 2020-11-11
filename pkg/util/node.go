@@ -8,11 +8,11 @@ import (
 	"os"
 	"strings"
 
+	"github.com/Masterminds/semver"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes"
 
-	"github.com/Masterminds/semver"
 	"github.com/sapcc/kubernikus/pkg/api/models"
 	"github.com/sapcc/kubernikus/pkg/util/netutil"
 )
