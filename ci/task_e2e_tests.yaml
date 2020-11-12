@@ -1,9 +1,9 @@
 platform: 'linux'
 
 image_resource:
-  type: docker-image
+  type: registry-image
   source:
-    repository: golang
+    repository: keppel.eu-de-2.cloud.sap/ccloud-dockerhub-mirror/library/golang
     tag: 1.14-alpine
 
 inputs:

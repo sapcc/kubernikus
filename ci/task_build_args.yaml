@@ -2,7 +2,7 @@ platform: linux
 image_resource:
   type: registry-image
   source:
-    repository: alpine
+    repository: keppel.eu-de-2.cloud.sap/ccloud-dockerhub-mirror/library/alpine
 inputs:
   - name: kubernikus.builds
 outputs:
