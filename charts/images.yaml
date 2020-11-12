@@ -1,24 +1,24 @@
 imagesForVersion:
-  '1.19.3':
+  '1.19.4':
     supported: true
     apiserver:
       repository: 'keppel.eu-de-1.cloud.sap/ccloud/kube-apiserver'
-      tag: 'v1.19.3'
+      tag: 'v1.19.4'
     controllerManager:
       repository: 'keppel.eu-de-1.cloud.sap/ccloud/kube-controller-manager'
-      tag: 'v1.19.3'
+      tag: 'v1.19.4'
     scheduler:
       repository: 'keppel.eu-de-1.cloud.sap/ccloud/kube-scheduler'
-      tag: 'v1.19.3'
+      tag: 'v1.19.4'
     kubelet:
       repository: 'keppel.eu-de-1.cloud.sap/ccloud/kubelet'
-      tag: 'v1.19.3'
+      tag: 'v1.19.4'
     kubeProxy:
       repository: 'keppel.eu-de-1.cloud.sap/ccloud/kube-proxy'
-      tag: 'v1.19.3'
+      tag: 'v1.19.4'
     cloudControllerManager:
       repository: 'keppel.eu-de-1.cloud.sap/ccloud/openstack-cloud-controller-manager'
-      tag: 'v1.19.0'
+      tag: 'v1.19.2'
     dex:
       repository: 'keppel.eu-de-1.cloud.sap/ccloud/dex'
       tag: '38f4f8ea8d487470a1dd5b83d66b428d8b502f81'
