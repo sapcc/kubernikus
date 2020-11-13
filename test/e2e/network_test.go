@@ -30,7 +30,7 @@ const (
 
 	PollInterval = 6 * time.Second // DNS Timeout is 5s
 
-	ServeHostnameImage = "sapcc/serve-hostname-amd64:1.2-alpine"
+	ServeHostnameImage = "keppel.eu-de-1.cloud.sap/ccloud-dockerhub-mirror/sapcc/serve-hostname-amd64:1.2-alpine"
 	ServeHostnamePort  = 9376
 )
 

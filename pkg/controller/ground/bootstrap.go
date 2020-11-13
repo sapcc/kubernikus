@@ -17,9 +17,10 @@ import (
 	"github.com/sapcc/kubernikus/pkg/controller/ground/bootstrap/dns"
 	"github.com/sapcc/kubernikus/pkg/controller/ground/bootstrap/gpu"
 	"github.com/sapcc/kubernikus/pkg/util"
+	"github.com/sapcc/kubernikus/pkg/version"
 )
 
-func SeedKluster(clients config.Clients, factories config.Factories, kluster *v1.Kluster) error {
+func SeedKluster(clients config.Clients, factories config.Factories, images version.ImageRegistry, kluster *v1.Kluster) error {
 	kubernetes, err := clients.Satellites.ClientFor(kluster)
 	if err != nil {
 		return err
@@ -53,11 +54,11 @@ func SeedKluster(clients config.Clients, factories config.Factories, kluster *v1
 		return errors.Wrap(err, "seed allow apiserver access to kubelet api")
 	}
 	if ok, _ := util.KlusterVersionConstraint(kluster, ">= 1.16"); ok {
-		if err := dns.SeedCoreDNS116(kubernetes, "", "", kluster.Spec.DNSDomain, kluster.Spec.DNSAddress); err != nil {
+		if err := dns.SeedCoreDNS116(kubernetes, images.Versions[kluster.Spec.Version].CoreDNS.Repository+":"+images.Versions[kluster.Spec.Version].CoreDNS.Tag, kluster.Spec.DNSDomain, kluster.Spec.DNSAddress); err != nil {
 			return errors.Wrap(err, "seed coredns")
 		}
 	} else if ok, _ := util.KlusterVersionConstraint(kluster, ">= 1.13"); ok {
-		if err := dns.SeedCoreDNS(kubernetes, "", "", kluster.Spec.DNSDomain, kluster.Spec.DNSAddress); err != nil {
+		if err := dns.SeedCoreDNS(kubernetes, images.Versions[kluster.Spec.Version].CoreDNS.Repository+":"+images.Versions[kluster.Spec.Version].CoreDNS.Tag, kluster.Spec.DNSDomain, kluster.Spec.DNSAddress); err != nil {
 			return errors.Wrap(err, "seed coredns")
 		}
 	} else {
