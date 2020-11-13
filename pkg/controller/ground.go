@@ -549,7 +549,7 @@ func (op *GroundControl) createKluster(kluster *v1.Kluster) error {
 		return fmt.Errorf("Failed to retrieve domain name by project: %s", err)
 	}
 	klusterSecret.Openstack.ProjectDomainName = domainNameByProject
-	
+
 	if klusterSecret.Openstack.Password, err = goutils.Random(20, 32, 127, true, true); err != nil {
 		return fmt.Errorf("Failed to generated password for cluster service user: %s", err)
 	}
