@@ -6,6 +6,7 @@ func init() {
 	prometheus.MustRegister(
 		MigrationErrorsTotal,
 	)
+	MigrationErrorsTotal.With(prometheus.Labels{"kluster", "dummy-for-absent-metrics-operator"}).Add(0)
 }
 
 var MigrationErrorsTotal = prometheus.NewCounterVec(
@@ -13,7 +14,7 @@ var MigrationErrorsTotal = prometheus.NewCounterVec(
 		Namespace: "kubernikus",
 		Subsystem: "migration",
 		Name:      "errors_total",
-		Help:      "Total numver of failed migration operations",
+		Help:      "Total number of failed migration operations",
 	},
 	[]string{"kluster"},
 )
