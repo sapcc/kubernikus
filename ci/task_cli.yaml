@@ -26,7 +26,9 @@ run:
       make bin/darwin/kubernikusctl
       make bin/linux/kubernikusctl
       make bin/windows/kubernikusctl.exe
-      upx bin/*/*
+      upx bin/linux/*
+      upx bin/windows/*
+      # upx is broken on big sur https://github.com/upx/upx/issues/424
       SHA=$(git rev-parse HEAD)
       echo $SHA > $BINARIES/commitish
       echo "1.0.0+$SHA" > $BINARIES/tag
