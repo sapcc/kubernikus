@@ -6,7 +6,7 @@ func init() {
 	prometheus.MustRegister(
 		MigrationErrorsTotal,
 	)
-	MigrationErrorsTotal.With(prometheus.Labels{"kluster", "dummy-for-absent-metrics-operator"}).Add(0)
+	MigrationErrorsTotal.With(prometheus.Labels{"kluster": "dummy-for-absent-metrics-operator"}).Add(0)
 }
 
 var MigrationErrorsTotal = prometheus.NewCounterVec(

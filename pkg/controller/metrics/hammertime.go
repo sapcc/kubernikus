@@ -6,7 +6,7 @@ func init() {
 	prometheus.MustRegister(
 		HammertimeStatus,
 	)
-	HammertimeStatus.With(prometheus.Labels{"kluster", "dummy-for-absent-metrics-operator"}).Set(0)
+	HammertimeStatus.With(prometheus.Labels{"kluster": "dummy-for-absent-metrics-operator"}).Set(0)
 }
 
 var HammertimeStatus = prometheus.NewGaugeVec(
