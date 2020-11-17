@@ -1,22 +1,22 @@
 <%
 REGIONS = {
-  "ap-ae-1": { continent: 'ASIA',     install: 'terraform', e2e: 'terraform', skip_admin: true },
-  "ap-au-1": { continent: 'ASIA',     install: 'manual'   , e2e: 'manual', skip_admin: true },
-  "ap-cn-1": { continent: 'ASIA',     install: 'terraform', e2e: 'terraform', skip_admin: true },
-  "ap-jp-1": { continent: 'ASIA',     install: 'terraform', e2e: 'terraform', skip_admin: true },
-  "ap-jp-2": { continent: 'ASIA',     install: 'terraform', e2e: 'terraform', skip_admin: true },
-  "ap-sa-1": { continent: 'ASIA',     install: 'terraform', e2e: 'terraform', skip_admin: true },
-  "eu-de-1": { continent: 'EMEA',     install: 'manual'   , e2e: 'manual', skip_admin: true },
-  "eu-de-2": { continent: 'EMEA',     install: 'manual'   , e2e: 'manual', skip_admin: true },
-  "eu-nl-1": { continent: 'EMEA',     install: 'manual'   , e2e: 'terraform', skip_admin: true },
-  "eu-ru-1": { continent: 'EMEA',     install: 'terraform', e2e: 'terraform', skip_admin: true },
-  "la-br-1": { continent: 'AMERICAS', install: 'terraform', e2e: 'terraform', skip_admin: true },
-  "na-ca-1": { continent: 'AMERICAS', install: 'terraform', e2e: 'terraform', skip_admin: true },
-  "na-us-1": { continent: 'AMERICAS', install: 'manual'   , e2e: 'manual', skip_admin: true },
-  "na-us-2": { continent: 'AMERICAS', install: 'terraform', e2e: 'terraform', skip_admin: true },
-  "na-us-3": { continent: 'AMERICAS', install: 'terraform', e2e: 'terraform', skip_admin: true },
-  "qa-de-1": { continent: 'INFRA',    install: 'terraform', e2e: 'terraform', nodepool_avz: 'qa-de-1a' , skip_admin: true},
-  "master":  { continent: "INFRA",    install: 'virtual'  , e2e: 'virtual', skip_admin: true   }
+  "ap-ae-1": { continent: 'ASIA',     install: 'terraform', e2e: 'terraform' },
+  "ap-au-1": { continent: 'ASIA',     install: 'manual'   , e2e: 'manual' },
+  "ap-cn-1": { continent: 'ASIA',     install: 'terraform', e2e: 'terraform' },
+  "ap-jp-1": { continent: 'ASIA',     install: 'terraform', e2e: 'terraform' },
+  "ap-jp-2": { continent: 'ASIA',     install: 'terraform', e2e: 'terraform' },
+  "ap-sa-1": { continent: 'ASIA',     install: 'terraform', e2e: 'terraform' },
+  "eu-de-1": { continent: 'EMEA',     install: 'manual'   , e2e: 'manual' },
+  "eu-de-2": { continent: 'EMEA',     install: 'manual'   , e2e: 'manual' },
+  "eu-nl-1": { continent: 'EMEA',     install: 'manual'   , e2e: 'terraform' },
+  "eu-ru-1": { continent: 'EMEA',     install: 'terraform', e2e: 'terraform' },
+  "la-br-1": { continent: 'AMERICAS', install: 'terraform', e2e: 'terraform' },
+  "na-ca-1": { continent: 'AMERICAS', install: 'terraform', e2e: 'terraform' },
+  "na-us-1": { continent: 'AMERICAS', install: 'manual'   , e2e: 'manual' },
+  "na-us-2": { continent: 'AMERICAS', install: 'terraform', e2e: 'terraform' },
+  "na-us-3": { continent: 'AMERICAS', install: 'terraform', e2e: 'terraform' },
+  "qa-de-1": { continent: 'INFRA',    install: 'terraform', e2e: 'terraform', nodepool_avz: 'qa-de-1a'},
+  "master":  { continent: "INFRA",    install: 'virtual'  , e2e: 'virtual' }
 }
 
 GROUPS             = REGIONS.values.map{ |v| v[:continent]}.uniq
@@ -28,19 +28,11 @@ auth_<%= region %>: &auth_<%= region %>
   KUBELOGON_USER:     ((KUBELOGON_USER))
   KUBELOGON_PASSWORD: ((KUBELOGON_PASSWORD))
   KUBERNIKUS_NAME: k-<%= region %>
-<% if meta[:skip_admin] %>
   KUBERNIKUS_URL: https://kubernikus.admin.<%= region == :master ? "eu-nl-1": region %>.cloud.sap
-<% else %>
-  KUBERNIKUS_URL: https://k-<%= region %>.admin.cloud.sap
-<% end %>
 
 auth_e2e_<%= region %>: &auth_e2e_<%= region %>
   CP_KLUSTER: k-<%= region %>
-<% if meta[:skip_admin] %>
   CP_KUBERNIKUS_URL: https://kubernikus.admin.<%= region == :master ? "eu-nl-1" : region %>.cloud.sap
-<% else %>
-  CP_KUBERNIKUS_URL: https://k-<%= region %>.admin.cloud.sap
-<% end %>
   CP_OS_PROJECT_DOMAIN_NAME: ccadmin
   KUBERNIKUS_NAME: e2e
   OS_PROJECT_DOMAIN_NAME: ccadmin
@@ -311,34 +303,6 @@ jobs:
           trigger: true
         - put: <%= group %>.tag
 
-  - name: admin_<%= group %>
-    serial: true
-    plan:
-      - in_parallel:
-        - get: <%= group %>.tag
-          passed: [ <%= group %> ]
-          trigger: true
-        - get: secrets.git
-          passed: [ <%= group %> ]
-        - get: kubernikus.builds
-          resource: master.builds
-          passed: [<%= group %>]
-<% if REGIONS.any?{ |k, v| v[:continent] == group && !v[:skip_admin] } %>
-      - in_parallel:
-<% REGIONS.select{ |k, v| v[:continent] == group && !v[:skip_admin] }.each do |region, meta| %>
-        - task: k-<%= region %>
-          config:
-            <<: *task_helm-admin_kubernikus
-          params:
-            REGION: admin
-            CONTEXT: admin
-            KUBERNIKUS_NAME: k-<%= region %>
-            KUBELOGON_USER:     ((KUBELOGON_USER))
-            KUBELOGON_PASSWORD: ((KUBELOGON_PASSWORD))
-<% end %>
-<% end %>
-    <<: *slack
-
 <% REGIONS.select{ |k, v| v[:continent] == group }.each do |region, meta| %>
 <% if ["terraform", "manual"].include? meta[:install] %>
 
@@ -347,10 +311,10 @@ jobs:
     plan:
       - in_parallel:
         - get: <%= group %>.tag
-          passed: [admin_<%= group %>]
+          passed: [<%= group %>]
           trigger: true
         - get: secrets.git
-          passed: [admin_<%= group %>]
+          passed: [<%= group %>]
         - get: helm-charts.git
           passed: [<%= group %>]
       - task: seed
@@ -394,7 +358,7 @@ jobs:
           passed: [seed_<%= region %>]
         - get: kubernikus.builds
           resource: master.builds
-          passed: [admin_<%= group %>]
+          passed: [<%= group %>]
       - in_parallel:
         - task: kubernikus_<%= region %>
           config:
@@ -462,14 +426,12 @@ groups:
       - prod
 <% GROUPS.each do |group| %>
       - <%= group %>
-      - admin_<%= group %>
 <% end %>
 
 <% DEPLOYABLE_REGIONS.each do |region, meta| %>
   - name: <%= region %>
     jobs:
       - <%= meta.fetch(:continent) %>
-      - admin_<%= meta.fetch(:continent) %>
       - seed_<%= region %>
       - tiller_<%= region %>
       - deploy_<%= region %>
@@ -486,7 +448,6 @@ groups:
       - prod
 <% GROUPS.each do |group| %>
       - <%= group %>
-      - admin_<%= group %>
 <% end %>
 <% DEPLOYABLE_REGIONS.each do |region, meta| %>
       - seed_<%= region %>
