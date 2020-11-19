@@ -54,6 +54,11 @@ func NewSharedClientFactory(client kubernetes.Interface, klusterEvents cache.Sha
 }
 
 func (f *sharedClientFactory) ClientFor(k *kubernikus_v1.Kluster) (clientset kubernetes.Interface, err error) {
+
+	if client, found := f.clients.Load(k.GetUID()); found {
+		return client.(kubernetes.Interface), nil
+	}
+
 	defer func() {
 		f.Logger.Log(
 			"msg", "created shared kubernetes client",
@@ -63,10 +68,6 @@ func (f *sharedClientFactory) ClientFor(k *kubernikus_v1.Kluster) (clientset kub
 			"err", err,
 		)
 	}()
-
-	if client, found := f.clients.Load(k.GetUID()); found {
-		return client.(kubernetes.Interface), nil
-	}
 
 	secret, err := util.KlusterSecret(f.clientInterface, k)
 	if err != nil {
