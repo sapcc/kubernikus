@@ -34,6 +34,7 @@ type KlusterVersion struct {
 	Kubelet                ImageVersion `yaml:"kubelet,omitempty"`
 	KubeProxy              ImageVersion `yaml:"kubeProxy,omitempty"`
 	CoreDNS                ImageVersion `yaml:"coreDNS,omitempty"`
+	Pause                  ImageVersion `yaml:"pause,omitempty"`
 }
 
 type ImageRegistry struct {

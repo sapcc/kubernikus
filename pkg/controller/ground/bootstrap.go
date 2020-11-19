@@ -53,12 +53,17 @@ func SeedKluster(clients config.Clients, factories config.Factories, images vers
 	if err := SeedAllowApiserverToAccessKubeletAPI(kubernetes); err != nil {
 		return errors.Wrap(err, "seed allow apiserver access to kubelet api")
 	}
+	coreDNSImage := ""
+	if images.Versions[kluster.Spec.Version].CoreDNS.Repository != "" &&
+		images.Versions[kluster.Spec.Version].CoreDNS.Tag != "" {
+		coreDNSImage = images.Versions[kluster.Spec.Version].CoreDNS.Repository + ":" + images.Versions[kluster.Spec.Version].CoreDNS.Tag
+	}
 	if ok, _ := util.KlusterVersionConstraint(kluster, ">= 1.16"); ok {
-		if err := dns.SeedCoreDNS116(kubernetes, images.Versions[kluster.Spec.Version].CoreDNS.Repository+":"+images.Versions[kluster.Spec.Version].CoreDNS.Tag, kluster.Spec.DNSDomain, kluster.Spec.DNSAddress); err != nil {
+		if err := dns.SeedCoreDNS116(kubernetes, coreDNSImage, kluster.Spec.DNSDomain, kluster.Spec.DNSAddress); err != nil {
 			return errors.Wrap(err, "seed coredns")
 		}
 	} else if ok, _ := util.KlusterVersionConstraint(kluster, ">= 1.13"); ok {
-		if err := dns.SeedCoreDNS(kubernetes, images.Versions[kluster.Spec.Version].CoreDNS.Repository+":"+images.Versions[kluster.Spec.Version].CoreDNS.Tag, kluster.Spec.DNSDomain, kluster.Spec.DNSAddress); err != nil {
+		if err := dns.SeedCoreDNS(kubernetes, coreDNSImage, kluster.Spec.DNSDomain, kluster.Spec.DNSAddress); err != nil {
 			return errors.Wrap(err, "seed coredns")
 		}
 	} else {
