@@ -97,6 +97,9 @@ imagesForVersion:
     dashboard:
       repository: 'kubernetesui/dashboard'
       tag: 'v2.0.0-beta4'
+    coreDNS:
+      repository: 'keppel.eu-de-1.cloud.sap/ccloud-dockerhub-mirror/sapcc/coredns'
+      tag: '1.6.2'
     pause:
       repository: 'keppel.eu-de-1.cloud.sap/ccloud-dockerhub-mirror/sapcc/pause-amd64'
       tag: '3.1'
