@@ -120,7 +120,7 @@ systemd:
 {{- end }}
           --non-masquerade-cidr=0.0.0.0/0 \
           --lock-file=/var/run/lock/kubelet.lock \
-          --pod-infra-container-image=sapcc/pause-amd64:3.1 \
+          --pod-infra-container-image={{ .PauseImage }}:{{ .PauseImageTag }} \
 {{- if .NodeLabels }}
           --node-labels={{ .NodeLabels | join "," }} \
 {{- end }}
