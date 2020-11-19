@@ -53,7 +53,7 @@ func (w *routeGarbageCollector) Reconcile(kluster *v1.Kluster) (err error) {
 	routerID := kluster.Spec.Openstack.RouterID
 	defer func(begin time.Time) {
 		if err != nil {
-			metrics.OrphanedRoutesTotal.With(prometheus.Labels{}).Add(1)
+			metrics.RouteGCFailedOperationsTotal.With(prometheus.Labels{}).Add(1)
 		}
 	}(time.Now())
 
