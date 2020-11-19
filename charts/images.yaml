@@ -28,6 +28,12 @@ imagesForVersion:
     dashboard:
       repository: 'keppel.eu-de-1.cloud.sap/ccloud-dockerhub-mirror/kubernetesui/dashboard'
       tag: 'v2.0.4'
+    coreDNS:
+      repository: 'keppel.eu-de-1.cloud.sap/ccloud-dockerhub-mirror/sapcc/coredns'
+      tag: '1.6.2'
+    pause:
+      repository: 'keppel.eu-de-1.cloud.sap/ccloud-dockerhub-mirror/sapcc/pause-amd64'
+      tag: '3.1'
   '1.18.10':
     supported: true
     hyperkube:
@@ -45,6 +51,12 @@ imagesForVersion:
     dashboard:
       repository: 'keppel.eu-de-1.cloud.sap/ccloud-dockerhub-mirror/kubernetesui/dashboard'
       tag: 'v2.0.4'
+    coreDNS:
+      repository: 'keppel.eu-de-1.cloud.sap/ccloud-dockerhub-mirror/sapcc/coredns'
+      tag: '1.6.2'
+    pause:
+      repository: 'keppel.eu-de-1.cloud.sap/ccloud-dockerhub-mirror/sapcc/pause-amd64'
+      tag: '3.1'
   '1.17.13':
     supported: true
     hyperkube:
@@ -62,6 +74,12 @@ imagesForVersion:
     dashboard:
       repository: 'keppel.eu-de-1.cloud.sap/ccloud-dockerhub-mirror/kubernetesui/dashboard'
       tag: 'v2.0.4'
+    coreDNS:
+      repository: 'keppel.eu-de-1.cloud.sap/ccloud-dockerhub-mirror/sapcc/coredns'
+      tag: '1.6.2'
+    pause:
+      repository: 'keppel.eu-de-1.cloud.sap/ccloud-dockerhub-mirror/sapcc/pause-amd64'
+      tag: '3.1'
   '1.16.14':
     supported: true
     hyperkube:
@@ -79,6 +97,12 @@ imagesForVersion:
     dashboard:
       repository: 'kubernetesui/dashboard'
       tag: 'v2.0.0-beta4'
+    coreDNS:
+      repository: 'keppel.eu-de-1.cloud.sap/ccloud-dockerhub-mirror/sapcc/coredns'
+      tag: '1.6.2'
+    pause:
+      repository: 'keppel.eu-de-1.cloud.sap/ccloud-dockerhub-mirror/sapcc/pause-amd64'
+      tag: '3.1'
   '1.16.9':
     hyperkube:
       repository: 'sapcc/hyperkube'
@@ -95,6 +119,12 @@ imagesForVersion:
     dashboard:
       repository: 'kubernetesui/dashboard'
       tag: 'v2.0.0-beta4'
+    coreDNS:
+      repository: 'keppel.eu-de-1.cloud.sap/ccloud-dockerhub-mirror/sapcc/coredns'
+      tag: '1.6.2'
+    pause:
+      repository: 'keppel.eu-de-1.cloud.sap/ccloud-dockerhub-mirror/sapcc/pause-amd64'
+      tag: '3.1'
   '1.15.9':
     default: true
     supported: true
@@ -113,6 +143,12 @@ imagesForVersion:
     dashboard:
       repository: 'kubernetesui/dashboard'
       tag: 'v2.0.0-beta4'
+    coreDNS:
+      repository: 'keppel.eu-de-1.cloud.sap/ccloud-dockerhub-mirror/sapcc/coredns'
+      tag: '1.6.2'
+    pause:
+      repository: 'keppel.eu-de-1.cloud.sap/ccloud-dockerhub-mirror/sapcc/pause-amd64'
+      tag: '3.1'
   '1.15.2':
     supported: false
     hyperkube:
@@ -130,6 +166,12 @@ imagesForVersion:
     dashboard:
       repository: 'kubernetesui/dashboard'
       tag: 'v2.0.0-beta4'
+    coreDNS:
+      repository: 'keppel.eu-de-1.cloud.sap/ccloud-dockerhub-mirror/sapcc/coredns'
+      tag: '1.6.2'
+    pause:
+      repository: 'keppel.eu-de-1.cloud.sap/ccloud-dockerhub-mirror/sapcc/pause-amd64'
+      tag: '3.1'
   '1.14.5':
     supported: true
     hyperkube:
@@ -147,6 +189,12 @@ imagesForVersion:
     dashboard:
       repository: 'kubernetesui/dashboard'
       tag: 'v2.0.0-beta1'
+    coreDNS:
+      repository: 'keppel.eu-de-1.cloud.sap/ccloud-dockerhub-mirror/sapcc/coredns'
+      tag: '1.6.2'
+    pause:
+      repository: 'keppel.eu-de-1.cloud.sap/ccloud-dockerhub-mirror/sapcc/pause-amd64'
+      tag: '3.1'
   '1.13.9':
     supported: true
     hyperkube:
@@ -164,6 +212,12 @@ imagesForVersion:
     dashboard:
       repository: 'kubernetesui/dashboard'
       tag: 'v2.0.0-beta1'
+    coreDNS:
+      repository: 'keppel.eu-de-1.cloud.sap/ccloud-dockerhub-mirror/sapcc/coredns'
+      tag: '1.6.2'
+    pause:
+      repository: 'keppel.eu-de-1.cloud.sap/ccloud-dockerhub-mirror/sapcc/pause-amd64'
+      tag: '3.1'
   '1.12.10':
     supported: true
     hyperkube:
@@ -178,6 +232,9 @@ imagesForVersion:
     dashboard:
       repository: 'kubernetesui/dashboard'
       tag: 'v2.0.0-beta1'
+    pause:
+      repository: 'keppel.eu-de-1.cloud.sap/ccloud-dockerhub-mirror/sapcc/pause-amd64'
+      tag: '3.1'
   '1.11.9':
     hyperkube:
       repository: 'sapcc/hyperkube'

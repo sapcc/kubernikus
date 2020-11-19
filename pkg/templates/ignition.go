@@ -140,6 +140,8 @@ func (i *ignition) GenerateNode(kluster *kubernikusv1.Kluster, pool *models.Node
 		KubeletImageTag                    string
 		KubeProxy                          string
 		KubeProxyTag                       string
+		PauseImage                         string
+		PauseImageTag                      string
 		CalicoNetworking                   bool
 	}{
 		TLSCA:                              secret.TLSCACertificate,
@@ -174,6 +176,8 @@ func (i *ignition) GenerateNode(kluster *kubernikusv1.Kluster, pool *models.Node
 		KubeletImageTag:                    images.Kubelet.Tag,
 		KubeProxy:                          images.KubeProxy.Repository,
 		KubeProxyTag:                       images.KubeProxy.Tag,
+		PauseImage:                         images.Pause.Repository,
+		PauseImageTag:                      images.Pause.Tag,
 		CalicoNetworking:                   calicoNetworking,
 	}
 
