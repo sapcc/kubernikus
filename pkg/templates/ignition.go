@@ -86,6 +86,8 @@ func (i *ignition) GenerateNode(kluster *kubernikusv1.Kluster, pool *models.Node
 	}
 	var nodeLabels []string
 	var nodeTaints []string
+
+	isFlatcar := true
 	if pool != nil {
 		nodeLabels = append(nodeLabels, "ccloud.sap.com/nodepool="+pool.Name)
 		if strings.HasPrefix(pool.Flavor, "zg") {
@@ -100,6 +102,7 @@ func (i *ignition) GenerateNode(kluster *kubernikusv1.Kluster, pool *models.Node
 		for _, userLabel := range pool.Labels {
 			nodeLabels = append(nodeLabels, userLabel)
 		}
+		isFlatcar = !strings.Contains(strings.ToLower(pool.Image), "coreos")
 	}
 
 	images, found := imageRegistry.Versions[kluster.Spec.Version]
@@ -143,6 +146,8 @@ func (i *ignition) GenerateNode(kluster *kubernikusv1.Kluster, pool *models.Node
 		PauseImage                         string
 		PauseImageTag                      string
 		CalicoNetworking                   bool
+		Flatcar                            bool
+		CoreOS                             bool
 	}{
 		TLSCA:                              secret.TLSCACertificate,
 		KubeletClientsCA:                   secret.KubeletClientsCACertificate,
@@ -179,6 +184,8 @@ func (i *ignition) GenerateNode(kluster *kubernikusv1.Kluster, pool *models.Node
 		PauseImage:                         images.Pause.Repository,
 		PauseImageTag:                      images.Pause.Tag,
 		CalicoNetworking:                   calicoNetworking,
+		Flatcar:                            isFlatcar,
+		CoreOS:                             !isFlatcar,
 	}
 
 	var dataOut []byte
