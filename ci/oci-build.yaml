@@ -1,0 +1,30 @@
+---
+platform: linux
+image_resource:
+  type: registry-image
+  source:
+    repository: keppel.eu-de-2.cloud.sap/ci/oci-build-task
+    #repository: vito/oci-build-task
+
+inputs:
+- name: context
+
+outputs:
+- name: image
+
+caches:
+- path: cache
+
+run:
+  #path: build
+  path: sh
+  args:
+  - -ec
+  - |
+    echo Executing on $(wget -q -O- http://169.254.169.254/latest/meta-data/local-hostname)
+    du -hs cache/
+    build
+params:
+  DEBUG: true
+  DOCKERFILE:
+  CONTEXT: context
