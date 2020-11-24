@@ -1,4 +1,3 @@
----
 platform: linux
 image_resource:
   type: registry-image
@@ -28,3 +27,4 @@ params:
   DEBUG: true
   DOCKERFILE:
   CONTEXT: context
+  BUILD_ARGS_FILE:

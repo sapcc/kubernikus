@@ -84,24 +84,48 @@ slack: &slack
 
 
 resources:
+
+  - name: docs.git
+    type: git
+    source:
+      uri: https://github.com/sapcc/kubernikus.git
+      paths:
+        - docs/**
+        - contrib/kubernikus-docs-builder/**
+        - swagger.yaml
+        - Dockerfile.kubernikus-docs2
+
+  - name: kubernikus.git
+    type: git
+    source:
+      uri: https://github.com/sapcc/kubernikus.git
+
+  - name: docs-builder.image
+    type: registry-image
+    source:
+    check_every: 24h
+    source:
+      username: ((keppel.username))
+      password: ((keppel.password))
+      repository: keppel.eu-de-1.cloud.sap/ccloud/kubernikus-docs-builder
+      tag: latest
+
+  - name: kubernikus.image
+    type: registry-image
+    source:
+    check_every: 24h
+    source:
+      username: ((keppel.username))
+      password: ((keppel.password))
+      repository: keppel.eu-de-1.cloud.sap/ccloud/kubernikus
+      tag: latest
+
   - name: kubernikusctl.release
     type: github-release
     source:
       owner: sapcc
       repository: kubernikus
       access_token: ((github-com-access-token))
-
-  - name: master.builds
-    type: gh-status
-    icon: github-circle
-    source:
-      username: sapcc-bot
-      password: ((github-com-access-token))
-      owner:    sapcc
-      repo:     kubernikus
-      access_token: ((github-com-access-token))
-      branch: master
-      depth: 1
 
   - name: secrets.git
     icon: key-variant
@@ -173,12 +197,6 @@ resource_types:
       repository: cfcommunity/slack-notification-resource
       tag: latest
 
-  - name: gh-status
-    type: docker-image
-    check_every: 24h
-    source:
-      repository: keppel.eu-de-1.cloud.sap/ccloud/concourse-ghstatus-resource
-      tag: latest
   - name: time-version-resource
     type: docker-image
     check_every: 24h
@@ -187,6 +205,45 @@ resource_types:
       tag: v2
 
 jobs:
+  - name: docs
+    serial: true
+    plan:
+      - get: docs.git
+        trigger: true
+      - task: build
+        privileged: true
+        config:
+          <<: *task_oci_build
+        input_mapping: { context: docs.git }
+        params:
+          DOCKERFILE: context/Dockerfile.kubernikus-docs2
+      - put: docs-builder.image
+        params:
+          image: image/image.tar
+  - name: build
+    serial: true
+    plan:
+      - in_parallel:
+        - get: kubernikus.git
+          trigger: true
+        - get: docs-builder.image
+          passed: [docs]
+      - task: args
+        config:
+          <<: *task_build_args
+      - task: build
+        privileged: true
+        config:
+          <<: *task_oci_build
+        input_mapping: { context: kubernikus.git }
+        params:
+          DOCKERFILE: context/Dockerfile.kubernikus
+          BUILD_ARGS_FILE: context/build-args.txt
+      - put: kubernikus.image
+        params:
+          image: image/image.tar
+          additional_tags: kubernikus.git/.git/ref
+
   - name: tiller_master
     plan:
       - in_parallel:
@@ -208,21 +265,23 @@ jobs:
       - in_parallel:
         - get: secrets.git
         - get: kubernikus.builds
-          resource: master.builds
+          resource: kubernikus.git
+          passed: [build]
           trigger: true
       - in_parallel:
         - task: kubernikus
           config:
             <<: *task_helm_kubernikus
           params:
-            REGION: "k-master"
+            REGION: eu-nl-1
+            CONTEXT: k-master
             <<: *auth_master
         - task: kubernikus-dex
           config:
             <<: *task_helm_kubernikus-dex
           params:
-            REGION: "eu-nl-1"
-            CONTEXT: "k-master"
+            REGION: eu-nl-1
+            CONTEXT: k-master
             <<: *auth_master
     <<: *slack
 
@@ -230,7 +289,8 @@ jobs:
     plan:
       - in_parallel:
         - get: kubernikus.builds
-          resource: master.builds
+          resource: kubernikus.git
+          passed: [build]
           trigger: true
       - task: build
         file: kubernikus.builds/ci/task_cli.yaml
@@ -250,7 +310,8 @@ jobs:
     plan:
       - in_parallel:
         - get: kubernikus.builds
-          resource: master.builds
+          resource: kubernikus.git
+          passed: [build]
           trigger: true
       - task: build
         file: kubernikus.builds/ci/task_whitesource.yaml
@@ -267,7 +328,7 @@ jobs:
       - in_parallel:
         - get: secrets.git
         - get: kubernikus.builds
-          resource: master.builds
+          resource: kubernikus.git
           passed: [master]
           trigger: true
       - task: e2e_tests
@@ -282,7 +343,7 @@ jobs:
     serial: true
     plan:
       - get: kubernikus.builds
-        resource: master.builds
+        resource: kubernikus.git
         passed: [e2e]
       - task: changes
         config:
@@ -298,7 +359,7 @@ jobs:
           trigger: true
         - get: secrets.git
         - get: kubernikus.builds
-          resource: master.builds
+          resource: kubernikus.git
           passed: [prod]
           trigger: true
         - put: <%= group %>.tag
@@ -357,7 +418,7 @@ jobs:
         - get: secrets.git
           passed: [seed_<%= region %>]
         - get: kubernikus.builds
-          resource: master.builds
+          resource: kubernikus.git
           passed: [<%= group %>]
       - in_parallel:
         - task: kubernikus_<%= region %>
@@ -385,7 +446,7 @@ jobs:
           trigger: true
           passed: [deploy_<%= region %>]
         - get: kubernikus.builds
-          resource: master.builds
+          resource: kubernikus.git
           passed: [deploy_<%= region %>]
         - get: hourly
           trigger: true
@@ -418,6 +479,8 @@ jobs:
 groups:
   - name: deploy
     jobs:
+      - docs
+      - build
       - master
       - cli
       - whitesource

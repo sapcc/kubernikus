@@ -19,16 +19,21 @@ run:
       VERSION=$(cat kubernikus.builds/.git/HEAD)
       helm dep up --skip-refresh kubernikus.builds/charts/kubernikus/
 
+      IMAGE=keppel.$REGION.cloud.sap/ccloud/kubernikus
+      keppel validate $IMAGE:$VERSION
+
       helm diff upgrade kubernikus kubernikus.builds/charts/kubernikus/ \
         --suppress-secrets --allow-unreleased --context 5 \
         --values secrets.git/global/values/kubernikus.yaml \
         --values secrets.git/kubernikus/$KUBERNIKUS_NAME/values/kubernikus.yaml \
+        --set image=$IMAGE \
         --set imageTag=$VERSION
 
       helm upgrade kubernikus kubernikus.builds/charts/kubernikus/ \
         --namespace=kubernikus-system \
         --values secrets.git/global/values/kubernikus.yaml \
         --values secrets.git/kubernikus/$KUBERNIKUS_NAME/values/kubernikus.yaml \
+        --set image=$IMAGE \
         --set imageTag=$VERSION \
         --install
       kubectl rollout status deployment/kubernikus-api --namespace=kubernikus-system
