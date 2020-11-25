@@ -45,6 +45,9 @@ spec:
             - --namespace={{ default "kubernikus" .Values.namespace }}
             - --policy={{ default "/etc/kubernikus/policy.json" .Values.api.policyFile }}
             - --images-file=/etc/kubernikus/charts/images.yaml
+            {{- if and (.Values.openstack.region) (ne .Values.openstack.region "qa-de-1") }}
+            - --region={{ .Values.openstack.region }}
+            {{- end }}
           ports:
             - name: http
               containerPort: {{ .Values.api.port }}
