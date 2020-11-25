@@ -52,6 +52,7 @@ func NewOperatorOptions() *Options {
 	options.Namespace = "kubernikus"
 	options.MetricPort = 9091
 	options.Controllers = []string{"groundctl", "launchctl", "deorbiter", "routegc", "flight", "migration", "hammertime", "servicing", "certs"}
+	options.Region = "eu-de-1"
 	return options
 }
 
@@ -59,6 +60,7 @@ func (o *Options) BindFlags(flags *pflag.FlagSet) {
 	flags.StringVar(&o.KubeConfig, "kubeconfig", o.KubeConfig, "Path to the kubeconfig file to use to talk to the Kubernetes apiserver. If unset, try the environment variable KUBECONFIG, as well as in-cluster configuration")
 	flags.StringVar(&o.Context, "context", "", "Override context")
 	flags.StringVar(&o.ChartDirectory, "chart-directory", o.ChartDirectory, "Directory containing the kubernikus related charts")
+	flags.StringVar(&o.Region, "region", o.Region, "Local region. (used for container image localization)")
 	flags.StringVar(&o.AuthURL, "auth-url", o.AuthURL, "Openstack keystone url")
 	flags.StringVar(&o.AuthUsername, "auth-username", o.AuthUsername, "Service user for kubernikus")
 	flags.StringVar(&o.AuthPassword, "auth-password", "", "Service user password (if unset its read from env var OS_PASSWORD)")
