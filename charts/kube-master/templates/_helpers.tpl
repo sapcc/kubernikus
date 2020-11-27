@@ -64,6 +64,11 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
     {{- required "tag for kubelet missing" .Values.images.kubelet.tag }}
 {{- end -}}
 
+{{- define "wormhole.image" }}
+  {{- required "repository for wormhole missing" .Values.images.wormhole.repository }}:
+    {{- required "tag for wormhole/kubernikus missing" .Values.kubernikus.version }}
+{{- end -}}
+
 {{- define "dashboard.url" -}}
   {{- printf "dashboard-%s" ( .Values.api.apiserverHost | replace (include "master.fullname" .) (printf "%s.ingress" (include "master.fullname" .) ) ) -}}
 {{- end -}}
