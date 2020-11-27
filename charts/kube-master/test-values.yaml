@@ -35,6 +35,10 @@ imagesForVersion:
     hyperkube:
       repository: abc
       tag: xyz
+images:
+  hyperkube:
+    repository: abc
+    tag: xyz
 dashboard:
   enabled: false
 dex:
