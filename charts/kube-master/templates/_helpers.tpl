@@ -60,8 +60,8 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
 {{- end -}}
 
 {{- define "kubelet.image" }}
-  {{- required (printf "repository for kubelet missing" .Values.images.kubelet.repository }}:
-    {{- required (printf "tag for kubelet missing" .Values.images.kubelet.tag }}
+  {{- required (printf "repository for kubelet missing" .Values.images.kubelet.repository) }}:
+    {{- required (printf "tag for kubelet missing" .Values.images.kubelet.tag) }}
 {{- end -}}
 
 {{- define "dashboard.url" -}}
