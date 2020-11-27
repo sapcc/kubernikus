@@ -3,7 +3,7 @@
 Expand the name of the chart.
 */}}
 {{- define "name" -}}
-{{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" -}}
+  {{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 
 {{/*
@@ -11,12 +11,12 @@ Create a default fully qualified app name.
 We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
 */}}
 {{- define "master.fullname" -}}
-{{- .Release.Name | trunc 63 -}}
+  {{- .Release.Name | trunc 63 -}}
 {{- end -}}
 
 {{- define "etcd.fullname" -}}
-{{- $name := default "etcd" .Values.etcd.nameOverride -}}
-{{- printf "%s-%s" .Release.Name $name | trunc 63 | trimSuffix "-" -}}
+  {{- $name := default "etcd" .Values.etcd.nameOverride -}}
+  {{- printf "%s-%s" .Release.Name $name | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 
 {{- define "hyperkube.image" }}
@@ -25,23 +25,23 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
 {{- end -}}
 
 {{- define "cloudControllerManager.image" }}
-{{- required "repository for cloudControllerManager missing" .Values.images.cloudControllerManager.repository }}:
-  {{- required "tag for cloudControllerManager missing" .Values.images.cloudControllerManager.tag }}
+  {{- required "repository for cloudControllerManager missing" .Values.images.cloudControllerManager.repository }}:
+    {{- required "tag for cloudControllerManager missing" .Values.images.cloudControllerManager.tag }}
 {{- end -}}
 
 {{- define "dex.image" }}
-{{- required "repository for dex missing" .Values.images.dex.repository }}:
-  {{- required "tag for dex missing" .Values.images.dex.tag }}
+  {{- required "repository for dex missing" .Values.images.dex.repository }}:
+    {{- required "tag for dex missing" .Values.images.dex.tag }}
 {{- end -}}
 
 {{- define "dashboard.image" }}
-{{- required "repository for dashboard missing" .Values.images.dashboard.repository }}:
-  {{- required "tag for dashboard missing" .Values.images.dashboard.tag }}
+  {{- required "repository for dashboard missing" .Values.images.dashboard.repository }}:
+    {{- required "tag for dashboard missing" .Values.images.dashboard.tag }}
 {{- end -}}
 
 {{- define "dashboardProxy.image" }}
-{{- required "repository for dashboardProxy missing" .Values.images.dashboardProxy.repository }}:
-  {{- required "tag for dashboardProxy missing" .Vaules.images.dashboardProxy.tag }}
+  {{- required "repository for dashboardProxy missing" .Values.images.dashboardProxy.repository }}:
+    {{- required "tag for dashboardProxy missing" .Vaules.images.dashboardProxy.tag }}
 {{- end -}}
 
 {{- define "apiserver.image" }}
@@ -60,14 +60,14 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
 {{- end -}}
 
 {{- define "kubelet.image" }}
-  {{- required (printf "repository for kubelet missing" .Values.images.kubelet.repository) }}:
-    {{- required (printf "tag for kubelet missing" .Values.images.kubelet.tag) }}
+  {{- required "repository for kubelet missing" .Values.images.kubelet.repository }}:
+    {{- required "tag for kubelet missing" .Values.images.kubelet.tag }}
 {{- end -}}
 
 {{- define "dashboard.url" -}}
-{{- printf "dashboard-%s" ( .Values.api.apiserverHost | replace (include "master.fullname" .) (printf "%s.ingress" (include "master.fullname" .) ) ) -}}
+  {{- printf "dashboard-%s" ( .Values.api.apiserverHost | replace (include "master.fullname" .) (printf "%s.ingress" (include "master.fullname" .) ) ) -}}
 {{- end -}}
 
 {{- define "dex.url" -}}
-{{- printf "auth-%s" ( .Values.api.apiserverHost | replace (include "master.fullname" .) (printf "%s.ingress" (include "master.fullname" .) ) ) -}}
+  {{- printf "auth-%s" ( .Values.api.apiserverHost | replace (include "master.fullname" .) (printf "%s.ingress" (include "master.fullname" .) ) ) -}}
 {{- end -}}
