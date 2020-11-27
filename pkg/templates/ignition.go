@@ -168,7 +168,7 @@ func (i *ignition) GenerateNode(kluster *kubernikusv1.Kluster, pool *models.Node
 		OpenstackLBSubnetID:                kluster.Spec.Openstack.LBSubnetID,
 		OpenstackLBFloatingNetworkID:       kluster.Spec.Openstack.LBFloatingNetworkID,
 		OpenstackRouterID:                  kluster.Spec.Openstack.RouterID,
-		KubernikusImage:                    "sapcc/kubernikus",
+		KubernikusImage:                    images.Wormhole.Repository,
 		KubernikusImageTag:                 version.GitCommit,
 		LoginPassword:                      passwordHash,
 		LoginPublicKey:                     kluster.Spec.SSHPublicKey,

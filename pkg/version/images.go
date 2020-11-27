@@ -4,6 +4,8 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"reflect"
+	"strings"
 
 	yaml "gopkg.in/yaml.v2"
 )
@@ -35,6 +37,7 @@ type KlusterVersion struct {
 	KubeProxy              ImageVersion `yaml:"kubeProxy,omitempty"`
 	CoreDNS                ImageVersion `yaml:"coreDNS,omitempty"`
 	Pause                  ImageVersion `yaml:"pause,omitempty"`
+	Wormhole               ImageVersion `yaml:"wormhole,omitempty"`
 }
 
 type ImageRegistry struct {
@@ -42,7 +45,7 @@ type ImageRegistry struct {
 	DefaultVersion string                    `yaml:"-"`
 }
 
-func NewImageRegistry(filepath string) (*ImageRegistry, error) {
+func NewImageRegistry(filepath string, region string) (*ImageRegistry, error) {
 
 	file, err := os.Open(filepath)
 	if err != nil {
@@ -57,6 +60,9 @@ func NewImageRegistry(filepath string) (*ImageRegistry, error) {
 	if len(registry.Versions) < 1 {
 		return nil, fmt.Errorf("No versions found in %s", filepath)
 	}
+
+	replaceRegionVarInRepositoryField(registry.Versions, region)
+
 	for v, info := range registry.Versions {
 		if info.Default {
 			if registry.DefaultVersion != "" {
@@ -107,4 +113,19 @@ func NewImageRegistry(filepath string) (*ImageRegistry, error) {
 
 	return registry, nil
 
+}
+
+func replaceRegionVarInRepositoryField(versions map[string]KlusterVersion, region string) {
+	for i := range versions {
+		v := versions[i]
+		s := reflect.ValueOf(&v).Elem()
+		for i := 0; i < s.NumField(); i++ {
+			f := s.Field(i)
+			if f.Type() == reflect.TypeOf(v.Hyperkube) {
+				repo := f.FieldByName("Repository")
+				repo.SetString(strings.Replace(repo.String(), "$REGION", region, 1))
+			}
+		}
+		versions[i] = v
+	}
 }

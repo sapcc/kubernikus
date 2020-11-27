@@ -47,6 +47,7 @@ type KubernikusOperatorOptions struct {
 	AuthDomain        string
 	AuthProject       string
 	AuthProjectDomain string
+	Region            string
 
 	KubernikusDomain    string
 	KubernikusProjectID string
@@ -71,7 +72,7 @@ const (
 func NewKubernikusOperator(options *KubernikusOperatorOptions, logger log.Logger) (*KubernikusOperator, error) {
 	var err error
 
-	imageRegistry, err := version.NewImageRegistry(path.Join(options.ChartDirectory, "images.yaml"))
+	imageRegistry, err := version.NewImageRegistry(path.Join(options.ChartDirectory, "images.yaml"), options.Region)
 	if err != nil {
 		return nil, fmt.Errorf("Unable to initialize image registry: %s", err)
 	}
