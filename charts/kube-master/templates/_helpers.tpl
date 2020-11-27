@@ -41,7 +41,7 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
 
 {{- define "dashboardProxy.image" }}
   {{- required "repository for dashboardProxy missing" .Values.images.dashboardProxy.repository }}:
-    {{- required "tag for dashboardProxy missing" .Vaules.images.dashboardProxy.tag }}
+    {{- required "tag for dashboardProxy missing" .Values.images.dashboardProxy.tag }}
 {{- end -}}
 
 {{- define "apiserver.image" }}
