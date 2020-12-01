@@ -1,8 +1,8 @@
 package: github.com/sapcc/kubernikus
 import:
 - package: github.com/golang/glog
-  repo: https://github.com/bugroger/glognomore
   version: 58f2bb154920fd79224b172cdac6a00d642a420a
+  repo: https://github.com/bugroger/glognomore
 - package: github.com/stretchr/testify
   version: ^1.1.0
   subpackages:
@@ -29,13 +29,10 @@ import:
   version: 0.6.0
   subpackages:
   - log
-# overwrite gophercloud version given in k8s deps
 - package: github.com/gophercloud/gophercloud
   version: 077038c4f65ca6324adea7af6907d0d770131c32
-# upgrade from 1.0.0 to fix foo in newer version clusters
 - package: github.com/prometheus/client_golang
   version: v0.9.0
-# Dependencies extracted from go-swagger 0.18.0
 - package: github.com/go-openapi/errors
   version: 7a7ff1b7b8020f22574411a32f28b4d168d69237
 - package: github.com/go-openapi/jsonreference
@@ -70,3 +67,5 @@ import:
   version: 60711f1a8329503b04e1c88535f419d0bb440bff
 - package: github.com/coreos/go-semver
   version: v0.3.0
+- package: github.com/fsnotify/fsnotify
+  version: v1.4.9

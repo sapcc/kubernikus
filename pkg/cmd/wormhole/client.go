@@ -97,5 +97,18 @@ func (o *ClientOptions) Run(c *cobra.Command) error {
 			})
 	}
 
+	fsnotify, err := client.NewFSNotify(o.KubeConfig)
+	closeFSNotify := make(chan struct{}, 0)
+	if err != nil {
+		return err
+	}
+	group.Add(
+		func() error {
+			return fsnotify.Start(closeFSNotify)
+		},
+		func(err error) {
+			close(closeFSNotify)
+		})
+
 	return group.Run()
 }

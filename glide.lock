@@ -1,5 +1,5 @@
-hash: d68a4a034de18b09f0021e3591ddaa18e61bd4954ffcb75aebd0d373a4f88da8
-updated: 2020-11-06T14:45:00.159872378+01:00
+hash: 65a557e0f79c5630df25aa5433560d26bbe11438a47543d9032251ce0c973a7f
+updated: 2020-11-30T15:41:42.265165639+01:00
 imports:
 - name: github.com/ajeddeloh/yaml
   version: 1072abfea31191db507785e2e0c1b8d1440d35a5
@@ -65,6 +65,8 @@ imports:
   version: 449fdfce4d962303d702fec724ef0ad181c92528
   subpackages:
   - spdy
+- name: github.com/fsnotify/fsnotify
+  version: 45d7d09e39ef4ac08d493309fa031790c15bfe8a
 - name: github.com/ghodss/yaml
   version: 73d445a93680fa1a78ae23a5839bad48f32ba1ee
 - name: github.com/globalsign/mgo
