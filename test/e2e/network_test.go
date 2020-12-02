@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"net"
 	"strings"
 	"testing"
 	"time"
@@ -24,9 +25,10 @@ const (
 	TestWaitForKubeDNSRunningTimeout   = 2 * time.Minute
 	TestWaitForServiceEndpointsTimeout = 5 * time.Minute
 
-	TestPodTimeout             = 1 * time.Minute
-	TestServicesTimeout        = 1 * time.Minute
-	TestServicesWithDNSTimeout = 2 * time.Minute
+	TestPodTimeout                 = 1 * time.Minute
+	TestServicesTimeout            = 1 * time.Minute
+	TestServicesWithDNSTimeout     = 2 * time.Minute
+	TestServiceLoadbalancerTimeout = 5 * time.Minute
 
 	PollInterval = 6 * time.Second // DNS Timeout is 5s
 
@@ -54,6 +56,7 @@ func (n *NetworkTests) Run(t *testing.T) {
 	t.Run("WaitNamespace", n.WaitForNamespace)
 	n.CreatePods(t)
 	n.CreateServices(t)
+	t.Run("CreateLoadbalancer", n.CreateLoadbalancer)
 	t.Run("Wait", func(t *testing.T) {
 		t.Run("Pods", n.WaitForPodsRunning)
 		t.Run("ServiceEndpoints", n.WaitForServiceEndpoints)
@@ -63,6 +66,7 @@ func (n *NetworkTests) Run(t *testing.T) {
 		t.Run("Pods", n.TestPods)
 		t.Run("Services", n.TestServices)
 		t.Run("ServicesWithDNS", n.TestServicesWithDNS)
+		t.Run("Loadbalancer", n.TestLoadbalancer)
 	})
 }
 
@@ -210,7 +214,7 @@ func (n *NetworkTests) TestPods(t *testing.T) {
 func (n *NetworkTests) TestServices(t *testing.T) {
 	runParallel(t)
 
-	services, err := n.Kubernetes.ClientSet.CoreV1().Services(n.Namespace).List(meta_v1.ListOptions{})
+	services, err := n.Kubernetes.ClientSet.CoreV1().Services(n.Namespace).List(meta_v1.ListOptions{LabelSelector: "service=e2e"})
 	assert.NoError(t, err, "There should be no error while listing services")
 	assert.Equal(t, len(n.Nodes.Items), len(services.Items), "There should one service for each node")
 
@@ -247,7 +251,7 @@ func (n *NetworkTests) TestServices(t *testing.T) {
 func (n *NetworkTests) TestServicesWithDNS(t *testing.T) {
 	runParallel(t)
 
-	services, err := n.Kubernetes.ClientSet.CoreV1().Services(n.Namespace).List(meta_v1.ListOptions{})
+	services, err := n.Kubernetes.ClientSet.CoreV1().Services(n.Namespace).List(meta_v1.ListOptions{LabelSelector: "service=e2e"})
 	assert.NoError(t, err, "There should be no error while listing services")
 	assert.Equal(t, len(n.Nodes.Items), len(services.Items), "There should one service for each node")
 
@@ -279,4 +283,52 @@ func (n *NetworkTests) TestServicesWithDNS(t *testing.T) {
 			})
 		}
 	}
+}
+
+func (n *NetworkTests) CreateLoadbalancer(t *testing.T) {
+	service := &v1.Service{
+		ObjectMeta: meta_v1.ObjectMeta{
+			Name:      "e2e-lb",
+			Namespace: n.Namespace,
+			Labels: map[string]string{
+				"service": "e2e-lb",
+			},
+		},
+		Spec: v1.ServiceSpec{
+			Ports: []v1.ServicePort{
+				{
+					Port:       ServeHostnamePort,
+					TargetPort: intstr.FromInt(ServeHostnamePort),
+				},
+			},
+			Type: v1.ServiceType(v1.ServiceTypeLoadBalancer),
+			Selector: map[string]string{
+				"app":  "serve-hostname",
+				"node": n.Nodes.Items[0].Name,
+			},
+			ExternalTrafficPolicy: v1.ServiceExternalTrafficPolicyTypeCluster,
+		},
+	}
+
+	_, err := n.Kubernetes.ClientSet.CoreV1().Services(n.Namespace).Create(service)
+	require.NoError(t, err, "There should be no error while creating a loadbalancer")
+}
+
+func (n *NetworkTests) TestLoadbalancer(t *testing.T) {
+	runParallel(t)
+
+	err := wait.PollImmediate(PollInterval, TestServiceLoadbalancerTimeout,
+		func() (bool, error) {
+			lb, _ := n.Kubernetes.ClientSet.CoreV1().Services(n.Namespace).Get("e2e-lb", meta_v1.GetOptions{})
+
+			if len(lb.Status.LoadBalancer.Ingress) > 0 && net.ParseIP(lb.Status.LoadBalancer.Ingress[0].IP) != nil {
+				return true, nil
+			}
+
+			return false, nil
+		})
+	assert.NoError(t, err, "Loadbalancers should get an external IP: %s", err)
+
+	err = n.Kubernetes.ClientSet.CoreV1().Services(n.Namespace).Delete("e2e-lb", &meta_v1.DeleteOptions{})
+	assert.NoError(t, err, "There should be no error deleting loadbalancer service: %s", err)
 }
