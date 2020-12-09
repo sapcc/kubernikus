@@ -47,6 +47,7 @@ type KubernikusOperatorOptions struct {
 	AuthDomain        string
 	AuthProject       string
 	AuthProjectDomain string
+	Region            string
 
 	KubernikusDomain    string
 	KubernikusProjectID string
@@ -71,7 +72,7 @@ const (
 func NewKubernikusOperator(options *KubernikusOperatorOptions, logger log.Logger) (*KubernikusOperator, error) {
 	var err error
 
-	imageRegistry, err := version.NewImageRegistry(path.Join(options.ChartDirectory, "images.yaml"))
+	imageRegistry, err := version.NewImageRegistry(path.Join(options.ChartDirectory, "images.yaml"), options.Region)
 	if err != nil {
 		return nil, fmt.Errorf("Unable to initialize image registry: %s", err)
 	}
@@ -183,7 +184,7 @@ func NewKubernikusOperator(options *KubernikusOperatorOptions, logger log.Logger
 		case "launchctl":
 			o.Config.Kubernikus.Controllers["launchctl"] = launch.NewController(10, o.Factories, o.Clients, recorder, o.Config.Images, logger)
 		case "routegc":
-			o.Config.Kubernikus.Controllers["routegc"] = routegc.New(60*time.Second, o.Factories, logger)
+			o.Config.Kubernikus.Controllers["routegc"] = routegc.New(300*time.Second, o.Factories, logger)
 		case "deorbiter":
 			o.Config.Kubernikus.Controllers["deorbiter"] = deorbit.NewController(10, o.Factories, o.Clients, recorder, logger)
 		case "flight":

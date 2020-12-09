@@ -152,8 +152,8 @@ func (lc *NodeLifeCycler) Drain(node *core_v1.Node) error {
 		DeleteLocalData:     true,
 		Selector:            "",
 		PodSelector:         "",
-		Out:                 drain.LogWriter{logger},
-		ErrOut:              drain.LogWriter{logger},
+		Out:                 drain.LogWriter{Logger: logger},
+		ErrOut:              drain.LogWriter{Logger: logger},
 		OnPodDeletedOrEvicted: func(pod *core_v1.Pod, usingEviction bool) {
 			logger.Log("eviction", usingEviction, "pod", pod.Name, "v", 2)
 		},
@@ -211,8 +211,8 @@ func (lc *NodeLifeCycler) Uncordon(node *core_v1.Node) error {
 		DeleteLocalData:     true,
 		Selector:            "",
 		PodSelector:         "",
-		Out:                 drain.LogWriter{logger},
-		ErrOut:              drain.LogWriter{logger},
+		Out:                 drain.LogWriter{Logger: logger},
+		ErrOut:              drain.LogWriter{Logger: logger},
 		OnPodDeletedOrEvicted: func(pod *core_v1.Pod, usingEviction bool) {
 			logger.Log("eviction", usingEviction, "pod", pod.Name, "v", 2)
 		},

@@ -1,5 +1,5 @@
 #!/bin/sh
-set -eo pipefail
+set -e
 
 VIOLATING_FILES=$(goimports -local github.com/sapcc/kubernikus -l $@ | sed /generated/d)
 if [ -n "$VIOLATING_FILES" ]; then

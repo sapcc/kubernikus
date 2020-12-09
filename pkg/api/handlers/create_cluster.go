@@ -138,8 +138,8 @@ func (d *createCluster) Handle(params operations.CreateClusterParams, principal 
 
 	kluster.ObjectMeta = metav1.ObjectMeta{
 		Name:        qualifiedName(name, principal.Account),
-		Labels:      map[string]string{"account": principal.Account, "domain": principal.Domain},
-		Annotations: map[string]string{"creator": principal.Name},
+		Labels:      map[string]string{"account": principal.Account},
+		Annotations: map[string]string{"creator": fmt.Sprintf("%s/%s", principal.Name, principal.Domain)},
 	}
 
 	k8sutil.EnsureNamespace(d.Kubernetes, d.Namespace)

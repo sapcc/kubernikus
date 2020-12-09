@@ -125,23 +125,6 @@ func (d *NodeLister) All() []*core_v1.Node {
 func (d *NodeLister) Reboot() []*core_v1.Node {
 	var rebootable, found []*core_v1.Node
 
-	latestCoreOS, err := d.CoreOSVersion.Stable()
-	if err != nil {
-		d.Logger.Log(
-			"msg", "Couldn't get CoreOS version.",
-			"err", err,
-		)
-		return found
-	}
-
-	releasedCoreOS, err := d.CoreOSRelease.GrownUp(latestCoreOS)
-	if err != nil {
-		d.Logger.Log(
-			"msg", "Couldn't get CoreOS releases.",
-			"err", err,
-		)
-	}
-
 	latestFlatcar, err := d.FlatcarVersion.Stable()
 	if err != nil {
 		d.Logger.Log(
@@ -182,10 +165,6 @@ func (d *NodeLister) Reboot() []*core_v1.Node {
 		if strings.HasPrefix(node.Status.NodeInfo.OSImage, "Flatcar Container Linux") {
 			if releasedFlatcar {
 				uptodate, err = d.FlatcarVersion.IsNodeUptodate(node)
-			}
-		} else if strings.HasPrefix(node.Status.NodeInfo.OSImage, "Container Linux by CoreOS") {
-			if releasedCoreOS {
-				uptodate, err = d.CoreOSVersion.IsNodeUptodate(node)
 			}
 		} else {
 			d.Logger.Log(

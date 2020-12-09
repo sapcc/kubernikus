@@ -86,7 +86,7 @@ func (hc *hammertimeController) Reconcile(kluster *v1.Kluster) error {
 	//var oldestHeartbeat time.Time = time.Now()
 	var newestHearbeat time.Time = time.Time{}
 	for _, node := range nodes {
-		if ok, _ := util.KlusterVersionConstraint(kluster, ">= 1.17"); ok {
+		if ok, _ := util.NodeVersionConstraint(node, ">= 1.17"); ok {
 			clientset, err := hc.satellites.ClientFor(kluster)
 			if err != nil {
 				return fmt.Errorf("Failed to get client for kluster: %s", err)

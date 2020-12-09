@@ -9,6 +9,11 @@ func init() {
 		LaunchSuccessfulOperationsTotal,
 		LaunchFailedOperationsTotal,
 	)
+	//Make sure absent metrics operator is happy:
+	LaunchOperationsLatency.With(prometheus.Labels{"method": "GetStatus"}).Observe(0)
+	LaunchOperationsTotal.With(prometheus.Labels{"method": "GetStatus"}).Add(0)
+	LaunchSuccessfulOperationsTotal.With(prometheus.Labels{"method": "GetStatus"}).Add(0)
+	LaunchFailedOperationsTotal.With(prometheus.Labels{"method": "GetStatus"}).Add(0)
 }
 
 var LaunchOperationsLatency = prometheus.NewSummaryVec(

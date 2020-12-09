@@ -283,7 +283,7 @@ spec:
           resources:
 {{ toYaml .Values.api.resources | indent 12 }}
         - name: wormhole
-          image: sapcc/kubernikus:{{ required ".version.kubernikus missing" .Values.version.kubernikus }}
+          image: {{ include "wormhole.image" . | quote }}
           args:
             - wormhole
             - server

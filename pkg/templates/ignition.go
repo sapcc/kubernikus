@@ -86,6 +86,8 @@ func (i *ignition) GenerateNode(kluster *kubernikusv1.Kluster, pool *models.Node
 	}
 	var nodeLabels []string
 	var nodeTaints []string
+
+	isFlatcar := true
 	if pool != nil {
 		nodeLabels = append(nodeLabels, "ccloud.sap.com/nodepool="+pool.Name)
 		if strings.HasPrefix(pool.Flavor, "zg") {
@@ -100,6 +102,7 @@ func (i *ignition) GenerateNode(kluster *kubernikusv1.Kluster, pool *models.Node
 		for _, userLabel := range pool.Labels {
 			nodeLabels = append(nodeLabels, userLabel)
 		}
+		isFlatcar = !strings.Contains(strings.ToLower(pool.Image), "coreos")
 	}
 
 	images, found := imageRegistry.Versions[kluster.Spec.Version]
@@ -140,7 +143,11 @@ func (i *ignition) GenerateNode(kluster *kubernikusv1.Kluster, pool *models.Node
 		KubeletImageTag                    string
 		KubeProxy                          string
 		KubeProxyTag                       string
+		PauseImage                         string
+		PauseImageTag                      string
 		CalicoNetworking                   bool
+		Flatcar                            bool
+		CoreOS                             bool
 	}{
 		TLSCA:                              secret.TLSCACertificate,
 		KubeletClientsCA:                   secret.KubeletClientsCACertificate,
@@ -161,7 +168,7 @@ func (i *ignition) GenerateNode(kluster *kubernikusv1.Kluster, pool *models.Node
 		OpenstackLBSubnetID:                kluster.Spec.Openstack.LBSubnetID,
 		OpenstackLBFloatingNetworkID:       kluster.Spec.Openstack.LBFloatingNetworkID,
 		OpenstackRouterID:                  kluster.Spec.Openstack.RouterID,
-		KubernikusImage:                    "sapcc/kubernikus",
+		KubernikusImage:                    images.Wormhole.Repository,
 		KubernikusImageTag:                 version.GitCommit,
 		LoginPassword:                      passwordHash,
 		LoginPublicKey:                     kluster.Spec.SSHPublicKey,
@@ -174,7 +181,11 @@ func (i *ignition) GenerateNode(kluster *kubernikusv1.Kluster, pool *models.Node
 		KubeletImageTag:                    images.Kubelet.Tag,
 		KubeProxy:                          images.KubeProxy.Repository,
 		KubeProxyTag:                       images.KubeProxy.Tag,
+		PauseImage:                         images.Pause.Repository,
+		PauseImageTag:                      images.Pause.Tag,
 		CalicoNetworking:                   calicoNetworking,
+		Flatcar:                            isFlatcar,
+		CoreOS:                             !isFlatcar,
 	}
 
 	var dataOut []byte

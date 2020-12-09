@@ -35,6 +35,12 @@ imagesForVersion:
     hyperkube:
       repository: abc
       tag: xyz
+images:
+  hyperkube:
+    repository: abc
+    tag: xyz
+  wormhole:
+    repository: abc
 dashboard:
   enabled: false
 dex:
