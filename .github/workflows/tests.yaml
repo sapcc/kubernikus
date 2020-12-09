@@ -63,13 +63,13 @@ jobs:
       run: make test-charts
     - name: Loopref
       run: make test-loopref
-    - name: Slack
-      uses: 8398a7/action-slack@v3
-      with:
-        status: ${{ job.status }}
-        fields: repo,message,commit,author,action,eventName,ref,workflow,job,took
-        author_name: Github Actions
-        icon_emoji: ":octocat:"
-      env:
-        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-      if: always()
+#    - name: Slack
+#      uses: 8398a7/action-slack@v3
+#      with:
+#        status: ${{ job.status }}
+#        fields: repo,message,commit,author,action,eventName,ref,workflow,job,took
+#        author_name: Github Actions
+#        icon_emoji: ":octocat:"
+#      env:
+#        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+#      if: always()
