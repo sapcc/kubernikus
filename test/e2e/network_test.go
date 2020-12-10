@@ -28,7 +28,7 @@ const (
 	TestPodTimeout                 = 1 * time.Minute
 	TestServicesTimeout            = 1 * time.Minute
 	TestServicesWithDNSTimeout     = 2 * time.Minute
-	TestServiceLoadbalancerTimeout = 5 * time.Minute
+	TestServiceLoadbalancerTimeout = 10 * time.Minute
 
 	PollInterval = 6 * time.Second // DNS Timeout is 5s
 
