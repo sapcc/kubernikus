@@ -35,7 +35,7 @@ func (fsn *fsNotify) Start(stopCh <-chan struct{}) error {
 	for {
 		select {
 		case event, ok := <-fsn.watcher.Events:
-			if ok && event.Op&fsnotify.Write == fsnotify.Write {
+			if ok && (event.Op&fsnotify.Write == fsnotify.Write || event.Op == fsnotify.Remove) {
 				return fmt.Errorf("File change detected: %s", fsn.filename)
 			}
 		case <-stopCh:
