@@ -38,6 +38,8 @@ type KlusterVersion struct {
 	CoreDNS                ImageVersion `yaml:"coreDNS,omitempty"`
 	Pause                  ImageVersion `yaml:"pause,omitempty"`
 	Wormhole               ImageVersion `yaml:"wormhole,omitempty"`
+	Etcd                   ImageVersion `yaml:"etcd,omitempty"`
+	EtcdBackup             ImageVersion `yaml:"etcdBackup,omitempty"`
 }
 
 type ImageRegistry struct {

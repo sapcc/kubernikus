@@ -49,10 +49,11 @@ type persistenceValues struct {
 }
 
 type etcdValues struct {
-	Persistence      persistenceValues `yaml:"persistence,omitempty"`
-	StorageContainer string            `yaml:"storageContainer,omitempty"`
-	Openstack        openstackValues   `yaml:"openstack,omitempty"`
-	Backup           etcdBackupValues  `yaml:"backup"`
+	Persistence      persistenceValues      `yaml:"persistence,omitempty"`
+	StorageContainer string                 `yaml:"storageContainer,omitempty"`
+	Openstack        openstackValues        `yaml:"openstack,omitempty"`
+	Backup           etcdBackupValues       `yaml:"backup"`
+	Images           version.KlusterVersion `yaml:"images"`
 }
 
 type etcdBackupValues struct {
@@ -206,6 +207,9 @@ func KlusterToHelmValues(kluster *v1.Kluster, secret *v1.Secret, kubernetesVersi
 	}
 	if registry != nil {
 		values.Images = registry.Versions[kubernetesVersion]
+		// make etcd images available to subchart
+		values.Etcd.Images.Etcd = values.Images.Etcd
+		values.Etcd.Images.EtcdBackup = values.Images.EtcdBackup
 	}
 	if !kluster.Spec.NoCloud {
 		values.Openstack = openstackValues{

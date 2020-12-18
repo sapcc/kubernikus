@@ -66,7 +66,17 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
 
 {{- define "wormhole.image" }}
   {{- required "repository for wormhole missing" .Values.images.wormhole.repository }}:
-    {{- required "tag for wormhole/kubernikus missing" .Values.version.kubernikus }}
+    {{- required "tag for wormhole missing" .Values.version.kubernikus }}
+{{- end -}}
+
+{{- define "etcd.image" }}
+  {{- required "repository for etcd missing" .Values.images.etcd.repository }}:
+    {{- required "tag for etcd missing" .Values.images.etcd.tag }}
+{{- end -}}
+
+{{- define "etcdBackup.image" }}
+  {{- required "repository for etcdBackup missing" .Values.images.etcdBackup.repository }}:
+    {{- required "tag for etcdBackup missing" .Values.images.etcdBackup.tag }}
 {{- end -}}
 
 {{- define "dashboard.url" -}}
