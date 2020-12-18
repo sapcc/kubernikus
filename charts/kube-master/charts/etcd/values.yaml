@@ -3,10 +3,10 @@
 # Declare variables to be passed into your templates.
 images:
   etcd:
-    repoitory: sapcc/etcd
-    tag: v3.3.13
+    repository: sapcc/etcd
+    tag: v3.3.14
   etcdBackup:
-    repoitory: sapcc/etcdbrctl
+    repository: sapcc/etcdbrctl
     tag: 0.5.2
 ## Persist data to a persitent volume
 persistence:
