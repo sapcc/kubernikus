@@ -20,6 +20,8 @@ run:
       helm dep up --skip-refresh kubernikus.builds/charts/kubernikus/
 
       IMAGE=keppel.$REGION.cloud.sap/ccloud/kubernikus
+      [ "$REGION" = "qa-de-1" ] && IMAGE=keppel.eu-de-1.cloud.sap/ccloud/kubernikus
+
       keppel validate $IMAGE:$VERSION
 
       helm diff upgrade kubernikus kubernikus.builds/charts/kubernikus/ \

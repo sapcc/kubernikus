@@ -326,6 +326,8 @@ auth_e2e_na-us-1: &auth_e2e_na-us-1
   KUBERNIKUS_NAME: e2e
   OS_PROJECT_DOMAIN_NAME: ccadmin
 
+  NODEPOOL_AVZ: na-us-1b
+
 
 
   OS_AUTH_URL: https://identity-3.na-us-1.cloud.sap/v3
@@ -703,6 +705,8 @@ task_helm_kubernikus: &task_helm_kubernikus
         helm dep up --skip-refresh kubernikus.builds/charts/kubernikus/
   
         IMAGE=keppel.$REGION.cloud.sap/ccloud/kubernikus
+        [ "$REGION" = "qa-de-1" ] && IMAGE=keppel.eu-de-1.cloud.sap/ccloud/kubernikus
+  
         keppel validate $IMAGE:$VERSION
   
         helm diff upgrade kubernikus kubernikus.builds/charts/kubernikus/ \
