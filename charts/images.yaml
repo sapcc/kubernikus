@@ -10,6 +10,12 @@ imagesForVersion:
     scheduler:
       repository: 'keppel.$REGION.cloud.sap/ccloud/kube-scheduler'
       tag: 'v1.19.4'
+    etcd:
+      repository: 'keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/etcd'
+      tag: 'v3.3.14'
+    etcdBackup:
+      repository: 'keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/etcdbrctl'
+      tag: '0.5.2'
     kubelet:
       repository: 'keppel.$REGION.cloud.sap/ccloud/kubelet'
       tag: 'v1.19.4'
@@ -45,6 +51,12 @@ imagesForVersion:
     cloudControllerManager:
       repository: 'keppel.$REGION.cloud.sap/ccloud/openstack-cloud-controller-manager'
       tag: 'v1.18.0'
+    etcd:
+      repository: 'keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/etcd'
+      tag: 'v3.3.14'
+    etcdBackup:
+      repository: 'keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/etcdbrctl'
+      tag: '0.5.2'
     dex:
       repository: 'keppel.$REGION.cloud.sap/ccloud/dex'
       tag: '38f4f8ea8d487470a1dd5b83d66b428d8b502f81'
@@ -71,6 +83,12 @@ imagesForVersion:
     cloudControllerManager:
       repository: 'keppel.$REGION.cloud.sap/ccloud/openstack-cloud-controller-manager'
       tag: 'v1.17.0'
+    etcd:
+      repository: 'keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/etcd'
+      tag: 'v3.3.14'
+    etcdBackup:
+      repository: 'keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/etcdbrctl'
+      tag: '0.5.2'
     dex:
       repository: 'keppel.$REGION.cloud.sap/ccloud/dex'
       tag: '38f4f8ea8d487470a1dd5b83d66b428d8b502f81'
@@ -97,6 +115,12 @@ imagesForVersion:
     cloudControllerManager:
       repository: 'keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/openstack-cloud-controller-manager'
       tag: 'v1.16.0'
+    etcd:
+      repository: 'keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/etcd'
+      tag: 'v3.3.14'
+    etcdBackup:
+      repository: 'keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/etcdbrctl'
+      tag: '0.5.2'
     dex:
       repository: 'keppel.$REGION.cloud.sap/ccloud/dex'
       tag: '38f4f8ea8d487470a1dd5b83d66b428d8b502f81'
@@ -122,6 +146,12 @@ imagesForVersion:
     cloudControllerManager:
       repository: 'keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/openstack-cloud-controller-manager'
       tag: 'v1.16.0'
+    etcd:
+      repository: 'keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/etcd'
+      tag: 'v3.3.14'
+    etcdBackup:
+      repository: 'keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/etcdbrctl'
+      tag: '0.5.2'
     dex:
       repository: 'keppel.$REGION.cloud.sap/ccloud/dex'
       tag: '38f4f8ea8d487470a1dd5b83d66b428d8b502f81'
@@ -149,6 +179,12 @@ imagesForVersion:
     cloudControllerManager:
       repository: 'keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/openstack-cloud-controller-manager'
       tag: 'v1.15.0-sap.2'
+    etcd:
+      repository: 'keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/etcd'
+      tag: 'v3.3.14'
+    etcdBackup:
+      repository: 'keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/etcdbrctl'
+      tag: '0.5.2'
     dex:
       repository: 'keppel.$REGION.cloud.sap/ccloud/dex'
       tag: '38f4f8ea8d487470a1dd5b83d66b428d8b502f81'
@@ -175,6 +211,12 @@ imagesForVersion:
     cloudControllerManager:
       repository: 'keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/openstack-cloud-controller-manager'
       tag: 'v1.15.0-sap.2'
+    etcd:
+      repository: 'keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/etcd'
+      tag: 'v3.3.14'
+    etcdBackup:
+      repository: 'keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/etcdbrctl'
+      tag: '0.5.2'
     dex:
       repository: 'keppel.$REGION.cloud.sap/ccloud/dex'
       tag: '38f4f8ea8d487470a1dd5b83d66b428d8b502f81'
@@ -201,6 +243,12 @@ imagesForVersion:
     cloudControllerManager:
       repository: 'keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/openstack-cloud-controller-manager'
       tag: 'v1.14.0-sap.0'
+    etcd:
+      repository: 'keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/etcd'
+      tag: 'v3.3.14'
+    etcdBackup:
+      repository: 'keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/etcdbrctl'
+      tag: '0.5.2'
     dex:
       repository: 'keppel.$REGION.cloud.sap/ccloud/dex'
       tag: '38f4f8ea8d487470a1dd5b83d66b428d8b502f81'
@@ -227,6 +275,12 @@ imagesForVersion:
     cloudControllerManager:
       repository: 'keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/openstack-cloud-controller-manager'
       tag: 'v1.13.1'
+    etcd:
+      repository: 'keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/etcd'
+      tag: 'v3.3.14'
+    etcdBackup:
+      repository: 'keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/etcdbrctl'
+      tag: '0.5.2'
     dex:
       repository: 'keppel.$REGION.cloud.sap/ccloud/dex'
       tag: '38f4f8ea8d487470a1dd5b83d66b428d8b502f81'
@@ -250,6 +304,12 @@ imagesForVersion:
     hyperkube:
       repository: 'keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/hyperkube'
       tag: 'v1.12.10'
+    etcd:
+      repository: 'keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/etcd'
+      tag: 'v3.3.14'
+    etcdBackup:
+      repository: 'keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/etcdbrctl'
+      tag: '0.5.2'
     dex:
       repository: 'keppel.$REGION.cloud.sap/ccloud/dex'
       tag: '38f4f8ea8d487470a1dd5b83d66b428d8b502f81'
@@ -269,6 +329,12 @@ imagesForVersion:
     hyperkube:
       repository: 'keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/hyperkube'
       tag: 'v1.11.9'
+    etcd:
+      repository: 'keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/etcd'
+      tag: 'v3.3.14'
+    etcdBackup:
+      repository: 'keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/etcdbrctl'
+      tag: '0.5.2'
     dex:
       repository: 'keppel.$REGION.cloud.sap/ccloud/dex'
       tag: '38f4f8ea8d487470a1dd5b83d66b428d8b502f81'
@@ -285,16 +351,12 @@ imagesForVersion:
     hyperkube:
       repository: 'keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/hyperkube'
       tag: 'v1.10.11'
-    dex:
-      repository: 'keppel.$REGION.cloud.sap/ccloud/dex'
-      tag: '38f4f8ea8d487470a1dd5b83d66b428d8b502f81'
-    wormhole:
-      repository: 'keppel.$REGION.cloud.sap/ccloud/kubernikus'
-      tag: 'changeme' #this is injected to match the operator so far
-  '1.10.8':
-    hyperkube:
-      repository: 'keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/hyperkube'
-      tag: 'v1.10.8'
+    etcd:
+      repository: 'keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/etcd'
+      tag: 'v3.3.14'
+    etcdBackup:
+      repository: 'keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/etcdbrctl'
+      tag: '0.5.2'
     dex:
       repository: 'keppel.$REGION.cloud.sap/ccloud/dex'
       tag: '38f4f8ea8d487470a1dd5b83d66b428d8b502f81'
@@ -305,6 +367,12 @@ imagesForVersion:
     hyperkube:
       repository: 'keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/hyperkube'
       tag: 'v1.10.7'
+    etcd:
+      repository: 'keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/etcd'
+      tag: 'v3.3.14'
+    etcdBackup:
+      repository: 'keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/etcdbrctl'
+      tag: '0.5.2'
     dex:
       repository: 'keppel.$REGION.cloud.sap/ccloud/dex'
       tag: '38f4f8ea8d487470a1dd5b83d66b428d8b502f81'
@@ -315,6 +383,12 @@ imagesForVersion:
     hyperkube:
       repository: 'keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/hyperkube'
       tag: 'v1.10.1'
+    etcd:
+      repository: 'keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/etcd'
+      tag: 'v3.3.14'
+    etcdBackup:
+      repository: 'keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/etcdbrctl'
+      tag: '0.5.2'
     dex:
       repository: 'keppel.$REGION.cloud.sap/ccloud/dex'
       tag: '38f4f8ea8d487470a1dd5b83d66b428d8b502f81'

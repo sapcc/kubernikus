@@ -30,9 +30,11 @@ etcd:
     password: xyz
     domainName: xyz.com
     projectID: xyz
-imagesForVersion:
-  "1.0.0":
-    hyperkube:
+  images:
+    etcd:
+      repository: abc
+      tag: xyz
+    etcdBackup:
       repository: abc
       tag: xyz
 images:
@@ -41,6 +43,13 @@ images:
     tag: xyz
   wormhole:
     repository: abc
+  etcd:
+    repository: abc
+    tag: xyz
+  etcdBackup:
+    repository: abc
+    tag: xyz
+
 dashboard:
   enabled: false
 dex:
