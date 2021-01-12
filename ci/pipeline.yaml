@@ -537,7 +537,8 @@ task_cli: &task_cli
         make bin/linux/kubernikusctl
         make bin/windows/kubernikusctl.exe
         upx bin/linux/*
-        upx bin/windows/*
+        #upx trips up the macaffee virus scanner https://convergedcloud.slack.com/archives/C8296QQUW/p1605530103201800
+        #upx bin/windows/*
         # upx is broken on big sur https://github.com/upx/upx/issues/424
         SHA=$(git rev-parse HEAD)
         echo $SHA > $BINARIES/commitish
