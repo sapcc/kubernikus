@@ -46,7 +46,8 @@ func SeedKluster(clients config.Clients, factories config.Factories, images vers
 		if err != nil {
 			return err
 		}
-		if err := SeedCinderStorageClasses(kubernetes, openstack); err != nil {
+		useCSI, _ := util.KlusterVersionConstraint(kluster, ">= 1.19")
+		if err := SeedCinderStorageClasses(kubernetes, openstack, useCSI); err != nil {
 			return errors.Wrap(err, "seed cinder storage classes")
 		}
 	}
@@ -85,8 +86,8 @@ func SeedKluster(clients config.Clients, factories config.Factories, images vers
 	return nil
 }
 
-func SeedCinderStorageClasses(client clientset.Interface, openstack openstack_project.ProjectClient) error {
-	if err := createStorageClass(client, "cinder-default", "", true); err != nil {
+func SeedCinderStorageClasses(client clientset.Interface, openstack openstack_project.ProjectClient, useCSI bool) error {
+	if err := createStorageClass(client, "cinder-default", "", true, useCSI); err != nil {
 		return err
 	}
 
@@ -97,7 +98,7 @@ func SeedCinderStorageClasses(client clientset.Interface, openstack openstack_pr
 
 	for _, avz := range metadata.AvailabilityZones {
 		name := fmt.Sprintf("cinder-zone-%s", avz.Name[len(avz.Name)-1:])
-		if err := createStorageClass(client, name, avz.Name, false); err != nil {
+		if err := createStorageClass(client, name, avz.Name, false, useCSI); err != nil {
 			return err
 		}
 	}
@@ -105,7 +106,13 @@ func SeedCinderStorageClasses(client clientset.Interface, openstack openstack_pr
 	return nil
 }
 
-func createStorageClass(client clientset.Interface, name, avz string, isDefault bool) error {
+func createStorageClass(client clientset.Interface, name, avz string, isDefault bool, useCSI bool) error {
+	provisioner := "kubernetes.io/cinder"
+
+	if useCSI {
+		provisioner = "cinder.csi.openstack.org"
+	}
+
 	mode := storage.VolumeBindingImmediate
 
 	if avz == "" {
@@ -116,7 +123,7 @@ func createStorageClass(client clientset.Interface, name, avz string, isDefault 
 		ObjectMeta: metav1.ObjectMeta{
 			Name: name,
 		},
-		Provisioner:       "kubernetes.io/cinder",
+		Provisioner:       provisioner,
 		VolumeBindingMode: &mode,
 	}
 
