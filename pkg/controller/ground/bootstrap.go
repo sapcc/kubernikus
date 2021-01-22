@@ -14,6 +14,7 @@ import (
 	openstack_project "github.com/sapcc/kubernikus/pkg/client/openstack/project"
 	"github.com/sapcc/kubernikus/pkg/controller/config"
 	"github.com/sapcc/kubernikus/pkg/controller/ground/bootstrap"
+	"github.com/sapcc/kubernikus/pkg/controller/ground/bootstrap/csi"
 	"github.com/sapcc/kubernikus/pkg/controller/ground/bootstrap/dns"
 	"github.com/sapcc/kubernikus/pkg/controller/ground/bootstrap/gpu"
 	"github.com/sapcc/kubernikus/pkg/util"
@@ -76,6 +77,22 @@ func SeedKluster(clients config.Clients, factories config.Factories, images vers
 	if ok, _ := util.KlusterVersionConstraint(kluster, ">= 1.10"); ok {
 		if err := gpu.SeedGPUSupport(kubernetes); err != nil {
 			return errors.Wrap(err, "seed GPU support")
+		}
+	}
+
+	if ok, _ := util.KlusterVersionConstraint(kluster, ">= 1.19"); ok {
+		dynamicKubernetes, err := clients.Satellites.DynamicClientFor(kluster)
+		if err != nil {
+			return errors.Wrap(err, "dynamic client")
+		}
+
+		klusterSecret, err := util.KlusterSecret(clients.Kubernetes, kluster)
+		if err != nil {
+			return errors.Wrap(err, "get kluster secret")
+		}
+
+		if err := csi.SeedCinderCSIPlugin(kubernetes, dynamicKubernetes, klusterSecret); err != nil {
+			return errors.Wrap(err, "seed cinder CSI plugin")
 		}
 	}
 
