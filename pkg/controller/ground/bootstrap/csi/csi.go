@@ -16,9 +16,20 @@ import (
 	"github.com/pkg/errors"
 	kubernikus_v1 "github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
 	"github.com/sapcc/kubernikus/pkg/controller/ground/bootstrap"
+	"github.com/sapcc/kubernikus/pkg/version"
 )
 
-func SeedCinderCSIPlugin(client clientset.Interface, dynamicClient dynamic.Interface, klusterSecret *kubernikus_v1.Secret) error {
+type images struct {
+	ImageAttacher      string
+	ImageProvisioner   string
+	ImageSnapshotter   string
+	ImageResizer       string
+	ImageLivenessProbe string
+	ImageCSIPlugin     string
+	ImageNodeDriver    string
+}
+
+func SeedCinderCSIPlugin(client clientset.Interface, dynamicClient dynamic.Interface, klusterSecret *kubernikus_v1.Secret, versions version.KlusterVersion) error {
 	secret := v1.Secret{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "cloud-config",
@@ -120,12 +131,22 @@ region="` + klusterSecret.Openstack.Region + `"
 		}
 	*/
 
-	err = createStatefulSet(client, CSIStatefulSet)
+	data := images{
+		versions.CSIAttacher.Repository + ":" + versions.CSIAttacher.Tag,
+		versions.CSIProvisioner.Repository + ":" + versions.CSIProvisioner.Tag,
+		versions.CSISnapshotter.Repository + ":" + versions.CSISnapshotter.Tag,
+		versions.CSIResizer.Repository + ":" + versions.CSIResizer.Tag,
+		versions.CSILivenessprobe.Repository + ":" + versions.CSILivenessprobe.Tag,
+		versions.CinderCSIPlugin.Repository + ":" + versions.CinderCSIPlugin.Tag,
+		versions.CSINodeDriver.Repository + ":" + versions.CSINodeDriver.Tag,
+	}
+
+	err = createStatefulSet(client, CSIStatefulSet, data)
 	if err != nil {
 		return errors.Wrap(err, "CSIStatefulSet")
 	}
 
-	err = createDaemonSet(client, CSIDaemonsSet)
+	err = createDaemonSet(client, CSIDaemonsSet, data)
 	if err != nil {
 		return errors.Wrap(err, "CSIDaemonsSet")
 	}
@@ -164,8 +185,8 @@ func createSecret(client clientset.Interface, secret *v1.Secret) error {
 	return nil
 }
 
-func createStatefulSet(client clientset.Interface, manifest string) error {
-	template, err := bootstrap.RenderManifest(manifest, nil)
+func createStatefulSet(client clientset.Interface, manifest string, data images) error {
+	template, err := bootstrap.RenderManifest(manifest, data)
 	if err != nil {
 		return err
 	}
@@ -290,8 +311,8 @@ func createServiceAccount(client clientset.Interface, manifest string) error {
 	return nil
 }
 
-func createDaemonSet(client clientset.Interface, manifest string) error {
-	template, err := bootstrap.RenderManifest(manifest, nil)
+func createDaemonSet(client clientset.Interface, manifest string, data images) error {
+	template, err := bootstrap.RenderManifest(manifest, data)
 	if err != nil {
 		return err
 	}

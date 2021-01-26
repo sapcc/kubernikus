@@ -381,7 +381,7 @@ spec:
       serviceAccount: csi-cinder-controller-sa
       containers:
         - name: csi-attacher
-          image: k8s.gcr.io/sig-storage/csi-attacher:v2.2.1
+          image: "{{ .ImageAttacher }}"
           args:
             - "--csi-address=$(ADDRESS)"
             - "--timeout=3m"
@@ -393,7 +393,7 @@ spec:
             - name: socket-dir
               mountPath: /var/lib/csi/sockets/pluginproxy/
         - name: csi-provisioner
-          image: k8s.gcr.io/sig-storage/csi-provisioner:v1.6.1
+          image: "{{ .ImageProvisioner }}"
           args:
             - "--csi-address=$(ADDRESS)"
             - "--timeout=3m"
@@ -405,19 +405,19 @@ spec:
             - name: socket-dir
               mountPath: /var/lib/csi/sockets/pluginproxy/
         - name: csi-snapshotter
-          image: k8s.gcr.io/sig-storage/csi-snapshotter:v2.1.3
+          image: "{{ .ImageSnapshotter }}"
           args:
             - "--csi-address=$(ADDRESS)"
             - "--timeout=3m"
           env:
             - name: ADDRESS
               value: /var/lib/csi/sockets/pluginproxy/csi.sock
-          imagePullPolicy: Always
+          imagePullPolicy: "IfNotPresent"
           volumeMounts:
             - mountPath: /var/lib/csi/sockets/pluginproxy/
               name: socket-dir
         - name: csi-resizer
-          image: k8s.gcr.io/sig-storage/csi-resizer:v0.5.1
+          image: "{{ .ImageResizer }}"
           args:
             - "--csi-address=$(ADDRESS)"
             - "--csiTimeout=3m"
@@ -429,7 +429,7 @@ spec:
             - name: socket-dir
               mountPath: /var/lib/csi/sockets/pluginproxy/
         - name: liveness-probe
-          image: k8s.gcr.io/sig-storage/livenessprobe:v2.1.0
+          image: "{{ .ImageLivenessProbe }}"
           args:
             - "--csi-address=$(ADDRESS)"
           env:
@@ -439,7 +439,7 @@ spec:
             - mountPath: /var/lib/csi/sockets/pluginproxy/
               name: socket-dir
         - name: cinder-csi-plugin
-          image: docker.io/k8scloudprovider/cinder-csi-plugin:latest
+          image: "{{ .ImageCSIPlugin }}"
           args:
             - /bin/cinder-csi-plugin
             - "--nodeid=$(NODE_ID)"
@@ -505,7 +505,7 @@ spec:
       hostNetwork: true
       containers:
         - name: node-driver-registrar
-          image: k8s.gcr.io/sig-storage/csi-node-driver-registrar:v1.3.0
+          image: "{{ .ImageNodeDriver }}"
           args:
             - "--csi-address=$(ADDRESS)"
             - "--kubelet-registration-path=$(DRIVER_REG_SOCK_PATH)"
@@ -529,7 +529,7 @@ spec:
             - name: registration-dir
               mountPath: /registration
         - name: liveness-probe
-          image: k8s.gcr.io/sig-storage/livenessprobe:v2.1.0
+          image: "{{ .ImageLivenessProbe }}"
           args:
             - --csi-address=/csi/csi.sock
           volumeMounts:
@@ -541,7 +541,7 @@ spec:
             capabilities:
               add: ["SYS_ADMIN"]
             allowPrivilegeEscalation: true
-          image: docker.io/k8scloudprovider/cinder-csi-plugin:latest
+          image: "{{ .ImageCSIPlugin }}"
           args:
             - /bin/cinder-csi-plugin
             - "--nodeid=$(NODE_ID)"
