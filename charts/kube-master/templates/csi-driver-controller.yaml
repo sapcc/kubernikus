@@ -6,14 +6,16 @@ metadata:
   name: {{ include "master.fullname" . }}-csi
   namespace: {{ .Release.Namespace }}
   labels:
-    app: csi
+    app: {{ include "master.fullname" . }}-csi
     role: controller
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}"
+    release: {{ .Release.Name }}
 spec:
   replicas: {{ .Values.csi.replicas }}
   revisionHistoryLimit: 1
   selector:
     matchLabels:
-      app: csi
+      app: {{ include "master.fullname" . }}-csi
       role: controller
   strategy:
     rollingUpdate:
@@ -27,9 +29,25 @@ spec:
 {{ toYaml .Values.csi.podAnnotations | indent 8 }}
 {{- end }}
       labels:
-        app: csi
+        app: {{ include "master.fullname" . }}-csi
         role: controller
+        release: {{ .Release.Name }}
     spec:
+      initContainers:
+      - name: apiserver-wait
+        image: {{ include "kubelet.image" . | quote }}
+        command:
+        - sh
+        - -c
+        args:
+        - until kubectl version --short --kubeconfig /etc/kubernetes/config/kubeconfig --request-timeout=4s | grep -i "Server.*{{ .Values.version.kubernetes }}"; do sleep 5; done;
+        volumeMounts:
+        - mountPath: /etc/kubernetes/certs/
+          name: certs
+          readOnly: true
+        - mountPath: /etc/kubernetes/config
+          name: config
+          readOnly: true
       containers:
       - name: cinder-csi-plugin
         image: {{ include "cinderCSIPlugin.image" . }}
@@ -65,14 +83,6 @@ spec:
           mountPath: {{ .Values.csi.socketPath }}
         - name: cloud-provider-config
           mountPath: /etc/kubernetes/cloudprovider
-        # Host certificates are mounted to accommodate OpenStack endpoints that might be served with a certificate
-        # signed by a CA that is not globally trusted.
-        #- mountPath: /usr/share/ca-certificates
-        #  name: usr-share-ca-certificates
-        #  readOnly: true
-        #- mountPath: /etc/ssl
-        #  name: etc-ssl
-        #  readOnly: true
 
       - name: csi-provisioner
         image: {{ include "csiProvisioner.image" . }}
@@ -81,7 +91,7 @@ spec:
         - --csi-address=$(ADDRESS)
         - --kubeconfig=/etc/kubernetes/config/csi-kubeconfig
         - --feature-gates=Topology=true
-        - --volume-name-prefix=pv-{{ .Release.Namespace }}
+        - --volume-name-prefix=pv-{{ include "master.fullname" . }}
         - --default-fstype=ext4
         - --leader-election={{ .Values.csi.leaderElection }}
         {{- if .Values.csi.leaderElectionNamespace }}
@@ -146,7 +156,7 @@ spec:
         - --leader-election-namespace={{ .Values.csi.leaderElectionNamespace }}
         {{- end }}
         - --timeout={{ .Values.csi.timeout }}
-        - --snapshot-name-prefix={{ .Release.Namespace }}
+        - --snapshot-name-prefix={{ include "master.fullname" . }}
         env:
         - name: CSI_ENDPOINT
           value: {{ .Values.csi.socketPath }}/csi.sock
@@ -211,20 +221,12 @@ spec:
       - name: config
         configMap:
           name: {{ include "master.fullname" . }}
-      #- name: usr-share-ca-certificates
-      #  hostPath:
-      #    path: /usr/share/ca-certificates
       - name: cloud-provider-config
         secret:
           secretName: {{ include "master.fullname" . }}-generated
           items:
           - key: openstack-csi.config
             path: openstack.config
-      # Host certificates are mounted to accommodate OpenStack endpoints that might be served with a certificate
-      # signed by a CA that is not globally trusted.
-      #- name: etc-ssl
-      #  hostPath:
-      #    path: /etc/ssl
       - name: certs
         secret:
           secretName: {{ .Values.secretName }}

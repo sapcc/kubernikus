@@ -45,7 +45,7 @@ type KlusterVersion struct {
 	CSISnapshotter         ImageVersion `yaml:"csiSnapshotter,omitempty"`
 	CSISnapshotController  ImageVersion `yaml:"csiSnapshotController,omitempty"`
 	CSIResizer             ImageVersion `yaml:"csiResizer,omitempty"`
-	CSILivenessprobe       ImageVersion `yaml:"csiLivenessprobe,omitempty"`
+	CSILivenessProbe       ImageVersion `yaml:"csiLivenessProbe,omitempty"`
 	CSINodeDriver          ImageVersion `yaml:"csiNodeDriver,omitempty"`
 	CinderCSIPlugin        ImageVersion `yaml:"cinderCSIPlugin,omitempty"`
 }

@@ -121,7 +121,7 @@ region="` + klusterSecret.Openstack.Region + `"
 	}
 
 	data := images{
-		versions.CSILivenessprobe.Repository + ":" + versions.CSILivenessprobe.Tag,
+		versions.CSILivenessProbe.Repository + ":" + versions.CSILivenessProbe.Tag,
 		versions.CinderCSIPlugin.Repository + ":" + versions.CinderCSIPlugin.Tag,
 		versions.CSINodeDriver.Repository + ":" + versions.CSINodeDriver.Tag,
 	}

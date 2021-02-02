@@ -242,7 +242,7 @@ func (cf *CertificateFactory) Ensure() ([]CertUpdates, error) {
 	}
 	if err := ensureClientCertificate(
 		apiserverClientsCA,
-		"system:csi-controller",
+		"system:serviceaccount:kube-system:csi-cinder-controller-sa",
 		nil,
 		&cf.store.ApiserverClientsCSIControllerCertificate,
 		&cf.store.ApiserverClientsCSIControllerPrivateKey,

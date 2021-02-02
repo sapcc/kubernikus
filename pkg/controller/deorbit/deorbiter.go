@@ -103,8 +103,7 @@ func (d *ConcreteDeorbiter) DeletePersistentVolumeClaims() (deleted []core_v1.Pe
 		}
 		deleted = append(deleted, pvc)
 
-		var gracePeriod int64 = 0
-		err = d.Client.Core().PersistentVolumeClaims(pvc.Namespace).Delete(pvc.Name, &meta_v1.DeleteOptions{GracePeriodSeconds: &gracePeriod})
+		err = d.Client.Core().PersistentVolumeClaims(pvc.Namespace).Delete(pvc.Name, &meta_v1.DeleteOptions{})
 		if err != nil {
 			return deleted, err
 		}
