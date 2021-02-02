@@ -35,7 +35,7 @@ spec:
         - sh
         - -c
         args:
-        - until kubectl version --short --kubeconfig /etc/kubernetes/config/kubeconfig --request-timeout=4s | grep -i "Server.*{{ .Values.version.kubernetes }}"; do sleep 5; done;
+        - until kubectl version --short --kubeconfig /etc/kubernetes/config/csi-kubeconfig --request-timeout=4s | grep -i "Server.*{{ .Values.version.kubernetes }}"; do sleep 5; done;
         volumeMounts:
         - mountPath: /etc/kubernetes/certs/
           name: certs
