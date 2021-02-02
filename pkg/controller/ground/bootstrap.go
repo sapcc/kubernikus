@@ -47,7 +47,7 @@ func SeedKluster(clients config.Clients, factories config.Factories, images vers
 		if err != nil {
 			return err
 		}
-		useCSI, _ := util.KlusterVersionConstraint(kluster, ">= 1.19")
+		useCSI, _ := util.KlusterVersionConstraint(kluster, ">= 1.20")
 		if err := SeedCinderStorageClasses(kubernetes, openstack, useCSI); err != nil {
 			return errors.Wrap(err, "seed cinder storage classes")
 		}
@@ -80,7 +80,7 @@ func SeedKluster(clients config.Clients, factories config.Factories, images vers
 		}
 	}
 
-	if ok, _ := util.KlusterVersionConstraint(kluster, ">= 1.19"); ok {
+	if ok, _ := util.KlusterVersionConstraint(kluster, ">= 1.20"); ok {
 		dynamicKubernetes, err := clients.Satellites.DynamicClientFor(kluster)
 		if err != nil {
 			return errors.Wrap(err, "dynamic client")

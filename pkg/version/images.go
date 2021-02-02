@@ -43,6 +43,7 @@ type KlusterVersion struct {
 	CSIAttacher            ImageVersion `yaml:"csiAttacher,omitempty"`
 	CSIProvisioner         ImageVersion `yaml:"csiProvisioner,omitempty"`
 	CSISnapshotter         ImageVersion `yaml:"csiSnapshotter,omitempty"`
+	CSISnapshotController  ImageVersion `yaml:"csiSnapshotController,omitempty"`
 	CSIResizer             ImageVersion `yaml:"csiResizer,omitempty"`
 	CSILivenessprobe       ImageVersion `yaml:"csiLivenessprobe,omitempty"`
 	CSINodeDriver          ImageVersion `yaml:"csiNodeDriver,omitempty"`

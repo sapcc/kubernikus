@@ -251,6 +251,11 @@ func (op *GroundControl) handler(key string) error {
 				expectedPods = 5
 			}
 
+			// csi
+			if ok, _ := util.KlusterVersionConstraint(kluster, ">= 1.20"); ok && !kluster.Spec.NoCloud {
+				expectedPods = 7
+			}
+
 			if swag.BoolValue(kluster.Spec.Dex) {
 				expectedPods = expectedPods + 1
 				if swag.BoolValue(kluster.Spec.Dashboard) {

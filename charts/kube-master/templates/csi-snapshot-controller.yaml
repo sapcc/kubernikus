@@ -1,0 +1,64 @@
+{{- if .Values.openstack }}
+{{- if (semverCompare ">= 1.20" .Values.version.kubernetes) }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "master.fullname" . }}-csisc
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: csi-snapshot-controller
+    role: controller
+spec:
+  replicas: {{ .Values.csiSnapshotController.replicas }}
+  revisionHistoryLimit: 1
+  selector:
+    matchLabels:
+      app: csi-snapshot-controller
+      role: controller
+  template:
+    metadata:
+      annotations:
+{{- if .Values.csiSnapshotController.podAnnotations }}
+{{ toYaml .Values.csiSnapshotController.podAnnotations | indent 8 }}
+{{- end }}
+      labels:
+        app: csi-snapshot-controller
+        role: controller
+    spec:
+      containers:
+      - name: csi-snapshot-controller
+        image: {{ include "csiSnapshotController.image" . }}
+        imagePullPolicy: IfNotPresent
+        args:
+        - --kubeconfig=/etc/kubernetes/config/csi-kubeconfig
+        - --leader-election={{ .Values.csiSnapshotController.leaderElection }}
+        {{- if .Values.csiSnapshotController.leaderElectionNamespace }}
+        - --leader-election-namespace={{ .Values.csiSnapshotController.leaderElectionNamespace }}
+        {{- end }}
+{{- if .Values.csiSnapshotController.resources }}
+        resources:
+{{ toYaml .Values.csiSnapshotController.resources | indent 10 }}
+{{- end }}
+        volumeMounts:
+        - mountPath: /etc/kubernetes/config
+          name: config
+          readOnly: true
+        - mountPath: /etc/kubernetes/certs/
+          name: certs
+          readOnly: true
+      volumes:
+      - name: config
+        configMap:
+          name: {{ include "master.fullname" . }}
+      - name: certs
+        secret:
+          secretName: {{ .Values.secretName }}
+          items:
+          - key: tls-ca.pem
+            path: tls-ca.pem
+          - key: apiserver-clients-csi-controller.pem
+            path: csi-client.pem
+          - key: apiserver-clients-csi-controller-key.pem
+            path: csi-client.key
+{{- end }}
+{{- end }}

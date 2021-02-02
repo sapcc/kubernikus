@@ -241,6 +241,15 @@ func (cf *CertificateFactory) Ensure() ([]CertUpdates, error) {
 		return nil, err
 	}
 	if err := ensureClientCertificate(
+		apiserverClientsCA,
+		"system:csi-controller",
+		nil,
+		&cf.store.ApiserverClientsCSIControllerCertificate,
+		&cf.store.ApiserverClientsCSIControllerPrivateKey,
+		&certUpdates); err != nil {
+		return nil, err
+	}
+	if err := ensureClientCertificate(
 		kubeletClientsCA,
 		"apiserver",
 		nil,

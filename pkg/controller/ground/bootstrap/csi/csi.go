@@ -20,10 +20,6 @@ import (
 )
 
 type images struct {
-	ImageAttacher      string
-	ImageProvisioner   string
-	ImageSnapshotter   string
-	ImageResizer       string
 	ImageLivenessProbe string
 	ImageCSIPlugin     string
 	ImageNodeDriver    string
@@ -124,26 +120,10 @@ region="` + klusterSecret.Openstack.Region + `"
 		return errors.Wrap(err, "CSIClusterRoleBindingSnapshotter")
 	}
 
-	/*
-		err = createService(client, CSIControllerService)
-		if err != nil {
-			return errors.Wrap(err, "CSIControllerService")
-		}
-	*/
-
 	data := images{
-		versions.CSIAttacher.Repository + ":" + versions.CSIAttacher.Tag,
-		versions.CSIProvisioner.Repository + ":" + versions.CSIProvisioner.Tag,
-		versions.CSISnapshotter.Repository + ":" + versions.CSISnapshotter.Tag,
-		versions.CSIResizer.Repository + ":" + versions.CSIResizer.Tag,
 		versions.CSILivenessprobe.Repository + ":" + versions.CSILivenessprobe.Tag,
 		versions.CinderCSIPlugin.Repository + ":" + versions.CinderCSIPlugin.Tag,
 		versions.CSINodeDriver.Repository + ":" + versions.CSINodeDriver.Tag,
-	}
-
-	err = createStatefulSet(client, CSIStatefulSet, data)
-	if err != nil {
-		return errors.Wrap(err, "CSIStatefulSet")
 	}
 
 	err = createDaemonSet(client, CSIDaemonsSet, data)
@@ -179,24 +159,6 @@ func createCSIDriver(dynamicClient dynamic.Interface, manifest string) error {
 
 func createSecret(client clientset.Interface, secret *v1.Secret) error {
 	if err := bootstrap.CreateOrUpdateSecret(client, secret); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func createStatefulSet(client clientset.Interface, manifest string, data images) error {
-	template, err := bootstrap.RenderManifest(manifest, data)
-	if err != nil {
-		return err
-	}
-
-	statefulSet, _, err := serializer.NewCodecFactory(clientsetscheme.Scheme).UniversalDeserializer().Decode(template, nil, &apps.StatefulSet{})
-	if err != nil {
-		return err
-	}
-
-	if err := bootstrap.CreateOrUpdateStatefulSet(client, statefulSet.(*apps.StatefulSet)); err != nil {
 		return err
 	}
 

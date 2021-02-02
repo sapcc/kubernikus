@@ -79,6 +79,41 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
     {{- required "tag for etcdBackup missing" .Values.images.etcdBackup.tag }}
 {{- end -}}
 
+{{- define "cinderCSIPlugin.image" }}
+  {{- required "repository for cinderCSIPlugin missing" .Values.images.cinderCSIPlugin.repository }}:
+    {{- required "tag for cinderCSIPlugin missing" .Values.images.cinderCSIPlugin.tag }}
+{{- end -}}
+
+{{- define "csiProvisioner.image" }}
+  {{- required "repository for csiProvisioner missing" .Values.images.csiProvisioner.repository }}:
+    {{- required "tag for csiProvisioner missing" .Values.images.csiProvisioner.tag }}
+{{- end -}}
+
+{{- define "csiAttacher.image" }}
+  {{- required "repository for csiAttacher missing" .Values.images.csiAttacher.repository }}:
+    {{- required "tag for csiAttacher missing" .Values.images.csiAttacher.tag }}
+{{- end -}}
+
+{{- define "csiSnapshotter.image" }}
+  {{- required "repository for csiSnapshotter missing" .Values.images.csiSnapshotter.repository }}:
+    {{- required "tag for csiSnapshotter missing" .Values.images.csiSnapshotter.tag }}
+{{- end -}}
+
+{{- define "csiResizer.image" }}
+  {{- required "repository for csiResizer missing" .Values.images.csiResizer.repository }}:
+    {{- required "tag for csiResizer missing" .Values.images.csiResizer.tag }}
+{{- end -}}
+
+{{- define "csiLivenessProbe.image" }}
+  {{- required "repository for csiLivenessProbe missing" .Values.images.csiLivenessProbe.repository }}:
+    {{- required "tag for csiLivenessProbe missing" .Values.images.csiLivenessProbe.tag }}
+{{- end -}}
+
+{{- define "csiSnapshotController.image" }}
+  {{- required "repository for csiSnapshotController missing" .Values.images.csiSnapshotController.repository }}:
+    {{- required "tag for csiSnapshotController missing" .Values.images.csiSnapshotController.tag }}
+{{- end -}}
+
 {{- define "dashboard.url" -}}
   {{- printf "dashboard-%s" ( .Values.api.apiserverHost | replace (include "master.fullname" .) (printf "%s.ingress" (include "master.fullname" .) ) ) -}}
 {{- end -}}
