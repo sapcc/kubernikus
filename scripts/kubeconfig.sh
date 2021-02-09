@@ -14,7 +14,7 @@ case $KUBECONTEXT in
     BASE_URL=$KUBENAMESPACE.admin.cloud.sap
 esac
 
-kubectl get secret $1-secret -ogo-template-file=<(cat<< EOF
+kubectl get secret -n$KUBENAMESPACE $1-secret -ogo-template-file=<(cat<< EOF
 {{ \$cluster := index .metadata.ownerReferences 0 "name" -}}
 apiVersion: v1
 kind: Config
