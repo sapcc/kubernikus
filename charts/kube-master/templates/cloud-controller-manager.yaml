@@ -99,6 +99,9 @@ spec:
 {{- end }}
             - --use-service-account-credentials=true
             - --concurrent-service-syncs=10
+{{- if (semverCompare ">= 1.20" .Values.version.kubernetes) }}
+            - --controllers=*,-cloud-node
+{{- end }}
           livenessProbe:
             httpGet:
               path: /healthz

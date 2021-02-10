@@ -125,9 +125,11 @@ func SeedCinderStorageClasses(client clientset.Interface, openstack openstack_pr
 
 func createStorageClass(client clientset.Interface, name, avz string, isDefault bool, useCSI bool) error {
 	provisioner := "kubernetes.io/cinder"
+	expansion := false
 
 	if useCSI {
 		provisioner = "cinder.csi.openstack.org"
+		expansion = true
 	}
 
 	mode := storage.VolumeBindingImmediate
@@ -140,8 +142,9 @@ func createStorageClass(client clientset.Interface, name, avz string, isDefault 
 		ObjectMeta: metav1.ObjectMeta{
 			Name: name,
 		},
-		Provisioner:       provisioner,
-		VolumeBindingMode: &mode,
+		Provisioner:          provisioner,
+		VolumeBindingMode:    &mode,
+		AllowVolumeExpansion: &expansion,
 	}
 
 	if isDefault {

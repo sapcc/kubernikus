@@ -131,25 +131,50 @@ region="` + klusterSecret.Openstack.Region + `"
 		return errors.Wrap(err, "CSIDaemonsSet")
 	}
 
-	err = createCSIDriver(dynamicClient, CSIDriver)
+	gvrCSIDriver := schema.GroupVersionResource{Group: "storage.k8s.io", Version: "v1", Resource: "csidrivers"}
+	err = createDynamicResource(dynamicClient, CSIDriver, gvrCSIDriver)
 	if err != nil {
 		return errors.Wrap(err, "CSIDriver")
+	}
+
+	gvrSnapClassCRD := schema.GroupVersionResource{Group: "apiextensions.k8s.io", Version: "v1", Resource: "customresourcedefinitions"}
+	err = createDynamicResource(dynamicClient, CSISnapshotCRDVolumeSnapshotClass, gvrSnapClassCRD)
+	if err != nil {
+		return errors.Wrap(err, "CSISnapshotCRDVolumeSnapshotClass")
+	}
+
+	gvrSnapContentCRD := schema.GroupVersionResource{Group: "apiextensions.k8s.io", Version: "v1", Resource: "customresourcedefinitions"}
+	err = createDynamicResource(dynamicClient, CSISnapshotCRDVolumeSnapshotContent, gvrSnapContentCRD)
+	if err != nil {
+		return errors.Wrap(err, "CSISnapshotCRDVolumeSnapshotContent")
+	}
+
+	gvrSnapCRD := schema.GroupVersionResource{Group: "apiextensions.k8s.io", Version: "v1", Resource: "customresourcedefinitions"}
+	err = createDynamicResource(dynamicClient, CSISnapshotCRDVolumeSnapshot, gvrSnapCRD)
+	if err != nil {
+		return errors.Wrap(err, "CSISnapshotCRDVolumeSnapshot")
+	}
+
+	// Todo: create missing roles
+
+	gvrSnapClass := schema.GroupVersionResource{Group: "snapshot.storage.k8s.io", Version: "v1beta1", Resource: "volumesnapshotclasses"}
+	err = createDynamicResource(dynamicClient, CSIVolumeSnapshotClass, gvrSnapClass)
+	if err != nil {
+		return errors.Wrap(err, "CSIVolumeSnapshotClass")
 	}
 
 	return nil
 }
 
-func createCSIDriver(dynamicClient dynamic.Interface, manifest string) error {
-	csiDriverRes := schema.GroupVersionResource{Group: "storage.k8s.io", Version: "v1", Resource: "csidrivers"}
-
+func createDynamicResource(dynamicClient dynamic.Interface, manifest string, gvr schema.GroupVersionResource) error {
 	var decUnstructured = yaml.NewDecodingSerializer(unstructured.UnstructuredJSONScheme)
-	csiDriver := &unstructured.Unstructured{}
-	_, _, err := decUnstructured.Decode([]byte(manifest), nil, csiDriver)
+	resource := &unstructured.Unstructured{}
+	_, _, err := decUnstructured.Decode([]byte(manifest), nil, resource)
 	if err != nil {
 		return errors.Wrap(err, "Decode")
 	}
 
-	_, err = dynamicClient.Resource(csiDriverRes).Create(csiDriver, metav1.CreateOptions{})
+	_, err = dynamicClient.Resource(gvr).Create(resource, metav1.CreateOptions{})
 	if err != nil {
 		return errors.Wrap(err, "Create")
 	}
