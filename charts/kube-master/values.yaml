@@ -151,6 +151,13 @@ csi:
       limits:
         cpu: 30m
         memory: 50Mi
+    snapshotController:
+      requests:
+        cpu: 10m
+        memory: 32Mi
+      limits:
+        cpu: 30m
+        memory: 50Mi
     resizer:
       requests:
         cpu: 10m
@@ -158,15 +165,3 @@ csi:
       limits:
         cpu: 30m
         memory: 50Mi
-
-csiSnapshotController:
-  replicas: 1
-  leaderElection: "false"
-  podAnnotations: {}
-  resources:
-    requests:
-      cpu: 10m
-      memory: 32Mi
-    limits:
-      cpu: 30m
-      memory: 50Mi

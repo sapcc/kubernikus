@@ -155,7 +155,25 @@ region="` + klusterSecret.Openstack.Region + `"
 		return errors.Wrap(err, "CSISnapshotCRDVolumeSnapshot")
 	}
 
-	// Todo: create missing roles
+	err = createClusterRole(client, CSISnapshotControllerClusterRole)
+	if err != nil {
+		return errors.Wrap(err, "CSISnapshotControllerClusterRole")
+	}
+
+	err = createClusterRoleBinding(client, CSISnapshotControllerClusterRoleBinding)
+	if err != nil {
+		return errors.Wrap(err, "CSISnapshotControllerClusterRoleBinding")
+	}
+
+	err = createRole(client, CSISnapshotControllerRole)
+	if err != nil {
+		return errors.Wrap(err, "CSISnapshotControllerRole")
+	}
+
+	err = createRoleBinding(client, CSISnapshotControllerRoleBinding)
+	if err != nil {
+		return errors.Wrap(err, "CSISnapshotControllerRoleBinding")
+	}
 
 	gvrSnapClass := schema.GroupVersionResource{Group: "snapshot.storage.k8s.io", Version: "v1beta1", Resource: "volumesnapshotclasses"}
 	err = createDynamicResource(dynamicClient, CSIVolumeSnapshotClass, gvrSnapClass)

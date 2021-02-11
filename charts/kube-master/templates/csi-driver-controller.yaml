@@ -203,6 +203,27 @@ spec:
           name: certs
           readOnly: true
 
+      - name: csi-snapshot-controller
+        image: {{ include "csiSnapshotController.image" . }}
+        imagePullPolicy: IfNotPresent
+        args:
+        - --kubeconfig=/etc/kubernetes/config/csi-kubeconfig
+        - --leader-election={{ .Values.csi.leaderElection }}
+        {{- if .Values.csi.leaderElectionNamespace }}
+        - --leader-election-namespace={{ .Values.csi.leaderElectionNamespace }}
+        {{- end }}
+{{- if .Values.csi.resources.snapshotController }}
+        resources:
+{{ toYaml .Values.csi.resources.snapshotController | indent 10 }}
+{{- end }}
+        volumeMounts:
+        - mountPath: /etc/kubernetes/config
+          name: config
+          readOnly: true
+        - mountPath: /etc/kubernetes/certs/
+          name: certs
+          readOnly: true
+
       - name: csi-liveness-probe
         image: {{ include "csiLivenessProbe.image" . }}
         args:
