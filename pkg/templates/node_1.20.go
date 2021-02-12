@@ -106,8 +106,7 @@ systemd:
         ExecStartPre=-/usr/bin/rkt rm --uuid-file=/var/run/kubelet-pod.uuid
         ExecStart=/usr/lib/coreos/kubelet-wrapper \
           --cert-dir=/var/lib/kubelet/pki \
-          --cloud-config=/etc/kubernetes/openstack/openstack.config \
-          --cloud-provider=openstack \
+          --cloud-provider=external \
           --config=/etc/kubernetes/kubelet/config \
           --bootstrap-kubeconfig=/etc/kubernetes/bootstrap/kubeconfig \
           --hostname-override={{ .NodeName }} \

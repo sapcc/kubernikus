@@ -27,6 +27,7 @@ import (
 	v1 "github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
 	"github.com/sapcc/kubernikus/pkg/controller/config"
 	"github.com/sapcc/kubernikus/pkg/controller/ground"
+	"github.com/sapcc/kubernikus/pkg/controller/ground/bootstrap/csi"
 	"github.com/sapcc/kubernikus/pkg/controller/metrics"
 	informers_kubernikus "github.com/sapcc/kubernikus/pkg/generated/informers/externalversions/kubernikus/v1"
 	"github.com/sapcc/kubernikus/pkg/util"
@@ -609,14 +610,43 @@ func (op *GroundControl) createKluster(kluster *v1.Kluster) error {
 }
 
 func (op *GroundControl) upgradeKluster(kluster *v1.Kluster, toVersion string) error {
-	accessMode, err := util.PVAccessMode(op.Clients.Kubernetes, kluster)
-	if err != nil {
-		return fmt.Errorf("Couldn't determine access mode for pvc: %s", err)
-	}
-
 	klusterSecret, err := util.KlusterSecret(op.Clients.Kubernetes, kluster)
 	if err != nil {
 		return err
+	}
+
+	if strings.HasPrefix(toVersion, "1.20") {
+		dynamicKubernetes, err := op.Clients.Satellites.DynamicClientFor(kluster)
+		if err != nil {
+			return errors.Wrap(err, "dynamic client")
+		}
+
+		kubernetes, err := op.Clients.Satellites.ClientFor(kluster)
+		if err != nil {
+			return errors.Wrap(err, "client")
+		}
+
+		if err := csi.SeedCinderCSIPlugin(kubernetes, dynamicKubernetes, klusterSecret, op.Images.Versions[kluster.Spec.Version]); err != nil {
+			return errors.Wrap(err, "seed cinder CSI plugin on upgrade")
+		}
+
+		openstack, err := op.Factories.Openstack.ProjectAdminClientFor(kluster.Account())
+		if err != nil {
+			return errors.Wrap(err, "project client")
+		}
+
+		if err := ground.DeleteCinderStorageClasses(kubernetes, openstack); err != nil {
+			return errors.Wrap(err, "delete in-tree storage classes on upgrade")
+		}
+
+		if err := ground.SeedCinderStorageClasses(kubernetes, openstack, true); err != nil {
+			return errors.Wrap(err, "seed CSI storage classes on upgrade")
+		}
+	}
+
+	accessMode, err := util.PVAccessMode(op.Clients.Kubernetes, kluster)
+	if err != nil {
+		return fmt.Errorf("Couldn't determine access mode for pvc: %s", err)
 	}
 
 	rawValues, err := helm_util.KlusterToHelmValues(kluster, klusterSecret, toVersion, &op.Config.Images, accessMode)

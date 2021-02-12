@@ -172,6 +172,27 @@ func createStorageClass(client clientset.Interface, name, avz string, isDefault 
 	return nil
 }
 
+func DeleteCinderStorageClasses(client clientset.Interface, openstack openstack_project.ProjectClient) error {
+	if err := client.StorageV1().StorageClasses().Delete("cinder-default", &metav1.DeleteOptions{}); err != nil {
+		return err
+	}
+
+	metadata, err := openstack.GetMetadata()
+	if err != nil {
+		return err
+	}
+
+	for _, avz := range metadata.AvailabilityZones {
+		name := fmt.Sprintf("cinder-zone-%s", avz.Name[len(avz.Name)-1:])
+
+		if err := client.StorageV1().StorageClasses().Delete(name, &metav1.DeleteOptions{}); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 func SeedKubernikusAdmin(client clientset.Interface) error {
 	return bootstrap.CreateOrUpdateClusterRoleBinding(client, &rbac.ClusterRoleBinding{
 		ObjectMeta: metav1.ObjectMeta{
