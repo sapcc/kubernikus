@@ -174,7 +174,9 @@ func createStorageClass(client clientset.Interface, name, avz string, isDefault 
 
 func DeleteCinderStorageClasses(client clientset.Interface, openstack openstack_project.ProjectClient) error {
 	if err := client.StorageV1().StorageClasses().Delete("cinder-default", &metav1.DeleteOptions{}); err != nil {
-		return err
+		if !apierrors.IsNotFound(err) {
+			return err
+		}
 	}
 
 	metadata, err := openstack.GetMetadata()
@@ -186,7 +188,9 @@ func DeleteCinderStorageClasses(client clientset.Interface, openstack openstack_
 		name := fmt.Sprintf("cinder-zone-%s", avz.Name[len(avz.Name)-1:])
 
 		if err := client.StorageV1().StorageClasses().Delete(name, &metav1.DeleteOptions{}); err != nil {
-			return err
+			if !apierrors.IsNotFound(err) {
+				return err
+			}
 		}
 	}
 
