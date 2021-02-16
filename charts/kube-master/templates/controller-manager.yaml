@@ -112,11 +112,11 @@ spec:
             - --allocate-node-cidrs=true
             {{- end }}
             {{- if .Values.openstack }}
-            {{- if (semverCompare "< 1.20" .Values.version.kubernetes) }}
+            {{- if (semverCompare "< 1.21" .Values.version.kubernetes) }}
             - --cloud-config=/etc/kubernetes/cloudprovider/openstack.config
             {{- end }}
 {{- if (semverCompare ">= 1.13" .Values.version.kubernetes) }}
-            {{- if (semverCompare "< 1.20" .Values.version.kubernetes) }}
+            {{- if (semverCompare "< 1.21" .Values.version.kubernetes) }}
             - --cloud-provider=external
             - --external-cloud-volume-plugin=openstack
             {{- end }}
