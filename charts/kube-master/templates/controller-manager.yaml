@@ -116,8 +116,8 @@ spec:
             - --cloud-config=/etc/kubernetes/cloudprovider/openstack.config
             {{- end }}
 {{- if (semverCompare ">= 1.13" .Values.version.kubernetes) }}
-            - --cloud-provider=external
             {{- if (semverCompare "< 1.20" .Values.version.kubernetes) }}
+            - --cloud-provider=external
             - --external-cloud-volume-plugin=openstack
             {{- end }}
 {{- else }}
@@ -128,11 +128,7 @@ spec:
             - --cluster-name={{ .Values.name }}
             - --cluster-signing-cert-file=/etc/kubernetes/certs/apiserver-nodes-ca.pem
             - --cluster-signing-key-file=/etc/kubernetes/certs/apiserver-nodes-ca-key.pem
-{{- if (semverCompare ">= 1.20" .Values.version.kubernetes) }}
-            - --controllers=*,bootstrapsigner,tokencleaner,-cloud-node-lifecycle,-route,-service
-{{- else }}
             - --controllers=*,bootstrapsigner,tokencleaner
-{{- end }}
             - --kubeconfig=/etc/kubernetes/config/kubeconfig
 {{- if (semverCompare ">= 1.12" .Values.version.kubernetes) }}
             - --authentication-kubeconfig=/etc/kubernetes/config/kubeconfig
