@@ -6,9 +6,6 @@ if [ "$1" == "" ]; then
 fi
 
 CONTEXT=$1
-set -x
-
-
 
 if [ "$2" != "" ]; then
   echo using kubeconfig $2

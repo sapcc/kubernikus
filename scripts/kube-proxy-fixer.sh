@@ -8,7 +8,6 @@ fi
 PARENT_CONTEXT=$1
 CONTEXT=$2
 CLUSTER=$3
-set -x
 
 
 

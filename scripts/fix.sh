@@ -5,6 +5,9 @@ if [ "$2" == "" ]; then
   echo usage $0 PARENT_CONTEXT CLUSTER_FQDN
   exit
 fi
+unset KUBECONTEXT
+unset KUBENAMESPACE
+
 PARENT_CONTEXT=$1
 CLUSTER=$2
 CLUSTER_NAME=${2%-*}
@@ -15,8 +18,8 @@ KUBECONTEXT=$PARENT_CONTEXT ./kubeconfig.sh $2 >$CLUSTER_CONFIG
 ./wormhole-fixer.sh $CLUSTER $CLUSTER_CONFIG
 ./kube-proxy-fixer.sh $PARENT_CONTEXT $CLUSTER $CLUSTER $CLUSTER_CONFIG
 
-echo Check status
-echo env KUBECONFIG=$CLUSTER_CONFIG kubectl get pods --context=$CLUSTER -n default get pods
+echo Check status with:
+echo env KUBECONFIG=$CLUSTER_CONFIG kubectl --context=$CLUSTER -n default get pods
 KUBECONFIG=$CLUSTER_CONFIG kubectl rollout status -n default daemonset/replace-proxy-certs
 KUBECONFIG=$CLUSTER_CONFIG kubectl rollout status -n default daemonset/restart-wormhole
 
