@@ -85,6 +85,8 @@ type Certificates struct {
 	ApiserverClientsKubeSchedulerCertificate         string `json:"apiserver-clients-system-kube-scheduler.pem"`
 	ApiserverClientsKubernikusWormholePrivateKey     string `json:"apiserver-clients-kubernikus-wormhole-key.pem"`
 	ApiserverClientsKubernikusWormholeCertificate    string `json:"apiserver-clients-kubernikus-wormhole.pem"`
+	ApiserverClientsCSIControllerPrivateKey          string `json:"apiserver-clients-csi-controller-key.pem"`
+	ApiserverClientsCSIControllerCertificate         string `json:"apiserver-clients-csi-controller.pem"`
 
 	ApiserverNodesCAPrivateKey  string `json:"apiserver-nodes-ca-key.pem"`
 	ApiserverNodesCACertificate string `json:"apiserver-nodes-ca.pem"`

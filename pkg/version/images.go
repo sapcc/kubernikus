@@ -40,6 +40,14 @@ type KlusterVersion struct {
 	Wormhole               ImageVersion `yaml:"wormhole,omitempty"`
 	Etcd                   ImageVersion `yaml:"etcd,omitempty"`
 	EtcdBackup             ImageVersion `yaml:"etcdBackup,omitempty"`
+	CSIAttacher            ImageVersion `yaml:"csiAttacher,omitempty"`
+	CSIProvisioner         ImageVersion `yaml:"csiProvisioner,omitempty"`
+	CSISnapshotter         ImageVersion `yaml:"csiSnapshotter,omitempty"`
+	CSISnapshotController  ImageVersion `yaml:"csiSnapshotController,omitempty"`
+	CSIResizer             ImageVersion `yaml:"csiResizer,omitempty"`
+	CSILivenessProbe       ImageVersion `yaml:"csiLivenessProbe,omitempty"`
+	CSINodeDriver          ImageVersion `yaml:"csiNodeDriver,omitempty"`
+	CinderCSIPlugin        ImageVersion `yaml:"cinderCSIPlugin,omitempty"`
 }
 
 type ImageRegistry struct {

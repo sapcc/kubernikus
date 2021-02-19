@@ -14,6 +14,7 @@ import (
 	openstack_project "github.com/sapcc/kubernikus/pkg/client/openstack/project"
 	"github.com/sapcc/kubernikus/pkg/controller/config"
 	"github.com/sapcc/kubernikus/pkg/controller/ground/bootstrap"
+	"github.com/sapcc/kubernikus/pkg/controller/ground/bootstrap/csi"
 	"github.com/sapcc/kubernikus/pkg/controller/ground/bootstrap/dns"
 	"github.com/sapcc/kubernikus/pkg/controller/ground/bootstrap/gpu"
 	"github.com/sapcc/kubernikus/pkg/util"
@@ -46,7 +47,8 @@ func SeedKluster(clients config.Clients, factories config.Factories, images vers
 		if err != nil {
 			return err
 		}
-		if err := SeedCinderStorageClasses(kubernetes, openstack); err != nil {
+		useCSI, _ := util.KlusterVersionConstraint(kluster, ">= 1.20")
+		if err := SeedCinderStorageClasses(kubernetes, openstack, useCSI); err != nil {
 			return errors.Wrap(err, "seed cinder storage classes")
 		}
 	}
@@ -78,6 +80,22 @@ func SeedKluster(clients config.Clients, factories config.Factories, images vers
 		}
 	}
 
+	if ok, _ := util.KlusterVersionConstraint(kluster, ">= 1.20"); ok {
+		dynamicKubernetes, err := clients.Satellites.DynamicClientFor(kluster)
+		if err != nil {
+			return errors.Wrap(err, "dynamic client")
+		}
+
+		klusterSecret, err := util.KlusterSecret(clients.Kubernetes, kluster)
+		if err != nil {
+			return errors.Wrap(err, "get kluster secret")
+		}
+
+		if err := csi.SeedCinderCSIPlugin(kubernetes, dynamicKubernetes, klusterSecret, images.Versions[kluster.Spec.Version]); err != nil {
+			return errors.Wrap(err, "seed cinder CSI plugin")
+		}
+	}
+
 	if err := SeedOpenStackClusterRoleBindings(kubernetes); err != nil {
 		return errors.Wrap(err, "seed openstack cluster role bindings")
 	}
@@ -85,8 +103,8 @@ func SeedKluster(clients config.Clients, factories config.Factories, images vers
 	return nil
 }
 
-func SeedCinderStorageClasses(client clientset.Interface, openstack openstack_project.ProjectClient) error {
-	if err := createStorageClass(client, "cinder-default", "", true); err != nil {
+func SeedCinderStorageClasses(client clientset.Interface, openstack openstack_project.ProjectClient, useCSI bool) error {
+	if err := createStorageClass(client, "cinder-default", "", true, useCSI); err != nil {
 		return err
 	}
 
@@ -97,7 +115,7 @@ func SeedCinderStorageClasses(client clientset.Interface, openstack openstack_pr
 
 	for _, avz := range metadata.AvailabilityZones {
 		name := fmt.Sprintf("cinder-zone-%s", avz.Name[len(avz.Name)-1:])
-		if err := createStorageClass(client, name, avz.Name, false); err != nil {
+		if err := createStorageClass(client, name, avz.Name, false, useCSI); err != nil {
 			return err
 		}
 	}
@@ -105,7 +123,15 @@ func SeedCinderStorageClasses(client clientset.Interface, openstack openstack_pr
 	return nil
 }
 
-func createStorageClass(client clientset.Interface, name, avz string, isDefault bool) error {
+func createStorageClass(client clientset.Interface, name, avz string, isDefault bool, useCSI bool) error {
+	provisioner := "kubernetes.io/cinder"
+	expansion := false
+
+	if useCSI {
+		provisioner = "cinder.csi.openstack.org"
+		expansion = true
+	}
+
 	mode := storage.VolumeBindingImmediate
 
 	if avz == "" {
@@ -116,8 +142,9 @@ func createStorageClass(client clientset.Interface, name, avz string, isDefault 
 		ObjectMeta: metav1.ObjectMeta{
 			Name: name,
 		},
-		Provisioner:       "kubernetes.io/cinder",
-		VolumeBindingMode: &mode,
+		Provisioner:          provisioner,
+		VolumeBindingMode:    &mode,
+		AllowVolumeExpansion: &expansion,
 	}
 
 	if isDefault {
@@ -139,6 +166,31 @@ func createStorageClass(client clientset.Interface, name, avz string, isDefault 
 
 		if _, err := client.StorageV1().StorageClasses().Update(&storageClass); err != nil {
 			return fmt.Errorf("unable to update storage class: %v", err)
+		}
+	}
+
+	return nil
+}
+
+func DeleteCinderStorageClasses(client clientset.Interface, openstack openstack_project.ProjectClient) error {
+	if err := client.StorageV1().StorageClasses().Delete("cinder-default", &metav1.DeleteOptions{}); err != nil {
+		if !apierrors.IsNotFound(err) {
+			return err
+		}
+	}
+
+	metadata, err := openstack.GetMetadata()
+	if err != nil {
+		return err
+	}
+
+	for _, avz := range metadata.AvailabilityZones {
+		name := fmt.Sprintf("cinder-zone-%s", avz.Name[len(avz.Name)-1:])
+
+		if err := client.StorageV1().StorageClasses().Delete(name, &metav1.DeleteOptions{}); err != nil {
+			if !apierrors.IsNotFound(err) {
+				return err
+			}
 		}
 	}
 

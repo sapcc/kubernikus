@@ -98,7 +98,7 @@ func (d *ConcreteDeorbiter) DeletePersistentVolumeClaims() (deleted []core_v1.Pe
 			return deleted, err
 		}
 
-		if pv.Spec.Cinder == nil {
+		if pv.Spec.Cinder == nil && pv.Spec.CSI.Driver != "cinder.csi.openstack.org" {
 			continue
 		}
 		deleted = append(deleted, pvc)
@@ -185,7 +185,7 @@ func (d *ConcreteDeorbiter) isPersistentVolumesCleanupFinished() (bool, error) {
 		if pv.Status.Phase == core_v1.VolumeFailed {
 			continue
 		}
-		if pv.Spec.PersistentVolumeSource.Cinder != nil {
+		if pv.Spec.PersistentVolumeSource.Cinder != nil || pv.Spec.PersistentVolumeSource.CSI.Driver == "cinder.csi.openstack.org" {
 			return false, nil
 		}
 	}

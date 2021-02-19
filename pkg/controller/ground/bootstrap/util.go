@@ -8,6 +8,7 @@ import (
 	apps "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
 	extensions "k8s.io/api/extensions/v1beta1"
+	rbac_v1 "k8s.io/api/rbac/v1"
 	rbac "k8s.io/api/rbac/v1beta1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -90,12 +91,12 @@ func CreateOrUpdateConfigMap(client clientset.Interface, configmap *v1.ConfigMap
 }
 
 func CreateOrUpdateDaemonset(client clientset.Interface, daemonset *apps.DaemonSet) error {
-	if _, err := client.Apps().DaemonSets(daemonset.ObjectMeta.Namespace).Create(daemonset); err != nil {
+	if _, err := client.AppsV1().DaemonSets(daemonset.ObjectMeta.Namespace).Create(daemonset); err != nil {
 		if !apierrors.IsAlreadyExists(err) {
 			return errors.Wrap(err, "unable to create daemonset")
 		}
 
-		if _, err := client.Apps().DaemonSets(daemonset.ObjectMeta.Namespace).Update(daemonset); err != nil {
+		if _, err := client.AppsV1().DaemonSets(daemonset.ObjectMeta.Namespace).Update(daemonset); err != nil {
 			return errors.Wrap(err, "unable to update daemonset")
 		}
 	}
@@ -115,6 +116,19 @@ func CreateOrUpdateClusterRoleBinding(client clientset.Interface, clusterRoleBin
 	return nil
 }
 
+func CreateOrUpdateClusterRoleBindingV1(client clientset.Interface, clusterRoleBinding *rbac_v1.ClusterRoleBinding) error {
+	if _, err := client.RbacV1().ClusterRoleBindings().Create(clusterRoleBinding); err != nil {
+		if !apierrors.IsAlreadyExists(err) {
+			return errors.Wrap(err, "unable to create RBAC clusterrolebinding")
+		}
+
+		if _, err := client.RbacV1().ClusterRoleBindings().Update(clusterRoleBinding); err != nil {
+			return errors.Wrap(err, "unable to update RBAC clusterrolebinding")
+		}
+	}
+	return nil
+}
+
 func CreateOrUpdateRoleBinding(client clientset.Interface, roleBinding *rbac.RoleBinding) error {
 	if _, err := client.RbacV1beta1().RoleBindings(roleBinding.Namespace).Create(roleBinding); err != nil {
 		if !apierrors.IsAlreadyExists(err) {
@@ -128,6 +142,32 @@ func CreateOrUpdateRoleBinding(client clientset.Interface, roleBinding *rbac.Rol
 	return nil
 }
 
+func CreateOrUpdateRoleBindingV1(client clientset.Interface, roleBinding *rbac_v1.RoleBinding) error {
+	if _, err := client.RbacV1().RoleBindings(roleBinding.Namespace).Create(roleBinding); err != nil {
+		if !apierrors.IsAlreadyExists(err) {
+			return errors.Wrap(err, "unable to create RBAC rolebinding")
+		}
+
+		if _, err := client.RbacV1().RoleBindings(roleBinding.Namespace).Update(roleBinding); err != nil {
+			return errors.Wrap(err, "unable to update RBAC rolebinding")
+		}
+	}
+	return nil
+}
+
+func CreateOrUpdateRole(client clientset.Interface, role *rbac_v1.Role) error {
+	if _, err := client.RbacV1().Roles(role.Namespace).Create(role); err != nil {
+		if !apierrors.IsAlreadyExists(err) {
+			return errors.Wrap(err, "unable to create RBAC role")
+		}
+
+		if _, err := client.RbacV1().Roles(role.Namespace).Update(role); err != nil {
+			return errors.Wrap(err, "unable to update RBAC role")
+		}
+	}
+	return nil
+}
+
 func CreateOrUpdateClusterRole(client clientset.Interface, clusterRole *rbac.ClusterRole) error {
 	if _, err := client.RbacV1beta1().ClusterRoles().Create(clusterRole); err != nil {
 		if !apierrors.IsAlreadyExists(err) {
@@ -136,6 +176,45 @@ func CreateOrUpdateClusterRole(client clientset.Interface, clusterRole *rbac.Clu
 
 		if _, err := client.RbacV1beta1().ClusterRoles().Update(clusterRole); err != nil {
 			return errors.Wrap(err, "unable to update RBAC clusterrole")
+		}
+	}
+	return nil
+}
+
+func CreateOrUpdateClusterRoleV1(client clientset.Interface, clusterRole *rbac_v1.ClusterRole) error {
+	if _, err := client.RbacV1().ClusterRoles().Create(clusterRole); err != nil {
+		if !apierrors.IsAlreadyExists(err) {
+			return errors.Wrap(err, "unable to create RBAC clusterrole")
+		}
+
+		if _, err := client.RbacV1().ClusterRoles().Update(clusterRole); err != nil {
+			return errors.Wrap(err, "unable to update RBAC clusterrole")
+		}
+	}
+	return nil
+}
+
+func CreateOrUpdateStatefulSet(client clientset.Interface, statefulSet *apps.StatefulSet) error {
+	if _, err := client.AppsV1().StatefulSets(statefulSet.Namespace).Create(statefulSet); err != nil {
+		if !apierrors.IsAlreadyExists(err) {
+			return errors.Wrap(err, "unable to create StatefulSet")
+		}
+
+		if _, err := client.AppsV1().StatefulSets(statefulSet.Namespace).Update(statefulSet); err != nil {
+			return errors.Wrap(err, "unable to update StatefulSet")
+		}
+	}
+	return nil
+}
+
+func CreateOrUpdateSecret(client clientset.Interface, secret *v1.Secret) error {
+	if _, err := client.CoreV1().Secrets(secret.Namespace).Create(secret); err != nil {
+		if !apierrors.IsAlreadyExists(err) {
+			return errors.Wrap(err, "unable to create Secret")
+		}
+
+		if _, err := client.CoreV1().Secrets(secret.Namespace).Update(secret); err != nil {
+			return errors.Wrap(err, "unable to update Secret")
 		}
 	}
 	return nil
