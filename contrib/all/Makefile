@@ -1,11 +1,11 @@
 VERSION?=v1.20.4
-VERSION_CCM?=v1.20.1
 REGISTRY?=k8s.gcr.io
 IMAGE?=keppel.eu-de-1.cloud.sap/ccloud
 ARCH=amd64
 
 #CNI_PLUGINS_RELEASE=v0.8.5
-
+CCM_VERSION?=v1.20.1
+FLANNEL_VERSION=v0.13.0
 CSI_ATTACHER_VERSION=v2.2.1
 CSI_PROVISIONER_VERSION=v2.1.0
 CSI_SNAPSHOTTER_VERSION=v2.1.3
@@ -25,7 +25,8 @@ build:
 	docker build ${OPTS} -t ${IMAGE}/kube-controller-manager:${VERSION} --build-arg IMAGE=${REGISTRY}/kube-controller-manager:${VERSION} .
 	docker build ${OPTS} -t ${IMAGE}/kube-proxy:${VERSION} --build-arg IMAGE=${REGISTRY}/kube-proxy:${VERSION} .
 	docker build ${OPTS} -t ${IMAGE}/kubelet:${VERSION} --build-arg KUBERNETES_VERSION=${VERSION} --build-arg ARCH=${ARCH} --build-arg CNI_PLUGINS_RELEASE=${CNI_PLUGINS_RELEASE} - < Dockerfile.kubelet
-	docker build ${OPTS} -t ${IMAGE}/openstack-cloud-controller-manager:${VERSION_CCM} --build-arg IMAGE=k8scloudprovider/openstack-cloud-controller-manager:${VERSION_CCM} .
+	docker build ${OPTS} -t ${IMAGE}/openstack-cloud-controller-manager:${CCM_VERSION} --build-arg IMAGE=k8scloudprovider/openstack-cloud-controller-manager:${CCM_VERSION} .
+	docker build ${OPTS} -t ${IMAGE}/kube-flannel:${FLANNEL_VERSION} --build-arg IMAGE=quay.io/coreos/flannel:${FLANNEL_VERSION} .
 
 build-csi:
 	docker build ${OPTS} -t ${IMAGE}/csi-attacher:${CSI_ATTACHER_VERSION} --build-arg IMAGE=${REGISTRY}/sig-storage/csi-attacher:${CSI_ATTACHER_VERSION} .
@@ -43,7 +44,8 @@ push:
 	docker push ${IMAGE}/kube-controller-manager:${VERSION}
 	docker push ${IMAGE}/kube-proxy:${VERSION}
 	docker push ${IMAGE}/kubelet:${VERSION}
-	docker push ${IMAGE}/openstack-cloud-controller-manager:${VERSION_CCM}
+	docker push ${IMAGE}/openstack-cloud-controller-manager:${CCM_VERSION}
+	docker push ${IMAGE}/kube-flannel:${FLANNEL_VERSION}
 
 push-csi:
 	docker push ${IMAGE}/csi-attacher:${CSI_ATTACHER_VERSION}

@@ -12,7 +12,9 @@ import (
 	rbac "k8s.io/api/rbac/v1beta1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime/serializer"
 	clientset "k8s.io/client-go/kubernetes"
+	clientsetscheme "k8s.io/client-go/kubernetes/scheme"
 )
 
 func RenderManifest(strtmpl string, obj interface{}) ([]byte, error) {
@@ -90,6 +92,24 @@ func CreateOrUpdateConfigMap(client clientset.Interface, configmap *v1.ConfigMap
 	return nil
 }
 
+func CreateConfigMapFromTemplate(client clientset.Interface, manifest string, vars interface{}) error {
+	template, err := RenderManifest(manifest, vars)
+	if err != nil {
+		return err
+	}
+
+	configmap, _, err := serializer.NewCodecFactory(clientsetscheme.Scheme).UniversalDeserializer().Decode(template, nil, &v1.ConfigMap{})
+	if err != nil {
+		return err
+	}
+
+	if err := CreateOrUpdateConfigMap(client, configmap.(*v1.ConfigMap)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func CreateOrUpdateDaemonset(client clientset.Interface, daemonset *apps.DaemonSet) error {
 	if _, err := client.AppsV1().DaemonSets(daemonset.ObjectMeta.Namespace).Create(daemonset); err != nil {
 		if !apierrors.IsAlreadyExists(err) {
@@ -100,6 +120,24 @@ func CreateOrUpdateDaemonset(client clientset.Interface, daemonset *apps.DaemonS
 			return errors.Wrap(err, "unable to update daemonset")
 		}
 	}
+	return nil
+}
+
+func CreateDaemonSetFromTemplate(client clientset.Interface, manifest string, vars interface{}) error {
+	template, err := RenderManifest(manifest, vars)
+	if err != nil {
+		return err
+	}
+
+	daemonset, _, err := serializer.NewCodecFactory(clientsetscheme.Scheme).UniversalDeserializer().Decode(template, nil, &apps.DaemonSet{})
+	if err != nil {
+		return err
+	}
+
+	if err := CreateOrUpdateDaemonset(client, daemonset.(*apps.DaemonSet)); err != nil {
+		return err
+	}
+
 	return nil
 }
 

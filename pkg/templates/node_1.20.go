@@ -39,34 +39,6 @@ systemd:
           contents: |
             [Service]
             Environment="DOCKER_OPTS=--log-opt max-size=5m --log-opt max-file=5 --ip-masq=false --iptables=false --bridge=none"
-    - name: flanneld.service
-      enable: true
-      dropins:
-        - name: 10-ccloud-opts.conf
-          contents: |
-            [Service]
-            EnvironmentFile=/etc/kubernetes/environment
-            Environment="FLANNEL_OPTS=-ip-masq=false \
-                                      -kube-subnet-mgr=true \
-                                      -kubeconfig-file=/var/lib/kubelet/kubeconfig \
-                                      -kube-api-url={{ .ApiserverURL }}"
-            Environment="RKT_RUN_ARGS=--uuid-file-save=/var/lib/{{if .CoreOS}}coreos{{else}}flatcar{{end}}/flannel-wrapper.uuid \
-                                      --volume var-lib-kubelet,kind=host,source=/var/lib/kubelet,readOnly=true \
-                                      --mount volume=var-lib-kubelet,target=/var/lib/kubelet \
-                                      --volume etc-kubernetes-certs,kind=host,source=/etc/kubernetes/certs,readOnly=true \
-                                      --mount volume=etc-kubernetes-certs,target=/etc/kubernetes/certs \
-                                      --volume etc-kube-flannel,kind=host,source=/etc/kube-flannel,readOnly=true \
-                                      --mount volume=etc-kube-flannel,target=/etc/kube-flannel"
-    - name: flannel-docker-opts.service
-      enable: true
-      contents: |
-        [Unit]
-        PartOf=flanneld.service
-        Requires=flanneld.service
-        After=flanneld.service
-        [Service]
-        Type=oneshot
-        ExecStart=/bin/true
     - name: kubelet.service
       enable: true
       contents: |
@@ -319,17 +291,6 @@ storage:
         inline: |-
           fs.inotify.max_user_instances=8192
           fs.inotify.max_user_watches=524288
-    - path: /etc/kube-flannel/net-conf.json
-      filesystem: root
-      mode: 0644
-      contents:
-        inline: |-
-          {
-            "Network": "{{ .ClusterCIDR }}",
-            "Backend": {
-               "Type": "host-gw"
-            }
-          }
     - path: /etc/kubernetes/environment
       filesystem: root
       mode: 0644

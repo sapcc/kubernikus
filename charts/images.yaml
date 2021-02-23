@@ -67,6 +67,9 @@ imagesForVersion:
     cinderCSIPlugin:
       repository: 'keppel.$REGION.cloud.sap/ccloud/cinder-csi-plugin'
       tag: 'v1.20.0'
+    flannel:
+      repository: 'keppel.$REGION.cloud.sap/ccloud/kube-flannel'
+      tag: 'v0.13.0'
   '1.19.4':
     supported: true
     apiserver:

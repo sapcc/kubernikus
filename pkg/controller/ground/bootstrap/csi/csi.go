@@ -2,7 +2,6 @@ package csi
 
 import (
 	"github.com/pkg/errors"
-	apps "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
 	rbac "k8s.io/api/rbac/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -126,7 +125,7 @@ region="` + klusterSecret.Openstack.Region + `"
 		versions.CSINodeDriver.Repository + ":" + versions.CSINodeDriver.Tag,
 	}
 
-	err = createDaemonSet(client, CSIDaemonsSet, data)
+	err = bootstrap.CreateDaemonSetFromTemplate(client, CSIDaemonsSet, data)
 	if err != nil {
 		return errors.Wrap(err, "CSIDaemonsSet")
 	}
@@ -310,24 +309,6 @@ func createServiceAccount(client clientset.Interface, manifest string) error {
 	}
 
 	if err := bootstrap.CreateOrUpdateServiceAccount(client, serviceAccount.(*v1.ServiceAccount)); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func createDaemonSet(client clientset.Interface, manifest string, data images) error {
-	template, err := bootstrap.RenderManifest(manifest, data)
-	if err != nil {
-		return err
-	}
-
-	daemonset, _, err := serializer.NewCodecFactory(clientsetscheme.Scheme).UniversalDeserializer().Decode(template, nil, &apps.DaemonSet{})
-	if err != nil {
-		return err
-	}
-
-	if err := bootstrap.CreateOrUpdateDaemonset(client, daemonset.(*apps.DaemonSet)); err != nil {
 		return err
 	}
 
