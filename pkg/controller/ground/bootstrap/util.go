@@ -39,6 +39,24 @@ func CreateOrUpdateServiceAccount(client clientset.Interface, sa *v1.ServiceAcco
 	return nil
 }
 
+func CreateServiceAccountFromTemplate(client clientset.Interface, manifest string, vars interface{}) error {
+	template, err := RenderManifest(manifest, vars)
+	if err != nil {
+		return err
+	}
+
+	serviceAccount, _, err := serializer.NewCodecFactory(clientsetscheme.Scheme).UniversalDeserializer().Decode(template, nil, &v1.ServiceAccount{})
+	if err != nil {
+		return err
+	}
+
+	if err := CreateOrUpdateServiceAccount(client, serviceAccount.(*v1.ServiceAccount)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func CreateOrUpdateDeployment(client clientset.Interface, deploy *extensions.Deployment) error {
 	if _, err := client.ExtensionsV1beta1().Deployments(deploy.ObjectMeta.Namespace).Create(deploy); err != nil {
 		if !apierrors.IsAlreadyExists(err) {
@@ -164,6 +182,24 @@ func CreateOrUpdateClusterRoleBindingV1(client clientset.Interface, clusterRoleB
 			return errors.Wrap(err, "unable to update RBAC clusterrolebinding")
 		}
 	}
+	return nil
+}
+
+func CreateClusterRoleBindingFromTemplate(client clientset.Interface, manifest string, vars interface{}) error {
+	template, err := RenderManifest(manifest, vars)
+	if err != nil {
+		return err
+	}
+
+	clusterRoleBinding, _, err := serializer.NewCodecFactory(clientsetscheme.Scheme).UniversalDeserializer().Decode(template, nil, &rbac_v1.ClusterRoleBinding{})
+	if err != nil {
+		return err
+	}
+
+	if err := CreateOrUpdateClusterRoleBindingV1(client, clusterRoleBinding.(*rbac_v1.ClusterRoleBinding)); err != nil {
+		return err
+	}
+
 	return nil
 }
 

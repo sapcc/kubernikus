@@ -49,12 +49,12 @@ region="` + klusterSecret.Openstack.Region + `"
 		return errors.Wrap(err, "CSISecret")
 	}
 
-	err = createServiceAccount(client, CSIServiceAccountController)
+	err = bootstrap.CreateServiceAccountFromTemplate(client, CSIServiceAccountController, nil)
 	if err != nil {
 		return errors.Wrap(err, "CSIServiceAccountController")
 	}
 
-	err = createServiceAccount(client, CSIServiceAccountNode)
+	err = bootstrap.CreateServiceAccountFromTemplate(client, CSIServiceAccountNode, nil)
 	if err != nil {
 		return errors.Wrap(err, "CSIServiceAccountNode")
 	}
@@ -94,27 +94,27 @@ region="` + klusterSecret.Openstack.Region + `"
 		return errors.Wrap(err, "CSIRoleBindingResizer")
 	}
 
-	err = createClusterRoleBinding(client, CSIClusterRoleBindingAttacher)
+	err = bootstrap.CreateClusterRoleBindingFromTemplate(client, CSIClusterRoleBindingAttacher, nil)
 	if err != nil {
 		return errors.Wrap(err, "CSIClusterRoleBindingAttacher")
 	}
 
-	err = createClusterRoleBinding(client, CSIClusterRoleBindingNodePlugin)
+	err = bootstrap.CreateClusterRoleBindingFromTemplate(client, CSIClusterRoleBindingNodePlugin, nil)
 	if err != nil {
 		return errors.Wrap(err, "CSIClusterRoleBindingNodePlugin")
 	}
 
-	err = createClusterRoleBinding(client, CSIClusterRoleBindingProvisioner)
+	err = bootstrap.CreateClusterRoleBindingFromTemplate(client, CSIClusterRoleBindingProvisioner, nil)
 	if err != nil {
 		return errors.Wrap(err, "CSIClusterRoleBindingProvisioner")
 	}
 
-	err = createClusterRoleBinding(client, CSIClusterRoleBindingResizer)
+	err = bootstrap.CreateClusterRoleBindingFromTemplate(client, CSIClusterRoleBindingResizer, nil)
 	if err != nil {
 		return errors.Wrap(err, "CSIClusterRoleBindingResizer")
 	}
 
-	err = createClusterRoleBinding(client, CSIClusterRoleBindingSnapshotter)
+	err = bootstrap.CreateClusterRoleBindingFromTemplate(client, CSIClusterRoleBindingSnapshotter, nil)
 	if err != nil {
 		return errors.Wrap(err, "CSIClusterRoleBindingSnapshotter")
 	}
@@ -159,7 +159,7 @@ region="` + klusterSecret.Openstack.Region + `"
 		return errors.Wrap(err, "CSISnapshotControllerClusterRole")
 	}
 
-	err = createClusterRoleBinding(client, CSISnapshotControllerClusterRoleBinding)
+	err = bootstrap.CreateClusterRoleBindingFromTemplate(client, CSISnapshotControllerClusterRoleBinding, nil)
 	if err != nil {
 		return errors.Wrap(err, "CSISnapshotControllerClusterRoleBinding")
 	}
@@ -225,24 +225,6 @@ func createService(client clientset.Interface, manifest string) error {
 	return nil
 }
 
-func createClusterRoleBinding(client clientset.Interface, manifest string) error {
-	template, err := bootstrap.RenderManifest(manifest, nil)
-	if err != nil {
-		return err
-	}
-
-	clusterRoleBinding, _, err := serializer.NewCodecFactory(clientsetscheme.Scheme).UniversalDeserializer().Decode(template, nil, &rbac.ClusterRoleBinding{})
-	if err != nil {
-		return err
-	}
-
-	if err := bootstrap.CreateOrUpdateClusterRoleBindingV1(client, clusterRoleBinding.(*rbac.ClusterRoleBinding)); err != nil {
-		return err
-	}
-
-	return nil
-}
-
 func createRoleBinding(client clientset.Interface, manifest string) error {
 	template, err := bootstrap.RenderManifest(manifest, nil)
 	if err != nil {
@@ -291,24 +273,6 @@ func createRole(client clientset.Interface, manifest string) error {
 	}
 
 	if err := bootstrap.CreateOrUpdateRole(client, role.(*rbac.Role)); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func createServiceAccount(client clientset.Interface, manifest string) error {
-	template, err := bootstrap.RenderManifest(manifest, nil)
-	if err != nil {
-		return err
-	}
-
-	serviceAccount, _, err := serializer.NewCodecFactory(clientsetscheme.Scheme).UniversalDeserializer().Decode(template, nil, &v1.ServiceAccount{})
-	if err != nil {
-		return err
-	}
-
-	if err := bootstrap.CreateOrUpdateServiceAccount(client, serviceAccount.(*v1.ServiceAccount)); err != nil {
 		return err
 	}
 

@@ -26,9 +26,11 @@ spec:
       - name: wormhole
         image: "{{ .Image }}"
         command:
-        - "sh"
-        - "-c"
-        - "wormhole client --listen={{ .ApiserverIP }}:{{ .ApiserverPort }} --kubeconfig=/var/lib/kubelet/kubeconfig"
+        - sh
+        - -c
+        - |
+          cp ${KUBE_CLIENT_CERT} /tmp/client-cert.livenessprobe
+          exec wormhole client --listen={{ .ApiserverIP }}:{{ .ApiserverPort }} --kubeconfig=/var/lib/kubelet/kubeconfig
         volumeMounts:
         - mountPath: /var/lib/kubelet/
           name: kubernetes
@@ -38,6 +40,18 @@ spec:
           readOnly: true
         securityContext:
           privileged: true
+        livenessProbe:
+          exec:
+            command:
+            - sh
+            - -c
+            - |
+              cmp -s ${KUBE_CLIENT_CERT} /tmp/client-cert.livenessprobe
+          initialDelaySeconds: 60
+          periodSeconds: 60
+        env:
+        - name: KUBE_CLIENT_CERT
+          value: "/var/lib/kubelet/pki/kubelet-client-current.pem"
       tolerations:
       - operator: Exists
       volumes:
