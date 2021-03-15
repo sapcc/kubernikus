@@ -16,7 +16,9 @@ import (
 	"github.com/sapcc/kubernikus/pkg/controller/ground/bootstrap"
 	"github.com/sapcc/kubernikus/pkg/controller/ground/bootstrap/csi"
 	"github.com/sapcc/kubernikus/pkg/controller/ground/bootstrap/dns"
+	"github.com/sapcc/kubernikus/pkg/controller/ground/bootstrap/flannel"
 	"github.com/sapcc/kubernikus/pkg/controller/ground/bootstrap/gpu"
+	"github.com/sapcc/kubernikus/pkg/controller/ground/bootstrap/kubeproxy"
 	"github.com/sapcc/kubernikus/pkg/controller/ground/bootstrap/wormhole"
 	"github.com/sapcc/kubernikus/pkg/util"
 	"github.com/sapcc/kubernikus/pkg/version"
@@ -93,7 +95,15 @@ func SeedKluster(clients config.Clients, factories config.Factories, images vers
 		}
 
 		if err := wormhole.SeedWormhole(kubernetes, images.Versions[kluster.Spec.Version], kluster); err != nil {
-			return errors.Wrap(err, "seed Wormhole")
+			return errors.Wrap(err, "seed wormhole")
+		}
+
+		if err := kubeproxy.SeedKubeProxy(kubernetes, images.Versions[kluster.Spec.Version], kluster); err != nil {
+			return errors.Wrap(err, "seed kube-proxy")
+		}
+
+		if err := flannel.SeedFlannel(kubernetes, images.Versions[kluster.Spec.Version], kluster); err != nil {
+			return errors.Wrap(err, "seed flannel")
 		}
 
 		if err := csi.SeedCinderCSIPlugin(kubernetes, dynamicKubernetes, klusterSecret, images.Versions[kluster.Spec.Version]); err != nil {

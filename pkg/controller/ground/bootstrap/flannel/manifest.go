@@ -5,7 +5,7 @@ const (
 kind: ConfigMap
 apiVersion: v1
 metadata:
-  name: kube-flannel-cfg
+  name: kube-flannel
   namespace: kube-system
   labels:
     tier: node
@@ -85,7 +85,7 @@ spec:
         volumeMounts:
         - name: cni
           mountPath: /etc/cni/net.d
-        - name: flannel-cfg
+        - name: config
           mountPath: /etc/kube-flannel/
       containers:
       - name: kube-flannel
@@ -118,7 +118,7 @@ spec:
         volumeMounts:
         - name: run
           mountPath: /run/flannel
-        - name: flannel-cfg
+        - name: config
           mountPath: /etc/kube-flannel/
       volumes:
       - name: run
@@ -127,8 +127,59 @@ spec:
       - name: cni
         hostPath:
           path: /etc/cni/net.d
-      - name: flannel-cfg
+      - name: config
         configMap:
-          name: kube-flannel-cfg
+          name: kube-flannel
+`
+	FlannelClusterRole = `
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: flannel
+rules:
+- apiGroups: ['extensions']
+  resources: ['podsecuritypolicies']
+  verbs: ['use']
+  resourceNames: ['psp.flannel.unprivileged']
+- apiGroups:
+  - ""
+  resources:
+  - pods
+  verbs:
+  - get
+- apiGroups:
+  - ""
+  resources:
+  - nodes
+  verbs:
+  - list
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - nodes/status
+  verbs:
+  - patch
+`
+	FlannelClusterRoleBinding = `
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: flannel
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: flannel
+subjects:
+- kind: ServiceAccount
+  name: flannel
+  namespace: kube-system
+`
+	FlannelServiceAccount = `
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: flannel
+  namespace: kube-system
 `
 )

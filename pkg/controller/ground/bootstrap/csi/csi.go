@@ -64,27 +64,27 @@ region="` + klusterSecret.Openstack.Region + `"
 		return errors.Wrap(err, "CSIRole")
 	}
 
-	err = createClusterRole(client, CSIClusterRoleAttacher)
+	err = bootstrap.CreateClusterRoleFromTemplate(client, CSIClusterRoleAttacher, nil)
 	if err != nil {
 		return errors.Wrap(err, "CSIClusterRoleAttacher")
 	}
 
-	err = createClusterRole(client, CSIClusterRoleNodePlugin)
+	err = bootstrap.CreateClusterRoleFromTemplate(client, CSIClusterRoleNodePlugin, nil)
 	if err != nil {
 		return errors.Wrap(err, "CSIClusterRoleNodePlugin")
 	}
 
-	err = createClusterRole(client, CSIClusterRoleProvisioner)
+	err = bootstrap.CreateClusterRoleFromTemplate(client, CSIClusterRoleProvisioner, nil)
 	if err != nil {
 		return errors.Wrap(err, "CSIClusterRoleProvisioner")
 	}
 
-	err = createClusterRole(client, CSIClusterRoleResizer)
+	err = bootstrap.CreateClusterRoleFromTemplate(client, CSIClusterRoleResizer, nil)
 	if err != nil {
 		return errors.Wrap(err, "CSIClusterRoleResizer")
 	}
 
-	err = createClusterRole(client, CSIClusterRoleSnapshotter)
+	err = bootstrap.CreateClusterRoleFromTemplate(client, CSIClusterRoleSnapshotter, nil)
 	if err != nil {
 		return errors.Wrap(err, "CSIClusterRoleSnapshotter")
 	}
@@ -154,7 +154,7 @@ region="` + klusterSecret.Openstack.Region + `"
 		return errors.Wrap(err, "CSISnapshotCRDVolumeSnapshot")
 	}
 
-	err = createClusterRole(client, CSISnapshotControllerClusterRole)
+	err = bootstrap.CreateClusterRoleFromTemplate(client, CSISnapshotControllerClusterRole, nil)
 	if err != nil {
 		return errors.Wrap(err, "CSISnapshotControllerClusterRole")
 	}
@@ -237,24 +237,6 @@ func createRoleBinding(client clientset.Interface, manifest string) error {
 	}
 
 	if err := bootstrap.CreateOrUpdateRoleBindingV1(client, roleBinding.(*rbac.RoleBinding)); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func createClusterRole(client clientset.Interface, manifest string) error {
-	template, err := bootstrap.RenderManifest(manifest, nil)
-	if err != nil {
-		return err
-	}
-
-	clusterRole, _, err := serializer.NewCodecFactory(clientsetscheme.Scheme).UniversalDeserializer().Decode(template, nil, &rbac.ClusterRole{})
-	if err != nil {
-		return err
-	}
-
-	if err := bootstrap.CreateOrUpdateClusterRoleV1(client, clusterRole.(*rbac.ClusterRole)); err != nil {
 		return err
 	}
 

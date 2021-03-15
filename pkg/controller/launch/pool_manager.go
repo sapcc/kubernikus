@@ -202,8 +202,6 @@ func (cpm *ConcretePoolManager) CreateNode() (id string, err error) {
 		}
 	}
 
-	// create serviceaccounts for kube-proxy and flannel
-
 	userdata, err := templates.Ignition.GenerateNode(cpm.Kluster, cpm.Pool, nodeName, secret, calicoNetworking, cpm.imageRegistry, cpm.Logger)
 	if err != nil {
 		return "", err

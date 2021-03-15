@@ -19,6 +19,18 @@ func SeedFlannel(client clientset.Interface, versions version.KlusterVersion, kl
 		versions.Flannel.Repository + ":" + versions.Flannel.Tag,
 	}
 
+	if err := bootstrap.CreateServiceAccountFromTemplate(client, FlannelServiceAccount, nil); err != nil {
+		return err
+	}
+
+	if err := bootstrap.CreateClusterRoleFromTemplate(client, FlannelClusterRole, nil); err != nil {
+		return err
+	}
+
+	if err := bootstrap.CreateClusterRoleBindingFromTemplate(client, FlannelClusterRoleBinding, nil); err != nil {
+		return err
+	}
+
 	if err := bootstrap.CreateConfigMapFromTemplate(client, FlannelConfigmap, vars); err != nil {
 		return err
 	}

@@ -10,7 +10,7 @@ metadata:
 spec:
   selector:
     matchLabels:
-      name: wormhole
+      app: wormhole
   updateStrategy:
     rollingUpdate:
       maxUnavailable: 1
@@ -18,7 +18,7 @@ spec:
   template:
     metadata:
       labels:
-        name: wormhole
+        app: wormhole
     spec:
       priorityClassName: system-node-critical
       hostNetwork: true

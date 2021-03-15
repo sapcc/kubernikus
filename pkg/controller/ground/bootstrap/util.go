@@ -268,6 +268,24 @@ func CreateOrUpdateClusterRoleV1(client clientset.Interface, clusterRole *rbac_v
 	return nil
 }
 
+func CreateClusterRoleFromTemplate(client clientset.Interface, manifest string, vars interface{}) error {
+	template, err := RenderManifest(manifest, vars)
+	if err != nil {
+		return err
+	}
+
+	clusterRole, _, err := serializer.NewCodecFactory(clientsetscheme.Scheme).UniversalDeserializer().Decode(template, nil, &rbac_v1.ClusterRole{})
+	if err != nil {
+		return err
+	}
+
+	if err := CreateOrUpdateClusterRoleV1(client, clusterRole.(*rbac_v1.ClusterRole)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func CreateOrUpdateStatefulSet(client clientset.Interface, statefulSet *apps.StatefulSet) error {
 	if _, err := client.AppsV1().StatefulSets(statefulSet.Namespace).Create(statefulSet); err != nil {
 		if !apierrors.IsAlreadyExists(err) {

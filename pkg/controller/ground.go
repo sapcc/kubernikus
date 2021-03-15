@@ -28,6 +28,9 @@ import (
 	"github.com/sapcc/kubernikus/pkg/controller/config"
 	"github.com/sapcc/kubernikus/pkg/controller/ground"
 	"github.com/sapcc/kubernikus/pkg/controller/ground/bootstrap/csi"
+	"github.com/sapcc/kubernikus/pkg/controller/ground/bootstrap/flannel"
+	"github.com/sapcc/kubernikus/pkg/controller/ground/bootstrap/kubeproxy"
+	"github.com/sapcc/kubernikus/pkg/controller/ground/bootstrap/wormhole"
 	"github.com/sapcc/kubernikus/pkg/controller/metrics"
 	informers_kubernikus "github.com/sapcc/kubernikus/pkg/generated/informers/externalversions/kubernikus/v1"
 	"github.com/sapcc/kubernikus/pkg/util"
@@ -616,14 +619,26 @@ func (op *GroundControl) upgradeKluster(kluster *v1.Kluster, toVersion string) e
 	}
 
 	if strings.HasPrefix(toVersion, "1.20") {
-		dynamicKubernetes, err := op.Clients.Satellites.DynamicClientFor(kluster)
-		if err != nil {
-			return errors.Wrap(err, "dynamic client")
-		}
-
 		kubernetes, err := op.Clients.Satellites.ClientFor(kluster)
 		if err != nil {
 			return errors.Wrap(err, "client")
+		}
+
+		if err := wormhole.SeedWormhole(kubernetes, op.Images.Versions[kluster.Spec.Version], kluster); err != nil {
+			return errors.Wrap(err, "seed wormhole")
+		}
+
+		if err := kubeproxy.SeedKubeProxy(kubernetes, op.Images.Versions[kluster.Spec.Version], kluster); err != nil {
+			return errors.Wrap(err, "seed kube-proxy")
+		}
+
+		if err := flannel.SeedFlannel(kubernetes, op.Images.Versions[kluster.Spec.Version], kluster); err != nil {
+			return errors.Wrap(err, "seed flannel")
+		}
+
+		dynamicKubernetes, err := op.Clients.Satellites.DynamicClientFor(kluster)
+		if err != nil {
+			return errors.Wrap(err, "dynamic client")
 		}
 
 		if err := csi.SeedCinderCSIPlugin(kubernetes, dynamicKubernetes, klusterSecret, op.Images.Versions[kluster.Spec.Version]); err != nil {
