@@ -1,5 +1,5 @@
-VERSION?=v1.20.4
-VERSION_CCM?=v1.20.1
+VERSION?=v1.20.5
+VERSION_CCM?=v1.20.2
 REGISTRY?=k8s.gcr.io
 IMAGE?=keppel.eu-de-1.cloud.sap/ccloud
 ARCH=amd64
