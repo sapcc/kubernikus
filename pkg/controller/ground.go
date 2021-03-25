@@ -30,6 +30,7 @@ import (
 	"github.com/sapcc/kubernikus/pkg/controller/ground/bootstrap/csi"
 	"github.com/sapcc/kubernikus/pkg/controller/ground/bootstrap/flannel"
 	"github.com/sapcc/kubernikus/pkg/controller/ground/bootstrap/kubeproxy"
+	"github.com/sapcc/kubernikus/pkg/controller/ground/bootstrap/servicing"
 	"github.com/sapcc/kubernikus/pkg/controller/ground/bootstrap/wormhole"
 	"github.com/sapcc/kubernikus/pkg/controller/metrics"
 	informers_kubernikus "github.com/sapcc/kubernikus/pkg/generated/informers/externalversions/kubernikus/v1"
@@ -622,6 +623,10 @@ func (op *GroundControl) upgradeKluster(kluster *v1.Kluster, toVersion string) e
 		kubernetes, err := op.Clients.Satellites.ClientFor(kluster)
 		if err != nil {
 			return errors.Wrap(err, "client")
+		}
+
+		if err := servicing.SeedDisableNodeServices(kubernetes, op.Images.Versions[kluster.Spec.Version], kluster); err != nil {
+			return errors.Wrap(err, "seed disable node services")
 		}
 
 		if err := wormhole.SeedWormhole(kubernetes, op.Images.Versions[kluster.Spec.Version], kluster); err != nil {
