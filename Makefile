@@ -1,5 +1,6 @@
 VERSION  ?= $(shell git rev-parse --verify HEAD)
 GOOS     ?= $(shell go env GOOS)
+export GO111MODULE =off
 ifeq ($(GOOS),darwin)
 export CGO_ENABLED=0
 endif
