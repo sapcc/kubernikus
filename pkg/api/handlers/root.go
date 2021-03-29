@@ -9,6 +9,7 @@ var RootContent = `{
   "paths": [
     "/api",
     "/api/v1",
+    "/auth/login",
     "/docs",
     "/swagger"
   ]

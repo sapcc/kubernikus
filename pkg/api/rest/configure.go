@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/aokoli/goutils"
 	"github.com/go-openapi/errors"
 	runtime "github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
@@ -52,6 +53,18 @@ func Configure(api *operations.KubernikusAPI, rt *apipkg.Runtime) error {
 		return err
 	}
 	api.APIAuthorizer = authorizer
+
+	config, verifier, err := auth.OAuthConfig()
+	if err == nil {
+		api.DexAuth = auth.OAuth(verifier)
+		randomPasswordChars := []rune("abcdefghjkmnpqrstuvwxABCDEFGHJKLMNPQRSTUVWX23456789")
+		state, err := goutils.Random(12, 0, 0, true, true, randomPasswordChars...)
+		if err != nil {
+			return err
+		}
+		api.GetAuthLoginHandler = auth.NewAuthLogin(config, state)
+		api.GetAuthCallbackHandler = auth.NewAuthCallback(config, state)
+	}
 
 	api.InfoHandler = handlers.NewInfo(rt)
 	api.ListAPIVersionsHandler = handlers.NewListAPIVersions(rt)
