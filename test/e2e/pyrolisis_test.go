@@ -42,11 +42,11 @@ func (p *PyrolisisTests) Run(t *testing.T) {
 			t.Run("Klusters", p.WaitForE2EKlustersTerminated)
 		})
 
-		cleanupStorageContainer := t.Run("CleanupBackupStorageContainers", p.CleanupBackupStorageContainers)
-		require.True(t, cleanupStorageContainer, "Etcd backup storage container cleanup failed")
-
 		t.Run("CleanupVolumes", p.CleanupVolumes)
 		t.Run("CleanupInstances", p.CleanupInstances)
+
+		cleanupStorageContainer := t.Run("CleanupBackupStorageContainers", p.CleanupBackupStorageContainers)
+		require.True(t, cleanupStorageContainer, "Etcd backup storage container cleanup failed")
 	}
 }
 
