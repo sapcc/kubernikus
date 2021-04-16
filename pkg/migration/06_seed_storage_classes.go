@@ -17,5 +17,5 @@ func SeedCinderStorageClasses(rawKluster []byte, current *v1.Kluster, clients co
 		return err
 	}
 
-	return ground.SeedCinderStorageClasses(kubernetes, openstack)
+	return ground.SeedCinderStorageClasses(kubernetes, openstack, false)
 }

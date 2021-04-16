@@ -1,0 +1,262 @@
+{{- if .Values.openstack }}
+{{- if (semverCompare ">= 1.20" .Values.version.kubernetes) }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "master.fullname" . }}-csi
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ include "master.fullname" . }}-csi
+    role: controller
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}"
+    release: {{ .Release.Name }}
+spec:
+  replicas: {{ .Values.csi.replicas }}
+  revisionHistoryLimit: 1
+  selector:
+    matchLabels:
+      app: {{ include "master.fullname" . }}-csi
+      role: controller
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+{{- if .Values.csi.podAnnotations }}
+      annotations:
+{{ toYaml .Values.csi.podAnnotations | indent 8 }}
+{{- end }}
+      labels:
+        app: {{ include "master.fullname" . }}-csi
+        role: controller
+        release: {{ .Release.Name }}
+    spec:
+      initContainers:
+      - name: apiserver-wait
+        image: {{ include "kubelet.image" . | quote }}
+        command:
+        - sh
+        - -c
+        args:
+        - until kubectl version --short --kubeconfig /etc/kubernetes/config/csi-kubeconfig --request-timeout=4s | grep -i "Server.*{{ .Values.version.kubernetes }}"; do sleep 5; done;
+        volumeMounts:
+        - mountPath: /etc/kubernetes/certs/
+          name: certs
+          readOnly: true
+        - mountPath: /etc/kubernetes/config
+          name: config
+          readOnly: true
+      containers:
+      - name: cinder-csi-plugin
+        image: {{ include "cinderCSIPlugin.image" . }}
+        imagePullPolicy: IfNotPresent
+        args :
+        - /bin/cinder-csi-plugin
+        - --nodeid=dummy
+        - --endpoint=$(CSI_ENDPOINT)
+        - --cloud-config=/etc/kubernetes/cloudprovider/openstack.config
+        - --cluster={{ include "master.fullname" . }}
+        - --v=3
+        env:
+        - name: CSI_ENDPOINT
+          value: unix://{{ .Values.csi.socketPath }}/csi.sock
+{{- if .Values.csi.resources.driver }}
+        resources:
+{{ toYaml .Values.csi.resources.driver | indent 10 }}
+{{- end }}
+        ports:
+        - name: healthz
+          containerPort: 9808
+          protocol: TCP
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: healthz
+          initialDelaySeconds: 10
+          timeoutSeconds: 3
+          periodSeconds: 10
+          failureThreshold: 5
+        volumeMounts:
+        - name: socket-dir
+          mountPath: {{ .Values.csi.socketPath }}
+        - name: cloud-provider-config
+          mountPath: /etc/kubernetes/cloudprovider
+
+      - name: csi-provisioner
+        image: {{ include "csiProvisioner.image" . }}
+        imagePullPolicy: IfNotPresent
+        args:
+        - --csi-address=$(ADDRESS)
+        - --kubeconfig=/etc/kubernetes/config/csi-kubeconfig
+        - --feature-gates=Topology=true
+        - --volume-name-prefix=pv-{{ include "master.fullname" . }}
+        - --default-fstype=ext4
+        - --leader-election={{ .Values.csi.leaderElection }}
+        {{- if .Values.csi.leaderElectionNamespace }}
+        - --leader-election-namespace={{ .Values.csi.leaderElectionNamespace }}
+        {{- end }}
+        - --timeout={{ .Values.csi.timeout }}
+        - --v=5
+        env:
+        - name: ADDRESS
+          value: {{ .Values.csi.socketPath }}/csi.sock
+{{- if .Values.csi.resources.provisioner }}
+        resources:
+{{ toYaml .Values.csi.resources.provisioner | indent 10 }}
+{{- end }}
+        volumeMounts:
+        - name: socket-dir
+          mountPath: {{ .Values.csi.socketPath }}
+        - mountPath: /etc/kubernetes/config
+          name: config
+          readOnly: true
+        - mountPath: /etc/kubernetes/certs/
+          name: certs
+          readOnly: true
+
+      - name: csi-attacher
+        image: {{ include "csiAttacher.image" . }}
+        imagePullPolicy: IfNotPresent
+        args:
+        - --csi-address=$(ADDRESS)
+        - --kubeconfig=/etc/kubernetes/config/csi-kubeconfig
+        - --leader-election={{ .Values.csi.leaderElection }}
+        {{- if .Values.csi.leaderElectionNamespace }}
+        - --leader-election-namespace={{ .Values.csi.leaderElectionNamespace }}
+        {{- end }}
+        - --timeout={{ .Values.csi.timeout }}
+        - --v=5
+        env:
+        - name: ADDRESS
+          value: {{ .Values.csi.socketPath }}/csi.sock
+{{- if .Values.csi.resources.attacher }}
+        resources:
+{{ toYaml .Values.csi.resources.attacher | indent 10 }}
+{{- end }}
+        volumeMounts:
+        - name: socket-dir
+          mountPath: {{ .Values.csi.socketPath }}
+        - mountPath: /etc/kubernetes/config
+          name: config
+          readOnly: true
+        - mountPath: /etc/kubernetes/certs/
+          name: certs
+          readOnly: true
+
+      - name: csi-snapshotter
+        image: {{ include "csiSnapshotter.image" . }}
+        imagePullPolicy: IfNotPresent
+        args:
+        - --csi-address=$(CSI_ENDPOINT)
+        - --kubeconfig=/etc/kubernetes/config/csi-kubeconfig
+        - --leader-election={{ .Values.csi.leaderElection }}
+        {{- if .Values.csi.leaderElectionNamespace }}
+        - --leader-election-namespace={{ .Values.csi.leaderElectionNamespace }}
+        {{- end }}
+        - --timeout={{ .Values.csi.timeout }}
+        - --snapshot-name-prefix={{ include "master.fullname" . }}
+        env:
+        - name: CSI_ENDPOINT
+          value: {{ .Values.csi.socketPath }}/csi.sock
+{{- if .Values.csi.resources.snapshotter }}
+        resources:
+{{ toYaml .Values.csi.resources.snapshotter | indent 10 }}
+{{- end }}
+        volumeMounts:
+        - name: socket-dir
+          mountPath: {{ .Values.csi.socketPath }}
+        - mountPath: /etc/kubernetes/config
+          name: config
+          readOnly: true
+        - mountPath: /etc/kubernetes/certs/
+          name: certs
+          readOnly: true
+
+      - name: csi-resizer
+        image: {{ include "csiResizer.image" . }}
+        imagePullPolicy: IfNotPresent
+        args:
+        - --csi-address=$(ADDRESS)
+        - --kubeconfig=/etc/kubernetes/config/csi-kubeconfig
+        - --leader-election={{ .Values.csi.leaderElection }}
+        {{- if .Values.csi.leaderElectionNamespace }}
+        - --leader-election-namespace={{ .Values.csi.leaderElectionNamespace }}
+        {{- end }}
+        - --csiTimeout={{ .Values.csi.timeout }}
+        - --v=5
+        env:
+        - name: ADDRESS
+          value: {{ .Values.csi.socketPath }}/csi.sock
+{{- if .Values.csi.resources.resizer }}
+        resources:
+{{ toYaml .Values.csi.resources.resizer | indent 10 }}
+{{- end }}
+        volumeMounts:
+        - name: socket-dir
+          mountPath: {{ .Values.csi.socketPath }}
+        - mountPath: /etc/kubernetes/config
+          name: config
+          readOnly: true
+        - mountPath: /etc/kubernetes/certs/
+          name: certs
+          readOnly: true
+
+      - name: csi-snapshot-controller
+        image: {{ include "csiSnapshotController.image" . }}
+        imagePullPolicy: IfNotPresent
+        args:
+        - --kubeconfig=/etc/kubernetes/config/csi-kubeconfig
+        - --leader-election={{ .Values.csi.leaderElection }}
+        {{- if .Values.csi.leaderElectionNamespace }}
+        - --leader-election-namespace={{ .Values.csi.leaderElectionNamespace }}
+        {{- end }}
+{{- if .Values.csi.resources.snapshotController }}
+        resources:
+{{ toYaml .Values.csi.resources.snapshotController | indent 10 }}
+{{- end }}
+        volumeMounts:
+        - mountPath: /etc/kubernetes/config
+          name: config
+          readOnly: true
+        - mountPath: /etc/kubernetes/certs/
+          name: certs
+          readOnly: true
+
+      - name: csi-liveness-probe
+        image: {{ include "csiLivenessProbe.image" . }}
+        args:
+        - --csi-address=/csi/csi.sock
+{{- if .Values.csi.resources.livenessProbe }}
+        resources:
+{{ toYaml .Values.csi.resources.livenessProbe | indent 10 }}
+{{- end }}
+        volumeMounts:
+        - name: socket-dir
+          mountPath: /csi
+
+      volumes:
+      - name: socket-dir
+        emptyDir: {}
+      - name: config
+        configMap:
+          name: {{ include "master.fullname" . }}
+      - name: cloud-provider-config
+        secret:
+          secretName: {{ include "master.fullname" . }}-generated
+          items:
+          - key: openstack-csi.config
+            path: openstack.config
+      - name: certs
+        secret:
+          secretName: {{ .Values.secretName }}
+          items:
+          - key: tls-ca.pem
+            path: tls-ca.pem
+          - key: apiserver-clients-csi-controller.pem
+            path: csi-client.pem
+          - key: apiserver-clients-csi-controller-key.pem
+            path: csi-client.key
+{{- end }}
+{{- end }}

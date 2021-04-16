@@ -91,6 +91,7 @@ func (lr *LaunchReconciler) Reconcile(kluster *v1.Kluster) (requeue bool, err er
 		if kluster.TerminationProtection() {
 			return false, nil
 		}
+
 		return lr.terminatePools(kluster)
 	}
 
