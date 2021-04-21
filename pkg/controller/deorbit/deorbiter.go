@@ -98,7 +98,7 @@ func (d *ConcreteDeorbiter) DeletePersistentVolumeClaims() (deleted []core_v1.Pe
 			return deleted, err
 		}
 
-		if pv.Spec.Cinder == nil && pv.Spec.CSI.Driver != "cinder.csi.openstack.org" {
+		if pv.Spec.Cinder == nil && pv.Spec.CSI == nil {
 			continue
 		}
 		deleted = append(deleted, pvc)
