@@ -170,8 +170,12 @@ spec:
             - --allow-privileged=true
             - --authorization-mode=Node,RBAC
             {{- if .Values.openstack }}
+            {{- if (semverCompare "< 1.20" .Values.version.kubernetes) }}
             - --cloud-config=/etc/kubernetes/cloudprovider/openstack.config
             - --cloud-provider=openstack
+            {{- else }}
+            - --cloud-provider=external
+            {{- end }}
             {{- end }}
 {{- if (semverCompare ">= 1.8" .Values.version.kubernetes) }}
             - --enable-bootstrap-token-auth=true
@@ -198,16 +202,19 @@ spec:
             - --admission-control=NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,ResourceQuota
             - --tls-ca-file=/etc/kubernetes/certs/tls-ca.pem
 {{- end }}
-{{- if (semverCompare ">= 1.13" .Values.version.kubernetes) }}
+{{- if and (semverCompare ">= 1.13" .Values.version.kubernetes) (semverCompare "< 1.20" .Values.version.kubernetes) }}
             - --enable-admission-plugins=PersistentVolumeLabel
 {{- end }}
 {{- if (semverCompare ">= 1.14" .Values.version.kubernetes) }}
 {{- if (semverCompare "< 1.17" .Values.version.kubernetes) }}
             - --feature-gates=NodeLease=false
 {{- end }}
-{{- else if (semverCompare ">= 1.12" .Values.version.kubernetes)}}
+{{- else if (semverCompare ">= 1.12" .Values.version.kubernetes) }}
             # https://github.com/kubernetes/kubernetes/issues/85867
             - --feature-gates=ValidateProxyRedirects=true
+{{- end }}
+{{- if (semverCompare ">= 1.20" .Values.version.kubernetes) }}
+            - --feature-gates=CSIMigration=true,CSIMigrationOpenStack=true,ExpandCSIVolumes=true
 {{- end }}
             #Cert Spratz
             - --client-ca-file=/etc/kubernetes/certs/apiserver-clients-and-nodes-ca.pem
