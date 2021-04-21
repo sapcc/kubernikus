@@ -11,6 +11,7 @@ import (
 	compute_quota "github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/quotasets"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/servergroups"
 	"github.com/gophercloud/gophercloud/openstack/identity/v3/tokens"
+	"github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/loadbalancers"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
@@ -39,6 +40,7 @@ func (s *CleanupTests) Run(t *testing.T) {
 		if s.Reuse == false {
 			t.Run("QuotaPostFlightCheck", s.QuotaPostFlightCheck)
 			t.Run("ServerGroupsGotDeleted", s.ServerGroupsGotDeleted)
+			t.Run("LoadbalancerGotDeleted", s.LoadbalancerGotDeleted)
 		}
 	}
 }
@@ -99,4 +101,24 @@ func (s *CleanupTests) ServerGroupsGotDeleted(t *testing.T) {
 		}
 	}
 	require.Equal(t, 0, count, "There should be no server groups left")
+}
+
+func (s *CleanupTests) LoadbalancerGotDeleted(t *testing.T) {
+	lbClient, err := openstack.NewLoadBalancerV2(s.OpenStack.Provider, gophercloud.EndpointOpts{})
+	require.NoError(t, err, "There should be no error getting a loadbalancer client")
+
+	allPages, err := loadbalancers.List(lbClient, loadbalancers.ListOpts{}).AllPages()
+	require.NoError(t, err, "There should be no error while listing loadbalancers")
+
+	allLoadbalancers, err := loadbalancers.ExtractLoadBalancers(allPages)
+	require.NoError(t, err, "There should be no error while extracting loadbalancers")
+
+	count := 0
+	for _, lb := range allLoadbalancers {
+		if strings.HasSuffix(lb.Name, "_e2e-lb") {
+			count++
+		}
+	}
+
+	require.Equal(t, 0, count, "There should be no Loadbalancers left")
 }
