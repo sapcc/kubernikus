@@ -185,7 +185,7 @@ func (d *ConcreteDeorbiter) isPersistentVolumesCleanupFinished() (bool, error) {
 		if pv.Status.Phase == core_v1.VolumeFailed {
 			continue
 		}
-		if pv.Spec.PersistentVolumeSource.Cinder != nil || pv.Spec.PersistentVolumeSource.CSI.Driver == "cinder.csi.openstack.org" {
+		if pv.Spec.PersistentVolumeSource.Cinder != nil || (pv.Spec.PersistentVolumeSource.CSI != nil && pv.Spec.PersistentVolumeSource.CSI.Driver == "cinder.csi.openstack.org") {
 			return false, nil
 		}
 	}
