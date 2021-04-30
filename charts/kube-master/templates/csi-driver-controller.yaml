@@ -93,6 +93,7 @@ spec:
         - --feature-gates=Topology=true
         - --volume-name-prefix=pv-{{ include "master.fullname" . }}
         - --default-fstype=ext4
+        - --extra-create-metadata
         - --leader-election={{ .Values.csi.leaderElection }}
         {{- if .Values.csi.leaderElectionNamespace }}
         - --leader-election-namespace={{ .Values.csi.leaderElectionNamespace }}
