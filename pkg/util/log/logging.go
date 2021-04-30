@@ -6,7 +6,7 @@ import (
 
 	kitLog "github.com/go-kit/kit/log"
 	"github.com/go-stack/stack"
-	"github.com/golang/glog"
+	"k8s.io/klog"
 )
 
 func NewLogger(level int) kitLog.Logger {
@@ -17,7 +17,8 @@ func NewLogger(level int) kitLog.Logger {
 	logger = NewLevelFilter(level, logger)
 	logger = NewErrorOrigin(logger)
 	logger = kitLog.With(logger, "ts", kitLog.DefaultTimestampUTC, "caller", Caller(3))
-	glog.SetLogger(logger, int32(level))
+	//pass go-kit logger to klog replacment simonpasquier/klog-gokit
+	klog.SetLogger(logger)
 
 	return logger
 

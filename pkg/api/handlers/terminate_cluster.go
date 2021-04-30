@@ -22,7 +22,7 @@ type terminateCluster struct {
 
 func (d *terminateCluster) Handle(params operations.TerminateClusterParams, principal *models.Principal) middleware.Responder {
 
-	klusterInterface := d.Kubernikus.Kubernikus().Klusters(d.Namespace)
+	klusterInterface := d.Kubernikus.KubernikusV1().Klusters(d.Namespace)
 	kluster, err := klusterInterface.Get(qualifiedName(params.Name, principal.Account), metav1.GetOptions{})
 	if err != nil {
 		if apierrors.IsNotFound(err) {

@@ -1,9 +1,9 @@
 package get
 
 import (
-	"github.com/golang/glog"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
+	"k8s.io/klog"
 
 	"github.com/sapcc/kubernikus/pkg/cmd"
 	"github.com/sapcc/kubernikus/pkg/cmd/printers"
@@ -27,7 +27,7 @@ func (o *GetOptions) nodePoolPreRun(c *cobra.Command, args []string) {
 }
 
 func (o *GetOptions) nodePoolRun(c *cobra.Command, args []string) {
-	glog.V(2).Infof("Run args: %v", args)
+	klog.V(2).Infof("Run args: %v", args)
 	if len(args) == 1 {
 		cmd.CheckError(o.nodePoolList(args[0]))
 	} else {
@@ -38,7 +38,7 @@ func (o *GetOptions) nodePoolRun(c *cobra.Command, args []string) {
 func (o *GetOptions) nodePoolList(cluster string) error {
 	nodePools, err := o.Kubernikus.ListNodePools(cluster)
 	if err != nil {
-		glog.V(2).Infof("Error listing nodepools: %v", err)
+		klog.V(2).Infof("Error listing nodepools: %v", err)
 		return errors.Wrap(err, "Error listing nodepools")
 	}
 	printme := make([]printers.Printable, len(nodePools))
@@ -52,7 +52,7 @@ func (o *GetOptions) nodePoolList(cluster string) error {
 func (o *GetOptions) nodePoolShow(cluster string, nodePoolName string) error {
 	nodePool, err := o.Kubernikus.ShowNodePool(cluster, nodePoolName)
 	if err != nil {
-		glog.V(2).Infof("Error getting nodepool %v from cluster %v: %v", nodePoolName, cluster, err)
+		klog.V(2).Infof("Error getting nodepool %v from cluster %v: %v", nodePoolName, cluster, err)
 		return errors.Wrap(err, "Error getting nodepool")
 	}
 	return nodePool.Print(printers.Human, printers.PrintOptions{})

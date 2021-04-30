@@ -1,11 +1,12 @@
 package util
 
 import (
-	"crypto/rand"
+	cryptorand "crypto/rand"
 	"crypto/rsa"
 	"crypto/x509"
 	"crypto/x509/pkix"
 	"encoding/json"
+	"encoding/pem"
 	"errors"
 	"fmt"
 	"math"
@@ -16,6 +17,7 @@ import (
 	"time"
 
 	certutil "k8s.io/client-go/util/cert"
+	"k8s.io/client-go/util/keyutil"
 
 	"github.com/sapcc/kubernikus/pkg/api/models"
 	v1 "github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
@@ -45,7 +47,7 @@ func NewBundle(key, cert []byte) (*Bundle, error) {
 	if len(certificates) < 1 {
 		return nil, errors.New("No certificates found")
 	}
-	k, err := certutil.ParsePrivateKeyPEM(key)
+	k, err := keyutil.ParsePrivateKeyPEM(key)
 	if err != nil {
 		return nil, err
 	}
@@ -82,8 +84,8 @@ func (ca Bundle) Sign(config Config) (*Bundle, error) {
 		config.ValidFor = defaultCertValidity
 	}
 
-	key, _ := certutil.NewPrivateKey()
-	serial, _ := rand.Int(rand.Reader, new(big.Int).SetInt64(math.MaxInt64))
+	key, _ := NewPrivateKey()
+	serial, _ := cryptorand.Int(cryptorand.Reader, new(big.Int).SetInt64(math.MaxInt64))
 
 	certTmpl := x509.Certificate{
 		Subject: pkix.Name{
@@ -102,7 +104,7 @@ func (ca Bundle) Sign(config Config) (*Bundle, error) {
 		ExtKeyUsage:  config.Usages,
 	}
 
-	certDERBytes, _ := x509.CreateCertificate(rand.Reader, &certTmpl, ca.Certificate, key.Public(), ca.PrivateKey)
+	certDERBytes, _ := x509.CreateCertificate(cryptorand.Reader, &certTmpl, ca.Certificate, key.Public(), ca.PrivateKey)
 
 	cert, _ := x509.ParseCertificate(certDERBytes)
 
@@ -355,8 +357,8 @@ func loadOrCreateCA(kluster *v1.Kluster, name string, cert, key *string, certUpd
 	}
 	*certUpdates = append(*certUpdates, update)
 
-	*cert = string(certutil.EncodeCertPEM(caBundle.Certificate))
-	*key = string(certutil.EncodePrivateKeyPEM(caBundle.PrivateKey))
+	*cert = string(EncodeCertPEM(caBundle.Certificate))
+	*key = string(EncodePrivateKeyPEM(caBundle.PrivateKey))
 	return caBundle, nil
 }
 
@@ -397,8 +399,8 @@ func ensureClientCertificate(ca *Bundle, cn string, groups []string, cert, key *
 	}
 	*certUpdates = append(*certUpdates, update)
 
-	*cert = string(certutil.EncodeCertPEM(certificate.Certificate))
-	*key = string(certutil.EncodePrivateKeyPEM(certificate.PrivateKey))
+	*cert = string(EncodeCertPEM(certificate.Certificate))
+	*key = string(EncodePrivateKeyPEM(certificate.PrivateKey))
 	return nil
 
 }
@@ -443,13 +445,13 @@ func ensureServerCertificate(ca *Bundle, cn string, dnsNames []string, ips []net
 	}
 	*certUpdates = append(*certUpdates, update)
 
-	*cert = string(certutil.EncodeCertPEM(certificate.Certificate))
-	*key = string(certutil.EncodePrivateKeyPEM(certificate.PrivateKey))
+	*cert = string(EncodeCertPEM(certificate.Certificate))
+	*key = string(EncodePrivateKeyPEM(certificate.PrivateKey))
 	return nil
 }
 
 func createCA(klusterName, name string) (*Bundle, error) {
-	privateKey, err := certutil.NewPrivateKey()
+	privateKey, err := NewPrivateKey()
 	if err != nil {
 		return nil, fmt.Errorf("Failed to generate private key for %s ca: %s", name, err)
 	}
@@ -468,7 +470,7 @@ func createCA(klusterName, name string) (*Bundle, error) {
 		IsCA:                  true,
 	}
 
-	certDERBytes, err := x509.CreateCertificate(rand.Reader, &tmpl, &tmpl, privateKey.Public(), privateKey)
+	certDERBytes, err := x509.CreateCertificate(cryptorand.Reader, &tmpl, &tmpl, privateKey.Public(), privateKey)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create certificate for %s CA: %s", name, err)
 	}
@@ -565,4 +567,39 @@ func addtionalSANsFromAnnotation(ann string) (dnsNames []string, ips []net.IP, e
 		}
 	}
 	return
+}
+
+const (
+	// PrivateKeyBlockType is a possible value for pem.Block.Type.
+	PrivateKeyBlockType = "PRIVATE KEY"
+	// PublicKeyBlockType is a possible value for pem.Block.Type.
+	PublicKeyBlockType = "PUBLIC KEY"
+	// CertificateBlockType is a possible value for pem.Block.Type.
+	CertificateBlockType = "CERTIFICATE"
+	// RSAPrivateKeyBlockType is a possible value for pem.Block.Type.
+	RSAPrivateKeyBlockType = "RSA PRIVATE KEY"
+	rsaKeySize             = 2048
+	duration365d           = time.Hour * 24 * 365
+)
+
+func EncodeCertPEM(cert *x509.Certificate) []byte {
+	block := pem.Block{
+		Type:  CertificateBlockType,
+		Bytes: cert.Raw,
+	}
+	return pem.EncodeToMemory(&block)
+}
+
+// EncodePrivateKeyPEM returns PEM-encoded private key data
+func EncodePrivateKeyPEM(key *rsa.PrivateKey) []byte {
+	block := pem.Block{
+		Type:  RSAPrivateKeyBlockType,
+		Bytes: x509.MarshalPKCS1PrivateKey(key),
+	}
+	return pem.EncodeToMemory(&block)
+}
+
+// NewPrivateKey creates an RSA private key
+func NewPrivateKey() (*rsa.PrivateKey, error) {
+	return rsa.GenerateKey(cryptorand.Reader, rsaKeySize)
 }

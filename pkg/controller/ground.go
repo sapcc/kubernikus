@@ -159,7 +159,7 @@ func (op *GroundControl) processNextWorkItem() bool {
 
 func (op *GroundControl) updateKluster(kluster *v1.Kluster, updateFunc func(*v1.Kluster) error) error {
 	_, err := util.UpdateKlusterWithRetries(
-		op.Clients.Kubernikus.Kubernikus().Klusters(kluster.Namespace),
+		op.Clients.Kubernikus.KubernikusV1().Klusters(kluster.Namespace),
 		op.klusterInformer.Lister().Klusters(kluster.Namespace),
 		kluster.Name,
 		updateFunc)
@@ -485,7 +485,7 @@ func (op *GroundControl) updatePhase(kluster *v1.Kluster, phase models.KlusterPh
 	if kluster.Status.Phase == phase {
 		return nil
 	}
-	err := util.UpdateKlusterPhase(op.Clients.Kubernikus.Kubernikus(), kluster, phase)
+	err := util.UpdateKlusterPhase(op.Clients.Kubernikus.KubernikusV1(), kluster, phase)
 
 	if err == nil {
 		op.Recorder.Eventf(kluster, api_v1.EventTypeNormal, string(phase), "%s kluster", phase)

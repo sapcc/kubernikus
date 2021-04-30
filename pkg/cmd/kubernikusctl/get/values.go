@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/golang/glog"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
+	"k8s.io/klog"
 
 	"github.com/sapcc/kubernikus/pkg/cmd"
 )
@@ -22,13 +22,13 @@ func (o *GetOptions) NewClusterValuesCommand() *cobra.Command {
 }
 
 func (o *GetOptions) valuesPreRun(c *cobra.Command, args []string) {
-	glog.V(2).Infof("Get Cluster PR: %v", o)
+	klog.V(2).Infof("Get Cluster PR: %v", o)
 	cmd.CheckError(validateClusterValuesCommandArgs(args))
 	cmd.CheckError(o.SetupKubernikusClient())
 }
 
 func (o *GetOptions) valuesRun(c *cobra.Command, args []string) {
-	glog.V(2).Infof("Run args: %v", args)
+	klog.V(2).Infof("Run args: %v", args)
 
 	idx := strings.LastIndex(args[0], "-")
 	name, account := args[0][:idx], args[0][idx+1:]
