@@ -41,6 +41,7 @@ password="` + klusterSecret.Openstack.Password + `"
 region="` + klusterSecret.Openstack.Region + `"
 
 [BlockStorage]
+rescan-on-resize = yes
 `,
 		},
 	}

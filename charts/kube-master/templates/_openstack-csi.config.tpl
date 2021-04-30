@@ -7,3 +7,4 @@ password = {{ required "missing openstack.password" .Values.openstack.password }
 region = {{ required "missing openstack.region" .Values.openstack.region }}
 
 [BlockStorage]
+rescan-on-resize = yes

@@ -135,7 +135,7 @@ func (k NodeTests) LatestStableContainerLinux(t *testing.T) {
 		} `json:"current"`
 	}
 
-	resp, err := http.Get("https://www.flatcar-linux.org/releases-json/releases-stable.json")
+	resp, err := http.Get("https://kinvolk.io/flatcar-container-linux/releases-json/releases-stable.json")
 	if !assert.NoError(t, err) {
 		return
 	}

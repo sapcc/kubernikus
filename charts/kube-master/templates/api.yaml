@@ -202,7 +202,7 @@ spec:
             - --admission-control=NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,ResourceQuota
             - --tls-ca-file=/etc/kubernetes/certs/tls-ca.pem
 {{- end }}
-{{- if (semverCompare ">= 1.13" .Values.version.kubernetes) }}
+{{- if and (semverCompare ">= 1.13" .Values.version.kubernetes) (semverCompare "< 1.20" .Values.version.kubernetes) }}
             - --enable-admission-plugins=PersistentVolumeLabel
 {{- end }}
 {{- if (semverCompare ">= 1.14" .Values.version.kubernetes) }}
