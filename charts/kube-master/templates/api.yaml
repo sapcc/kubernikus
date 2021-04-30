@@ -106,7 +106,7 @@ spec:
         - name: config
           configMap:
             name: {{ include "master.fullname" . }}
-{{- if (semverCompare "< 1.19" .Values.version.kubernetes) }}
+{{- if and (.Values.etcd.backup.enabled) (semverCompare "< 1.19" .Values.version.kubernetes) }}
         - name: liveness-probe
           configMap:
             name: {{ include "master.fullname" . }}
@@ -266,12 +266,19 @@ spec:
               name: liveness-probe
 {{- end }}
           livenessProbe:
+{{- if .Values.etcd.backup.enabled }}
             exec:
               command:
-{{- if (semverCompare ">= 1.19" .Values.version.kubernetes) }}
+            {{- if (semverCompare ">= 1.19" .Values.version.kubernetes) }}
                 - /api-liveness
-{{- else }}
+            {{- else }}
                 - /liveness-probe/api-liveness-probe.py
+            {{- end }}
+{{- else }}
+            httpGet:
+              path: /healthz
+              port: {{ .Values.advertisePort }}
+              scheme: HTTPS
 {{- end }}
             initialDelaySeconds: 60
             periodSeconds: 60
