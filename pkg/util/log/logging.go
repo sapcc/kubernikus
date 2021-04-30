@@ -16,12 +16,12 @@ func NewLogger(level int) kitLog.Logger {
 	logger = NewTrailingNilFilter(logger)
 	logger = NewLevelFilter(level, logger)
 	logger = NewErrorOrigin(logger)
-	logger = kitLog.With(logger, "ts", kitLog.DefaultTimestampUTC, "caller", Caller(3))
+	logger = kitLog.With(logger, "ts", kitLog.DefaultTimestampUTC)
 	//pass go-kit logger to klog replacment simonpasquier/klog-gokit
-	klog.SetLogger(logger)
+	klog.SetLogger(kitLog.With(logger, "caller", Caller(4)))
 	klog.ClampLevel(klog.Level(level))
 
-	return logger
+	return kitLog.With(logger, "caller", Caller(3))
 
 }
 
