@@ -261,7 +261,7 @@ spec:
             - mountPath: /etc/kubernetes/bootstrap
               name: bootstrap
               readOnly: true
-{{- if (semverCompare "< 1.19" .Values.version.kubernetes) }}
+{{- if and (.Values.etcd.backup.enabled) (semverCompare "< 1.19" .Values.version.kubernetes) }}
             - mountPath: /liveness-probe
               name: liveness-probe
 {{- end }}
