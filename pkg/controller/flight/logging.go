@@ -70,3 +70,15 @@ func (f *LoggingFlightReconciler) EnsureServiceUserRoles() []string {
 	}
 	return createdRoles
 }
+
+func (f *LoggingFlightReconciler) EnsureNodeTags() []string {
+	addedTags := f.Reconciler.EnsureNodeTags()
+	if len(addedTags) > 0 {
+		f.Logger.Log(
+			"msg", "added missing node tags",
+			"nodes", fmt.Sprintf("%v", addedTags),
+			"v", 2,
+		)
+	}
+	return addedTags
+}

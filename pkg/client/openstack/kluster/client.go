@@ -10,6 +10,7 @@ import (
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/schedulerhints"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/secgroups"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/servergroups"
+	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/tags"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/servers"
 	securitygroups "github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/security/groups"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/security/rules"
@@ -18,7 +19,7 @@ import (
 	"github.com/sapcc/kubernikus/pkg/api/models"
 	v1 "github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
 	"github.com/sapcc/kubernikus/pkg/client/openstack/compute"
-	"github.com/sapcc/kubernikus/pkg/util/generator"
+	"github.com/sapcc/kubernikus/pkg/util"
 )
 
 type KlusterClient interface {
@@ -30,6 +31,8 @@ type KlusterClient interface {
 	EnsureKubernikusRuleInSecurityGroup(*v1.Kluster) (bool, error)
 	EnsureServerGroup(name string) (string, error)
 	DeleteServerGroup(name string) error
+	CheckNodeTag(nodeID, tag string) (bool, error)
+	AddNodeTag(nodeID, tag string) error
 }
 
 type klusterClient struct {
@@ -80,6 +83,7 @@ func (c *klusterClient) CreateNode(kluster *v1.Kluster, pool *models.NodePool, n
 		ServiceClient:    c.ComputeClient,
 		SecurityGroups:   []string{kluster.Spec.Openstack.SecurityGroupName},
 		ConfigDrive:      &configDrive,
+		Metadata: map[string]string{"provisioner": "kubernikus", "nodepool": pool.Name, "kluster": kluster.Name},
 	}
 
 	if os.Getenv("NODEPOOL_AFFINITY") != "" {
@@ -95,7 +99,6 @@ func (c *klusterClient) CreateNode(kluster *v1.Kluster, pool *models.NodePool, n
 	}
 
 	server, err := compute.Create(c.ComputeClient, createOpts).Extract()
-
 	if err != nil {
 		return "", err
 	}
@@ -117,8 +120,7 @@ func (c *klusterClient) ListNodes(k *v1.Kluster, pool *models.NodePool) ([]Node,
 	var filteredNodes []Node
 	var err error
 
-	prefix := fmt.Sprintf("%v-%v-", k.Spec.Name, pool.Name)
-	err = servers.List(c.ComputeClient, servers.ListOpts{Name: prefix}).EachPage(func(page pagination.Page) (bool, error) {
+	err = servers.List(c.ComputeClient, servers.ListOpts{}).EachPage(func(page pagination.Page) (bool, error) {
 		if page != nil {
 			unfilteredNodes, err = ExtractServers(page)
 			if err != nil {
@@ -132,13 +134,10 @@ func (c *klusterClient) ListNodes(k *v1.Kluster, pool *models.NodePool) ([]Node,
 	}
 
 	//filter nodeList https://github.com/golang/go/wiki/SliceTricks#filtering-without-allocating
-	//we only keep nodes whose where the name length is matched the expected length of a name for this pool
-	//otherwise we would be returning nodes from other nodepools here if the current pool name is a prefix of other pools
 	filteredNodes = unfilteredNodes[:0]
 	for _, node := range unfilteredNodes {
-		if len(node.GetName()) == len(prefix)+generator.RandomLength {
+		if util.IsKubernikusNode(node.Name, k.Spec.Name, pool.Name) {
 			filteredNodes = append(filteredNodes, node)
-
 		}
 	}
 
@@ -289,4 +288,12 @@ func ExtractServers(r pagination.Page) ([]Node, error) {
 	var s []Node
 	err := servers.ExtractServersInto(r, &s)
 	return s, err
+}
+
+func (c *klusterClient) CheckNodeTag(nodeID, tag string) (bool, error) {
+	return tags.Check(c.ComputeClient, nodeID, tag).Extract()
+}
+
+func (c *klusterClient) AddNodeTag(nodeID, tag string) error {
+	return tags.Add(c.ComputeClient, nodeID, tag).ExtractErr()
 }
