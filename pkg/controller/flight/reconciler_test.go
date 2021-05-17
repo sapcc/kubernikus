@@ -88,6 +88,21 @@ func (m *MockKlusterClient) DeleteServerGroup(name string) (err error) {
 	return args.Error(0)
 }
 
+func (m *MockKlusterClient) CheckNodeTag(nodeID, tag string) (bool, error) {
+	args := m.Called(nodeID, tag)
+	return args.Bool(0), args.Error(0)
+}
+
+func (m *MockKlusterClient) AddNodeTag(nodeID, tag string) error {
+	args := m.Called(nodeID, tag)
+	return args.Error(0)
+}
+
+func (m *MockKlusterClient) UpdateMetadata(nodeID string, data map[string]string) (map[string]string, error) {
+	args := m.Called(nodeID, data)
+	return args.Get(0).(map[string]string), args.Error(0)
+}
+
 func TestEnsureInstanceSecurityGroupAssignment(t *testing.T) {
 	kluster := &v1.Kluster{
 		Spec: models.KlusterSpec{
