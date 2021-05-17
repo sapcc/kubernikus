@@ -203,7 +203,7 @@ func (f *flightReconciler) getUnregisteredInstances() []Instance {
 
 func (f *flightReconciler) EnsureNodeTags() []string {
 	tagsAdded := []string{}
-	for i, _ := range f.Kluster.Spec.NodePools {
+	for i := range f.Kluster.Spec.NodePools {
 		nodes, err := f.Client.ListNodes(f.Kluster, &f.Kluster.Spec.NodePools[i])
 		if err != nil {
 			f.Logger.Log("msg", "couldn't ensure node tags for nodepool", "nodepool", f.Kluster.Spec.NodePools[i].Name, "err", err)
@@ -241,7 +241,7 @@ func (f *flightReconciler) EnsureNodeTags() []string {
 
 func (f *flightReconciler) EnsureNodeMetadata() []string {
 	metadataAdded := []string{}
-	for i, _ := range f.Kluster.Spec.NodePools {
+	for i := range f.Kluster.Spec.NodePools {
 		nodes, err := f.Client.ListNodes(f.Kluster, &f.Kluster.Spec.NodePools[i])
 		if err != nil {
 			f.Logger.Log("msg", "couldn't ensure node tags for nodepool", "nodepool", f.Kluster.Spec.NodePools[i].Name, "err", err)
