@@ -1,0 +1,29 @@
+apiVersion: "autoscaling.k8s.io/v1"
+kind: VerticalPodAutoscaler
+metadata:
+  name: {{ include "fullname" . }}
+spec:
+  targetRef:
+    {{- if semverCompare ">=1.16-0" .Capabilities.KubeVersion.GitVersion }}
+    apiVersion: "apps/v1"
+    {{- else }}
+    apiVersion: "extensions/v1beta1"
+    {{- end }}
+    kind: Deployment
+    name: {{ include "fullname" . }}
+  resourcePolicy:
+    containerPolicies:
+      - containerName: etcd
+        controlledResources: ["cpu", "memory"]
+        minAllowed:
+          {{- toYaml .Values.resources.requests | nindent 12 }}
+        maxAllowed:
+          {{- toYaml .Values.resources.requests | nindent 12 }}
+{{- if and .Values.backup.enabled .Values.resources}}
+      - containerName: backup
+        controlledResources: ["cpu", "memory"]
+        minAllowed:
+          {{- toYaml .Values.backup.resources.requests | nindent 12 }}
+        maxAllowed:
+          {{- toYaml .Values.resources.limits| nindent 12 }}
+{{- end }}
