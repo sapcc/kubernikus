@@ -24,6 +24,7 @@ type FlightReconciler interface {
 	EnsureKubernikusRuleInSecurityGroup() bool
 	EnsureServiceUserRoles() []string
 	EnsureNodeTags() []string
+	EnsureNodeMetadata() []string
 }
 
 type flightReconciler struct {
@@ -236,4 +237,34 @@ func (f *flightReconciler) EnsureNodeTags() []string {
 		}
 	}
 	return tagsAdded
+}
+
+func (f *flightReconciler) EnsureNodeMetadata() []string {
+	metadataAdded := []string{}
+	for i, _ := range f.Kluster.Spec.NodePools {
+		nodes, err := f.Client.ListNodes(f.Kluster, &f.Kluster.Spec.NodePools[i])
+		if err != nil {
+			f.Logger.Log("msg", "couldn't ensure node tags for nodepool", "nodepool", f.Kluster.Spec.NodePools[i].Name, "err", err)
+			continue
+		}
+		metadataList := map[string]string{"provisioner": "kubernikus", "nodepool": f.Kluster.Spec.NodePools[i].Name, "kluster": f.Kluster.Name}
+		for _, node := range nodes {
+			changed := false
+			for key, value := range metadataList {
+				if ret, _ := node.Metadata[key]; value != ret {
+					node.Metadata[key] = value
+					changed = true
+				}
+			}
+			if changed {
+				_, err := f.Client.UpdateMetadata(node.ID, node.Metadata)
+				if err != nil {
+					f.Logger.Log("msg", "couldn't update node metadata", "node", node.Name, "metadata", node.Metadata, "err", err)
+				}
+				metadataAdded = append(metadataAdded, node.Name)
+			}
+		}
+	}
+
+	return metadataAdded
 }

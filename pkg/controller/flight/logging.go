@@ -82,3 +82,15 @@ func (f *LoggingFlightReconciler) EnsureNodeTags() []string {
 	}
 	return addedTags
 }
+
+func (f *LoggingFlightReconciler) EnsureNodeMetadata() []string {
+	addedMetadata := f.Reconciler.EnsureNodeMetadata()
+	if len(addedMetadata) > 0 {
+		f.Logger.Log(
+			"msg", "added missing metadata to nodes",
+			"nodes", fmt.Sprintf("%v", addedMetadata),
+			"v", 2,
+		)
+	}
+	return addedMetadata
+}

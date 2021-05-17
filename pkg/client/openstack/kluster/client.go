@@ -33,6 +33,7 @@ type KlusterClient interface {
 	DeleteServerGroup(name string) error
 	CheckNodeTag(nodeID, tag string) (bool, error)
 	AddNodeTag(nodeID, tag string) error
+	UpdateMetadata(nodeID string, data map[string]string) (map[string]string, error)
 }
 
 type klusterClient struct {
@@ -296,4 +297,8 @@ func (c *klusterClient) CheckNodeTag(nodeID, tag string) (bool, error) {
 
 func (c *klusterClient) AddNodeTag(nodeID, tag string) error {
 	return tags.Add(c.ComputeClient, nodeID, tag).ExtractErr()
+}
+
+func (c *klusterClient) UpdateMetadata(nodeID string, data map[string]string) (map[string]string, error) {
+	return servers.UpdateMetadata(c.ComputeClient, nodeID, servers.MetadataOpts(data)).Extract()
 }

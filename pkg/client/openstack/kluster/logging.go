@@ -1,6 +1,7 @@
 package kluster
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/go-kit/kit/log"
@@ -158,4 +159,20 @@ func (c LoggingClient) AddNodeTag(nodeID, tag string) (err error) {
 	}(time.Now())
 
 	return c.Client.AddNodeTag(nodeID, tag)
+}
+
+func (c LoggingClient) UpdateMetadata(nodeID string, data map[string]string) (ret map[string]string, err error) {
+	defer func(begin time.Time) {
+		c.Logger.Log(
+			"msg", "updated node metadata",
+			"nodeID", nodeID,
+			"metadata", fmt.Sprintf("%v", data),
+			"return", fmt.Sprintf("%v", ret),
+			"took", time.Since(begin),
+			"v", 4,
+			"err", err,
+		)
+	}(time.Now())
+
+	return c.Client.UpdateMetadata(nodeID, data)
 }
