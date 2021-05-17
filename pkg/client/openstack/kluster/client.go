@@ -83,7 +83,7 @@ func (c *klusterClient) CreateNode(kluster *v1.Kluster, pool *models.NodePool, n
 		ServiceClient:    c.ComputeClient,
 		SecurityGroups:   []string{kluster.Spec.Openstack.SecurityGroupName},
 		ConfigDrive:      &configDrive,
-		Metadata: map[string]string{"provisioner": "kubernikus", "nodepool": pool.Name, "kluster": kluster.Name},
+		Metadata:         map[string]string{"provisioner": "kubernikus", "nodepool": pool.Name, "kluster": kluster.Name},
 	}
 
 	if os.Getenv("NODEPOOL_AFFINITY") != "" {
