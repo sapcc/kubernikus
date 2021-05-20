@@ -67,17 +67,17 @@ imagesForVersion:
     cinderCSIPlugin:
       repository: 'keppel.$REGION.cloud.sap/ccloud/cinder-csi-plugin'
       tag: 'v1.20.3'
-  '1.19.10':
+  '1.19.11':
     supported: true
     apiserver:
       repository: 'keppel.$REGION.cloud.sap/ccloud/kube-apiserver'
-      tag: 'v1.19.10'
+      tag: 'v1.19.11'
     controllerManager:
       repository: 'keppel.$REGION.cloud.sap/ccloud/kube-controller-manager'
-      tag: 'v1.19.10'
+      tag: 'v1.19.11'
     scheduler:
       repository: 'keppel.$REGION.cloud.sap/ccloud/kube-scheduler'
-      tag: 'v1.19.10'
+      tag: 'v1.19.11'
     etcd:
       repository: 'keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/etcd'
       tag: 'v3.3.14'
@@ -86,10 +86,10 @@ imagesForVersion:
       tag: '0.5.2'
     kubelet:
       repository: 'keppel.$REGION.cloud.sap/ccloud/kubelet'
-      tag: 'v1.19.10'
+      tag: 'v1.19.11'
     kubeProxy:
       repository: 'keppel.$REGION.cloud.sap/ccloud/kube-proxy'
-      tag: 'v1.19.10'
+      tag: 'v1.19.11'
     cloudControllerManager:
       repository: 'keppel.$REGION.cloud.sap/ccloud/openstack-cloud-controller-manager'
       tag: 'v1.19.2'
