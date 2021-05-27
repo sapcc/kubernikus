@@ -18,7 +18,7 @@ spec:
         minAllowed:
           {{- toYaml .Values.resources.requests | nindent 12 }}
         maxAllowed:
-          {{- toYaml .Values.resources.requests | nindent 12 }}
+          {{- toYaml .Values.resources.limits | nindent 12 }}
 {{- if and .Values.backup.enabled .Values.resources}}
       - containerName: backup
         controlledResources: ["cpu", "memory"]
