@@ -184,7 +184,7 @@ func (r *KlusterReconciler) Do() error {
 		}
 	}
 
-	if len(reboot) > 0 {
+	if len(reboot) > 0 && len(update) == 0 {
 		if err := r.LifeCycler.Drain(reboot[0]); err != nil {
 			return errors.Wrap(err, "Failed to drain node that is about to be rebooted")
 		}
@@ -192,6 +192,9 @@ func (r *KlusterReconciler) Do() error {
 		if err := r.LifeCycler.Reboot(reboot[0]); err != nil {
 			return errors.Wrap(err, "Failed to reboot node")
 		}
+	}
+	if len(reboot) > 0 && len(update) > 0 {
+		r.Logger.Log("msg", "skipped reboot because a node is already in process of being updated", "v", 2)
 	}
 
 	return nil
