@@ -26,9 +26,10 @@ data:
       level: debug
 
     connectors:
+{{- range $key, $conn := .Values.dex.connectors }}
       - type: ldap
-        id: ldap
-        name: Active Directory
+        id: {{ required "id missing for connector" $conn.id }}
+        name: {{ required "name missing for connector" $conn.name }}
         config:
           host: $LDAP_CONFIG_HOST
           bindDN: $LDAP_CONFIG_BIND_DN
@@ -43,7 +44,7 @@ data:
             emailAttr: mail
             nameAttr: cn
             # workaround for technical users without email address in LDAP:
-            emailSuffix: cloud.sap
+            emailSuffix: {{ required "projectID missing for connector" $conn.projectID }}
 
           # Group search queries for groups given a user entry.
           groupSearch:
@@ -52,7 +53,7 @@ data:
             userAttr: distinguishedName
             groupAttr: member
             nameAttr: cn
-
+{{- end }}
     oauth2:
       skipApprovalScreen: true
       responseTypes: ["code", "token", "id_token"]

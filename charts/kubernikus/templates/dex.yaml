@@ -33,37 +33,37 @@ spec:
         - name: LDAP_CONFIG_HOST
           valueFrom:
             secretKeyRef:
-              name: {{ required "dex.connectors.ldap.secret undefined" .Values.dex.connectors.ldap.secret }}
+              name: kubernikus-api-dex
               key: host
         - name: LDAP_CONFIG_BIND_DN
           valueFrom:
             secretKeyRef:
-              name: {{ required "dex.connectors.ldap.secret undefined" .Values.dex.connectors.ldap.secret }}
+              name: kubernikus-api-dex
               key: bindDN
         - name: LDAP_CONFIG_BIND_PW
           valueFrom:
             secretKeyRef:
-              name: {{ required "dex.connectors.ldap.secret undefined" .Values.dex.connectors.ldap.secret }}
+              name: kubernikus-api-dex
               key: bindPW
         - name: LDAP_USER_SEARCH_BASEDN
           valueFrom:
             secretKeyRef:
-              name: {{ required "dex.connectors.ldap.secret undefined" .Values.dex.connectors.ldap.secret }}
+              name: kubernikus-api-dex
               key: userSearchBaseDN
         - name: LDAP_USER_SEARCH_FILTER
           valueFrom:
             secretKeyRef:
-              name: {{ required "dex.connectors.ldap.secret undefined" .Values.dex.connectors.ldap.secret }}
+              name: kubernikus-api-dex
               key: userSearchFilter
         - name: LDAP_GROUP_SEARCH_BASEDN
           valueFrom:
             secretKeyRef:
-              name: {{ required "dex.connectors.ldap.secret undefined" .Values.dex.connectors.ldap.secret }}
+              name: kubernikus-api-dex
               key: groupSearchBaseDN
         - name: LDAP_GROUP_SEARCH_FILTER
           valueFrom:
             secretKeyRef:
-              name: {{ required "dex.connectors.ldap.secret undefined" .Values.dex.connectors.ldap.secret }}
+              name: kubernikus-api-dex
               key: groupSearchFilter
         livenessProbe:
           httpGet:
