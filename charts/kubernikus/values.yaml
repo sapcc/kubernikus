@@ -9,6 +9,15 @@ openstack: {}
   #auth_project: "master"
   #auth_project_domain: "Default"
 
+dex:
+  image: keppel.eu-de-1.cloud.sap/ccloud/dex:38f4f8ea8d487470a1dd5b83d66b428d8b502f81
+  enabled: false
+  clientID: kubernikus
+  #clientSecret:
+  connectors:
+    ldap:
+      nase: tut
+
 api:
   port: 1234
   log_level: 1

@@ -1,0 +1,67 @@
+{{ if .Values.dex.enabled -}}
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  labels:
+    app: kubernikus-api-dex
+    chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+    release: {{ .Release.Name }}
+  name: kubernikus-api-dex
+data:
+  config.yaml: |
+    issuer: https://{{ include "oidc.issuer" . }}
+    storage:
+      type: kubernetes
+      config:
+        inCluster: true
+    web:
+      http: 0.0.0.0:80
+    frontend:
+      theme: ccloud
+      issuer: "Converged Cloud Kubernetes"
+    expiry:
+      signingKeys: "48h"
+      idTokens: "24h"
+    logger:
+      level: debug
+
+    connectors:
+      - type: ldap
+        id: ldap
+        name: Active Directory
+        config:
+          host: $LDAP_CONFIG_HOST
+          bindDN: $LDAP_CONFIG_BIND_DN
+          bindPW: $LDAP_CONFIG_BIND_PW
+          insecureSkipVerify: true
+
+          userSearch:
+            baseDN: $LDAP_USER_SEARCH_BASEDN
+            filter: $LDAP_USER_SEARCH_FILTER
+            username: cn
+            idAttr: distinguishedName
+            emailAttr: mail
+            nameAttr: cn
+            # workaround for technical users without email address in LDAP:
+            emailSuffix: cloud.sap
+
+          # Group search queries for groups given a user entry.
+          groupSearch:
+            baseDN: $LDAP_GROUP_SEARCH_BASEDN
+            filter: $LDAP_GROUP_SEARCH_FILTER
+            userAttr: distinguishedName
+            groupAttr: member
+            nameAttr: cn
+
+    oauth2:
+      skipApprovalScreen: true
+      responseTypes: ["code", "token", "id_token"]
+      passwordConnector: ldap
+    staticClients:
+    - id: {{ .Values.dex.clientID }}
+      redirectURIs:
+      - https://{{ .Values.domain }}/auth/callback # for dashboard access
+      - http://localhost:33768/auth/callback
+      name: kubernikus
+      secret: {{ required "missing dex.clientSecret" .Values.dex.clientSecret }}
+{{ end }}
