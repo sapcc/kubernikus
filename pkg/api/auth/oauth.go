@@ -2,10 +2,15 @@ package auth
 
 import (
 	"context"
+	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
 
+	"github.com/aokoli/goutils"
 	oidc "github.com/coreos/go-oidc/oidc"
+	"github.com/go-kit/kit/log"
 	errors "github.com/go-openapi/errors"
 	runtime "github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
@@ -30,10 +35,16 @@ func init() {
 	flag.StringVar(&callbackURL, "oidc-callback-url", "", "")
 }
 
-func OAuthConfig() (*oauth2.Config, *oidc.IDTokenVerifier, error) {
+func OAuthEnabled() bool {
+	return issuerURL != "" && clientID != "" && clientSecret != "" && callbackURL != ""
+}
+
+func OAuthConfig(logger log.Logger) (func(token string, scopes []string) (*models.Principal, error), operations.GetAuthLoginHandler, operations.GetAuthCallbackHandler, error) {
+	//func OAuthConfig() (*oauth2.Config, *oidc.IDTokenVerifier, error) {
+
 	provider, err := oidc.NewProvider(context.Background(), issuerURL)
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, nil, err
 	}
 
 	config := &oauth2.Config{
@@ -43,16 +54,34 @@ func OAuthConfig() (*oauth2.Config, *oidc.IDTokenVerifier, error) {
 		RedirectURL:  callbackURL,
 		Scopes:       []string{oidc.ScopeOpenID, "profile", "email"},
 	}
-	return config, provider.Verifier(&oidc.Config{ClientID: config.ClientID}), nil
+	randomPasswordChars := []rune("abcdefghjkmnpqrstuvwxABCDEFGHJKLMNPQRSTUVWX23456789")
+	state, err := goutils.Random(12, 0, 0, true, true, randomPasswordChars...)
+	if err != nil {
+		return nil, nil, nil, err
+	}
+
+	verifier := provider.Verifier(&oidc.Config{ClientID: config.ClientID})
+	return OAuth(verifier, logger), NewAuthLogin(config, state), NewAuthCallback(config, state), nil
 }
 
-func OAuth(verifier *oidc.IDTokenVerifier) func(token string, scopes []string) (*models.Principal, error) {
+func OAuth(verifier *oidc.IDTokenVerifier, logger log.Logger) func(token string, scopes []string) (*models.Principal, error) {
 	return func(token string, scopes []string) (*models.Principal, error) {
-		idToken, err := verifier.Verify(context.Background(), token)
+		id, err := verifier.Verify(context.Background(), token)
 		if err != nil {
 			return nil, errors.New(401, "invalid token: %s", err)
 		}
-		prin := models.Principal{Name: idToken.Subject}
+		var idToken struct {
+			Name  string
+			Email string
+		}
+		if err := parseJWT(token, &idToken); err != nil {
+			return nil, errors.New(401, "invalid token 2: %s", err)
+		}
+		emailParts := strings.Split(idToken.Email, "@")
+		if len(emailParts) < 2 {
+			return nil, errors.New(401, "Malformed email in idToken")
+		}
+		prin := models.Principal{ID: id.Subject, Name: idToken.Name, Account: emailParts[1]}
 		return &prin, nil
 	}
 }
@@ -118,4 +147,16 @@ func (a *authCallback) verify(authCode, state string) (string, error) {
 	}
 
 	return rawIDToken, nil
+}
+
+func parseJWT(p string, obj interface{}) error {
+	parts := strings.Split(p, ".")
+	if len(parts) < 2 {
+		return fmt.Errorf("malformed jwt, expected 3 parts got %d", len(parts))
+	}
+	payload, err := base64.RawURLEncoding.DecodeString(parts[1])
+	if err != nil {
+		return fmt.Errorf("malformed jwt payload: %v", err)
+	}
+	return json.Unmarshal(payload, obj)
 }

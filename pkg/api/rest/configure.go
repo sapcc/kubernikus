@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/aokoli/goutils"
 	"github.com/go-openapi/errors"
 	runtime "github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
@@ -36,34 +35,34 @@ func Configure(api *operations.KubernikusAPI, rt *apipkg.Runtime) error {
 	api.JSONConsumer = runtime.JSONConsumer()
 	api.JSONProducer = runtime.JSONProducer()
 
-	// Applies when the "x-auth-token" header is set
-	api.KeystoneAuth = auth.Keystone(rt.Logger)
+	if auth.KeystoneAuthEnabled() {
+		// Applies when the "x-auth-token" header is set
+		api.KeystoneAuth = auth.Keystone(rt.Logger)
 
-	// Set your custom authorizer if needed. Default one is security.Authorized()
-	rules, err := auth.LoadPolicy(auth.DefaultPolicyFile)
-	if err != nil {
-		return err
-	}
-	document, err := spec.Spec()
-	if err != nil {
-		return err
-	}
-	authorizer, err := auth.NewOsloPolicyAuthorizer(document, rules, rt.Logger)
-	if err != nil {
-		return err
-	}
-	api.APIAuthorizer = authorizer
-
-	config, verifier, err := auth.OAuthConfig()
-	if err == nil {
-		api.DexAuth = auth.OAuth(verifier)
-		randomPasswordChars := []rune("abcdefghjkmnpqrstuvwxABCDEFGHJKLMNPQRSTUVWX23456789")
-		state, err := goutils.Random(12, 0, 0, true, true, randomPasswordChars...)
+		// Set your custom authorizer if needed. Default one is security.Authorized()
+		rules, err := auth.LoadPolicy(auth.DefaultPolicyFile)
 		if err != nil {
 			return err
 		}
-		api.GetAuthLoginHandler = auth.NewAuthLogin(config, state)
-		api.GetAuthCallbackHandler = auth.NewAuthCallback(config, state)
+		document, err := spec.Spec()
+		if err != nil {
+			return err
+		}
+		authorizer, err := auth.NewOsloPolicyAuthorizer(document, rules, rt.Logger)
+		if err != nil {
+			return err
+		}
+		api.APIAuthorizer = authorizer
+	} else if auth.OAuthEnabled() {
+		authHandler, loginHandler, callbackHandler, err := auth.OAuthConfig(rt.Logger)
+		if err != nil {
+			return fmt.Errorf("Failed to configure OAuth based auth: %s", err)
+		}
+		api.DexAuth = authHandler
+		api.GetAuthLoginHandler = loginHandler
+		api.GetAuthCallbackHandler = callbackHandler
+	} else {
+		return fmt.Errorf("No auth method enabled.")
 	}
 
 	api.InfoHandler = handlers.NewInfo(rt)
