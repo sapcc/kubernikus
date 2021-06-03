@@ -59,12 +59,12 @@ data:
       responseTypes: ["code", "token", "id_token"]
       passwordConnector: ldap
     staticClients:
-    - id: {{ .Values.dex.clientID }}
+    - id: {{ .Values.dex.clientID | quote }}
       redirectURIs:
       - https://{{ .Values.domain }}/auth/callback # for dashboard access
       - http://localhost:33768/auth/callback
       name: kubernikus
-      secret: {{ required "missing dex.clientSecret" .Values.dex.clientSecret }}
+      secret: {{ required "missing dex.clientSecret" .Values.dex.clientSecret | quote }}
 ---
 apiVersion: v1
 kind: Secret

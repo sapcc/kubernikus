@@ -20,3 +20,10 @@ dex:
       groupSearch:
         baseDN: group=pup
         filter: igel=fuchs
+  connectors:
+    - name: ldap
+      id: ldap1
+      projectID: project1
+    - name: ldap2
+      id: ldap2
+      projectID: project2

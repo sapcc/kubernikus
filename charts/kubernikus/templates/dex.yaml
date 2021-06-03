@@ -52,7 +52,6 @@ spec:
           mountPath: /etc/dex/cfg
       volumes:
       - name: config
-        defaultMode: 420
         configMap:
           name: kubernikus-api-dex
           items:
