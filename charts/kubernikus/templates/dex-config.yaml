@@ -31,25 +31,25 @@ data:
         id: {{ required "id missing for connector" $conn.id }}
         name: {{ required "name missing for connector" $conn.name }}
         config:
-          host: $LDAP_CONFIG_HOST
-          bindDN: $LDAP_CONFIG_BIND_DN
+          host: {{ required "dex.ldap.config.host undefined" $.Values.dex.ldap.config.host }}
+          bindDN: {{ required "dex.ldap.config.bindDN undefined" $.Values.dex.ldap.config.bindDN }}
           bindPW: $LDAP_CONFIG_BIND_PW
           insecureSkipVerify: true
 
           userSearch:
-            baseDN: $LDAP_USER_SEARCH_BASEDN
-            filter: $LDAP_USER_SEARCH_FILTER
+            baseDN: {{ required "dex.ldap.config.userSearch.baseDN undefined" $.Values.dex.ldap.config.userSearch.baseDN }} 
+            filter: {{ required "dex.ldap.config.userSearch.filter undefined" $.Values.dex.ldap.config.userSearch.filter }}
             username: cn
             idAttr: distinguishedName
             emailAttr: mail
             nameAttr: cn
             # workaround for technical users without email address in LDAP:
-            emailSuffix: {{ required "projectID missing for connector" $conn.projectID }}
+            emailSuffix: {{ required "projectID missing for dex connector" $conn.projectID }}
 
           # Group search queries for groups given a user entry.
           groupSearch:
-            baseDN: $LDAP_GROUP_SEARCH_BASEDN
-            filter: $LDAP_GROUP_SEARCH_FILTER
+            baseDN: {{ required "dex.ldap.config.groupSearch.baseDN undefined" $.Values.dex.ldap.config.groupSearch.baseDN }} 
+            filter: {{ required "dex.ldap.config.groupSearch.filter undefined" $.Values.dex.ldap.config.groupSearch.filter }}
             userAttr: distinguishedName
             groupAttr: member
             nameAttr: cn
@@ -65,4 +65,13 @@ data:
       - http://localhost:33768/auth/callback
       name: kubernikus
       secret: {{ required "missing dex.clientSecret" .Values.dex.clientSecret }}
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name:  kubernikus-dex-api
+  namespace: {{ default .Release.Namespace .Values.namespaceOverride }}
+type: Opaque
+data:
+  bindPW: {{ required ".Values.dex.ldap.config.bindPW undefined" .Values.dex.ldap.config.bindPW | b64enc | quote}}
 {{ end }}

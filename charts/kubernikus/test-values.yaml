@@ -7,3 +7,16 @@ openstack:
   auth_project: xyz
   auth_project_domain: xyz
   region: xy-xy-1
+dex:
+  clientSecret: uhu-ah-secret
+  ldap:
+    config:
+      host: ldap.host.xyz
+      bindDN: urks=burks
+      bindPW: ldap-pass
+      userSearch:
+        baseDN: user=looser
+        filter: hase=nase
+      groupSearch:
+        baseDN: group=pup
+        filter: igel=fuchs

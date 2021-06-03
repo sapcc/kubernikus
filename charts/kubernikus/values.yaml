@@ -10,6 +10,17 @@ openstack: {}
   #auth_project_domain: "Default"
 
 dex:
+  ldap:
+    config:
+      # host: 
+      # bindDN: 
+      # bindPW:
+      userSearch: {}
+        # baseDN:
+        # filter:
+      groupSearch: {}
+        # baseDN:
+        # filter:
   image: keppel.eu-de-1.cloud.sap/ccloud/dex:38f4f8ea8d487470a1dd5b83d66b428d8b502f81
   enabled: false
   clientID: kubernikus
