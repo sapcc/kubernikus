@@ -28,7 +28,7 @@ data:
     connectors:
 {{- range $key, $conn := .Values.dex.connectors }}
       - type: ldap
-        id: {{ required "id missing for connector" $conn.id }}
+        id: {{ required "id missing for dex connector" $conn.id }}
         name: {{ required "name missing for connector" $conn.name }}
         config:
           host: {{ required "dex.ldap.config.host undefined" $.Values.dex.ldap.config.host }}
@@ -44,7 +44,7 @@ data:
             emailAttr: mail
             nameAttr: cn
             # workaround for technical users without email address in LDAP:
-            emailSuffix: {{ required "projectID missing for dex connector" $conn.projectID }}
+            emailSuffix: {{ required "id missing for dex connector" $conn.id }}
 
           # Group search queries for groups given a user entry.
           groupSearch:

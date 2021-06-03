@@ -35,7 +35,15 @@ func Configure(api *operations.KubernikusAPI, rt *apipkg.Runtime) error {
 	api.JSONConsumer = runtime.JSONConsumer()
 	api.JSONProducer = runtime.JSONProducer()
 
-	if auth.KeystoneAuthEnabled() {
+	if auth.OAuthEnabled() {
+		authHandler, loginHandler, callbackHandler, err := auth.OAuthConfig(rt.Logger)
+		if err != nil {
+			return fmt.Errorf("Failed to configure OAuth based auth: %s", err)
+		}
+		api.DexAuth = authHandler
+		api.GetAuthLoginHandler = loginHandler
+		api.GetAuthCallbackHandler = callbackHandler
+	} else {
 		// Applies when the "x-auth-token" header is set
 		api.KeystoneAuth = auth.Keystone(rt.Logger)
 
@@ -53,16 +61,6 @@ func Configure(api *operations.KubernikusAPI, rt *apipkg.Runtime) error {
 			return err
 		}
 		api.APIAuthorizer = authorizer
-	} else if auth.OAuthEnabled() {
-		authHandler, loginHandler, callbackHandler, err := auth.OAuthConfig(rt.Logger)
-		if err != nil {
-			return fmt.Errorf("Failed to configure OAuth based auth: %s", err)
-		}
-		api.DexAuth = authHandler
-		api.GetAuthLoginHandler = loginHandler
-		api.GetAuthCallbackHandler = callbackHandler
-	} else {
-		return fmt.Errorf("No auth method enabled.")
 	}
 
 	api.InfoHandler = handlers.NewInfo(rt)
