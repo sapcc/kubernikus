@@ -387,6 +387,13 @@ func init() {
       "get": {
         "security": [],
         "summary": "login through oauth2 server",
+        "parameters": [
+          {
+            "type": "string",
+            "name": "connector_id",
+            "in": "query"
+          }
+        ],
         "responses": {
           "302": {
             "description": "Redirect"
@@ -1430,6 +1437,13 @@ func init() {
       "get": {
         "security": [],
         "summary": "login through oauth2 server",
+        "parameters": [
+          {
+            "type": "string",
+            "name": "connector_id",
+            "in": "query"
+          }
+        ],
         "responses": {
           "302": {
             "description": "Redirect"

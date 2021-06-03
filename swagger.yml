@@ -32,6 +32,11 @@ responses:
 paths:
   /auth/login:
     get:
+      parameters:
+        - name: connector_id
+          in: query
+          type: string
+          required: false
       summary: login through oauth2 server
       security: []
       responses:

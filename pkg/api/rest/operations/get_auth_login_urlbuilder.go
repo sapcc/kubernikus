@@ -13,7 +13,11 @@ import (
 
 // GetAuthLoginURL generates an URL for the get auth login operation
 type GetAuthLoginURL struct {
+	ConnectorID *string
+
 	_basePath string
+	// avoid unkeyed usage
+	_ struct{}
 }
 
 // WithBasePath sets the base path for this url builder, only required when it's different from the
@@ -39,6 +43,18 @@ func (o *GetAuthLoginURL) Build() (*url.URL, error) {
 
 	_basePath := o._basePath
 	_result.Path = golangswaggerpaths.Join(_basePath, _path)
+
+	qs := make(url.Values)
+
+	var connectorID string
+	if o.ConnectorID != nil {
+		connectorID = *o.ConnectorID
+	}
+	if connectorID != "" {
+		qs.Set("connector_id", connectorID)
+	}
+
+	_result.RawQuery = qs.Encode()
 
 	return &_result, nil
 }

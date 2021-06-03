@@ -96,10 +96,15 @@ func NewAuthLogin(c *oauth2.Config, state string) operations.GetAuthLoginHandler
 }
 
 func (a *authLogin) Handle(params operations.GetAuthLoginParams) middleware.Responder {
+	opts := []oauth2.AuthCodeOption{}
+	if params.ConnectorID != nil && len(*params.ConnectorID) > 0 {
+		opts = append(opts, oauth2.SetAuthURLParam("connector_id", *params.ConnectorID))
+	}
+
 	// implements the login with a redirection
 	return middleware.ResponderFunc(
 		func(w http.ResponseWriter, pr runtime.Producer) {
-			http.Redirect(w, params.HTTPRequest, a.config.AuthCodeURL(a.state), http.StatusFound)
+			http.Redirect(w, params.HTTPRequest, a.config.AuthCodeURL(a.state, opts...), http.StatusFound)
 		})
 }
 

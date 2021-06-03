@@ -20,7 +20,7 @@ import (
 // NewGetAuthLoginParams creates a new GetAuthLoginParams object
 // with the default values initialized.
 func NewGetAuthLoginParams() *GetAuthLoginParams {
-
+	var ()
 	return &GetAuthLoginParams{
 
 		timeout: cr.DefaultTimeout,
@@ -30,7 +30,7 @@ func NewGetAuthLoginParams() *GetAuthLoginParams {
 // NewGetAuthLoginParamsWithTimeout creates a new GetAuthLoginParams object
 // with the default values initialized, and the ability to set a timeout on a request
 func NewGetAuthLoginParamsWithTimeout(timeout time.Duration) *GetAuthLoginParams {
-
+	var ()
 	return &GetAuthLoginParams{
 
 		timeout: timeout,
@@ -40,7 +40,7 @@ func NewGetAuthLoginParamsWithTimeout(timeout time.Duration) *GetAuthLoginParams
 // NewGetAuthLoginParamsWithContext creates a new GetAuthLoginParams object
 // with the default values initialized, and the ability to set a context for a request
 func NewGetAuthLoginParamsWithContext(ctx context.Context) *GetAuthLoginParams {
-
+	var ()
 	return &GetAuthLoginParams{
 
 		Context: ctx,
@@ -50,7 +50,7 @@ func NewGetAuthLoginParamsWithContext(ctx context.Context) *GetAuthLoginParams {
 // NewGetAuthLoginParamsWithHTTPClient creates a new GetAuthLoginParams object
 // with the default values initialized, and the ability to set a custom HTTPClient for a request
 func NewGetAuthLoginParamsWithHTTPClient(client *http.Client) *GetAuthLoginParams {
-
+	var ()
 	return &GetAuthLoginParams{
 		HTTPClient: client,
 	}
@@ -60,6 +60,10 @@ func NewGetAuthLoginParamsWithHTTPClient(client *http.Client) *GetAuthLoginParam
 for the get auth login operation typically these are written to a http.Request
 */
 type GetAuthLoginParams struct {
+
+	/*ConnectorID*/
+	ConnectorID *string
+
 	timeout    time.Duration
 	Context    context.Context
 	HTTPClient *http.Client
@@ -98,6 +102,17 @@ func (o *GetAuthLoginParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
+// WithConnectorID adds the connectorID to the get auth login params
+func (o *GetAuthLoginParams) WithConnectorID(connectorID *string) *GetAuthLoginParams {
+	o.SetConnectorID(connectorID)
+	return o
+}
+
+// SetConnectorID adds the connectorId to the get auth login params
+func (o *GetAuthLoginParams) SetConnectorID(connectorID *string) {
+	o.ConnectorID = connectorID
+}
+
 // WriteToRequest writes these params to a swagger request
 func (o *GetAuthLoginParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Registry) error {
 
@@ -105,6 +120,22 @@ func (o *GetAuthLoginParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.
 		return err
 	}
 	var res []error
+
+	if o.ConnectorID != nil {
+
+		// query param connector_id
+		var qrConnectorID string
+		if o.ConnectorID != nil {
+			qrConnectorID = *o.ConnectorID
+		}
+		qConnectorID := qrConnectorID
+		if qConnectorID != "" {
+			if err := r.SetQueryParam("connector_id", qConnectorID); err != nil {
+				return err
+			}
+		}
+
+	}
 
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)

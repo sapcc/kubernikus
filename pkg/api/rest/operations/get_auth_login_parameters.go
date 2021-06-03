@@ -9,7 +9,10 @@ import (
 	"net/http"
 
 	"github.com/go-openapi/errors"
+	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
+
+	strfmt "github.com/go-openapi/strfmt"
 )
 
 // NewGetAuthLoginParams creates a new GetAuthLoginParams object
@@ -27,6 +30,11 @@ type GetAuthLoginParams struct {
 
 	// HTTP Request Object
 	HTTPRequest *http.Request `json:"-"`
+
+	/*
+	  In: query
+	*/
+	ConnectorID *string
 }
 
 // BindRequest both binds and validates a request, it assumes that complex things implement a Validatable(strfmt.Registry) error interface
@@ -38,8 +46,33 @@ func (o *GetAuthLoginParams) BindRequest(r *http.Request, route *middleware.Matc
 
 	o.HTTPRequest = r
 
+	qs := runtime.Values(r.URL.Query())
+
+	qConnectorID, qhkConnectorID, _ := qs.GetOK("connector_id")
+	if err := o.bindConnectorID(qConnectorID, qhkConnectorID, route.Formats); err != nil {
+		res = append(res, err)
+	}
+
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+// bindConnectorID binds and validates parameter ConnectorID from query.
+func (o *GetAuthLoginParams) bindConnectorID(rawData []string, hasKey bool, formats strfmt.Registry) error {
+	var raw string
+	if len(rawData) > 0 {
+		raw = rawData[len(rawData)-1]
+	}
+
+	// Required: false
+	// AllowEmptyValue: false
+	if raw == "" { // empty values pass all other validations
+		return nil
+	}
+
+	o.ConnectorID = &raw
+
 	return nil
 }
