@@ -57,7 +57,7 @@ data:
     oauth2:
       skipApprovalScreen: true
       responseTypes: ["code", "token", "id_token"]
-      passwordConnector: ldap
+      passwordConnector: {{ (index .Values.dex.connectors 0).id  | quote }}
     staticClients:
     - id: {{ .Values.dex.clientID | quote }}
       redirectURIs:
@@ -69,7 +69,7 @@ data:
 apiVersion: v1
 kind: Secret
 metadata:
-  name:  kubernikus-dex-api
+  name:  kubernikus-api-dex
   namespace: {{ default .Release.Namespace .Values.namespaceOverride }}
 type: Opaque
 data:
