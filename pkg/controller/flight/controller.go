@@ -95,6 +95,8 @@ func (d *FlightController) Reconcile(kluster *v1.Kluster) (bool, error) {
 	reconciler.DeleteIncompletelySpawnedInstances()
 	reconciler.DeleteErroredInstances()
 	reconciler.EnsureServiceUserRoles()
+	reconciler.EnsureNodeTags()
+	reconciler.EnsureNodeMetadata()
 
 	return false, nil
 }

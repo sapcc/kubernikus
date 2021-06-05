@@ -23,6 +23,8 @@ type FlightReconciler interface {
 	DeleteErroredInstances() []string
 	EnsureKubernikusRuleInSecurityGroup() bool
 	EnsureServiceUserRoles() []string
+	EnsureNodeTags() []string
+	EnsureNodeMetadata() []string
 }
 
 type flightReconciler struct {
@@ -197,4 +199,72 @@ func (f *flightReconciler) getUnregisteredInstances() []Instance {
 		}
 	}
 	return unregisterd
+}
+
+func (f *flightReconciler) EnsureNodeTags() []string {
+	tagsAdded := []string{}
+	for i := range f.Kluster.Spec.NodePools {
+		nodes, err := f.Client.ListNodes(f.Kluster, &f.Kluster.Spec.NodePools[i])
+		if err != nil {
+			f.Logger.Log("msg", "couldn't ensure node tags for nodepool", "nodepool", f.Kluster.Spec.NodePools[i].Name, "err", err)
+			continue
+		}
+		tagList := []string{"kubernikus", f.Kluster.Name, f.Kluster.Spec.NodePools[i].Name}
+		for _, node := range nodes {
+			if node.Running() {
+				added := false
+				for _, tag := range tagList {
+					r, err := f.Client.CheckNodeTag(node.ID, tag)
+					if err != nil {
+						f.Logger.Log("msg", "couldn't check tag for node", "node", node.Name, "tag", tag, "err", err)
+						continue
+					}
+					if !r {
+						err := f.Client.AddNodeTag(node.ID, tag)
+						if err != nil {
+							f.Logger.Log("msg", "couldn't add tag to node", "node", node.Name, "tag", tag, "err", err)
+							continue
+						}
+						added = true
+					}
+				}
+				if added {
+					tagsAdded = append(tagsAdded, node.Name)
+				}
+			} else {
+				f.Logger.Log("msg", "skipping tag check for not active node", "node", node.Name, "v", 4)
+			}
+		}
+	}
+	return tagsAdded
+}
+
+func (f *flightReconciler) EnsureNodeMetadata() []string {
+	metadataAdded := []string{}
+	for i := range f.Kluster.Spec.NodePools {
+		nodes, err := f.Client.ListNodes(f.Kluster, &f.Kluster.Spec.NodePools[i])
+		if err != nil {
+			f.Logger.Log("msg", "couldn't ensure node tags for nodepool", "nodepool", f.Kluster.Spec.NodePools[i].Name, "err", err)
+			continue
+		}
+		metadataList := map[string]string{"provisioner": "kubernikus", "nodepool": f.Kluster.Spec.NodePools[i].Name, "kluster": f.Kluster.Name}
+		for _, node := range nodes {
+			changed := false
+			for key, value := range metadataList {
+				if ret, _ := node.Metadata[key]; value != ret {
+					node.Metadata[key] = value
+					changed = true
+				}
+			}
+			if changed {
+				_, err := f.Client.UpdateMetadata(node.ID, node.Metadata)
+				if err != nil {
+					f.Logger.Log("msg", "couldn't update node metadata", "node", node.Name, "metadata", node.Metadata, "err", err)
+				}
+				metadataAdded = append(metadataAdded, node.Name)
+			}
+		}
+	}
+
+	return metadataAdded
 }
