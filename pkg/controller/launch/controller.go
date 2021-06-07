@@ -1,6 +1,8 @@
 package launch
 
 import (
+	"strings"
+
 	"github.com/go-kit/kit/log"
 	core_v1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/tools/cache"
@@ -168,9 +170,14 @@ func (lr *LaunchReconciler) reconcilePool(kluster *v1.Kluster, pool *models.Node
 		}
 		return
 	case status.UnNeeded > 0:
-		for i := 0; i < int(status.UnNeeded); i++ {
-			requeue = true
-			if err = pm.DeleteNode(status.Nodes[i]); err != nil {
+		requeue = true
+		if len(status.UnschedulableNodes) > 0 {
+			id := strings.Replace(status.UnschedulableNodes[0].Spec.ProviderID, "openstack:///", "", 1)
+			if err = pm.DeleteNode(id); err != nil {
+				return
+			}
+		} else {
+			if err = pm.DeleteNode(status.Nodes[0]); err != nil {
 				return
 			}
 		}
