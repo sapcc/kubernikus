@@ -12,14 +12,63 @@ securityDefinitions:
     type: apiKey
     in: header
     name: x-auth-token
+  dex:
+    type: oauth2
+    flow: accessCode
+    authorizationUrl: 'https://example.com/auth'
+    tokenUrl: 'https://example.com/token'
+    scopes:
+      admin: Admin scope
+      user: User scope
 security:
   - keystone: []
+  - dex:
+    - user
 responses:
   errorResponse:
     description: Error
     schema:
       $ref: '#/definitions/error'
 paths:
+  /auth/login:
+    get:
+      parameters:
+        - name: connector_id
+          in: query
+          type: string
+          required: false
+      summary: login through oauth2 server
+      security: []
+      responses:
+        '302':
+          description: Redirect
+  /auth/callback:
+    get:
+      parameters:
+        - name: code
+          in: query
+          type: string
+          required: true
+        - name: state
+          in: query
+          type: string
+          required: true
+      summary: callback for oauth result
+      security: []
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: object
+            properties:
+              type:
+                description: Token type
+                type: string
+              idToken:
+                description: idToken
+                type: string
+        default:
+          $ref: '#/responses/errorResponse'
   /info:
     get:
       security: []

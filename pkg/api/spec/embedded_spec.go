@@ -342,6 +342,65 @@ func init() {
         }
       ]
     },
+    "/auth/callback": {
+      "get": {
+        "security": [],
+        "summary": "callback for oauth result",
+        "parameters": [
+          {
+            "type": "string",
+            "name": "code",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "name": "state",
+            "in": "query",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "idToken": {
+                  "description": "idToken",
+                  "type": "string"
+                },
+                "type": {
+                  "description": "Token type",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/responses/errorResponse"
+          }
+        }
+      }
+    },
+    "/auth/login": {
+      "get": {
+        "security": [],
+        "summary": "login through oauth2 server",
+        "parameters": [
+          {
+            "type": "string",
+            "name": "connector_id",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "302": {
+            "description": "Redirect"
+          }
+        }
+      }
+    },
     "/info": {
       "get": {
         "security": [],
@@ -957,6 +1016,16 @@ func init() {
     }
   },
   "securityDefinitions": {
+    "dex": {
+      "type": "oauth2",
+      "flow": "accessCode",
+      "authorizationUrl": "https://example.com/auth",
+      "tokenUrl": "https://example.com/token",
+      "scopes": {
+        "admin": "Admin scope",
+        "user": "User scope"
+      }
+    },
     "keystone": {
       "description": "OpenStack Keystone Authentication",
       "type": "apiKey",
@@ -967,6 +1036,11 @@ func init() {
   "security": [
     {
       "keystone": null
+    },
+    {
+      "dex": [
+        "user"
+      ]
     }
   ]
 }`))
@@ -1324,6 +1398,58 @@ func init() {
           "required": true
         }
       ]
+    },
+    "/auth/callback": {
+      "get": {
+        "security": [],
+        "summary": "callback for oauth result",
+        "parameters": [
+          {
+            "type": "string",
+            "name": "code",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "name": "state",
+            "in": "query",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/getAuthCallbackOKBody"
+            }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      }
+    },
+    "/auth/login": {
+      "get": {
+        "security": [],
+        "summary": "login through oauth2 server",
+        "parameters": [
+          {
+            "type": "string",
+            "name": "connector_id",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "302": {
+            "description": "Redirect"
+          }
+        }
+      }
     },
     "/info": {
       "get": {
@@ -1821,6 +1947,20 @@ func init() {
         }
       }
     },
+    "getAuthCallbackOKBody": {
+      "type": "object",
+      "properties": {
+        "idToken": {
+          "description": "idToken",
+          "type": "string"
+        },
+        "type": {
+          "description": "Token type",
+          "type": "string"
+        }
+      },
+      "x-go-gen-location": "operations"
+    },
     "getClusterValuesOKBody": {
       "type": "object",
       "properties": {
@@ -1987,6 +2127,16 @@ func init() {
     }
   },
   "securityDefinitions": {
+    "dex": {
+      "type": "oauth2",
+      "flow": "accessCode",
+      "authorizationUrl": "https://example.com/auth",
+      "tokenUrl": "https://example.com/token",
+      "scopes": {
+        "admin": "Admin scope",
+        "user": "User scope"
+      }
+    },
     "keystone": {
       "description": "OpenStack Keystone Authentication",
       "type": "apiKey",
@@ -1997,6 +2147,11 @@ func init() {
   "security": [
     {
       "keystone": []
+    },
+    {
+      "dex": [
+        "user"
+      ]
     }
   ]
 }`))

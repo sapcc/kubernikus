@@ -1,5 +1,5 @@
 hash: d68a4a034de18b09f0021e3591ddaa18e61bd4954ffcb75aebd0d373a4f88da8
-updated: 2020-11-06T14:45:00.159872378+01:00
+updated: 2021-03-18T14:14:12.034396+01:00
 imports:
 - name: github.com/ajeddeloh/yaml
   version: 1072abfea31191db507785e2e0c1b8d1440d35a5
@@ -26,6 +26,10 @@ imports:
   - config/templating
   - config/types
   - config/types/util
+- name: github.com/coreos/go-oidc
+  version: 08563f61dbb316f8ef85b784d01da503f2480690
+  subpackages:
+  - oidc
 - name: github.com/coreos/go-semver
   version: e214231b295a8ea9479f11b70b35d5acf3556d9b
   subpackages:
@@ -400,6 +404,11 @@ imports:
   - transport
 - name: gopkg.in/inf.v0
   version: 3887ee99ecf07df5b447e9b00d9c0b2adaa9f3e4
+- name: gopkg.in/square/go-jose.v2
+  version: e94fb177d3668d35ab39c61cbb2f311550557e83
+  subpackages:
+  - cipher
+  - json
 - name: gopkg.in/yaml.v2
   version: 51d6538a90f86fe93ac480b35f37b2be17fef232
 - name: gopkg.in/yaml.v3
