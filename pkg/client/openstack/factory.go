@@ -29,6 +29,30 @@ type SharedOpenstackClientFactory interface {
 	AdminClient() (admin.AdminClient, error)
 }
 
+var _ SharedOpenstackClientFactory = &NotAvailableFactory{}
+
+type NotAvailableFactory struct {
+}
+
+func (_ NotAvailableFactory) KlusterClientFor(*kubernikus_v1.Kluster) (openstack_kluster.KlusterClient, error) {
+	return nil, errors.New("Openstack not configured")
+}
+func (_ NotAvailableFactory) ProjectClientFor(authOptions *tokens.AuthOptions) (openstack_project.ProjectClient, error) {
+	return nil, errors.New("Openstack not configured")
+}
+func (_ NotAvailableFactory) ProjectAdminClientFor(string) (openstack_project.ProjectClient, error) {
+	return nil, errors.New("Openstack not configured")
+}
+func (_ NotAvailableFactory) ProviderClientFor(authOptions *tokens.AuthOptions, logger log.Logger) (*gophercloud.ProviderClient, error) {
+	return nil, errors.New("Openstack not configured")
+}
+func (_ NotAvailableFactory) ProviderClientForKluster(kluster *kubernikus_v1.Kluster, logger log.Logger) (*gophercloud.ProviderClient, error) {
+	return nil, errors.New("Openstack not configured")
+}
+func (_ NotAvailableFactory) AdminClient() (admin.AdminClient, error) {
+	return nil, errors.New("Openstack not configured")
+}
+
 type factory struct {
 	klusterClients sync.Map
 	projectClients sync.Map
