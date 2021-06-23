@@ -15,7 +15,7 @@ require (
 	github.com/coreos/ignition v0.17.2
 	github.com/danieljoos/wincred v1.0.1 // indirect
 	github.com/databus23/goslo.policy v0.0.0-20170317131957-3ae74dd07ebf
-	github.com/databus23/guttle v0.0.0-20180831113238-290306d52eb2
+	github.com/databus23/guttle v0.0.0-20210623071842-89102dbdfc85
 	github.com/databus23/keystone v0.0.0-20180111110916-350fd0e663cd
 	github.com/databus23/requestutil v0.0.0-20160108082528-5ff8e981f38f
 	github.com/ghodss/yaml v1.0.0

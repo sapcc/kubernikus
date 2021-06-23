@@ -139,6 +139,8 @@ github.com/databus23/goslo.policy v0.0.0-20170317131957-3ae74dd07ebf h1:9V+7mLoE
 github.com/databus23/goslo.policy v0.0.0-20170317131957-3ae74dd07ebf/go.mod h1:l9nkDMRWNXo519AKv09j14YhyHW1YsAKAa1kG6R1p3Y=
 github.com/databus23/guttle v0.0.0-20180831113238-290306d52eb2 h1:beY0aihoUu71237z+7xwlrd4Zv6sj3F7yvjTG0/X7o8=
 github.com/databus23/guttle v0.0.0-20180831113238-290306d52eb2/go.mod h1:rXhm36GMqFlpEHJVnwHgD1B4SrX8SExE17Hbry+9HhU=
+github.com/databus23/guttle v0.0.0-20210623071842-89102dbdfc85 h1:8nIG9Yiu7+UMEtcQQt8j2UPjPgBW9y3DixvFthA+avY=
+github.com/databus23/guttle v0.0.0-20210623071842-89102dbdfc85/go.mod h1:rXhm36GMqFlpEHJVnwHgD1B4SrX8SExE17Hbry+9HhU=
 github.com/databus23/keystone v0.0.0-20180111110916-350fd0e663cd h1:OptdAs3t90tBs6w+lAJVVhBQj3/gqHh1tAQQBL5r08M=
 github.com/databus23/keystone v0.0.0-20180111110916-350fd0e663cd/go.mod h1:TtJx0X0i4vIrVWmEEDScoV1pI2IRk0xnLSOdkBOSNgQ=
 github.com/databus23/requestutil v0.0.0-20160108082528-5ff8e981f38f h1:XNMA7+H8BjFGoU7R0Adz8QgqnorBwoAYo2TuRR68OHQ=
