@@ -1,0 +1,3 @@
+package: github.com/databus23/guttle
+import:
+- package: github.com/spf13/cobra
