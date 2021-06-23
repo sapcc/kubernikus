@@ -65,7 +65,7 @@ spec:
             - name: USE_OCTAVIA
               value: "true"
             {{- end }}
-            {{- if .Values.openstack.password }}
+            {{- if .Values.openstack.auth_url }}
             - name: OS_PASSWORD
               valueFrom:
                 secretKeyRef:
