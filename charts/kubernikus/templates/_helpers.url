@@ -1,0 +1,3 @@
+{{- define "oidc.issuer" -}}
+{{- printf "auth.%s" .Values.domain -}}
+{{- end -}}

@@ -4,6 +4,9 @@
 KUBENAMESPACE=${KUBENAMESPACE:-kubernikus}
 
 case $KUBECONTEXT in
+  k-master)
+    BASE_URL=kubernikus-master.eu-nl-1.cloud.sap
+    ;;
   v-*)
     BASE_URL=kubernikus-v.${KUBECONTEXT#"v-"}.cloud.sap
     ;;
@@ -12,9 +15,10 @@ case $KUBECONTEXT in
     ;;
   admin)
     BASE_URL=$KUBENAMESPACE.admin.cloud.sap
+    ;;
 esac
 
-kubectl get secret $1-secret -ogo-template-file=<(cat<< EOF
+kubectl get secret -n$KUBENAMESPACE $1-secret -ogo-template-file=<(cat<< EOF
 {{ \$cluster := index .metadata.ownerReferences 0 "name" -}}
 apiVersion: v1
 kind: Config

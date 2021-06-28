@@ -41,6 +41,7 @@ type openstackValues struct {
 	LbSubnetID          string `yaml:"lbSubnetID,omitempty"`
 	LbFloatingNetworkID string `yaml:"lbFloatingNetworkID,omitempty"`
 	RouterID            string `yaml:"routerID,omitempty"`
+	UseOctavia          bool   `yaml:"useOctavia"`
 }
 
 type persistenceValues struct {
@@ -48,10 +49,11 @@ type persistenceValues struct {
 }
 
 type etcdValues struct {
-	Persistence      persistenceValues `yaml:"persistence,omitempty"`
-	StorageContainer string            `yaml:"storageContainer,omitempty"`
-	Openstack        openstackValues   `yaml:"openstack,omitempty"`
-	Backup           etcdBackupValues  `yaml:"backup"`
+	Persistence      persistenceValues      `yaml:"persistence,omitempty"`
+	StorageContainer string                 `yaml:"storageContainer,omitempty"`
+	Openstack        openstackValues        `yaml:"openstack,omitempty"`
+	Backup           etcdBackupValues       `yaml:"backup"`
+	Images           version.KlusterVersion `yaml:"images"`
 }
 
 type etcdBackupValues struct {
@@ -100,21 +102,21 @@ type staticPassword struct {
 }
 
 type kubernikusHelmValues struct {
-	Openstack        openstackValues       `yaml:"openstack,omitempty"`
-	ClusterCIDR      string                `yaml:"clusterCIDR,omitempty"`
-	ServiceCIDR      string                `yaml:"serviceCIDR,omitempty"`
-	AdvertiseAddress string                `yaml:"advertiseAddress,omitempty"`
-	AdvertisePort    int64                 `yaml:"advertisePort,omitempty"`
-	BoostrapToken    string                `yaml:"bootstrapToken,omitempty"`
-	Version          versionValues         `yaml:"version,omitempty"`
-	Etcd             etcdValues            `yaml:"etcd,omitempty"`
-	Api              apiValues             `yaml:"api,omitempty"`
-	Name             string                `yaml:"name"`
-	Account          string                `yaml:"account"`
-	SecretName       string                `yaml:"secretName"`
-	ImageRegistry    version.ImageRegistry `yaml:",inline"`
-	Dex              dexValues             `yaml:"dex,omitempty"`
-	Dashboard        dashboardValues       `yaml:"dashboard,omitempty"`
+	Openstack        openstackValues        `yaml:"openstack,omitempty"`
+	ClusterCIDR      string                 `yaml:"clusterCIDR,omitempty"`
+	ServiceCIDR      string                 `yaml:"serviceCIDR,omitempty"`
+	AdvertiseAddress string                 `yaml:"advertiseAddress,omitempty"`
+	AdvertisePort    int64                  `yaml:"advertisePort,omitempty"`
+	BoostrapToken    string                 `yaml:"bootstrapToken,omitempty"`
+	Version          versionValues          `yaml:"version,omitempty"`
+	Etcd             etcdValues             `yaml:"etcd,omitempty"`
+	Api              apiValues              `yaml:"api,omitempty"`
+	Name             string                 `yaml:"name"`
+	Account          string                 `yaml:"account"`
+	SecretName       string                 `yaml:"secretName"`
+	Images           version.KlusterVersion `yaml:"images"`
+	Dex              dexValues              `yaml:"dex,omitempty"`
+	Dashboard        dashboardValues        `yaml:"dashboard,omitempty"`
 }
 
 func KlusterToHelmValues(kluster *v1.Kluster, secret *v1.Secret, kubernetesVersion string, registry *version.ImageRegistry, accessMode string) ([]byte, error) {
@@ -203,6 +205,12 @@ func KlusterToHelmValues(kluster *v1.Kluster, secret *v1.Secret, kubernetesVersi
 		},
 		Dex: dex,
 	}
+	if registry != nil {
+		values.Images = registry.Versions[kubernetesVersion]
+		// make etcd images available to subchart
+		values.Etcd.Images.Etcd = values.Images.Etcd
+		values.Etcd.Images.EtcdBackup = values.Images.EtcdBackup
+	}
 	if !kluster.Spec.NoCloud {
 		values.Openstack = openstackValues{
 			AuthURL:             secret.Openstack.AuthURL,
@@ -215,10 +223,8 @@ func KlusterToHelmValues(kluster *v1.Kluster, secret *v1.Secret, kubernetesVersi
 			LbSubnetID:          kluster.Spec.Openstack.LBSubnetID,
 			LbFloatingNetworkID: kluster.Spec.Openstack.LBFloatingNetworkID,
 			RouterID:            kluster.Spec.Openstack.RouterID,
+			UseOctavia:          true,
 		}
-	}
-	if registry != nil {
-		values.ImageRegistry = *registry
 	}
 
 	result, err := yaml.Marshal(values)

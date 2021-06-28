@@ -1,22 +1,22 @@
 <%
 REGIONS = {
   "ap-ae-1": { continent: 'ASIA',     install: 'terraform', e2e: 'terraform' },
-  "ap-au-1": { continent: 'ASIA',     install: 'manual'   , e2e: 'manual'    },
+  "ap-au-1": { continent: 'ASIA',     install: 'manual'   , e2e: 'manual' },
   "ap-cn-1": { continent: 'ASIA',     install: 'terraform', e2e: 'terraform' },
   "ap-jp-1": { continent: 'ASIA',     install: 'terraform', e2e: 'terraform' },
   "ap-jp-2": { continent: 'ASIA',     install: 'terraform', e2e: 'terraform' },
   "ap-sa-1": { continent: 'ASIA',     install: 'terraform', e2e: 'terraform' },
-  "eu-de-1": { continent: 'EMEA',     install: 'manual'   , e2e: 'manual'    },
-  "eu-de-2": { continent: 'EMEA',     install: 'manual'   , e2e: 'manual'    },
+  "eu-de-1": { continent: 'EMEA',     install: 'manual'   , e2e: 'manual' },
+  "eu-de-2": { continent: 'EMEA',     install: 'manual'   , e2e: 'manual' },
   "eu-nl-1": { continent: 'EMEA',     install: 'manual'   , e2e: 'terraform' },
   "eu-ru-1": { continent: 'EMEA',     install: 'terraform', e2e: 'terraform' },
   "la-br-1": { continent: 'AMERICAS', install: 'terraform', e2e: 'terraform' },
   "na-ca-1": { continent: 'AMERICAS', install: 'terraform', e2e: 'terraform' },
-  "na-us-1": { continent: 'AMERICAS', install: 'manual'   , e2e: 'manual'    },
+  "na-us-1": { continent: 'AMERICAS', install: 'manual'   , e2e: 'manual', nodepool_avz: 'na-us-1b' },
   "na-us-2": { continent: 'AMERICAS', install: 'terraform', e2e: 'terraform' },
   "na-us-3": { continent: 'AMERICAS', install: 'terraform', e2e: 'terraform' },
-  "qa-de-1": { continent: 'INFRA',    install: 'terraform', e2e: 'terraform', nodepool_avz: 'qa-de-1a' },
-  "master":  { continent: "INFRA",    install: 'virtual'  , e2e: 'virtual'   }
+  "qa-de-1": { continent: 'INFRA',    install: 'terraform', e2e: 'terraform', nodepool_avz: 'qa-de-1a'},
+  "master":  { continent: "INFRA",    install: 'virtual'  , e2e: 'virtual' }
 }
 
 GROUPS             = REGIONS.values.map{ |v| v[:continent]}.uniq
@@ -28,11 +28,11 @@ auth_<%= region %>: &auth_<%= region %>
   KUBELOGON_USER:     ((KUBELOGON_USER))
   KUBELOGON_PASSWORD: ((KUBELOGON_PASSWORD))
   KUBERNIKUS_NAME: k-<%= region %>
-  KUBERNIKUS_URL: https://k-<%= region %>.admin.cloud.sap
+  KUBERNIKUS_URL: https://kubernikus.admin.<%= region == :master ? "eu-nl-1": region %>.cloud.sap
 
 auth_e2e_<%= region %>: &auth_e2e_<%= region %>
   CP_KLUSTER: k-<%= region %>
-  CP_KUBERNIKUS_URL: https://k-<%= region %>.admin.cloud.sap
+  CP_KUBERNIKUS_URL: https://kubernikus.admin.<%= region == :master ? "eu-nl-1" : region %>.cloud.sap
   CP_OS_PROJECT_DOMAIN_NAME: ccadmin
   KUBERNIKUS_NAME: e2e
   OS_PROJECT_DOMAIN_NAME: ccadmin
@@ -84,24 +84,48 @@ slack: &slack
 
 
 resources:
+
+  - name: docs.git
+    type: git
+    source:
+      uri: https://github.com/sapcc/kubernikus.git
+      paths:
+        - docs/**
+        - contrib/kubernikus-docs-builder/**
+        - swagger.yaml
+        - Dockerfile.kubernikus-docs2
+
+  - name: kubernikus.git
+    type: git
+    source:
+      uri: https://github.com/sapcc/kubernikus.git
+
+  - name: docs-builder.image
+    type: registry-image
+    source:
+    check_every: 24h
+    source:
+      username: ((keppel.username))
+      password: ((keppel.password))
+      repository: keppel.eu-de-1.cloud.sap/ccloud/kubernikus-docs-builder
+      tag: latest
+
+  - name: kubernikus.image
+    type: registry-image
+    source:
+    check_every: 24h
+    source:
+      username: ((keppel.username))
+      password: ((keppel.password))
+      repository: keppel.eu-de-1.cloud.sap/ccloud/kubernikus
+      tag: latest
+
   - name: kubernikusctl.release
     type: github-release
     source:
       owner: sapcc
       repository: kubernikus
       access_token: ((github-com-access-token))
-
-  - name: master.builds
-    type: gh-status
-    icon: github-circle
-    source:
-      username: sapcc-bot
-      password: ((github-com-access-token))
-      owner:    sapcc
-      repo:     kubernikus
-      access_token: ((github-com-access-token))
-      branch: master
-      depth: 1
 
   - name: secrets.git
     icon: key-variant
@@ -151,6 +175,9 @@ resources:
   - name: <%= group %>.tag
     type: time-version-resource
     check_every: 525600h # basically never (only when triggered by a job)
+    source:
+      group: <%= group %>
+      pipeline: kubernikus # we do this so we don't get versions from other pipelines
 <% end %>
 
   - name: hourly
@@ -158,33 +185,65 @@ resources:
     source: {interval: 1h}
 
 resource_types:
-  - name: time-version
-    type: docker-image
-    source:
-      repository: hub.global.cloud.sap/concourse/time-version-resource
-      tag: v2
   - name: slack-alert
     type: docker-image
+    check_every: 24h
     source:
       repository: arbourd/concourse-slack-alert-resource
   - name: slack-notification
     type: docker-image
+    check_every: 24h
     source:
       repository: cfcommunity/slack-notification-resource
       tag: latest
 
-  - name: gh-status
-    type: docker-image
-    source:
-      repository: hub.global.cloud.sap/concourse/ghstatus-resource
-      tag: latest
   - name: time-version-resource
     type: docker-image
+    check_every: 24h
     source:
-      repository: hub.global.cloud.sap/concourse/time-version-resource
+      repository: keppel.eu-de-1.cloud.sap/ccloud/concourse-time-version-resource
       tag: v2
 
 jobs:
+  - name: docs
+    serial: true
+    plan:
+      - get: docs.git
+        trigger: true
+      - task: build
+        privileged: true
+        config:
+          <<: *task_oci_build
+        input_mapping: { context: docs.git }
+        params:
+          DOCKERFILE: context/Dockerfile.kubernikus-docs2
+      - put: docs-builder.image
+        params:
+          image: image/image.tar
+  - name: build
+    serial: true
+    plan:
+      - in_parallel:
+        - get: kubernikus.git
+          trigger: true
+        - get: docs-builder.image
+          passed: [docs]
+      - task: args
+        config:
+          <<: *task_build_args
+      - task: build
+        privileged: true
+        config:
+          <<: *task_oci_build
+        input_mapping: { context: kubernikus.git }
+        params:
+          DOCKERFILE: context/Dockerfile.kubernikus
+          BUILD_ARGS_FILE: context/build-args.txt
+      - put: kubernikus.image
+        params:
+          image: image/image.tar
+          additional_tags: kubernikus.git/.git/ref
+
   - name: tiller_master
     plan:
       - in_parallel:
@@ -206,21 +265,23 @@ jobs:
       - in_parallel:
         - get: secrets.git
         - get: kubernikus.builds
-          resource: master.builds
+          resource: kubernikus.git
+          passed: [build]
           trigger: true
       - in_parallel:
         - task: kubernikus
           config:
             <<: *task_helm_kubernikus
           params:
-            REGION: "k-master"
+            REGION: eu-nl-1
+            CONTEXT: k-master
             <<: *auth_master
         - task: kubernikus-dex
           config:
             <<: *task_helm_kubernikus-dex
           params:
-            REGION: "eu-nl-1"
-            CONTEXT: "k-master"
+            REGION: eu-nl-1
+            CONTEXT: k-master
             <<: *auth_master
     <<: *slack
 
@@ -228,7 +289,8 @@ jobs:
     plan:
       - in_parallel:
         - get: kubernikus.builds
-          resource: master.builds
+          resource: kubernikus.git
+          passed: [build]
           trigger: true
       - task: build
         file: kubernikus.builds/ci/task_cli.yaml
@@ -248,7 +310,8 @@ jobs:
     plan:
       - in_parallel:
         - get: kubernikus.builds
-          resource: master.builds
+          resource: kubernikus.git
+          passed: [build]
           trigger: true
       - task: build
         file: kubernikus.builds/ci/task_whitesource.yaml
@@ -265,7 +328,7 @@ jobs:
       - in_parallel:
         - get: secrets.git
         - get: kubernikus.builds
-          resource: master.builds
+          resource: kubernikus.git
           passed: [master]
           trigger: true
       - task: e2e_tests
@@ -280,7 +343,7 @@ jobs:
     serial: true
     plan:
       - get: kubernikus.builds
-        resource: master.builds
+        resource: kubernikus.git
         passed: [e2e]
       - task: changes
         config:
@@ -296,36 +359,10 @@ jobs:
           trigger: true
         - get: secrets.git
         - get: kubernikus.builds
-          resource: master.builds
+          resource: kubernikus.git
           passed: [prod]
           trigger: true
         - put: <%= group %>.tag
-
-  - name: admin_<%= group %>
-    serial: true
-    plan:
-      - in_parallel:
-        - get: <%= group %>.tag
-          passed: [ <%= group %> ]
-          trigger: true
-        - get: secrets.git
-          passed: [ <%= group %> ]
-        - get: kubernikus.builds
-          resource: master.builds
-          passed: [<%= group %>]
-      - in_parallel:
-<% REGIONS.select{ |k, v| v[:continent] == group }.each do |region, meta| %>
-        - task: k-<%= region %>
-          config:
-            <<: *task_helm-admin_kubernikus
-          params:
-            REGION: admin
-            CONTEXT: admin
-            KUBERNIKUS_NAME: k-<%= region %>
-            KUBELOGON_USER:     ((KUBELOGON_USER))
-            KUBELOGON_PASSWORD: ((KUBELOGON_PASSWORD))
-<% end %>
-    <<: *slack
 
 <% REGIONS.select{ |k, v| v[:continent] == group }.each do |region, meta| %>
 <% if ["terraform", "manual"].include? meta[:install] %>
@@ -335,10 +372,10 @@ jobs:
     plan:
       - in_parallel:
         - get: <%= group %>.tag
-          passed: [admin_<%= group %>]
+          passed: [<%= group %>]
           trigger: true
         - get: secrets.git
-          passed: [admin_<%= group %>]
+          passed: [<%= group %>]
         - get: helm-charts.git
           passed: [<%= group %>]
       - task: seed
@@ -381,8 +418,8 @@ jobs:
         - get: secrets.git
           passed: [seed_<%= region %>]
         - get: kubernikus.builds
-          resource: master.builds
-          passed: [admin_<%= group %>]
+          resource: kubernikus.git
+          passed: [<%= group %>]
       - in_parallel:
         - task: kubernikus_<%= region %>
           config:
@@ -409,7 +446,7 @@ jobs:
           trigger: true
           passed: [deploy_<%= region %>]
         - get: kubernikus.builds
-          resource: master.builds
+          resource: kubernikus.git
           passed: [deploy_<%= region %>]
         - get: hourly
           trigger: true
@@ -442,6 +479,8 @@ jobs:
 groups:
   - name: deploy
     jobs:
+      - docs
+      - build
       - master
       - cli
       - whitesource
@@ -450,14 +489,12 @@ groups:
       - prod
 <% GROUPS.each do |group| %>
       - <%= group %>
-      - admin_<%= group %>
 <% end %>
 
 <% DEPLOYABLE_REGIONS.each do |region, meta| %>
   - name: <%= region %>
     jobs:
       - <%= meta.fetch(:continent) %>
-      - admin_<%= meta.fetch(:continent) %>
       - seed_<%= region %>
       - tiller_<%= region %>
       - deploy_<%= region %>
@@ -474,7 +511,6 @@ groups:
       - prod
 <% GROUPS.each do |group| %>
       - <%= group %>
-      - admin_<%= group %>
 <% end %>
 <% DEPLOYABLE_REGIONS.each do |region, meta| %>
       - seed_<%= region %>

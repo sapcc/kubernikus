@@ -16,7 +16,7 @@ import (
 )
 
 // SeedCoreDNS creates a deployment and related resources for running CoreDNS in the customer cluster
-func SeedCoreDNS(client clientset.Interface, repository, version, domain, clusterIP string) error {
+func SeedCoreDNS(client clientset.Interface, image, domain, clusterIP string) error {
 	if err := createCoreDNSServiceAccount(client); err != nil {
 		return errors.Wrap(err, "Failed to ensure coredns service account")
 	}
@@ -36,14 +36,14 @@ func SeedCoreDNS(client clientset.Interface, repository, version, domain, cluste
 	if err := createCoreDNSService(client, clusterIP); err != nil {
 		return errors.Wrap(err, "Failed to ensure coredns service")
 	}
-	if err := createCoreDNSDeployment(client, repository, version); err != nil {
+	if err := createCoreDNSDeployment(client, image); err != nil {
 		return errors.Wrap(err, "Failed to ensure coredns deployment")
 	}
 
 	return nil
 }
 
-func SeedCoreDNS116(client clientset.Interface, repository, version, domain, clusterIP string) error {
+func SeedCoreDNS116(client clientset.Interface, image, domain, clusterIP string) error {
 	if err := createCoreDNSServiceAccount(client); err != nil {
 		return errors.Wrap(err, "Failed to ensure coredns service account")
 	}
@@ -63,7 +63,7 @@ func SeedCoreDNS116(client clientset.Interface, repository, version, domain, clu
 	if err := createCoreDNSService(client, clusterIP); err != nil {
 		return errors.Wrap(err, "Failed to ensure coredns service")
 	}
-	if err := createCoreDNSDeployment116(client, repository, version); err != nil {
+	if err := createCoreDNSDeployment116(client, image); err != nil {
 		return errors.Wrap(err, "Failed to ensure coredns deployment")
 	}
 
@@ -212,13 +212,9 @@ func createCoreDNSService(client clientset.Interface, clusterIP string) error {
 	})
 }
 
-func createCoreDNSDeployment(client clientset.Interface, repository, version string) error {
-	if repository == "" {
-		repository = "sapcc"
-	}
-
-	if version == "" {
-		version = "1.6.2"
+func createCoreDNSDeployment(client clientset.Interface, image string) error {
+	if image == "" {
+		image = "sapcc/coredns:1.6.2"
 	}
 
 	manifest := `
@@ -267,7 +263,7 @@ spec:
         beta.kubernetes.io/os: linux
       containers:
       - name: coredns
-        image: {{ .Repository }}/coredns:{{ .Version }}
+        image: {{ .Image }}
         imagePullPolicy: IfNotPresent
         resources:
           limits:
@@ -323,11 +319,9 @@ spec:
 `
 
 	data := struct {
-		Repository string
-		Version    string
+		Image string
 	}{
-		repository,
-		version,
+		image,
 	}
 
 	template, err := bootstrap.RenderManifest(manifest, data)
@@ -343,13 +337,9 @@ spec:
 	return bootstrap.CreateOrUpdateDeployment(client, deployment.(*extensions.Deployment))
 }
 
-func createCoreDNSDeployment116(client clientset.Interface, repository, version string) error {
-	if repository == "" {
-		repository = "sapcc"
-	}
-
-	if version == "" {
-		version = "1.6.2"
+func createCoreDNSDeployment116(client clientset.Interface, image string) error {
+	if image == "" {
+		image = "sapcc/coredns:1.6.2"
 	}
 
 	manifest := `
@@ -398,7 +388,7 @@ spec:
         beta.kubernetes.io/os: linux
       containers:
       - name: coredns
-        image: {{ .Repository }}/coredns:{{ .Version }}
+        image: {{ .Image }}
         imagePullPolicy: IfNotPresent
         resources:
           limits:
@@ -454,11 +444,9 @@ spec:
 `
 
 	data := struct {
-		Repository string
-		Version    string
+		Image string
 	}{
-		repository,
-		version,
+		image,
 	}
 
 	template, err := bootstrap.RenderManifest(manifest, data)

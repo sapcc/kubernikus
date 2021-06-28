@@ -71,6 +71,15 @@ func NewController(informer informers.NodeInformer, serviceCIDR string, tunnel *
 				c.queue.Add(key)
 			}
 		},
+		UpdateFunc: func(oldObj, newObj interface{}) {
+			oldNode := oldObj.(*v1.Node)
+			newNode := newObj.(*v1.Node)
+			if oldNode.Spec.PodCIDR != newNode.Spec.PodCIDR {
+				if key, err := cache.MetaNamespaceKeyFunc(newObj); err == nil {
+					c.queue.Add(key)
+				}
+			}
+		},
 	})
 
 	return c
@@ -170,11 +179,19 @@ func (c *Controller) reconcile(key string) error {
 func (c *Controller) addNode(key string, node *v1.Node) error {
 
 	identifier := fmt.Sprintf("system:node:%v", node.GetName())
+
+	podCIDR := node.Spec.PodCIDR
+	if podCIDR == "" {
+		c.Logger.Log(
+			"msg", "removing tunnel routes for node with empty spec.PodCIDR",
+			"node", identifier,
+		)
+		return c.redoIPTablesSpratz()
+	}
+
 	c.Logger.Log(
 		"msg", "adding tunnel routes",
 		"node", identifier)
-
-	podCIDR := node.Spec.PodCIDR
 
 	ip, err := GetNodeHostIP(node)
 	if err != nil {

@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"regexp"
+	"sync"
 	"time"
 
 	"github.com/pkg/errors"
@@ -35,6 +36,8 @@ type Version struct {
 	Client    *http.Client
 	versions  map[channel]*version.Version
 	fetchedAt map[channel]time.Time
+
+	mu sync.Mutex
 }
 
 // Stable returns version of flatcar stable channel
@@ -87,6 +90,8 @@ func ExractVersion(node *v1.Node) (*version.Version, error) {
 
 func (d *Version) latest(c channel) (*version.Version, error) {
 	var err error
+	d.mu.Lock()
+	defer d.mu.Unlock()
 
 	if d.Client == nil {
 		d.Client = &http.Client{

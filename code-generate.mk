@@ -22,7 +22,6 @@ informer-gen: $(BIN)/informer-gen
 	@rm -rf ./pkg/generated/informers
 	@mkdir -p ./pkg/generated/informers
 	$(BIN)/informer-gen \
-	  --logtostderr \
 	  --go-header-file /dev/null \
 	  --output-base                 $(OUTPUT_BASE) \
 	  --input-dirs                  $(API_BASE)/kubernikus/v1  \
@@ -35,7 +34,6 @@ lister-gen: $(BIN)/lister-gen
 	@rm -rf ./pkg/generated/listers
 	@mkdir -p ./pkg/generated/listers
 	$(BIN)/lister-gen \
-	  --logtostderr \
 	  --go-header-file /dev/null \
 	  --output-base    $(OUTPUT_BASE) \
 	  --input-dirs     $(API_BASE)/kubernikus/v1 \

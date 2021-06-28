@@ -11,6 +11,7 @@ import (
 	"github.com/gophercloud/gophercloud/openstack/blockstorage/v3/volumes"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/servers"
 	"github.com/gophercloud/gophercloud/openstack/identity/v3/tokens"
+	"github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/loadbalancers"
 	"github.com/gophercloud/gophercloud/openstack/objectstorage/v1/containers"
 	"github.com/gophercloud/gophercloud/openstack/objectstorage/v1/objects"
 	"github.com/stretchr/testify/assert"
@@ -42,11 +43,13 @@ func (p *PyrolisisTests) Run(t *testing.T) {
 			t.Run("Klusters", p.WaitForE2EKlustersTerminated)
 		})
 
+		t.Run("CleanupVolumes", p.CleanupVolumes)
+		t.Run("CleanupInstances", p.CleanupInstances)
+
 		cleanupStorageContainer := t.Run("CleanupBackupStorageContainers", p.CleanupBackupStorageContainers)
 		require.True(t, cleanupStorageContainer, "Etcd backup storage container cleanup failed")
 
-		t.Run("CleanupVolumes", p.CleanupVolumes)
-		t.Run("CleanupInstances", p.CleanupInstances)
+		t.Run("CleanupLoadbalancers", p.CleanupLoadbalancers)
 	}
 }
 
@@ -143,8 +146,15 @@ func (p *PyrolisisTests) CleanupVolumes(t *testing.T) {
 	require.NoError(t, err, "There should be no error while extracting volumes")
 
 	for _, vol := range allVolumes {
+		// in-tree
 		if strings.HasPrefix(vol.Name, "kubernetes-dynamic-pvc-") &&
 			strings.HasPrefix(vol.Metadata["kubernetes.io/created-for/pvc/namespace"], "e2e-volumes-") {
+			err := volumes.Delete(storageClient, vol.ID, volumes.DeleteOpts{}).ExtractErr()
+			require.NoError(t, err, "There should be no error while deleting volume %s (%s)", vol.Name, vol.ID)
+		}
+		// CSI
+		if strings.HasPrefix(vol.Name, "pv-e2e-") &&
+			strings.HasPrefix(vol.Metadata["cinder.csi.openstack.org/cluster"], "e2e-") {
 			err := volumes.Delete(storageClient, vol.ID, volumes.DeleteOpts{}).ExtractErr()
 			require.NoError(t, err, "There should be no error while deleting volume %s (%s)", vol.Name, vol.ID)
 		}
@@ -172,5 +182,23 @@ func (p *PyrolisisTests) CleanupInstances(t *testing.T) {
 	for _, srv := range allServers {
 		err := servers.Delete(computeClient, srv.ID).ExtractErr()
 		require.NoError(t, err, "There should be no error while deleting server %s (%s)", srv.Name, srv.ID)
+	}
+}
+
+func (p *PyrolisisTests) CleanupLoadbalancers(t *testing.T) {
+	lbClient, err := openstack.NewLoadBalancerV2(p.OpenStack.Provider, gophercloud.EndpointOpts{})
+	require.NoError(t, err, "There should be no error getting a loadbalancer client")
+
+	allPages, err := loadbalancers.List(lbClient, loadbalancers.ListOpts{}).AllPages()
+	require.NoError(t, err, "There should be no error while listing loadbalancers")
+
+	allLoadbalancers, err := loadbalancers.ExtractLoadBalancers(allPages)
+	require.NoError(t, err, "There should be no error while extracting loadbalancers")
+
+	for _, lb := range allLoadbalancers {
+		if strings.HasSuffix(lb.Name, "_e2e-lb") {
+			err := loadbalancers.Delete(lbClient, lb.ID, loadbalancers.DeleteOpts{}).ExtractErr()
+			require.NoError(t, err, "There should be no error while deleting loadbalancer %s", lb.Name)
+		}
 	}
 }

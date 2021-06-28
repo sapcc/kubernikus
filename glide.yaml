@@ -9,16 +9,16 @@ import:
   - assert
   - mock
 - package: k8s.io/client-go
-  version: v6.0.0
+  version: release-9.0
 - package: k8s.io/apimachinery
-  version: kubernetes-1.9.1
+  version: release-1.12
 - package: k8s.io/apiextensions-apiserver
-  version: kubernetes-1.9.1
+  version: release-1.12
 - package: k8s.io/code-generator
-  version: kubernetes-1.9.1
+  version: release-1.12
 - package: k8s.io/gengo
 - package: k8s.io/helm
-  version: v2.7.2
+  version: v2.11.0
 - package: github.com/coreos/container-linux-config-transpiler
   version: v0.4.2
 - package: github.com/pkg/errors
@@ -32,6 +32,9 @@ import:
 # overwrite gophercloud version given in k8s deps
 - package: github.com/gophercloud/gophercloud
   version: 077038c4f65ca6324adea7af6907d0d770131c32
+# upgrade from 1.0.0 to fix foo in newer version clusters
+- package: github.com/prometheus/client_golang
+  version: v0.9.0
 # Dependencies extracted from go-swagger 0.18.0
 - package: github.com/go-openapi/errors
   version: 7a7ff1b7b8020f22574411a32f28b4d168d69237
@@ -65,3 +68,5 @@ import:
   version: d2eab7d93009e9215fc85b2faa2c2f2a98c2af48
 - package: github.com/mailru/easyjson
   version: 60711f1a8329503b04e1c88535f419d0bb440bff
+- package: github.com/coreos/go-semver
+  version: v0.3.0

@@ -1,4 +1,5 @@
 FROM alpine:3.8
+LABEL source_repository="https://github.com/sapcc/kubernikus"
 
 ARG HUGO_VERSION=0.30.2
 

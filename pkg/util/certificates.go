@@ -29,6 +29,7 @@ const (
 	// renew certs 90 days before they expire
 	certExpiration                    = 90 * 24 * time.Hour
 	AdditionalApiserverSANsAnnotation = "kubernikus.cloud.sap/additional-apiserver-sans"
+	AdditionalWormholeSANsAnnotation  = "kubernikus.cloud.sap/additional-wormhole-sans"
 )
 
 type Bundle struct {
@@ -240,6 +241,15 @@ func (cf *CertificateFactory) Ensure() ([]CertUpdates, error) {
 		return nil, err
 	}
 	if err := ensureClientCertificate(
+		apiserverClientsCA,
+		"system:serviceaccount:kube-system:csi-cinder-controller-sa",
+		nil,
+		&cf.store.ApiserverClientsCSIControllerCertificate,
+		&cf.store.ApiserverClientsCSIControllerPrivateKey,
+		&certUpdates); err != nil {
+		return nil, err
+	}
+	if err := ensureClientCertificate(
 		kubeletClientsCA,
 		"apiserver",
 		nil,
@@ -261,22 +271,13 @@ func (cf *CertificateFactory) Ensure() ([]CertUpdates, error) {
 	apiServerDNSNames := []string{"kubernetes", "kubernetes.default", "kubernetes.default.svc", "apiserver", cf.kluster.Name, fmt.Sprintf("%s.%s", cf.kluster.Name, cf.kluster.Namespace), fmt.Sprintf("%v.%v", cf.kluster.Name, cf.domain)}
 	apiServerIPs := []net.IP{net.IPv4(127, 0, 0, 1), apiServiceIP, apiIP}
 	if ann := cf.kluster.Annotations[AdditionalApiserverSANsAnnotation]; ann != "" {
-		var additionalValues []IPOrDNSName
-		if err := json.Unmarshal([]byte(ann), &additionalValues); err != nil {
+		dnsNames, ips, err := addtionalSANsFromAnnotation(ann)
+		if err != nil {
 			return nil, fmt.Errorf("Failed to parse annotation %s: %v", AdditionalApiserverSANsAnnotation, err)
 		}
-		for _, ipOrName := range additionalValues {
-			switch ipOrName.Type {
-			case IPType:
-				apiServerIPs = append(apiServerIPs, ipOrName.IPVal)
-			case DNSNameType:
-				apiServerDNSNames = append(apiServerDNSNames, ipOrName.DNSNameVal)
-			default:
-				return nil, fmt.Errorf("impossible IPOrDNSName.Type")
-			}
-		}
+		apiServerDNSNames = append(apiServerDNSNames, dnsNames...)
+		apiServerIPs = append(apiServerIPs, ips...)
 	}
-
 	if err := ensureServerCertificate(tlsCA, "apiserver",
 		apiServerDNSNames,
 		apiServerIPs,
@@ -285,8 +286,17 @@ func (cf *CertificateFactory) Ensure() ([]CertUpdates, error) {
 		&certUpdates); err != nil {
 		return nil, err
 	}
+
+	wormholeDNSNames := []string{fmt.Sprintf("%v-wormhole.%v", cf.kluster.Name, cf.domain)}
+	if ann := cf.kluster.Annotations[AdditionalWormholeSANsAnnotation]; ann != "" {
+		dnsNames, _, err := addtionalSANsFromAnnotation(ann)
+		if err != nil {
+			return nil, fmt.Errorf("Failed to parse annotation %s: %v", AdditionalWormholeSANsAnnotation, err)
+		}
+		wormholeDNSNames = append(wormholeDNSNames, dnsNames...)
+	}
 	if err := ensureServerCertificate(tlsCA, "wormhole",
-		[]string{fmt.Sprintf("%v-wormhole.%v", cf.kluster.Name, cf.domain)},
+		wormholeDNSNames,
 		nil,
 		&cf.store.TLSWormholeCertificate,
 		&cf.store.TLSWormholePrivateKey,
@@ -537,4 +547,22 @@ OUTER2:
 		diff = append(diff, fmt.Sprintf("-%v", o))
 	}
 	return diff
+}
+
+func addtionalSANsFromAnnotation(ann string) (dnsNames []string, ips []net.IP, err error) {
+	var additionalValues []IPOrDNSName
+	if err = json.Unmarshal([]byte(ann), &additionalValues); err != nil {
+		return
+	}
+	for _, ipOrName := range additionalValues {
+		switch ipOrName.Type {
+		case IPType:
+			ips = append(ips, ipOrName.IPVal)
+		case DNSNameType:
+			dnsNames = append(dnsNames, ipOrName.DNSNameVal)
+		default:
+			return nil, nil, fmt.Errorf("impossible IPOrDNSName.Type")
+		}
+	}
+	return
 }

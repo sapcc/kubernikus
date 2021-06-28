@@ -49,13 +49,15 @@ data:
       --client-cert-auth=true \
       --trusted-ca-file=/etc/kubernetes/certs/etcd-clients-ca.pem \
       --advertise-client-urls=https://${ETCD_IP}:2379 \
-      --listen-client-urls=https://0.0.0.0:2379
+      --listen-client-urls=https://0.0.0.0:2379 \
+      --listen-metrics-urls=http://0.0.0.0:8081
 {{- else }}
       --advertise-client-urls=http://${ETCD_IP}:2379 \
-      --listen-client-urls=http://0.0.0.0:2379
+      --listen-client-urls=http://0.0.0.0:2379 \
+      --listen-metrics-urls=http://0.0.0.0:8081
 {{- end }}
 ---
-{{- if semverCompare ">=1.16-0" .Capabilities.KubeVersion.GitVersion }}
+{{- if .Capabilities.APIVersions.Has "apps/v1" }}
 apiVersion: "apps/v1"
 {{- else }}
 apiVersion: "extensions/v1beta1"
@@ -68,6 +70,11 @@ metadata:
     release: {{ .Release.Name }}
 spec:
   replicas: 1
+  strategy:
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
+    type: RollingUpdate
   selector:
     matchLabels:
       app: {{ include "fullname" . }}
@@ -76,6 +83,7 @@ spec:
       labels:
         app: {{ include "fullname" . }}
         release: {{ .Release.Name }}
+        component: etcd
       annotations:
         prometheus.io/scrape: "true"
         prometheus.io/port: "8080"
@@ -124,7 +132,11 @@ spec:
 {{- end }}
       containers:
         - name: etcd
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          ports:
+          - containerPort: 2379
+            name: etcd
+            protocol: TCP
+          image: "{{ include "etcd.image" . }}"
           env:
             - name: ETCD_IP
               valueFrom:
@@ -190,8 +202,7 @@ spec:
             {{- else }}
             - --insecure-transport=true
             {{- end }}
-          image: "{{ .Values.backup.image.repository }}:{{ .Values.backup.image.tag }}"
-          imagePullPolicy: {{ .Values.backup.image.pullPolicy }}
+          image: "{{ include "etcdBackup.image" . }}"
           ports:
             - containerPort: 8080
               name: server

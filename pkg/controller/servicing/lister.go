@@ -125,23 +125,6 @@ func (d *NodeLister) All() []*core_v1.Node {
 func (d *NodeLister) Reboot() []*core_v1.Node {
 	var rebootable, found []*core_v1.Node
 
-	latestCoreOS, err := d.CoreOSVersion.Stable()
-	if err != nil {
-		d.Logger.Log(
-			"msg", "Couldn't get CoreOS version.",
-			"err", err,
-		)
-		return found
-	}
-
-	releasedCoreOS, err := d.CoreOSRelease.GrownUp(latestCoreOS)
-	if err != nil {
-		d.Logger.Log(
-			"msg", "Couldn't get CoreOS releases.",
-			"err", err,
-		)
-	}
-
 	latestFlatcar, err := d.FlatcarVersion.Stable()
 	if err != nil {
 		d.Logger.Log(
@@ -183,10 +166,6 @@ func (d *NodeLister) Reboot() []*core_v1.Node {
 			if releasedFlatcar {
 				uptodate, err = d.FlatcarVersion.IsNodeUptodate(node)
 			}
-		} else if strings.HasPrefix(node.Status.NodeInfo.OSImage, "Container Linux by CoreOS") {
-			if releasedCoreOS {
-				uptodate, err = d.CoreOSVersion.IsNodeUptodate(node)
-			}
 		} else {
 			d.Logger.Log(
 				"msg", "Unsupported OS on node. Skipping OS upgrade.",
@@ -216,7 +195,7 @@ func (d *NodeLister) Replace() []*core_v1.Node {
 	var nodeNameToPool map[string]*models.NodePool
 	nodeNameToPool = make(map[string]*models.NodePool)
 
-	for _, pool := range d.Kluster.Spec.NodePools {
+	for i, pool := range d.Kluster.Spec.NodePools {
 		if *pool.Config.AllowReplace == false {
 			continue
 		}
@@ -228,7 +207,7 @@ func (d *NodeLister) Replace() []*core_v1.Node {
 			}
 
 			if len(node.GetName()) == len(prefix)+generator.RandomLength {
-				nodeNameToPool[node.GetName()] = &pool
+				nodeNameToPool[node.GetName()] = &d.Kluster.Spec.NodePools[i]
 				upgradable = append(upgradable, node)
 			}
 

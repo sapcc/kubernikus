@@ -4,6 +4,7 @@ kind: Service
 metadata:
   name: {{ include "master.fullname" . }}
   labels:
+    component: apiserver
     chart: "{{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}"
     release: {{ .Release.Name }}
 spec:

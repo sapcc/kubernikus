@@ -1,7 +1,7 @@
 {{- if .Values.openstack }}
 {{- if (semverCompare ">= 1.13" .Values.version.kubernetes) }}
 {{/* vim: set filetype=gotexttmpl: */ -}}
-{{- if semverCompare ">=1.16-0" .Capabilities.KubeVersion.GitVersion }}
+{{- if .Capabilities.APIVersions.Has "apps/v1" }}
 apiVersion: "apps/v1"
 {{- else }}
 apiVersion: "extensions/v1beta1"
@@ -58,6 +58,25 @@ spec:
               - key: openstack.config
 {{- end }}
                 path: openstack.config
+      initContainers:
+        - name: apiserver-wait
+{{- if (semverCompare ">= 1.19" .Values.version.kubernetes) }}
+          image: {{ include "kubelet.image" . | quote }}
+{{- else }}
+          image: {{ include "hyperkube.image" . }}
+{{- end }}
+          command:
+            - sh
+            - -c
+          args:
+            - until kubectl version --short --kubeconfig /etc/kubernetes/config/kubeconfig --request-timeout=4s | grep -i "Server.*{{ .Values.version.kubernetes }}"; do sleep 5; done;
+          volumeMounts:
+            - mountPath: /etc/kubernetes/certs/
+              name: certs
+              readOnly: true
+            - mountPath: /etc/kubernetes/config
+              name: config
+              readOnly: true
       containers:
         - name: cloud-controller-manager
           image: {{ include "cloudControllerManager.image" . | quote }}
@@ -71,7 +90,7 @@ spec:
             - --cluster-cidr={{ .Values.clusterCIDR }}
             - --cluster-name={{ .Values.name }}
             - --configure-cloud-routes=true
-{{- if (semverCompare ">= 1.14" .Values.version.kubernetes) }}
+{{- if and (semverCompare ">= 1.14" .Values.version.kubernetes) (semverCompare "< 1.17" .Values.version.kubernetes) }}
             - --feature-gates=NodeLease=false
 {{- end }}
             - --kubeconfig=/etc/kubernetes/config/kubeconfig
@@ -79,6 +98,7 @@ spec:
             - --leader-elect=false
 {{- end }}
             - --use-service-account-credentials=true
+            - --concurrent-service-syncs=10
           livenessProbe:
             httpGet:
               path: /healthz

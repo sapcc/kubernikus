@@ -1,4 +1,4 @@
-{{- if semverCompare ">=1.16-0" .Capabilities.KubeVersion.GitVersion }}
+{{- if .Capabilities.APIVersions.Has "apps/v1" }}
 apiVersion: "apps/v1"
 {{- else }}
 apiVersion: "extensions/v1beta1"
@@ -17,6 +17,10 @@ spec:
       maxSurge: 1
       maxUnavailable: 0
   revisionHistoryLimit: {{ .Values.revisionHistoryLimit }}
+  selector:
+    matchLabels:
+      app: kubernikus
+      type: api
   template:
     metadata:
       labels:
@@ -35,12 +39,22 @@ spec:
             - apiserver
             - --port={{ .Values.api.port }}
             - --host=0.0.0.0
+            {{- if .Values.dex.enabled }}
+            - --oidc-issuer-url=https://{{ include "oidc.issuer" . }}
+            - --oidc-client-id={{ required "api.oidc.clientID missing" .Values.dex.clientID }}
+            - --oidc-client-secret={{ required "api.oidc.clientSecret missing" .Values.dex.clientSecret }}
+            - --oidc-callback-url=https://{{ required "domain missing" .Values.domain }}/auth/callback
+            {{- else }}
             {{- /* This is a bit convoluted but making sure that the url ends with /v3 */}}
             - --auth-url={{ trimSuffix "/" .Values.openstack.auth_url | trimSuffix "/v3" }}/v3
+            - --policy={{ default "/etc/kubernikus/policy.json" .Values.api.policyFile }}
+            {{- end }}
             - --v={{ default 1 .Values.api.log_level }}
             - --namespace={{ default "kubernikus" .Values.namespace }}
-            - --policy={{ default "/etc/kubernikus/policy.json" .Values.api.policyFile }}
             - --images-file=/etc/kubernikus/charts/images.yaml
+            {{- if and (.Values.openstack.region) (ne .Values.openstack.region "qa-de-1") }}
+            - --region={{ .Values.openstack.region }}
+            {{- end }}
           ports:
             - name: http
               containerPort: {{ .Values.api.port }}

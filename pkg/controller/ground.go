@@ -27,6 +27,7 @@ import (
 	v1 "github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
 	"github.com/sapcc/kubernikus/pkg/controller/config"
 	"github.com/sapcc/kubernikus/pkg/controller/ground"
+	"github.com/sapcc/kubernikus/pkg/controller/ground/bootstrap/csi"
 	"github.com/sapcc/kubernikus/pkg/controller/metrics"
 	informers_kubernikus "github.com/sapcc/kubernikus/pkg/generated/informers/externalversions/kubernikus/v1"
 	"github.com/sapcc/kubernikus/pkg/util"
@@ -251,6 +252,11 @@ func (op *GroundControl) handler(key string) error {
 				expectedPods = 5
 			}
 
+			// csi
+			if ok, _ := util.KlusterVersionConstraint(kluster, ">= 1.20"); ok && !kluster.Spec.NoCloud {
+				expectedPods = 6
+			}
+
 			if swag.BoolValue(kluster.Spec.Dex) {
 				expectedPods = expectedPods + 1
 				if swag.BoolValue(kluster.Spec.Dashboard) {
@@ -265,7 +271,7 @@ func (op *GroundControl) handler(key string) error {
 				"expected", expectedPods,
 				"actual", podsReady)
 			if podsReady == expectedPods {
-				if err := ground.SeedKluster(op.Clients, op.Factories, kluster); err != nil {
+				if err := ground.SeedKluster(op.Clients, op.Factories, op.Images, kluster); err != nil {
 					return err
 				}
 				if err := op.updatePhase(kluster, models.KlusterPhaseRunning); err != nil {
@@ -543,7 +549,13 @@ func (op *GroundControl) createKluster(kluster *v1.Kluster) error {
 	if klusterSecret.Openstack.ProjectID == "" {
 		klusterSecret.Openstack.ProjectID = kluster.Account()
 	}
-	klusterSecret.Openstack.ProjectDomainName = kluster.Domain()
+
+	domainNameByProject, err := op.OpenstackAdmin.GetDomainNameByProject(klusterSecret.Openstack.ProjectID)
+	if err != nil {
+		return fmt.Errorf("Failed to retrieve domain name by project: %s", err)
+	}
+	klusterSecret.Openstack.ProjectDomainName = domainNameByProject
+
 	if klusterSecret.Openstack.Password, err = goutils.Random(20, 32, 127, true, true); err != nil {
 		return fmt.Errorf("Failed to generated password for cluster service user: %s", err)
 	}
@@ -598,14 +610,43 @@ func (op *GroundControl) createKluster(kluster *v1.Kluster) error {
 }
 
 func (op *GroundControl) upgradeKluster(kluster *v1.Kluster, toVersion string) error {
-	accessMode, err := util.PVAccessMode(op.Clients.Kubernetes, kluster)
-	if err != nil {
-		return fmt.Errorf("Couldn't determine access mode for pvc: %s", err)
-	}
-
 	klusterSecret, err := util.KlusterSecret(op.Clients.Kubernetes, kluster)
 	if err != nil {
 		return err
+	}
+
+	if strings.HasPrefix(toVersion, "1.20") && strings.HasPrefix(kluster.Status.ApiserverVersion, "1.19") {
+		dynamicKubernetes, err := op.Clients.Satellites.DynamicClientFor(kluster)
+		if err != nil {
+			return errors.Wrap(err, "dynamic client")
+		}
+
+		kubernetes, err := op.Clients.Satellites.ClientFor(kluster)
+		if err != nil {
+			return errors.Wrap(err, "client")
+		}
+
+		if err := csi.SeedCinderCSIPlugin(kubernetes, dynamicKubernetes, klusterSecret, op.Images.Versions[kluster.Spec.Version]); err != nil {
+			return errors.Wrap(err, "seed cinder CSI plugin on upgrade")
+		}
+
+		openstack, err := op.Factories.Openstack.ProjectAdminClientFor(kluster.Account())
+		if err != nil {
+			return errors.Wrap(err, "project client")
+		}
+
+		if err := ground.DeleteCinderStorageClasses(kubernetes, openstack); err != nil {
+			return errors.Wrap(err, "delete in-tree storage classes on upgrade")
+		}
+
+		if err := ground.SeedCinderStorageClasses(kubernetes, openstack, true); err != nil {
+			return errors.Wrap(err, "seed CSI storage classes on upgrade")
+		}
+	}
+
+	accessMode, err := util.PVAccessMode(op.Clients.Kubernetes, kluster)
+	if err != nil {
+		return fmt.Errorf("Couldn't determine access mode for pvc: %s", err)
 	}
 
 	rawValues, err := helm_util.KlusterToHelmValues(kluster, klusterSecret, toVersion, &op.Config.Images, accessMode)

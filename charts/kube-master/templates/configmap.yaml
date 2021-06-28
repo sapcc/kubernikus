@@ -44,6 +44,27 @@ data:
         user:
           client-certificate: /etc/kubernetes/certs/kube-client.pem
           client-key: /etc/kubernetes/certs/kube-client.key
+{{- if (semverCompare ">= 1.20" .Values.version.kubernetes) }}
+  csi-kubeconfig: |-
+    apiVersion: v1
+    kind: Config
+    clusters:
+      - name: local
+        cluster:
+           certificate-authority: /etc/kubernetes/certs/tls-ca.pem
+           server: https://{{ include "master.fullname" . }}:{{ .Values.advertisePort }}
+    contexts:
+      - name: local
+        context:
+          cluster: local
+          user: local
+    current-context: local
+    users:
+      - name: local
+        user:
+          client-certificate: /etc/kubernetes/certs/csi-client.pem
+          client-key: /etc/kubernetes/certs/csi-client.key
+{{- end }}
   api-liveness-probe.py: |-
     #!/usr/bin/python
     import requests, os, os.path, sys

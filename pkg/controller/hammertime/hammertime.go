@@ -5,6 +5,7 @@ import (
 	"time"
 
 	kitlog "github.com/go-kit/kit/log"
+	coord_v1beta1 "k8s.io/api/coordination/v1beta1"
 	core_v1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -14,6 +15,7 @@ import (
 
 	"github.com/sapcc/kubernikus/pkg/api/models"
 	v1 "github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
+	kube "github.com/sapcc/kubernikus/pkg/client/kubernetes"
 	"github.com/sapcc/kubernikus/pkg/controller/base"
 	"github.com/sapcc/kubernikus/pkg/controller/config"
 	"github.com/sapcc/kubernikus/pkg/controller/metrics"
@@ -24,6 +26,7 @@ import (
 type hammertimeController struct {
 	nodeObervatory *nodeobservatory.NodeObservatory
 	client         kubernetes.Interface
+	satellites     kube.SharedClientFactory
 	timeout        time.Duration
 	logger         kitlog.Logger
 	recorder       record.EventRecorder
@@ -40,6 +43,7 @@ func New(syncPeriod time.Duration, timeout time.Duration, factories config.Facto
 	controller := hammertimeController{
 		nodeObervatory: factories.NodesObservatory.NodeInformer(),
 		client:         clients.Kubernetes,
+		satellites:     clients.Satellites,
 		timeout:        timeout,
 		logger:         logger,
 		recorder:       recorder,
@@ -82,19 +86,33 @@ func (hc *hammertimeController) Reconcile(kluster *v1.Kluster) error {
 	//var oldestHeartbeat time.Time = time.Now()
 	var newestHearbeat time.Time = time.Time{}
 	for _, node := range nodes {
-		ready := nodeReadyCondition(node)
-		if ready == nil {
-			continue
-		}
-		if ready.LastHeartbeatTime.After(newestHearbeat) {
-			newestHearbeat = ready.LastHeartbeatTime.Time
+		if ok, _ := util.NodeVersionConstraint(node, ">= 1.17"); ok {
+			clientset, err := hc.satellites.ClientFor(kluster)
+			if err != nil {
+				return fmt.Errorf("Failed to get client for kluster: %s", err)
+			}
+			nodeLease, err := getNodeLease(node, clientset)
+			if err != nil {
+				logger.Log("msg", "Node lease not found", "node", node.Name, "err", err)
+				continue
+			}
+			if nodeLease.Spec.RenewTime.After(newestHearbeat) {
+				newestHearbeat = nodeLease.Spec.RenewTime.Time
+			}
+		} else {
+			ready := nodeReadyCondition(node)
+			if ready == nil {
+				continue
+			}
+			if ready.LastHeartbeatTime.After(newestHearbeat) {
+				newestHearbeat = ready.LastHeartbeatTime.Time
+			}
 		}
 	}
 
 	timeout_exeeded := time.Now().Sub(newestHearbeat) > hc.timeout
 
 	return hc.scaleDeployment(kluster, timeout_exeeded, logger)
-
 }
 
 func (hc *hammertimeController) scaleDeployment(kluster *v1.Kluster, disable bool, logger kitlog.Logger) error {
@@ -104,28 +122,30 @@ func (hc *hammertimeController) scaleDeployment(kluster *v1.Kluster, disable boo
 		metrics.HammertimeStatus.WithLabelValues(kluster.Name).Set(0)
 	}
 
-	deploymentClient := hc.client.ExtensionsV1beta1().Deployments(kluster.Namespace)
+	scaleClient := NewScaleClient(hc.client, kluster.Namespace)
 
-	deploymentName := fmt.Sprintf("%s-cmanager", kluster.GetName())
-	scale, err := deploymentClient.GetScale(deploymentName, meta_v1.GetOptions{})
+	deploymentName := fmt.Sprintf("%s-ccmanager", kluster.GetName())
+	replicas, err := scaleClient.GetScale(deploymentName)
+	if apierrors.IsNotFound(err) {
+		deploymentName := fmt.Sprintf("%s-cmanager", kluster.GetName())
+		replicas, err = scaleClient.GetScale(deploymentName)
+	}
 	if apierrors.IsNotFound(err) {
 		deploymentName = fmt.Sprintf("%s-controller-manager", kluster.GetName())
-		scale, err = deploymentClient.GetScale(deploymentName, meta_v1.GetOptions{})
+		replicas, err = scaleClient.GetScale(deploymentName)
 	}
 	if err != nil {
 		return fmt.Errorf("Failed to get deployment scale: %s", err)
 	}
 
-	if scale.Spec.Replicas > 0 {
+	if replicas > 0 {
 		if disable {
-			scale.Spec.Replicas = 0
-			_, err = deploymentClient.UpdateScale(deploymentName, scale)
+			err = scaleClient.UpdateScale(deploymentName, 0)
 			logger.Log("msg", "Scaling down", "deployment", deploymentName, "err", err)
 		}
 	} else {
 		if !disable {
-			scale.Spec.Replicas = 1
-			_, err = deploymentClient.UpdateScale(deploymentName, scale)
+			err = scaleClient.UpdateScale(deploymentName, 1)
 			logger.Log("msg", "Scaling up", "deployment", deploymentName, "err", err)
 		}
 	}
@@ -139,4 +159,9 @@ func nodeReadyCondition(node *core_v1.Node) *core_v1.NodeCondition {
 		}
 	}
 	return nil
+}
+
+func getNodeLease(node *core_v1.Node, clientset kubernetes.Interface) (*coord_v1beta1.Lease, error) {
+	leaseClient := clientset.CoordinationV1beta1().Leases(core_v1.NamespaceNodeLease)
+	return leaseClient.Get(node.Name, meta_v1.GetOptions{})
 }

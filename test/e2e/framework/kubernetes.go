@@ -1,6 +1,7 @@
 package framework
 
 import (
+	"context"
 	"fmt"
 	"time"
 
@@ -8,10 +9,10 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/wait"
-	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/kubernetes"
 	restclient "k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
+	"k8s.io/client-go/tools/watch"
 
 	"github.com/sapcc/kubernikus/pkg/api/client/operations"
 )
@@ -62,7 +63,10 @@ func (f *Kubernetes) WaitForDefaultServiceAccountInNamespace(namespace string) e
 	if err != nil {
 		return err
 	}
-	_, err = watch.Until(ServiceAccountProvisionTimeout, w, ServiceAccountHasSecrets)
+	ctx, cancel := context.WithTimeout(context.Background(), ServiceAccountProvisionTimeout)
+	defer cancel()
+
+	_, err = watch.UntilWithoutRetry(ctx, w, ServiceAccountHasSecrets)
 	return err
 }
 
@@ -162,7 +166,10 @@ func (f *Kubernetes) WaitForPVCBound(pvcNs, pvcName string, timeout time.Duratio
 		return fmt.Errorf("failed to watch pvc: %v", err)
 	}
 
-	_, err = watch.Until(timeout, w, IsPVCBound)
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	defer cancel()
+
+	_, err = watch.UntilWithoutRetry(ctx, w, IsPVCBound)
 	if err != nil {
 		return err
 	}

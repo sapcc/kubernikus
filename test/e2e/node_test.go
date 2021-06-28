@@ -2,7 +2,9 @@ package main
 
 import (
 	"bufio"
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"strings"
 	"testing"
@@ -117,16 +119,61 @@ func (k NodeTests) LatestStableContainerLinux(t *testing.T) {
 	if !assert.NoError(t, err) {
 		return
 	}
-	resp, err := http.Get("https://stable.release.flatcar-linux.net/amd64-usr/current/version.txt")
+
+	type FlatcarReleases struct {
+		Current struct {
+			Channel       string   `json:"channel"`
+			Architectures []string `json:"architectures"`
+			ReleaseDate   string   `json:"release_date"`
+			MajorSoftware struct {
+				Docker   []string `json:"docker"`
+				Ignition []string `json:"ignition"`
+				Kernel   []string `json:"kernel"`
+				Systemd  []string `json:"systemd"`
+			} `json:"major_software"`
+			ReleaseNotes string `json:"release_notes"`
+		} `json:"current"`
+	}
+
+	resp, err := http.Get("https://kinvolk.io/flatcar-container-linux/releases-json/releases-stable.json")
 	if !assert.NoError(t, err) {
 		return
 	}
 	if !assert.Equal(t, 200, resp.StatusCode) {
 		return
 	}
+	body, err := ioutil.ReadAll(resp.Body)
+	if !assert.NoError(t, err) {
+		return
+	}
+	var current FlatcarReleases
+	err = json.Unmarshal(body, &current)
+	if !assert.NoError(t, err) {
+		return
+	}
 
+	if current.Current.ReleaseDate != "" {
+		date, err := time.Parse("2006-01-02", current.Current.ReleaseDate[0:10])
+		if !assert.NoError(t, err) {
+			return
+		}
+		if !assert.NotEmpty(t, date, "Could not get release date") {
+			return
+		}
+		// check if release is at least 3 days old, otherwise image might not be up-to-date
+		if time.Since(date).Hours() < 72 {
+			return
+		}
+	}
+
+	resp, err = http.Get("https://stable.release.flatcar-linux.net/amd64-usr/current/version.txt")
+	if !assert.NoError(t, err) {
+		return
+	}
+	if !assert.Equal(t, 200, resp.StatusCode) {
+		return
+	}
 	version := ""
-	var date time.Time
 	scanner := bufio.NewScanner(resp.Body)
 	for scanner.Scan() {
 		keyval := strings.Split(scanner.Text(), "=")
@@ -137,20 +184,10 @@ func (k NodeTests) LatestStableContainerLinux(t *testing.T) {
 				return
 			}
 		}
+	}
 
-		if len(keyval) == 2 && keyval[0] == "FLATCAR_BUILD_ID" {
-			date, err = time.Parse("2006-01-02", keyval[1][1:11])
-			if !assert.NoError(t, err) {
-				return
-			}
-			if !assert.NotEmpty(t, date, "Could not get release date") {
-				return
-			}
-			// check if release is at least 72 old, otherwise image might not be up-to-date
-			if time.Since(date).Hours() < 72 {
-				return
-			}
-		}
+	if !assert.NotEmpty(t, version, "Failed to detect latest stable Container Linux version") {
+		return
 	}
 
 	for _, node := range nodes.Items {

@@ -22,6 +22,7 @@ RUN make
 
 FROM sapcc/kubernikus-terraform:v20181113152146 as terraform11
 FROM alpine:3.8
+LABEL source_repository="https://github.com/sapcc/kubernikus"
 
 RUN apk add --update make ca-certificates 
 COPY --from=builder /go/bin/* /usr/local/bin/
