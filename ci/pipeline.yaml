@@ -5,15 +5,11 @@ auth_ap-ae-1: &auth_ap-ae-1
   KUBELOGON_USER:     ((KUBELOGON_USER))
   KUBELOGON_PASSWORD: ((KUBELOGON_PASSWORD))
   KUBERNIKUS_NAME: k-ap-ae-1
-
   KUBERNIKUS_URL: https://kubernikus.admin.ap-ae-1.cloud.sap
-
 
 auth_e2e_ap-ae-1: &auth_e2e_ap-ae-1
   CP_KLUSTER: k-ap-ae-1
-
   CP_KUBERNIKUS_URL: https://kubernikus.admin.ap-ae-1.cloud.sap
-
   CP_OS_PROJECT_DOMAIN_NAME: ccadmin
   KUBERNIKUS_NAME: e2e
   OS_PROJECT_DOMAIN_NAME: ccadmin
@@ -35,15 +31,11 @@ auth_ap-au-1: &auth_ap-au-1
   KUBELOGON_USER:     ((KUBELOGON_USER))
   KUBELOGON_PASSWORD: ((KUBELOGON_PASSWORD))
   KUBERNIKUS_NAME: k-ap-au-1
-
   KUBERNIKUS_URL: https://kubernikus.admin.ap-au-1.cloud.sap
-
 
 auth_e2e_ap-au-1: &auth_e2e_ap-au-1
   CP_KLUSTER: k-ap-au-1
-
   CP_KUBERNIKUS_URL: https://kubernikus.admin.ap-au-1.cloud.sap
-
   CP_OS_PROJECT_DOMAIN_NAME: ccadmin
   KUBERNIKUS_NAME: e2e
   OS_PROJECT_DOMAIN_NAME: ccadmin
@@ -65,15 +57,11 @@ auth_ap-cn-1: &auth_ap-cn-1
   KUBELOGON_USER:     ((KUBELOGON_USER))
   KUBELOGON_PASSWORD: ((KUBELOGON_PASSWORD))
   KUBERNIKUS_NAME: k-ap-cn-1
-
   KUBERNIKUS_URL: https://kubernikus.admin.ap-cn-1.cloud.sap
-
 
 auth_e2e_ap-cn-1: &auth_e2e_ap-cn-1
   CP_KLUSTER: k-ap-cn-1
-
   CP_KUBERNIKUS_URL: https://kubernikus.admin.ap-cn-1.cloud.sap
-
   CP_OS_PROJECT_DOMAIN_NAME: ccadmin
   KUBERNIKUS_NAME: e2e
   OS_PROJECT_DOMAIN_NAME: ccadmin
@@ -95,15 +83,11 @@ auth_ap-jp-1: &auth_ap-jp-1
   KUBELOGON_USER:     ((KUBELOGON_USER))
   KUBELOGON_PASSWORD: ((KUBELOGON_PASSWORD))
   KUBERNIKUS_NAME: k-ap-jp-1
-
   KUBERNIKUS_URL: https://kubernikus.admin.ap-jp-1.cloud.sap
-
 
 auth_e2e_ap-jp-1: &auth_e2e_ap-jp-1
   CP_KLUSTER: k-ap-jp-1
-
   CP_KUBERNIKUS_URL: https://kubernikus.admin.ap-jp-1.cloud.sap
-
   CP_OS_PROJECT_DOMAIN_NAME: ccadmin
   KUBERNIKUS_NAME: e2e
   OS_PROJECT_DOMAIN_NAME: ccadmin
@@ -125,15 +109,11 @@ auth_ap-jp-2: &auth_ap-jp-2
   KUBELOGON_USER:     ((KUBELOGON_USER))
   KUBELOGON_PASSWORD: ((KUBELOGON_PASSWORD))
   KUBERNIKUS_NAME: k-ap-jp-2
-
   KUBERNIKUS_URL: https://kubernikus.admin.ap-jp-2.cloud.sap
-
 
 auth_e2e_ap-jp-2: &auth_e2e_ap-jp-2
   CP_KLUSTER: k-ap-jp-2
-
   CP_KUBERNIKUS_URL: https://kubernikus.admin.ap-jp-2.cloud.sap
-
   CP_OS_PROJECT_DOMAIN_NAME: ccadmin
   KUBERNIKUS_NAME: e2e
   OS_PROJECT_DOMAIN_NAME: ccadmin
@@ -155,15 +135,11 @@ auth_ap-sa-1: &auth_ap-sa-1
   KUBELOGON_USER:     ((KUBELOGON_USER))
   KUBELOGON_PASSWORD: ((KUBELOGON_PASSWORD))
   KUBERNIKUS_NAME: k-ap-sa-1
-
   KUBERNIKUS_URL: https://kubernikus.admin.ap-sa-1.cloud.sap
-
 
 auth_e2e_ap-sa-1: &auth_e2e_ap-sa-1
   CP_KLUSTER: k-ap-sa-1
-
   CP_KUBERNIKUS_URL: https://kubernikus.admin.ap-sa-1.cloud.sap
-
   CP_OS_PROJECT_DOMAIN_NAME: ccadmin
   KUBERNIKUS_NAME: e2e
   OS_PROJECT_DOMAIN_NAME: ccadmin
@@ -185,15 +161,11 @@ auth_eu-de-1: &auth_eu-de-1
   KUBELOGON_USER:     ((KUBELOGON_USER))
   KUBELOGON_PASSWORD: ((KUBELOGON_PASSWORD))
   KUBERNIKUS_NAME: k-eu-de-1
-
-  KUBERNIKUS_URL: https://k-eu-de-1.admin.cloud.sap
-
+  KUBERNIKUS_URL: https://kubernikus.admin.eu-de-1.cloud.sap
 
 auth_e2e_eu-de-1: &auth_e2e_eu-de-1
   CP_KLUSTER: k-eu-de-1
-
-  CP_KUBERNIKUS_URL: https://k-eu-de-1.admin.cloud.sap
-
+  CP_KUBERNIKUS_URL: https://kubernikus.admin.eu-de-1.cloud.sap
   CP_OS_PROJECT_DOMAIN_NAME: ccadmin
   KUBERNIKUS_NAME: e2e
   OS_PROJECT_DOMAIN_NAME: ccadmin
@@ -215,15 +187,11 @@ auth_eu-de-2: &auth_eu-de-2
   KUBELOGON_USER:     ((KUBELOGON_USER))
   KUBELOGON_PASSWORD: ((KUBELOGON_PASSWORD))
   KUBERNIKUS_NAME: k-eu-de-2
-
-  KUBERNIKUS_URL: https://k-eu-de-2.admin.cloud.sap
-
+  KUBERNIKUS_URL: https://kubernikus.admin.eu-de-2.cloud.sap
 
 auth_e2e_eu-de-2: &auth_e2e_eu-de-2
   CP_KLUSTER: k-eu-de-2
-
-  CP_KUBERNIKUS_URL: https://k-eu-de-2.admin.cloud.sap
-
+  CP_KUBERNIKUS_URL: https://kubernikus.admin.eu-de-2.cloud.sap
   CP_OS_PROJECT_DOMAIN_NAME: ccadmin
   KUBERNIKUS_NAME: e2e
   OS_PROJECT_DOMAIN_NAME: ccadmin
@@ -245,15 +213,11 @@ auth_eu-nl-1: &auth_eu-nl-1
   KUBELOGON_USER:     ((KUBELOGON_USER))
   KUBELOGON_PASSWORD: ((KUBELOGON_PASSWORD))
   KUBERNIKUS_NAME: k-eu-nl-1
-
-  KUBERNIKUS_URL: https://k-eu-nl-1.admin.cloud.sap
-
+  KUBERNIKUS_URL: https://kubernikus.admin.eu-nl-1.cloud.sap
 
 auth_e2e_eu-nl-1: &auth_e2e_eu-nl-1
   CP_KLUSTER: k-eu-nl-1
-
-  CP_KUBERNIKUS_URL: https://k-eu-nl-1.admin.cloud.sap
-
+  CP_KUBERNIKUS_URL: https://kubernikus.admin.eu-nl-1.cloud.sap
   CP_OS_PROJECT_DOMAIN_NAME: ccadmin
   KUBERNIKUS_NAME: e2e
   OS_PROJECT_DOMAIN_NAME: ccadmin
@@ -275,15 +239,11 @@ auth_eu-ru-1: &auth_eu-ru-1
   KUBELOGON_USER:     ((KUBELOGON_USER))
   KUBELOGON_PASSWORD: ((KUBELOGON_PASSWORD))
   KUBERNIKUS_NAME: k-eu-ru-1
-
   KUBERNIKUS_URL: https://kubernikus.admin.eu-ru-1.cloud.sap
-
 
 auth_e2e_eu-ru-1: &auth_e2e_eu-ru-1
   CP_KLUSTER: k-eu-ru-1
-
   CP_KUBERNIKUS_URL: https://kubernikus.admin.eu-ru-1.cloud.sap
-
   CP_OS_PROJECT_DOMAIN_NAME: ccadmin
   KUBERNIKUS_NAME: e2e
   OS_PROJECT_DOMAIN_NAME: ccadmin
@@ -305,15 +265,11 @@ auth_la-br-1: &auth_la-br-1
   KUBELOGON_USER:     ((KUBELOGON_USER))
   KUBELOGON_PASSWORD: ((KUBELOGON_PASSWORD))
   KUBERNIKUS_NAME: k-la-br-1
-
   KUBERNIKUS_URL: https://kubernikus.admin.la-br-1.cloud.sap
-
 
 auth_e2e_la-br-1: &auth_e2e_la-br-1
   CP_KLUSTER: k-la-br-1
-
   CP_KUBERNIKUS_URL: https://kubernikus.admin.la-br-1.cloud.sap
-
   CP_OS_PROJECT_DOMAIN_NAME: ccadmin
   KUBERNIKUS_NAME: e2e
   OS_PROJECT_DOMAIN_NAME: ccadmin
@@ -335,15 +291,11 @@ auth_na-ca-1: &auth_na-ca-1
   KUBELOGON_USER:     ((KUBELOGON_USER))
   KUBELOGON_PASSWORD: ((KUBELOGON_PASSWORD))
   KUBERNIKUS_NAME: k-na-ca-1
-
   KUBERNIKUS_URL: https://kubernikus.admin.na-ca-1.cloud.sap
-
 
 auth_e2e_na-ca-1: &auth_e2e_na-ca-1
   CP_KLUSTER: k-na-ca-1
-
   CP_KUBERNIKUS_URL: https://kubernikus.admin.na-ca-1.cloud.sap
-
   CP_OS_PROJECT_DOMAIN_NAME: ccadmin
   KUBERNIKUS_NAME: e2e
   OS_PROJECT_DOMAIN_NAME: ccadmin
@@ -365,18 +317,16 @@ auth_na-us-1: &auth_na-us-1
   KUBELOGON_USER:     ((KUBELOGON_USER))
   KUBELOGON_PASSWORD: ((KUBELOGON_PASSWORD))
   KUBERNIKUS_NAME: k-na-us-1
-
   KUBERNIKUS_URL: https://kubernikus.admin.na-us-1.cloud.sap
-
 
 auth_e2e_na-us-1: &auth_e2e_na-us-1
   CP_KLUSTER: k-na-us-1
-
   CP_KUBERNIKUS_URL: https://kubernikus.admin.na-us-1.cloud.sap
-
   CP_OS_PROJECT_DOMAIN_NAME: ccadmin
   KUBERNIKUS_NAME: e2e
   OS_PROJECT_DOMAIN_NAME: ccadmin
+
+  NODEPOOL_AVZ: na-us-1b
 
 
 
@@ -395,15 +345,11 @@ auth_na-us-2: &auth_na-us-2
   KUBELOGON_USER:     ((KUBELOGON_USER))
   KUBELOGON_PASSWORD: ((KUBELOGON_PASSWORD))
   KUBERNIKUS_NAME: k-na-us-2
-
   KUBERNIKUS_URL: https://kubernikus.admin.na-us-2.cloud.sap
-
 
 auth_e2e_na-us-2: &auth_e2e_na-us-2
   CP_KLUSTER: k-na-us-2
-
   CP_KUBERNIKUS_URL: https://kubernikus.admin.na-us-2.cloud.sap
-
   CP_OS_PROJECT_DOMAIN_NAME: ccadmin
   KUBERNIKUS_NAME: e2e
   OS_PROJECT_DOMAIN_NAME: ccadmin
@@ -425,15 +371,11 @@ auth_na-us-3: &auth_na-us-3
   KUBELOGON_USER:     ((KUBELOGON_USER))
   KUBELOGON_PASSWORD: ((KUBELOGON_PASSWORD))
   KUBERNIKUS_NAME: k-na-us-3
-
   KUBERNIKUS_URL: https://kubernikus.admin.na-us-3.cloud.sap
-
 
 auth_e2e_na-us-3: &auth_e2e_na-us-3
   CP_KLUSTER: k-na-us-3
-
   CP_KUBERNIKUS_URL: https://kubernikus.admin.na-us-3.cloud.sap
-
   CP_OS_PROJECT_DOMAIN_NAME: ccadmin
   KUBERNIKUS_NAME: e2e
   OS_PROJECT_DOMAIN_NAME: ccadmin
@@ -455,15 +397,11 @@ auth_qa-de-1: &auth_qa-de-1
   KUBELOGON_USER:     ((KUBELOGON_USER))
   KUBELOGON_PASSWORD: ((KUBELOGON_PASSWORD))
   KUBERNIKUS_NAME: k-qa-de-1
-
   KUBERNIKUS_URL: https://kubernikus.admin.qa-de-1.cloud.sap
-
 
 auth_e2e_qa-de-1: &auth_e2e_qa-de-1
   CP_KLUSTER: k-qa-de-1
-
   CP_KUBERNIKUS_URL: https://kubernikus.admin.qa-de-1.cloud.sap
-
   CP_OS_PROJECT_DOMAIN_NAME: ccadmin
   KUBERNIKUS_NAME: e2e
   OS_PROJECT_DOMAIN_NAME: ccadmin
@@ -487,15 +425,11 @@ auth_master: &auth_master
   KUBELOGON_USER:     ((KUBELOGON_USER))
   KUBELOGON_PASSWORD: ((KUBELOGON_PASSWORD))
   KUBERNIKUS_NAME: k-master
-
   KUBERNIKUS_URL: https://kubernikus.admin.eu-nl-1.cloud.sap
-
 
 auth_e2e_master: &auth_e2e_master
   CP_KLUSTER: k-master
-
   CP_KUBERNIKUS_URL: https://kubernikus.admin.eu-nl-1.cloud.sap
-
   CP_OS_PROJECT_DOMAIN_NAME: ccadmin
   KUBERNIKUS_NAME: e2e
   OS_PROJECT_DOMAIN_NAME: ccadmin
@@ -520,28 +454,31 @@ task_build_args: &task_build_args
   image_resource:
     type: registry-image
     source:
-      repository: alpine
+      repository: keppel.eu-de-2.cloud.sap/ccloud-dockerhub-mirror/library/alpine
   inputs:
-    - name: kubernikus.builds
+    - name: docs-builder.image
+    - name: kubernikus.git
   outputs:
-    - name: args
+    - name: kubernikus.git
   run:
     path: sh
     args:
       - -exc
       - |
-        SHA=$(cat kubernikus.builds/.git/ref)
-        echo '{"VERSION":"'$SHA'"}' > args/build_args.json
+        SHA=$(cat kubernikus.git/.git/ref)
+        DIGEST=$(cat docs-builder.image/digest)
+        echo "VERSION=$SHA" > kubernikus.git/build-args.txt
+        echo "DOCS_IMAGE=keppel.eu-de-1.cloud.sap/ccloud/kubernikus-docs-builder@$DIGEST" >> kubernikus.git/build-args.txt
   
 
 task_checksum: &task_checksum
   platform: 'linux'
   
   image_resource:
-    type: docker-image
+    type: registry-image
     source:
-      repository: golang
-      tag: 1.9.2-alpine3.6
+      repository: keppel.eu-de-2.cloud.sap/ccloud-dockerhub-mirror/library/golang
+      tag: 1.14-alpine
   
   inputs:
     - name: kubernikus.builds
@@ -576,8 +513,8 @@ task_cli: &task_cli
   image_resource:
     type: registry-image
     source:
-      repository: golang
-      tag: 1.11.5-alpine3.8
+      repository: keppel.eu-de-2.cloud.sap/ccloud-dockerhub-mirror/library/golang
+      tag: 1.14-alpine
   inputs:
     - name: kubernikus.builds
       path: gopath/src/github.com/sapcc/kubernikus
@@ -599,7 +536,10 @@ task_cli: &task_cli
         make bin/darwin/kubernikusctl
         make bin/linux/kubernikusctl
         make bin/windows/kubernikusctl.exe
-        upx bin/*/*
+        upx bin/linux/*
+        #upx trips up the macaffee virus scanner https://convergedcloud.slack.com/archives/C8296QQUW/p1605530103201800
+        #upx bin/windows/*
+        # upx is broken on big sur https://github.com/upx/upx/issues/424
         SHA=$(git rev-parse HEAD)
         echo $SHA > $BINARIES/commitish
         echo "1.0.0+$SHA" > $BINARIES/tag
@@ -615,10 +555,10 @@ task_e2e_tests: &task_e2e_tests
   platform: 'linux'
   
   image_resource:
-    type: docker-image
+    type: registry-image
     source:
-      repository: golang
-      tag: 1.9.2-alpine3.6
+      repository: keppel.eu-de-2.cloud.sap/ccloud-dockerhub-mirror/library/golang
+      tag: 1.14-alpine
   
   inputs:
     - name: kubernikus.builds
@@ -639,6 +579,7 @@ task_e2e_tests: &task_e2e_tests
   
         apk add --no-progress --no-cache make git curl
         export RUN_PARALLEL=false
+        export CGO_ENABLED=0
         make test-e2e | tee test.output
         rc=$?
         #Get the longest uniq (!) whitespace prefix of --- FAIL: lines
@@ -670,7 +611,7 @@ task_github_compare_url: &task_github_compare_url
   image_resource:
     type: registry-image
     source:
-      repository: alpine
+      repository: keppel.eu-de-2.cloud.sap/ccloud-dockerhub-mirror/library/alpine
   inputs:
     - name: kubernikus.builds
   outputs:
@@ -687,60 +628,13 @@ task_github_compare_url: &task_github_compare_url
   
   
 
-task_helm-admin_kubernikus: &task_helm-admin_kubernikus
-  platform: 'linux'
-  
-  image_resource:
-    type: docker-image
-    source:
-      repository: sapcc/unified-kubernetes-toolbox
-      tag: 'latest'
-  
-  inputs:
-    - name: kubernikus.builds
-    - name: secrets.git
-  
-  run:
-    path: /bin/sh
-    args:
-      - -c
-      - |
-        set -exo pipefail
-        VERSION=$(cat kubernikus.builds/.git/HEAD)
-        helm dep up --skip-refresh kubernikus.builds/charts/kubernikus/
-        helm diff upgrade $KUBERNIKUS_NAME kubernikus.builds/charts/kubernikus/ \
-          --values secrets.git/global/values/kubernikus.yaml \
-          --values secrets.git/kubernikus/$KUBERNIKUS_NAME/values/kubernikus.yaml \
-          --values secrets.git/admin/values/$KUBERNIKUS_NAME.yaml \
-          --set imageTag=$VERSION \
-          --suppress-secrets \
-          --allow-unreleased
-        helm upgrade $KUBERNIKUS_NAME kubernikus.builds/charts/kubernikus/ \
-          --namespace=$KUBERNIKUS_NAME \
-          --values secrets.git/global/values/kubernikus.yaml \
-          --values secrets.git/kubernikus/$KUBERNIKUS_NAME/values/kubernikus.yaml \
-          --values secrets.git/admin/values/$KUBERNIKUS_NAME.yaml \
-          --set imageTag=$VERSION \
-          --install
-        kubectl rollout status deployment/kubernikus-api --namespace=$KUBERNIKUS_NAME
-        kubectl rollout status deployment/kubernikus-operator --namespace=$KUBERNIKUS_NAME
-  
-  params:
-    REGION:
-    CONTEXT:
-    KUBERNIKUS_NAME:
-    KUBELOGON_USER:
-    KUBELOGON_PASSWORD:
-    HELM_VERSION: 2.11.0
-  
-
 task_helm_kubernikus-dex: &task_helm_kubernikus-dex
   platform: "linux"
   
   image_resource:
     type: registry-image
     source:
-      repository: sapcc/unified-kubernetes-toolbox
+      repository: keppel.eu-de-2.cloud.sap/ccloud-dockerhub-mirror/sapcc/unified-kubernetes-toolbox
       tag: 'latest'
   
   inputs:
@@ -795,7 +689,7 @@ task_helm_kubernikus: &task_helm_kubernikus
   image_resource:
     type: registry-image
     source:
-      repository: sapcc/unified-kubernetes-toolbox
+      repository: keppel.eu-de-2.cloud.sap/ccloud-dockerhub-mirror/sapcc/unified-kubernetes-toolbox
       tag: 'latest'
   
   inputs:
@@ -811,16 +705,23 @@ task_helm_kubernikus: &task_helm_kubernikus
         VERSION=$(cat kubernikus.builds/.git/HEAD)
         helm dep up --skip-refresh kubernikus.builds/charts/kubernikus/
   
+        IMAGE=keppel.$REGION.cloud.sap/ccloud/kubernikus
+        [ "$REGION" = "qa-de-1" ] && IMAGE=keppel.eu-de-1.cloud.sap/ccloud/kubernikus
+  
+        keppel validate $IMAGE:$VERSION
+  
         helm diff upgrade kubernikus kubernikus.builds/charts/kubernikus/ \
           --suppress-secrets --allow-unreleased --context 5 \
           --values secrets.git/global/values/kubernikus.yaml \
           --values secrets.git/kubernikus/$KUBERNIKUS_NAME/values/kubernikus.yaml \
+          --set image=$IMAGE \
           --set imageTag=$VERSION
   
         helm upgrade kubernikus kubernikus.builds/charts/kubernikus/ \
           --namespace=kubernikus-system \
           --values secrets.git/global/values/kubernikus.yaml \
           --values secrets.git/kubernikus/$KUBERNIKUS_NAME/values/kubernikus.yaml \
+          --set image=$IMAGE \
           --set imageTag=$VERSION \
           --install
         kubectl rollout status deployment/kubernikus-api --namespace=kubernikus-system
@@ -841,9 +742,9 @@ task_helm_seed: &task_helm_seed
   platform: linux
   
   image_resource:
-    type: docker-image
+    type: registry-image
     source:
-      repository: sapcc/unified-kubernetes-toolbox
+      repository: keppel.eu-de-2.cloud.sap/ccloud-dockerhub-mirror/sapcc/unified-kubernetes-toolbox
       tag: 'latest'
   
   inputs:
@@ -868,13 +769,46 @@ task_helm_seed: &task_helm_seed
     HELM_VERSION: 2.11.0
   
 
+task_oci_build: &task_oci_build
+  platform: linux
+  image_resource:
+    type: registry-image
+    source:
+      repository: keppel.eu-de-2.cloud.sap/ci/oci-build-task
+      #repository: vito/oci-build-task
+  
+  inputs:
+  - name: context
+  
+  outputs:
+  - name: image
+  
+  caches:
+  - path: cache
+  
+  run:
+    #path: build
+    path: sh
+    args:
+    - -ec
+    - |
+      echo Executing on $(wget -q -O- http://169.254.169.254/latest/meta-data/local-hostname)
+      du -hs cache/
+      build
+  params:
+    DEBUG: true
+    DOCKERFILE:
+    CONTEXT: context
+    BUILD_ARGS_FILE:
+  
+
 task_tiller: &task_tiller
   platform: 'linux'
   
   image_resource:
     type: registry-image
     source:
-      repository: sapcc/unified-kubernetes-toolbox
+      repository: keppel.eu-de-2.cloud.sap/ccloud-dockerhub-mirror/sapcc/unified-kubernetes-toolbox
       tag: 'latest'
   
   inputs:
@@ -912,9 +846,9 @@ task_whitesource: &task_whitesource
   platform: 'linux'
   
   image_resource:
-    type: docker-image
+    type: registry-image
     source:
-      repository: hub.global.cloud.sap/d074427/wss-agent
+      repository: keppel.eu-de-2.cloud.sap/ccloud/whitesource-agent
       tag: 20.1.3-kubernikus
   inputs:
     - name: kubernikus.builds
@@ -1025,24 +959,48 @@ slack: &slack
 
 
 resources:
+
+  - name: docs.git
+    type: git
+    source:
+      uri: https://github.com/sapcc/kubernikus.git
+      paths:
+        - docs/**
+        - contrib/kubernikus-docs-builder/**
+        - swagger.yaml
+        - Dockerfile.kubernikus-docs2
+
+  - name: kubernikus.git
+    type: git
+    source:
+      uri: https://github.com/sapcc/kubernikus.git
+
+  - name: docs-builder.image
+    type: registry-image
+    source:
+    check_every: 24h
+    source:
+      username: ((keppel.username))
+      password: ((keppel.password))
+      repository: keppel.eu-de-1.cloud.sap/ccloud/kubernikus-docs-builder
+      tag: latest
+
+  - name: kubernikus.image
+    type: registry-image
+    source:
+    check_every: 24h
+    source:
+      username: ((keppel.username))
+      password: ((keppel.password))
+      repository: keppel.eu-de-1.cloud.sap/ccloud/kubernikus
+      tag: latest
+
   - name: kubernikusctl.release
     type: github-release
     source:
       owner: sapcc
       repository: kubernikus
       access_token: ((github-com-access-token))
-
-  - name: master.builds
-    type: gh-status
-    icon: github-circle
-    source:
-      username: sapcc-bot
-      password: ((github-com-access-token))
-      owner:    sapcc
-      repo:     kubernikus
-      access_token: ((github-com-access-token))
-      branch: master
-      depth: 1
 
   - name: secrets.git
     icon: key-variant
@@ -1135,12 +1093,6 @@ resource_types:
       repository: cfcommunity/slack-notification-resource
       tag: latest
 
-  - name: gh-status
-    type: docker-image
-    check_every: 24h
-    source:
-      repository: keppel.eu-de-1.cloud.sap/ccloud/concourse-ghstatus-resource
-      tag: latest
   - name: time-version-resource
     type: docker-image
     check_every: 24h
@@ -1149,6 +1101,45 @@ resource_types:
       tag: v2
 
 jobs:
+  - name: docs
+    serial: true
+    plan:
+      - get: docs.git
+        trigger: true
+      - task: build
+        privileged: true
+        config:
+          <<: *task_oci_build
+        input_mapping: { context: docs.git }
+        params:
+          DOCKERFILE: context/Dockerfile.kubernikus-docs2
+      - put: docs-builder.image
+        params:
+          image: image/image.tar
+  - name: build
+    serial: true
+    plan:
+      - in_parallel:
+        - get: kubernikus.git
+          trigger: true
+        - get: docs-builder.image
+          passed: [docs]
+      - task: args
+        config:
+          <<: *task_build_args
+      - task: build
+        privileged: true
+        config:
+          <<: *task_oci_build
+        input_mapping: { context: kubernikus.git }
+        params:
+          DOCKERFILE: context/Dockerfile.kubernikus
+          BUILD_ARGS_FILE: context/build-args.txt
+      - put: kubernikus.image
+        params:
+          image: image/image.tar
+          additional_tags: kubernikus.git/.git/ref
+
   - name: tiller_master
     plan:
       - in_parallel:
@@ -1170,21 +1161,23 @@ jobs:
       - in_parallel:
         - get: secrets.git
         - get: kubernikus.builds
-          resource: master.builds
+          resource: kubernikus.git
+          passed: [build]
           trigger: true
       - in_parallel:
         - task: kubernikus
           config:
             <<: *task_helm_kubernikus
           params:
-            REGION: "k-master"
+            REGION: eu-nl-1
+            CONTEXT: k-master
             <<: *auth_master
         - task: kubernikus-dex
           config:
             <<: *task_helm_kubernikus-dex
           params:
-            REGION: "eu-nl-1"
-            CONTEXT: "k-master"
+            REGION: eu-nl-1
+            CONTEXT: k-master
             <<: *auth_master
     <<: *slack
 
@@ -1192,7 +1185,8 @@ jobs:
     plan:
       - in_parallel:
         - get: kubernikus.builds
-          resource: master.builds
+          resource: kubernikus.git
+          passed: [build]
           trigger: true
       - task: build
         file: kubernikus.builds/ci/task_cli.yaml
@@ -1212,7 +1206,8 @@ jobs:
     plan:
       - in_parallel:
         - get: kubernikus.builds
-          resource: master.builds
+          resource: kubernikus.git
+          passed: [build]
           trigger: true
       - task: build
         file: kubernikus.builds/ci/task_whitesource.yaml
@@ -1229,7 +1224,7 @@ jobs:
       - in_parallel:
         - get: secrets.git
         - get: kubernikus.builds
-          resource: master.builds
+          resource: kubernikus.git
           passed: [master]
           trigger: true
       - task: e2e_tests
@@ -1244,7 +1239,7 @@ jobs:
     serial: true
     plan:
       - get: kubernikus.builds
-        resource: master.builds
+        resource: kubernikus.git
         passed: [e2e]
       - task: changes
         config:
@@ -1260,25 +1255,10 @@ jobs:
           trigger: true
         - get: secrets.git
         - get: kubernikus.builds
-          resource: master.builds
+          resource: kubernikus.git
           passed: [prod]
           trigger: true
         - put: ASIA.tag
-
-  - name: admin_ASIA
-    serial: true
-    plan:
-      - in_parallel:
-        - get: ASIA.tag
-          passed: [ ASIA ]
-          trigger: true
-        - get: secrets.git
-          passed: [ ASIA ]
-        - get: kubernikus.builds
-          resource: master.builds
-          passed: [ASIA]
-
-    <<: *slack
 
 
 
@@ -1288,10 +1268,10 @@ jobs:
     plan:
       - in_parallel:
         - get: ASIA.tag
-          passed: [admin_ASIA]
+          passed: [ASIA]
           trigger: true
         - get: secrets.git
-          passed: [admin_ASIA]
+          passed: [ASIA]
         - get: helm-charts.git
           passed: [ASIA]
       - task: seed
@@ -1334,8 +1314,8 @@ jobs:
         - get: secrets.git
           passed: [seed_ap-ae-1]
         - get: kubernikus.builds
-          resource: master.builds
-          passed: [admin_ASIA]
+          resource: kubernikus.git
+          passed: [ASIA]
       - in_parallel:
         - task: kubernikus_ap-ae-1
           config:
@@ -1362,7 +1342,7 @@ jobs:
           trigger: true
           passed: [deploy_ap-ae-1]
         - get: kubernikus.builds
-          resource: master.builds
+          resource: kubernikus.git
           passed: [deploy_ap-ae-1]
         - get: hourly
           trigger: true
@@ -1397,10 +1377,10 @@ jobs:
     plan:
       - in_parallel:
         - get: ASIA.tag
-          passed: [admin_ASIA]
+          passed: [ASIA]
           trigger: true
         - get: secrets.git
-          passed: [admin_ASIA]
+          passed: [ASIA]
         - get: helm-charts.git
           passed: [ASIA]
       - task: seed
@@ -1443,8 +1423,8 @@ jobs:
         - get: secrets.git
           passed: [seed_ap-au-1]
         - get: kubernikus.builds
-          resource: master.builds
-          passed: [admin_ASIA]
+          resource: kubernikus.git
+          passed: [ASIA]
       - in_parallel:
         - task: kubernikus_ap-au-1
           config:
@@ -1471,7 +1451,7 @@ jobs:
           trigger: true
           passed: [deploy_ap-au-1]
         - get: kubernikus.builds
-          resource: master.builds
+          resource: kubernikus.git
           passed: [deploy_ap-au-1]
         - get: hourly
           trigger: true
@@ -1506,10 +1486,10 @@ jobs:
     plan:
       - in_parallel:
         - get: ASIA.tag
-          passed: [admin_ASIA]
+          passed: [ASIA]
           trigger: true
         - get: secrets.git
-          passed: [admin_ASIA]
+          passed: [ASIA]
         - get: helm-charts.git
           passed: [ASIA]
       - task: seed
@@ -1552,8 +1532,8 @@ jobs:
         - get: secrets.git
           passed: [seed_ap-cn-1]
         - get: kubernikus.builds
-          resource: master.builds
-          passed: [admin_ASIA]
+          resource: kubernikus.git
+          passed: [ASIA]
       - in_parallel:
         - task: kubernikus_ap-cn-1
           config:
@@ -1580,7 +1560,7 @@ jobs:
           trigger: true
           passed: [deploy_ap-cn-1]
         - get: kubernikus.builds
-          resource: master.builds
+          resource: kubernikus.git
           passed: [deploy_ap-cn-1]
         - get: hourly
           trigger: true
@@ -1615,10 +1595,10 @@ jobs:
     plan:
       - in_parallel:
         - get: ASIA.tag
-          passed: [admin_ASIA]
+          passed: [ASIA]
           trigger: true
         - get: secrets.git
-          passed: [admin_ASIA]
+          passed: [ASIA]
         - get: helm-charts.git
           passed: [ASIA]
       - task: seed
@@ -1661,8 +1641,8 @@ jobs:
         - get: secrets.git
           passed: [seed_ap-jp-1]
         - get: kubernikus.builds
-          resource: master.builds
-          passed: [admin_ASIA]
+          resource: kubernikus.git
+          passed: [ASIA]
       - in_parallel:
         - task: kubernikus_ap-jp-1
           config:
@@ -1689,7 +1669,7 @@ jobs:
           trigger: true
           passed: [deploy_ap-jp-1]
         - get: kubernikus.builds
-          resource: master.builds
+          resource: kubernikus.git
           passed: [deploy_ap-jp-1]
         - get: hourly
           trigger: true
@@ -1724,10 +1704,10 @@ jobs:
     plan:
       - in_parallel:
         - get: ASIA.tag
-          passed: [admin_ASIA]
+          passed: [ASIA]
           trigger: true
         - get: secrets.git
-          passed: [admin_ASIA]
+          passed: [ASIA]
         - get: helm-charts.git
           passed: [ASIA]
       - task: seed
@@ -1770,8 +1750,8 @@ jobs:
         - get: secrets.git
           passed: [seed_ap-jp-2]
         - get: kubernikus.builds
-          resource: master.builds
-          passed: [admin_ASIA]
+          resource: kubernikus.git
+          passed: [ASIA]
       - in_parallel:
         - task: kubernikus_ap-jp-2
           config:
@@ -1798,7 +1778,7 @@ jobs:
           trigger: true
           passed: [deploy_ap-jp-2]
         - get: kubernikus.builds
-          resource: master.builds
+          resource: kubernikus.git
           passed: [deploy_ap-jp-2]
         - get: hourly
           trigger: true
@@ -1833,10 +1813,10 @@ jobs:
     plan:
       - in_parallel:
         - get: ASIA.tag
-          passed: [admin_ASIA]
+          passed: [ASIA]
           trigger: true
         - get: secrets.git
-          passed: [admin_ASIA]
+          passed: [ASIA]
         - get: helm-charts.git
           passed: [ASIA]
       - task: seed
@@ -1879,8 +1859,8 @@ jobs:
         - get: secrets.git
           passed: [seed_ap-sa-1]
         - get: kubernikus.builds
-          resource: master.builds
-          passed: [admin_ASIA]
+          resource: kubernikus.git
+          passed: [ASIA]
       - in_parallel:
         - task: kubernikus_ap-sa-1
           config:
@@ -1907,7 +1887,7 @@ jobs:
           trigger: true
           passed: [deploy_ap-sa-1]
         - get: kubernikus.builds
-          resource: master.builds
+          resource: kubernikus.git
           passed: [deploy_ap-sa-1]
         - get: hourly
           trigger: true
@@ -1944,58 +1924,10 @@ jobs:
           trigger: true
         - get: secrets.git
         - get: kubernikus.builds
-          resource: master.builds
+          resource: kubernikus.git
           passed: [prod]
           trigger: true
         - put: EMEA.tag
-
-  - name: admin_EMEA
-    serial: true
-    plan:
-      - in_parallel:
-        - get: EMEA.tag
-          passed: [ EMEA ]
-          trigger: true
-        - get: secrets.git
-          passed: [ EMEA ]
-        - get: kubernikus.builds
-          resource: master.builds
-          passed: [EMEA]
-
-      - in_parallel:
-
-        - task: k-eu-de-1
-          config:
-            <<: *task_helm-admin_kubernikus
-          params:
-            REGION: admin
-            CONTEXT: admin
-            KUBERNIKUS_NAME: k-eu-de-1
-            KUBELOGON_USER:     ((KUBELOGON_USER))
-            KUBELOGON_PASSWORD: ((KUBELOGON_PASSWORD))
-
-        - task: k-eu-de-2
-          config:
-            <<: *task_helm-admin_kubernikus
-          params:
-            REGION: admin
-            CONTEXT: admin
-            KUBERNIKUS_NAME: k-eu-de-2
-            KUBELOGON_USER:     ((KUBELOGON_USER))
-            KUBELOGON_PASSWORD: ((KUBELOGON_PASSWORD))
-
-        - task: k-eu-nl-1
-          config:
-            <<: *task_helm-admin_kubernikus
-          params:
-            REGION: admin
-            CONTEXT: admin
-            KUBERNIKUS_NAME: k-eu-nl-1
-            KUBELOGON_USER:     ((KUBELOGON_USER))
-            KUBELOGON_PASSWORD: ((KUBELOGON_PASSWORD))
-
-
-    <<: *slack
 
 
 
@@ -2005,10 +1937,10 @@ jobs:
     plan:
       - in_parallel:
         - get: EMEA.tag
-          passed: [admin_EMEA]
+          passed: [EMEA]
           trigger: true
         - get: secrets.git
-          passed: [admin_EMEA]
+          passed: [EMEA]
         - get: helm-charts.git
           passed: [EMEA]
       - task: seed
@@ -2051,8 +1983,8 @@ jobs:
         - get: secrets.git
           passed: [seed_eu-de-1]
         - get: kubernikus.builds
-          resource: master.builds
-          passed: [admin_EMEA]
+          resource: kubernikus.git
+          passed: [EMEA]
       - in_parallel:
         - task: kubernikus_eu-de-1
           config:
@@ -2079,7 +2011,7 @@ jobs:
           trigger: true
           passed: [deploy_eu-de-1]
         - get: kubernikus.builds
-          resource: master.builds
+          resource: kubernikus.git
           passed: [deploy_eu-de-1]
         - get: hourly
           trigger: true
@@ -2114,10 +2046,10 @@ jobs:
     plan:
       - in_parallel:
         - get: EMEA.tag
-          passed: [admin_EMEA]
+          passed: [EMEA]
           trigger: true
         - get: secrets.git
-          passed: [admin_EMEA]
+          passed: [EMEA]
         - get: helm-charts.git
           passed: [EMEA]
       - task: seed
@@ -2160,8 +2092,8 @@ jobs:
         - get: secrets.git
           passed: [seed_eu-de-2]
         - get: kubernikus.builds
-          resource: master.builds
-          passed: [admin_EMEA]
+          resource: kubernikus.git
+          passed: [EMEA]
       - in_parallel:
         - task: kubernikus_eu-de-2
           config:
@@ -2188,7 +2120,7 @@ jobs:
           trigger: true
           passed: [deploy_eu-de-2]
         - get: kubernikus.builds
-          resource: master.builds
+          resource: kubernikus.git
           passed: [deploy_eu-de-2]
         - get: hourly
           trigger: true
@@ -2223,10 +2155,10 @@ jobs:
     plan:
       - in_parallel:
         - get: EMEA.tag
-          passed: [admin_EMEA]
+          passed: [EMEA]
           trigger: true
         - get: secrets.git
-          passed: [admin_EMEA]
+          passed: [EMEA]
         - get: helm-charts.git
           passed: [EMEA]
       - task: seed
@@ -2269,8 +2201,8 @@ jobs:
         - get: secrets.git
           passed: [seed_eu-nl-1]
         - get: kubernikus.builds
-          resource: master.builds
-          passed: [admin_EMEA]
+          resource: kubernikus.git
+          passed: [EMEA]
       - in_parallel:
         - task: kubernikus_eu-nl-1
           config:
@@ -2297,7 +2229,7 @@ jobs:
           trigger: true
           passed: [deploy_eu-nl-1]
         - get: kubernikus.builds
-          resource: master.builds
+          resource: kubernikus.git
           passed: [deploy_eu-nl-1]
         - get: hourly
           trigger: true
@@ -2332,10 +2264,10 @@ jobs:
     plan:
       - in_parallel:
         - get: EMEA.tag
-          passed: [admin_EMEA]
+          passed: [EMEA]
           trigger: true
         - get: secrets.git
-          passed: [admin_EMEA]
+          passed: [EMEA]
         - get: helm-charts.git
           passed: [EMEA]
       - task: seed
@@ -2378,8 +2310,8 @@ jobs:
         - get: secrets.git
           passed: [seed_eu-ru-1]
         - get: kubernikus.builds
-          resource: master.builds
-          passed: [admin_EMEA]
+          resource: kubernikus.git
+          passed: [EMEA]
       - in_parallel:
         - task: kubernikus_eu-ru-1
           config:
@@ -2406,7 +2338,7 @@ jobs:
           trigger: true
           passed: [deploy_eu-ru-1]
         - get: kubernikus.builds
-          resource: master.builds
+          resource: kubernikus.git
           passed: [deploy_eu-ru-1]
         - get: hourly
           trigger: true
@@ -2443,25 +2375,10 @@ jobs:
           trigger: true
         - get: secrets.git
         - get: kubernikus.builds
-          resource: master.builds
+          resource: kubernikus.git
           passed: [prod]
           trigger: true
         - put: AMERICAS.tag
-
-  - name: admin_AMERICAS
-    serial: true
-    plan:
-      - in_parallel:
-        - get: AMERICAS.tag
-          passed: [ AMERICAS ]
-          trigger: true
-        - get: secrets.git
-          passed: [ AMERICAS ]
-        - get: kubernikus.builds
-          resource: master.builds
-          passed: [AMERICAS]
-
-    <<: *slack
 
 
 
@@ -2471,10 +2388,10 @@ jobs:
     plan:
       - in_parallel:
         - get: AMERICAS.tag
-          passed: [admin_AMERICAS]
+          passed: [AMERICAS]
           trigger: true
         - get: secrets.git
-          passed: [admin_AMERICAS]
+          passed: [AMERICAS]
         - get: helm-charts.git
           passed: [AMERICAS]
       - task: seed
@@ -2517,8 +2434,8 @@ jobs:
         - get: secrets.git
           passed: [seed_la-br-1]
         - get: kubernikus.builds
-          resource: master.builds
-          passed: [admin_AMERICAS]
+          resource: kubernikus.git
+          passed: [AMERICAS]
       - in_parallel:
         - task: kubernikus_la-br-1
           config:
@@ -2545,7 +2462,7 @@ jobs:
           trigger: true
           passed: [deploy_la-br-1]
         - get: kubernikus.builds
-          resource: master.builds
+          resource: kubernikus.git
           passed: [deploy_la-br-1]
         - get: hourly
           trigger: true
@@ -2580,10 +2497,10 @@ jobs:
     plan:
       - in_parallel:
         - get: AMERICAS.tag
-          passed: [admin_AMERICAS]
+          passed: [AMERICAS]
           trigger: true
         - get: secrets.git
-          passed: [admin_AMERICAS]
+          passed: [AMERICAS]
         - get: helm-charts.git
           passed: [AMERICAS]
       - task: seed
@@ -2626,8 +2543,8 @@ jobs:
         - get: secrets.git
           passed: [seed_na-ca-1]
         - get: kubernikus.builds
-          resource: master.builds
-          passed: [admin_AMERICAS]
+          resource: kubernikus.git
+          passed: [AMERICAS]
       - in_parallel:
         - task: kubernikus_na-ca-1
           config:
@@ -2654,7 +2571,7 @@ jobs:
           trigger: true
           passed: [deploy_na-ca-1]
         - get: kubernikus.builds
-          resource: master.builds
+          resource: kubernikus.git
           passed: [deploy_na-ca-1]
         - get: hourly
           trigger: true
@@ -2689,10 +2606,10 @@ jobs:
     plan:
       - in_parallel:
         - get: AMERICAS.tag
-          passed: [admin_AMERICAS]
+          passed: [AMERICAS]
           trigger: true
         - get: secrets.git
-          passed: [admin_AMERICAS]
+          passed: [AMERICAS]
         - get: helm-charts.git
           passed: [AMERICAS]
       - task: seed
@@ -2735,8 +2652,8 @@ jobs:
         - get: secrets.git
           passed: [seed_na-us-1]
         - get: kubernikus.builds
-          resource: master.builds
-          passed: [admin_AMERICAS]
+          resource: kubernikus.git
+          passed: [AMERICAS]
       - in_parallel:
         - task: kubernikus_na-us-1
           config:
@@ -2763,7 +2680,7 @@ jobs:
           trigger: true
           passed: [deploy_na-us-1]
         - get: kubernikus.builds
-          resource: master.builds
+          resource: kubernikus.git
           passed: [deploy_na-us-1]
         - get: hourly
           trigger: true
@@ -2798,10 +2715,10 @@ jobs:
     plan:
       - in_parallel:
         - get: AMERICAS.tag
-          passed: [admin_AMERICAS]
+          passed: [AMERICAS]
           trigger: true
         - get: secrets.git
-          passed: [admin_AMERICAS]
+          passed: [AMERICAS]
         - get: helm-charts.git
           passed: [AMERICAS]
       - task: seed
@@ -2844,8 +2761,8 @@ jobs:
         - get: secrets.git
           passed: [seed_na-us-2]
         - get: kubernikus.builds
-          resource: master.builds
-          passed: [admin_AMERICAS]
+          resource: kubernikus.git
+          passed: [AMERICAS]
       - in_parallel:
         - task: kubernikus_na-us-2
           config:
@@ -2872,7 +2789,7 @@ jobs:
           trigger: true
           passed: [deploy_na-us-2]
         - get: kubernikus.builds
-          resource: master.builds
+          resource: kubernikus.git
           passed: [deploy_na-us-2]
         - get: hourly
           trigger: true
@@ -2907,10 +2824,10 @@ jobs:
     plan:
       - in_parallel:
         - get: AMERICAS.tag
-          passed: [admin_AMERICAS]
+          passed: [AMERICAS]
           trigger: true
         - get: secrets.git
-          passed: [admin_AMERICAS]
+          passed: [AMERICAS]
         - get: helm-charts.git
           passed: [AMERICAS]
       - task: seed
@@ -2953,8 +2870,8 @@ jobs:
         - get: secrets.git
           passed: [seed_na-us-3]
         - get: kubernikus.builds
-          resource: master.builds
-          passed: [admin_AMERICAS]
+          resource: kubernikus.git
+          passed: [AMERICAS]
       - in_parallel:
         - task: kubernikus_na-us-3
           config:
@@ -2981,7 +2898,7 @@ jobs:
           trigger: true
           passed: [deploy_na-us-3]
         - get: kubernikus.builds
-          resource: master.builds
+          resource: kubernikus.git
           passed: [deploy_na-us-3]
         - get: hourly
           trigger: true
@@ -3018,25 +2935,10 @@ jobs:
           trigger: true
         - get: secrets.git
         - get: kubernikus.builds
-          resource: master.builds
+          resource: kubernikus.git
           passed: [prod]
           trigger: true
         - put: INFRA.tag
-
-  - name: admin_INFRA
-    serial: true
-    plan:
-      - in_parallel:
-        - get: INFRA.tag
-          passed: [ INFRA ]
-          trigger: true
-        - get: secrets.git
-          passed: [ INFRA ]
-        - get: kubernikus.builds
-          resource: master.builds
-          passed: [INFRA]
-
-    <<: *slack
 
 
 
@@ -3046,10 +2948,10 @@ jobs:
     plan:
       - in_parallel:
         - get: INFRA.tag
-          passed: [admin_INFRA]
+          passed: [INFRA]
           trigger: true
         - get: secrets.git
-          passed: [admin_INFRA]
+          passed: [INFRA]
         - get: helm-charts.git
           passed: [INFRA]
       - task: seed
@@ -3092,8 +2994,8 @@ jobs:
         - get: secrets.git
           passed: [seed_qa-de-1]
         - get: kubernikus.builds
-          resource: master.builds
-          passed: [admin_INFRA]
+          resource: kubernikus.git
+          passed: [INFRA]
       - in_parallel:
         - task: kubernikus_qa-de-1
           config:
@@ -3120,7 +3022,7 @@ jobs:
           trigger: true
           passed: [deploy_qa-de-1]
         - get: kubernikus.builds
-          resource: master.builds
+          resource: kubernikus.git
           passed: [deploy_qa-de-1]
         - get: hourly
           trigger: true
@@ -3155,6 +3057,8 @@ jobs:
 groups:
   - name: deploy
     jobs:
+      - docs
+      - build
       - master
       - cli
       - whitesource
@@ -3163,23 +3067,18 @@ groups:
       - prod
 
       - ASIA
-      - admin_ASIA
 
       - EMEA
-      - admin_EMEA
 
       - AMERICAS
-      - admin_AMERICAS
 
       - INFRA
-      - admin_INFRA
 
 
 
   - name: ap-ae-1
     jobs:
       - ASIA
-      - admin_ASIA
       - seed_ap-ae-1
       - tiller_ap-ae-1
       - deploy_ap-ae-1
@@ -3188,7 +3087,6 @@ groups:
   - name: ap-au-1
     jobs:
       - ASIA
-      - admin_ASIA
       - seed_ap-au-1
       - tiller_ap-au-1
       - deploy_ap-au-1
@@ -3197,7 +3095,6 @@ groups:
   - name: ap-cn-1
     jobs:
       - ASIA
-      - admin_ASIA
       - seed_ap-cn-1
       - tiller_ap-cn-1
       - deploy_ap-cn-1
@@ -3206,7 +3103,6 @@ groups:
   - name: ap-jp-1
     jobs:
       - ASIA
-      - admin_ASIA
       - seed_ap-jp-1
       - tiller_ap-jp-1
       - deploy_ap-jp-1
@@ -3215,7 +3111,6 @@ groups:
   - name: ap-jp-2
     jobs:
       - ASIA
-      - admin_ASIA
       - seed_ap-jp-2
       - tiller_ap-jp-2
       - deploy_ap-jp-2
@@ -3224,7 +3119,6 @@ groups:
   - name: ap-sa-1
     jobs:
       - ASIA
-      - admin_ASIA
       - seed_ap-sa-1
       - tiller_ap-sa-1
       - deploy_ap-sa-1
@@ -3233,7 +3127,6 @@ groups:
   - name: eu-de-1
     jobs:
       - EMEA
-      - admin_EMEA
       - seed_eu-de-1
       - tiller_eu-de-1
       - deploy_eu-de-1
@@ -3242,7 +3135,6 @@ groups:
   - name: eu-de-2
     jobs:
       - EMEA
-      - admin_EMEA
       - seed_eu-de-2
       - tiller_eu-de-2
       - deploy_eu-de-2
@@ -3251,7 +3143,6 @@ groups:
   - name: eu-nl-1
     jobs:
       - EMEA
-      - admin_EMEA
       - seed_eu-nl-1
       - tiller_eu-nl-1
       - deploy_eu-nl-1
@@ -3260,7 +3151,6 @@ groups:
   - name: eu-ru-1
     jobs:
       - EMEA
-      - admin_EMEA
       - seed_eu-ru-1
       - tiller_eu-ru-1
       - deploy_eu-ru-1
@@ -3269,7 +3159,6 @@ groups:
   - name: la-br-1
     jobs:
       - AMERICAS
-      - admin_AMERICAS
       - seed_la-br-1
       - tiller_la-br-1
       - deploy_la-br-1
@@ -3278,7 +3167,6 @@ groups:
   - name: na-ca-1
     jobs:
       - AMERICAS
-      - admin_AMERICAS
       - seed_na-ca-1
       - tiller_na-ca-1
       - deploy_na-ca-1
@@ -3287,7 +3175,6 @@ groups:
   - name: na-us-1
     jobs:
       - AMERICAS
-      - admin_AMERICAS
       - seed_na-us-1
       - tiller_na-us-1
       - deploy_na-us-1
@@ -3296,7 +3183,6 @@ groups:
   - name: na-us-2
     jobs:
       - AMERICAS
-      - admin_AMERICAS
       - seed_na-us-2
       - tiller_na-us-2
       - deploy_na-us-2
@@ -3305,7 +3191,6 @@ groups:
   - name: na-us-3
     jobs:
       - AMERICAS
-      - admin_AMERICAS
       - seed_na-us-3
       - tiller_na-us-3
       - deploy_na-us-3
@@ -3314,7 +3199,6 @@ groups:
   - name: qa-de-1
     jobs:
       - INFRA
-      - admin_INFRA
       - seed_qa-de-1
       - tiller_qa-de-1
       - deploy_qa-de-1
@@ -3331,16 +3215,12 @@ groups:
       - prod
 
       - ASIA
-      - admin_ASIA
 
       - EMEA
-      - admin_EMEA
 
       - AMERICAS
-      - admin_AMERICAS
 
       - INFRA
-      - admin_INFRA
 
 
       - seed_ap-ae-1

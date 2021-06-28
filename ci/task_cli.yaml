@@ -3,8 +3,8 @@ platform: 'linux'
 image_resource:
   type: registry-image
   source:
-    repository: golang
-    tag: 1.11.5-alpine3.8
+    repository: keppel.eu-de-2.cloud.sap/ccloud-dockerhub-mirror/library/golang
+    tag: 1.14-alpine
 inputs:
   - name: kubernikus.builds
     path: gopath/src/github.com/sapcc/kubernikus
@@ -26,7 +26,10 @@ run:
       make bin/darwin/kubernikusctl
       make bin/linux/kubernikusctl
       make bin/windows/kubernikusctl.exe
-      upx bin/*/*
+      upx bin/linux/*
+      #upx trips up the macaffee virus scanner https://convergedcloud.slack.com/archives/C8296QQUW/p1605530103201800
+      #upx bin/windows/*
+      # upx is broken on big sur https://github.com/upx/upx/issues/424
       SHA=$(git rev-parse HEAD)
       echo $SHA > $BINARIES/commitish
       echo "1.0.0+$SHA" > $BINARIES/tag

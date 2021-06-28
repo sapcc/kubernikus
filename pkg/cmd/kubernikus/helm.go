@@ -46,6 +46,7 @@ type HelmOptions struct {
 	AuthProjectDomain string
 	ProjectID         string
 	ImagesFile        string
+	Region            string
 }
 
 func NewHelmOptions() *HelmOptions {
@@ -55,6 +56,7 @@ func NewHelmOptions() *HelmOptions {
 		AuthProject:       "cloud_admin",
 		AuthProjectDomain: "ccadmin",
 		ImagesFile:        "charts/images.yaml",
+		Region:            "eu-de-1",
 	}
 }
 func (o *HelmOptions) BindFlags(flags *pflag.FlagSet) {
@@ -66,6 +68,7 @@ func (o *HelmOptions) BindFlags(flags *pflag.FlagSet) {
 	flags.StringVar(&o.AuthProjectDomain, "auth-project-domain", o.AuthProjectDomain, "Domain of the project")
 	flags.StringVar(&o.ProjectID, "project-id", o.ProjectID, "Project ID where the kublets will be running")
 	flags.StringVar(&o.ImagesFile, "images-file", o.ImagesFile, "Yaml file for populating the image registry")
+	flags.StringVar(&o.Region, "region", o.Region, "The region (used for image replacements)")
 }
 
 func (o *HelmOptions) Validate(c *cobra.Command, args []string) error {
@@ -97,7 +100,7 @@ func (o *HelmOptions) Complete(args []string) error {
 
 func (o *HelmOptions) Run(c *cobra.Command) error {
 	nameA := strings.SplitN(o.Name, ".", 2)
-	registry, err := version.NewImageRegistry(o.ImagesFile)
+	registry, err := version.NewImageRegistry(o.ImagesFile, o.Region)
 	if err != nil {
 		return fmt.Errorf("Failed to load images from file: %s", err)
 	}

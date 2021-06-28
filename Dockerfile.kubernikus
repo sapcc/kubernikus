@@ -1,0 +1,33 @@
+ARG DOCS_IMAGE=keppel.eu-de-1.cloud.sap/ccloud/kubernikus-docs-builder:latest
+FROM keppel.eu-de-1.cloud.sap/ccloud-dockerhub-mirror/library/golang:1.14-alpine as builder
+WORKDIR /go/src/github.com/sapcc/kubernikus/
+RUN apk add --no-cache make git curl
+RUN curl -Lf https://github.com/alecthomas/gometalinter/releases/download/v2.0.11/gometalinter-2.0.11-linux-amd64.tar.gz \
+		| tar --strip-components=1 -C /usr/local/bin -zxv \
+		&& gometalinter --version
+COPY . .
+ARG VERSION
+#We run gofmt and linter before compiling for faster feedback
+RUN make gofmt linters
+RUN make all
+RUN make gotest
+RUN make build-e2e
+
+FROM ${DOCS_IMAGE} as kubernikus-docs
+
+FROM keppel.eu-de-1.cloud.sap/ccloud-dockerhub-mirror/library/alpine:3.8 as kubernikus
+LABEL source_repository="https://github.com/sapcc/kubernikus"
+MAINTAINER "Fabian Ruff <fabian.ruff@sap.com>"
+RUN apk add --no-cache curl iptables
+RUN curl -Lo /bin/dumb-init https://github.com/Yelp/dumb-init/releases/download/v1.2.1/dumb-init_1.2.1_amd64 \
+	&& chmod +x /bin/dumb-init \
+	&& dumb-init -V
+COPY etc/*.json /etc/kubernikus/
+COPY --from=kubernikus-docs /public/docs /static/docs
+COPY charts/ /etc/kubernikus/charts
+COPY --from=builder /go/src/github.com/sapcc/kubernikus/bin/linux/kubernikus \
+	                  /go/src/github.com/sapcc/kubernikus/bin/linux/apiserver \
+										/go/src/github.com/sapcc/kubernikus/bin/linux/wormhole /usr/local/bin/
+#COPY --from=kubernikus-binaries /kubernikusctl /static/binaries/linux/amd64/kubernikusctl
+ENTRYPOINT ["dumb-init", "--"]
+CMD ["apiserver"]

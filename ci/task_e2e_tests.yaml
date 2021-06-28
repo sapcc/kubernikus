@@ -1,10 +1,10 @@
 platform: 'linux'
 
 image_resource:
-  type: docker-image
+  type: registry-image
   source:
-    repository: golang
-    tag: 1.9.2-alpine3.6
+    repository: keppel.eu-de-2.cloud.sap/ccloud-dockerhub-mirror/library/golang
+    tag: 1.14-alpine
 
 inputs:
   - name: kubernikus.builds
@@ -25,6 +25,7 @@ run:
 
       apk add --no-progress --no-cache make git curl
       export RUN_PARALLEL=false
+      export CGO_ENABLED=0
       make test-e2e | tee test.output
       rc=$?
       #Get the longest uniq (!) whitespace prefix of --- FAIL: lines

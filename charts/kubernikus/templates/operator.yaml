@@ -49,6 +49,9 @@ spec:
             - --controllers={{ join "," .Values.operator.controllers }}
             {{- end }}
             - --v={{ default 1 .Values.groundctl.log_level }}
+            {{- if and (.Values.openstack.region) (ne .Values.openstack.region "qa-de-1") }}
+            - --region={{ .Values.openstack.region }}
+            {{- end }}
           env:
             {{- if .Values.operator.nodeAffinity }}
             - name: NODEPOOL_AFFINITY

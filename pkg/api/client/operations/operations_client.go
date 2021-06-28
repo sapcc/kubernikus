@@ -54,6 +54,62 @@ func (a *Client) CreateCluster(params *CreateClusterParams, authInfo runtime.Cli
 }
 
 /*
+GetAuthCallback callbacks for oauth result
+*/
+func (a *Client) GetAuthCallback(params *GetAuthCallbackParams) (*GetAuthCallbackOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewGetAuthCallbackParams()
+	}
+
+	result, err := a.transport.Submit(&runtime.ClientOperation{
+		ID:                 "GetAuthCallback",
+		Method:             "GET",
+		PathPattern:        "/auth/callback",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &GetAuthCallbackReader{formats: a.formats},
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return result.(*GetAuthCallbackOK), nil
+
+}
+
+/*
+GetAuthLogin logins through oauth2 server
+*/
+func (a *Client) GetAuthLogin(params *GetAuthLoginParams) error {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewGetAuthLoginParams()
+	}
+
+	_, err := a.transport.Submit(&runtime.ClientOperation{
+		ID:                 "GetAuthLogin",
+		Method:             "GET",
+		PathPattern:        "/auth/login",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &GetAuthLoginReader{formats: a.formats},
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	})
+	if err != nil {
+		return err
+	}
+	return nil
+
+}
+
+/*
 GetBootstrapConfig gets bootstrap config to onboard a node
 */
 func (a *Client) GetBootstrapConfig(params *GetBootstrapConfigParams, authInfo runtime.ClientAuthInfoWriter) (*GetBootstrapConfigOK, error) {

@@ -290,12 +290,14 @@ func (s *Server) handleHijackedConnection(conn net.Conn) {
 	stream, err := session.OpenStream()
 	if err != nil {
 		logger.Log("msg", "failed to open stream", err, "err")
+		return
 	}
 	logger = log.With(logger, "stream_id", stream.StreamID())
 
 	err = writeHeader(stream, originalIP, orginalPort)
 	if err != nil {
 		logger.Log("msg", "Failed to send preamble", "err", err)
+		return
 	}
 
 	Join(stream, conn, logger)

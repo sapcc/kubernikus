@@ -1,5 +1,6 @@
 VERSION  ?= $(shell git rev-parse --verify HEAD)
 GOOS     ?= $(shell go env GOOS)
+export GO111MODULE =off
 ifeq ($(GOOS),darwin)
 export CGO_ENABLED=0
 endif
@@ -22,7 +23,9 @@ endif
 HAS_GLIDE := $(shell command -v glide;)
 HAS_GLIDE_VC := $(shell command -v glide-vc;)
 GO_SWAGGER_VERSION := v0.18.0
-SWAGGER_BIN        := bin/$(GOOS)/swagger-$(GO_SWAGGER_VERSION)
+SWAGGER_BIN        ?= bin/$(GOOS)/swagger-$(GO_SWAGGER_VERSION)
+
+GOMETALINTER_BIN ?= gometalinter
 
 .PHONY: all test clean code-gen vendor
 
@@ -41,7 +44,7 @@ gofmt:
 	test/gofmt.sh pkg/ cmd/ deps/ test/
 
 linters:
-	gometalinter --vendor -s generated --disable-all -E vet -E ineffassign -E misspell ./cmd/... ./pkg/... ./test/...
+	$(GOMETALINTER_BIN) --deadline=60s --vendor -s generated --disable-all -E vet -E ineffassign -E misspell ./cmd/... ./pkg/... ./test/...
 
 gotest:
 	# go 1.11 requires gcc for go test because of reasons: https://github.com/golang/go/issues/28065 (CGO_ENABLED=0 fixes this)
@@ -143,11 +146,11 @@ endif
 
 .PHONY: test-charts
 test-charts:
-	docker run -ti --rm -v $(shell pwd):/go/src/github.com/sapcc/kubernikus --entrypoint "/go/src/github.com/sapcc/kubernikus/test/charts/charts.sh" sapcc/kubernikus-tests:latest
+	docker run --rm -v $(shell pwd):/go/src/github.com/sapcc/kubernikus --entrypoint "/go/src/github.com/sapcc/kubernikus/test/charts/charts.sh" sapcc/kubernikus-tests:latest
 
 .PHONY: test-loopref
 test-loopref:
-	docker run -ti --rm -v $(shell pwd):/go/src/github.com/sapcc/kubernikus -e "CGO_ENABLED=0" -w /go/src/github.com/sapcc/kubernikus sapcc/kubernikus-tests:latest sh -c "go list ./... | grep "github.com/sapcc/kubernikus/pkg" | xargs exportloopref -c 4"
+	docker run --rm -v $(shell pwd):/go/src/github.com/sapcc/kubernikus -e "CGO_ENABLED=0" -w /go/src/github.com/sapcc/kubernikus sapcc/kubernikus-tests:latest sh -c "go list ./... | grep "github.com/sapcc/kubernikus/pkg" | xargs exportloopref -c 4"
 
 include code-generate.mk
 code-gen: client-gen informer-gen lister-gen deepcopy-gen

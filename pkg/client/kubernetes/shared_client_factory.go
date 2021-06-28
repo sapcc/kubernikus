@@ -1,6 +1,7 @@
 package kubernetes
 
 import (
+	"context"
 	"fmt"
 	"net"
 	"os"
@@ -8,6 +9,7 @@ import (
 	"time"
 
 	kitlog "github.com/go-kit/kit/log"
+	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/cache"
@@ -18,6 +20,7 @@ import (
 
 type SharedClientFactory interface {
 	ClientFor(k *kubernikus_v1.Kluster) (clientset kubernetes.Interface, err error)
+	DynamicClientFor(k *kubernikus_v1.Kluster) (clientset dynamic.Interface, err error)
 }
 
 type sharedClientFactory struct {
@@ -53,6 +56,11 @@ func NewSharedClientFactory(client kubernetes.Interface, klusterEvents cache.Sha
 }
 
 func (f *sharedClientFactory) ClientFor(k *kubernikus_v1.Kluster) (clientset kubernetes.Interface, err error) {
+
+	if client, found := f.clients.Load(k.GetUID()); found {
+		return client.(kubernetes.Interface), nil
+	}
+
 	defer func() {
 		f.Logger.Log(
 			"msg", "created shared kubernetes client",
@@ -63,17 +71,13 @@ func (f *sharedClientFactory) ClientFor(k *kubernikus_v1.Kluster) (clientset kub
 		)
 	}()
 
-	if client, found := f.clients.Load(k.GetUID()); found {
-		return client.(kubernetes.Interface), nil
-	}
-
 	secret, err := util.KlusterSecret(f.clientInterface, k)
 	if err != nil {
 		return nil, err
 	}
 
 	apiHost := k.Status.Apiserver
-	var dialerFunc func(string, string) (net.Conn, error)
+	var dialerFunc func(context.Context, string, string) (net.Conn, error)
 
 	// If run inside a kubernetes cluster we want to bypass the sni proxy and access the api service directly
 	// if we run outside (dev) we fall back to using the fqdn that is exposed by the sni ingress controller
@@ -85,12 +89,12 @@ func (f *sharedClientFactory) ClientFor(k *kubernikus_v1.Kluster) (clientset kub
 			port = 6443
 		}
 		apiHost = fmt.Sprintf("https://%s:%d", k.Name, port)
-		dialer := net.Dialer{
+		dialer := (&net.Dialer{
 			Timeout:   30 * time.Second,
 			KeepAlive: 30 * time.Second,
-		}
-		dialerFunc = func(network, _ string) (net.Conn, error) {
-			return dialer.Dial(network, fmt.Sprintf("%s.%s:%d", k.Name, k.Namespace, port))
+		}).DialContext
+		dialerFunc = func(ctx context.Context, network, _ string) (net.Conn, error) {
+			return dialer(ctx, network, fmt.Sprintf("%s.%s:%d", k.Name, k.Namespace, port))
 		}
 	}
 
@@ -118,11 +122,71 @@ func (f *sharedClientFactory) ClientFor(k *kubernikus_v1.Kluster) (clientset kub
 
 }
 
+func (f *sharedClientFactory) DynamicClientFor(k *kubernikus_v1.Kluster) (clientset dynamic.Interface, err error) {
+	defer func() {
+		f.Logger.Log(
+			"msg", "created dynamic kubernetes client",
+			"kluster", k.GetName(),
+			"project", k.Account(),
+			"v", 2,
+			"err", err,
+		)
+	}()
+
+	secret, err := util.KlusterSecret(f.clientInterface, k)
+	if err != nil {
+		return nil, err
+	}
+
+	apiHost := k.Status.Apiserver
+	var dialerFunc func(context.Context, string, string) (net.Conn, error)
+
+	// If run inside a kubernetes cluster we want to bypass the sni proxy and access the api service directly
+	// if we run outside (dev) we fall back to using the fqdn that is exposed by the sni ingress controller
+	// We need to provide a custom dialer to add the kluster namespace to the dns resolution because the
+	// apiserver cert is missing an SAN for $kluster.$namespace
+	if os.Getenv("KUBERNETES_SERVICE_HOST") != "" {
+		port := k.Spec.AdvertisePort
+		if port == 0 {
+			port = 6443
+		}
+		apiHost = fmt.Sprintf("https://%s:%d", k.Name, port)
+		dialer := (&net.Dialer{
+			Timeout:   30 * time.Second,
+			KeepAlive: 30 * time.Second,
+		}).DialContext
+		dialerFunc = func(ctx context.Context, network, _ string) (net.Conn, error) {
+			return dialer(ctx, network, fmt.Sprintf("%s.%s:%d", k.Name, k.Namespace, port))
+		}
+	}
+
+	c := rest.Config{
+		Host: apiHost,
+		TLSClientConfig: rest.TLSClientConfig{
+			CertData: []byte(secret.ApiserverClientsClusterAdminCertificate),
+			KeyData:  []byte(secret.ApiserverClientsClusterAdminPrivateKey),
+			CAData:   []byte(secret.TLSCACertificate),
+		},
+		Dial: dialerFunc,
+	}
+
+	clientset, err = dynamic.NewForConfig(&c)
+	if err != nil {
+		return nil, err
+	}
+
+	return clientset, nil
+}
+
 type MockSharedClientFactory struct {
-	Clientset kubernetes.Interface
+	Clientset        kubernetes.Interface
+	DynamicClientset dynamic.Interface
 }
 
 func (m *MockSharedClientFactory) ClientFor(k *kubernikus_v1.Kluster) (kubernetes.Interface, error) {
 	return m.Clientset, nil
+}
 
+func (m *MockSharedClientFactory) DynamicClientFor(k *kubernikus_v1.Kluster) (dynamic.Interface, error) {
+	return m.DynamicClientset, nil
 }

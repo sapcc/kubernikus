@@ -8,10 +8,10 @@ metadata:
   namespace: {{ default .Release.Namespace .Values.namespaceOverride }}
 spec:
   rules:
-  - host: {{ include "dex.url" . | quote }} 
+  - host: {{ include "dex.url" . | quote }}
   tls:
   - hosts:
-    -  {{ include "dex.url" . | quote }} 
+    -  {{ include "dex.url" . | quote }}
     secretName: kubernikus-dex
 ---
 apiVersion: v1

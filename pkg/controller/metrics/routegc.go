@@ -7,6 +7,9 @@ func init() {
 		OrphanedRoutesTotal,
 		RouteGCFailedOperationsTotal,
 	)
+
+	OrphanedRoutesTotal.With(prometheus.Labels{}).Add(0)
+	RouteGCFailedOperationsTotal.With(prometheus.Labels{}).Add(0)
 }
 
 var OrphanedRoutesTotal = prometheus.NewCounterVec(
