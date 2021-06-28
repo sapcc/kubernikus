@@ -23,11 +23,13 @@ var (
 	metricsPort int
 	loglevel    int
 	imagesFile  string
+	region      string
 )
 
 func init() {
 	pflag.StringVar(&namespace, "namespace", "kubernikus", "Namespace the apiserver should work in")
 	pflag.StringVar(&imagesFile, "images-file", "", "Path to yaml file descriping available cluster versions/images")
+	pflag.StringVar(&region, "region", "eu-de-1", "Used for localizing image uris")
 	pflag.IntVar(&metricsPort, "metrics-port", 9100, "Lister port for metric exposition")
 	pflag.IntVar(&loglevel, "v", 0, "log level")
 }
@@ -69,7 +71,7 @@ func main() {
 	}
 	rt := apipkg.NewRuntime(namespace, kubernikusClient, k8sclient, logger)
 	if imagesFile != "" {
-		if rt.Images, err = version.NewImageRegistry(imagesFile); err != nil {
+		if rt.Images, err = version.NewImageRegistry(imagesFile, region); err != nil {
 			logger.Log(
 				"msg", "failed to load images from file",
 				"file", imagesFile,

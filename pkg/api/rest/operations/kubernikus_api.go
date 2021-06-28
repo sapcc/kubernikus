@@ -42,6 +42,12 @@ func NewKubernikusAPI(spec *loads.Document) *KubernikusAPI {
 		CreateClusterHandler: CreateClusterHandlerFunc(func(params CreateClusterParams, principal *models.Principal) middleware.Responder {
 			return middleware.NotImplemented("operation CreateCluster has not yet been implemented")
 		}),
+		GetAuthCallbackHandler: GetAuthCallbackHandlerFunc(func(params GetAuthCallbackParams) middleware.Responder {
+			return middleware.NotImplemented("operation GetAuthCallback has not yet been implemented")
+		}),
+		GetAuthLoginHandler: GetAuthLoginHandlerFunc(func(params GetAuthLoginParams) middleware.Responder {
+			return middleware.NotImplemented("operation GetAuthLogin has not yet been implemented")
+		}),
 		GetBootstrapConfigHandler: GetBootstrapConfigHandlerFunc(func(params GetBootstrapConfigParams, principal *models.Principal) middleware.Responder {
 			return middleware.NotImplemented("operation GetBootstrapConfig has not yet been implemented")
 		}),
@@ -82,6 +88,10 @@ func NewKubernikusAPI(spec *loads.Document) *KubernikusAPI {
 			return middleware.NotImplemented("operation UpdateCluster has not yet been implemented")
 		}),
 
+		DexAuth: func(token string, scopes []string) (*models.Principal, error) {
+			return nil, errors.NotImplemented("oauth2 bearer auth (dex) has not yet been implemented")
+		},
+
 		// Applies when the "x-auth-token" header is set
 		KeystoneAuth: func(token string) (*models.Principal, error) {
 			return nil, errors.NotImplemented("api key auth (keystone) x-auth-token from header param [x-auth-token] has not yet been implemented")
@@ -120,6 +130,10 @@ type KubernikusAPI struct {
 	// JSONProducer registers a producer for a "application/json" mime type
 	JSONProducer runtime.Producer
 
+	// DexAuth registers a function that takes an access token and a collection of required scopes and returns a principal
+	// it performs authentication based on an oauth2 bearer token provided in the request
+	DexAuth func(string, []string) (*models.Principal, error)
+
 	// KeystoneAuth registers a function that takes a token and returns a principal
 	// it performs authentication based on an api key x-auth-token provided in the header
 	KeystoneAuth func(string) (*models.Principal, error)
@@ -129,6 +143,10 @@ type KubernikusAPI struct {
 
 	// CreateClusterHandler sets the operation handler for the create cluster operation
 	CreateClusterHandler CreateClusterHandler
+	// GetAuthCallbackHandler sets the operation handler for the get auth callback operation
+	GetAuthCallbackHandler GetAuthCallbackHandler
+	// GetAuthLoginHandler sets the operation handler for the get auth login operation
+	GetAuthLoginHandler GetAuthLoginHandler
 	// GetBootstrapConfigHandler sets the operation handler for the get bootstrap config operation
 	GetBootstrapConfigHandler GetBootstrapConfigHandler
 	// GetClusterCredentialsHandler sets the operation handler for the get cluster credentials operation
@@ -218,12 +236,24 @@ func (o *KubernikusAPI) Validate() error {
 		unregistered = append(unregistered, "JSONProducer")
 	}
 
+	if o.DexAuth == nil {
+		unregistered = append(unregistered, "DexAuth")
+	}
+
 	if o.KeystoneAuth == nil {
 		unregistered = append(unregistered, "XAuthTokenAuth")
 	}
 
 	if o.CreateClusterHandler == nil {
 		unregistered = append(unregistered, "CreateClusterHandler")
+	}
+
+	if o.GetAuthCallbackHandler == nil {
+		unregistered = append(unregistered, "GetAuthCallbackHandler")
+	}
+
+	if o.GetAuthLoginHandler == nil {
+		unregistered = append(unregistered, "GetAuthLoginHandler")
 	}
 
 	if o.GetBootstrapConfigHandler == nil {
@@ -296,6 +326,12 @@ func (o *KubernikusAPI) AuthenticatorsFor(schemes map[string]spec.SecurityScheme
 	result := make(map[string]runtime.Authenticator)
 	for name, scheme := range schemes {
 		switch name {
+
+		case "dex":
+
+			result[name] = o.BearerAuthenticator(scheme.Name, func(token string, scopes []string) (interface{}, error) {
+				return o.DexAuth(token, scopes)
+			})
 
 		case "keystone":
 
@@ -392,6 +428,16 @@ func (o *KubernikusAPI) initHandlerCache() {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
 	o.handlers["POST"]["/api/v1/clusters"] = NewCreateCluster(o.context, o.CreateClusterHandler)
+
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/auth/callback"] = NewGetAuthCallback(o.context, o.GetAuthCallbackHandler)
+
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/auth/login"] = NewGetAuthLogin(o.context, o.GetAuthLoginHandler)
 
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)

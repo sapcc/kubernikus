@@ -50,14 +50,13 @@ systemd:
                                       -kube-subnet-mgr=true \
                                       -kubeconfig-file=/var/lib/kubelet/kubeconfig \
                                       -kube-api-url={{ .ApiserverURL }}"
-            Environment="RKT_RUN_ARGS=--uuid-file-save=/var/lib/flannel/flannel-wrapper.uuid \
+            Environment="RKT_RUN_ARGS=--uuid-file-save=/var/lib/{{if .CoreOS}}coreos{{else}}flatcar{{end}}/flannel-wrapper.uuid \
                                       --volume var-lib-kubelet,kind=host,source=/var/lib/kubelet,readOnly=true \
                                       --mount volume=var-lib-kubelet,target=/var/lib/kubelet \
                                       --volume etc-kubernetes-certs,kind=host,source=/etc/kubernetes/certs,readOnly=true \
                                       --mount volume=etc-kubernetes-certs,target=/etc/kubernetes/certs \
                                       --volume etc-kube-flannel,kind=host,source=/etc/kube-flannel,readOnly=true \
                                       --mount volume=etc-kube-flannel,target=/etc/kube-flannel"
-            ExecStartPre=/bin/mkdir -p /var/lib/flannel
     - name: flannel-docker-opts.service
       enable: true
       contents: |
@@ -117,10 +116,11 @@ systemd:
           --network-plugin=cni \
 {{- else }}
           --network-plugin=kubenet \
+          --network-plugin-mtu=8900 \
 {{- end }}
           --non-masquerade-cidr=0.0.0.0/0 \
           --lock-file=/var/run/lock/kubelet.lock \
-          --pod-infra-container-image=sapcc/pause-amd64:3.1 \
+          --pod-infra-container-image={{ .PauseImage }}:{{ .PauseImageTag }} \
 {{- if .NodeLabels }}
           --node-labels={{ .NodeLabels | join "," }} \
 {{- end }}

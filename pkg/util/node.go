@@ -8,6 +8,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/Masterminds/semver"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes"
@@ -148,4 +149,16 @@ func IsCoreOSNodePool(pool *models.NodePool) bool {
 
 func IsFlatcarNodePool(pool *models.NodePool) bool {
 	return pool.Image == NODEPOOL_FLATCAR_IMAGE
+}
+
+func NodeVersionConstraint(node *v1.Node, constraint string) (bool, error) {
+	c, err := semver.NewConstraint(constraint)
+	if err != nil {
+		return false, err
+	}
+	v, err := semver.NewVersion(node.Status.NodeInfo.KubeletVersion)
+	if err != nil {
+		return false, err
+	}
+	return c.Check(v), nil
 }

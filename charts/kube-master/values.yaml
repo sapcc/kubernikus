@@ -102,3 +102,66 @@ dex:
 dashboard:
   enabled: false
   ingressSecret: kubernikus-dex
+
+images:
+  csi-driver-cinder: image-repository:image-tag
+  csi-provisioner: image-repository:image-tag
+  csi-attacher: image-repository:image-tag
+  csi-snapshotter: image-repository:image-tag
+  csi-resizer: image-repository:image-tag
+  csi-liveness-probe: image-repository:image-tag
+  csi-snapshot-controller: image-repository:image-tag
+
+socketPath: /var/lib/csi/sockets/pluginproxy
+timeout: 3m
+
+csi:
+  replicas: 1
+  leaderElection: "false"
+  podAnnotations: {}
+  socketPath: /var/lib/csi/sockets/pluginproxy
+  timeout: 3m
+
+  resources:
+    driver:
+      requests:
+        cpu: 20m
+        memory: 50Mi
+      limits:
+        cpu: 50m
+        memory: 80Mi
+    provisioner:
+      requests:
+        cpu: 10m
+        memory: 32Mi
+      limits:
+        cpu: 30m
+        memory: 50Mi
+    attacher:
+      requests:
+        cpu: 10m
+        memory: 32Mi
+      limits:
+        cpu: 30m
+        memory: 50Mi
+    snapshotter:
+      requests:
+        cpu: 10m
+        memory: 32Mi
+      limits:
+        cpu: 30m
+        memory: 50Mi
+    snapshotController:
+      requests:
+        cpu: 10m
+        memory: 32Mi
+      limits:
+        cpu: 30m
+        memory: 50Mi
+    resizer:
+      requests:
+        cpu: 10m
+        memory: 32Mi
+      limits:
+        cpu: 30m
+        memory: 50Mi

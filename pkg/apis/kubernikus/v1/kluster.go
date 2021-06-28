@@ -34,10 +34,6 @@ func (spec Kluster) Account() string {
 	return spec.ObjectMeta.Labels["account"]
 }
 
-func (spec Kluster) Domain() string {
-	return spec.ObjectMeta.Labels["domain"]
-}
-
 func (spec Kluster) ApiServiceIP() (net.IP, error) {
 	_, ipnet, err := net.ParseCIDR(spec.Spec.ServiceCIDR)
 	if err != nil {

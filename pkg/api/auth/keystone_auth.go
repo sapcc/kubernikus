@@ -20,6 +20,10 @@ func init() {
 	flag.StringVar(&authURL, "auth-url", "", "Openstack identity v3 auth url")
 }
 
+func KeystoneAuthEnabled() bool {
+	return authURL != ""
+}
+
 func Keystone(logger log.Logger) func(token string) (*models.Principal, error) {
 
 	if !(strings.HasSuffix(authURL, "/v3") || strings.HasSuffix(authURL, "/v3/")) {

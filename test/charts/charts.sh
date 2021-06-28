@@ -1,7 +1,6 @@
 #!/bin/ash
 
-helm init --client-only
-helm repo add sapcc https://charts.global.cloud.sap
+helm init --client-only --stable-repo-url https://charts.helm.sh/stable
 
 pwd=$(pwd)
 for chart in $pwd/charts/*; do

@@ -106,6 +106,7 @@ spec:
         - name: config
           configMap:
             name: {{ include "master.fullname" . }}
+{{- if and (.Values.etcd.backup.enabled) (semverCompare "< 1.19" .Values.version.kubernetes) }}
         - name: liveness-probe
           configMap:
             name: {{ include "master.fullname" . }}
@@ -113,6 +114,7 @@ spec:
             items:
               - key: api-liveness-probe.py
                 path: api-liveness-probe.py
+{{- end }}
         - name: wormhole-config
           configMap:
             name: {{ include "master.fullname" . }}
@@ -121,7 +123,7 @@ spec:
                 path: kubeconfig
       initContainers:
         - name: etcd-wait
-          image: "{{ required "etcd.image.repository undefined" .Values.etcd.image.repository }}:{{ required "etcd.image.tag undefined" .Values.etcd.image.tag }}"
+          image: "{{ include "etcd.image" . }}"
           command:
             - sh
             - -c
@@ -144,9 +146,15 @@ spec:
           - containerPort: 443
             name: server
             protocol: TCP
+{{- if (semverCompare ">= 1.19" .Values.version.kubernetes) }}
+          image: {{ include "apiserver.image" . | quote }}
+{{- else }}
           image: {{ include "hyperkube.image" . | quote }}
+{{- end }}
           args:
+{{- if (semverCompare "< 1.17" .Values.version.kubernetes) }}
             - /hyperkube
+{{- end }}
 {{- if (semverCompare ">= 1.15" .Values.version.kubernetes) }}
             - kube-apiserver
 {{- else }}
@@ -162,8 +170,12 @@ spec:
             - --allow-privileged=true
             - --authorization-mode=Node,RBAC
             {{- if .Values.openstack }}
+            {{- if (semverCompare "< 1.20" .Values.version.kubernetes) }}
             - --cloud-config=/etc/kubernetes/cloudprovider/openstack.config
             - --cloud-provider=openstack
+            {{- else }}
+            - --cloud-provider=external
+            {{- end }}
             {{- end }}
 {{- if (semverCompare ">= 1.8" .Values.version.kubernetes) }}
             - --enable-bootstrap-token-auth=true
@@ -190,14 +202,19 @@ spec:
             - --admission-control=NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,ResourceQuota
             - --tls-ca-file=/etc/kubernetes/certs/tls-ca.pem
 {{- end }}
-{{- if (semverCompare ">= 1.13" .Values.version.kubernetes) }}
+{{- if and (semverCompare ">= 1.13" .Values.version.kubernetes) (semverCompare "< 1.20" .Values.version.kubernetes) }}
             - --enable-admission-plugins=PersistentVolumeLabel
 {{- end }}
 {{- if (semverCompare ">= 1.14" .Values.version.kubernetes) }}
+{{- if (semverCompare "< 1.17" .Values.version.kubernetes) }}
             - --feature-gates=NodeLease=false
-{{- else if (semverCompare ">= 1.12" .Values.version.kubernetes)}}
+{{- end }}
+{{- else if (semverCompare ">= 1.12" .Values.version.kubernetes) }}
             # https://github.com/kubernetes/kubernetes/issues/85867
             - --feature-gates=ValidateProxyRedirects=true
+{{- end }}
+{{- if (semverCompare ">= 1.20" .Values.version.kubernetes) }}
+            - --feature-gates=CSIMigration=true,CSIMigrationOpenStack=true,ExpandCSIVolumes=true
 {{- end }}
             #Cert Spratz
             - --client-ca-file=/etc/kubernetes/certs/apiserver-clients-and-nodes-ca.pem
@@ -244,12 +261,25 @@ spec:
             - mountPath: /etc/kubernetes/bootstrap
               name: bootstrap
               readOnly: true
+{{- if and (.Values.etcd.backup.enabled) (semverCompare "< 1.19" .Values.version.kubernetes) }}
             - mountPath: /liveness-probe
               name: liveness-probe
+{{- end }}
           livenessProbe:
+{{- if .Values.etcd.backup.enabled }}
             exec:
               command:
+            {{- if (semverCompare ">= 1.19" .Values.version.kubernetes) }}
+                - /api-liveness
+            {{- else }}
                 - /liveness-probe/api-liveness-probe.py
+            {{- end }}
+{{- else }}
+            httpGet:
+              path: /healthz
+              port: {{ .Values.advertisePort }}
+              scheme: HTTPS
+{{- end }}
             initialDelaySeconds: 60
             periodSeconds: 60
           readinessProbe:
@@ -267,7 +297,7 @@ spec:
           resources:
 {{ toYaml .Values.api.resources | indent 12 }}
         - name: wormhole
-          image: sapcc/kubernikus:{{ required ".version.kubernikus missing" .Values.version.kubernikus }}
+          image: {{ include "wormhole.image" . | quote }}
           args:
             - wormhole
             - server

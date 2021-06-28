@@ -1,10 +1,10 @@
 platform: 'linux'
 
 image_resource:
-  type: docker-image
+  type: registry-image
   source:
-    repository: golang
-    tag: 1.9.2-alpine3.6
+    repository: keppel.eu-de-2.cloud.sap/ccloud-dockerhub-mirror/library/golang
+    tag: 1.14-alpine
 
 inputs:
   - name: kubernikus.builds

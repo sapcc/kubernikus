@@ -131,7 +131,7 @@ spec:
           - containerPort: 2379
             name: etcd
             protocol: TCP
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          image: "{{ include "etcd.image" . }}"
           env:
             - name: ETCD_IP
               valueFrom:
@@ -197,8 +197,7 @@ spec:
             {{- else }}
             - --insecure-transport=true
             {{- end }}
-          image: "{{ .Values.backup.image.repository }}:{{ .Values.backup.image.tag }}"
-          imagePullPolicy: {{ .Values.backup.image.pullPolicy }}
+          image: "{{ include "etcdBackup.image" . }}"
           ports:
             - containerPort: 8080
               name: server

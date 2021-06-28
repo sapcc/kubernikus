@@ -1,0 +1,21 @@
+FROM alpine as builder
+
+WORKDIR /tmp
+
+ARG KUBERNETES_VERSION
+ARG CNI_PLUGINS_RELEASE
+ARG ARCH
+
+RUN wget https://storage.googleapis.com/kubernetes-release/release/$KUBERNETES_VERSION/bin/linux/amd64/kubelet && \
+    chmod +x kubelet && \
+    wget https://storage.googleapis.com/kubernetes-release/release/$KUBERNETES_VERSION/bin/linux/amd64/kubectl && \
+    chmod +x kubectl
+
+FROM k8s.gcr.io/build-image/debian-hyperkube-base-amd64:v1.1.0 
+
+LABEL source_repository="https://github.com/sapcc/kubernikus"
+
+RUN rm -rf /usr/local/bin/* /apiserver /cloud-controller-manager /controller-manager /kubectl /kubelet /proxy /scheduler
+
+COPY --from=builder /tmp/kubelet /usr/local/bin/kubelet
+COPY --from=builder /tmp/kubectl /usr/local/bin/kubectl

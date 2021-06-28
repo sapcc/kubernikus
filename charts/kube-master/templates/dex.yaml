@@ -27,7 +27,7 @@ spec:
     spec:
       initContainers:
       - name: etcd-wait
-        image: "{{ required "etcd.image.repository undefined" .Values.etcd.image.repository }}:{{ required "etcd.image.tag undefined" .Values.etcd.image.tag }}"
+        image: "{{ include "etcd.image" . }}"
         command:
           - sh
           - -c
