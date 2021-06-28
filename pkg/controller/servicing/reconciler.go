@@ -150,7 +150,14 @@ func (r *KlusterReconciler) Do() error {
 	update := r.Lister.Updating()
 	replace := r.Lister.Replace()
 	reboot := r.Lister.Reboot()
+
+	// The following block retires already updating nodes
 	if len(update) > 0 {
+		// loop through all nodes needing to be replaced
+		// 	 find the one that is already being replaced
+		//     retry to drain
+		//     retry to replace
+		// skip further changes this service interval
 		for _, tbReplaced := range replace {
 			if tbReplaced == update[0] {
 				if err := r.LifeCycler.Drain(update[0]); err != nil {
@@ -165,11 +172,22 @@ func (r *KlusterReconciler) Do() error {
 			}
 		}
 
+		// loop through all nodes needing to be rebooted
+		// 	 find the node that was already rebooted before
+		//     retry to drain
+		//     retry to replace
+		// skip further changes this service interval
 		for _, tbRebooted := range reboot {
 			if tbRebooted == update[0] {
+				if err := r.LifeCycler.Drain(update[0]); err != nil {
+					return errors.Wrap(err, "Failed to drain node that is about to be rebooted")
+				}
+
 				if err := r.LifeCycler.Reboot(update[0]); err != nil {
 					return errors.Wrap(err, "Failed to reboot node")
 				}
+
+				return nil
 			}
 		}
 	}
@@ -182,6 +200,9 @@ func (r *KlusterReconciler) Do() error {
 		if err := r.LifeCycler.Replace(replace[0]); err != nil {
 			return errors.Wrap(err, "Failed to replace node")
 		}
+
+		// do not continue and also reboot another node
+		return nil
 	}
 
 	if len(reboot) > 0 {
