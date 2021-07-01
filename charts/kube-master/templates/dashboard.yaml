@@ -1,7 +1,7 @@
 {{/* vim: set filetype=gotexttmpl: */ -}}
 {{ if and .Values.dex.enabled .Values.dashboard.enabled }}
 kind: Deployment
-{{- if semverCompare ">=1.16-0" .Capabilities.KubeVersion.GitVersion }}
+{{- if .Capabilities.APIVersions.Has "apps/v1" }}
 apiVersion: "apps/v1"
 {{- else }}
 apiVersion: "extensions/v1beta1"
@@ -151,7 +151,11 @@ spec:
   selector:
     app: {{ include "master.fullname" . }}-dashboard 
 ---
+{{- if .Capabilities.APIVersions.Has "networking.k8s.io/v1beta1" }}
+apiVersion: networking.k8s.io/v1beta1
+{{- else }}
 apiVersion: extensions/v1beta1
+{{- end }}
 kind: Ingress
 metadata:
   labels:

@@ -116,6 +116,7 @@ systemd:
           --network-plugin=cni \
 {{- else }}
           --network-plugin=kubenet \
+          --network-plugin-mtu=8900 \
 {{- end }}
           --non-masquerade-cidr=0.0.0.0/0 \
           --lock-file=/var/run/lock/kubelet.lock \
