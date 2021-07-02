@@ -41,7 +41,7 @@ jobs:
           ${{ env.GOPATH }}/pkg/mod # Module download cache
           ~/.cache/go-build         # Build cache (Linux)
           ~/bin
-        key: ${{ runner.os }}-go-${{ matrix.go-version }}-${{ hashFiles('**/glide.lock') }}
+        key: ${{ runner.os }}-go-${{ matrix.go-version }}-${{ hashFiles('**/go.sum') }}
         restore-keys: |
           ${{ runner.os }}-go-${{ matrix.go-version }}-
     - name: Install tooling
