@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/aokoli/goutils"
-	oidc "github.com/coreos/go-oidc/oidc"
+	oidc "github.com/coreos/go-oidc/v3/oidc"
 	"github.com/go-kit/kit/log"
 	errors "github.com/go-openapi/errors"
 	runtime "github.com/go-openapi/runtime"
