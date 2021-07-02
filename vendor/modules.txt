@@ -39,6 +39,9 @@ github.com/coreos/container-linux-config-transpiler/config/platform
 github.com/coreos/container-linux-config-transpiler/config/templating
 github.com/coreos/container-linux-config-transpiler/config/types
 github.com/coreos/container-linux-config-transpiler/config/types/util
+# github.com/coreos/go-oidc/v3 v3.0.0
+## explicit
+github.com/coreos/go-oidc/v3/oidc
 # github.com/coreos/go-semver v0.3.0
 ## explicit
 github.com/coreos/go-semver/semver
@@ -55,7 +58,7 @@ github.com/danieljoos/wincred
 # github.com/databus23/goslo.policy v0.0.0-20170317131957-3ae74dd07ebf
 ## explicit
 github.com/databus23/goslo.policy
-# github.com/databus23/guttle v0.0.0-20180831113238-290306d52eb2
+# github.com/databus23/guttle v0.0.0-20210623071842-89102dbdfc85
 ## explicit
 github.com/databus23/guttle
 # github.com/databus23/keystone v0.0.0-20180111110916-350fd0e663cd
@@ -149,7 +152,7 @@ github.com/golang/protobuf/ptypes
 github.com/golang/protobuf/ptypes/any
 github.com/golang/protobuf/ptypes/duration
 github.com/golang/protobuf/ptypes/timestamp
-# github.com/google/go-cmp v0.3.1
+# github.com/google/go-cmp v0.4.0
 github.com/google/go-cmp/cmp
 github.com/google/go-cmp/cmp/internal/diff
 github.com/google/go-cmp/cmp/internal/flags
@@ -309,10 +312,12 @@ github.com/zalando/go-keyring/secret_service
 ## explicit
 golang.org/x/crypto/bcrypt
 golang.org/x/crypto/blowfish
+golang.org/x/crypto/ed25519
+golang.org/x/crypto/ed25519/internal/edwards25519
 golang.org/x/crypto/pbkdf2
 golang.org/x/crypto/scrypt
 golang.org/x/crypto/ssh/terminal
-# golang.org/x/net v0.0.0-20191004110552-13f9640d40b9
+# golang.org/x/net v0.0.0-20200505041828-1ed23360d12c
 ## explicit
 golang.org/x/net/bpf
 golang.org/x/net/context
@@ -329,10 +334,11 @@ golang.org/x/net/ipv4
 golang.org/x/net/ipv6
 golang.org/x/net/netutil
 golang.org/x/net/trace
-# golang.org/x/oauth2 v0.0.0-20190604053449-0f29369cfe45
+# golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d
+## explicit
 golang.org/x/oauth2
 golang.org/x/oauth2/internal
-# golang.org/x/sys v0.0.0-20191220142924-d4481acd189f
+# golang.org/x/sys v0.0.0-20200323222414-85ca7c5b95cd
 ## explicit
 golang.org/x/sys/unix
 golang.org/x/sys/windows
@@ -395,6 +401,10 @@ google.golang.org/grpc/status
 google.golang.org/grpc/tap
 # gopkg.in/inf.v0 v0.9.1
 gopkg.in/inf.v0
+# gopkg.in/square/go-jose.v2 v2.5.1
+gopkg.in/square/go-jose.v2
+gopkg.in/square/go-jose.v2/cipher
+gopkg.in/square/go-jose.v2/json
 # gopkg.in/yaml.v2 v2.2.8
 ## explicit
 gopkg.in/yaml.v2
