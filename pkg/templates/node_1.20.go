@@ -72,6 +72,8 @@ systemd:
       contents: |
         [Unit]
         Description=Kubelet
+        After=network-online.target
+        Wants=network-online.target
 
         [Service]
         Environment="RKT_RUN_ARGS=--uuid-file-save=/var/run/kubelet-pod.uuid \
