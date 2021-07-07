@@ -157,6 +157,32 @@ auth_e2e_ap-sa-1: &auth_e2e_ap-sa-1
 
 
 
+auth_ap-sa-2: &auth_ap-sa-2
+  KUBELOGON_USER:     ((KUBELOGON_USER))
+  KUBELOGON_PASSWORD: ((KUBELOGON_PASSWORD))
+  KUBERNIKUS_NAME: k-ap-sa-2
+  KUBERNIKUS_URL: https://kubernikus.admin.ap-sa-2.cloud.sap
+
+auth_e2e_ap-sa-2: &auth_e2e_ap-sa-2
+  CP_KLUSTER: k-ap-sa-2
+  CP_KUBERNIKUS_URL: https://kubernikus.admin.ap-sa-2.cloud.sap
+  CP_OS_PROJECT_DOMAIN_NAME: ccadmin
+  KUBERNIKUS_NAME: e2e
+  OS_PROJECT_DOMAIN_NAME: ccadmin
+
+
+  OS_AUTH_URL: https://identity-3.ap-sa-2.cloud.sap/v3
+  OS_USERNAME: kubernikus-pipeline
+  OS_PASSWORD: ((kubernikus-pipeline-password))
+  OS_USER_DOMAIN_NAME: Default
+  OS_PROJECT_NAME: kubernikus_e2e
+  OS_REGION_NAME: ap-sa-2
+  KUBERNIKUS_URL: https://kubernikus.ap-sa-2.cloud.sap
+  CP_OS_PROJECT_NAME: kubernikus
+
+
+
+
 auth_eu-de-1: &auth_eu-de-1
   KUBELOGON_USER:     ((KUBELOGON_USER))
   KUBELOGON_PASSWORD: ((KUBELOGON_PASSWORD))
@@ -766,7 +792,7 @@ task_helm_seed: &task_helm_seed
     KUBELOGON_PASSWORD:
     NAMESPACE: monsoon3
     RELEASE: kubernikus
-    HELM_VERSION: 2.11.0
+    HELM_VERSION: 3.2.4
   
 
 task_oci_build: &task_oci_build
@@ -1902,6 +1928,115 @@ jobs:
           params:
             channel: '#kubernikus-ci'
             text: Soak tests in ap-sa-1 failed
+            text_file: test-result/content
+            attachments:
+              - text: $TEXT_FILE_CONTENT
+                color: "#d00000"
+                footer: $ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME
+                footer_icon: https://ci.concourse-ci.org/public/images/favicon-failed.png
+
+    on_success: { put: slack-alert, inputs: [], params: {alert_type: fixed } }
+    on_abort:   { put: slack-alert, inputs: [], params: {alert_type: broke } }
+    on_error:   { put: slack-alert, inputs: [], params: {alert_type: broke } }
+
+
+
+
+
+  - name: seed_ap-sa-2
+    serial: true
+    plan:
+      - in_parallel:
+        - get: ASIA.tag
+          passed: [ASIA]
+          trigger: true
+        - get: secrets.git
+          passed: [ASIA]
+        - get: helm-charts.git
+          passed: [ASIA]
+      - task: seed
+        config:
+          <<: *task_helm_seed
+        input_mapping:
+          charts.git: helm-charts.git
+        params:
+          REGION: ap-sa-2
+          CONTEXT: ap-sa-2
+          <<: *auth_ap-sa-2
+    <<: *slack
+
+  - name: tiller_ap-sa-2
+    plan:
+      - in_parallel:
+        - get: ASIA.tag
+          trigger: true
+          passed: [seed_ap-sa-2]
+        - get: tiller-version.git
+          trigger: true
+      - in_parallel:
+        - task: k-ap-sa-2
+          config:
+            <<: *task_tiller
+          timeout: 10m
+          params:
+            REGION: ap-sa-2
+            CONTEXT: k-ap-sa-2
+            <<: *auth_ap-sa-2
+    <<: *slack
+
+  - name: deploy_ap-sa-2
+    serial: true
+    plan:
+      - in_parallel:
+        - get: ASIA.tag
+          trigger: true
+          passed: [tiller_ap-sa-2]
+        - get: secrets.git
+          passed: [seed_ap-sa-2]
+        - get: kubernikus.builds
+          resource: kubernikus.git
+          passed: [ASIA]
+      - in_parallel:
+        - task: kubernikus_ap-sa-2
+          config:
+            <<: *task_helm_kubernikus
+          params:
+            REGION: ap-sa-2
+            CONTEXT: k-ap-sa-2
+            <<: *auth_ap-sa-2
+        - task: kubernikus-dex_ap-sa-2
+          config:
+            <<: *task_helm_kubernikus-dex
+          params:
+            REGION: ap-sa-2
+            CONTEXT: k-ap-sa-2
+            <<: *auth_ap-sa-2
+    <<: *slack
+
+  - name: soak_ap-sa-2
+    serial: true
+    build_logs_to_retain: 168
+    plan:
+      - in_parallel:
+        - get: ASIA.tag
+          trigger: true
+          passed: [deploy_ap-sa-2]
+        - get: kubernikus.builds
+          resource: kubernikus.git
+          passed: [deploy_ap-sa-2]
+        - get: hourly
+          trigger: true
+      - task: e2e_tests
+        config:
+          <<: *task_e2e_tests
+        timeout: 45m
+        params:
+          <<: *auth_e2e_ap-sa-2
+        on_failure:
+          put: slack-notification
+          params:
+            channel: '#kubernikus-ci'
+            text: Soak tests in ap-sa-2 failed
             text_file: test-result/content
             attachments:
               - text: $TEXT_FILE_CONTENT
@@ -3124,6 +3259,14 @@ groups:
       - deploy_ap-sa-1
       - soak_ap-sa-1
 
+  - name: ap-sa-2
+    jobs:
+      - ASIA
+      - seed_ap-sa-2
+      - tiller_ap-sa-2
+      - deploy_ap-sa-2
+      - soak_ap-sa-2
+
   - name: eu-de-1
     jobs:
       - EMEA
@@ -3252,6 +3395,11 @@ groups:
       - tiller_ap-sa-1
       - deploy_ap-sa-1
       - soak_ap-sa-1
+
+      - seed_ap-sa-2
+      - tiller_ap-sa-2
+      - deploy_ap-sa-2
+      - soak_ap-sa-2
 
       - seed_eu-de-1
       - tiller_eu-de-1
