@@ -1,4 +1,4 @@
-FROM golang:1.11.5-alpine3.8
+FROM keppel.eu-de-1.cloud.sap/ccloud-dockerhub-mirror/library/golang:1.16-alpine
 LABEL source_repository="https://github.com/sapcc/kubernikus"
 
 WORKDIR /go/src/github.com/sapcc/kubernikus/

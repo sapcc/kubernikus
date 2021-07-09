@@ -8,7 +8,7 @@ import (
 )
 
 func EnsureNamespace(client kubernetes.Interface, ns string) error {
-	if _, err := client.Core().Namespaces().Get(ns, metav1.GetOptions{}); err == nil {
+	if _, err := client.CoreV1().Namespaces().Get(ns, metav1.GetOptions{}); err == nil {
 		return nil
 	}
 	newNs := &api_v1.Namespace{
@@ -16,7 +16,7 @@ func EnsureNamespace(client kubernetes.Interface, ns string) error {
 			Name: ns,
 		},
 	}
-	if _, err := client.Core().Namespaces().Create(newNs); !apierrors.IsAlreadyExists(err) {
+	if _, err := client.CoreV1().Namespaces().Create(newNs); !apierrors.IsAlreadyExists(err) {
 		return err
 	}
 	return nil

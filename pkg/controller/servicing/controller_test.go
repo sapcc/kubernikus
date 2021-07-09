@@ -312,7 +312,7 @@ func TestServicingControllerReconcile(t *testing.T) {
 				ListerFactory:     listers,
 				LifeCyclerFactory: lifecyclers,
 				KlusterLister:     NewFakeKlusterLister(kluster),
-				KubernikusClient:  kubernikusfake.NewSimpleClientset(kluster).Kubernikus(),
+				KubernikusClient:  kubernikusfake.NewSimpleClientset(kluster).KubernikusV1(),
 			}
 
 			controller := &Controller{

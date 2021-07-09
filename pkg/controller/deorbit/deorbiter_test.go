@@ -205,7 +205,7 @@ func TestDeletePersistentVolumeClaims(testing *testing.T) {
 
 		deorbiter := &ConcreteDeorbiter{kluster, done, client, logger}
 		deleted, err := deorbiter.DeletePersistentVolumeClaims()
-		remaining, _ := client.Core().PersistentVolumeClaims(meta_v1.NamespaceAll).List(meta_v1.ListOptions{})
+		remaining, _ := client.CoreV1().PersistentVolumeClaims(meta_v1.NamespaceAll).List(meta_v1.ListOptions{})
 
 		assert.Equal(testing, t.remaining, len(remaining.Items), "Test %d failed: %v", i, t.message)
 		assert.Equal(testing, t.deleted, len(deleted), "Test %d failed: %v", i, t.message)
@@ -232,7 +232,7 @@ func TestDeleteServices(testing *testing.T) {
 
 		deorbiter := &ConcreteDeorbiter{kluster, done, client, logger}
 		deleted, err := deorbiter.DeleteServices()
-		remaining, _ := client.Core().Services(meta_v1.NamespaceAll).List(meta_v1.ListOptions{})
+		remaining, _ := client.CoreV1().Services(meta_v1.NamespaceAll).List(meta_v1.ListOptions{})
 
 		assert.Equal(testing, t.remaining, len(remaining.Items), "Test %d failed: %v", i, t.message)
 		assert.Equal(testing, t.deleted, len(deleted), "Test %d failed: %v", i, t.message)

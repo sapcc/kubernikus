@@ -1,4 +1,4 @@
-FROM golang:alpine as builder
+FROM keppel.eu-de-1.cloud.sap/ccloud-dockerhub-mirror/library/golang:1.16-alpine as builder
 
 RUN apk add --update git make bash gcc musl-dev zip
 
