@@ -2,7 +2,6 @@ package deorbit
 
 import (
 	"testing"
-	"time"
 
 	"github.com/go-kit/kit/log"
 	"github.com/stretchr/testify/assert"
@@ -106,7 +105,7 @@ var (
 		},
 	}
 
-	svcLB0 = &core_v1.Service{
+	svcLB0 *core_v1.Service = &core_v1.Service{
 		ObjectMeta: meta_v1.ObjectMeta{
 			Name: "svc-lb0",
 		},
@@ -136,23 +135,21 @@ var (
 
 func TestIsServiceCleanupFinished(testing *testing.T) {
 	type test_case struct {
-		message   string
-		expected  bool
-		deletedAt time.Time
+		expected bool
+		message  string
+		objects  []runtime.Object
 	}
 
 	for i, t := range []test_case{
-		{"true if grace period is not expired.", false, time.Now()},
-		{"true if grace period is expired.", true, time.Now().Add(-1 * ServiceDeletionGracePeriod)},
+		{true, "true if no services with type LoadBalancer exist", []runtime.Object{svcCIP}},
+		{false, "false if service with type LoadBalancer exists", []runtime.Object{svcLB0, svcLB1, svcCIP}},
 	} {
 
-		k := kluster.DeepCopy()
-		k.DeletionTimestamp = &meta_v1.Time{Time: t.deletedAt}
 		done := make(chan struct{})
-		client := fake.NewSimpleClientset()
+		client := fake.NewSimpleClientset(t.objects...)
 		logger := log.NewNopLogger()
 
-		deorbiter := &ConcreteDeorbiter{k, done, client, logger}
+		deorbiter := &ConcreteDeorbiter{kluster, done, client, logger}
 		finished, err := deorbiter.isServiceCleanupFinished()
 
 		assert.Equal(testing, t.expected, finished, "Test %d failed: %v", i, t.message)
