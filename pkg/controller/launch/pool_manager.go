@@ -17,6 +17,7 @@ import (
 	"github.com/sapcc/kubernikus/pkg/version"
 
 	"github.com/go-kit/kit/log"
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 )
@@ -30,14 +31,16 @@ type PoolManager interface {
 }
 
 type PoolStatus struct {
-	Nodes       []string
-	Running     int
-	Starting    int
-	Stopping    int
-	Needed      int
-	UnNeeded    int
-	Healthy     int
-	Schedulable int
+	Nodes              []string
+	Running            int
+	Starting           int
+	Stopping           int
+	Needed             int
+	UnNeeded           int
+	Healthy            int
+	Schedulable        int
+	SchedulableNodes   []*corev1.Node
+	UnschedulableNodes []*corev1.Node
 }
 
 type ConcretePoolManager struct {
@@ -85,17 +88,19 @@ func (cpm *ConcretePoolManager) GetStatus() (status *PoolStatus, err error) {
 	if err != nil {
 		return status, err
 	}
-	healthy, schedulable := cpm.healthyAndSchedulable()
+	healthy, schedulable, schedNodes, unschedNodes := cpm.healthyAndSchedulable()
 
 	return &PoolStatus{
-		Nodes:       cpm.nodeIDs(nodes),
-		Running:     cpm.running(nodes),
-		Starting:    cpm.starting(nodes),
-		Stopping:    cpm.stopping(nodes),
-		Needed:      cpm.needed(nodes),
-		UnNeeded:    cpm.unNeeded(nodes),
-		Healthy:     healthy,
-		Schedulable: schedulable,
+		Nodes:              cpm.nodeIDs(nodes),
+		Running:            cpm.running(nodes),
+		Starting:           cpm.starting(nodes),
+		Stopping:           cpm.stopping(nodes),
+		Needed:             cpm.needed(nodes),
+		UnNeeded:           cpm.unNeeded(nodes),
+		Healthy:            healthy,
+		Schedulable:        schedulable,
+		SchedulableNodes:   schedNodes,
+		UnschedulableNodes: unschedNodes,
 	}, nil
 }
 
@@ -126,7 +131,7 @@ func removeNodePool(pool []models.NodePoolInfo, name string) ([]models.NodePoolI
 }
 
 func (cpm *ConcretePoolManager) SetStatus(status *PoolStatus) error {
-	healthy, schedulable := cpm.healthyAndSchedulable()
+	healthy, schedulable, _, _ := cpm.healthyAndSchedulable()
 
 	newInfo := models.NodePoolInfo{
 		Name:        cpm.Pool.Name,
@@ -281,7 +286,7 @@ func (cpm ConcretePoolManager) unNeeded(nodes []openstack_kluster.Node) int {
 	return unneeded
 }
 
-func (cpm *ConcretePoolManager) healthyAndSchedulable() (healthy int, schedulable int) {
+func (cpm *ConcretePoolManager) healthyAndSchedulable() (healthy int, schedulable int, schedNodes []*corev1.Node, unschedNodes []*corev1.Node) {
 	nodeLister, err := cpm.nodeObservatory.GetListerForKluster(cpm.Kluster)
 	if err != nil {
 		return
@@ -291,11 +296,14 @@ func (cpm *ConcretePoolManager) healthyAndSchedulable() (healthy int, schedulabl
 		return
 	}
 	prefix := fmt.Sprintf("%s-%s-", cpm.Kluster.Spec.Name, cpm.Pool.Name)
-	for _, node := range nodes {
+	for i, node := range nodes {
 		//Does the node belong to this pool?
 		if strings.HasPrefix(node.Name, prefix) && len(node.Name) == len(prefix)+generator.RandomLength {
 			if !node.Spec.Unschedulable {
 				schedulable++
+				schedNodes = append(schedNodes, nodes[i])
+			} else {
+				unschedNodes = append(unschedNodes, nodes[i])
 			}
 			if util.IsNodeReady(node) {
 				healthy++
