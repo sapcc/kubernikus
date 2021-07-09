@@ -37,7 +37,11 @@ func AddDexSecretAndRoleBindings(rawKluster []byte, current *v1.Kluster, clients
 
 	if apiSecret.Openstack.ProjectDomainName == "" {
 
-		domainFromOpenstack, err := clients.OpenstackAdmin.GetDomainNameByProject(apiSecret.ProjectID)
+		admin, err := factories.Openstack.AdminClient()
+		if err != nil {
+			return err
+		}
+		domainFromOpenstack, err := admin.GetDomainNameByProject(apiSecret.ProjectID)
 		if err != nil {
 			return err
 		}

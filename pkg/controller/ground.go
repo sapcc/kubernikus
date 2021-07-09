@@ -503,11 +503,6 @@ func (op *GroundControl) createKluster(kluster *v1.Kluster) error {
 		return fmt.Errorf("Couldn't determine access mode for pvc: %s", err)
 	}
 
-	region, err := op.Clients.OpenstackAdmin.GetRegion()
-	if err != nil {
-		return err
-	}
-
 	if err := util.EnsureFinalizerCreated(op.Clients.Kubernikus.KubernikusV1(), op.klusterInformer.Lister(), kluster, GroundctlFinalizer); err != nil {
 		return err
 	}
@@ -540,47 +535,63 @@ func (op *GroundControl) createKluster(kluster *v1.Kluster) error {
 		return fmt.Errorf("Failed to generate certificates: %s", err)
 	}
 	klusterSecret.BootstrapToken = util.GenerateBootstrapToken()
-	klusterSecret.Openstack.AuthURL = op.Config.Openstack.AuthURL
-	klusterSecret.Openstack.Username = fmt.Sprintf("kubernikus-%s", kluster.Name)
-	klusterSecret.Openstack.DomainName = "kubernikus"
-	klusterSecret.Openstack.Region = region
-	klusterSecret.Openstack.ProjectID = kluster.Account()
-	//TODO: remove once the backup credentials are disentageled from the service user (e.g. backup to s3)
-	if klusterSecret.Openstack.ProjectID == "" {
+
+	if !kluster.Spec.NoCloud {
+		adminClient, err := op.Factories.Openstack.AdminClient()
+		if err != nil {
+			return err
+		}
+		region, err := adminClient.GetRegion()
+		if err != nil {
+			return err
+		}
+
+		klusterSecret.Openstack.AuthURL = op.Config.Openstack.AuthURL
+		klusterSecret.Openstack.Username = fmt.Sprintf("kubernikus-%s", kluster.Name)
+		klusterSecret.Openstack.DomainName = "kubernikus"
+		klusterSecret.Openstack.Region = region
 		klusterSecret.Openstack.ProjectID = kluster.Account()
-	}
+		//TODO: remove once the backup credentials are disentageled from the service user (e.g. backup to s3)
+		if klusterSecret.Openstack.ProjectID == "" {
+			klusterSecret.Openstack.ProjectID = kluster.Account()
+		}
 
-	domainNameByProject, err := op.OpenstackAdmin.GetDomainNameByProject(klusterSecret.Openstack.ProjectID)
-	if err != nil {
-		return fmt.Errorf("Failed to retrieve domain name by project: %s", err)
-	}
-	klusterSecret.Openstack.ProjectDomainName = domainNameByProject
+		domainNameByProject, err := adminClient.GetDomainNameByProject(klusterSecret.Openstack.ProjectID)
+		if err != nil {
+			return fmt.Errorf("Failed to retrieve domain name by project: %s", err)
+		}
+		klusterSecret.Openstack.ProjectDomainName = domainNameByProject
 
-	if klusterSecret.Openstack.Password, err = goutils.Random(20, 32, 127, true, true); err != nil {
-		return fmt.Errorf("Failed to generated password for cluster service user: %s", err)
-	}
+		if klusterSecret.Openstack.Password, err = goutils.Random(20, 32, 127, true, true); err != nil {
+			return fmt.Errorf("Failed to generated password for cluster service user: %s", err)
+		}
 
-	op.Logger.Log(
-		"msg", "creating service user",
-		"username", klusterSecret.Openstack.Username,
-		"kluster", kluster.GetName(),
-		"project", kluster.Account())
+		op.Logger.Log(
+			"msg", "creating service user",
+			"username", klusterSecret.Openstack.Username,
+			"kluster", kluster.GetName(),
+			"project", kluster.Account())
 
-	if err := op.Clients.OpenstackAdmin.CreateKlusterServiceUser(
-		klusterSecret.Openstack.Username,
-		klusterSecret.Openstack.Password,
-		klusterSecret.Openstack.DomainName,
-		klusterSecret.Openstack.ProjectID,
-	); err != nil {
-		return err
+		if err := adminClient.CreateKlusterServiceUser(
+			klusterSecret.Openstack.Username,
+			klusterSecret.Openstack.Password,
+			klusterSecret.Openstack.DomainName,
+			klusterSecret.Openstack.ProjectID,
+		); err != nil {
+			return err
+		}
 	}
 
 	if err := util.UpdateKlusterSecret(op.Clients.Kubernetes, kluster, klusterSecret); err != nil {
 		return fmt.Errorf("Failed to update kluster secret: %s", err)
 	}
 
-	if kluster.Spec.Backup == "on" {
-		if err := op.Clients.OpenstackAdmin.CreateStorageContainer(
+	if !kluster.Spec.NoCloud && kluster.Spec.Backup == "on" {
+		adminClient, err := op.Factories.Openstack.AdminClient()
+		if err != nil {
+			return err
+		}
+		if err := adminClient.CreateStorageContainer(
 			klusterSecret.Openstack.ProjectID,
 			etcd_util.DefaultStorageContainer(kluster),
 			klusterSecret.Openstack.Username,
@@ -665,7 +676,11 @@ func (op *GroundControl) terminateKluster(kluster *v1.Kluster) error {
 		username := secret.Openstack.Username
 		domain := secret.Openstack.DomainName
 		//If the cluster was still in state Pending we don't have a service user yet: skip deletion
-		if username != "" && domain != "" {
+		if !kluster.Spec.NoCloud && username != "" && domain != "" {
+			adminClient, err := op.Factories.Openstack.AdminClient()
+			if err != nil {
+				return err
+			}
 			op.Logger.Log(
 				"msg", "Deleting openstack user",
 				"kluster", kluster.GetName(),
@@ -673,7 +688,7 @@ func (op *GroundControl) terminateKluster(kluster *v1.Kluster) error {
 				"username", username,
 				"domain", domain)
 
-			if err := op.Clients.OpenstackAdmin.DeleteUser(username, domain); err != nil {
+			if err := adminClient.DeleteUser(username, domain); err != nil {
 				return err
 			}
 		}

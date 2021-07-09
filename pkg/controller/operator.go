@@ -147,13 +147,13 @@ func NewKubernikusOperator(options *KubernikusOperatorOptions, logger log.Logger
 
 	klusters := o.Factories.Kubernikus.Kubernikus().V1().Klusters().Informer()
 
-	o.Factories.Openstack = openstack.NewSharedOpenstackClientFactory(o.Clients.Kubernetes, klusters, adminAuthOptions, logger)
+	if options.AuthURL != "" {
+		o.Factories.Openstack = openstack.NewSharedOpenstackClientFactory(o.Clients.Kubernetes, klusters, adminAuthOptions, logger)
+	} else {
+		o.Factories.Openstack = openstack.NotAvailableFactory{}
+	}
 
 	o.Clients.Satellites = kube.NewSharedClientFactory(o.Clients.Kubernetes, klusters, logger)
-	o.Clients.OpenstackAdmin, err = o.Factories.Openstack.AdminClient()
-	if err != nil {
-		return nil, fmt.Errorf("Couldn't create Openstack client: %v", err)
-	}
 
 	o.Factories.NodesObservatory = nodeobservatory.NewInformerFactory(o.Factories.Kubernikus.Kubernikus().V1().Klusters(), o.Clients.Satellites, logger)
 
