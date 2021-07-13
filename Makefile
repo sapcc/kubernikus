@@ -1,6 +1,5 @@
 VERSION  ?= $(shell git rev-parse --verify HEAD)
 GOOS     ?= $(shell go env GOOS)
-export GO111MODULE =off
 ifeq ($(GOOS),darwin)
 export CGO_ENABLED=0
 endif
@@ -20,8 +19,6 @@ ifneq ($(http_proxy),)
 BUILD_ARGS+= --build-arg http_proxy=$(http_proxy) --build-arg https_proxy=$(https_proxy) --build-arg no_proxy=$(no_proxy)
 endif
 
-HAS_GLIDE := $(shell command -v glide;)
-HAS_GLIDE_VC := $(shell command -v glide-vc;)
 GO_SWAGGER_VERSION := v0.18.0
 SWAGGER_BIN        ?= bin/$(GOOS)/swagger-$(GO_SWAGGER_VERSION)
 
@@ -36,12 +33,12 @@ bin/$(GOOS)/swagger-%:
 	chmod +x $@
 
 bin/%: $(GOFILES) Makefile
-	GOOS=$(*D) GOARCH=amd64 go build $(GOFLAGS) -v -i -o $(@D)/$(@F) ./cmd/$(basename $(@F))
+	GOOS=$(*D) GOARCH=amd64 go build $(GOFLAGS) -v -o $(@D)/$(@F) ./cmd/$(basename $(@F))
 
 test: gofmt linters gotest build-e2e
 
 gofmt:
-	test/gofmt.sh pkg/ cmd/ deps/ test/
+	test/gofmt.sh pkg/ cmd/ test/
 
 linters:
 	$(GOMETALINTER_BIN) --deadline=60s --vendor -s generated --disable-all -E vet -E ineffassign -E misspell ./cmd/... ./pkg/... ./test/...
@@ -156,16 +153,6 @@ include code-generate.mk
 code-gen: client-gen informer-gen lister-gen deepcopy-gen
 
 vendor:
-ifndef HAS_GLIDE_VC
-	$(error glide-vc (vendor cleaner) not found. Run `make bootstrap to fix.`)
-endif
-	glide install -v
-	glide-vc --only-code --no-tests
+	go mod vendor -v
 
 bootstrap: $(SWAGGER_BIN)
-ifndef HAS_GLIDE
-	$(error glide not found. Please run `brew install glide` or install it from https://github.com/Masterminds/glide)
-endif
-ifndef HAS_GLIDE_VC
-	go get -u github.com/sgotti/glide-vc
-endif

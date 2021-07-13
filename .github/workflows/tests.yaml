@@ -17,7 +17,7 @@ jobs:
         working-directory: ${{ env.GOPATH }}/src/github.com/sapcc/kubernikus
     strategy:
       matrix:
-        go-version: [1.13.x, 1.14.x, 1.15.x]
+        go-version: [1.14.x, 1.15.x, 1.16.x]
         os: [ubuntu-latest]
     runs-on: ${{ matrix.os }}
     steps:
@@ -41,7 +41,7 @@ jobs:
           ${{ env.GOPATH }}/pkg/mod # Module download cache
           ~/.cache/go-build         # Build cache (Linux)
           ~/bin
-        key: ${{ runner.os }}-go-${{ matrix.go-version }}-${{ hashFiles('**/glide.lock') }}
+        key: ${{ runner.os }}-go-${{ matrix.go-version }}-${{ hashFiles('**/go.sum') }}
         restore-keys: |
           ${{ runner.os }}-go-${{ matrix.go-version }}-
     - name: Install tooling

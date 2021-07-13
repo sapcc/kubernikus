@@ -4,8 +4,8 @@ import (
 	"os"
 
 	kitLog "github.com/go-kit/kit/log"
-	"github.com/golang/glog"
 	"github.com/spf13/pflag"
+	"k8s.io/klog"
 
 	"github.com/sapcc/kubernikus/pkg/util/log"
 )
@@ -23,6 +23,6 @@ func SetupLogger() {
 	logger = log.NewTrailingNilFilter(logger)
 	//logger = log.NewLevelFilter(logLevel, logger)
 	logger = kitLog.With(logger, "ts", kitLog.DefaultTimestampUTC, "caller", log.Caller(4))
-	glog.SetLogger(logger, int32(logLevel))
+	klog.SetLogger(logger)
 
 }

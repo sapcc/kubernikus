@@ -1,0 +1,82 @@
+{{ range $count := untilStep 1 (add1 .Values.deploymentCount|int) 1 }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "pvc-test.fullname" $ }}-{{ $count }}
+  labels:
+    {{- include "pvc-test.labels" $ | nindent 4 }}
+    idx: "{{ $count }}"
+spec:
+{{- if not $.Values.autoscaling.enabled }}
+  replicas: {{ $.Values.replicaCount }}
+{{- end }}
+  selector:
+    matchLabels:
+      {{- include "pvc-test.selectorLabels" $ | nindent 6 }}
+      idx: "{{ $count }}"
+  template:
+    metadata:
+    {{- with $.Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+      labels:
+        {{- include "pvc-test.selectorLabels" $ | nindent 8 }}
+        idx: "{{ $count }}"
+    spec:
+      {{- with $.Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: {{ $.Chart.Name }}
+          securityContext:
+            {{- toYaml $.Values.securityContext | nindent 12 }}
+          image: "{{ $.Values.image.repository }}:{{ $.Values.image.tag | default $.Chart.AppVersion }}"
+          imagePullPolicy: {{ $.Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+          resources:
+            {{- toYaml $.Values.resources | nindent 12 }}
+          volumeMounts:
+            - mountPath: /vol
+              name: vol
+      volumes:
+        - name: vol
+          persistentVolumeClaim:
+            claimName: {{ include "pvc-test.fullname" $ }}-{{ $count }}
+      {{- with $.Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml $ | nindent 8 }}
+      {{- end }}
+      {{- with $.Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with $.Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: {{ include "pvc-test.fullname" $ }}-{{ $count }}
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+{{ end }}

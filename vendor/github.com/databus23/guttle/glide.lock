@@ -1,0 +1,30 @@
+hash: e0a547a1d0379165d7d19878469b70fc842b1d5bfa56dcb204dca2f9ef7dba9e
+updated: 2018-08-31T10:12:28.688989+02:00
+imports:
+- name: github.com/cenkalti/backoff
+  version: 80e08cb804a3eb3e576876c777e957e874609a9a
+- name: github.com/go-kit/kit
+  version: 4dc7be5d2d12881735283bcab7352178e190fc71
+  subpackages:
+  - log
+- name: github.com/go-logfmt/logfmt
+  version: 390ab7935ee28ec6b286364bba9b4dd6410cb3d5
+- name: github.com/go-stack/stack
+  version: 259ab82a6cad3992b4e21ff5cac294ccb06474bc
+- name: github.com/hashicorp/yamux
+  version: cc6d2ea263b2471faabce371255777a365bf8306
+- name: github.com/inconshreveable/mousetrap
+  version: 76626ae9c91c4f2a10f34cad8ce83ea42c93bb75
+- name: github.com/kr/logfmt
+  version: b84e30acd515aadc4b783ad4ff83aff3299bdfe0
+- name: github.com/oklog/run
+  version: 6934b124db28979da51d3470dadfa34d73d72652
+- name: github.com/spf13/cobra
+  version: f62e98d28ab7ad31d707ba837a966378465c7b57
+- name: github.com/spf13/pflag
+  version: 9ff6c6923cfffbcd502984b8e0c80539a94968b7
+- name: golang.org/x/net
+  version: f2499483f923065a842d38eb4c7f1927e6fc6e6d
+  subpackages:
+  - context
+testImports: []

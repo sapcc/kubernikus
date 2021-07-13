@@ -1,9 +1,9 @@
 package get
 
 import (
-	"github.com/golang/glog"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
+	"k8s.io/klog"
 
 	"github.com/sapcc/kubernikus/pkg/cmd"
 	"github.com/sapcc/kubernikus/pkg/cmd/printers"
@@ -22,13 +22,13 @@ func (o *GetOptions) NewClusterCommand() *cobra.Command {
 }
 
 func (o *GetOptions) clusterPreRun(c *cobra.Command, args []string) {
-	glog.V(2).Infof("Get Cluster PR: %v", o)
+	klog.V(2).Infof("Get Cluster PR: %v", o)
 	cmd.CheckError(validateClusterCommandArgs(args))
 	cmd.CheckError(o.SetupKubernikusClient())
 }
 
 func (o *GetOptions) clusterRun(c *cobra.Command, args []string) {
-	glog.V(2).Infof("Run args: %v", args)
+	klog.V(2).Infof("Run args: %v", args)
 	if len(args) == 1 {
 		cmd.CheckError(o.clusterShow(args[0]))
 	} else {
@@ -39,7 +39,7 @@ func (o *GetOptions) clusterRun(c *cobra.Command, args []string) {
 func (o *GetOptions) clusterList() error {
 	clusters, err := o.Kubernikus.ListAllClusters()
 	if err != nil {
-		glog.V(2).Infof("Error listing clusters: %v", err)
+		klog.V(2).Infof("Error listing clusters: %v", err)
 		return errors.Wrap(err, "Error listing clusters")
 	}
 	printme := make([]printers.Printable, len(clusters))
@@ -53,7 +53,7 @@ func (o *GetOptions) clusterList() error {
 func (o *GetOptions) clusterShow(name string) error {
 	cluster, err := o.Kubernikus.ShowCluster(name)
 	if err != nil {
-		glog.V(2).Infof("Error getting cluster %v: %v", name, err)
+		klog.V(2).Infof("Error getting cluster %v: %v", name, err)
 		return errors.Wrap(err, "Error getting cluster")
 	}
 	return cluster.Print(printers.Human, printers.PrintOptions{})
