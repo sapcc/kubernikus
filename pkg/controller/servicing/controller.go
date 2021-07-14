@@ -65,6 +65,9 @@ func NewController(threadiness int, factories config.Factories, clients config.C
 
 // Reconcile checks a kluster for node updates
 func (d *Controller) Reconcile(k *v1.Kluster) (requeue bool, err error) {
+	// Disabled until node templates are fixed
+	return false, nil
+
 	//Skip klusters not in state running
 	if k.Status.Phase != models.KlusterPhaseRunning {
 		return false, nil
