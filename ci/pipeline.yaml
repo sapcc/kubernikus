@@ -1111,12 +1111,12 @@ resource_types:
     type: docker-image
     check_every: 24h
     source:
-      repository: arbourd/concourse-slack-alert-resource
+      repository: keppel.eu-de-1.cloud.sap/ccloud-dockerhub-mirror/arbourd/concourse-slack-alert-resource
   - name: slack-notification
     type: docker-image
     check_every: 24h
     source:
-      repository: cfcommunity/slack-notification-resource
+      repository: keppel.eu-de-1.cloud.sap/ccloud-dockerhub-mirror/cfcommunity/slack-notification-resource
       tag: latest
 
   - name: time-version-resource
