@@ -14,6 +14,8 @@ passwd:
 
 systemd:
   units:
+    - name: containerd.service
+      enable: true
     - name: iptables-restore.service
       enable: true
     - name: ccloud-metadata-hostname.service
@@ -41,22 +43,40 @@ systemd:
             Environment="DOCKER_OPTS=--log-opt max-size=5m --log-opt max-file=5 --ip-masq=false --iptables=false --bridge=none"
     - name: flanneld.service
       enable: true
-      dropins:
-        - name: 10-ccloud-opts.conf
-          contents: |
-            [Service]
-            EnvironmentFile=/etc/kubernetes/environment
-            Environment="FLANNEL_OPTS=-ip-masq=false \
-                                      -kube-subnet-mgr=true \
-                                      -kubeconfig-file=/var/lib/kubelet/kubeconfig \
-                                      -kube-api-url={{ .ApiserverURL }}"
-            Environment="RKT_RUN_ARGS=--uuid-file-save=/var/lib/{{if .CoreOS}}coreos{{else}}flatcar{{end}}/flannel-wrapper.uuid \
-                                      --volume var-lib-kubelet,kind=host,source=/var/lib/kubelet,readOnly=true \
-                                      --mount volume=var-lib-kubelet,target=/var/lib/kubelet \
-                                      --volume etc-kubernetes-certs,kind=host,source=/etc/kubernetes/certs,readOnly=true \
-                                      --mount volume=etc-kubernetes-certs,target=/etc/kubernetes/certs \
-                                      --volume etc-kube-flannel,kind=host,source=/etc/kube-flannel,readOnly=true \
-                                      --mount volume=etc-kube-flannel,target=/etc/kube-flannel"
+      contents: |
+        [Unit]
+        After=etcd.service etcd2.service etcd-member.service
+        Requires=flannel-docker-opts.service
+
+        [Service]
+        Type=notify
+        Restart=always
+        RestartSec=10s
+        TimeoutStartSec=300
+        LimitNOFILE=40000
+        LimitNPROC=1048576
+
+        Environment="FLANNEL_IMAGE_URL=quay.io/coreos/flannel"
+        Environment="FLANNEL_IMAGE_TAG=v0.12.0"
+        Environment="FLANNEL_IMAGE_ARGS=/opt/bin/flanneld"
+        EnvironmentFile=/etc/kubernetes/environment
+        Environment="FLANNEL_OPTS=-ip-masq=false \
+                                  -kube-subnet-mgr=true \
+                                  -kubeconfig-file=/var/lib/kubelet/kubeconfig \
+                                  -kube-api-url={{ .ApiserverURL }}"
+        Environment="CTR_RUN_ARGS=--pid-file=/var/lib/{{if .CoreOS}}coreos{{else}}flatcar{{end}}/flannel-wrapper.uuid \
+                                  --mount type=bind,src=/proc,dst=/proc,options=rbind:rw \
+                                  --mount type=bind,src=/var/lib/kubelet,dst=/var/lib/kubelet,options=rbind:ro \
+                                  --mount type=bind,src=/etc/kubernetes/certs,dst=/etc/kubernetes/certs,options=rbind:ro \
+                                  --mount type=bind,src=/etc/kube-flannel,dst=/etc/kube-flannel,options=rbind:ro"
+        ExecStartPre=/sbin/modprobe ip_tables
+        ExecStartPre=/usr/bin/mkdir --parents /var/lib/flatcar /run/flannel
+        #ExecStartPre=-/usr/bin/rkt rm --uuid-file=/var/lib/flatcar/flannel-wrapper.uuid
+        ExecStart=/opt/bin/flannel-wrapper-containerd $FLANNEL_OPTS
+        #ExecStop=-/usr/bin/rkt stop --uuid-file=/var/lib/flatcar/flannel-wrapper.uuid
+
+        [Install]
+        WantedBy=multi-user.target
     - name: flannel-docker-opts.service
       enable: true
       contents: |
@@ -76,37 +96,24 @@ systemd:
         Wants=network-online.target
 
         [Service]
-        Environment="RKT_RUN_ARGS=--uuid-file-save=/var/run/kubelet-pod.uuid \
-          --inherit-env \
-          --dns=host \
-          --net=host \
-          --volume var-lib-cni,kind=host,source=/var/lib/cni \
-          --volume var-log,kind=host,source=/var/log \
-          --volume etc-machine-id,kind=host,source=/etc/machine-id,readOnly=true \
-          --volume modprobe,kind=host,source=/usr/sbin/modprobe \
-          --mount volume=var-lib-cni,target=/var/lib/cni \
-          --mount volume=var-log,target=/var/log \
-          --mount volume=etc-machine-id,target=/etc/machine-id \
-          --mount volume=modprobe,target=/usr/sbin/modprobe \
+        Environment="CTR_RUN_ARGS=--pid-file=/var/run/kubelet-pod.uuid \
 {{- if .CalicoNetworking }}
-          --volume var-lib-calico,kind=host,source=/var/lib/calico,readOnly=true \
-          --volume etc-cni,kind=host,source=/etc/cni,readOnly=true \
-          --volume opt-cni,kind=host,source=/opt/cni,readOnly=true \
-          --mount volume=var-lib-calico,target=/var/lib/calico \
-          --mount volume=etc-cni,target=/etc/cni \
-          --mount volume=opt-cni,target=/opt/cni \
+          --mount type=bind,src=/var/lib/calico,dst=/var/lib/calico,options=rbind:ro \
+          --mount type=bind,src=/etc/cni,dst=/etc/cni,options=rbind:ro \
+          --mount type=bind,src=/opt/cni,dst=/opt/cni,options=rbind:ro \
 {{- end }}
-          --insecure-options=image"
+          --mount type=bind,src=/var/lib/cni,dst=/var/lib/cni,options=rbind:rw \
+          --mount type=bind,src=/usr/sbin/modprobe,dst=/usr/sbin/modprobe,options=rbind:ro"
         Environment="KUBELET_IMAGE_TAG={{ .KubeletImageTag }}"
-        Environment="KUBELET_IMAGE_URL=docker://{{ .KubeletImage }}"
-        Environment="KUBELET_IMAGE_ARGS=--name=kubelet --exec=/usr/local/bin/kubelet"
+        Environment="KUBELET_IMAGE_URL={{ .KubeletImage }}"
+        Environment="KUBELET_IMAGE_ARGS=/usr/local/bin/kubelet"
 {{- if .CalicoNetworking }}
         ExecStartPre=/bin/mkdir -p /etc/cni /opt/cni /var/lib/calico
  {{- end }}
         ExecStartPre=/bin/mkdir -p /etc/kubernetes/manifests
         ExecStartPre=/bin/mkdir -p /var/lib/cni
-        ExecStartPre=-/usr/bin/rkt rm --uuid-file=/var/run/kubelet-pod.uuid
-        ExecStart=/usr/lib/coreos/kubelet-wrapper \
+        #ExecStartPre=-/usr/bin/rkt rm --uuid-file=/var/run/kubelet-pod.uuid
+        ExecStart=/opt/bin/kubelet-wrapper-containerd \
           --cert-dir=/var/lib/kubelet/pki \
           --cloud-provider=external \
           --config=/etc/kubernetes/kubelet/config \
@@ -131,7 +138,7 @@ systemd:
           --volume-plugin-dir=/var/lib/kubelet/volumeplugins \
           --rotate-certificates \
           --exit-on-lock-contention
-        ExecStop=-/usr/bin/rkt stop --uuid-file=/var/run/kubelet-pod.uuid
+        #ExecStop=-/usr/bin/rkt stop --uuid-file=/var/run/kubelet-pod.uuid
         Restart=always
         RestartSec=10
 
@@ -527,4 +534,178 @@ storage:
       contents:
         inline: |-
           REBOOT_STRATEGY="off"
+    - path: /opt/bin/kubelet-wrapper-containerd
+      filesystem: root
+      mode: 0755
+      contents:
+        inline: |-
+          #!/bin/bash
+          set -e
+          
+          function require_ev_all() {
+            for rev in $@ ; do
+              if [[ -z "${!rev}" ]]; then
+                echo "${rev}" is not set
+                exit 1
+              fi
+            done
+          }
+          
+          function require_ev_one() {
+            for rev in $@ ; do
+              if [[ ! -z "${!rev}" ]]; then
+                return
+              fi
+            done
+            echo One of $@ must be set
+            exit 1
+          }
+          
+          if [[ -n "${KUBELET_VERSION}" ]]; then
+            echo KUBELET_VERSION environment variable is deprecated, please use KUBELET_IMAGE_TAG instead
+          fi
+          
+          if [[ -n "${KUBELET_ACI}" ]]; then
+            echo KUBELET_ACI environment variable is deprecated, please use the KUBELET_IMAGE_URL instead
+          fi
+          
+          if [[ -n "${CTR_OPTS}" ]]; then
+            echo CTR_OPTS environment variable is deprecated, please use the CTR_RUN_ARGS instead
+          fi
+          
+          KUBELET_IMAGE_TAG="${KUBELET_IMAGE_TAG:-${KUBELET_VERSION}}"
+          
+          require_ev_one KUBELET_IMAGE KUBELET_IMAGE_TAG
+          
+          KUBELET_IMAGE_URL="${KUBELET_IMAGE_URL:-${KUBELET_ACI:-docker://quay.io/coreos/hyperkube}}"
+          KUBELET_IMAGE="${KUBELET_IMAGE:-${KUBELET_IMAGE_URL}:${KUBELET_IMAGE_TAG}}"
+          
+          CTR_RUN_ARGS="${CTR_RUN_ARGS} ${CTR_OPTS}"
+          
+          #if [[ "${KUBELET_IMAGE%%/*}" == "quay.io" ]] && ! (echo "${RKT_RUN_ARGS}" | grep -q trust-keys-from-https); then
+          #	RKT_RUN_ARGS="${RKT_RUN_ARGS} --trust-keys-from-https"
+          #elif [[ "${KUBELET_IMAGE%%/*}" == "docker:" ]] && ! (echo "${RKT_RUN_ARGS}" | grep -q insecure-options); then
+          #	RKT_RUN_ARGS="${RKT_RUN_ARGS} --insecure-options=image"
+          #fi
+          
+          mkdir --parents /etc/kubernetes
+          mkdir --parents /var/lib/docker
+          mkdir --parents /var/lib/kubelet
+          mkdir --parents /run/kubelet
+          
+          #--mount type=bind,src=/sys,dst=/sys,options=rbind:rw \
+          #--mount type=bind,src=/proc,dst=/proc,options=rbind:rw \
+          
+          CTR="${CTR:-/usr/bin/ctr}"
+          #RKT_STAGE1_ARG="${RKT_STAGE1_ARG:---stage1-from-dir=stage1-fly.aci}"
+          KUBELET_IMAGE_ARGS=${KUBELET_IMAGE_ARGS:---exec=/kubelet}
+          set -x
+          ${CTR} -n kubelet image pull ${KUBELET_IMAGE}
+          exec ${CTR} ${CTR_GLOBAL_ARGS} \
+            -n kubelet \
+            run ${CTR_RUN_ARGS} \
+            --net-host \
+            --privileged \
+            --no-pivot \
+            --mount type=cgroup,dst=/sys/fs/cgroup \
+            --mount type=bind,src=/proc,dst=/proc,options=rbind:rw \
+            --mount type=bind,src=/etc/kubernetes,dst=/etc/kubernetes,options=rbind:rw \
+            --mount type=bind,src=/etc/ssl/certs,dst=/etc/ssl/certs,options=rbind:ro \
+            --mount type=bind,src=/usr/share/ca-certificates,dst=/usr/share/ca-certificates,options=rbind:ro \
+            --mount type=bind,src=/var/lib/docker,dst=/var/lib/docker,options=rbind:rw \
+            --mount type=bind,src=/var/lib/kubelet,dst=/var/lib/kubelet,options=rbind:rw \
+            --mount type=bind,src=/var/log,dst=/var/log,options=rbind:rw \
+            --mount type=bind,src=/usr/lib/os-release,dst=/usr/lib/os-release,options=rbind:ro \
+            --mount type=bind,src=/run,dst=/run,options=rbind:rw \
+            --mount type=bind,src=/lib/modules,dst=/lib/modules,options=rbind:ro \
+            --mount type=bind,src=/etc/machine-id,dst=/etc/machine-id,options=rbind:ro \
+            --rm \
+            ${KUBELET_IMAGE} \
+            kubelet \
+              ${KUBELET_IMAGE_ARGS} \
+              "$@"
+    - path: /opt/bin/flannel-wrapper-containerd
+      filesystem: root
+      mode: 0755
+      contents:
+        inline: |-
+          #!/bin/bash -e
+          function require_ev_all() {
+            for rev in $@ ; do
+              if [[ -z "${!rev}" ]]; then
+                echo "${rev}" is not set
+                exit 1
+              fi
+            done
+          }
+          
+          function require_ev_one() {
+            for rev in $@ ; do
+              if [[ ! -z "${!rev}" ]]; then
+                return
+              fi
+            done
+            echo One of $@ must be set
+            exit 1
+          }
+          
+          if [[ -n "${FLANNEL_VER}" ]]; then
+            echo FLANNEL_VER environment variable is deprecated, please use FLANNEL_IMAGE_TAG instead
+          fi
+          
+          if [[ -n "${FLANNEL_IMG}" ]]; then
+            echo FLANNEL_IMG environment variable is deprecated, please use FLANNEL_IMAGE_URL instead
+          fi
+          
+          FLANNEL_IMAGE_TAG="${FLANNEL_IMAGE_TAG:-${FLANNEL_VER}}"
+          
+          require_ev_one FLANNEL_IMAGE FLANNEL_IMAGE_TAG
+          
+          FLANNEL_IMAGE_URL="${FLANNEL_IMAGE_URL:-${FLANNEL_IMG:-quay.io/coreos/flannel}}"
+          FLANNEL_IMAGE="${FLANNEL_IMAGE:-${FLANNEL_IMAGE_URL}:${FLANNEL_IMAGE_TAG}}"
+          
+          #if [[ "${FLANNEL_IMAGE%%/*}" == "quay.io" ]] && ! (echo "${RKT_RUN_ARGS}" | grep -q trust-keys-from-https); then
+          #	RKT_RUN_ARGS="${RKT_RUN_ARGS} --trust-keys-from-https"
+          #elif [[ "${FLANNEL_IMAGE%%/*}" == "docker:" ]] && ! (echo "${RKT_RUN_ARGS}" | grep -q insecure-options); then
+          #	RKT_RUN_ARGS="${RKT_RUN_ARGS} --insecure-options=image"
+          #fi
+          
+          ETCD_SSL_DIR="${ETCD_SSL_DIR:-/etc/ssl/etcd}"
+          if [[ -d "${ETCD_SSL_DIR}" ]]; then
+            CTR_RUN_ARGS="${CTR_RUN_ARGS} \
+                          --mount type=bind,src=${ETCD_SSL_DIR},dst=${ETCD_SSL_DIR},options=rbind:ro \
+            "
+          fi
+          
+          if [[ -S "${NOTIFY_SOCKET}" ]]; then
+            CTR_RUN_ARGS="${CTR_RUN_ARGS} \
+              --mount type=bind,src=/run/systemd/notify,dst=/run/systemd/notify,options=rbind:rw \
+              --env=NOTIFY_SOCKET=/run/systemd/notify \
+            "
+          fi
+          
+          mkdir --parents /run/flannel
+          
+          CTR="${CTR:-/usr/bin/ctr}"
+          #RKT_STAGE1_ARG="${RKT_STAGE1_ARG:---stage1-from-dir=stage1-fly.aci}"
+          set -x
+          ${CTR} -n kubelet image pull ${FLANNEL_IMAGE}
+          exec ${CTR} ${CTR_GLOBAL_ARGS} \
+            -n kubelet \
+            run ${CTR_RUN_ARGS} \
+            --net-host \
+            --privileged \
+            --no-pivot \
+            --mount type=cgroup,dst=/sys/fs/cgroup \
+            --mount type=bind,src=/run/flannel,dst=/run/flannel,options=rbind:rw \
+            --mount type=bind,src=/etc/ssl/certs,dst=/etc/ssl/certs,options=rbind:ro \
+            --mount type=bind,src=/usr/share/ca-certificates,dst=/usr/share/ca-certificates,options=rbind:ro \
+            --mount type=bind,src=/etc/hosts,dst=/etc/hosts,options=rbind:ro \
+            --mount type=bind,src=/etc/resolv.conf,dst=/etc/resolv.conf,options=rbind:ro \
+            --rm \
+            --env NODE_NAME=${NODE_NAME} \
+            ${FLANNEL_IMAGE} \
+            flanneld \
+              ${FLANNEL_IMAGE_ARGS} \
+              "$@"
 `
