@@ -3,12 +3,9 @@ package servicing
 import (
 	"time"
 
-	"github.com/pkg/errors"
-
 	"github.com/go-kit/kit/log"
 	"k8s.io/client-go/tools/record"
 
-	"github.com/sapcc/kubernikus/pkg/api/models"
 	v1 "github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
 	"github.com/sapcc/kubernikus/pkg/controller/base"
 	"github.com/sapcc/kubernikus/pkg/controller/config"
@@ -68,15 +65,17 @@ func (d *Controller) Reconcile(k *v1.Kluster) (requeue bool, err error) {
 	// Disabled until node templates are fixed
 	return false, nil
 
-	//Skip klusters not in state running
-	if k.Status.Phase != models.KlusterPhaseRunning {
-		return false, nil
-	}
-	reconciler, err := d.Reconciler.Make(k)
-	if err != nil {
-		d.Logger.Log("msg", "skippig upgrades. Internal server error.", "err", err)
-		return true, errors.Wrap(err, "Couldn't make Servicing Reconciler.")
-	}
+	/*
+		//Skip klusters not in state running
+		if k.Status.Phase != models.KlusterPhaseRunning {
+			return false, nil
+		}
+		reconciler, err := d.Reconciler.Make(k)
+		if err != nil {
+			d.Logger.Log("msg", "skippig upgrades. Internal server error.", "err", err)
+			return true, errors.Wrap(err, "Couldn't make Servicing Reconciler.")
+		}
 
-	return false, reconciler.Do()
+		return false, reconciler.Do()
+	*/
 }
