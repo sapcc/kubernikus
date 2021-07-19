@@ -7,10 +7,14 @@ passwd:
   users:
     - name:          core
       password_hash: {{ .LoginPassword }}
+      groups: [ rkt ]
 {{- if .LoginPublicKey }}
       ssh_authorized_keys:
         - {{ .LoginPublicKey | quote }}
 {{- end }}
+  groups:
+    - name: rkt
+      system: true
 
 systemd:
   units:
@@ -39,6 +43,36 @@ systemd:
           contents: |
             [Service]
             Environment="DOCKER_OPTS=--log-opt max-size=5m --log-opt max-file=5 --ip-masq=false --iptables=false --bridge=none"
+    - name: flanneld.service
+      enable: true
+      contents: |
+        [Unit]
+        Description=flannel - Network fabric for containers (System Application Container)
+        Documentation=https://github.com/coreos/flannel
+        After=etcd.service etcd2.service etcd-member.service
+        Requires=flannel-docker-opts.service
+
+        [Service]
+        Type=notify
+        Restart=always
+        RestartSec=10s
+        TimeoutStartSec=300
+        LimitNOFILE=40000
+        LimitNPROC=1048576
+
+        Environment="FLANNEL_IMAGE_TAG=v0.12.0"
+        Environment="FLANNEL_OPTS=--ip-masq=true"
+        Environment="RKT_RUN_ARGS=--uuid-file-save=/var/lib/flatcar/flannel-wrapper.uuid"
+        EnvironmentFile=-/run/flannel/options.env
+
+        ExecStartPre=/sbin/modprobe ip_tables
+        ExecStartPre=/usr/bin/mkdir --parents /var/lib/flatcar /run/flannel
+        ExecStartPre=-/opt/bin/rkt rm --uuid-file=/var/lib/flatcar/flannel-wrapper.uuid
+        ExecStart=/opt/bin/flannel-wrapper $FLANNEL_OPTS
+        ExecStop=-/opt/bin/rkt stop --uuid-file=/var/lib/flatcar/flannel-wrapper.uuid
+
+        [Install]
+        WantedBy=multi-user.target
     - name: flanneld.service
       enable: true
       dropins:
@@ -105,8 +139,8 @@ systemd:
  {{- end }}
         ExecStartPre=/bin/mkdir -p /etc/kubernetes/manifests
         ExecStartPre=/bin/mkdir -p /var/lib/cni
-        ExecStartPre=-/usr/bin/rkt rm --uuid-file=/var/run/kubelet-pod.uuid
-        ExecStart=/usr/lib/coreos/kubelet-wrapper \
+        ExecStartPre=-/opt/bin/rkt rm --uuid-file=/var/run/kubelet-pod.uuid
+        ExecStart=/opt/bin/kubelet-wrapper \
           --cert-dir=/var/lib/kubelet/pki \
           --cloud-provider=external \
           --config=/etc/kubernetes/kubelet/config \
@@ -131,7 +165,7 @@ systemd:
           --volume-plugin-dir=/var/lib/kubelet/volumeplugins \
           --rotate-certificates \
           --exit-on-lock-contention
-        ExecStop=-/usr/bin/rkt stop --uuid-file=/var/run/kubelet-pod.uuid
+        ExecStop=-/opt/bin/rkt stop --uuid-file=/var/run/kubelet-pod.uuid
         Restart=always
         RestartSec=10
 
@@ -145,8 +179,8 @@ systemd:
         After=network-online.target
         [Service]
         Slice=machine.slice
-        ExecStartPre=/usr/bin/rkt fetch --insecure-options=image --pull-policy=new docker://{{ .KubernikusImage }}:{{ .KubernikusImageTag }}
-        ExecStart=/usr/bin/rkt run \
+        ExecStartPre=/opt/bin/rkt fetch --insecure-options=image --pull-policy=new docker://{{ .KubernikusImage }}:{{ .KubernikusImageTag }}
+        ExecStart=/opt/bin/rkt run \
           --inherit-env \
           --net=host \
           --dns=host \
@@ -154,9 +188,11 @@ systemd:
           --mount volume=var-lib-kubelet,target=/var/lib/kubelet \
           --volume etc-kubernetes-certs,kind=host,source=/etc/kubernetes/certs,readOnly=true \
           --mount volume=etc-kubernetes-certs,target=/etc/kubernetes/certs \
+          --insecure-options=image \
+          --stage1-from-dir=stage1-coreos.aci \
           docker://{{ .KubernikusImage }}:{{ .KubernikusImageTag }} \
           --name wormhole --exec wormhole -- client --listen {{ .ApiserverIP }}:{{ .ApiserverPort }} --kubeconfig=/var/lib/kubelet/kubeconfig
-        ExecStopPost=/usr/bin/rkt gc --mark-only
+        ExecStopPost=/opt/bin/rkt gc --mark-only
         KillMode=mixed
         Restart=always
         RestartSec=10s
@@ -176,7 +212,7 @@ systemd:
         After=network-online.target
         [Service]
         Slice=machine.slice
-        ExecStart=/usr/bin/rkt run \
+        ExecStart=/opt/bin/rkt run \
           --trust-keys-from-https \
           --inherit-env \
           --net=host \
@@ -190,7 +226,7 @@ systemd:
           docker://{{ .KubeProxy }}:{{ .KubeProxyTag }} \
           --name kube-proxy \
           --exec /usr/local/bin/kube-proxy -- --config=/etc/kubernetes/kube-proxy/config
-        ExecStopPost=/usr/bin/rkt gc --mark-only
+        ExecStopPost=/opt/bin/rkt gc --mark-only
         KillMode=mixed
         Restart=always
         RestartSec=10s
@@ -208,6 +244,28 @@ systemd:
         ExecStart=/usr/sbin/update-ca-certificates
         RemainAfterExit=yes
         Type=oneshot
+        [Install]
+        WantedBy=multi-user.target
+    - name: rkt-gc.service
+      contents: |
+        [Unit]
+        Description=Garbage Collection for rkt
+
+        [Service]
+        Environment=GRACE_PERIOD=24h
+        Type=oneshot
+        ExecStart=/opt/bin/rkt gc --grace-period=${GRACE_PERIOD}
+    - name: rkt-gc.timer
+      enable: true
+      command: start
+      contents: |
+        [Unit]
+        Description=Periodic Garbage Collection for rkt
+
+        [Timer]
+        OnActiveSec=0s
+        OnUnitActiveSec=12h
+
         [Install]
         WantedBy=multi-user.target
 
@@ -527,4 +585,221 @@ storage:
       contents:
         inline: |-
           REBOOT_STRATEGY="off"
+    - path: /opt/bin/rkt
+      filesystem: root
+      mode: 0755
+      contents:
+        remote:
+          url: https://objectstore-3.eu-de-1.cloud.sap/v1/AUTH_caa6209d2c38450f8266311fd0f05446/kubernikus/rkt-v1.30.0/rkt.gz
+          compression: gzip
+          verification:
+            hash:
+              function: sha512
+              sum: 259fd4d1e1d33715c03ec1168af42962962cf70abc5ae9976cf439949f3bcdaf97110455fcf40c415a2adece28f6a52b46f8abd180cad1ee2e802d41a590b35f
+    - path: /opt/rkt/stage1-fly.aci
+      filesystem: root
+      mode: 0644
+      contents:
+        remote:
+          url: https://objectstore-3.eu-de-1.cloud.sap/v1/AUTH_caa6209d2c38450f8266311fd0f05446/kubernikus/rkt-v1.30.0/stage1-fly.aci
+          verification:
+            hash:
+              function: sha512
+              sum: 624bcf48b6829d2ac05c5744996d0fbbe2a0757bf2e5ad859f962a7001bb81980b0aa7be8532f3ec1ef7bbf025bbd089f5aa2eee9fdadefed1602343624750f1
+    - path: /opt/rkt/stage1-coreos.aci
+      filesystem: root
+      mode: 0644
+      contents:
+        remote:
+          url: https://objectstore-3.eu-de-1.cloud.sap/v1/AUTH_caa6209d2c38450f8266311fd0f05446/kubernikus/rkt-v1.30.0/stage1-coreos.aci
+          verification:
+            hash:
+              function: sha512
+              sum: b295e35daab8ca312aeb516a59e79781fd8661d585ecd6c2714bbdec9738ee9012114a2ec886b19cb6eb2e212d72da6f902f02ca889394ef23dbd81fbf147f8c
+    - path: /etc/rkt/paths.d/stage1.json
+      filesystem: root
+      mode: 0644
+      contents:
+        inline: |-
+          {
+            "rktKind": "paths",
+            "rktVersion": "v1",
+            "stage1-images": "/opt/rkt"
+          }
+
+    - path: /opt/bin/kubelet-wrapper
+      filesystem: root
+      mode: 0755
+      contents:
+        inline: |-
+          #!/bin/bash
+          # Wrapper for launching kubelet via rkt-fly.
+          #
+          # Make sure to set KUBELET_IMAGE_TAG to an image tag published here:
+          # https://quay.io/repository/coreos/hyperkube?tab=tags Alternatively,
+          # override KUBELET_IMAGE to a custom image.
+          set -e
+          function require_ev_all() {
+            for rev in $@ ; do
+              if [[ -z "${!rev}" ]]; then
+                echo "${rev}" is not set
+                exit 1
+              fi
+            done
+          }
+          function require_ev_one() {
+            for rev in $@ ; do
+              if [[ ! -z "${!rev}" ]]; then
+                return
+              fi
+            done
+            echo One of $@ must be set
+            exit 1
+          }
+          if [[ -n "${KUBELET_VERSION}" ]]; then
+            echo KUBELET_VERSION environment variable is deprecated, please use KUBELET_IMAGE_TAG instead
+          fi
+          if [[ -n "${KUBELET_ACI}" ]]; then
+            echo KUBELET_ACI environment variable is deprecated, please use the KUBELET_IMAGE_URL instead
+          fi
+          if [[ -n "${RKT_OPTS}" ]]; then
+            echo RKT_OPTS environment variable is deprecated, please use the RKT_RUN_ARGS instead
+          fi
+          KUBELET_IMAGE_TAG="${KUBELET_IMAGE_TAG:-${KUBELET_VERSION}}"
+          require_ev_one KUBELET_IMAGE KUBELET_IMAGE_TAG
+          KUBELET_IMAGE_URL="${KUBELET_IMAGE_URL:-${KUBELET_ACI:-docker://quay.io/coreos/hyperkube}}"
+          KUBELET_IMAGE="${KUBELET_IMAGE:-${KUBELET_IMAGE_URL}:${KUBELET_IMAGE_TAG}}"
+          RKT_RUN_ARGS="${RKT_RUN_ARGS} ${RKT_OPTS}"
+          if [[ "${KUBELET_IMAGE%%/*}" == "quay.io" ]] && ! (echo "${RKT_RUN_ARGS}" | grep -q trust-keys-from-https); then
+            RKT_RUN_ARGS="${RKT_RUN_ARGS} --trust-keys-from-https"
+          elif [[ "${KUBELET_IMAGE%%/*}" == "docker:" ]] && ! (echo "${RKT_RUN_ARGS}" | grep -q insecure-options); then
+            RKT_RUN_ARGS="${RKT_RUN_ARGS} --insecure-options=image"
+          fi
+          mkdir --parents /etc/kubernetes
+          mkdir --parents /var/lib/docker
+          mkdir --parents /var/lib/kubelet
+          mkdir --parents /run/kubelet
+          RKT="${RKT:-/opt/bin/rkt}"
+          RKT_STAGE1_ARG="${RKT_STAGE1_ARG:---stage1-from-dir=stage1-fly.aci}"
+          KUBELET_IMAGE_ARGS=${KUBELET_IMAGE_ARGS:---exec=/kubelet}
+          set -x
+          exec ${RKT} ${RKT_GLOBAL_ARGS} \
+            run ${RKT_RUN_ARGS} \
+            --volume coreos-etc-kubernetes,kind=host,source=/etc/kubernetes,readOnly=false \
+            --volume coreos-etc-ssl-certs,kind=host,source=/etc/ssl/certs,readOnly=true \
+            --volume coreos-usr-share-certs,kind=host,source=/usr/share/ca-certificates,readOnly=true \
+            --volume coreos-var-lib-docker,kind=host,source=/var/lib/docker,readOnly=false \
+            --volume coreos-var-lib-kubelet,kind=host,source=/var/lib/kubelet,readOnly=false,recursive=true \
+            --volume coreos-var-log,kind=host,source=/var/log,readOnly=false \
+            --volume coreos-os-release,kind=host,source=/usr/lib/os-release,readOnly=true \
+            --volume coreos-run,kind=host,source=/run,readOnly=false \
+            --volume coreos-lib-modules,kind=host,source=/lib/modules,readOnly=true \
+            --volume coreos-etc-machine-id,kind=host,source=/etc/machine-id,readOnly=true \
+            --mount volume=coreos-etc-kubernetes,target=/etc/kubernetes \
+            --mount volume=coreos-etc-ssl-certs,target=/etc/ssl/certs \
+            --mount volume=coreos-usr-share-certs,target=/usr/share/ca-certificates \
+            --mount volume=coreos-var-lib-docker,target=/var/lib/docker \
+            --mount volume=coreos-var-lib-kubelet,target=/var/lib/kubelet \
+            --mount volume=coreos-var-log,target=/var/log \
+            --mount volume=coreos-os-release,target=/etc/os-release \
+            --mount volume=coreos-run,target=/run \
+            --mount volume=coreos-lib-modules,target=/lib/modules \
+            --mount volume=coreos-etc-machine-id,target=/etc/machine-id \
+            --hosts-entry host \
+            ${RKT_STAGE1_ARG} \
+            ${KUBELET_IMAGE} \
+              ${KUBELET_IMAGE_ARGS} \
+              -- "$@"
+
+    - path: /opt/bin/flannel-wrapper
+      filesystem: root
+      mode: 0755
+      contents:
+        inline: |-
+          #!/bin/bash -e
+          # Wrapper for launching flannel via rkt.
+          #
+          # Make sure to set FLANNEL_IMAGE_TAG to an image tag published here:
+          # https://quay.io/repository/coreos/flannel?tab=tags Alternatively,
+          # override FLANNEL_IMAGE to a custom image.
+
+          function require_ev_all() {
+            for rev in $@ ; do
+              if [[ -z "${!rev}" ]]; then
+                echo "${rev}" is not set
+                exit 1
+              fi
+            done
+          }
+
+          function require_ev_one() {
+            for rev in $@ ; do
+              if [[ ! -z "${!rev}" ]]; then
+                return
+              fi
+            done
+            echo One of $@ must be set
+            exit 1
+          }
+
+          if [[ -n "${FLANNEL_VER}" ]]; then
+            echo FLANNEL_VER environment variable is deprecated, please use FLANNEL_IMAGE_TAG instead
+          fi
+
+          if [[ -n "${FLANNEL_IMG}" ]]; then
+            echo FLANNEL_IMG environment variable is deprecated, please use FLANNEL_IMAGE_URL instead
+          fi
+
+          FLANNEL_IMAGE_TAG="${FLANNEL_IMAGE_TAG:-${FLANNEL_VER}}"
+
+          require_ev_one FLANNEL_IMAGE FLANNEL_IMAGE_TAG
+
+          FLANNEL_IMAGE_URL="${FLANNEL_IMAGE_URL:-${FLANNEL_IMG:-docker://quay.io/coreos/flannel}}"
+          FLANNEL_IMAGE="${FLANNEL_IMAGE:-${FLANNEL_IMAGE_URL}:${FLANNEL_IMAGE_TAG}}"
+
+          if [[ "${FLANNEL_IMAGE%%/*}" == "quay.io" ]] && ! (echo "${RKT_RUN_ARGS}" | grep -q trust-keys-from-https); then
+            RKT_RUN_ARGS="${RKT_RUN_ARGS} --trust-keys-from-https"
+          elif [[ "${FLANNEL_IMAGE%%/*}" == "docker:" ]] && ! (echo "${RKT_RUN_ARGS}" | grep -q insecure-options); then
+            RKT_RUN_ARGS="${RKT_RUN_ARGS} --insecure-options=image"
+          fi
+
+          ETCD_SSL_DIR="${ETCD_SSL_DIR:-/etc/ssl/etcd}"
+          if [[ -d "${ETCD_SSL_DIR}" ]]; then
+            RKT_RUN_ARGS="${RKT_RUN_ARGS} \
+              --volume coreos-ssl,kind=host,source=${ETCD_SSL_DIR},readOnly=true \
+              --mount volume=coreos-ssl,target=${ETCD_SSL_DIR} \
+            "
+          fi
+
+          if [[ -S "${NOTIFY_SOCKET}" ]]; then
+            RKT_RUN_ARGS="${RKT_RUN_ARGS} \
+              --mount volume=coreos-notify,target=/run/systemd/notify \
+              --volume coreos-notify,kind=host,source=${NOTIFY_SOCKET} \
+              --set-env=NOTIFY_SOCKET=/run/systemd/notify \
+            "
+          fi
+
+          mkdir --parents /run/flannel
+
+          RKT="${RKT:-/opt/bin/rkt}"
+          RKT_STAGE1_ARG="${RKT_STAGE1_ARG:---stage1-from-dir=stage1-fly.aci}"
+          set -x
+          exec ${RKT} ${RKT_GLOBAL_ARGS} \
+            run ${RKT_RUN_ARGS} \
+            --net=host \
+            --volume coreos-run-flannel,kind=host,source=/run/flannel,readOnly=false \
+            --volume coreos-etc-ssl-certs,kind=host,source=/etc/ssl/certs,readOnly=true \
+            --volume coreos-usr-share-certs,kind=host,source=/usr/share/ca-certificates,readOnly=true \
+            --volume coreos-etc-hosts,kind=host,source=/etc/hosts,readOnly=true \
+            --volume coreos-etc-resolv,kind=host,source=/etc/resolv.conf,readOnly=true \
+            --mount volume=coreos-run-flannel,target=/run/flannel \
+            --mount volume=coreos-etc-ssl-certs,target=/etc/ssl/certs \
+            --mount volume=coreos-usr-share-certs,target=/usr/share/ca-certificates \
+            --mount volume=coreos-etc-hosts,target=/etc/hosts  \
+            --mount volume=coreos-etc-resolv,target=/etc/resolv.conf \
+            --inherit-env \
+            ${RKT_STAGE1_ARG} \
+            ${FLANNEL_IMAGE} \
+              ${FLANNEL_IMAGE_ARGS} \
+              -- "$@"
 `
