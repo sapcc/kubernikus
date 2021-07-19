@@ -246,6 +246,28 @@ systemd:
         Type=oneshot
         [Install]
         WantedBy=multi-user.target
+    - name: rkt-gc.service
+      contents: |
+        [Unit]
+        Description=Garbage Collection for rkt
+
+        [Service]
+        Environment=GRACE_PERIOD=24h
+        Type=oneshot
+        ExecStart=/opt/bin/rkt gc --grace-period=${GRACE_PERIOD}
+    - name: rkt-gc.timer
+      enable: true
+      command: start
+      contents: |
+        [Unit]
+        Description=Periodic Garbage Collection for rkt
+
+        [Timer]
+        OnActiveSec=0s
+        OnUnitActiveSec=12h
+
+        [Install]
+        WantedBy=multi-user.target
 
 networkd:
   units:
