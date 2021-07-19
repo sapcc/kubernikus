@@ -7,10 +7,14 @@ passwd:
   users:
     - name:          core
       password_hash: {{ .LoginPassword }}
+      groups: [ rkt ]
 {{- if .LoginPublicKey }}
       ssh_authorized_keys:
         - {{ .LoginPublicKey | quote }}
 {{- end }}
+  groups:
+    - name: rkt
+      system: true
 
 systemd:
   units:
