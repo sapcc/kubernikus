@@ -84,7 +84,7 @@ systemd:
                                       -kube-subnet-mgr=true \
                                       -kubeconfig-file=/var/lib/kubelet/kubeconfig \
                                       -kube-api-url={{ .ApiserverURL }}"
-            Environment="RKT_RUN_ARGS=--uuid-file-save=/var/lib/{{if .CoreOS}}coreos{{else}}flatcar{{end}}/flannel-wrapper.uuid \
+            Environment="RKT_RUN_ARGS=--uuid-file-save=/var/lib/flatcar/flannel-wrapper.uuid \
                                       --volume var-lib-kubelet,kind=host,source=/var/lib/kubelet,readOnly=true \
                                       --mount volume=var-lib-kubelet,target=/var/lib/kubelet \
                                       --volume etc-kubernetes-certs,kind=host,source=/etc/kubernetes/certs,readOnly=true \
