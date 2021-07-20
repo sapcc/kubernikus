@@ -14,6 +14,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 
 	"github.com/sapcc/kubernikus/pkg/api/models"
+	"github.com/sapcc/kubernikus/pkg/controller/servicing/flatcar"
 	"github.com/sapcc/kubernikus/pkg/util/netutil"
 )
 
@@ -141,6 +142,14 @@ func IsCoreOSNode(node *v1.Node) bool {
 
 func IsFlatcarNode(node *v1.Node) bool {
 	return strings.HasPrefix(node.Status.NodeInfo.OSImage, NODE_FLATCAR_PREFIX)
+}
+
+func IsFlatcarNodeWithRkt(node *v1.Node) bool {
+	extractVersion, err := flatcar.ExractVersion(node)
+	if err != nil {
+		return false
+	}
+	return extractVersion.Major() < 2905
 }
 
 func IsCoreOSNodePool(pool *models.NodePool) bool {

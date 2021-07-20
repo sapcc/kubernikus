@@ -23,7 +23,7 @@ func (m *MockNodeListerFactory) Make(k *v1.Kluster) LifeCycler {
 	return m.Called(k).Get(0).(LifeCycler)
 }
 
-func NewFakeNodeLister(t *testing.T, logger log.Logger, kluster *v1.Kluster, nodes []runtime.Object) Lister {
+func NewFakeNodeLister(t *testing.T, logger log.Logger, kluster *v1.Kluster, nodes []runtime.Object, version string) Lister {
 	kl, _ := nodeobservatory.NewFakeController(kluster, nodes...).GetListerForKluster(kluster)
 
 	var lister Lister
@@ -31,8 +31,8 @@ func NewFakeNodeLister(t *testing.T, logger log.Logger, kluster *v1.Kluster, nod
 		Logger:         logger,
 		Kluster:        kluster,
 		Lister:         kl,
-		FlatcarVersion: flatcar.NewFakeVersion(t, "2605.7.0"),
-		FlatcarRelease: flatcar.NewFakeRelease(t, "2605.7.0"),
+		FlatcarVersion: flatcar.NewFakeVersion(t, version),
+		FlatcarRelease: flatcar.NewFakeRelease(t, version),
 	}
 
 	lister = &LoggingLister{
@@ -159,34 +159,41 @@ func NewFakeKlusterForListerTests() (*v1.Kluster, []runtime.Object) {
 					AllowReplace:        false,
 					NodeOSOutdated:      false,
 					NodeKubeletOutdated: false,
-					NodeHealthy:         true,
 					Size:                1,
+					NodeHealthy:         true,
 				},
 			},
 		},
 	)
 }
+
 func TestServicingListertAll(t *testing.T) {
 	kluster, nodes := NewFakeKlusterForListerTests()
-	lister := NewFakeNodeLister(t, TestLogger(), kluster, nodes)
+	lister := NewFakeNodeLister(t, TestLogger(), kluster, nodes, "2605.7.0")
+	assert.Len(t, lister.All(), 16)
+	lister = NewFakeNodeLister(t, TestLogger(), kluster, nodes, "2905.2.1")
 	assert.Len(t, lister.All(), 16)
 }
 
 func TestServicingListerRequiringReboot(t *testing.T) {
 	kluster, nodes := NewFakeKlusterForListerTests()
-	lister := NewFakeNodeLister(t, TestLogger(), kluster, nodes)
+	lister := NewFakeNodeLister(t, TestLogger(), kluster, nodes, "2605.7.0")
 	assert.Len(t, lister.Reboot(), 4)
+	lister = NewFakeNodeLister(t, TestLogger(), kluster, nodes, "2905.2.1")
+	assert.Len(t, lister.Reboot(), 0)
 }
 
 func TestServicingListerRequiringReplacement(t *testing.T) {
 	kluster, nodes := NewFakeKlusterForListerTests()
-	lister := NewFakeNodeLister(t, TestLogger(), kluster, nodes)
+	lister := NewFakeNodeLister(t, TestLogger(), kluster, nodes, "2605.7.0")
 	assert.Len(t, lister.Replace(), 4)
+	lister = NewFakeNodeLister(t, TestLogger(), kluster, nodes, "2905.2.1")
+	assert.Len(t, lister.Replace(), 10)
 }
 
 func TestServicingListerNotReady(t *testing.T) {
 	kluster, nodes := NewFakeKlusterForListerTests()
-	lister := NewFakeNodeLister(t, TestLogger(), kluster, nodes)
+	lister := NewFakeNodeLister(t, TestLogger(), kluster, nodes, "2605.7.0")
 	assert.Len(t, lister.NotReady(), 15)
 }
 
@@ -217,7 +224,7 @@ func TestServicingListerUpdating(t *testing.T) {
 			},
 		},
 	)
-	lister := NewFakeNodeLister(t, TestLogger(), kluster, nodes)
+	lister := NewFakeNodeLister(t, TestLogger(), kluster, nodes, "2605.7.0")
 	assert.Len(t, lister.Updating(), 1)
 }
 
@@ -304,7 +311,7 @@ func TestServicingListerUpdateSuccessful(t *testing.T) {
 			},
 		},
 	)
-	lister := NewFakeNodeLister(t, TestLogger(), kluster, nodes)
+	lister := NewFakeNodeLister(t, TestLogger(), kluster, nodes, "2605.7.0")
 	assert.Len(t, lister.Successful(), 2)
 }
 
@@ -391,6 +398,6 @@ func TestServicingListerUpdateFailed(t *testing.T) {
 			},
 		},
 	)
-	lister := NewFakeNodeLister(t, TestLogger(), kluster, nodes)
+	lister := NewFakeNodeLister(t, TestLogger(), kluster, nodes, "2605.7.0")
 	assert.Len(t, lister.Failed(), 3)
 }
