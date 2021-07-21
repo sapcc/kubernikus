@@ -149,7 +149,7 @@ func (d *NodeLister) Reboot() []*core_v1.Node {
 				continue
 			}
 			if len(node.GetName()) == len(prefix)+generator.RandomLength {
-				if util.IsFlatcarNodeWithRkt(node) && latestFlatcar.Major() >= 2905 {
+				if util.IsFlatcarNodeWithRkt(node) {
 					continue
 				}
 
@@ -224,7 +224,7 @@ func (d *NodeLister) Replace() []*core_v1.Node {
 			if len(node.GetName()) == len(prefix)+generator.RandomLength {
 				nodeNameToPool[node.GetName()] = &d.Kluster.Spec.NodePools[i]
 
-				if *pool.Config.AllowReplace == true || (util.IsFlatcarNodeWithRkt(node) && latestFlatcar.Major() >= 2905) {
+				if *pool.Config.AllowReplace == true || util.IsFlatcarNodeWithRkt(node) {
 					upgradable = append(upgradable, node)
 				}
 			}
@@ -281,7 +281,7 @@ func (d *NodeLister) Replace() []*core_v1.Node {
 			continue
 		}
 
-		if util.IsFlatcarNodeWithRkt(node) && latestFlatcar.Major() >= 2905 {
+		if util.IsFlatcarNodeWithRkt(node) {
 			uptodate := true
 
 			if strings.HasPrefix(node.Status.NodeInfo.OSImage, "Flatcar Container Linux") {
