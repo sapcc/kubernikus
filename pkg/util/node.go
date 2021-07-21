@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"strconv"
 	"strings"
 
 	"github.com/Masterminds/semver"
@@ -149,7 +150,19 @@ func IsFlatcarNodeWithRkt(node *v1.Node) bool {
 	if err != nil {
 		return false
 	}
-	return extractVersion.Major() < 2905
+	return NodeTemplateVersion(node) < 1 && extractVersion.Major() < 2905
+}
+
+func NodeTemplateVersion(node *v1.Node) int {
+	if node == nil || node.Labels == nil {
+		return 0
+	}
+	if strVal, ok := node.Labels["kubernikus.cloud.sap/template-version"]; ok {
+		if ver, err := strconv.Atoi(strVal); err == nil {
+			return ver
+		}
+	}
+	return 0
 }
 
 func IsCoreOSNodePool(pool *models.NodePool) bool {
