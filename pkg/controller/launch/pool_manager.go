@@ -2,7 +2,6 @@ package launch
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/sapcc/kubernikus/pkg/api/models"
 	v1 "github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
@@ -193,7 +192,7 @@ func (cpm *ConcretePoolManager) CreateNode() (id string, err error) {
 		return "", err
 	}
 
-	nodeName := generator.SimpleNameGenerator.GenerateName(fmt.Sprintf("%v-%v-", cpm.Kluster.Spec.Name, cpm.Pool.Name))
+	nodeName := generator.SimpleNameGenerator.GenerateName(fmt.Sprintf(util.NODE_NAMING_PATTERN_PREFIX, cpm.Kluster.Spec.Name, cpm.Pool.Name))
 
 	calicoNetworking := false
 	if client, err := cpm.Clients.Satellites.ClientFor(cpm.Kluster); err == nil {
@@ -290,10 +289,9 @@ func (cpm *ConcretePoolManager) healthyAndSchedulable() (healthy int, schedulabl
 	if err != nil {
 		return
 	}
-	prefix := fmt.Sprintf("%s-%s-", cpm.Kluster.Spec.Name, cpm.Pool.Name)
 	for _, node := range nodes {
 		//Does the node belong to this pool?
-		if strings.HasPrefix(node.Name, prefix) && len(node.Name) == len(prefix)+generator.RandomLength {
+		if util.IsKubernikusNode(node.Name, cpm.Kluster.Spec.Name, cpm.Pool.Name) {
 			if !node.Spec.Unschedulable {
 				schedulable++
 			}

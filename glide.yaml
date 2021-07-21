@@ -31,7 +31,7 @@ import:
   - log
 # overwrite gophercloud version given in k8s deps
 - package: github.com/gophercloud/gophercloud
-  version: 077038c4f65ca6324adea7af6907d0d770131c32
+  version: ee96a03bd4bd72846607d0867fad3a656ed0b700
 # upgrade from 1.0.0 to fix foo in newer version clusters
 - package: github.com/prometheus/client_golang
   version: v0.9.0

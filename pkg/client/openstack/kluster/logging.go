@@ -128,3 +128,34 @@ func (c LoggingClient) EnsureServerGroup(name string) (id string, err error) {
 
 	return c.Client.EnsureServerGroup(name)
 }
+
+func (c LoggingClient) CheckNodeTag(nodeID, tag string) (t bool, err error) {
+	defer func(begin time.Time) {
+		c.Logger.Log(
+			"msg", "check node tag",
+			"nodeID", nodeID,
+			"tag", tag,
+			"check", t,
+			"took", time.Since(begin),
+			"v", 4,
+			"err", err,
+		)
+	}(time.Now())
+
+	return c.Client.CheckNodeTag(nodeID, tag)
+}
+
+func (c LoggingClient) AddNodeTag(nodeID, tag string) (err error) {
+	defer func(begin time.Time) {
+		c.Logger.Log(
+			"msg", "add node tag",
+			"nodeID", nodeID,
+			"tag", tag,
+			"took", time.Since(begin),
+			"v", 4,
+			"err", err,
+		)
+	}(time.Now())
+
+	return c.Client.AddNodeTag(nodeID, tag)
+}
