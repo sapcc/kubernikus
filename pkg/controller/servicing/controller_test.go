@@ -283,7 +283,7 @@ func TestServicingControllerReconcile(t *testing.T) {
 		},
 	} {
 		t.Run(string(subject.message), func(t *testing.T) {
-			kluster, nodes := NewFakeKluster(subject.options)
+			kluster, nodes := NewFakeKluster(subject.options, true)
 			logger := log.With(TestLogger(), "controller", "servicing")
 
 			mockCycler := &MockLifeCycler{}
@@ -303,8 +303,8 @@ func TestServicingControllerReconcile(t *testing.T) {
 			listers := &NodeListerFactory{
 				Logger:          logger,
 				NodeObservatory: nodeobservatory.NewFakeController(kluster, nodes...),
-				FlatcarVersion:  flatcar.NewFakeVersion(t, "2303.4.0"),
-				FlatcarRelease:  flatcar.NewFakeRelease(t, "2303.4.0"),
+				FlatcarVersion:  flatcar.NewFakeVersion(t, "3000.0.0"),
+				FlatcarRelease:  flatcar.NewFakeRelease(t, "3000.0.0"),
 			}
 
 			reconcilers := &KlusterReconcilerFactory{

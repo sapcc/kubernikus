@@ -51,7 +51,7 @@ type FakeNodePoolOptions struct {
 }
 
 // NewFakeKluster creates a Kluster Object for tests
-func NewFakeKluster(opts *FakeKlusterOptions) (*v1.Kluster, []runtime.Object) {
+func NewFakeKluster(opts *FakeKlusterOptions, afterFlatCarRktRemoval bool) (*v1.Kluster, []runtime.Object) {
 	kluster := &v1.Kluster{
 		ObjectMeta: meta_v1.ObjectMeta{
 			Namespace: "servicing",
@@ -115,9 +115,13 @@ func NewFakeKluster(opts *FakeKlusterOptions) (*v1.Kluster, []runtime.Object) {
 			}
 
 			if p.NodeOSOutdated {
-				node.Status.NodeInfo.OSImage = "Flatcar Container Linux by Kinvolk 1000.0.0 (Oklo)"
+				if afterFlatCarRktRemoval {
+					node.Status.NodeInfo.OSImage = "Flatcar Container Linux by Kinvolk 2999.2.6 (Oklo)"
+				} else {
+					node.Status.NodeInfo.OSImage = "Flatcar Container Linux by Kinvolk 1000.0.0 (Oklo)"
+				}
 			} else {
-				node.Status.NodeInfo.OSImage = "Flatcar Container Linux by Kinvolk 3000.0.0 (Oklo)"
+				node.Status.NodeInfo.OSImage = "Flatcar Container Linux by Kinvolk 3000.1.2 (Oklo)"
 			}
 
 			if p.NodeKubeletOutdated {
