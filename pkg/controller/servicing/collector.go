@@ -19,6 +19,7 @@ type servicingNodesCollector struct {
 	kubelet     *prometheus.Desc
 	proxy       *prometheus.Desc
 	osimage     *prometheus.Desc
+	logger      log.Logger
 }
 
 // RegisterServicingNodesCollector does what the method name sais
@@ -63,6 +64,7 @@ func RegisterServicingNodesCollector(logger log.Logger, factories config.Factori
 			FlatcarVersion:  &flatcar.Version{},
 			FlatcarRelease:  &flatcar.Release{},
 		},
+		logger: logger,
 	}
 
 	prometheus.MustRegister(collector)
@@ -82,13 +84,15 @@ func (c *servicingNodesCollector) Describe(ch chan<- *prometheus.Desc) {
 func (c *servicingNodesCollector) Collect(ch chan<- prometheus.Metric) {
 	klusters, err := c.klusters.List(labels.Everything())
 	if err != nil {
+		c.logger.Log("msg", "Failed to list klusters", "err", err)
 		return
 	}
 
 	for _, kluster := range klusters {
 		nodes, err := c.nodeListers.Make(kluster)
 		if err != nil {
-			return
+			c.logger.Log("msg", "Failed to list nodes", "kluster", kluster.Name, "err", err)
+			continue
 		}
 
 		updatingStarted := float64(len(nodes.Updating()))
@@ -107,9 +111,11 @@ func (c *servicingNodesCollector) Collect(ch chan<- prometheus.Metric) {
 			kubeletVersions[node.Status.NodeInfo.KubeletVersion]++
 			proxyVersions[node.Status.NodeInfo.KubeProxyVersion]++
 
-			osVersion, err := coreos.ExractVersion(node)
+			osVersion, err := flatcar.ExractVersion(node)
 			if err != nil {
-				continue
+				if osVersion, err = coreos.ExractVersion(node); err != nil {
+					continue
+				}
 			}
 			osVersions[osVersion.String()]++
 		}
