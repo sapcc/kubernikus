@@ -20,20 +20,19 @@ func init() {
 	flag.StringVar(&authURL, "auth-url", "", "Openstack identity v3 auth url")
 }
 
-func KeystoneAuthEnabled() bool {
-	return authURL != ""
+func OpenStackAuthURL() string {
+	if !(strings.HasSuffix(authURL, "/v3") || strings.HasSuffix(authURL, "/v3/")) {
+		return fmt.Sprintf("%s/%s", strings.TrimRight(authURL, "/"), "/v3")
+	}
+	return authURL
 }
 
 func Keystone(logger log.Logger) func(token string) (*models.Principal, error) {
 
-	if !(strings.HasSuffix(authURL, "/v3") || strings.HasSuffix(authURL, "/v3/")) {
-		authURL = fmt.Sprintf("%s/%s", strings.TrimRight(authURL, "/"), "/v3")
-	}
-
 	keystone.Log = func(format string, a ...interface{}) {
 		logger.Log("library", "keystone", "msg", fmt.Sprintf(format, a...))
 	}
-	auth := keystone.New(authURL)
+	auth := keystone.New(OpenStackAuthURL())
 	auth.TokenCache = memory.New(10 * time.Minute)
 
 	return func(token string) (*models.Principal, error) {
@@ -48,6 +47,6 @@ func Keystone(logger log.Logger) func(token string) (*models.Principal, error) {
 		for _, role := range t.Roles {
 			roles = append(roles, role.Name)
 		}
-		return &models.Principal{AuthURL: authURL, ID: t.User.ID, Name: t.User.Name, Domain: t.User.Domain.Name, Account: t.Project.ID, AccountName: t.Project.Name, Roles: roles}, nil
+		return &models.Principal{ID: t.User.ID, Name: t.User.Name, Domain: t.User.Domain.Name, Account: t.Project.ID, AccountName: t.Project.Name, Roles: roles}, nil
 	}
 }

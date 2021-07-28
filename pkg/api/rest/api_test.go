@@ -50,7 +50,6 @@ func mockAuth(token string) (*models.Principal, error) {
 		return nil, errors.New(401, "auth failed")
 	}
 	return &models.Principal{
-		AuthURL: "http://identity.test/v3",
 		ID:      "test",
 		Name:    "Test Mc Dougle",
 		Domain:  "TestDomain",

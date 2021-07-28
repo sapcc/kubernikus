@@ -12,6 +12,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 
+	"github.com/sapcc/kubernikus/pkg/api/auth"
 	"github.com/sapcc/kubernikus/pkg/api/models"
 	"github.com/sapcc/kubernikus/pkg/api/spec"
 	v1 "github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
@@ -118,7 +119,7 @@ func fetchOpenstackMetadata(request *http.Request, principal *models.Principal) 
 	tokenID := request.Header.Get("X-Auth-Token")
 
 	authOptions := &tokens.AuthOptions{
-		IdentityEndpoint: principal.AuthURL,
+		IdentityEndpoint: auth.OpenStackAuthURL(),
 		TokenID:          tokenID,
 		Scope: tokens.Scope{
 			ProjectID: principal.Account,

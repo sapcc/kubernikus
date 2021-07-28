@@ -956,10 +956,6 @@ func init() {
           "description": "account name",
           "type": "string"
         },
-        "authUrl": {
-          "description": "Identity Endpoint",
-          "type": "string"
-        },
         "domain": {
           "description": "user's domain name",
           "type": "string"
@@ -1895,10 +1891,6 @@ func init() {
         },
         "account_name": {
           "description": "account name",
-          "type": "string"
-        },
-        "authUrl": {
-          "description": "Identity Endpoint",
           "type": "string"
         },
         "domain": {
