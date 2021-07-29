@@ -197,7 +197,7 @@ func (p *PyrolisisTests) CleanupLoadbalancers(t *testing.T) {
 
 	for _, lb := range allLoadbalancers {
 		if strings.HasSuffix(lb.Name, "_e2e-lb") {
-			err := loadbalancers.Delete(lbClient, lb.ID, loadbalancers.DeleteOpts{}).ExtractErr()
+			err := loadbalancers.Delete(lbClient, lb.ID, loadbalancers.DeleteOpts{Cascade: true}).ExtractErr()
 			require.NoError(t, err, "There should be no error while deleting loadbalancer %s", lb.Name)
 		}
 	}

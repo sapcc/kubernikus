@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"strconv"
 	"strings"
 
 	"github.com/Masterminds/semver"
@@ -14,6 +15,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 
 	"github.com/sapcc/kubernikus/pkg/api/models"
+	"github.com/sapcc/kubernikus/pkg/controller/servicing/flatcar"
 	"github.com/sapcc/kubernikus/pkg/util/netutil"
 )
 
@@ -141,6 +143,26 @@ func IsCoreOSNode(node *v1.Node) bool {
 
 func IsFlatcarNode(node *v1.Node) bool {
 	return strings.HasPrefix(node.Status.NodeInfo.OSImage, NODE_FLATCAR_PREFIX)
+}
+
+func IsFlatcarNodeWithRkt(node *v1.Node) bool {
+	extractVersion, err := flatcar.ExractVersion(node)
+	if err != nil {
+		return false
+	}
+	return NodeTemplateVersion(node) < 1 && extractVersion.Major() < 2905
+}
+
+func NodeTemplateVersion(node *v1.Node) int {
+	if node == nil || node.Labels == nil {
+		return 0
+	}
+	if strVal, ok := node.Labels["kubernikus.cloud.sap/template-version"]; ok {
+		if ver, err := strconv.Atoi(strVal); err == nil {
+			return ver
+		}
+	}
+	return 0
 }
 
 func IsCoreOSNodePool(pool *models.NodePool) bool {

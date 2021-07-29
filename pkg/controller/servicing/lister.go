@@ -143,17 +143,19 @@ func (d *NodeLister) Reboot() []*core_v1.Node {
 	}
 
 	for _, pool := range d.Kluster.Spec.NodePools {
-		if *pool.Config.AllowReboot == false {
-			continue
-		}
-
 		prefix := fmt.Sprintf("%v-%v-", d.Kluster.Spec.Name, pool.Name)
 		for _, node := range d.All() {
 			if !strings.HasPrefix(node.GetName(), prefix) {
 				continue
 			}
 			if len(node.GetName()) == len(prefix)+generator.RandomLength {
-				rebootable = append(rebootable, node)
+				if util.IsFlatcarNodeWithRkt(node) {
+					continue
+				}
+
+				if *pool.Config.AllowReboot == true {
+					rebootable = append(rebootable, node)
+				}
 			}
 		}
 	}
@@ -195,11 +197,24 @@ func (d *NodeLister) Replace() []*core_v1.Node {
 	var nodeNameToPool map[string]*models.NodePool
 	nodeNameToPool = make(map[string]*models.NodePool)
 
-	for i, pool := range d.Kluster.Spec.NodePools {
-		if *pool.Config.AllowReplace == false {
-			continue
-		}
+	latestFlatcar, err := d.FlatcarVersion.Stable()
+	if err != nil {
+		d.Logger.Log(
+			"msg", "Couldn't get Flatcar version.",
+			"err", err,
+		)
+		return found
+	}
 
+	releasedFlatcar, err := d.FlatcarRelease.GrownUp(latestFlatcar)
+	if err != nil {
+		d.Logger.Log(
+			"msg", "Couldn't get Flatcar releases.",
+			"err", err,
+		)
+	}
+
+	for i, pool := range d.Kluster.Spec.NodePools {
 		prefix := fmt.Sprintf("%v-%v-", d.Kluster.Spec.Name, pool.Name)
 		for _, node := range d.All() {
 			if !strings.HasPrefix(node.GetName(), prefix) {
@@ -208,9 +223,11 @@ func (d *NodeLister) Replace() []*core_v1.Node {
 
 			if len(node.GetName()) == len(prefix)+generator.RandomLength {
 				nodeNameToPool[node.GetName()] = &d.Kluster.Spec.NodePools[i]
-				upgradable = append(upgradable, node)
-			}
 
+				if *pool.Config.AllowReplace == true || util.IsFlatcarNodeWithRkt(node) {
+					upgradable = append(upgradable, node)
+				}
+			}
 		}
 	}
 
@@ -262,6 +279,33 @@ func (d *NodeLister) Replace() []*core_v1.Node {
 		if kubeProxyVersion.LessThan(klusterVersion) {
 			found = append(found, node)
 			continue
+		}
+
+		if util.IsFlatcarNodeWithRkt(node) {
+			uptodate := true
+
+			if strings.HasPrefix(node.Status.NodeInfo.OSImage, "Flatcar Container Linux") {
+				if releasedFlatcar {
+					uptodate, err = d.FlatcarVersion.IsNodeUptodate(node)
+				}
+			} else {
+				d.Logger.Log(
+					"msg", "Unsupported OS on node. Skipping OS upgrade.",
+					"os", node.Status.NodeInfo.OSImage,
+				)
+				continue
+			}
+			if err != nil {
+				d.Logger.Log(
+					"msg", "Couldn't get OS version from Node. Skipping OS upgrade.",
+					"err", err,
+				)
+				continue
+			}
+
+			if !uptodate {
+				found = append(found, node)
+			}
 		}
 	}
 

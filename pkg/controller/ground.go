@@ -626,7 +626,7 @@ func (op *GroundControl) upgradeKluster(kluster *v1.Kluster, toVersion string) e
 		return err
 	}
 
-	if strings.HasPrefix(toVersion, "1.20") {
+	if strings.HasPrefix(toVersion, "1.20") && strings.HasPrefix(kluster.Status.ApiserverVersion, "1.19") {
 		dynamicKubernetes, err := op.Clients.Satellites.DynamicClientFor(kluster)
 		if err != nil {
 			return errors.Wrap(err, "dynamic client")

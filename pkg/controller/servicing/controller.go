@@ -3,9 +3,8 @@ package servicing
 import (
 	"time"
 
-	"github.com/pkg/errors"
-
 	"github.com/go-kit/kit/log"
+	"github.com/pkg/errors"
 	"k8s.io/client-go/tools/record"
 
 	"github.com/sapcc/kubernikus/pkg/api/models"

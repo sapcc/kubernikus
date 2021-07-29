@@ -149,6 +149,7 @@ func (lc *NodeLifeCycler) Drain(node *core_v1.Node) error {
 		GracePeriodSeconds:  -1,
 		IgnoreAllDaemonSets: true,
 		Timeout:             EvictionTimeout,
+		DisableEviction:     true,
 		DeleteLocalData:     true,
 		Selector:            "",
 		PodSelector:         "",

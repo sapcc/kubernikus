@@ -27,6 +27,8 @@ var Ignition = &ignition{}
 
 var passwordHashRounds = 1000000
 
+const TEMPLATE_VERSION = "1"
+
 func (i *ignition) getIgnitionTemplate(kluster *kubernikusv1.Kluster) (string, error) {
 	switch {
 	case strings.HasPrefix(kluster.Spec.Version, "1.20"):
@@ -104,6 +106,7 @@ func (i *ignition) GenerateNode(kluster *kubernikusv1.Kluster, pool *models.Node
 		for _, userLabel := range pool.Labels {
 			nodeLabels = append(nodeLabels, userLabel)
 		}
+		nodeLabels = append(nodeLabels, "kubernikus.cloud.sap/template-version="+TEMPLATE_VERSION)
 		isFlatcar = !strings.Contains(strings.ToLower(pool.Image), "coreos")
 	}
 

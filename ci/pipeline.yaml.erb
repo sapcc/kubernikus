@@ -6,6 +6,7 @@ REGIONS = {
   "ap-jp-1": { continent: 'ASIA',     install: 'terraform', e2e: 'terraform' },
   "ap-jp-2": { continent: 'ASIA',     install: 'terraform', e2e: 'terraform' },
   "ap-sa-1": { continent: 'ASIA',     install: 'terraform', e2e: 'terraform' },
+  "ap-sa-2": { continent: 'ASIA',     install: 'terraform', e2e: 'terraform' },
   "eu-de-1": { continent: 'EMEA',     install: 'manual'   , e2e: 'manual' },
   "eu-de-2": { continent: 'EMEA',     install: 'manual'   , e2e: 'manual' },
   "eu-nl-1": { continent: 'EMEA',     install: 'manual'   , e2e: 'terraform' },
@@ -189,12 +190,12 @@ resource_types:
     type: docker-image
     check_every: 24h
     source:
-      repository: arbourd/concourse-slack-alert-resource
+      repository: keppel.eu-de-1.cloud.sap/ccloud-dockerhub-mirror/arbourd/concourse-slack-alert-resource
   - name: slack-notification
     type: docker-image
     check_every: 24h
     source:
-      repository: cfcommunity/slack-notification-resource
+      repository: keppel.eu-de-1.cloud.sap/ccloud-dockerhub-mirror/cfcommunity/slack-notification-resource
       tag: latest
 
   - name: time-version-resource
