@@ -22,7 +22,7 @@ func init() {
 
 func OpenStackAuthURL() string {
 	if !(strings.HasSuffix(authURL, "/v3") || strings.HasSuffix(authURL, "/v3/")) {
-		return fmt.Sprintf("%s/%s", strings.TrimRight(authURL, "/"), "/v3")
+		return strings.TrimRight(authURL, "/") + "/v3"
 	}
 	return authURL
 }
