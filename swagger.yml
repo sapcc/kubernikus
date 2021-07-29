@@ -660,9 +660,6 @@ definitions:
   Principal:
     type: object
     properties:
-      authUrl:
-        description: Identity Endpoint
-        type: string
       name:
         description: username
         type: string

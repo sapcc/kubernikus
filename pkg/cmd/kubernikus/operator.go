@@ -45,7 +45,6 @@ type Options struct {
 func NewOperatorOptions() *Options {
 	options := &Options{}
 	options.ChartDirectory = "charts/"
-	options.AuthURL = "http://keystone.monsoon3:5000/v3"
 	options.AuthUsername = "kubernikus"
 	options.AuthDomain = "Default"
 	options.KubernikusDomain = "kluster.staging.cloud.sap"
@@ -83,7 +82,7 @@ func (o *Options) Validate(c *cobra.Command, args []string) error {
 		o.AuthPassword = os.Getenv("OS_PASSWORD")
 	}
 
-	if o.AuthPassword == "" {
+	if o.AuthURL != "" && o.AuthPassword == "" {
 		return errors.New("you must specify the auth-password flag")
 	}
 

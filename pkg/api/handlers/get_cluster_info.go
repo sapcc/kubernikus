@@ -11,6 +11,7 @@ import (
 	"github.com/go-openapi/runtime/middleware"
 
 	"github.com/sapcc/kubernikus/pkg/api"
+	"github.com/sapcc/kubernikus/pkg/api/auth"
 	"github.com/sapcc/kubernikus/pkg/api/models"
 	"github.com/sapcc/kubernikus/pkg/api/rest/operations"
 	"github.com/sapcc/kubernikus/pkg/version"
@@ -41,7 +42,7 @@ func (d *getClusterInfo) Handle(params operations.GetClusterInfoParams, principa
 		"--username", principal.Name,
 		"--user-domain-name", principal.Domain,
 		"--project-id", principal.Account,
-		"--auth-url", principal.AuthURL,
+		"--auth-url", auth.OpenStackAuthURL(),
 		"--url", baseURL,
 		"--name", params.Name,
 	}

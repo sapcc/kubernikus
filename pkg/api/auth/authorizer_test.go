@@ -13,7 +13,6 @@ import (
 func TestAuthorizer(t *testing.T) {
 
 	admin := models.Principal{
-		AuthURL: "http://identity.test/v3",
 		ID:      "test",
 		Name:    "Test Mc Dougle",
 		Domain:  "TestDomain",
@@ -21,7 +20,6 @@ func TestAuthorizer(t *testing.T) {
 		Roles:   []string{"kubernetes_admin"},
 	}
 	user := models.Principal{
-		AuthURL: "http://identity.test/v3",
 		ID:      "test",
 		Name:    "Test Mc Dougle",
 		Domain:  "TestDomain",

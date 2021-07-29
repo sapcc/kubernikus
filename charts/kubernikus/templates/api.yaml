@@ -52,8 +52,10 @@ spec:
             - --v={{ default 1 .Values.api.log_level }}
             - --namespace={{ default "kubernikus" .Values.namespace }}
             - --images-file=/etc/kubernikus/charts/images.yaml
-            {{- if and (.Values.openstack.region) (ne .Values.openstack.region "qa-de-1") }}
+            {{- if .Values.openstack.region }}
+            {{- if ne .Values.openstack.region "qa-de-1" }}
             - --region={{ .Values.openstack.region }}
+            {{- end }}
             {{- end }}
           ports:
             - name: http

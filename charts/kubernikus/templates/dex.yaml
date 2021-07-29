@@ -81,6 +81,7 @@ kind: Ingress
 metadata:
   annotations:
     kubernetes.io/tls-acme: "true"
+    disco: "true"
   name: kubernikus-api-dex
   namespace: {{ default .Release.Namespace .Values.namespaceOverride }}
 spec:

@@ -17,6 +17,7 @@ import (
 
 	certutil "k8s.io/client-go/util/cert"
 
+	"github.com/sapcc/kubernikus/pkg/api/auth"
 	"github.com/sapcc/kubernikus/pkg/api/models"
 	v1 "github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
 )
@@ -331,7 +332,7 @@ func (cf *CertificateFactory) UserCert(principal *models.Principal, apiURL strin
 	return caBundle.Sign(Config{
 		Sign:         fmt.Sprintf("%s@%s", principal.Name, principal.Domain),
 		Organization: organizations,
-		Province:     []string{principal.AuthURL, projectid},
+		Province:     []string{auth.OpenStackAuthURL(), projectid},
 		Locality:     []string{apiURL},
 		Usages:       []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth},
 		ValidFor:     24 * time.Hour,

@@ -21,9 +21,6 @@ type Principal struct {
 	// account name
 	AccountName string `json:"account_name,omitempty"`
 
-	// Identity Endpoint
-	AuthURL string `json:"authUrl,omitempty"`
-
 	// user's domain name
 	Domain string `json:"domain,omitempty"`
 
