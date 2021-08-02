@@ -23,6 +23,7 @@ type FlightReconciler interface {
 	DeleteErroredInstances() []string
 	EnsureKubernikusRuleInSecurityGroup() bool
 	EnsureServiceUserRoles() []string
+	EnsureNodeMetadataAndTags() []string
 }
 
 type flightReconciler struct {
@@ -38,6 +39,9 @@ type flightReconciler struct {
 func (f *flightReconciler) EnsureInstanceSecurityGroupAssignment() []string {
 	ids := []string{}
 	for _, instance := range f.Instances {
+		if !instance.Running() {
+			continue
+		}
 		found := false
 		for _, sgn := range instance.GetSecurityGroupNames() {
 			if sgn == f.Kluster.Spec.Openstack.SecurityGroupName {
@@ -197,4 +201,32 @@ func (f *flightReconciler) getUnregisteredInstances() []Instance {
 		}
 	}
 	return unregisterd
+}
+
+func (f *flightReconciler) EnsureNodeMetadataAndTags() []string {
+	nodesUpdated := []string{}
+	for _, node := range f.Instances {
+		if !node.Running() {
+			f.Logger.Log("msg", "skipping tag check for not active node", "node", node.GetName(), "v", 4)
+			continue
+		}
+		//this is a hack but yolo
+		n := node.(*instance).Node
+
+		tagsAdded, err := f.Client.EnsureNodeTags(n, f.Kluster.Spec.Name, node.GetPoolName())
+		if len(tagsAdded) > 1 {
+			nodesUpdated = append(nodesUpdated, node.GetName())
+		}
+		if err != nil {
+			f.Logger.Log("msg", "failed to ensure node tags", "node", node.GetName(), "err", err)
+		}
+		changed, err := f.Client.EnsureMetadata(n, f.Kluster.Spec.Name, node.GetPoolName())
+		if len(tagsAdded) == 0 && len(changed) > 0 {
+			nodesUpdated = append(nodesUpdated, node.GetName())
+		}
+		if err != nil {
+			f.Logger.Log("msg", "failed to ensure node metadata", "node", node.GetName(), "err", err)
+		}
+	}
+	return nodesUpdated
 }

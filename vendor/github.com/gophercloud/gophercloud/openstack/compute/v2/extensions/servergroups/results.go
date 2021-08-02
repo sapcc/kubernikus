@@ -6,6 +6,8 @@ import (
 )
 
 // A ServerGroup creates a policy for instance placement in the cloud.
+// You should use extract methods from microversions.go to retrieve additional
+// fields.
 type ServerGroup struct {
 	// ID is the unique ID of the Server Group.
 	ID string `json:"id"`
@@ -30,6 +32,22 @@ type ServerGroup struct {
 	// Metadata includes a list of all user-specified key-value pairs attached
 	// to the Server Group.
 	Metadata map[string]interface{}
+
+	// Policy is the policy of a server group.
+	// This requires microversion 2.64 or later.
+	Policy *string `json:"policy"`
+
+	// Rules are the rules of the server group.
+	// This requires microversion 2.64 or later.
+	Rules *Rules `json:"rules"`
+}
+
+// Rules represents set of rules for a policy.
+// This requires microversion 2.64 or later.
+type Rules struct {
+	// MaxServerPerHost specifies how many servers can reside on a single compute host.
+	// It can be used only with the "anti-affinity" policy.
+	MaxServerPerHost int `json:"max_server_per_host"`
 }
 
 // ServerGroupPage stores a single page of all ServerGroups results from a

@@ -16,14 +16,17 @@ import (
 
 	"github.com/sapcc/kubernikus/pkg/api/models"
 	"github.com/sapcc/kubernikus/pkg/controller/servicing/flatcar"
+	"github.com/sapcc/kubernikus/pkg/util/generator"
 	"github.com/sapcc/kubernikus/pkg/util/netutil"
 )
 
 const (
-	NODE_COREOS_PREFIX     = "Container Linux by CoreOS"
-	NODE_FLATCAR_PREFIX    = "Flatcar Container Linux"
-	NODEPOOL_COREOS_IMAGE  = "coreos-stable-amd64"
-	NODEPOOL_FLATCAR_IMAGE = "flatcar-stable-amd64"
+	NODE_COREOS_PREFIX             = "Container Linux by CoreOS"
+	NODE_FLATCAR_PREFIX            = "Flatcar Container Linux"
+	NODEPOOL_COREOS_IMAGE          = "coreos-stable-amd64"
+	NODEPOOL_FLATCAR_IMAGE         = "flatcar-stable-amd64"
+	NODE_NAMING_PATTERN_OLD_PREFIX = "%v-%v-"
+	NODE_NAMING_PATTERN_PREFIX     = "kks-%v-%v-"
 )
 
 //Taken from https://github.com/kubernetes/kubernetes/blob/886e04f1fffbb04faf8a9f9ee141143b2684ae68/pkg/api/v1/node/util.go
@@ -183,4 +186,11 @@ func NodeVersionConstraint(node *v1.Node, constraint string) (bool, error) {
 		return false, err
 	}
 	return c.Check(v), nil
+}
+
+func IsKubernikusNode(nodeName, klusterName, nodePool string) bool {
+	oldPrefix := fmt.Sprintf(NODE_NAMING_PATTERN_OLD_PREFIX, klusterName, nodePool)
+	prefix := fmt.Sprintf(NODE_NAMING_PATTERN_PREFIX, klusterName, nodePool)
+	return (strings.HasPrefix(nodeName, oldPrefix) && len(nodeName) == len(oldPrefix)+generator.RandomLength) ||
+		(strings.HasPrefix(nodeName, prefix) && len(nodeName) == len(prefix)+generator.RandomLength)
 }
