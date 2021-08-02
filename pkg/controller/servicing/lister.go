@@ -1,7 +1,6 @@
 package servicing
 
 import (
-	"fmt"
 	"strings"
 	"time"
 
@@ -19,7 +18,6 @@ import (
 	"github.com/sapcc/kubernikus/pkg/controller/servicing/coreos"
 	"github.com/sapcc/kubernikus/pkg/controller/servicing/flatcar"
 	"github.com/sapcc/kubernikus/pkg/util"
-	"github.com/sapcc/kubernikus/pkg/util/generator"
 	"github.com/sapcc/kubernikus/pkg/util/version"
 )
 
@@ -143,12 +141,8 @@ func (d *NodeLister) Reboot() []*core_v1.Node {
 	}
 
 	for _, pool := range d.Kluster.Spec.NodePools {
-		prefix := fmt.Sprintf("%v-%v-", d.Kluster.Spec.Name, pool.Name)
 		for _, node := range d.All() {
-			if !strings.HasPrefix(node.GetName(), prefix) {
-				continue
-			}
-			if len(node.GetName()) == len(prefix)+generator.RandomLength {
+			if util.IsKubernikusNode(node.Name, d.Kluster.Spec.Name, pool.Name) {
 				if util.IsFlatcarNodeWithRkt(node) {
 					continue
 				}
@@ -215,13 +209,8 @@ func (d *NodeLister) Replace() []*core_v1.Node {
 	}
 
 	for i, pool := range d.Kluster.Spec.NodePools {
-		prefix := fmt.Sprintf("%v-%v-", d.Kluster.Spec.Name, pool.Name)
 		for _, node := range d.All() {
-			if !strings.HasPrefix(node.GetName(), prefix) {
-				continue
-			}
-
-			if len(node.GetName()) == len(prefix)+generator.RandomLength {
+			if util.IsKubernikusNode(node.Name, d.Kluster.Spec.Name, pool.Name) {
 				nodeNameToPool[node.GetName()] = &d.Kluster.Spec.NodePools[i]
 
 				if *pool.Config.AllowReplace == true || util.IsFlatcarNodeWithRkt(node) {

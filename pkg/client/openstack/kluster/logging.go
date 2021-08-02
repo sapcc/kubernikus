@@ -1,6 +1,8 @@
 package kluster
 
 import (
+	"fmt"
+	"strings"
 	"time"
 
 	"github.com/go-kit/kit/log"
@@ -127,4 +129,34 @@ func (c LoggingClient) EnsureServerGroup(name string) (id string, err error) {
 	}(time.Now())
 
 	return c.Client.EnsureServerGroup(name)
+}
+
+func (c LoggingClient) EnsureNodeTags(node Node, klusterName, poolName string) (added []string, err error) {
+	defer func(begin time.Time) {
+		c.Logger.Log(
+			"msg", "ensured node tags",
+			"nodeID", node.ID,
+			"tags", strings.Join(added, ","),
+			"took", time.Since(begin),
+			"v", 4,
+			"err", err,
+		)
+	}(time.Now())
+
+	return c.Client.EnsureNodeTags(node, klusterName, poolName)
+}
+
+func (c LoggingClient) EnsureMetadata(node Node, klusterName, poolName string) (ret map[string]string, err error) {
+	defer func(begin time.Time) {
+		c.Logger.Log(
+			"msg", "ensured node metadata",
+			"nodeID", node.ID,
+			"return", fmt.Sprintf("%v", ret),
+			"took", time.Since(begin),
+			"v", 4,
+			"err", err,
+		)
+	}(time.Now())
+
+	return c.Client.EnsureMetadata(node, klusterName, poolName)
 }

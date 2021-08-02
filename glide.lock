@@ -1,5 +1,5 @@
-hash: d68a4a034de18b09f0021e3591ddaa18e61bd4954ffcb75aebd0d373a4f88da8
-updated: 2021-03-18T14:14:12.034396+01:00
+hash: edb8669746a696730bcb8dbf9e6a29c35acef571c8ba1cebd25f4964c66bfb97
+updated: 2021-07-30T12:38:05.711195+02:00
 imports:
 - name: github.com/ajeddeloh/yaml
   version: 1072abfea31191db507785e2e0c1b8d1440d35a5
@@ -160,7 +160,7 @@ imports:
   - compiler
   - extensions
 - name: github.com/gophercloud/gophercloud
-  version: 077038c4f65ca6324adea7af6907d0d770131c32
+  version: 09f9c2ef8f0b89eb3715fb612ee97dd65cc0c1e9
   subpackages:
   - internal
   - openstack
@@ -172,6 +172,7 @@ imports:
   - openstack/compute/v2/extensions/schedulerhints
   - openstack/compute/v2/extensions/secgroups
   - openstack/compute/v2/extensions/servergroups
+  - openstack/compute/v2/extensions/tags
   - openstack/compute/v2/flavors
   - openstack/compute/v2/images
   - openstack/compute/v2/servers
@@ -184,6 +185,12 @@ imports:
   - openstack/identity/v3/services
   - openstack/identity/v3/tokens
   - openstack/identity/v3/users
+  - openstack/imageservice/v2/images
+  - openstack/loadbalancer/v2/l7policies
+  - openstack/loadbalancer/v2/listeners
+  - openstack/loadbalancer/v2/loadbalancers
+  - openstack/loadbalancer/v2/monitors
+  - openstack/loadbalancer/v2/pools
   - openstack/networking/v2/extensions/layer3/routers
   - openstack/networking/v2/extensions/security/groups
   - openstack/networking/v2/extensions/security/rules
@@ -195,6 +202,11 @@ imports:
   - openstack/objectstorage/v1/objects
   - openstack/utils
   - pagination
+- name: github.com/gophercloud/utils
+  version: 8a3ad2ad9e70bb387b7256ddcce13755ebc4b446
+  subpackages:
+  - openstack/compute/v2/flavors
+  - openstack/imageservice/v2/images
 - name: github.com/gregjones/httpcache
   version: 787624de3eb7bd915c329cba748687a3b22666a6
   subpackages:
@@ -317,6 +329,8 @@ imports:
   subpackages:
   - bcrypt
   - blowfish
+  - ed25519
+  - ed25519/internal/edwards25519
   - pbkdf2
   - scrypt
   - ssh/terminal
@@ -478,6 +492,7 @@ imports:
   - pkg/runtime/serializer/recognizer
   - pkg/runtime/serializer/streaming
   - pkg/runtime/serializer/versioning
+  - pkg/runtime/serializer/yaml
   - pkg/selection
   - pkg/types
   - pkg/util/cache
@@ -511,6 +526,7 @@ imports:
   subpackages:
   - discovery
   - discovery/fake
+  - dynamic
   - informers
   - informers/admissionregistration
   - informers/admissionregistration/v1alpha1
