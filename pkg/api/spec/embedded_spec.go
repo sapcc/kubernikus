@@ -654,7 +654,8 @@ func init() {
         },
         "sshPublicKey": {
           "description": "SSH public key that is injected into spawned nodes.",
-          "type": "string"
+          "type": "string",
+          "maxLength": 10000
         },
         "version": {
           "description": "Kubernetes version",
@@ -1677,7 +1678,8 @@ func init() {
         },
         "sshPublicKey": {
           "description": "SSH public key that is injected into spawned nodes.",
-          "type": "string"
+          "type": "string",
+          "maxLength": 10000
         },
         "version": {
           "description": "Kubernetes version",
