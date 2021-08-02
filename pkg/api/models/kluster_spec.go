@@ -65,6 +65,7 @@ type KlusterSpec struct {
 	ServiceCIDR string `json:"serviceCIDR,omitempty"`
 
 	// SSH public key that is injected into spawned nodes.
+	// Max Length: 10000
 	SSHPublicKey string `json:"sshPublicKey,omitempty"`
 
 	// Kubernetes version
@@ -97,6 +98,10 @@ func (m *KlusterSpec) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateServiceCIDR(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateSSHPublicKey(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -225,6 +230,19 @@ func (m *KlusterSpec) validateServiceCIDR(formats strfmt.Registry) error {
 	}
 
 	if err := validate.Pattern("serviceCIDR", "body", string(m.ServiceCIDR), `^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$`); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *KlusterSpec) validateSSHPublicKey(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.SSHPublicKey) { // not required
+		return nil
+	}
+
+	if err := validate.MaxLength("sshPublicKey", "body", string(m.SSHPublicKey), 10000); err != nil {
 		return err
 	}
 

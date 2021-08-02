@@ -1,7 +1,9 @@
 package templates
 
 import (
+	"encoding/base64"
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/go-kit/kit/log"
@@ -68,6 +70,7 @@ func init() {
 
 	imageRegistry = version.ImageRegistry{
 		Versions: map[string]version.KlusterVersion{
+			"1.20": {Kubelet: version.ImageVersion{Repository: "nase", Tag: "v1.20"}},
 			"1.19": {Kubelet: version.ImageVersion{Repository: "nase", Tag: "v1.19"}},
 			"1.18": {Hyperkube: version.ImageVersion{Repository: "nase", Tag: "v1.18"}},
 			"1.17": {Hyperkube: version.ImageVersion{Repository: "nase", Tag: "v1.17"}},
@@ -89,17 +92,23 @@ func TestGenerateNode(t *testing.T) {
 
 	for version := range imageRegistry.Versions {
 		kluster.Spec.Version = version
+		//Generate templates with maximum length ssh key
+		kluster.Spec.SSHPublicKey = strings.Repeat("a", 10000)
 		data, err := Ignition.GenerateNode(kluster, nil, "test", &testKlusterSecret, false, imageRegistry, log.NewNopLogger())
+
 		if assert.NoError(t, err, "Failed to generate node for version %s", version) {
 			//Ensure we rendered the expected template
 			assert.Contains(t, string(data), fmt.Sprintf("KUBELET_IMAGE_TAG=v%s", version))
+
+			userData := base64.StdEncoding.EncodeToString(data)
+			assert.LessOrEqual(t, len(userData), 60000, "userdata exceeds openstack limit")
 		}
 	}
 }
 
 func TestNodeLabels(t *testing.T) {
 	kluster := testKluster.DeepCopy()
-	kluster.Spec.Version = "1.10"
+	kluster.Spec.Version = "1.20"
 
 	pool := &models.NodePool{Name: "some-name"}
 

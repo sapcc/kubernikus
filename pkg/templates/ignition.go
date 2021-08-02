@@ -227,8 +227,7 @@ func (i *ignition) GenerateNode(kluster *kubernikusv1.Kluster, pool *models.Node
 		}
 	}
 
-	dataOut, err = json.MarshalIndent(&ignitionConfig2_0, "", "  ")
-	dataOut = append(dataOut, '\n')
+	dataOut, err = json.Marshal(&ignitionConfig2_0)
 
 	if err != nil {
 		return nil, err
