@@ -2,6 +2,7 @@ package kluster
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/go-kit/kit/log"
@@ -130,43 +131,26 @@ func (c LoggingClient) EnsureServerGroup(name string) (id string, err error) {
 	return c.Client.EnsureServerGroup(name)
 }
 
-func (c LoggingClient) CheckNodeTag(nodeID, tag string) (t bool, err error) {
+func (c LoggingClient) EnsureNodeTags(node Node, klusterName, poolName string) (added []string, err error) {
 	defer func(begin time.Time) {
 		c.Logger.Log(
-			"msg", "check node tag",
-			"nodeID", nodeID,
-			"tag", tag,
-			"check", t,
+			"msg", "ensured node tags",
+			"nodeID", node.ID,
+			"tags", strings.Join(added, ","),
 			"took", time.Since(begin),
 			"v", 4,
 			"err", err,
 		)
 	}(time.Now())
 
-	return c.Client.CheckNodeTag(nodeID, tag)
+	return c.Client.EnsureNodeTags(node, klusterName, poolName)
 }
 
-func (c LoggingClient) AddNodeTag(nodeID, tag string) (err error) {
+func (c LoggingClient) EnsureMetadata(node Node, klusterName, poolName string) (ret map[string]string, err error) {
 	defer func(begin time.Time) {
 		c.Logger.Log(
-			"msg", "add node tag",
-			"nodeID", nodeID,
-			"tag", tag,
-			"took", time.Since(begin),
-			"v", 4,
-			"err", err,
-		)
-	}(time.Now())
-
-	return c.Client.AddNodeTag(nodeID, tag)
-}
-
-func (c LoggingClient) UpdateMetadata(nodeID string, data map[string]string) (ret map[string]string, err error) {
-	defer func(begin time.Time) {
-		c.Logger.Log(
-			"msg", "updated node metadata",
-			"nodeID", nodeID,
-			"metadata", fmt.Sprintf("%v", data),
+			"msg", "ensured node metadata",
+			"nodeID", node.ID,
 			"return", fmt.Sprintf("%v", ret),
 			"took", time.Since(begin),
 			"v", 4,
@@ -174,5 +158,5 @@ func (c LoggingClient) UpdateMetadata(nodeID string, data map[string]string) (re
 		)
 	}(time.Now())
 
-	return c.Client.UpdateMetadata(nodeID, data)
+	return c.Client.EnsureMetadata(node, klusterName, poolName)
 }

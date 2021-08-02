@@ -22,6 +22,7 @@ type fakeInstance struct {
 	Created            time.Time
 	SecurityGroupNames []string
 	Errored            bool
+	Pool               string
 }
 
 func (f *fakeInstance) GetID() string {
@@ -42,6 +43,12 @@ func (f *fakeInstance) GetCreated() time.Time {
 
 func (f *fakeInstance) Erroring() bool {
 	return f.Errored
+}
+func (f *fakeInstance) GetPoolName() string {
+	return f.Pool
+}
+func (f *fakeInstance) Running() bool {
+	return true
 }
 
 type MockKlusterClient struct {
@@ -88,18 +95,13 @@ func (m *MockKlusterClient) DeleteServerGroup(name string) (err error) {
 	return args.Error(0)
 }
 
-func (m *MockKlusterClient) CheckNodeTag(nodeID, tag string) (bool, error) {
-	args := m.Called(nodeID, tag)
-	return args.Bool(0), args.Error(0)
+func (m *MockKlusterClient) EnsureNodeTags(node openstack_kluster.Node, kluster, pool string) ([]string, error) {
+	args := m.Called(node, kluster, pool)
+	return args.Get(0).([]string), args.Error(0)
 }
 
-func (m *MockKlusterClient) AddNodeTag(nodeID, tag string) error {
-	args := m.Called(nodeID, tag)
-	return args.Error(0)
-}
-
-func (m *MockKlusterClient) UpdateMetadata(nodeID string, data map[string]string) (map[string]string, error) {
-	args := m.Called(nodeID, data)
+func (m *MockKlusterClient) EnsureMetadata(node openstack_kluster.Node, kluster, pool string) (map[string]string, error) {
+	args := m.Called(node, kluster, pool)
 	return args.Get(0).(map[string]string), args.Error(0)
 }
 

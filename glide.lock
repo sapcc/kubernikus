@@ -1,5 +1,5 @@
-hash: ac013ce89daa32ce004c1e2ec91cdf9db3662132dcb4378f488d040380f3f997
-updated: 2021-07-21T18:25:57.727273+02:00
+hash: edb8669746a696730bcb8dbf9e6a29c35acef571c8ba1cebd25f4964c66bfb97
+updated: 2021-07-30T12:38:05.711195+02:00
 imports:
 - name: github.com/ajeddeloh/yaml
   version: 1072abfea31191db507785e2e0c1b8d1440d35a5
@@ -160,7 +160,7 @@ imports:
   - compiler
   - extensions
 - name: github.com/gophercloud/gophercloud
-  version: ee96a03bd4bd72846607d0867fad3a656ed0b700
+  version: 09f9c2ef8f0b89eb3715fb612ee97dd65cc0c1e9
   subpackages:
   - internal
   - openstack
@@ -185,6 +185,7 @@ imports:
   - openstack/identity/v3/services
   - openstack/identity/v3/tokens
   - openstack/identity/v3/users
+  - openstack/imageservice/v2/images
   - openstack/loadbalancer/v2/l7policies
   - openstack/loadbalancer/v2/listeners
   - openstack/loadbalancer/v2/loadbalancers
@@ -201,6 +202,11 @@ imports:
   - openstack/objectstorage/v1/objects
   - openstack/utils
   - pagination
+- name: github.com/gophercloud/utils
+  version: 8a3ad2ad9e70bb387b7256ddcce13755ebc4b446
+  subpackages:
+  - openstack/compute/v2/flavors
+  - openstack/imageservice/v2/images
 - name: github.com/gregjones/httpcache
   version: 787624de3eb7bd915c329cba748687a3b22666a6
   subpackages:

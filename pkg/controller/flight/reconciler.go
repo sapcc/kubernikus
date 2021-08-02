@@ -23,8 +23,7 @@ type FlightReconciler interface {
 	DeleteErroredInstances() []string
 	EnsureKubernikusRuleInSecurityGroup() bool
 	EnsureServiceUserRoles() []string
-	EnsureNodeTags() []string
-	EnsureNodeMetadata() []string
+	EnsureNodeMetadataAndTags() []string
 }
 
 type flightReconciler struct {
@@ -40,6 +39,9 @@ type flightReconciler struct {
 func (f *flightReconciler) EnsureInstanceSecurityGroupAssignment() []string {
 	ids := []string{}
 	for _, instance := range f.Instances {
+		if !instance.Running() {
+			continue
+		}
 		found := false
 		for _, sgn := range instance.GetSecurityGroupNames() {
 			if sgn == f.Kluster.Spec.Openstack.SecurityGroupName {
@@ -201,70 +203,30 @@ func (f *flightReconciler) getUnregisteredInstances() []Instance {
 	return unregisterd
 }
 
-func (f *flightReconciler) EnsureNodeTags() []string {
-	tagsAdded := []string{}
-	for i := range f.Kluster.Spec.NodePools {
-		nodes, err := f.Client.ListNodes(f.Kluster, &f.Kluster.Spec.NodePools[i])
-		if err != nil {
-			f.Logger.Log("msg", "couldn't ensure node tags for nodepool", "nodepool", f.Kluster.Spec.NodePools[i].Name, "err", err)
+func (f *flightReconciler) EnsureNodeMetadataAndTags() []string {
+	nodesUpdated := []string{}
+	for _, node := range f.Instances {
+		if !node.Running() {
+			f.Logger.Log("msg", "skipping tag check for not active node", "node", node.GetName(), "v", 4)
 			continue
 		}
-		tagList := []string{"kubernikus", f.Kluster.Name, f.Kluster.Spec.NodePools[i].Name}
-		for _, node := range nodes {
-			if node.Running() {
-				added := false
-				for _, tag := range tagList {
-					r, err := f.Client.CheckNodeTag(node.ID, tag)
-					if err != nil {
-						f.Logger.Log("msg", "couldn't check tag for node", "node", node.Name, "tag", tag, "err", err)
-						continue
-					}
-					if !r {
-						err := f.Client.AddNodeTag(node.ID, tag)
-						if err != nil {
-							f.Logger.Log("msg", "couldn't add tag to node", "node", node.Name, "tag", tag, "err", err)
-							continue
-						}
-						added = true
-					}
-				}
-				if added {
-					tagsAdded = append(tagsAdded, node.Name)
-				}
-			} else {
-				f.Logger.Log("msg", "skipping tag check for not active node", "node", node.Name, "v", 4)
-			}
-		}
-	}
-	return tagsAdded
-}
+		//this is a hack but yolo
+		n := node.(*instance).Node
 
-func (f *flightReconciler) EnsureNodeMetadata() []string {
-	metadataAdded := []string{}
-	for i := range f.Kluster.Spec.NodePools {
-		nodes, err := f.Client.ListNodes(f.Kluster, &f.Kluster.Spec.NodePools[i])
+		tagsAdded, err := f.Client.EnsureNodeTags(n, f.Kluster.Spec.Name, node.GetPoolName())
+		if len(tagsAdded) > 1 {
+			nodesUpdated = append(nodesUpdated, node.GetName())
+		}
 		if err != nil {
-			f.Logger.Log("msg", "couldn't ensure node tags for nodepool", "nodepool", f.Kluster.Spec.NodePools[i].Name, "err", err)
-			continue
+			f.Logger.Log("msg", "failed to ensure node tags", "node", node.GetName(), "err", err)
 		}
-		metadataList := map[string]string{"provisioner": "kubernikus", "nodepool": f.Kluster.Spec.NodePools[i].Name, "kluster": f.Kluster.Name}
-		for _, node := range nodes {
-			changed := false
-			for key, value := range metadataList {
-				if ret, _ := node.Metadata[key]; value != ret {
-					node.Metadata[key] = value
-					changed = true
-				}
-			}
-			if changed {
-				_, err := f.Client.UpdateMetadata(node.ID, node.Metadata)
-				if err != nil {
-					f.Logger.Log("msg", "couldn't update node metadata", "node", node.Name, "metadata", node.Metadata, "err", err)
-				}
-				metadataAdded = append(metadataAdded, node.Name)
-			}
+		changed, err := f.Client.EnsureMetadata(n, f.Kluster.Spec.Name, node.GetPoolName())
+		if len(tagsAdded) == 0 && len(changed) > 0 {
+			nodesUpdated = append(nodesUpdated, node.GetName())
+		}
+		if err != nil {
+			f.Logger.Log("msg", "failed to ensure node metadata", "node", node.GetName(), "err", err)
 		}
 	}
-
-	return metadataAdded
+	return nodesUpdated
 }

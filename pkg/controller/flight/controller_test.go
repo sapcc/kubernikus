@@ -48,12 +48,7 @@ func (m *MockFlightReconciler) EnsureServiceUserRoles() []string {
 	return args.Get(0).([]string)
 }
 
-func (m *MockFlightReconciler) EnsureNodeTags() []string {
-	args := m.Called()
-	return args.Get(0).([]string)
-}
-
-func (m *MockFlightReconciler) EnsureNodeMetadata() []string {
+func (m *MockFlightReconciler) EnsureNodeMetadataAndTags() []string {
 	args := m.Called()
 	return args.Get(0).([]string)
 }
@@ -68,8 +63,7 @@ func TestReconcile(t *testing.T) {
 	reconciler.On("DeleteIncompletelySpawnedInstances").Return([]string{})
 	reconciler.On("DeleteErroredInstances").Return([]string{})
 	reconciler.On("EnsureServiceUserRoles").Return([]string{})
-	reconciler.On("EnsureNodeTags").Return([]string{})
-	reconciler.On("EnsureNodeMetadata").Return([]string{})
+	reconciler.On("EnsureNodeMetadataAndTags").Return([]string{})
 
 	factory := &MockFlightReconcilerFactory{}
 	factory.On("FlightReconciler", kluster).Return(reconciler, nil)
@@ -84,7 +78,6 @@ func TestReconcile(t *testing.T) {
 	reconciler.AssertCalled(t, "DeleteIncompletelySpawnedInstances")
 	reconciler.AssertCalled(t, "DeleteErroredInstances")
 	reconciler.AssertCalled(t, "EnsureServiceUserRoles")
-	reconciler.AssertCalled(t, "EnsureNodeTags")
-	reconciler.AssertCalled(t, "EnsureNodeMetadata")
+	reconciler.AssertCalled(t, "EnsureNodeMetadataAndTags")
 
 }

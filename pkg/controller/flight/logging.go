@@ -71,26 +71,14 @@ func (f *LoggingFlightReconciler) EnsureServiceUserRoles() []string {
 	return createdRoles
 }
 
-func (f *LoggingFlightReconciler) EnsureNodeTags() []string {
-	addedTags := f.Reconciler.EnsureNodeTags()
+func (f *LoggingFlightReconciler) EnsureNodeMetadataAndTags() []string {
+	addedTags := f.Reconciler.EnsureNodeMetadataAndTags()
 	if len(addedTags) > 0 {
 		f.Logger.Log(
-			"msg", "added missing node tags",
+			"msg", "ensured node metadata and tags",
 			"nodes", fmt.Sprintf("%v", addedTags),
 			"v", 2,
 		)
 	}
 	return addedTags
-}
-
-func (f *LoggingFlightReconciler) EnsureNodeMetadata() []string {
-	addedMetadata := f.Reconciler.EnsureNodeMetadata()
-	if len(addedMetadata) > 0 {
-		f.Logger.Log(
-			"msg", "added missing metadata to nodes",
-			"nodes", fmt.Sprintf("%v", addedMetadata),
-			"v", 2,
-		)
-	}
-	return addedMetadata
 }

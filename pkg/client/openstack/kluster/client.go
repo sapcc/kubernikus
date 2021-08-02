@@ -15,10 +15,14 @@ import (
 	securitygroups "github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/security/groups"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/security/rules"
 	"github.com/gophercloud/gophercloud/pagination"
+	flavorutil "github.com/gophercloud/utils/openstack/compute/v2/flavors"
+	imageutil "github.com/gophercloud/utils/openstack/imageservice/v2/images"
+	"k8s.io/apimachinery/pkg/util/sets"
 
 	"github.com/sapcc/kubernikus/pkg/api/models"
 	v1 "github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
 	"github.com/sapcc/kubernikus/pkg/client/openstack/compute"
+	"github.com/sapcc/kubernikus/pkg/templates"
 	"github.com/sapcc/kubernikus/pkg/util"
 )
 
@@ -31,23 +35,24 @@ type KlusterClient interface {
 	EnsureKubernikusRuleInSecurityGroup(*v1.Kluster) (bool, error)
 	EnsureServerGroup(name string) (string, error)
 	DeleteServerGroup(name string) error
-	CheckNodeTag(nodeID, tag string) (bool, error)
-	AddNodeTag(nodeID, tag string) error
-	UpdateMetadata(nodeID string, data map[string]string) (map[string]string, error)
+	EnsureNodeTags(node Node, klusterName, poolName string) ([]string, error)
+	EnsureMetadata(node Node, klusterName, poolName string) (map[string]string, error)
 }
 
 type klusterClient struct {
 	NetworkClient  *gophercloud.ServiceClient
 	ComputeClient  *gophercloud.ServiceClient
 	IdentityClient *gophercloud.ServiceClient
+	ImageClient    *gophercloud.ServiceClient
 }
 
-func NewKlusterClient(network, compute, identity *gophercloud.ServiceClient) KlusterClient {
+func NewKlusterClient(network, compute, identity, image *gophercloud.ServiceClient) KlusterClient {
 	var client KlusterClient
 	client = &klusterClient{
 		NetworkClient:  network,
 		ComputeClient:  compute,
 		IdentityClient: identity,
+		ImageClient:    image,
 	}
 
 	return client
@@ -73,24 +78,39 @@ func (c *klusterClient) CreateNode(kluster *v1.Kluster, pool *models.NodePool, n
 			{UUID: kluster.Spec.Openstack.NetworkID},
 		}
 	}
+	flavorID, err := flavorutil.IDFromName(c.ComputeClient, pool.Flavor)
+	if err != nil {
+		return "", fmt.Errorf("Failed to find id for flavor %s: %w", pool.Flavor, err)
+	}
+	imageID, err := imageutil.IDFromName(c.ImageClient, pool.Image)
+	if err != nil {
+		return "", fmt.Errorf("Failed to find id for image %s: %w", pool.Image, err)
+	}
+
+	tags := nodeTags(kluster.Spec.Name, pool.Name)
+	tags = append(tags, "kubernikus:template-version="+templates.TEMPLATE_VERSION)
+	tags = append(tags, "kubernikus:api-version="+kluster.Spec.Version)
+	metadata := nodeMetadata(kluster.Spec.Name, pool.Name)
+	metadata["kubernikus:template-version"] = templates.TEMPLATE_VERSION
+	metadata["kubernikus:api-version"] = kluster.Spec.Version
 
 	var createOpts servers.CreateOptsBuilder = servers.CreateOpts{
 		Name:             name,
-		FlavorName:       pool.Flavor,
-		ImageName:        pool.Image,
+		FlavorRef:        flavorID,
+		ImageRef:         imageID,
 		AvailabilityZone: pool.AvailabilityZone,
 		Networks:         networks,
 		UserData:         userData,
-		ServiceClient:    c.ComputeClient,
 		SecurityGroups:   []string{kluster.Spec.Openstack.SecurityGroupName},
 		ConfigDrive:      &configDrive,
-		Metadata:         map[string]string{"provisioner": "kubernikus", "nodepool": pool.Name, "kluster": kluster.Name},
+		Metadata:         metadata,
+		Tags:             tags,
 	}
 
 	if os.Getenv("NODEPOOL_AFFINITY") != "" {
 		serverGroupID, err := c.EnsureServerGroup(kluster.Name + "/" + pool.Name)
 		if err != nil {
-			return "", err
+			return "", fmt.Errorf("Failed to ensure server group: %w", err)
 		}
 
 		createOpts = schedulerhints.CreateOptsExt{
@@ -101,7 +121,7 @@ func (c *klusterClient) CreateNode(kluster *v1.Kluster, pool *models.NodePool, n
 
 	server, err := compute.Create(c.ComputeClient, createOpts).Extract()
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("Failed to create node: %w", err)
 	}
 
 	return server.ID, nil
@@ -291,14 +311,56 @@ func ExtractServers(r pagination.Page) ([]Node, error) {
 	return s, err
 }
 
-func (c *klusterClient) CheckNodeTag(nodeID, tag string) (bool, error) {
-	return tags.Check(c.ComputeClient, nodeID, tag).Extract()
+func (c *klusterClient) EnsureNodeTags(node Node, klusterName, poolName string) ([]string, error) {
+
+	exitingTags := sets.NewString()
+	if node.Tags != nil {
+		exitingTags.Insert(*node.Tags...)
+	}
+	missingTags := sets.NewString(nodeTags(klusterName, poolName)...).Difference(exitingTags).UnsortedList()
+
+	added := []string{}
+	for _, tag := range missingTags {
+		if err := tags.Add(c.ComputeClient, node.ID, tag).ExtractErr(); err != nil {
+			return added, fmt.Errorf("Failed to add tag %s to instance %s, %w", tag, node.ID, err)
+
+		}
+		added = append(added, tag)
+	}
+	return added, nil
+
 }
 
-func (c *klusterClient) AddNodeTag(nodeID, tag string) error {
-	return tags.Add(c.ComputeClient, nodeID, tag).ExtractErr()
+func (c *klusterClient) EnsureMetadata(node Node, klusterName, poolName string) (map[string]string, error) {
+
+	metadata := nodeMetadata(klusterName, poolName)
+	if node.Metadata == nil {
+		node.Metadata = map[string]string{}
+	}
+	//remove metadata keys that are aleady present
+	for k, v := range metadata {
+		if node.Metadata[k] == v {
+			delete(metadata, k)
+		}
+	}
+	if len(metadata) == 0 {
+		return nil, nil // nothing left to set
+	}
+	return servers.UpdateMetadata(c.ComputeClient, node.ID, servers.MetadataOpts(metadata)).Extract()
 }
 
-func (c *klusterClient) UpdateMetadata(nodeID string, data map[string]string) (map[string]string, error) {
-	return servers.UpdateMetadata(c.ComputeClient, nodeID, servers.MetadataOpts(data)).Extract()
+func nodeTags(kluster, pool string) []string {
+	return []string{
+		"kubernikus",
+		"kubernikus:kluster=" + kluster,
+		"kubernikus:nodepool=" + pool,
+	}
+}
+
+func nodeMetadata(kluster, pool string) map[string]string {
+	return map[string]string{
+		"provisioner":         "kubernikus",
+		"kubernikus:nodepool": pool,
+		"kubernikus:kluster":  kluster,
+	}
 }
