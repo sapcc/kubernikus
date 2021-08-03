@@ -45,10 +45,10 @@ spec:
             - --oidc-client-secret={{ required "api.oidc.clientSecret missing" .Values.dex.clientSecret }}
             - --oidc-callback-url=https://{{ required "domain missing" .Values.domain }}/auth/callback
             {{- else }}
-            {{- /* This is a bit convoluted but making sure that the url ends with /v3 */}}
-            - --auth-url={{ trimSuffix "/" .Values.openstack.auth_url | trimSuffix "/v3" }}/v3
             - --policy={{ default "/etc/kubernikus/policy.json" .Values.api.policyFile }}
             {{- end }}
+            {{- /* This is a bit convoluted but making sure that the url ends with /v3 */}}
+            - --auth-url={{ trimSuffix "/" .Values.openstack.auth_url | trimSuffix "/v3" }}/v3
             - --v={{ default 1 .Values.api.log_level }}
             - --namespace={{ default "kubernikus" .Values.namespace }}
             - --images-file=/etc/kubernikus/charts/images.yaml
