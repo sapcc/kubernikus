@@ -7,6 +7,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/go-openapi/runtime"
 	"github.com/gophercloud/gophercloud/openstack/identity/v3/tokens"
 	"github.com/stretchr/testify/require"
 
@@ -115,26 +116,38 @@ func TestRunner(t *testing.T) {
 			DomainName:  os.Getenv("OS_PROJECT_DOMAIN_NAME"),
 		},
 	}
-	kubernikus, err := framework.NewKubernikusFramework(kurl, authOptions)
+	authInfo, err := framework.NewOpensStackAuth(authOptions)
+	if err != nil {
+		require.NoError(t, err, "Failed to create auth for kubernikus api")
+	}
+	kubernikus := framework.NewKubernikusFramework(kurl, authInfo)
 	require.NoError(t, err, "Must be able to connect to Kubernikus")
 
 	var kubernikusControlPlane *framework.Kubernikus
 	if os.Getenv("CP_KUBERNIKUS_URL") != "" {
 		kcpurl, err := url.Parse(os.Getenv("CP_KUBERNIKUS_URL"))
 		require.NoError(t, err, "Must be able to parse Kubernikus control plane URL")
-		authOptionsControlPlane := &tokens.AuthOptions{
-			IdentityEndpoint: os.Getenv("OS_AUTH_URL"),
-			Username:         os.Getenv("OS_USERNAME"),
-			Password:         os.Getenv("OS_PASSWORD"),
-			DomainName:       os.Getenv("OS_USER_DOMAIN_NAME"),
-			AllowReauth:      true,
-			Scope: tokens.Scope{
-				ProjectName: os.Getenv("CP_OS_PROJECT_NAME"),
-				DomainName:  os.Getenv("CP_OS_PROJECT_DOMAIN_NAME"),
-			},
+
+		var auth_info runtime.ClientAuthInfoWriter
+		if os.Getenv("CP_OIDC_AUTH_URL") != "" {
+			auth_info, err = framework.NewOIDCAuth(os.Getenv("OS_USERNAME"), os.Getenv("OS_PASSWORD"), os.Getenv("CP_OIDC_CONNECTOR_ID"), os.Getenv("CP_OIDC_AUTH_URL"))
+			require.NoError(t, err, "Failed to use oidc auth for controlplane kubernikus")
+		} else {
+			authOptionsControlPlane := &tokens.AuthOptions{
+				IdentityEndpoint: os.Getenv("OS_AUTH_URL"),
+				Username:         os.Getenv("OS_USERNAME"),
+				Password:         os.Getenv("OS_PASSWORD"),
+				DomainName:       os.Getenv("OS_USER_DOMAIN_NAME"),
+				AllowReauth:      true,
+				Scope: tokens.Scope{
+					ProjectName: os.Getenv("CP_OS_PROJECT_NAME"),
+					DomainName:  os.Getenv("CP_OS_PROJECT_DOMAIN_NAME"),
+				},
+			}
+			auth_info, err = framework.NewOpensStackAuth(authOptionsControlPlane)
+			require.NoError(t, err, "Failed to use openstack auth for controlplane kubernikus")
 		}
-		kubernikusControlPlane, err = framework.NewKubernikusFramework(kcpurl, authOptionsControlPlane)
-		require.NoError(t, err, "Must be able to connect to Kubernikus Control Plane")
+		kubernikusControlPlane = framework.NewKubernikusFramework(kcpurl, auth_info)
 	}
 
 	openstack, err := framework.NewOpenStackFramework()
