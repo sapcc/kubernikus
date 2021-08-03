@@ -140,7 +140,7 @@ func TestRunner(t *testing.T) {
 	openstack, err := framework.NewOpenStackFramework()
 	require.NoError(t, err, "Must be able to connect to OpenStack")
 
-	project, err := tokens.Get(openstack.Identity, openstack.Provider.Token()).ExtractProject()
+	project, err := openstack.Provider.GetAuthResult().(tokens.CreateResult).ExtractProject()
 	require.NoError(t, err, "Cannot extract project from token")
 	fullKlusterName := fmt.Sprintf("%s-%s", klusterName, project.ID)
 
