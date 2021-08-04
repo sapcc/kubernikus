@@ -114,7 +114,7 @@ func (p *PyrolisisTests) CleanupBackupStorageContainers(t *testing.T) {
 			err = wait.PollImmediate(CleanupBackupContainerDeleteInterval, CleanupBackupContainerDeleteTimeout,
 				func() (bool, error) {
 					_, err := containers.Delete(storageClient, container).Extract()
-					if errResponseCode, ok := err.(gophercloud.ErrDefault409); ok {
+					if _, ok := err.(gophercloud.ErrDefault409); ok {
 						return false, nil
 					}
 					//Ignore 404 from swift, this can happen for a successful delete becase of the eventual consistency
