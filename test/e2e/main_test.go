@@ -87,8 +87,14 @@ func TestRunner(t *testing.T) {
 	fmt.Printf("\n")
 	if os.Getenv("CP_KUBERNIKUS_URL") != "" {
 		fmt.Printf("CP_KUBERNIKUS_URL:         %v\n", os.Getenv("CP_KUBERNIKUS_URL"))
-		fmt.Printf("CP_OS_PROJECT_NAME:        %v\n", os.Getenv("CP_OS_PROJECT_NAME"))
-		fmt.Printf("CP_OS_PROJECT_DOMAIN_NAME: %v\n", os.Getenv("CP_OS_PROJECT_DOMAIN_NAME"))
+		if os.Getenv("CP_OIDC_AUTH_URL") != "" {
+			fmt.Printf("CP_OIDC_AUTH_URL:          %v\n", os.Getenv("CP_OIDC_AUTH_URL"))
+			fmt.Printf("CP_OIDC_CONNECTOR_ID:      %v\n", os.Getenv("CP_OIDC_CONNECTOR_ID"))
+			fmt.Printf("CP_OIDC_USERNAME:          %v\n", os.Getenv("CP_OIDC_USERNAME"))
+		} else {
+			fmt.Printf("CP_OS_PROJECT_NAME:        %v\n", os.Getenv("CP_OS_PROJECT_NAME"))
+			fmt.Printf("CP_OS_PROJECT_DOMAIN_NAME: %v\n", os.Getenv("CP_OS_PROJECT_DOMAIN_NAME"))
+		}
 	}
 	fmt.Printf("\n")
 	fmt.Printf("========================================================================\n")
@@ -130,7 +136,7 @@ func TestRunner(t *testing.T) {
 
 		var auth_info runtime.ClientAuthInfoWriter
 		if os.Getenv("CP_OIDC_AUTH_URL") != "" {
-			auth_info, err = framework.NewOIDCAuth(os.Getenv("OS_USERNAME"), os.Getenv("OS_PASSWORD"), os.Getenv("CP_OIDC_CONNECTOR_ID"), os.Getenv("CP_OIDC_AUTH_URL"))
+			auth_info, err = framework.NewOIDCAuth(os.Getenv("CP_OIDC_USERNAME"), os.Getenv("CP_OIDC_PASSWORD"), os.Getenv("CP_OIDC_CONNECTOR_ID"), os.Getenv("CP_OIDC_AUTH_URL"))
 			require.NoError(t, err, "Failed to use oidc auth for controlplane kubernikus")
 		} else {
 			authOptionsControlPlane := &tokens.AuthOptions{
