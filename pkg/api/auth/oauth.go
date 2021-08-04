@@ -81,7 +81,7 @@ func OAuth(verifier *oidc.IDTokenVerifier, logger log.Logger) func(token string,
 		if len(emailParts) < 2 {
 			return nil, errors.New(401, "Malformed email in idToken")
 		}
-		prin := models.Principal{ID: id.Subject, Name: idToken.Name, Account: emailParts[1], Roles: []string{"kubernetes_admin"}}
+		prin := models.Principal{ID: id.Subject, Name: idToken.Name, Account: emailParts[1]}
 		return &prin, nil
 	}
 }

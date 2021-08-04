@@ -101,8 +101,9 @@ func (k *NodeTests) Tagged(t *testing.T) {
 	if err != nil {
 		require.NoErrorf(t, err, "listing openstack instances failed")
 	}
+	assert.Len(t, instances, k.ExpectedNodeCount, "Didn't find expected number of cloud instances")
 	for _, instance := range instances {
-		assert.Subset(t, instance.Tags, []string{"kubernikus", "kubernikus:kluster=" + k.KlusterName, "kubernikus:nodepool=small"})
+		assert.Subset(t, *instance.Tags, []string{"kubernikus", "kubernikus:kluster=" + k.KlusterName, "kubernikus:nodepool=small"})
 
 		expect := map[string]string{
 			"provisioner":         "kubernikus",

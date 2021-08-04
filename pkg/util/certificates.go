@@ -328,9 +328,13 @@ func (cf *CertificateFactory) UserCert(principal *models.Principal, apiURL strin
 		organizations = append(organizations, "os:"+role)
 	}
 	projectid := cf.kluster.Account()
+	cn := principal.Name
+	if principal.Domain != "" {
+		cn = fmt.Sprintf("%s@%s", principal.Name, principal.Domain)
+	}
 
 	return caBundle.Sign(Config{
-		Sign:         fmt.Sprintf("%s@%s", principal.Name, principal.Domain),
+		Sign:         cn,
 		Organization: organizations,
 		Province:     []string{auth.OpenStackAuthURL(), projectid},
 		Locality:     []string{apiURL},
