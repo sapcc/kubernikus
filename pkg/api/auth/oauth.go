@@ -2,8 +2,6 @@ package auth
 
 import (
 	"context"
-	"encoding/base64"
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"strings"
@@ -52,7 +50,7 @@ func OAuthConfig(logger log.Logger) (func(token string, scopes []string) (*model
 		ClientSecret: clientSecret,
 		Endpoint:     provider.Endpoint(),
 		RedirectURL:  callbackURL,
-		Scopes:       []string{oidc.ScopeOpenID, "profile", "email"},
+		Scopes:       []string{oidc.ScopeOpenID, "profile", "email", "groups"},
 	}
 	randomPasswordChars := []rune("abcdefghjkmnpqrstuvwxABCDEFGHJKLMNPQRSTUVWX23456789")
 	state, err := goutils.Random(12, 0, 0, true, true, randomPasswordChars...)
@@ -70,18 +68,19 @@ func OAuth(verifier *oidc.IDTokenVerifier, logger log.Logger) func(token string,
 		if err != nil {
 			return nil, errors.New(401, "invalid token: %s", err)
 		}
-		var idToken struct {
-			Name  string
-			Email string
+		var claims struct {
+			Name   string
+			Email  string
+			Groups []string
 		}
-		if err := parseJWT(token, &idToken); err != nil {
+		if err := id.Claims(&claims); err != nil {
 			return nil, errors.New(401, "invalid token 2: %s", err)
 		}
-		emailParts := strings.Split(idToken.Email, "@")
+		emailParts := strings.Split(claims.Email, "@")
 		if len(emailParts) < 2 {
 			return nil, errors.New(401, "Malformed email in idToken")
 		}
-		prin := models.Principal{ID: id.Subject, Name: idToken.Name, Account: emailParts[1]}
+		prin := models.Principal{ID: id.Subject, Name: claims.Name, Account: emailParts[1], Groups: claims.Groups}
 		return &prin, nil
 	}
 }
@@ -152,16 +151,4 @@ func (a *authCallback) verify(authCode, state string) (string, error) {
 	}
 
 	return rawIDToken, nil
-}
-
-func parseJWT(p string, obj interface{}) error {
-	parts := strings.Split(p, ".")
-	if len(parts) < 2 {
-		return fmt.Errorf("malformed jwt, expected 3 parts got %d", len(parts))
-	}
-	payload, err := base64.RawURLEncoding.DecodeString(parts[1])
-	if err != nil {
-		return fmt.Errorf("malformed jwt payload: %v", err)
-	}
-	return json.Unmarshal(payload, obj)
 }

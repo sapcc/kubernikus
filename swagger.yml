@@ -681,6 +681,11 @@ definitions:
         type: array
         items:
           type: string
+      groups:
+        description: list of groups the user belongs to
+        type: array
+        items:
+          type: string
   error:
     description: >
       the error model is a model for all the error responses coming from
