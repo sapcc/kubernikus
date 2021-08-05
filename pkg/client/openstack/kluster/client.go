@@ -139,15 +139,14 @@ func (c *klusterClient) RebootNode(id string) error {
 func (c *klusterClient) ListNodes(k *v1.Kluster, pool *models.NodePool) ([]Node, error) {
 	var unfilteredNodes []Node
 	var filteredNodes []Node
-	var err error
 
-	err = servers.List(c.ComputeClient, servers.ListOpts{}).EachPage(func(page pagination.Page) (bool, error) {
+	err := servers.List(c.ComputeClient, servers.ListOpts{}).EachPage(func(page pagination.Page) (bool, error) {
 		if page != nil {
-			nodes, err = ExtractServers(page)
+			nodes, err := ExtractServers(page)
 			if err != nil {
 				return false, err
 			}
-			unfilteredNodes = append(unfilteredNodes, nodes)
+			unfilteredNodes = append(unfilteredNodes, nodes...)
 		}
 		return true, nil
 	})
