@@ -283,7 +283,6 @@ func (k *NodeTests) listInstances() ([]instance, error) {
 
 	serversListOpts := servers.ListOpts{
 		TenantID: project.ID,
-		Status:   "ACTIVE",
 		Name:     "kks-" + k.KlusterName,
 	}
 
