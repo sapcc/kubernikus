@@ -143,10 +143,11 @@ func (c *klusterClient) ListNodes(k *v1.Kluster, pool *models.NodePool) ([]Node,
 
 	err = servers.List(c.ComputeClient, servers.ListOpts{}).EachPage(func(page pagination.Page) (bool, error) {
 		if page != nil {
-			unfilteredNodes, err = ExtractServers(page)
+			nodes, err = ExtractServers(page)
 			if err != nil {
 				return false, err
 			}
+			unfilteredNodes = append(unfilteredNodes, nodes)
 		}
 		return true, nil
 	})
