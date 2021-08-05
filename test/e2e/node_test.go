@@ -12,7 +12,6 @@ import (
 
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/extendedserverattributes"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/servers"
-	"github.com/gophercloud/gophercloud/openstack/identity/v3/tokens"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	v1 "k8s.io/api/core/v1"
@@ -276,14 +275,8 @@ type instance struct {
 
 func (k *NodeTests) listInstances() ([]instance, error) {
 
-	project, err := k.OpenStack.Provider.GetAuthResult().(tokens.CreateResult).ExtractProject()
-	if err != nil {
-		return nil, fmt.Errorf("Failed to extract project from auth result: %w", err)
-	}
-
 	serversListOpts := servers.ListOpts{
-		TenantID: project.ID,
-		Name:     "kks-" + k.KlusterName,
+		Name: "kks-" + k.KlusterName,
 	}
 
 	allPages, err := servers.List(k.OpenStack.Compute, serversListOpts).AllPages()
