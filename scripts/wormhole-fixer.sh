@@ -12,7 +12,7 @@ if [ "$2" != "" ]; then
   export KUBECONFIG=$2
 fi
 
-kubectl create --context $CONTEXT -n default -f - <<EOF
+kubectl apply --context $CONTEXT -n default -f - <<EOF
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:

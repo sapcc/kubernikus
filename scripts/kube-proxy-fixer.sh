@@ -11,14 +11,14 @@ CLUSTER=$3
 
 
 
-kubectl get secret --context $PARENT_CONTEXT $CLUSTER-secret --namespace=kubernikus -o go-template='{"kind":"Secret", "apiVersion":"v1", "metadata":{"name":"new-proxy-certs"}, "data":{"apiserver-clients-system-kube-proxy-key.pem": "{{index .data "apiserver-clients-system-kube-proxy-key.pem"}}", "apiserver-clients-system-kube-proxy.pem":"{{index .data "apiserver-clients-system-kube-proxy.pem"}}"}}' | kubectl --kubeconfig=$4 create -n default --context=$CONTEXT -f -
+kubectl get secret --context $PARENT_CONTEXT $CLUSTER-secret --namespace=kubernikus -o go-template='{"kind":"Secret", "apiVersion":"v1", "metadata":{"name":"new-proxy-certs"}, "data":{"apiserver-clients-system-kube-proxy-key.pem": "{{index .data "apiserver-clients-system-kube-proxy-key.pem"}}", "apiserver-clients-system-kube-proxy.pem":"{{index .data "apiserver-clients-system-kube-proxy.pem"}}"}}' | kubectl --kubeconfig=$4 apply -n default --context=$CONTEXT -f -
 
 if [ "$4" != "" ]; then
   echo using kubeconfig $4
   export KUBECONFIG=$4
 fi
 
-kubectl create --context $CONTEXT -n default -f - <<EOF
+kubectl apply --context $CONTEXT -n default -f - <<EOF
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:

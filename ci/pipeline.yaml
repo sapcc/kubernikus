@@ -451,6 +451,11 @@ auth_e2e_qa-de-1: &auth_e2e_qa-de-1
   CP_KUBERNIKUS_URL: https://kubernikus.admin.qa-de-1.cloud.sap
   CP_OS_PROJECT_DOMAIN_NAME: ccadmin
 
+  CP_OIDC_AUTH_URL: https://kubernikus.admin.qa-de-1.cloud.sap/auth/login
+  CP_OIDC_CONNECTOR_ID: ce5462b173184391a9b47b486fabe580
+  CP_OIDC_USERNAME: ((KUBELOGON_USER))
+  CP_OIDC_PASSWORD: ((KUBELOGON_PASSWORD))
+
   KUBERNIKUS_NAME: e2e
   OS_PROJECT_DOMAIN_NAME: ccadmin
 
