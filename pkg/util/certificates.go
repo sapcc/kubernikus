@@ -324,15 +324,27 @@ func (cf *CertificateFactory) UserCert(principal *models.Principal, apiURL strin
 	}
 
 	var organizations []string
+	for _, group := range principal.Groups {
+		organizations = append(organizations, group)
+	}
 	for _, role := range principal.Roles {
 		organizations = append(organizations, "os:"+role)
 	}
 	projectid := cf.kluster.Account()
+	cn := principal.Name
+	if principal.Domain != "" {
+		cn = fmt.Sprintf("%s@%s", principal.Name, principal.Domain)
+	}
+
+	province := []string{projectid}
+	if a := auth.OpenStackAuthURL(); a != "" {
+		province = append([]string{a}, province...)
+	}
 
 	return caBundle.Sign(Config{
-		Sign:         fmt.Sprintf("%s@%s", principal.Name, principal.Domain),
+		Sign:         cn,
 		Organization: organizations,
-		Province:     []string{auth.OpenStackAuthURL(), projectid},
+		Province:     province,
 		Locality:     []string{apiURL},
 		Usages:       []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth},
 		ValidFor:     24 * time.Hour,

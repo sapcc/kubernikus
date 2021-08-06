@@ -10,10 +10,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/gophercloud/gophercloud"
-	"github.com/gophercloud/gophercloud/openstack"
+	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/extendedserverattributes"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/servers"
-	"github.com/gophercloud/gophercloud/openstack/identity/v3/tokens"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	v1 "k8s.io/api/core/v1"
@@ -46,6 +44,7 @@ type NodeTests struct {
 
 func (k *NodeTests) Run(t *testing.T) {
 	_ = t.Run("Created", k.StateRunning) &&
+		t.Run("Tagged", k.Tagged) &&
 		t.Run("Registered", k.Registered) &&
 		t.Run("LatestStableContainerLinux", k.LatestStableContainerLinux) &&
 		t.Run("Schedulable", k.StateSchedulable) &&
@@ -54,7 +53,6 @@ func (k *NodeTests) Run(t *testing.T) {
 		t.Run("Ready", k.ConditionReady) &&
 		t.Run("Labeled", k.Labeled) &&
 		t.Run("Sufficient", k.Sufficient)
-	//t.Run("SameBuildingBlock", k.SameBuildingBlock)
 }
 
 func (k *NodeTests) StateRunning(t *testing.T) {
@@ -95,6 +93,27 @@ func (k *NodeTests) Labeled(t *testing.T) {
 		assert.Contains(t, node.Labels, "ccloud.sap.com/nodepool", "node %s is missing the ccloud.sap.com/nodepool label", node.Name)
 	}
 
+}
+
+func (k *NodeTests) Tagged(t *testing.T) {
+	instances, err := k.listInstances()
+	if err != nil {
+		require.NoErrorf(t, err, "listing openstack instances failed")
+	}
+	assert.Len(t, instances, k.ExpectedNodeCount, "Didn't find expected number of cloud instances")
+	for _, instance := range instances {
+		assert.Subset(t, *instance.Tags, []string{"kubernikus", "kubernikus:kluster=" + k.KlusterName, "kubernikus:nodepool=small"})
+
+		expect := map[string]string{
+			"provisioner":         "kubernikus",
+			"kubernikus:kluster":  k.KlusterName,
+			"kubernikus:nodepool": "small",
+		}
+		for k, v := range expect {
+			assert.Equalf(t, v, instance.Metadata[k], "metadata key %s incorrect", k)
+		}
+
+	}
 }
 
 func (k *NodeTests) Registered(t *testing.T) {
@@ -249,42 +268,28 @@ func (k *NodeTests) checkCondition(t *testing.T, conditionType v1.NodeConditionT
 	return count, err
 }
 
-func (k *NodeTests) SameBuildingBlock(t *testing.T) {
-	if k.ExpectedNodeCount < 2 {
-		return
-	}
+type instance struct {
+	servers.Server
+	extendedserverattributes.ServerAttributesExt
+}
 
-	computeClient, err := openstack.NewComputeV2(k.OpenStack.Provider, gophercloud.EndpointOpts{})
-	require.NoError(t, err, "There should be no error creating compute client")
-
-	project, err := tokens.Get(k.OpenStack.Identity, k.OpenStack.Provider.Token()).ExtractProject()
-	require.NoError(t, err, "There should be no error while extracting the project")
+func (k *NodeTests) listInstances() ([]instance, error) {
 
 	serversListOpts := servers.ListOpts{
-		Name:     k.KlusterName,
-		TenantID: project.ID,
-		Status:   "ACTIVE",
+		Name: "kks-" + k.KlusterName,
 	}
 
-	allPages, err := servers.List(computeClient, serversListOpts).AllPages()
-	require.NoError(t, err, "There should be no error while listing all servers")
-
-	var s []struct {
-		BuildingBlock string `json:"OS-EXT-SRV-ATTR:host"`
-		ID            string `json:"id"`
+	allPages, err := servers.List(k.OpenStack.Compute, serversListOpts).AllPages()
+	if err != nil {
+		return nil, fmt.Errorf("error while listing all servers: %w", err)
 	}
+
+	var s []instance
+
 	err = servers.ExtractServersInto(allPages, &s)
-	require.NoError(t, err, "There should be no error extracting server info")
-
-	require.Len(t, s, k.ExpectedNodeCount, "Expected to find %d building blocks", k.ExpectedNodeCount)
-
-	bb := ""
-	for _, bbs := range s {
-		require.NotEmpty(t, bbs.BuildingBlock, "Node building block should not be empty")
-		if bb == "" {
-			bb = bbs.BuildingBlock
-		} else {
-			require.Equal(t, bb, bbs.BuildingBlock, "Node %s is on building block %s which is different from node %s which is running on %s", bbs.ID, bbs.BuildingBlock, s[0].ID, s[0].BuildingBlock)
-		}
+	if err != nil {
+		return nil, fmt.Errorf("error extracting server info: %w", err)
 	}
+	return s, nil
+
 }

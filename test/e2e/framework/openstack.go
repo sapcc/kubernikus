@@ -47,6 +47,7 @@ func NewOpenStackFramework() (*OpenStack, error) {
 	}
 
 	compute, err := openstack.NewComputeV2(provider, gophercloud.EndpointOpts{})
+	compute.Microversion = "2.52"
 	if err != nil {
 		return nil, fmt.Errorf("could not initialize compute client: %v", err)
 	}

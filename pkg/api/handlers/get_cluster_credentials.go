@@ -43,11 +43,6 @@ func (d *getClusterCredentials) Handle(params operations.GetClusterCredentialsPa
 
 	factory := util.NewCertificateFactory(kluster, &secret.Certificates, "")
 
-	var organizations []string
-	for _, role := range principal.Roles {
-		organizations = append(organizations, "os:"+role)
-	}
-
 	cert, err := factory.UserCert(principal, fmt.Sprintf("%s://%s", requestutil.Scheme(params.HTTPRequest), requestutil.HostWithPort(params.HTTPRequest)))
 	if err != nil {
 		return NewErrorResponse(&operations.GetClusterCredentialsDefault{}, 500, "Failed to issue cert: %s", err)

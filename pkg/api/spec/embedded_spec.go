@@ -961,6 +961,13 @@ func init() {
           "description": "user's domain name",
           "type": "string"
         },
+        "groups": {
+          "description": "list of groups the user belongs to",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
         "id": {
           "description": "userid",
           "type": "string"
@@ -1898,6 +1905,13 @@ func init() {
         "domain": {
           "description": "user's domain name",
           "type": "string"
+        },
+        "groups": {
+          "description": "list of groups the user belongs to",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         },
         "id": {
           "description": "userid",

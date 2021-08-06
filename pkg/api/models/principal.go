@@ -24,6 +24,9 @@ type Principal struct {
 	// user's domain name
 	Domain string `json:"domain,omitempty"`
 
+	// list of groups the user belongs to
+	Groups []string `json:"groups"`
+
 	// userid
 	ID string `json:"id,omitempty"`
 

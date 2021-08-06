@@ -6,7 +6,7 @@ REGIONS = {
   "ap-jp-1": { continent: 'ASIA',     install: 'terraform', e2e: 'terraform' },
   "ap-jp-2": { continent: 'ASIA',     install: 'terraform', e2e: 'terraform' },
   "ap-sa-1": { continent: 'ASIA',     install: 'terraform', e2e: 'terraform' },
-  "ap-sa-2": { continent: 'ASIA',     install: 'terraform', e2e: 'terraform' },
+  "ap-sa-2": { continent: 'ASIA',     install: 'terraform', e2e: 'terraform', oidc: '37c3822fe4194ab586d9625d81b9d532' },
   "eu-de-1": { continent: 'EMEA',     install: 'manual'   , e2e: 'manual' },
   "eu-de-2": { continent: 'EMEA',     install: 'manual'   , e2e: 'manual' },
   "eu-nl-1": { continent: 'EMEA',     install: 'manual'   , e2e: 'terraform' },
@@ -35,6 +35,12 @@ auth_e2e_<%= region %>: &auth_e2e_<%= region %>
   CP_KLUSTER: k-<%= region %>
   CP_KUBERNIKUS_URL: https://kubernikus.admin.<%= region == :master ? "eu-nl-1" : region %>.cloud.sap
   CP_OS_PROJECT_DOMAIN_NAME: ccadmin
+<% if meta[:oidc] %>
+  CP_OIDC_AUTH_URL: https://kubernikus.admin.<%= region == :master ? "eu-nl-1" : region %>.cloud.sap/auth/login
+  CP_OIDC_CONNECTOR_ID: <%= meta[:oidc] %>
+  CP_OIDC_USERNAME: ((KUBELOGON_USER))
+  CP_OIDC_PASSWORD: ((KUBELOGON_PASSWORD))
+<% end %>
   KUBERNIKUS_NAME: e2e
   OS_PROJECT_DOMAIN_NAME: ccadmin
 <% if meta[:nodepool_avz] %>
