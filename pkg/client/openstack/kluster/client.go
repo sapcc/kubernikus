@@ -3,6 +3,8 @@ package kluster
 import (
 	"errors"
 	"fmt"
+	"net"
+	"net/url"
 	"os"
 	"strings"
 
@@ -33,7 +35,7 @@ type KlusterClient interface {
 	RebootNode(string) error
 	ListNodes(*v1.Kluster, *models.NodePool) ([]Node, error)
 	SetSecurityGroup(sgName, nodeID string) error
-	EnsureKubernikusRuleInSecurityGroup(*v1.Kluster) (bool, error)
+	EnsureKubernikusRulesInSecurityGroup(*v1.Kluster) (bool, error)
 	EnsureServerGroup(name string) (string, error)
 	DeleteServerGroup(name string) error
 	EnsureNodeTags(node Node, klusterName, poolName string) ([]string, error)
@@ -190,7 +192,7 @@ func (c *klusterClient) SetSecurityGroup(sgName, nodeID string) (err error) {
 	return secgroups.AddServer(c.ComputeClient, nodeID, sgName).ExtractErr()
 }
 
-func (c *klusterClient) EnsureKubernikusRuleInSecurityGroup(kluster *v1.Kluster) (created bool, err error) {
+func (c *klusterClient) EnsureKubernikusRulesInSecurityGroup(kluster *v1.Kluster) (created bool, err error) {
 	sgName := kluster.Spec.Openstack.SecurityGroupName
 	page, err := securitygroups.List(c.NetworkClient, securitygroups.ListOpts{Name: sgName}).AllPages()
 	if err != nil {
@@ -210,74 +212,92 @@ func (c *klusterClient) EnsureKubernikusRuleInSecurityGroup(kluster *v1.Kluster)
 		return false, fmt.Errorf("More than one SecurityGroup with name %v found", sgName)
 	}
 
-	udp := false
-	tcp := false
-	icmp := false
-	for _, rule := range groups[0].Rules {
-		if rule.Direction != string(rules.DirIngress) {
-			continue
-		}
-
-		if rule.EtherType != string(rules.EtherType4) {
-			continue
-		}
-
-		if rule.RemoteIPPrefix != *kluster.Spec.ClusterCIDR {
-			continue
-		}
-
-		if rule.Protocol == string(rules.ProtocolICMP) {
-			icmp = true
-			continue
-		}
-
-		if rule.Protocol == string(rules.ProtocolUDP) {
-			udp = true
-			continue
-		}
-
-		if rule.Protocol == string(rules.ProtocolTCP) {
-			tcp = true
-			continue
-		}
-
-		if icmp && udp && tcp {
-			break
-		}
+	apiURL, err := url.Parse(kluster.Status.Apiserver)
+	if err != nil {
+		return false, fmt.Errorf("Failed to parse apiserver api: %w", err)
+	}
+	apiIPs, err := net.LookupHost(apiURL.Host)
+	if err != nil || len(apiIPs) == 0 {
+		return false, fmt.Errorf("Failed to resolve apiserver: %w", err)
 	}
 
-	opts := rules.CreateOpts{
-		Direction:      rules.DirIngress,
-		EtherType:      rules.EtherType4,
-		SecGroupID:     groups[0].ID,
-		RemoteIPPrefix: *kluster.Spec.ClusterCIDR,
+	wantedRules := []rules.SecGroupRule{
+		{
+			Direction:      string(rules.DirIngress),
+			EtherType:      string(rules.EtherType4),
+			RemoteIPPrefix: *kluster.Spec.ClusterCIDR,
+			Description:    fmt.Sprintf(`Kubernikus: accept traffic from pod CIDR of cluster "%s"`, kluster.Spec.Name),
+		},
+		{
+			Direction:    string(rules.DirEgress),
+			EtherType:    string(rules.EtherType4),
+			Protocol:     string(rules.ProtocolUDP),
+			PortRangeMin: 123,
+			PortRangeMax: 123,
+			Description:  "Kubernikus: allow ntp client traffic",
+		},
+		{
+			Direction:      string(rules.DirEgress),
+			EtherType:      string(rules.EtherType4),
+			Protocol:       string(rules.ProtocolTCP),
+			PortRangeMin:   443,
+			PortRangeMax:   443,
+			RemoteIPPrefix: apiIPs[0] + "/32",
+			Description:    fmt.Sprintf(`Kubernikus: allow access to apiserver of cluster "%s"`, kluster.Spec.Name),
+		},
 	}
+OUTER:
+	for n, wanted := range wantedRules {
+		for _, rule := range groups[0].Rules {
+			if MatchRule(wanted, rule) {
+				continue OUTER //wanted rule is already coverd by exiting rules in group
+			}
+		}
+		//we need to create the
 
-	if !udp {
-		opts.Protocol = rules.ProtocolUDP
+		opts := rules.CreateOpts{
+			Direction:      rules.RuleDirection(wanted.Direction),
+			EtherType:      rules.RuleEtherType(wanted.EtherType),
+			Protocol:       rules.RuleProtocol(wanted.Protocol),
+			SecGroupID:     groups[0].ID,
+			RemoteIPPrefix: wanted.RemoteIPPrefix,
+			Description:    wanted.Description,
+			PortRangeMin:   wanted.PortRangeMin,
+			PortRangeMax:   wanted.PortRangeMax,
+		}
 		_, err := rules.Create(c.NetworkClient, opts).Extract()
 		if err != nil {
-			return false, err
+			return false, fmt.Errorf("Failed to create security group %v: %w", wanted, err)
+		}
+		created = true
+		//super extra special hack, when we create the first rule we clean out the old rules we created previously
+		// can be removed after it has been rolled out to all regions
+		if n == 0 {
+			for _, rule := range groups[0].Rules {
+				if rule.Direction != string(rules.DirIngress) {
+					continue
+				}
+
+				if rule.EtherType != string(rules.EtherType4) {
+					continue
+				}
+
+				if rule.RemoteIPPrefix != *kluster.Spec.ClusterCIDR {
+					continue
+				}
+				// rules regarding the clusterCIDR with a non-empty protocol are deprecated
+				if rule.Protocol != "" {
+					if err := rules.Delete(c.NetworkClient, rule.ID).ExtractErr(); err != nil {
+						return created, err
+					}
+				}
+			}
+
 		}
 	}
 
-	if !tcp {
-		opts.Protocol = rules.ProtocolTCP
-		_, err := rules.Create(c.NetworkClient, opts).Extract()
-		if err != nil {
-			return false, err
-		}
-	}
+	return created, nil
 
-	if !icmp {
-		opts.Protocol = rules.ProtocolICMP
-		_, err := rules.Create(c.NetworkClient, opts).Extract()
-		if err != nil {
-			return false, err
-		}
-	}
-
-	return !udp || !tcp || !icmp, nil
 }
 
 func (c *klusterClient) EnsureServerGroup(name string) (id string, err error) {

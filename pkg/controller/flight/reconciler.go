@@ -21,7 +21,7 @@ type FlightReconciler interface {
 	EnsureInstanceSecurityGroupAssignment() []string
 	DeleteIncompletelySpawnedInstances() []string
 	DeleteErroredInstances() []string
-	EnsureKubernikusRuleInSecurityGroup() bool
+	EnsureKubernikusRulesInSecurityGroup() bool
 	EnsureServiceUserRoles() []string
 	EnsureNodeMetadataAndTags() []string
 }
@@ -67,8 +67,8 @@ func (f *flightReconciler) EnsureInstanceSecurityGroupAssignment() []string {
 	return ids
 }
 
-func (f *flightReconciler) EnsureKubernikusRuleInSecurityGroup() bool {
-	ensured, err := f.Client.EnsureKubernikusRuleInSecurityGroup(f.Kluster)
+func (f *flightReconciler) EnsureKubernikusRulesInSecurityGroup() bool {
+	ensured, err := f.Client.EnsureKubernikusRulesInSecurityGroup(f.Kluster)
 	if err != nil {
 		f.Logger.Log(
 			"msg", "couldn't ensure security group rules",

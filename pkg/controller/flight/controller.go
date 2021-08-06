@@ -90,7 +90,7 @@ func (d *FlightController) Reconcile(kluster *v1.Kluster) (bool, error) {
 		return false, err
 	}
 
-	reconciler.EnsureKubernikusRuleInSecurityGroup()
+	reconciler.EnsureKubernikusRulesInSecurityGroup()
 	reconciler.EnsureInstanceSecurityGroupAssignment()
 	reconciler.DeleteIncompletelySpawnedInstances()
 	reconciler.DeleteErroredInstances()

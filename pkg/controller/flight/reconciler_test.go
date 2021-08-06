@@ -80,7 +80,7 @@ func (m *MockKlusterClient) SetSecurityGroup(name, id string) error {
 	return args.Error(0)
 }
 
-func (m *MockKlusterClient) EnsureKubernikusRuleInSecurityGroup(k *v1.Kluster) (created bool, err error) {
+func (m *MockKlusterClient) EnsureKubernikusRulesInSecurityGroup(k *v1.Kluster) (created bool, err error) {
 	args := m.Called(k)
 	return args.Bool(0), args.Error(1)
 }
@@ -236,13 +236,13 @@ func TestDeleteErroredInstances(t *testing.T) {
 	assert.ElementsMatch(t, ids, []string{"a", "d"})
 }
 
-func TestEnsureKubernikusRuleInSecurityGroup(t *testing.T) {
+func TestEnsureKubernikusRulesInSecurityGroup(t *testing.T) {
 	kluster := &v1.Kluster{}
 	instances := []Instance{}
 	nodes := []*core_v1.Node{}
 
 	client := &MockKlusterClient{}
-	client.On("EnsureKubernikusRuleInSecurityGroup", kluster).Return(true, nil)
+	client.On("EnsureKubernikusRulesInSecurityGroup", kluster).Return(true, nil)
 
 	reconciler := flightReconciler{
 		kluster,
@@ -254,7 +254,7 @@ func TestEnsureKubernikusRuleInSecurityGroup(t *testing.T) {
 		log.NewNopLogger(),
 	}
 
-	ensured := reconciler.EnsureKubernikusRuleInSecurityGroup()
-	client.AssertCalled(t, "EnsureKubernikusRuleInSecurityGroup", kluster)
+	ensured := reconciler.EnsureKubernikusRulesInSecurityGroup()
+	client.AssertCalled(t, "EnsureKubernikusRulesInSecurityGroup", kluster)
 	assert.True(t, ensured)
 }

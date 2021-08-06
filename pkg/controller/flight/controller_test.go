@@ -28,7 +28,7 @@ func (m *MockFlightReconciler) EnsureInstanceSecurityGroupAssignment() []string 
 	return args.Get(0).([]string)
 }
 
-func (m *MockFlightReconciler) EnsureKubernikusRuleInSecurityGroup() bool {
+func (m *MockFlightReconciler) EnsureKubernikusRulesInSecurityGroup() bool {
 	args := m.Called()
 	return args.Bool(0)
 }
@@ -58,7 +58,7 @@ func TestReconcile(t *testing.T) {
 	kluster.Status.Phase = models.KlusterPhaseRunning
 
 	reconciler := &MockFlightReconciler{}
-	reconciler.On("EnsureKubernikusRuleInSecurityGroup").Return(true)
+	reconciler.On("EnsureKubernikusRulesInSecurityGroup").Return(true)
 	reconciler.On("EnsureInstanceSecurityGroupAssignment").Return([]string{})
 	reconciler.On("DeleteIncompletelySpawnedInstances").Return([]string{})
 	reconciler.On("DeleteErroredInstances").Return([]string{})
@@ -73,7 +73,7 @@ func TestReconcile(t *testing.T) {
 	_, err := controller.Reconcile(kluster)
 	assert.NoError(t, err)
 	factory.AssertCalled(t, "FlightReconciler", kluster)
-	reconciler.AssertCalled(t, "EnsureKubernikusRuleInSecurityGroup")
+	reconciler.AssertCalled(t, "EnsureKubernikusRulesInSecurityGroup")
 	reconciler.AssertCalled(t, "EnsureInstanceSecurityGroupAssignment")
 	reconciler.AssertCalled(t, "DeleteIncompletelySpawnedInstances")
 	reconciler.AssertCalled(t, "DeleteErroredInstances")
