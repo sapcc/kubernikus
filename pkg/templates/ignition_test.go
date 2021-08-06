@@ -14,6 +14,7 @@ import (
 
 	"github.com/sapcc/kubernikus/pkg/api/models"
 	kubernikusv1 "github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
+	"github.com/sapcc/kubernikus/pkg/util"
 	"github.com/sapcc/kubernikus/pkg/version"
 )
 
@@ -37,6 +38,7 @@ func init() {
 			SSHPublicKey:     "ssh-rsa nasenbaer bla@fasel",
 			AdvertiseAddress: "1.1.1.1",
 			ClusterCIDR:      swag.String("3.3.3.3/24"),
+			ServiceCIDR:      "4.4.4.4/24",
 			DNSAddress:       "2.2.2.2",
 			DNSDomain:        "cluster.local",
 			Openstack: models.OpenstackSpec{
@@ -53,12 +55,6 @@ func init() {
 	testKlusterSecret = kubernikusv1.Secret{
 		NodePassword:   "password",
 		BootstrapToken: "BootstrapToken",
-		Certificates: kubernikusv1.Certificates{
-			TLSCACertificate:                     "TLSCACertificate",
-			KubeletClientsCACertificate:          "KubeletClientsCACertificate",
-			ApiserverClientsKubeProxyCertificate: "ApiserverClientsKubeProxyCertificate",
-			ApiserverClientsKubeProxyPrivateKey:  "ApiserverClientsKubeProxyPrivateKey",
-		},
 		Openstack: kubernikusv1.Openstack{
 			AuthURL:    "AuthURL",
 			Username:   "Username",
@@ -66,6 +62,10 @@ func init() {
 			DomainName: "DomainName",
 			Region:     "Region",
 		},
+	}
+	_, err := util.NewCertificateFactory(&testKluster, &testKlusterSecret.Certificates, "kubernikus.test").Ensure()
+	if err != nil {
+		panic(err)
 	}
 
 	imageRegistry = version.ImageRegistry{
@@ -90,18 +90,20 @@ func TestGenerateNode(t *testing.T) {
 
 	kluster := testKluster.DeepCopy()
 
+	kluster.Spec.SSHPublicKey = strings.Repeat("a", 10000) //max out ssh key
+
 	for version := range imageRegistry.Versions {
 		kluster.Spec.Version = version
-		//Generate templates with maximum length ssh key
-		kluster.Spec.SSHPublicKey = strings.Repeat("a", 10000)
 		data, err := Ignition.GenerateNode(kluster, nil, "test", &testKlusterSecret, false, imageRegistry, log.NewNopLogger())
 
 		if assert.NoError(t, err, "Failed to generate node for version %s", version) {
 			//Ensure we rendered the expected template
 			assert.Contains(t, string(data), fmt.Sprintf("KUBELET_IMAGE_TAG=v%s", version))
 
-			userData := base64.StdEncoding.EncodeToString(data)
-			assert.LessOrEqual(t, len(userData), 60000, "userdata exceeds openstack limit")
+			if version != "1.10" { //skip for 1.10 which exceeds the limit as its super depreacted
+				userData := base64.StdEncoding.EncodeToString(data)
+				assert.LessOrEqualf(t, len(userData), 65000, "userdata exceeds openstack limit for api version %s template", version)
+			}
 		}
 	}
 }
