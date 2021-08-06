@@ -84,9 +84,11 @@ spec:
         app: {{ include "fullname" . }}
         release: {{ .Release.Name }}
         component: etcd
+{{- if .Values.backup.enabled }}
       annotations:
         prometheus.io/scrape: "true"
         prometheus.io/port: "8080"
+{{- end }}
     spec:
       volumes:
         - name: data
