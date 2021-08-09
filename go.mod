@@ -12,7 +12,6 @@ require (
 	github.com/asaskevich/govalidator v0.0.0-20190424111038-f61b66f89f4a
 	github.com/coreos/container-linux-config-transpiler v0.4.2
 	github.com/coreos/go-oidc/v3 v3.0.0
-	github.com/coreos/go-semver v0.3.0 // indirect
 	github.com/coreos/ignition v0.17.2
 	github.com/danieljoos/wincred v1.0.1 // indirect
 	github.com/databus23/goslo.policy v0.0.0-20170317131957-3ae74dd07ebf
@@ -32,7 +31,8 @@ require (
 	github.com/gobwas/glob v0.2.3 // indirect
 	github.com/godbus/dbus v0.0.0-20151105175453-c7fdd8b5cd55 // indirect
 	github.com/google/uuid v1.1.2 // indirect
-	github.com/gophercloud/gophercloud v0.1.0
+	github.com/gophercloud/gophercloud v0.19.0
+	github.com/gophercloud/utils v0.0.0-20210720165645-8a3ad2ad9e70
 	github.com/hashicorp/yamux v0.0.0-20180826203732-cc6d2ea263b2 // indirect
 	github.com/howeyc/gopass v0.0.0-20170109162249-bf9dde6d0d2c
 	github.com/huandu/xstrings v1.3.2 // indirect
@@ -53,18 +53,19 @@ require (
 	github.com/tredoe/osutil v0.0.0-20161130133508-7d3ee1afa71c
 	github.com/vincent-petithory/dataurl v0.0.0-20160330182126-9a301d65acbb // indirect
 	github.com/zalando/go-keyring v0.0.0-20180221093347-6d81c293b3fb
-	golang.org/x/crypto v0.0.0-20200220183623-bac4c82f6975
+	golang.org/x/crypto v0.0.0-20201221181555-eec23a3978ad
 	golang.org/x/net v0.0.0-20200505041828-1ed23360d12c
 	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d
-	golang.org/x/sys v0.0.0-20200323222414-85ca7c5b95cd
+	golang.org/x/sys v0.0.0-20201119102817-f84b799fce68
 	google.golang.org/grpc v1.26.0
-	gopkg.in/yaml.v2 v2.2.8
+	gopkg.in/yaml.v2 v2.4.0
 	gopkg.in/yaml.v3 v3.0.0-20200615113413-eeeca48fe776 // indirect
 	k8s.io/api v0.16.15
 	k8s.io/apiextensions-apiserver v0.0.0-20200831054406-27625ab65fd7
 	k8s.io/apimachinery v0.16.15
 	k8s.io/client-go v0.16.15
 	k8s.io/cluster-bootstrap v0.0.0-20190802024125-9150a5ba960c
+	k8s.io/code-generator v0.0.0-20200429001146-f5af5c5facff
 	k8s.io/helm v2.11.0+incompatible
 	k8s.io/klog v1.0.0
 	k8s.io/utils v0.0.0-20190801114015-581e00157fb1

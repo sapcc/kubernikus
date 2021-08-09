@@ -2,6 +2,8 @@ package listeners
 
 import (
 	"github.com/gophercloud/gophercloud"
+	"github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/l7policies"
+	"github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/pools"
 	"github.com/gophercloud/gophercloud/pagination"
 )
 
@@ -15,6 +17,20 @@ const (
 	ProtocolPROXY Protocol = "PROXY"
 	ProtocolHTTP  Protocol = "HTTP"
 	ProtocolHTTPS Protocol = "HTTPS"
+	// Protocol SCTP requires octavia microversion 2.23
+	ProtocolSCTP            Protocol = "SCTP"
+	ProtocolTerminatedHTTPS Protocol = "TERMINATED_HTTPS"
+)
+
+// Type TLSVersion represents a tls version
+type TLSVersion string
+
+const (
+	TLSVersionSSLv3   TLSVersion = "SSLv3"
+	TLSVersionTLSv1   TLSVersion = "TLSv1"
+	TLSVersionTLSv1_1 TLSVersion = "TLSv1.1"
+	TLSVersionTLSv1_2 TLSVersion = "TLSv1.2"
+	TLSVersionTLSv1_3 TLSVersion = "TLSv1.3"
 )
 
 // ListOptsBuilder allows extensions to add additional parameters to the
@@ -83,9 +99,9 @@ type CreateOptsBuilder interface {
 // CreateOpts represents options for creating a listener.
 type CreateOpts struct {
 	// The load balancer on which to provision this listener.
-	LoadbalancerID string `json:"loadbalancer_id" required:"true"`
+	LoadbalancerID string `json:"loadbalancer_id,omitempty"`
 
-	// The protocol - can either be TCP, HTTP or HTTPS.
+	// The protocol - can either be TCP, SCTP, HTTP, HTTPS or TERMINATED_HTTPS.
 	Protocol Protocol `json:"protocol" required:"true"`
 
 	// The port on which to listen for client traffic.
@@ -100,6 +116,13 @@ type CreateOpts struct {
 
 	// The ID of the default pool with which the Listener is associated.
 	DefaultPoolID string `json:"default_pool_id,omitempty"`
+
+	// DefaultPool an instance of pools.CreateOpts which allows a
+	// (default) pool to be created at the same time the listener is created.
+	//
+	// This is only possible to use when creating a fully populated
+	// load balancer.
+	DefaultPool *pools.CreateOpts `json:"default_pool,omitempty"`
 
 	// Human-readable description for the Listener.
 	Description string `json:"description,omitempty"`
@@ -116,6 +139,13 @@ type CreateOpts struct {
 	// The administrative state of the Listener. A valid value is true (UP)
 	// or false (DOWN).
 	AdminStateUp *bool `json:"admin_state_up,omitempty"`
+
+	// L7Policies is a slice of l7policies.CreateOpts which allows a set
+	// of policies to be created at the same time the listener is created.
+	//
+	// This is only possible to use when creating a fully populated
+	// Loadbalancer.
+	L7Policies []l7policies.CreateOpts `json:"l7policies,omitempty"`
 
 	// Frontend client inactivity timeout in milliseconds
 	TimeoutClientData *int `json:"timeout_client_data,omitempty"`
@@ -134,6 +164,9 @@ type CreateOpts struct {
 
 	// A list of IPv4, IPv6 or mix of both CIDRs
 	AllowedCIDRs []string `json:"allowed_cidrs,omitempty"`
+
+	// A list of TLS protocol versions. Available from microversion 2.17
+	TLSVersions []TLSVersion `json:"tls_versions,omitempty"`
 }
 
 // ToListenerCreateMap builds a request body from CreateOpts.
@@ -154,13 +187,15 @@ func Create(c *gophercloud.ServiceClient, opts CreateOptsBuilder) (r CreateResul
 		r.Err = err
 		return
 	}
-	_, r.Err = c.Post(rootURL(c), b, &r.Body, nil)
+	resp, err := c.Post(rootURL(c), b, &r.Body, nil)
+	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
 	return
 }
 
 // Get retrieves a particular Listeners based on its unique ID.
 func Get(c *gophercloud.ServiceClient, id string) (r GetResult) {
-	_, r.Err = c.Get(resourceURL(c, id), &r.Body, nil)
+	resp, err := c.Get(resourceURL(c, id), &r.Body, nil)
+	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
 	return
 }
 
@@ -211,6 +246,9 @@ type UpdateOpts struct {
 
 	// A list of IPv4, IPv6 or mix of both CIDRs
 	AllowedCIDRs *[]string `json:"allowed_cidrs,omitempty"`
+
+	// A list of TLS protocol versions. Available from microversion 2.17
+	TLSVersions *[]TLSVersion `json:"tls_versions,omitempty"`
 }
 
 // ToListenerUpdateMap builds a request body from UpdateOpts.
@@ -235,20 +273,23 @@ func Update(c *gophercloud.ServiceClient, id string, opts UpdateOpts) (r UpdateR
 		r.Err = err
 		return
 	}
-	_, r.Err = c.Put(resourceURL(c, id), b, &r.Body, &gophercloud.RequestOpts{
+	resp, err := c.Put(resourceURL(c, id), b, &r.Body, &gophercloud.RequestOpts{
 		OkCodes: []int{200, 202},
 	})
+	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
 	return
 }
 
 // Delete will permanently delete a particular Listeners based on its unique ID.
 func Delete(c *gophercloud.ServiceClient, id string) (r DeleteResult) {
-	_, r.Err = c.Delete(resourceURL(c, id), nil)
+	resp, err := c.Delete(resourceURL(c, id), nil)
+	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
 	return
 }
 
 // GetStats will return the shows the current statistics of a particular Listeners.
 func GetStats(c *gophercloud.ServiceClient, id string) (r StatsResult) {
-	_, r.Err = c.Get(statisticsRootURL(c, id), &r.Body, nil)
+	resp, err := c.Get(statisticsRootURL(c, id), &r.Body, nil)
+	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
 	return
 }

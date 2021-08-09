@@ -123,7 +123,7 @@ func (w *routeGarbageCollector) Reconcile(kluster *v1.Kluster) (err error) {
 	//something was changed, update the router
 	if len(newRoutes) < len(router.Routes) {
 		_, err := routers.Update(networkClient, routerID, routers.UpdateOpts{
-			Routes: newRoutes,
+			Routes: &newRoutes,
 		}).Extract()
 		if err != nil {
 			return fmt.Errorf("Failed to remove routes: %s", err)

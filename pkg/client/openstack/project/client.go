@@ -170,7 +170,7 @@ func (c *projectClient) getSubnets(network *models.Network) ([]*models.Subnet, e
 func (c *projectClient) getKeyPairs() ([]*models.KeyPair, error) {
 	result := []*models.KeyPair{}
 
-	pager, err := keypairs.List(c.ComputeClient).AllPages()
+	pager, err := keypairs.List(c.ComputeClient, keypairs.ListOpts{}).AllPages()
 	if err != nil {
 		return result, err
 	}

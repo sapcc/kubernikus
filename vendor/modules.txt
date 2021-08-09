@@ -43,7 +43,6 @@ github.com/coreos/container-linux-config-transpiler/config/types/util
 ## explicit
 github.com/coreos/go-oidc/v3/oidc
 # github.com/coreos/go-semver v0.3.0
-## explicit
 github.com/coreos/go-semver/semver
 # github.com/coreos/go-systemd v0.0.0-20181012123002-c6f51f82210d
 github.com/coreos/go-systemd/unit
@@ -167,31 +166,34 @@ github.com/google/uuid
 github.com/googleapis/gnostic/OpenAPIv2
 github.com/googleapis/gnostic/compiler
 github.com/googleapis/gnostic/extensions
-# github.com/gophercloud/gophercloud v0.1.0
+# github.com/gophercloud/gophercloud v0.19.0
 ## explicit
 github.com/gophercloud/gophercloud
-github.com/gophercloud/gophercloud/internal
 github.com/gophercloud/gophercloud/openstack
 github.com/gophercloud/gophercloud/openstack/blockstorage/extensions/quotasets
 github.com/gophercloud/gophercloud/openstack/blockstorage/v3/volumes
 github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/availabilityzones
+github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/extendedserverattributes
 github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/keypairs
 github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/quotasets
 github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/schedulerhints
 github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/secgroups
 github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/servergroups
+github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/tags
 github.com/gophercloud/gophercloud/openstack/compute/v2/flavors
-github.com/gophercloud/gophercloud/openstack/compute/v2/images
 github.com/gophercloud/gophercloud/openstack/compute/v2/servers
 github.com/gophercloud/gophercloud/openstack/identity/v2/tenants
 github.com/gophercloud/gophercloud/openstack/identity/v2/tokens
 github.com/gophercloud/gophercloud/openstack/identity/v3/endpoints
+github.com/gophercloud/gophercloud/openstack/identity/v3/extensions/ec2tokens
+github.com/gophercloud/gophercloud/openstack/identity/v3/extensions/oauth1
 github.com/gophercloud/gophercloud/openstack/identity/v3/groups
 github.com/gophercloud/gophercloud/openstack/identity/v3/projects
 github.com/gophercloud/gophercloud/openstack/identity/v3/roles
 github.com/gophercloud/gophercloud/openstack/identity/v3/services
 github.com/gophercloud/gophercloud/openstack/identity/v3/tokens
 github.com/gophercloud/gophercloud/openstack/identity/v3/users
+github.com/gophercloud/gophercloud/openstack/imageservice/v2/images
 github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/l7policies
 github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/listeners
 github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/loadbalancers
@@ -208,6 +210,10 @@ github.com/gophercloud/gophercloud/openstack/objectstorage/v1/containers
 github.com/gophercloud/gophercloud/openstack/objectstorage/v1/objects
 github.com/gophercloud/gophercloud/openstack/utils
 github.com/gophercloud/gophercloud/pagination
+# github.com/gophercloud/utils v0.0.0-20210720165645-8a3ad2ad9e70
+## explicit
+github.com/gophercloud/utils/openstack/compute/v2/flavors
+github.com/gophercloud/utils/openstack/imageservice/v2/images
 # github.com/hashicorp/golang-lru v0.5.1
 github.com/hashicorp/golang-lru
 github.com/hashicorp/golang-lru/simplelru
@@ -296,6 +302,7 @@ github.com/stretchr/objx
 github.com/stretchr/testify/assert
 github.com/stretchr/testify/mock
 github.com/stretchr/testify/require
+github.com/stretchr/testify/suite
 # github.com/tredoe/osutil v0.0.0-20161130133508-7d3ee1afa71c
 ## explicit
 github.com/tredoe/osutil/user/crypt
@@ -308,7 +315,7 @@ github.com/vincent-petithory/dataurl
 ## explicit
 github.com/zalando/go-keyring
 github.com/zalando/go-keyring/secret_service
-# golang.org/x/crypto v0.0.0-20200220183623-bac4c82f6975
+# golang.org/x/crypto v0.0.0-20201221181555-eec23a3978ad
 ## explicit
 golang.org/x/crypto/bcrypt
 golang.org/x/crypto/blowfish
@@ -338,10 +345,14 @@ golang.org/x/net/trace
 ## explicit
 golang.org/x/oauth2
 golang.org/x/oauth2/internal
-# golang.org/x/sys v0.0.0-20200323222414-85ca7c5b95cd
+# golang.org/x/sys v0.0.0-20201119102817-f84b799fce68
 ## explicit
+golang.org/x/sys/internal/unsafeheader
+golang.org/x/sys/plan9
 golang.org/x/sys/unix
 golang.org/x/sys/windows
+# golang.org/x/term v0.0.0-20201126162022-7de9c90e9dd1
+golang.org/x/term
 # golang.org/x/text v0.3.2
 golang.org/x/text/secure/bidirule
 golang.org/x/text/transform
@@ -350,6 +361,14 @@ golang.org/x/text/unicode/norm
 golang.org/x/text/width
 # golang.org/x/time v0.0.0-20191024005414-555d28b269f0
 golang.org/x/time/rate
+# golang.org/x/tools v0.0.0-20200103221440-774c71fcf114
+golang.org/x/tools/go/ast/astutil
+golang.org/x/tools/imports
+golang.org/x/tools/internal/fastwalk
+golang.org/x/tools/internal/gopathwalk
+golang.org/x/tools/internal/imports
+golang.org/x/tools/internal/module
+golang.org/x/tools/internal/semver
 # google.golang.org/appengine v1.5.0
 google.golang.org/appengine/internal
 google.golang.org/appengine/internal/base
@@ -405,7 +424,7 @@ gopkg.in/inf.v0
 gopkg.in/square/go-jose.v2
 gopkg.in/square/go-jose.v2/cipher
 gopkg.in/square/go-jose.v2/json
-# gopkg.in/yaml.v2 v2.2.8
+# gopkg.in/yaml.v2 v2.4.0
 ## explicit
 gopkg.in/yaml.v2
 # gopkg.in/yaml.v3 v3.0.0-20200615113413-eeeca48fe776
@@ -720,6 +739,34 @@ k8s.io/client-go/util/workqueue
 ## explicit
 k8s.io/cluster-bootstrap/token/api
 k8s.io/cluster-bootstrap/token/util
+# k8s.io/code-generator v0.0.0-20200429001146-f5af5c5facff
+## explicit
+k8s.io/code-generator/cmd/client-gen
+k8s.io/code-generator/cmd/client-gen/args
+k8s.io/code-generator/cmd/client-gen/generators
+k8s.io/code-generator/cmd/client-gen/generators/fake
+k8s.io/code-generator/cmd/client-gen/generators/scheme
+k8s.io/code-generator/cmd/client-gen/generators/util
+k8s.io/code-generator/cmd/client-gen/path
+k8s.io/code-generator/cmd/client-gen/types
+k8s.io/code-generator/cmd/deepcopy-gen
+k8s.io/code-generator/cmd/deepcopy-gen/args
+k8s.io/code-generator/cmd/informer-gen
+k8s.io/code-generator/cmd/informer-gen/args
+k8s.io/code-generator/cmd/informer-gen/generators
+k8s.io/code-generator/cmd/lister-gen
+k8s.io/code-generator/cmd/lister-gen/args
+k8s.io/code-generator/cmd/lister-gen/generators
+k8s.io/code-generator/pkg/namer
+k8s.io/code-generator/pkg/util
+# k8s.io/gengo v0.0.0-20190822140433-26a664648505
+k8s.io/gengo/args
+k8s.io/gengo/examples/deepcopy-gen/generators
+k8s.io/gengo/examples/set-gen/sets
+k8s.io/gengo/generator
+k8s.io/gengo/namer
+k8s.io/gengo/parser
+k8s.io/gengo/types
 # k8s.io/helm v2.11.0+incompatible
 ## explicit
 k8s.io/helm/pkg/chartutil

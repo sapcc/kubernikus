@@ -27,7 +27,7 @@ type Listener struct {
 	// Human-readable description for the Listener.
 	Description string `json:"description"`
 
-	// The protocol to loadbalance. A valid value is TCP, HTTP, or HTTPS.
+	// The protocol to loadbalance. A valid value is TCP, SCTP, HTTP, HTTPS or TERMINATED_HTTPS.
 	Protocol string `json:"protocol"`
 
 	// The port on which to listen to client traffic that is associated with the
@@ -36,6 +36,9 @@ type Listener struct {
 
 	// The UUID of default pool. Must have compatible protocol with listener.
 	DefaultPoolID string `json:"default_pool_id"`
+
+	// The default pool with which the Listener is associated.
+	DefaultPool *pools.Pool `json:"default_pool"`
 
 	// A list of load balancer IDs.
 	Loadbalancers []LoadBalancerID `json:"loadbalancers"`
@@ -77,12 +80,12 @@ type Listener struct {
 
 	// A dictionary of optional headers to insert into the request before it is sent to the backend member.
 	InsertHeaders map[string]string `json:"insert_headers"`
-<<<<<<< HEAD
 
 	// A list of IPv4, IPv6 or mix of both CIDRs
 	AllowedCIDRs []string `json:"allowed_cidrs"`
-=======
->>>>>>> 64fba069 (Bump client-go to 1.16.15)
+
+	// A list of TLS protocol versions. Available from microversion 2.17
+	TLSVersions []string `json:"tls_versions"`
 }
 
 type Stats struct {
