@@ -77,9 +77,12 @@ type Listener struct {
 
 	// A dictionary of optional headers to insert into the request before it is sent to the backend member.
 	InsertHeaders map[string]string `json:"insert_headers"`
+<<<<<<< HEAD
 
 	// A list of IPv4, IPv6 or mix of both CIDRs
 	AllowedCIDRs []string `json:"allowed_cidrs"`
+=======
+>>>>>>> 64fba069 (Bump client-go to 1.16.15)
 }
 
 type Stats struct {
