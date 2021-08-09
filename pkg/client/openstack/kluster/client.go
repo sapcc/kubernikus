@@ -158,29 +158,24 @@ func (c *klusterClient) RebootNode(id string) error {
 }
 
 func (c *klusterClient) ListNodes(k *v1.Kluster, pool *models.NodePool) ([]Node, error) {
-	var unfilteredNodes []Node
 	var filteredNodes []Node
 
-	err := servers.List(c.ComputeClient, servers.ListOpts{}).EachPage(func(page pagination.Page) (bool, error) {
+	err := servers.List(c.ComputeClient, servers.ListOpts{Name: "^(kks-)?" + k.Spec.Name + "-" + pool.Name + "-"}).EachPage(func(page pagination.Page) (bool, error) {
 		if page != nil {
-			nodes, err := ExtractServers(page)
+			unfilteredNodes, err := ExtractServers(page)
 			if err != nil {
 				return false, err
 			}
-			unfilteredNodes = append(unfilteredNodes, nodes...)
+			for _, node := range unfilteredNodes {
+				if util.IsKubernikusNode(node.Name, k.Spec.Name, pool.Name) {
+					filteredNodes = append(filteredNodes, node)
+				}
+			}
 		}
 		return true, nil
 	})
 	if err != nil {
 		return nil, err
-	}
-
-	//filter nodeList https://github.com/golang/go/wiki/SliceTricks#filtering-without-allocating
-	filteredNodes = unfilteredNodes[:0]
-	for _, node := range unfilteredNodes {
-		if util.IsKubernikusNode(node.Name, k.Spec.Name, pool.Name) {
-			filteredNodes = append(filteredNodes, node)
-		}
 	}
 
 	return filteredNodes, nil
