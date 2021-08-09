@@ -56,6 +56,6 @@ $(OUTPUT)/bin/%:
 	CODEGEN_TMP_DIR=$$(mktemp -d) ;\
 	cd $$CODEGEN_TMP_DIR ;\
 	go mod init tmp ;\
-	GOBIN=$(PWD)/_output/bin go get k8s.io/code-generator/cmd/$*@kubernetes-1.15.12 ;\
+	GOBIN=$(PWD)/_output/bin go get k8s.io/code-generator/cmd/$*@kubernetes-1.16.15 ;\
 	rm -rf $$CODEGEN_TMP_DIR ;\
 	}
