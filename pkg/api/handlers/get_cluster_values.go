@@ -23,7 +23,7 @@ type getClusterValues struct {
 func (d *getClusterValues) Handle(params operations.GetClusterValuesParams, principal *models.Principal) middleware.Responder {
 
 	//This is an admin-only api, the account is passed via parameters
-	kluster, err := d.Kubernikus.Kubernikus().Klusters(d.Namespace).Get(qualifiedName(params.Name, params.Account), meta_v1.GetOptions{})
+	kluster, err := d.Kubernikus.KubernikusV1().Klusters(d.Namespace).Get(qualifiedName(params.Name, params.Account), meta_v1.GetOptions{})
 	if err != nil {
 		if apierrors.IsNotFound(err) {
 			return NewErrorResponse(&operations.GetClusterCredentialsDefault{}, 404, "Kluster not found")

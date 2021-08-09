@@ -74,7 +74,7 @@ func migrateKluster(kluster *v1.Kluster, version int, migration Migration, clien
 
 	//TODO: Don't import fake pkg outside of test code
 	if _, ok := clients.Kubernikus.(*kubernikusfake.Clientset); !ok {
-		request := clients.Kubernikus.Kubernikus().RESTClient().Get().Namespace(kluster.Namespace).Resource("klusters").Name(kluster.Name)
+		request := clients.Kubernikus.KubernikusV1().RESTClient().Get().Namespace(kluster.Namespace).Resource("klusters").Name(kluster.Name)
 		if rawData, err = request.DoRaw(); err != nil {
 			return nil, err
 		}
@@ -84,5 +84,5 @@ func migrateKluster(kluster *v1.Kluster, version int, migration Migration, clien
 		return nil, err
 	}
 	kluster.Status.SpecVersion = int64(version)
-	return clients.Kubernikus.Kubernikus().Klusters(kluster.Namespace).Update(kluster)
+	return clients.Kubernikus.KubernikusV1().Klusters(kluster.Namespace).Update(kluster)
 }

@@ -7,7 +7,6 @@ import (
 	"github.com/ghodss/yaml"
 	"github.com/go-openapi/runtime/middleware"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
-	certutil "k8s.io/client-go/util/cert"
 
 	"github.com/sapcc/kubernikus/pkg/api"
 	"github.com/sapcc/kubernikus/pkg/api/models"
@@ -51,8 +50,8 @@ func (d *getClusterCredentials) Handle(params operations.GetClusterCredentialsPa
 		params.Name,
 		fmt.Sprintf("%v@%v", principal.Name, params.Name),
 		kluster.Status.Apiserver,
-		certutil.EncodePrivateKeyPEM(cert.PrivateKey),
-		certutil.EncodeCertPEM(cert.Certificate),
+		util.EncodePrivateKeyPEM(cert.PrivateKey),
+		util.EncodeCertPEM(cert.Certificate),
 		[]byte(secret.TLSCACertificate),
 		"",
 	)

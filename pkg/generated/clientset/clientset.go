@@ -12,8 +12,6 @@ import (
 type Interface interface {
 	Discovery() discovery.DiscoveryInterface
 	KubernikusV1() kubernikusv1.KubernikusV1Interface
-	// Deprecated: please explicitly pick a version if possible.
-	Kubernikus() kubernikusv1.KubernikusV1Interface
 }
 
 // Clientset contains the clients for groups. Each group has exactly one
@@ -25,12 +23,6 @@ type Clientset struct {
 
 // KubernikusV1 retrieves the KubernikusV1Client
 func (c *Clientset) KubernikusV1() kubernikusv1.KubernikusV1Interface {
-	return c.kubernikusV1
-}
-
-// Deprecated: Kubernikus retrieves the default version of KubernikusClient.
-// Please explicitly pick a version.
-func (c *Clientset) Kubernikus() kubernikusv1.KubernikusV1Interface {
 	return c.kubernikusV1
 }
 

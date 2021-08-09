@@ -1,6 +1,5 @@
 VERSION  ?= $(shell git rev-parse --verify HEAD)
 GOOS     ?= $(shell go env GOOS)
-export GO111MODULE =off
 ifeq ($(GOOS),darwin)
 export CGO_ENABLED=0
 endif
@@ -36,12 +35,12 @@ bin/$(GOOS)/swagger-%:
 	chmod +x $@
 
 bin/%: $(GOFILES) Makefile
-	GOOS=$(*D) GOARCH=amd64 go build $(GOFLAGS) -v -i -o $(@D)/$(@F) ./cmd/$(basename $(@F))
+	GOOS=$(*D) GOARCH=amd64 go build $(GOFLAGS) -v -o $(@D)/$(@F) ./cmd/$(basename $(@F))
 
 test: gofmt linters gotest build-e2e
 
 gofmt:
-	test/gofmt.sh pkg/ cmd/ deps/ test/
+	test/gofmt.sh pkg/ cmd/ test/
 
 linters:
 	$(GOMETALINTER_BIN) --deadline=60s --vendor -s generated --disable-all -E vet -E ineffassign -E misspell ./cmd/... ./pkg/... ./test/...

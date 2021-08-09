@@ -83,9 +83,9 @@ func (lr *LaunchReconciler) Reconcile(kluster *v1.Kluster) (requeue bool, err er
 	}
 	switch kluster.Status.Phase {
 	case models.KlusterPhaseCreating:
-		util.EnsureFinalizerCreated(lr.Kubernikus.Kubernikus(), lr.klusterInformer.Lister(), kluster, LaunchctlFinalizer)
+		util.EnsureFinalizerCreated(lr.Kubernikus.KubernikusV1(), lr.klusterInformer.Lister(), kluster, LaunchctlFinalizer)
 	case models.KlusterPhaseRunning:
-		util.EnsureFinalizerCreated(lr.Kubernikus.Kubernikus(), lr.klusterInformer.Lister(), kluster, LaunchctlFinalizer)
+		util.EnsureFinalizerCreated(lr.Kubernikus.KubernikusV1(), lr.klusterInformer.Lister(), kluster, LaunchctlFinalizer)
 		return lr.reconcilePools(kluster)
 	case models.KlusterPhaseTerminating:
 		if kluster.TerminationProtection() {

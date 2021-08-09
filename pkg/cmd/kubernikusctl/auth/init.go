@@ -6,13 +6,13 @@ import (
 	"os"
 	"strings"
 
-	"github.com/golang/glog"
 	"github.com/gophercloud/gophercloud"
 	"github.com/howeyc/gopass"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	keyring "github.com/zalando/go-keyring"
+	"k8s.io/klog"
 
 	"github.com/sapcc/kubernikus/pkg/cmd/kubernikusctl/common"
 )
@@ -104,7 +104,7 @@ func (o *InitOptions) Run(c *cobra.Command) (err error) {
 			return errors.Wrapf(err, "You need to provide --name. Cluster Auto-Detection failed")
 		} else {
 			o.name = cluster.Name
-			glog.V(2).Infof("Detected cluster name: %v", o.name)
+			klog.V(2).Infof("Detected cluster name: %v", o.name)
 		}
 	}
 
@@ -134,7 +134,7 @@ func (o *InitOptions) Run(c *cobra.Command) (err error) {
 }
 
 func (o *InitOptions) setup() error {
-	glog.V(2).Infof(o.openstack.PrintDebugAuthInfo())
+	klog.V(2).Infof(o.openstack.PrintDebugAuthInfo())
 	fmt.Println(o.openstack.PrintAuthInfo())
 
 	if err := o.openstack.Authenticate(); err != nil {
@@ -146,7 +146,7 @@ func (o *InitOptions) setup() error {
 			return errors.Wrapf(err, "You need to provide --url. Auto-Detection failed")
 		} else {
 			o.url = url
-			glog.V(2).Infof("Detected Kubernikus URL: %v", url)
+			klog.V(2).Infof("Detected Kubernikus URL: %v", url)
 		}
 	}
 
