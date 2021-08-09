@@ -32,10 +32,15 @@ func MatchRule(input rules.SecGroupRule, rule rules.SecGroupRule) bool {
 			if err != nil {
 				return false
 			}
-			inputnet := &net.IPNet{IP: make([]byte, 4), Mask: make([]byte, 4)}
+			var inputnet = &net.IPNet{IP: make([]byte, 4), Mask: make([]byte, 4)}
 			if input.RemoteIPPrefix != "" {
 				if _, inputnet, err = net.ParseCIDR(input.RemoteIPPrefix); err != nil {
-					return false
+					//true to parse as an ip
+					if ip := net.ParseIP(input.RemoteIPPrefix); ip != nil && ip.To4() != nil {
+						inputnet = &net.IPNet{IP: ip.To4(), Mask: net.IPv4Mask(255, 255, 255, 255)}
+					} else {
+						return false
+					}
 				}
 			}
 			if !CIDRIncluded(inputnet, rulenet) {

@@ -31,6 +31,7 @@ func TestMatchRule(t *testing.T) {
 		{rules.SecGroupRule{Direction: "ingress", Protocol: "tcp", RemoteIPPrefix: "10.0.0.0/23"}, rules.SecGroupRule{Direction: "ingress", Protocol: "tcp", RemoteIPPrefix: "10.0.1.0/24"}, false},
 		{rules.SecGroupRule{Direction: "ingress", Protocol: "tcp", RemoteIPPrefix: "10.0.2.0/23"}, rules.SecGroupRule{Direction: "ingress", Protocol: "tcp", RemoteIPPrefix: "10.0.2.0/24"}, false},
 		{rules.SecGroupRule{Direction: "ingress", Protocol: "tcp", RemoteIPPrefix: "10.0.2.0/24"}, rules.SecGroupRule{Direction: "ingress", Protocol: "tcp", RemoteIPPrefix: "10.0.2.0/23"}, true},
+		{rules.SecGroupRule{Direction: "ingress", Protocol: "tcp", RemoteIPPrefix: "10.0.2.1"}, rules.SecGroupRule{Direction: "ingress", Protocol: "tcp", RemoteIPPrefix: "10.0.2.1/32"}, true},
 	}
 
 	for _, c := range cases {

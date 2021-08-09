@@ -212,13 +212,9 @@ func (c *klusterClient) EnsureKubernikusRulesInSecurityGroup(kluster *v1.Kluster
 		return false, fmt.Errorf("More than one SecurityGroup with name %v found", sgName)
 	}
 
-	apiURL, err := url.Parse(kluster.Status.Apiserver)
+	apiIP, err := ipForUrl(kluster.Status.Apiserver)
 	if err != nil {
-		return false, fmt.Errorf("Failed to parse apiserver api: %w", err)
-	}
-	apiIPs, err := net.LookupHost(apiURL.Host)
-	if err != nil || len(apiIPs) == 0 {
-		return false, fmt.Errorf("Failed to resolve apiserver: %w", err)
+		return false, fmt.Errorf("Failed to lookup apiserver ip: %w", err)
 	}
 
 	wantedRules := []rules.SecGroupRule{
@@ -242,9 +238,39 @@ func (c *klusterClient) EnsureKubernikusRulesInSecurityGroup(kluster *v1.Kluster
 			Protocol:       string(rules.ProtocolTCP),
 			PortRangeMin:   443,
 			PortRangeMax:   443,
-			RemoteIPPrefix: apiIPs[0] + "/32",
+			RemoteIPPrefix: apiIP.String(),
 			Description:    fmt.Sprintf(`Kubernikus: allow access to apiserver of cluster "%s"`, kluster.Spec.Name),
 		},
+	}
+	if osURL, err := c.ComputeClient.ProviderClient.EndpointLocator(gophercloud.EndpointOpts{Type: "object-store", Availability: gophercloud.AvailabilityPublic}); err == nil {
+		if ip, err := ipForUrl(osURL); err == nil {
+			wantedRules = append(wantedRules, rules.SecGroupRule{
+				Direction:      string(rules.DirEgress),
+				EtherType:      string(rules.EtherType4),
+				Protocol:       string(rules.ProtocolTCP),
+				PortRangeMin:   443,
+				PortRangeMax:   443,
+				RemoteIPPrefix: ip.String(),
+				Description:    `Kubernikus: allow access to regional object-store/swift`,
+			})
+		} else {
+			fmt.Println("parse error object-store", osURL, err)
+		}
+	} else {
+		fmt.Println("no object-store", err, osURL)
+	}
+	if keppelURL, err := c.ComputeClient.ProviderClient.EndpointLocator(gophercloud.EndpointOpts{Type: "keppel", Availability: gophercloud.AvailabilityPublic}); err == nil {
+		if ip, err := ipForUrl(keppelURL); err == nil {
+			wantedRules = append(wantedRules, rules.SecGroupRule{
+				Direction:      string(rules.DirEgress),
+				EtherType:      string(rules.EtherType4),
+				Protocol:       string(rules.ProtocolTCP),
+				PortRangeMin:   443,
+				PortRangeMax:   443,
+				RemoteIPPrefix: ip.String(),
+				Description:    `Kubernikus: allow access to regional keppel`,
+			})
+		}
 	}
 OUTER:
 	for n, wanted := range wantedRules {
@@ -404,4 +430,23 @@ func nodeMetadata(kluster, pool string) map[string]string {
 		"kubernikus:nodepool": pool,
 		"kubernikus:kluster":  kluster,
 	}
+}
+
+func ipForUrl(theurl string) (net.IP, error) {
+	u, err := url.Parse(theurl)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to parse url %s: %w", theurl, err)
+	}
+	//if host is an IP we are done
+	if ip := net.ParseIP(u.Hostname()); ip != nil {
+		return ip, nil
+	}
+	ips, err := net.LookupHost(u.Hostname())
+	if err != nil || len(ips) == 0 {
+		return nil, fmt.Errorf("Failed to resolve host: %w", err)
+	}
+	if ip := net.ParseIP(ips[0]); ip != nil {
+		return ip, nil
+	}
+	return nil, fmt.Errorf("Failed to parse resolved ip %s", ips[0])
 }
