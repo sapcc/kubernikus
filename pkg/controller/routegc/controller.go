@@ -87,7 +87,7 @@ func (w *routeGarbageCollector) Reconcile(kluster *v1.Kluster) (err error) {
 	}
 
 	validNexthops := map[string]string{}
-	err = foreachServer(computeClient, servers.ListOpts{}, func(srv *servers.Server) (bool, error) {
+	err = foreachServer(computeClient, servers.ListOpts{Name: "^(kks-)?" + kluster.Spec.Name}, func(srv *servers.Server) (bool, error) {
 		for _, addrs := range srv.Addresses {
 			for _, nase := range addrs.([]interface{}) {
 				addresses, ok := nase.(map[string]interface{})
