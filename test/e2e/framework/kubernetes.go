@@ -24,8 +24,8 @@ const (
 )
 
 type Kubernetes struct {
-	ClientSet        *kubernetes.Clientset
-	restClientConfig *restclient.Config
+	ClientSet  *kubernetes.Clientset
+	RestConfig *restclient.Config
 }
 
 func NewKubernetesFramework(kubernikus *Kubernikus, kluster string) (*Kubernetes, error) {
@@ -53,8 +53,8 @@ func NewKubernetesFramework(kubernikus *Kubernikus, kluster string) (*Kubernetes
 	}
 
 	return &Kubernetes{
-		ClientSet:        clientset,
-		restClientConfig: restConfig,
+		ClientSet:  clientset,
+		RestConfig: restConfig,
 	}, nil
 }
 

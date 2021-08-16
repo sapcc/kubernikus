@@ -134,13 +134,14 @@ build-e2e:
 	CGO_ENABLED=0 go test -v -c -o /dev/null ./test/e2e
 
 .PHONY: test-e2e
+test-e2e: export OS_PASSWORD=$(KS_PASSWORD)
 test-e2e:
 ifndef KUBERNIKUS_URL
 	$(error set KUBERNIKUS_URL)
 else
 	@cd test/e2e && \
 	set -o pipefail && \
-	go test -v -timeout 55m --kubernikus=$(KUBERNIKUS_URL) | \
+	go test -v -timeout 20m --kubernikus=$(KUBERNIKUS_URL) | \
 	grep -v "CONT\|PAUSE"
 endif
 

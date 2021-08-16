@@ -51,7 +51,7 @@ func (f *Kubernetes) ExecWithOptions(options ExecOptions) (string, string, error
 	}, scheme.ParameterCodec)
 
 	var stdout, stderr bytes.Buffer
-	err := execute("POST", req.URL(), f.restClientConfig, options.Stdin, &stdout, &stderr, tty)
+	err := execute("POST", req.URL(), f.RestConfig, options.Stdin, &stdout, &stderr, tty)
 
 	if options.PreserveWhitespace {
 		return stdout.String(), stderr.String(), err
