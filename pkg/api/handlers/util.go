@@ -148,6 +148,9 @@ func getDefaultAvailabilityZone(metadata *models.OpenstackMetadata) (string, err
 }
 
 func validateAavailabilityZone(avz string, metadata *models.OpenstackMetadata) error {
+	if metadata == nil {
+		return errors.New("metadata is nil")
+	}
 	for _, a := range metadata.AvailabilityZones {
 		if a.Name == avz {
 			return nil
