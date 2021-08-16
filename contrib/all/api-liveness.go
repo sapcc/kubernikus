@@ -27,46 +27,36 @@ func main() {
 	resp, err := http.Get(url)
 	if err != nil {
 		log.Fatalf("Could not reach URL: %s", err)
-		os.Exit(1)
 	}
 	defer resp.Body.Close()
 
+	current := 0
 	scanner := bufio.NewScanner(resp.Body)
-
 	for scanner.Scan() {
 		if line := scanner.Text(); strings.HasPrefix(line, "etcdbr_restoration_duration_seconds_count{succeeded=\"true\"}") {
-			current := strings.Split(line, " ")
-
-			if _, err := os.Stat(LastFile); os.IsExist(err) {
-				data, err := ioutil.ReadFile(LastFile)
-				if err != nil {
-					log.Fatalf("Could not read file:", err)
-					os.Exit(1)
-				}
-
-				last, err := strconv.Atoi(string(data))
-				if err != nil {
-					log.Fatalf("Error converting last:", err)
-					os.Exit(1)
-				}
-
-				currentInt, err := strconv.Atoi(current[1])
-				if err != nil {
-					log.Fatalf("Error converting current:", err)
-					os.Exit(1)
-				}
-
-				if last < currentInt {
-					log.Fatalf("Etcd restore detected.")
-					os.Exit(1)
-				}
+			c := strings.Split(line, " ")
+			if current, err = strconv.Atoi(c[1]); err != nil {
+				log.Fatalf("Error converting current: %s", err)
 			}
+			break
+		}
+	}
 
-			err = ioutil.WriteFile(LastFile, []byte(current[1]), 0644)
-			if err != nil {
-				log.Fatalf("Could not write file:", err)
-				os.Exit(1)
-			}
+	if _, err := os.Stat(LastFile); err == nil {
+		data, err := ioutil.ReadFile(LastFile)
+		if err != nil {
+			log.Fatalf("Could not read file: %s", err)
+		}
+		last, err := strconv.Atoi(string(data))
+		if err != nil {
+			log.Fatalf("Error converting last: %s", err)
+		}
+		if last != current {
+			log.Fatal("Etcd restore detected")
+		}
+	} else {
+		if err := ioutil.WriteFile(LastFile, []byte(strconv.Itoa(current)), 0644); err != nil {
+			log.Fatalf("Failed to write file: %s", err)
 		}
 	}
 	// exit 0

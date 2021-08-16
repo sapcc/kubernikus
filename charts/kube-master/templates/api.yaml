@@ -280,14 +280,15 @@ spec:
               port: {{ .Values.advertisePort }}
               scheme: HTTPS
 {{- end }}
-            initialDelaySeconds: 60
+            initialDelaySeconds: 5
             periodSeconds: 60
+            failureThreshold: 2
           readinessProbe:
             httpGet:
               path: /healthz
               port: {{ .Values.advertisePort }}
               scheme: HTTPS
-            initialDelaySeconds: 15
+            initialDelaySeconds: 5
             timeoutSeconds: 3
           env:
             - name: ETCD_HOST
