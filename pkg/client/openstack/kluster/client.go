@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/gophercloud/gophercloud"
+	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/bootfromvolume"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/schedulerhints"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/secgroups"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/servergroups"
@@ -119,7 +120,27 @@ func (c *klusterClient) CreateNode(kluster *v1.Kluster, pool *models.NodePool, n
 		}
 	}
 
-	server, err := compute.Create(c.ComputeClient, createOpts).Extract()
+	var server *servers.Server
+
+	if pool.CustomRootDiskSize > 0 {
+		blockDevices := []bootfromvolume.BlockDevice{{
+			UUID:                imageID,
+			VolumeSize:          int(pool.CustomRootDiskSize),
+			BootIndex:           0,
+			DeleteOnTermination: true,
+			SourceType:          "image",
+			DestinationType:     "volume",
+		}}
+		createOpts = &bootfromvolume.CreateOptsExt{
+			CreateOptsBuilder: createOpts,
+			BlockDevice:       blockDevices,
+		}
+
+		server, err = bootfromvolume.Create(c.ComputeClient, createOpts).Extract()
+	} else {
+		server, err = compute.Create(c.ComputeClient, createOpts).Extract()
+	}
+
 	if err != nil {
 		return "", fmt.Errorf("Failed to create node: %w", err)
 	}
