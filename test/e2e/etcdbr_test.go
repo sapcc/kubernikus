@@ -78,7 +78,7 @@ func (e *EtcdBackupTests) WaitForBackupRestore(t *testing.T) {
 
 			return p.Status.ContainerStatuses[0].RestartCount > apiPod.Status.ContainerStatuses[0].RestartCount && podutil.IsPodReady(p), nil
 		})
-	require.NoError(t, err, "apiserver did not restart efter etcd restore")
+	require.NoError(t, err, "apiserver did not restart after etcd restore")
 }
 
 func (e *EtcdBackupTests) getServiceAccountUID(namespace, serviceAccountName string) (string, error) {

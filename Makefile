@@ -36,7 +36,7 @@ bin/$(GOOS)/swagger-%:
 	chmod +x $@
 
 bin/%: $(GOFILES) Makefile
-	GOOS=$(*D) GOARCH=amd64 go build $(GOFLAGS) -v -i -o $(@D)/$(@F) ./cmd/$(basename $(@F))
+	GOOS=$(*D) GOARCH=amd64 go build $(GOFLAGS) -v -o $(@D)/$(@F) ./cmd/$(basename $(@F))
 
 test: gofmt linters gotest build-e2e
 
@@ -141,7 +141,7 @@ ifndef KUBERNIKUS_URL
 else
 	@cd test/e2e && \
 	set -o pipefail && \
-	go test -v -timeout 20m --kubernikus=$(KUBERNIKUS_URL) | \
+	go test -v -timeout 55m --kubernikus=$(KUBERNIKUS_URL) | \
 	grep -v "CONT\|PAUSE"
 endif
 
