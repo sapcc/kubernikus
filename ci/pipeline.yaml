@@ -12,6 +12,11 @@ auth_e2e_ap-ae-1: &auth_e2e_ap-ae-1
   CP_KUBERNIKUS_URL: https://kubernikus.admin.ap-ae-1.cloud.sap
   CP_OS_PROJECT_DOMAIN_NAME: ccadmin
 
+  CP_OIDC_AUTH_URL: https://kubernikus.admin.ap-ae-1.cloud.sap/auth/login
+  CP_OIDC_CONNECTOR_ID: 9a2d0e1181194fb1bca52e7951666bc3
+  CP_OIDC_USERNAME: ((KUBELOGON_USER))
+  CP_OIDC_PASSWORD: ((KUBELOGON_PASSWORD))
+
   KUBERNIKUS_NAME: e2e
   OS_PROJECT_DOMAIN_NAME: ccadmin
 
@@ -38,6 +43,11 @@ auth_e2e_ap-au-1: &auth_e2e_ap-au-1
   CP_KLUSTER: k-ap-au-1
   CP_KUBERNIKUS_URL: https://kubernikus.admin.ap-au-1.cloud.sap
   CP_OS_PROJECT_DOMAIN_NAME: ccadmin
+
+  CP_OIDC_AUTH_URL: https://kubernikus.admin.ap-au-1.cloud.sap/auth/login
+  CP_OIDC_CONNECTOR_ID: f34304c03d2147cc964470c31d00ce97
+  CP_OIDC_USERNAME: ((KUBELOGON_USER))
+  CP_OIDC_PASSWORD: ((KUBELOGON_PASSWORD))
 
   KUBERNIKUS_NAME: e2e
   OS_PROJECT_DOMAIN_NAME: ccadmin
@@ -66,6 +76,11 @@ auth_e2e_ap-cn-1: &auth_e2e_ap-cn-1
   CP_KUBERNIKUS_URL: https://kubernikus.admin.ap-cn-1.cloud.sap
   CP_OS_PROJECT_DOMAIN_NAME: ccadmin
 
+  CP_OIDC_AUTH_URL: https://kubernikus.admin.ap-cn-1.cloud.sap/auth/login
+  CP_OIDC_CONNECTOR_ID: e83ddace725b4c5da605e3f66d266f2c
+  CP_OIDC_USERNAME: ((KUBELOGON_USER))
+  CP_OIDC_PASSWORD: ((KUBELOGON_PASSWORD))
+
   KUBERNIKUS_NAME: e2e
   OS_PROJECT_DOMAIN_NAME: ccadmin
 
@@ -92,6 +107,11 @@ auth_e2e_ap-jp-1: &auth_e2e_ap-jp-1
   CP_KLUSTER: k-ap-jp-1
   CP_KUBERNIKUS_URL: https://kubernikus.admin.ap-jp-1.cloud.sap
   CP_OS_PROJECT_DOMAIN_NAME: ccadmin
+
+  CP_OIDC_AUTH_URL: https://kubernikus.admin.ap-jp-1.cloud.sap/auth/login
+  CP_OIDC_CONNECTOR_ID: b505497ca03e4942a2d0aa50dfbdc7a0
+  CP_OIDC_USERNAME: ((KUBELOGON_USER))
+  CP_OIDC_PASSWORD: ((KUBELOGON_PASSWORD))
 
   KUBERNIKUS_NAME: e2e
   OS_PROJECT_DOMAIN_NAME: ccadmin
@@ -120,6 +140,11 @@ auth_e2e_ap-jp-2: &auth_e2e_ap-jp-2
   CP_KUBERNIKUS_URL: https://kubernikus.admin.ap-jp-2.cloud.sap
   CP_OS_PROJECT_DOMAIN_NAME: ccadmin
 
+  CP_OIDC_AUTH_URL: https://kubernikus.admin.ap-jp-2.cloud.sap/auth/login
+  CP_OIDC_CONNECTOR_ID: f34b8aa879334a7fb20e1b96cb1c576e
+  CP_OIDC_USERNAME: ((KUBELOGON_USER))
+  CP_OIDC_PASSWORD: ((KUBELOGON_PASSWORD))
+
   KUBERNIKUS_NAME: e2e
   OS_PROJECT_DOMAIN_NAME: ccadmin
 
@@ -146,6 +171,11 @@ auth_e2e_ap-sa-1: &auth_e2e_ap-sa-1
   CP_KLUSTER: k-ap-sa-1
   CP_KUBERNIKUS_URL: https://kubernikus.admin.ap-sa-1.cloud.sap
   CP_OS_PROJECT_DOMAIN_NAME: ccadmin
+
+  CP_OIDC_AUTH_URL: https://kubernikus.admin.ap-sa-1.cloud.sap/auth/login
+  CP_OIDC_CONNECTOR_ID: 436297dc67b9428f97da11227dc070ec
+  CP_OIDC_USERNAME: ((KUBELOGON_USER))
+  CP_OIDC_PASSWORD: ((KUBELOGON_PASSWORD))
 
   KUBERNIKUS_NAME: e2e
   OS_PROJECT_DOMAIN_NAME: ccadmin
@@ -206,6 +236,11 @@ auth_e2e_eu-de-1: &auth_e2e_eu-de-1
   CP_KUBERNIKUS_URL: https://kubernikus.admin.eu-de-1.cloud.sap
   CP_OS_PROJECT_DOMAIN_NAME: ccadmin
 
+  CP_OIDC_AUTH_URL: https://kubernikus.admin.eu-de-1.cloud.sap/auth/login
+  CP_OIDC_CONNECTOR_ID: d7df5ce6c37643e49b3c93528c29818b
+  CP_OIDC_USERNAME: ((KUBELOGON_USER))
+  CP_OIDC_PASSWORD: ((KUBELOGON_PASSWORD))
+
   KUBERNIKUS_NAME: e2e
   OS_PROJECT_DOMAIN_NAME: ccadmin
 
@@ -232,6 +267,11 @@ auth_e2e_eu-de-2: &auth_e2e_eu-de-2
   CP_KLUSTER: k-eu-de-2
   CP_KUBERNIKUS_URL: https://kubernikus.admin.eu-de-2.cloud.sap
   CP_OS_PROJECT_DOMAIN_NAME: ccadmin
+
+  CP_OIDC_AUTH_URL: https://kubernikus.admin.eu-de-2.cloud.sap/auth/login
+  CP_OIDC_CONNECTOR_ID: 57da32d8d50d49a9a9fbbe6b890e9e13
+  CP_OIDC_USERNAME: ((KUBELOGON_USER))
+  CP_OIDC_PASSWORD: ((KUBELOGON_PASSWORD))
 
   KUBERNIKUS_NAME: e2e
   OS_PROJECT_DOMAIN_NAME: ccadmin
@@ -260,6 +300,11 @@ auth_e2e_eu-nl-1: &auth_e2e_eu-nl-1
   CP_KUBERNIKUS_URL: https://kubernikus.admin.eu-nl-1.cloud.sap
   CP_OS_PROJECT_DOMAIN_NAME: ccadmin
 
+  CP_OIDC_AUTH_URL: https://kubernikus.admin.eu-nl-1.cloud.sap/auth/login
+  CP_OIDC_CONNECTOR_ID: d9b056a6762649f684a8a02b30f38324
+  CP_OIDC_USERNAME: ((KUBELOGON_USER))
+  CP_OIDC_PASSWORD: ((KUBELOGON_PASSWORD))
+
   KUBERNIKUS_NAME: e2e
   OS_PROJECT_DOMAIN_NAME: ccadmin
 
@@ -286,6 +331,11 @@ auth_e2e_eu-ru-1: &auth_e2e_eu-ru-1
   CP_KLUSTER: k-eu-ru-1
   CP_KUBERNIKUS_URL: https://kubernikus.admin.eu-ru-1.cloud.sap
   CP_OS_PROJECT_DOMAIN_NAME: ccadmin
+
+  CP_OIDC_AUTH_URL: https://kubernikus.admin.eu-ru-1.cloud.sap/auth/login
+  CP_OIDC_CONNECTOR_ID: eb31733cfb9d4ab283bb19e00863b780
+  CP_OIDC_USERNAME: ((KUBELOGON_USER))
+  CP_OIDC_PASSWORD: ((KUBELOGON_PASSWORD))
 
   KUBERNIKUS_NAME: e2e
   OS_PROJECT_DOMAIN_NAME: ccadmin
@@ -314,6 +364,11 @@ auth_e2e_la-br-1: &auth_e2e_la-br-1
   CP_KUBERNIKUS_URL: https://kubernikus.admin.la-br-1.cloud.sap
   CP_OS_PROJECT_DOMAIN_NAME: ccadmin
 
+  CP_OIDC_AUTH_URL: https://kubernikus.admin.la-br-1.cloud.sap/auth/login
+  CP_OIDC_CONNECTOR_ID: b33ac00cb0004d50bb34eb4e4cbbeb54
+  CP_OIDC_USERNAME: ((KUBELOGON_USER))
+  CP_OIDC_PASSWORD: ((KUBELOGON_PASSWORD))
+
   KUBERNIKUS_NAME: e2e
   OS_PROJECT_DOMAIN_NAME: ccadmin
 
@@ -341,6 +396,11 @@ auth_e2e_na-ca-1: &auth_e2e_na-ca-1
   CP_KUBERNIKUS_URL: https://kubernikus.admin.na-ca-1.cloud.sap
   CP_OS_PROJECT_DOMAIN_NAME: ccadmin
 
+  CP_OIDC_AUTH_URL: https://kubernikus.admin.na-ca-1.cloud.sap/auth/login
+  CP_OIDC_CONNECTOR_ID: b7269ea1dde54a6383453ab69f25cce4
+  CP_OIDC_USERNAME: ((KUBELOGON_USER))
+  CP_OIDC_PASSWORD: ((KUBELOGON_PASSWORD))
+
   KUBERNIKUS_NAME: e2e
   OS_PROJECT_DOMAIN_NAME: ccadmin
 
@@ -367,6 +427,11 @@ auth_e2e_na-us-1: &auth_e2e_na-us-1
   CP_KLUSTER: k-na-us-1
   CP_KUBERNIKUS_URL: https://kubernikus.admin.na-us-1.cloud.sap
   CP_OS_PROJECT_DOMAIN_NAME: ccadmin
+
+  CP_OIDC_AUTH_URL: https://kubernikus.admin.na-us-1.cloud.sap/auth/login
+  CP_OIDC_CONNECTOR_ID: 040ed45cb5d8403790cf341a26c50601
+  CP_OIDC_USERNAME: ((KUBELOGON_USER))
+  CP_OIDC_PASSWORD: ((KUBELOGON_PASSWORD))
 
   KUBERNIKUS_NAME: e2e
   OS_PROJECT_DOMAIN_NAME: ccadmin
@@ -397,6 +462,11 @@ auth_e2e_na-us-2: &auth_e2e_na-us-2
   CP_KUBERNIKUS_URL: https://kubernikus.admin.na-us-2.cloud.sap
   CP_OS_PROJECT_DOMAIN_NAME: ccadmin
 
+  CP_OIDC_AUTH_URL: https://kubernikus.admin.na-us-2.cloud.sap/auth/login
+  CP_OIDC_CONNECTOR_ID: fc0f2b8450e1444197609800c8b5c4cb
+  CP_OIDC_USERNAME: ((KUBELOGON_USER))
+  CP_OIDC_PASSWORD: ((KUBELOGON_PASSWORD))
+
   KUBERNIKUS_NAME: e2e
   OS_PROJECT_DOMAIN_NAME: ccadmin
 
@@ -423,6 +493,11 @@ auth_e2e_na-us-3: &auth_e2e_na-us-3
   CP_KLUSTER: k-na-us-3
   CP_KUBERNIKUS_URL: https://kubernikus.admin.na-us-3.cloud.sap
   CP_OS_PROJECT_DOMAIN_NAME: ccadmin
+
+  CP_OIDC_AUTH_URL: https://kubernikus.admin.na-us-3.cloud.sap/auth/login
+  CP_OIDC_CONNECTOR_ID: aa579369ca944a41bccb76f49f20924f
+  CP_OIDC_USERNAME: ((KUBELOGON_USER))
+  CP_OIDC_PASSWORD: ((KUBELOGON_PASSWORD))
 
   KUBERNIKUS_NAME: e2e
   OS_PROJECT_DOMAIN_NAME: ccadmin
@@ -484,6 +559,11 @@ auth_e2e_master: &auth_e2e_master
   CP_KLUSTER: k-master
   CP_KUBERNIKUS_URL: https://kubernikus.admin.eu-nl-1.cloud.sap
   CP_OS_PROJECT_DOMAIN_NAME: ccadmin
+
+  CP_OIDC_AUTH_URL: https://kubernikus.admin.eu-nl-1.cloud.sap/auth/login
+  CP_OIDC_CONNECTOR_ID: a8b6853024494e1eb56136025b04866b
+  CP_OIDC_USERNAME: ((KUBELOGON_USER))
+  CP_OIDC_PASSWORD: ((KUBELOGON_PASSWORD))
 
   KUBERNIKUS_NAME: e2e
   OS_PROJECT_DOMAIN_NAME: ccadmin

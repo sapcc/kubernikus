@@ -569,6 +569,11 @@ definitions:
       availabilityZone:
         type: string
         x-nullable: false
+      customRootDiskSize:
+        type: integer
+        minimum: 64
+        maximum: 1024
+        description: Create servers with custom (cinder based) root disked. Size in GB
       taints:
         description: The specified taints will be added to members of this pool once during initial registration of the node
         type: array

@@ -24,14 +24,19 @@ type updateCluster struct {
 }
 
 func (d *updateCluster) Handle(params operations.UpdateClusterParams, principal *models.Principal) middleware.Responder {
-	metadata, err := FetchOpenstackMetadataFunc(params.HTTPRequest, principal)
-	if err != nil {
-		return NewErrorResponse(&operations.UpdateClusterDefault{}, 500, err.Error())
-	}
 
-	defaultAVZ, err := getDefaultAvailabilityZone(metadata)
-	if err != nil {
-		return NewErrorResponse(&operations.UpdateClusterDefault{}, 500, err.Error())
+	var metadata *models.OpenstackMetadata
+	var defaultAVZ string
+	var err error
+
+	if len(params.Body.Spec.NodePools) > 0 {
+		if metadata, err = FetchOpenstackMetadataFunc(params.HTTPRequest, principal); err != nil {
+			return NewErrorResponse(&operations.UpdateClusterDefault{}, 500, err.Error())
+		}
+
+		if defaultAVZ, err = getDefaultAvailabilityZone(metadata); err != nil {
+			return NewErrorResponse(&operations.UpdateClusterDefault{}, 500, err.Error())
+		}
 	}
 
 	kluster, err := editCluster(d.Kubernikus.KubernikusV1().Klusters(d.Namespace), principal, params.Name, func(kluster *v1.Kluster) error {

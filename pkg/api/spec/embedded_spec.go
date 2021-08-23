@@ -722,6 +722,12 @@ func init() {
         "config": {
           "$ref": "#/definitions/NodePoolConfig"
         },
+        "customRootDiskSize": {
+          "description": "Create servers with custom (cinder based) root disked. Size in GB",
+          "type": "integer",
+          "maximum": 1024,
+          "minimum": 64
+        },
         "flavor": {
           "type": "string",
           "x-nullable": false
@@ -1752,6 +1758,12 @@ func init() {
         },
         "config": {
           "$ref": "#/definitions/NodePoolConfig"
+        },
+        "customRootDiskSize": {
+          "description": "Create servers with custom (cinder based) root disked. Size in GB",
+          "type": "integer",
+          "maximum": 1024,
+          "minimum": 64
         },
         "flavor": {
           "type": "string",
