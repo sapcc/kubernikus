@@ -25,6 +25,11 @@ type NodePool struct {
 	// config
 	Config *NodePoolConfig `json:"config,omitempty"`
 
+	// Create servers with custom (cinder based) root disked. Size in GB
+	// Maximum: 1024
+	// Minimum: 64
+	CustomRootDiskSize int64 `json:"customRootDiskSize"`
+
 	// flavor
 	// Required: true
 	Flavor string `json:"flavor"`
@@ -55,6 +60,10 @@ func (m *NodePool) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateConfig(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateCustomRootDiskSize(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -97,6 +106,23 @@ func (m *NodePool) validateConfig(formats strfmt.Registry) error {
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (m *NodePool) validateCustomRootDiskSize(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.CustomRootDiskSize) { // not required
+		return nil
+	}
+
+	if err := validate.MinimumInt("customRootDiskSize", "body", int64(m.CustomRootDiskSize), 64, false); err != nil {
+		return err
+	}
+
+	if err := validate.MaximumInt("customRootDiskSize", "body", int64(m.CustomRootDiskSize), 1024, false); err != nil {
+		return err
 	}
 
 	return nil

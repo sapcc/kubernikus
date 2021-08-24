@@ -76,8 +76,12 @@ func (k *Kubernikus) WaitForKlusterToHaveEnoughSchedulableNodes(klusterName stri
 }
 
 func (k *Kubernikus) WaitForKlusterToBeDeleted(klusterName string, timeout time.Duration) error {
+	count := 0
+	overall := time.Now()
 	return wait.PollImmediate(Poll, timeout,
 		func() (done bool, err error) {
+			count++
+			req_start := time.Now()
 			_, err = k.Client.Operations.ShowCluster(
 				operations.NewShowClusterParams().WithName(klusterName),
 				k.AuthInfo,
@@ -88,7 +92,7 @@ func (k *Kubernikus) WaitForKlusterToBeDeleted(klusterName string, timeout time.
 					result := err.(*operations.ShowClusterDefault)
 					return result.Code() == 404, nil
 				}
-				return false, err
+				return false, fmt.Errorf("Polling cluster state failed after %d tries and %s. Failed request took %s: %w", count, time.Now().Sub(overall), time.Now().Sub(req_start), err)
 			}
 			return false, nil
 		},
