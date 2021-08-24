@@ -151,7 +151,7 @@ test-charts:
 
 .PHONY: test-loopref
 test-loopref:
-	docker run --rm -v $(shell pwd):/go/src/github.com/sapcc/kubernikus -e "CGO_ENABLED=0" -w /go/src/github.com/sapcc/kubernikus sapcc/kubernikus-tests:latest sh -c "go list ./... | grep "github.com/sapcc/kubernikus/pkg" | xargs exportloopref -c 4"
+	docker run --rm -v $(shell pwd):/go/src/github.com/sapcc/kubernikus -e "CGO_ENABLED=0" -e "GO111MODULE=off" -w /go/src/github.com/sapcc/kubernikus sapcc/kubernikus-tests:latest sh -c "go list ./... | grep "github.com/sapcc/kubernikus/pkg" | xargs exportloopref -c 4"
 
 include code-generate.mk
 code-gen: client-gen informer-gen lister-gen deepcopy-gen
