@@ -50,6 +50,7 @@ func (n *NetworkTests) Run(t *testing.T) {
 	var err error
 	n.Nodes, err = n.Kubernetes.ClientSet.CoreV1().Nodes().List(meta_v1.ListOptions{})
 	require.NoError(t, err, "There must be no error while listing the kluster's nodes")
+	require.NotEmpty(t, n.Nodes.Items, "No nodes returned by list")
 
 	defer t.Run("Cleanup", n.DeleteNamespace)
 	t.Run("CreateNamespace", n.CreateNamespace)

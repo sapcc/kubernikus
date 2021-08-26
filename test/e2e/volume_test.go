@@ -34,6 +34,7 @@ func (v *VolumeTests) Run(t *testing.T) {
 	var err error
 	v.Nodes, err = v.Kubernetes.ClientSet.CoreV1().Nodes().List(meta_v1.ListOptions{})
 	require.NoError(t, err, "There must be no error while listing the kluster's nodes")
+	require.NotEmpty(t, v.Nodes.Items, "No nodes returned by list")
 
 	//defer t.Run("Cleanup", v.DeleteNamespace)
 	t.Run("CreateNamespace", v.CreateNamespace)

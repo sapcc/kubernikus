@@ -6,9 +6,11 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/require"
+	v1 "k8s.io/api/core/v1"
 	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
 
+	podutil "github.com/sapcc/kubernikus/pkg/util/pod"
 	"github.com/sapcc/kubernikus/test/e2e/framework"
 )
 
@@ -39,28 +41,23 @@ func (e *EtcdBackupTests) WaitForBackupRestore(t *testing.T) {
 	require.NoError(t, err, "Error retrieving default secret")
 	require.NotEmpty(t, UID, "ServiceAccount UID should not be empty")
 
-	opts := meta_v1.ListOptions{
-		LabelSelector: fmt.Sprintf("app=%s-etcd", e.FullKlusterName),
-	}
-	pods, err := e.KubernetesControlPlane.ClientSet.CoreV1().Pods(e.Namespace).List(opts)
+	etcdPod, err := e.GetPod(fmt.Sprintf("app=%s-etcd", e.FullKlusterName))
 	require.NoError(t, err, "Error retrieving etcd pod: %s", err)
-	require.EqualValues(t, 1, len(pods.Items), "There should be exactly one etcd pod, %d found", len(pods.Items))
-	podName := pods.Items[0].GetName()
-	require.NotEmpty(t, podName, "Podname should not be empty")
 
-	pod, err := e.KubernetesControlPlane.ClientSet.CoreV1().Pods(e.Namespace).Get(podName, meta_v1.GetOptions{})
-	require.NoError(t, err, "Error retrieving resource version")
-	rv := pod.GetResourceVersion()
+	rv := etcdPod.GetResourceVersion()
 	require.NotEmpty(t, rv, "ResourceVersion should not be empty")
 
+	apiPod, err := e.GetPod(fmt.Sprintf("app=%s-apiserver", e.FullKlusterName))
+	require.NoError(t, err, "Error retrieving apiserver pod: %s", err)
+
 	cmd := fmt.Sprintf("mv %s %s.bak", EtcdDataDir, EtcdDataDir)
-	_, _, err = e.KubernetesControlPlane.ExecCommandInContainerWithFullOutput(e.Namespace, podName, "backup", "/bin/sh", "-c", cmd)
+	_, _, err = e.KubernetesControlPlane.ExecCommandInContainerWithFullOutput(e.Namespace, etcdPod.Name, "backup", "/bin/sh", "-c", cmd)
 	require.NoError(t, err, "Deletion of etcd data failed: %s", err)
 
 	newRv := string(rv)
 	wait.PollImmediate(EtcdFailPollInterval, EtcdFailTimeout,
 		func() (bool, error) {
-			pod, _ := e.KubernetesControlPlane.ClientSet.CoreV1().Pods(e.Namespace).Get(podName, meta_v1.GetOptions{})
+			pod, _ := e.KubernetesControlPlane.ClientSet.CoreV1().Pods(e.Namespace).Get(etcdPod.Name, meta_v1.GetOptions{})
 			newRv = pod.GetResourceVersion()
 			return (newRv != rv), nil
 		})
@@ -74,6 +71,14 @@ func (e *EtcdBackupTests) WaitForBackupRestore(t *testing.T) {
 		})
 	require.NoError(t, err)
 	require.EqualValues(t, UID, newUID, "Recovery of etcd backup failed")
+
+	err = wait.PollImmediate(EtcdRestorePollInterval, EtcdRestoreTimeout,
+		func() (bool, error) {
+			p, _ := e.KubernetesControlPlane.ClientSet.CoreV1().Pods(e.Namespace).Get(apiPod.Name, meta_v1.GetOptions{})
+
+			return p.Status.ContainerStatuses[0].RestartCount > apiPod.Status.ContainerStatuses[0].RestartCount && podutil.IsPodReady(p), nil
+		})
+	require.NoError(t, err, "apiserver did not restart after etcd restore")
 }
 
 func (e *EtcdBackupTests) getServiceAccountUID(namespace, serviceAccountName string) (string, error) {
@@ -83,4 +88,19 @@ func (e *EtcdBackupTests) getServiceAccountUID(namespace, serviceAccountName str
 	}
 
 	return string(serviceAccount.GetUID()), nil
+}
+
+func (e *EtcdBackupTests) GetPod(labelSelector string) (*v1.Pod, error) {
+	opts := meta_v1.ListOptions{
+		LabelSelector: labelSelector,
+	}
+
+	pods, err := e.KubernetesControlPlane.ClientSet.CoreV1().Pods(e.Namespace).List(opts)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to list pods: %w", err)
+	}
+	if len(pods.Items) != 1 {
+		return nil, fmt.Errorf("Expected to find one pod for selector %s, found %d", labelSelector, len(pods.Items))
+	}
+	return &pods.Items[0], nil
 }

@@ -10,7 +10,9 @@ import (
 	"github.com/go-openapi/runtime"
 	"github.com/gophercloud/gophercloud/openstack/identity/v3/tokens"
 	"github.com/stretchr/testify/require"
+	client "k8s.io/client-go/kubernetes"
 
+	clientutil "github.com/sapcc/kubernikus/pkg/client/kubernetes"
 	"github.com/sapcc/kubernikus/pkg/util/generator"
 	"github.com/sapcc/kubernikus/test/e2e/framework"
 )
@@ -32,12 +34,8 @@ func validate() error {
 	}
 
 	k, err := url.Parse(*kubernikusURL)
-	if err != nil {
+	if err != nil || k.Host == "" {
 		return fmt.Errorf("You need to provide an URL for --kubernikus: %v", err)
-	}
-
-	if k.Host == "" {
-		return fmt.Errorf("You need to provide an URL for --kubernikus")
 	}
 
 	if reuse != nil && *reuse && (kluster == nil || *kluster == "") {
@@ -100,13 +98,13 @@ func TestRunner(t *testing.T) {
 	fmt.Printf("========================================================================\n")
 	fmt.Printf("Test Parameters\n")
 	fmt.Printf("========================================================================\n")
-	fmt.Printf("Kubernikus:                %v\n", kurl.Host)
+	fmt.Printf("Kubernikus:                %v\n", kurl)
 	fmt.Printf("Kluster Name:              %v\n", klusterName)
 	fmt.Printf("Reuse:                     %v\n", *reuse)
 	fmt.Printf("Cleanup:                   %v\n", *cleanup)
 	fmt.Println("")
 	fmt.Printf("Dashboard:                 https://dashboard.%s.cloud.sap/%s/%s/kubernetes\n", os.Getenv("OS_REGION_NAME"), os.Getenv("OS_PROJECT_DOMAIN_NAME"), os.Getenv("OS_PROJECT_NAME"))
-	if os.Getenv("CP_KUBERNIKUS_URL") != "" {
+	if os.Getenv("CP_KLUSTER") != "" {
 		fmt.Printf("CP Kluster Name:           %v\n", os.Getenv("CP_KLUSTER"))
 	}
 	fmt.Printf("\n\n")
@@ -202,10 +200,21 @@ func TestRunner(t *testing.T) {
 		networkTests := &NetworkTests{Kubernetes: kubernetes}
 		t.Run("Network", networkTests.Run)
 
+		var kubernetesControlPlane *framework.Kubernetes
 		if os.Getenv("CP_KUBERNIKUS_URL") != "" {
-			kubernetesControlPlane, err := framework.NewKubernetesFramework(kubernikusControlPlane, os.Getenv("CP_KLUSTER"))
+			kubernetesControlPlane, err = framework.NewKubernetesFramework(kubernikusControlPlane, os.Getenv("CP_KLUSTER"))
 			require.NoError(t, err, "Must be able to create a control plane kubernetes client")
+		} else {
+			if context := os.Getenv("CP_KLUSTER"); context != "" {
+				c, err := clientutil.NewConfig("", context)
+				require.NoErrorf(t, err, "Failed to get rest config for context %s", context)
+				cs, err := client.NewForConfig(c)
+				require.NoError(t, err, "Failed to get clientset for config")
+				kubernetesControlPlane = &framework.Kubernetes{ClientSet: cs, RestConfig: c}
+			}
+		}
 
+		if kubernetesControlPlane != nil {
 			namespace := "kubernikus"
 			if os.Getenv("CP_NAMESPACE") != "" {
 				namespace = os.Getenv("CP_NAMESPACE")

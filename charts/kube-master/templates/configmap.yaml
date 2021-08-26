@@ -79,6 +79,9 @@ data:
                   sys.exit("restore detected")
             with open("/tmp/last", "w") as f:
               f.write(restore_count)
+      if not os.path.exists("/tmp/last"):
+        with open("/tmp/last", "w") as f:
+          f.write("0")
     except requests.exceptions.RequestException as e:
       print e
       sys.exit(0)
