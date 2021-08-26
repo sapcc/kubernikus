@@ -36,7 +36,7 @@ bin/$(GOOS)/swagger-%:
 	chmod +x $@
 
 bin/%: $(GOFILES) Makefile
-	GOOS=$(*D) GOARCH=amd64 go build $(GOFLAGS) -v -i -o $(@D)/$(@F) ./cmd/$(basename $(@F))
+	GOOS=$(*D) GOARCH=amd64 go build $(GOFLAGS) -v -o $(@D)/$(@F) ./cmd/$(basename $(@F))
 
 test: gofmt linters gotest build-e2e
 
@@ -134,6 +134,7 @@ build-e2e:
 	CGO_ENABLED=0 go test -v -c -o /dev/null ./test/e2e
 
 .PHONY: test-e2e
+test-e2e: export OS_PASSWORD=$(KS_PASSWORD)
 test-e2e:
 ifndef KUBERNIKUS_URL
 	$(error set KUBERNIKUS_URL)
@@ -150,7 +151,7 @@ test-charts:
 
 .PHONY: test-loopref
 test-loopref:
-	docker run --rm -v $(shell pwd):/go/src/github.com/sapcc/kubernikus -e "CGO_ENABLED=0" -w /go/src/github.com/sapcc/kubernikus sapcc/kubernikus-tests:latest sh -c "go list ./... | grep "github.com/sapcc/kubernikus/pkg" | xargs exportloopref -c 4"
+	docker run --rm -v $(shell pwd):/go/src/github.com/sapcc/kubernikus -e "CGO_ENABLED=0" -e "GO111MODULE=off" -w /go/src/github.com/sapcc/kubernikus sapcc/kubernikus-tests:latest sh -c "go list ./... | grep "github.com/sapcc/kubernikus/pkg" | xargs exportloopref -c 4"
 
 include code-generate.mk
 code-gen: client-gen informer-gen lister-gen deepcopy-gen

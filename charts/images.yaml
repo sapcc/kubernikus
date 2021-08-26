@@ -3,7 +3,7 @@ imagesForVersion:
     supported: true
     apiserver:
       repository: 'keppel.$REGION.cloud.sap/ccloud/kube-apiserver'
-      tag: 'v1.20.8'
+      tag: 'v1.20.8-sap.1'
     controllerManager:
       repository: 'keppel.$REGION.cloud.sap/ccloud/kube-controller-manager'
       tag: 'v1.20.8'
@@ -68,7 +68,7 @@ imagesForVersion:
       repository: 'keppel.$REGION.cloud.sap/ccloud/cinder-csi-plugin'
       tag: 'v1.21.0'
   '1.20.6':
-    supported: true
+    supported: false
     apiserver:
       repository: 'keppel.$REGION.cloud.sap/ccloud/kube-apiserver'
       tag: 'v1.20.6'
@@ -139,7 +139,7 @@ imagesForVersion:
     supported: true
     apiserver:
       repository: 'keppel.$REGION.cloud.sap/ccloud/kube-apiserver'
-      tag: 'v1.19.11'
+      tag: 'v1.19.11-sap.1'
     controllerManager:
       repository: 'keppel.$REGION.cloud.sap/ccloud/kube-controller-manager'
       tag: 'v1.19.11'
@@ -180,7 +180,7 @@ imagesForVersion:
       repository: 'keppel.$REGION.cloud.sap/ccloud/kubernikus'
       tag: 'changeme' #this is injected to match the operator so far
   '1.19.4':
-    supported: true
+    supported: false
     apiserver:
       repository: 'keppel.$REGION.cloud.sap/ccloud/kube-apiserver'
       tag: 'v1.19.4'
