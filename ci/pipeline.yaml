@@ -706,12 +706,13 @@ task_e2e_tests: &task_e2e_tests
     args:
       - -c
       - |
+        wget -q -O- http://169.254.169.254/latest/meta-data/hostname && echo
         set -o pipefail
         OUTPUT_DIR=$PWD/test-result
         export GOPATH=$PWD/gopath
         cd gopath/src/github.com/sapcc/kubernikus
   
-        apk add --no-progress --no-cache make git curl
+        apk add --no-progress --no-cache make git
         export RUN_PARALLEL=false
         export CGO_ENABLED=0
         make test-e2e | tee test.output
