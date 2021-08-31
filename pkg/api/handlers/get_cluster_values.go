@@ -43,7 +43,7 @@ func (d *getClusterValues) Handle(params operations.GetClusterValuesParams, prin
 		return NewErrorResponse(&operations.GetClusterCredentialsDefault{}, 500, "Couldn't determine access mode for pvc: %s", err)
 	}
 
-	yamlData, err := helm.KlusterToHelmValues(kluster, secret, kluster.Spec.Version, nil, accessMode)
+	yamlData, err := helm.KlusterToHelmValues(kluster, secret, kluster.Spec.Version, d.Images, accessMode)
 	if err != nil {
 		return NewErrorResponse(&operations.GetClusterCredentialsDefault{}, 500, "Failed to generate helm values: %s", err)
 	}

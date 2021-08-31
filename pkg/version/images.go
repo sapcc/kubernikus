@@ -26,7 +26,7 @@ type KlusterVersion struct {
 	Default                bool         `yaml:"default"`
 	Supported              bool         `yaml:"supported"`
 	Hyperkube              ImageVersion `yaml:"hyperkube,omitempty"`
-	CloudControllerManager ImageVersion `yaml:"cloudControllerManager"`
+	CloudControllerManager ImageVersion `yaml:"cloudControllerManager,omitempty"`
 	Dex                    ImageVersion `yaml:"dex,omitempty"`
 	Dashboard              ImageVersion `yaml:"dashboard,omitempty"`
 	DashboardProxy         ImageVersion `yaml:"dashboardProxy,omitempty"`
