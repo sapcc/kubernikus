@@ -17,5 +17,7 @@ spec:
         controlledResources: ["cpu", "memory"]
         minAllowed:
           {{- toYaml .Values.api.resources.requests | nindent 12 }}
+{{- if .Values.api.resources.limits }}
         maxAllowed:
           {{- toYaml .Values.api.resources.limits | nindent 12 }}
+{{- end }}
