@@ -3,6 +3,7 @@ image_resource:
   type: registry-image
   source:
     repository: keppel.eu-de-2.cloud.sap/ccloud-dockerhub-mirror/library/alpine
+    tag: 3.13
 inputs:
   - name: docs-builder.image
   - name: kubernikus.git

@@ -589,6 +589,7 @@ task_build_args: &task_build_args
     type: registry-image
     source:
       repository: keppel.eu-de-2.cloud.sap/ccloud-dockerhub-mirror/library/alpine
+      tag: 3.13
   inputs:
     - name: docs-builder.image
     - name: kubernikus.git
@@ -612,7 +613,7 @@ task_checksum: &task_checksum
     type: registry-image
     source:
       repository: keppel.eu-de-2.cloud.sap/ccloud-dockerhub-mirror/library/golang
-      tag: 1.14-alpine
+      tag: 1.16-alpine3.13
   
   inputs:
     - name: kubernikus.builds
@@ -648,7 +649,7 @@ task_cli: &task_cli
     type: registry-image
     source:
       repository: keppel.eu-de-2.cloud.sap/ccloud-dockerhub-mirror/library/golang
-      tag: 1.14-alpine
+      tag: 1.16-alpine3.13
   inputs:
     - name: kubernikus.builds
       path: gopath/src/github.com/sapcc/kubernikus
@@ -692,7 +693,7 @@ task_e2e_tests: &task_e2e_tests
     type: registry-image
     source:
       repository: keppel.eu-de-2.cloud.sap/ccloud-dockerhub-mirror/library/golang
-      tag: 1.14-alpine
+      tag: 1.16-alpine3.13
   
   inputs:
     - name: kubernikus.builds
@@ -751,6 +752,7 @@ task_github_compare_url: &task_github_compare_url
     type: registry-image
     source:
       repository: keppel.eu-de-2.cloud.sap/ccloud-dockerhub-mirror/library/alpine
+      tag: 3.13
   inputs:
     - name: kubernikus.builds
   outputs:
