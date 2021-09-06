@@ -261,7 +261,20 @@ func (n *NodeObservatory) createAndWatchNodeInformerForKluster(kluster *v1.Klust
 				n.handlersMux.RLock()
 				defer n.handlersMux.RUnlock()
 				for _, deleteHandler := range n.deleteEventHandlers {
-					deleteHandler(kluster, obj.(*core_v1.Node))
+					node, ok := obj.(*core_v1.Node)
+					if !ok {
+						tombstone, ok := obj.(cache.DeletedFinalStateUnknown)
+						if !ok {
+							n.logger.Log("obj", fmt.Sprintf("%v", obj), "err", "unexpected object type")
+							return
+						}
+						if node, ok = tombstone.Obj.(*core_v1.Node); !ok {
+							n.logger.Log("obj", fmt.Sprintf("%v", tombstone.Obj), "err", "unexpected object type in tombstone.Obj")
+							return
+						}
+					}
+
+					deleteHandler(kluster, node)
 				}
 			},
 		})
