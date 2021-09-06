@@ -3,7 +3,6 @@ package containers
 import (
 	"encoding/json"
 	"fmt"
-	"strconv"
 	"strings"
 	"time"
 
@@ -29,7 +28,7 @@ type ContainerPage struct {
 	pagination.MarkerPageBase
 }
 
-//IsEmpty returns true if a ListResult contains no container names.
+// IsEmpty returns true if a ListResult contains no container names.
 func (r ContainerPage) IsEmpty() (bool, error) {
 	names, err := ExtractNames(r)
 	return len(names) == 0, err
@@ -73,7 +72,7 @@ func ExtractNames(page pagination.Page) ([]string, error) {
 			names = append(names, container.Name)
 		}
 		return names, nil
-	case strings.HasPrefix(ct, "text/plain"):
+	case strings.HasPrefix(ct, "text/plain") || ct == "":
 		names := make([]string, 0, 50)
 
 		body := string(page.(ContainerPage).Body.([]uint8))
@@ -92,66 +91,37 @@ func ExtractNames(page pagination.Page) ([]string, error) {
 // GetHeader represents the headers returned in the response from a Get request.
 type GetHeader struct {
 	AcceptRanges     string    `json:"Accept-Ranges"`
-	BytesUsed        int64     `json:"-"`
-	ContentLength    int64     `json:"-"`
+	BytesUsed        int64     `json:"X-Container-Bytes-Used,string"`
+	ContentLength    int64     `json:"Content-Length,string"`
 	ContentType      string    `json:"Content-Type"`
 	Date             time.Time `json:"-"`
-	ObjectCount      int64     `json:"-"`
+	ObjectCount      int64     `json:"X-Container-Object-Count,string"`
 	Read             []string  `json:"-"`
 	TransID          string    `json:"X-Trans-Id"`
 	VersionsLocation string    `json:"X-Versions-Location"`
 	HistoryLocation  string    `json:"X-History-Location"`
 	Write            []string  `json:"-"`
 	StoragePolicy    string    `json:"X-Storage-Policy"`
+	TempURLKey       string    `json:"X-Container-Meta-Temp-URL-Key"`
+	TempURLKey2      string    `json:"X-Container-Meta-Temp-URL-Key-2"`
+	Timestamp        float64   `json:"X-Timestamp,string"`
 }
 
 func (r *GetHeader) UnmarshalJSON(b []byte) error {
 	type tmp GetHeader
 	var s struct {
 		tmp
-		BytesUsed     string                  `json:"X-Container-Bytes-Used"`
-		ContentLength string                  `json:"Content-Length"`
-		ObjectCount   string                  `json:"X-Container-Object-Count"`
-		Write         string                  `json:"X-Container-Write"`
-		Read          string                  `json:"X-Container-Read"`
-		Date          gophercloud.JSONRFC1123 `json:"Date"`
+		Write string                  `json:"X-Container-Write"`
+		Read  string                  `json:"X-Container-Read"`
+		Date  gophercloud.JSONRFC1123 `json:"Date"`
 	}
+
 	err := json.Unmarshal(b, &s)
 	if err != nil {
 		return err
 	}
 
 	*r = GetHeader(s.tmp)
-
-	switch s.BytesUsed {
-	case "":
-		r.BytesUsed = 0
-	default:
-		r.BytesUsed, err = strconv.ParseInt(s.BytesUsed, 10, 64)
-		if err != nil {
-			return err
-		}
-	}
-
-	switch s.ContentLength {
-	case "":
-		r.ContentLength = 0
-	default:
-		r.ContentLength, err = strconv.ParseInt(s.ContentLength, 10, 64)
-		if err != nil {
-			return err
-		}
-	}
-
-	switch s.ObjectCount {
-	case "":
-		r.ObjectCount = 0
-	default:
-		r.ObjectCount, err = strconv.ParseInt(s.ObjectCount, 10, 64)
-		if err != nil {
-			return err
-		}
-	}
 
 	r.Read = strings.Split(s.Read, ",")
 	r.Write = strings.Split(s.Write, ",")
@@ -168,9 +138,9 @@ type GetResult struct {
 
 // Extract will return a struct of headers returned from a call to Get.
 func (r GetResult) Extract() (*GetHeader, error) {
-	var s *GetHeader
+	var s GetHeader
 	err := r.ExtractInto(&s)
-	return s, err
+	return &s, err
 }
 
 // ExtractMetadata is a function that takes a GetResult (of type *http.Response)
@@ -192,7 +162,7 @@ func (r GetResult) ExtractMetadata() (map[string]string, error) {
 // CreateHeader represents the headers returned in the response from a Create
 // request.
 type CreateHeader struct {
-	ContentLength int64     `json:"-"`
+	ContentLength int64     `json:"Content-Length,string"`
 	ContentType   string    `json:"Content-Type"`
 	Date          time.Time `json:"-"`
 	TransID       string    `json:"X-Trans-Id"`
@@ -202,8 +172,7 @@ func (r *CreateHeader) UnmarshalJSON(b []byte) error {
 	type tmp CreateHeader
 	var s struct {
 		tmp
-		ContentLength string                  `json:"Content-Length"`
-		Date          gophercloud.JSONRFC1123 `json:"Date"`
+		Date gophercloud.JSONRFC1123 `json:"Date"`
 	}
 	err := json.Unmarshal(b, &s)
 	if err != nil {
@@ -211,16 +180,6 @@ func (r *CreateHeader) UnmarshalJSON(b []byte) error {
 	}
 
 	*r = CreateHeader(s.tmp)
-
-	switch s.ContentLength {
-	case "":
-		r.ContentLength = 0
-	default:
-		r.ContentLength, err = strconv.ParseInt(s.ContentLength, 10, 64)
-		if err != nil {
-			return err
-		}
-	}
 
 	r.Date = time.Time(s.Date)
 
@@ -236,15 +195,15 @@ type CreateResult struct {
 // Extract will return a struct of headers returned from a call to Create.
 // To extract the headers from the HTTP response, call its Extract method.
 func (r CreateResult) Extract() (*CreateHeader, error) {
-	var s *CreateHeader
+	var s CreateHeader
 	err := r.ExtractInto(&s)
-	return s, err
+	return &s, err
 }
 
 // UpdateHeader represents the headers returned in the response from a Update
 // request.
 type UpdateHeader struct {
-	ContentLength int64     `json:"-"`
+	ContentLength int64     `json:"Content-Length,string"`
 	ContentType   string    `json:"Content-Type"`
 	Date          time.Time `json:"-"`
 	TransID       string    `json:"X-Trans-Id"`
@@ -254,8 +213,7 @@ func (r *UpdateHeader) UnmarshalJSON(b []byte) error {
 	type tmp UpdateHeader
 	var s struct {
 		tmp
-		ContentLength string                  `json:"Content-Length"`
-		Date          gophercloud.JSONRFC1123 `json:"Date"`
+		Date gophercloud.JSONRFC1123 `json:"Date"`
 	}
 	err := json.Unmarshal(b, &s)
 	if err != nil {
@@ -263,16 +221,6 @@ func (r *UpdateHeader) UnmarshalJSON(b []byte) error {
 	}
 
 	*r = UpdateHeader(s.tmp)
-
-	switch s.ContentLength {
-	case "":
-		r.ContentLength = 0
-	default:
-		r.ContentLength, err = strconv.ParseInt(s.ContentLength, 10, 64)
-		if err != nil {
-			return err
-		}
-	}
 
 	r.Date = time.Time(s.Date)
 
@@ -287,15 +235,15 @@ type UpdateResult struct {
 
 // Extract will return a struct of headers returned from a call to Update.
 func (r UpdateResult) Extract() (*UpdateHeader, error) {
-	var s *UpdateHeader
+	var s UpdateHeader
 	err := r.ExtractInto(&s)
-	return s, err
+	return &s, err
 }
 
 // DeleteHeader represents the headers returned in the response from a Delete
 // request.
 type DeleteHeader struct {
-	ContentLength int64     `json:"-"`
+	ContentLength int64     `json:"Content-Length,string"`
 	ContentType   string    `json:"Content-Type"`
 	Date          time.Time `json:"-"`
 	TransID       string    `json:"X-Trans-Id"`
@@ -305,8 +253,7 @@ func (r *DeleteHeader) UnmarshalJSON(b []byte) error {
 	type tmp DeleteHeader
 	var s struct {
 		tmp
-		ContentLength string                  `json:"Content-Length"`
-		Date          gophercloud.JSONRFC1123 `json:"Date"`
+		Date gophercloud.JSONRFC1123 `json:"Date"`
 	}
 	err := json.Unmarshal(b, &s)
 	if err != nil {
@@ -315,30 +262,42 @@ func (r *DeleteHeader) UnmarshalJSON(b []byte) error {
 
 	*r = DeleteHeader(s.tmp)
 
-	switch s.ContentLength {
-	case "":
-		r.ContentLength = 0
-	default:
-		r.ContentLength, err = strconv.ParseInt(s.ContentLength, 10, 64)
-		if err != nil {
-			return err
-		}
-	}
-
 	r.Date = time.Time(s.Date)
 
 	return err
 }
 
 // DeleteResult represents the result of a delete operation. To extract the
-// the headers from the HTTP response, call its Extract method.
+// headers from the HTTP response, call its Extract method.
 type DeleteResult struct {
 	gophercloud.HeaderResult
 }
 
 // Extract will return a struct of headers returned from a call to Delete.
 func (r DeleteResult) Extract() (*DeleteHeader, error) {
-	var s *DeleteHeader
+	var s DeleteHeader
 	err := r.ExtractInto(&s)
-	return s, err
+	return &s, err
+}
+
+type BulkDeleteResponse struct {
+	ResponseStatus string     `json:"Response Status"`
+	ResponseBody   string     `json:"Response Body"`
+	Errors         [][]string `json:"Errors"`
+	NumberDeleted  int        `json:"Number Deleted"`
+	NumberNotFound int        `json:"Number Not Found"`
+}
+
+// BulkDeleteResult represents the result of a bulk delete operation. To extract
+// the response object from the HTTP response, call its Extract method.
+type BulkDeleteResult struct {
+	gophercloud.Result
+}
+
+// Extract will return a BulkDeleteResponse struct returned from a BulkDelete
+// call.
+func (r BulkDeleteResult) Extract() (*BulkDeleteResponse, error) {
+	var s BulkDeleteResponse
+	err := r.ExtractInto(&s)
+	return &s, err
 }

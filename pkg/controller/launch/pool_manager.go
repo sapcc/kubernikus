@@ -145,7 +145,7 @@ func (cpm *ConcretePoolManager) SetStatus(status *PoolStatus) error {
 		},
 	)
 
-	copy, err := cpm.Clients.Kubernikus.Kubernikus().Klusters(cpm.Kluster.Namespace).Get(cpm.Kluster.Name, metav1.GetOptions{})
+	copy, err := cpm.Clients.Kubernikus.KubernikusV1().Klusters(cpm.Kluster.Namespace).Get(cpm.Kluster.Name, metav1.GetOptions{})
 	if err != nil {
 		return err
 	}
@@ -177,7 +177,7 @@ func (cpm *ConcretePoolManager) SetStatus(status *PoolStatus) error {
 	}
 
 	if updated {
-		_, err = util.UpdateKlusterWithRetries(cpm.Clients.Kubernikus.Kubernikus().Klusters(cpm.Kluster.Namespace), cpm.Lister.Klusters(cpm.Kluster.Namespace), cpm.Kluster.GetName(), func(kluster *v1.Kluster) error {
+		_, err = util.UpdateKlusterWithRetries(cpm.Clients.Kubernikus.KubernikusV1().Klusters(cpm.Kluster.Namespace), cpm.Lister.Klusters(cpm.Kluster.Namespace), cpm.Kluster.GetName(), func(kluster *v1.Kluster) error {
 			kluster.Status.NodePools = copy.Status.NodePools
 			return nil
 		})

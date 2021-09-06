@@ -41,6 +41,9 @@ type ListOpts struct {
 	// Visibility filters on the visibility of the image.
 	Visibility ImageVisibility `q:"visibility"`
 
+	// Hidden filters on the hidden status of the image.
+	Hidden bool `q:"os_hidden"`
+
 	// MemberStatus filters on the member status of the image.
 	MemberStatus ImageMemberStatus `q:"member_status"`
 
@@ -155,6 +158,9 @@ type CreateOpts struct {
 	// Visibility defines who can see/use the image.
 	Visibility *ImageVisibility `json:"visibility,omitempty"`
 
+	// Hidden is whether the image is listed in default image list or not.
+	Hidden *bool `json:"os_hidden,omitempty"`
+
 	// Tags is a set of image tags.
 	Tags []string `json:"tags,omitempty"`
 
@@ -206,19 +212,22 @@ func Create(client *gophercloud.ServiceClient, opts CreateOptsBuilder) (r Create
 		r.Err = err
 		return r
 	}
-	_, r.Err = client.Post(createURL(client), b, &r.Body, &gophercloud.RequestOpts{OkCodes: []int{201}})
+	resp, err := client.Post(createURL(client), b, &r.Body, &gophercloud.RequestOpts{OkCodes: []int{201}})
+	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
 	return
 }
 
 // Delete implements image delete request.
 func Delete(client *gophercloud.ServiceClient, id string) (r DeleteResult) {
-	_, r.Err = client.Delete(deleteURL(client, id), nil)
+	resp, err := client.Delete(deleteURL(client, id), nil)
+	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
 	return
 }
 
 // Get implements image get request.
 func Get(client *gophercloud.ServiceClient, id string) (r GetResult) {
-	_, r.Err = client.Get(getURL(client, id), &r.Body, nil)
+	resp, err := client.Get(getURL(client, id), &r.Body, nil)
+	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
 	return
 }
 
@@ -229,10 +238,11 @@ func Update(client *gophercloud.ServiceClient, id string, opts UpdateOptsBuilder
 		r.Err = err
 		return r
 	}
-	_, r.Err = client.Patch(updateURL(client, id), b, &r.Body, &gophercloud.RequestOpts{
+	resp, err := client.Patch(updateURL(client, id), b, &r.Body, &gophercloud.RequestOpts{
 		OkCodes:     []int{200},
 		MoreHeaders: map[string]string{"Content-Type": "application/openstack-images-v2.1-json-patch"},
 	})
+	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
 	return
 }
 
@@ -276,6 +286,20 @@ func (r UpdateVisibility) ToImagePatchMap() map[string]interface{} {
 		"op":    "replace",
 		"path":  "/visibility",
 		"value": r.Visibility,
+	}
+}
+
+// ReplaceImageHidden represents an updated os_hidden property request.
+type ReplaceImageHidden struct {
+	NewHidden bool
+}
+
+// ToImagePatchMap assembles a request body based on ReplaceImageHidden.
+func (r ReplaceImageHidden) ToImagePatchMap() map[string]interface{} {
+	return map[string]interface{}{
+		"op":    "replace",
+		"path":  "/os_hidden",
+		"value": r.NewHidden,
 	}
 }
 
@@ -335,6 +359,20 @@ func (r ReplaceImageMinDisk) ToImagePatchMap() map[string]interface{} {
 	}
 }
 
+// ReplaceImageMinRam represents an updated min_ram property request.
+type ReplaceImageMinRam struct {
+	NewMinRam int
+}
+
+// ToImagePatchMap assembles a request body based on ReplaceImageTags.
+func (r ReplaceImageMinRam) ToImagePatchMap() map[string]interface{} {
+	return map[string]interface{}{
+		"op":    "replace",
+		"path":  "/min_ram",
+		"value": r.NewMinRam,
+	}
+}
+
 // UpdateOp represents a valid update operation.
 type UpdateOp string
 
@@ -358,7 +396,7 @@ func (r UpdateImageProperty) ToImagePatchMap() map[string]interface{} {
 		"path": fmt.Sprintf("/%s", r.Name),
 	}
 
-	if r.Value != "" {
+	if r.Op != RemoveOp {
 		updateMap["value"] = r.Value
 	}
 

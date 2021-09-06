@@ -8,7 +8,6 @@ import (
 	"os"
 	"strings"
 
-	"github.com/golang/glog"
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack"
 	"github.com/gophercloud/gophercloud/openstack/identity/v3/tokens"
@@ -16,6 +15,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	keyring "github.com/zalando/go-keyring"
+	"k8s.io/klog"
 )
 
 type OpenstackClient struct {
@@ -163,7 +163,7 @@ func (o *OpenstackClient) Setup() error {
 			if password, err := keyring.Get("kubernikus", strings.ToLower(username)); err == nil {
 				o.Password = password
 			} else {
-				glog.V(2).Infof("Failed to get credential from keyring: %s", err)
+				klog.V(2).Infof("Failed to get credential from keyring: %s", err)
 			}
 		}
 	}

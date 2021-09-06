@@ -83,7 +83,7 @@ func EnsureKlusterSecret(client kubernetes.Interface, kluster *v1.Kluster) (*v1.
 			OwnerReferences: []meta_v1.OwnerReference{*klusterRef},
 		},
 	}
-	apiSecret, err := client.Core().Secrets(kluster.Namespace).Create(&s)
+	apiSecret, err := client.CoreV1().Secrets(kluster.Namespace).Create(&s)
 	if apierrors.IsAlreadyExists(err) {
 		return KlusterSecret(client, kluster)
 	}
@@ -95,7 +95,7 @@ func EnsureKlusterSecret(client kubernetes.Interface, kluster *v1.Kluster) (*v1.
 
 // NOTE: this is not threadsafe (but we are only calling this once per kluster for the time being)
 func UpdateKlusterSecret(client kubernetes.Interface, kluster *v1.Kluster, secret *v1.Secret) error {
-	api_secret, err := client.Core().Secrets(kluster.Namespace).Get(klusterSecretName(kluster), meta_v1.GetOptions{})
+	api_secret, err := client.CoreV1().Secrets(kluster.Namespace).Get(klusterSecretName(kluster), meta_v1.GetOptions{})
 	if err != nil {
 		return err
 	}
@@ -103,13 +103,13 @@ func UpdateKlusterSecret(client kubernetes.Interface, kluster *v1.Kluster, secre
 	if err != nil {
 		return fmt.Errorf("Failed to serialize secret data: %s", err)
 	}
-	_, err = client.Core().Secrets(kluster.Namespace).Update(api_secret)
+	_, err = client.CoreV1().Secrets(kluster.Namespace).Update(api_secret)
 	return err
 
 }
 
 func DeleteKlusterSecret(client kubernetes.Interface, kluster *v1.Kluster) error {
-	err := client.Core().Secrets(kluster.Namespace).Delete(klusterSecretName(kluster), nil)
+	err := client.CoreV1().Secrets(kluster.Namespace).Delete(klusterSecretName(kluster), nil)
 	if apierrors.IsNotFound(err) {
 		return nil
 	}

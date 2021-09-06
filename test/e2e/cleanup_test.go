@@ -99,7 +99,7 @@ func (s *CleanupTests) ServerGroupsGotDeleted(t *testing.T) {
 	computeClient, err := openstack.NewComputeV2(s.OpenStack.Provider, gophercloud.EndpointOpts{})
 	require.NoError(t, err, "There should be no error creating compute client")
 
-	allPages, err := servergroups.List(computeClient).AllPages()
+	allPages, err := servergroups.List(computeClient, servergroups.ListOpts{}).AllPages()
 	require.NoError(t, err, "There should be no error listing server groups")
 
 	allGroups, err := servergroups.ExtractServerGroups(allPages)

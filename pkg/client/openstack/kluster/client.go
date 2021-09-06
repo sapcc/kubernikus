@@ -310,7 +310,7 @@ func (c *klusterClient) DeleteServerGroup(name string) error {
 }
 
 func (c *klusterClient) serverGroupByName(name string) (*servergroups.ServerGroup, error) {
-	page, err := servergroups.List(c.ComputeClient).AllPages()
+	page, err := servergroups.List(c.ComputeClient, servergroups.ListOpts{}).AllPages()
 	if err != nil {
 		return nil, err
 	}

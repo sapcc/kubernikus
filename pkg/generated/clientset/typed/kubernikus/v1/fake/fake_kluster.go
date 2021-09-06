@@ -115,7 +115,7 @@ func (c *FakeKlusters) DeleteCollection(options *v1.DeleteOptions, listOptions v
 // Patch applies the patch and returns the patched kluster.
 func (c *FakeKlusters) Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *kubernikusv1.Kluster, err error) {
 	obj, err := c.Fake.
-		Invokes(testing.NewPatchSubresourceAction(klustersResource, c.ns, name, data, subresources...), &kubernikusv1.Kluster{})
+		Invokes(testing.NewPatchSubresourceAction(klustersResource, c.ns, name, pt, data, subresources...), &kubernikusv1.Kluster{})
 
 	if obj == nil {
 		return nil, err

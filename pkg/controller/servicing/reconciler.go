@@ -73,7 +73,7 @@ func NewKlusterReconcilerFactory(logger log.Logger, recorder record.EventRecorde
 		ListerFactory:     NewNodeListerFactory(logger, recorder, factories, clients),
 		LifeCyclerFactory: NewNodeLifeCyclerFactory(logger, recorder, factories, clients),
 		KlusterLister:     factories.Kubernikus.Kubernikus().V1().Klusters().Lister(),
-		KubernikusClient:  clients.Kubernikus.Kubernikus(),
+		KubernikusClient:  clients.Kubernikus.KubernikusV1(),
 	}
 }
 

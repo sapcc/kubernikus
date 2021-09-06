@@ -39,7 +39,7 @@ func (d *updateCluster) Handle(params operations.UpdateClusterParams, principal 
 		}
 	}
 
-	kluster, err := editCluster(d.Kubernikus.Kubernikus().Klusters(d.Namespace), principal, params.Name, func(kluster *v1.Kluster) error {
+	kluster, err := editCluster(d.Kubernikus.KubernikusV1().Klusters(d.Namespace), principal, params.Name, func(kluster *v1.Kluster) error {
 		// find the deleted nodepools
 		deletedNodePoolNames, err := detectNodePoolChanges(kluster.Spec.NodePools, params.Body.Spec.NodePools)
 		if err != nil {

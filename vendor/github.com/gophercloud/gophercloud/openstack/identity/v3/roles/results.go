@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 
 	"github.com/gophercloud/gophercloud"
-	"github.com/gophercloud/gophercloud/internal"
 	"github.com/gophercloud/gophercloud/pagination"
 )
 
@@ -49,7 +48,7 @@ func (r *Role) UnmarshalJSON(b []byte) error {
 			return err
 		}
 		if resultMap, ok := result.(map[string]interface{}); ok {
-			r.Extra = internal.RemainingKeys(Role{}, resultMap)
+			r.Extra = gophercloud.RemainingKeys(Role{}, resultMap)
 		}
 	}
 
@@ -139,7 +138,8 @@ type RoleAssignment struct {
 
 // AssignedRole represents a Role in an assignment.
 type AssignedRole struct {
-	ID string `json:"id,omitempty"`
+	ID   string `json:"id,omitempty"`
+	Name string `json:"name,omitempty"`
 }
 
 // Scope represents a scope in a Role assignment.
@@ -150,22 +150,26 @@ type Scope struct {
 
 // Domain represents a domain in a role assignment scope.
 type Domain struct {
-	ID string `json:"id,omitempty"`
+	ID   string `json:"id,omitempty"`
+	Name string `json:"name,omitempty"`
 }
 
 // Project represents a project in a role assignment scope.
 type Project struct {
-	ID string `json:"id,omitempty"`
+	ID   string `json:"id,omitempty"`
+	Name string `json:"name,omitempty"`
 }
 
 // User represents a user in a role assignment scope.
 type User struct {
-	ID string `json:"id,omitempty"`
+	ID   string `json:"id,omitempty"`
+	Name string `json:"name,omitempty"`
 }
 
 // Group represents a group in a role assignment scope.
 type Group struct {
-	ID string `json:"id,omitempty"`
+	ID   string `json:"id,omitempty"`
+	Name string `json:"name,omitempty"`
 }
 
 // RoleAssignmentPage is a single page of RoleAssignments results.

@@ -56,7 +56,7 @@ func (in *Kluster) DeepCopyObject() runtime.Object {
 func (in *KlusterList) DeepCopyInto(out *KlusterList) {
 	*out = *in
 	out.TypeMeta = in.TypeMeta
-	out.ListMeta = in.ListMeta
+	in.ListMeta.DeepCopyInto(&out.ListMeta)
 	if in.Items != nil {
 		in, out := &in.Items, &out.Items
 		*out = make([]Kluster, len(*in))
