@@ -186,7 +186,7 @@ systemd:
           --volume etc-kubernetes-certs,kind=host,source=/etc/kubernetes/certs,readOnly=true \
           --mount volume=etc-kubernetes-certs,target=/etc/kubernetes/certs \
           --insecure-options=image \
-          --stage1-from-dir=stage1-coreos.aci \
+          --stage1-from-dir=stage1-fly.aci \
           docker://{{ .KubernikusImage }}:{{ .KubernikusImageTag }} \
           --name wormhole --exec wormhole -- client --listen {{ .ApiserverIP }}:{{ .ApiserverPort }} --kubeconfig=/var/lib/kubelet/kubeconfig
         ExecStopPost=/opt/bin/rkt gc --mark-only
