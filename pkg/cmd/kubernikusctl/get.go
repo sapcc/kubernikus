@@ -14,6 +14,7 @@ func getRun(c *cobra.Command, args []string) {
 func NewGetCommand() *cobra.Command {
 	o := &get.GetOptions{
 		Openstack: common.NewOpenstackClient(),
+		OIDC: common.NewOIDCClient(),
 	}
 
 	c := &cobra.Command{

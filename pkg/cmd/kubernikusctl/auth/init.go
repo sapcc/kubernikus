@@ -150,6 +150,6 @@ func (o *InitOptions) setup() error {
 		}
 	}
 
-	o.kubernikus = common.NewKubernikusClient(o.url, o.openstack.Provider.TokenID)
+	o.kubernikus = common.NewKubernikusClient(o.url, o.openstack.Provider.TokenID, false)
 	return nil
 }

@@ -15,9 +15,10 @@ import (
 type KubernikusClient struct {
 	token  string
 	client *kubernikus.Kubernikus
+	oidc bool
 }
 
-func NewKubernikusClient(url *url.URL, token string) *KubernikusClient {
+func NewKubernikusClient(url *url.URL, token string, oidc bool) *KubernikusClient {
 	transport := kubernikus.DefaultTransportConfig().
 		WithSchemes([]string{url.Scheme}).
 		WithHost(url.Host).
@@ -26,22 +27,38 @@ func NewKubernikusClient(url *url.URL, token string) *KubernikusClient {
 	return &KubernikusClient{
 		token:  token,
 		client: kubernikus.NewHTTPClientWithConfig(nil, transport),
+		oidc: oidc,
 	}
+}
+
+func (k *KubernikusClient) authOIDCFunc() runtime.ClientAuthInfoWriterFunc {
+	return runtime.ClientAuthInfoWriterFunc(
+		func(req runtime.ClientRequest, reg strfmt.Registry) error {
+			_ = req.SetHeaderParam("Authorization", "Bearer " + k.token)
+			return nil
+		})
 }
 
 func (k *KubernikusClient) authFunc() runtime.ClientAuthInfoWriterFunc {
 	return runtime.ClientAuthInfoWriterFunc(
 		func(req runtime.ClientRequest, reg strfmt.Registry) error {
-			req.SetHeaderParam("X-AUTH-TOKEN", k.token)
+			_ = req.SetHeaderParam("X-AUTH-TOKEN", k.token)
 			return nil
 		})
 }
 
 func (k *KubernikusClient) GetCredentials(name string) (string, error) {
-	ok, err := k.client.Operations.GetClusterCredentials(
-		operations.NewGetClusterCredentialsParams().WithName(name),
-		k.authFunc())
-
+	var err error
+	var ok *operations.GetClusterCredentialsOK
+	if k.oidc {
+		ok, err = k.client.Operations.GetClusterCredentials(
+			operations.NewGetClusterCredentialsParams().WithName(name),
+			k.authOIDCFunc())
+	} else {
+		ok, err = k.client.Operations.GetClusterCredentials(
+			operations.NewGetClusterCredentialsParams().WithName(name),
+			k.authFunc())
+	}
 	switch err.(type) {
 	case *operations.GetClusterCredentialsDefault:
 		result := err.(*operations.GetClusterCredentialsDefault)

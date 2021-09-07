@@ -182,7 +182,7 @@ func (o *RefreshOptions) setupClients() error {
 		return err
 	}
 
-	o.kubernikus = common.NewKubernikusClient(o.url, o.openstack.Provider.TokenID)
+	o.kubernikus = common.NewKubernikusClient(o.url, o.openstack.Provider.TokenID, false)
 
 	return nil
 }

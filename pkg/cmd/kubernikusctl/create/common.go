@@ -45,6 +45,6 @@ func (o *CreateOptions) SetupKubernikusClient() error {
 		}
 	}
 	klog.V(2).Infof("Setting up kubernikus client at %v.", o.url)
-	o.Kubernikus = common.NewKubernikusClient(o.url, o.Openstack.Provider.TokenID)
+	o.Kubernikus = common.NewKubernikusClient(o.url, o.Openstack.Provider.TokenID, false)
 	return nil
 }
