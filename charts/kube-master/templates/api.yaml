@@ -244,6 +244,11 @@ spec:
             - --oidc-username-prefix=-
             - --oidc-username-claim=name
             {{ end }}
+            - --audit-log-path=-
+            - --audit-policy-file=/etc/kubernetes/config/audit-policy.yaml
+            - --audit-log-batch-max-wait=5s
+            - --audit-log-batch-max-size=50
+            - --audit-log-mode=batch
           volumeMounts:
             - mountPath: /etc/kubernetes/certs
               name: certs
@@ -260,6 +265,9 @@ spec:
             {{- end }}
             - mountPath: /etc/kubernetes/bootstrap
               name: bootstrap
+              readOnly: true
+            - mountPath: /etc/kubernetes/config
+              name: config
               readOnly: true
 {{- if and (.Values.etcd.backup.enabled) (semverCompare "< 1.19" .Values.version.kubernetes) }}
             - mountPath: /liveness-probe
