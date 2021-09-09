@@ -3,7 +3,7 @@ imagesForVersion:
     supported: true
     apiserver:
       repository: 'keppel.$REGION.cloud.sap/ccloud/kube-apiserver'
-      tag: 'v1.20.8-sap.1'
+      tag: 'v1.20.8-sap.2'
     controllerManager:
       repository: 'keppel.$REGION.cloud.sap/ccloud/kube-controller-manager'
       tag: 'v1.20.8'
@@ -139,7 +139,7 @@ imagesForVersion:
     supported: true
     apiserver:
       repository: 'keppel.$REGION.cloud.sap/ccloud/kube-apiserver'
-      tag: 'v1.19.11-sap.1'
+      tag: 'v1.19.11-sap.2'
     controllerManager:
       repository: 'keppel.$REGION.cloud.sap/ccloud/kube-controller-manager'
       tag: 'v1.19.11'
