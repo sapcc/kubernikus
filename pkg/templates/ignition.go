@@ -27,7 +27,7 @@ var Ignition = &ignition{}
 
 var passwordHashRounds = 1000000
 
-const TEMPLATE_VERSION = "1"
+const TEMPLATE_VERSION = "2"
 
 func (i *ignition) getIgnitionTemplate(kluster *kubernikusv1.Kluster) (string, error) {
 	switch {
@@ -153,6 +153,7 @@ func (i *ignition) GenerateNode(kluster *kubernikusv1.Kluster, pool *models.Node
 		CalicoNetworking                   bool
 		Flatcar                            bool
 		CoreOS                             bool
+		NoCloud                            bool
 	}{
 		TLSCA:                              secret.TLSCACertificate,
 		KubeletClientsCA:                   secret.KubeletClientsCACertificate,
@@ -191,6 +192,7 @@ func (i *ignition) GenerateNode(kluster *kubernikusv1.Kluster, pool *models.Node
 		CalicoNetworking:                   calicoNetworking,
 		Flatcar:                            isFlatcar,
 		CoreOS:                             !isFlatcar,
+		NoCloud:                            kluster.Spec.NoCloud,
 	}
 
 	var dataOut []byte
