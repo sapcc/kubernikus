@@ -513,9 +513,11 @@ storage:
           rotateCertificates: true
           nodeLeaseDurationSeconds: 20
           featureGates:
+{{- if not .NoCloud }}
             CSIMigration: true
             CSIMigrationOpenStack: true
             ExpandCSIVolumes: true
+{{- end }}
     - path: /etc/kubernetes/kube-proxy/config
       filesystem: root
       mode: 0644
