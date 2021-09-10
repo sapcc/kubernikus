@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"sort"
 	"strings"
 
 	kitlog "github.com/go-kit/kit/log"
@@ -132,30 +131,4 @@ func fetchOpenstackMetadata(request *http.Request, principal *models.Principal) 
 	}
 
 	return client.GetMetadata()
-}
-
-func getDefaultAvailabilityZone(metadata *models.OpenstackMetadata) (string, error) {
-	sort.Slice(metadata.AvailabilityZones, func(i, j int) bool { return metadata.AvailabilityZones[i].Name > metadata.AvailabilityZones[j].Name })
-	if len(metadata.AvailabilityZones) == 0 {
-		return "", errors.New("couldn't determine default availability zone")
-	}
-	//eu-de2b is full, default to different az
-	if metadata.AvailabilityZones[0].Name == "eu-de-2b" && len(metadata.AvailabilityZones) > 1 {
-		return metadata.AvailabilityZones[1].Name, nil
-	}
-
-	return metadata.AvailabilityZones[0].Name, nil
-}
-
-func validateAavailabilityZone(avz string, metadata *models.OpenstackMetadata) error {
-	if metadata == nil {
-		return errors.New("metadata is nil")
-	}
-	for _, a := range metadata.AvailabilityZones {
-		if a.Name == avz {
-			return nil
-		}
-	}
-
-	return errors.New("availability zone not found")
 }

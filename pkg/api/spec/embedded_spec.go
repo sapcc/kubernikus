@@ -712,7 +712,8 @@ func init() {
       "type": "object",
       "required": [
         "name",
-        "flavor"
+        "flavor",
+        "availabilityZone"
       ],
       "properties": {
         "availabilityZone": {
@@ -1749,7 +1750,8 @@ func init() {
       "type": "object",
       "required": [
         "name",
-        "flavor"
+        "flavor",
+        "availabilityZone"
       ],
       "properties": {
         "availabilityZone": {
