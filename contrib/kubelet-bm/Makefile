@@ -1,4 +1,4 @@
-VERSION?=v1.20.6
+VERSION?=v1.20.8
 REGISTRY?=k8s.gcr.io
 REPOSITORY?=kubelet-bm
 IMAGE?=public.ecr.aws/sapcc
