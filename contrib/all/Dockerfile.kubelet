@@ -19,3 +19,8 @@ RUN rm -rf /usr/local/bin/* /apiserver /cloud-controller-manager /controller-man
 
 COPY --from=builder /tmp/kubelet /usr/local/bin/kubelet
 COPY --from=builder /tmp/kubectl /usr/local/bin/kubectl
+
+RUN apt-get update && \
+    apt-get -y --no-install-recommends install iproute2 && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
