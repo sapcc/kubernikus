@@ -177,10 +177,6 @@ func (op *GroundControl) handler(key string) error {
 		if _, name, err := cache.SplitMetaNamespaceKey(key); err == nil {
 			metrics.SetMetricKlusterTerminated(name)
 		}
-		op.Logger.Log(
-			"msg", "kluster resource already deleted",
-			"kluster", key,
-			"v", 2)
 	} else {
 		kluster := obj.(*v1.Kluster)
 		if kluster.Disabled() {
