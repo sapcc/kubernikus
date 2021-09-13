@@ -18,7 +18,7 @@ imagesForVersion:
       tag: '0.5.2'
     kubelet:
       repository: 'keppel.$REGION.cloud.sap/ccloud/kubelet'
-      tag: 'v1.20.8'
+      tag: 'v1.20.8-sap.1'
     kubeProxy:
       repository: 'keppel.$REGION.cloud.sap/ccloud/kube-proxy'
       tag: 'v1.20.8'
@@ -154,7 +154,7 @@ imagesForVersion:
       tag: '0.5.2'
     kubelet:
       repository: 'keppel.$REGION.cloud.sap/ccloud/kubelet'
-      tag: 'v1.19.11'
+      tag: 'v1.19.11-sap.1'
     kubeProxy:
       repository: 'keppel.$REGION.cloud.sap/ccloud/kube-proxy'
       tag: 'v1.19.11'
