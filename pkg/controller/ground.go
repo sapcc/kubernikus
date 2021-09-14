@@ -696,7 +696,7 @@ func (op *GroundControl) terminateKluster(kluster *v1.Kluster) error {
 		"project", kluster.Account())
 
 	_, err := op.Clients.Helm.DeleteRelease(kluster.GetName(), helm.DeletePurge(true))
-	if err != nil && !strings.Contains(grpc.ErrorDesc(err), fmt.Sprintf(`release: "%s" not found`, kluster.GetName())) {
+	if err != nil && !strings.Contains(grpc.ErrorDesc(err), fmt.Sprintf(`release: "%s" not found`, kluster.GetName())) { //nolint:staticcheck
 		return err
 	}
 

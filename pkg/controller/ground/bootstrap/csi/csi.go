@@ -209,24 +209,6 @@ func createSecret(client clientset.Interface, secret *v1.Secret) error {
 	return nil
 }
 
-func createService(client clientset.Interface, manifest string) error {
-	template, err := bootstrap.RenderManifest(manifest, nil)
-	if err != nil {
-		return err
-	}
-
-	service, _, err := serializer.NewCodecFactory(clientsetscheme.Scheme).UniversalDeserializer().Decode(template, nil, &v1.Service{})
-	if err != nil {
-		return err
-	}
-
-	if err := bootstrap.CreateOrUpdateService(client, service.(*v1.Service)); err != nil {
-		return err
-	}
-
-	return nil
-}
-
 func createClusterRoleBinding(client clientset.Interface, manifest string) error {
 	template, err := bootstrap.RenderManifest(manifest, nil)
 	if err != nil {

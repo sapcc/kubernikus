@@ -15,8 +15,6 @@ const (
 	ProtocolIP       = 0  // IPv4 encapsulation, pseudo protocol number
 	ProtocolICMP     = 1  //Internet Control Message
 	ProtocolIPv6ICMP = 58 // ICMP for IPv6
-
-	sysIP_STRIPHDR = 0x17 // for now only darwin supports this option
 )
 
 var random = rand.New(rand.NewSource(int64(os.Getpid())))
@@ -69,7 +67,7 @@ func (l *Listener) Read() (*Message, error) {
 
 	switch msg.Type {
 	case ipv4.ICMPTypeRedirect:
-		msg.Body, err = parseRedirectMessageBody(ProtocolICMP, msg.Body.(*icmp.DefaultMessageBody).Data)
+		msg.Body, err = parseRedirectMessageBody(ProtocolICMP, msg.Body.(*icmp.RawBody).Data)
 	}
 
 	return &Message{Message: msg, Peer: peer}, err

@@ -39,7 +39,7 @@ func LoggingHandler(logger kitlog.Logger, next http.Handler) http.Handler {
 			id := fmt.Sprintf("%s", reqId)
 			inner_logger = kitlog.With(inner_logger, "id", id)
 		}
-		request = request.WithContext(context.WithValue(request.Context(), "logger", inner_logger))
+		request = request.WithContext(context.WithValue(request.Context(), "logger", inner_logger)) //nolint:staticcheck
 
 		defer func(begin time.Time) {
 			var keyvals = make([]interface{}, 0, 4)
@@ -102,7 +102,7 @@ func makeWrapper(w http.ResponseWriter) loggingResponseWriter {
 		logger = &hijackLogger{responseLogger{w: w, status: http.StatusOK}}
 	}
 	h, ok1 := logger.(http.Hijacker)
-	c, ok2 := w.(http.CloseNotifier)
+	c, ok2 := w.(http.CloseNotifier) //nolint:staticcheck
 	if ok1 && ok2 {
 		return hijackCloseNotifier{logger, h, c}
 	}

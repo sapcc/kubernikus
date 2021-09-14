@@ -91,32 +91,18 @@ func SetMetricKlusterTerminated(klusterName string) {
 }
 
 /*
-kubernikus_node_pool_size{"kluster_id"="<id", "node_pool"="<name>", "image_name"="<name>", "flavor_name"="<name>"} <node_pool_size>
-*/
-func setMetricNodePoolSize(klusterID, nodePoolName, imageName, flavorName string, size int64) {
-	nodePoolSize.With(prometheus.Labels{
-		"kluster_id":  klusterID,
-		"node_pool":   nodePoolName,
-		"image_name":  imageName,
-		"flavor_name": flavorName,
-	}).Set(float64(size))
-}
-
-/*
 kubernikus_node_pool_status{"kluster_id"="<id", "node_pool"="<name>", "status"="<status>"} < number of nodes in that status >
 kubernikus_node_pool_status{"kluster_id"="<id", "node_pool"="<name>", "status"="schedulable"} 1
 kubernikus_node_pool_status{"kluster_id"="<id", "node_pool"="<name>", "status"="running"} 1
 kubernikus_node_pool_status{"kluster_id"="<id", "node_pool"="<name>", "status"="healthy"} 1
 */
 func SetMetricNodePoolStatus(klusterID, nodePoolName string, status map[string]int64) {
-	if status != nil {
-		for s, v := range status {
-			nodePoolStatus.With(prometheus.Labels{
-				"kluster_id": klusterID,
-				"node_pool":  nodePoolName,
-				"status":     s,
-			}).Set(float64(v))
-		}
+	for s, v := range status {
+		nodePoolStatus.With(prometheus.Labels{
+			"kluster_id": klusterID,
+			"node_pool":  nodePoolName,
+			"status":     s,
+		}).Set(float64(v))
 	}
 }
 

@@ -11,12 +11,11 @@ import (
 	"time"
 
 	"github.com/go-kit/kit/log"
-	"k8s.io/apimachinery/pkg/util/sets"
-	utilexec "k8s.io/utils/exec"
-
 	"golang.org/x/sys/unix"
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/apimachinery/pkg/util/wait"
+	utilexec "k8s.io/utils/exec"
 
 	utilversion "github.com/sapcc/kubernikus/pkg/util/version"
 )
@@ -462,7 +461,7 @@ const (
 	opCreateChain operation = "-N"
 	opFlushChain  operation = "-F"
 	opDeleteChain operation = "-X"
-	opAppendRule  operation = "-A"
+	opAppendRule  operation = "-A" //nolint:deadcode,varcheck
 	opCheckRule   operation = "-C"
 	opDeleteRule  operation = "-D"
 )
@@ -595,15 +594,6 @@ func getIPTablesRestoreVersionString(exec utilexec.Interface) (string, error) {
 // AddReloadFunc is part of Interface
 func (runner *runner) AddReloadFunc(reloadFunc func()) {
 	runner.reloadFuncs = append(runner.reloadFuncs, reloadFunc)
-}
-
-// runs all reload funcs to re-sync iptables rules
-func (runner *runner) reload() {
-	runner.logger.Log(
-		"msg", "reloading iptables rules")
-	for _, f := range runner.reloadFuncs {
-		f()
-	}
 }
 
 // IsNotFoundError returns true if the error indicates "not found".  It parses

@@ -29,7 +29,6 @@ const (
 	RegisteredTimeout                  = 15 * time.Minute // Time from node created to registered
 	StateSchedulableTimeout            = 1 * time.Minute  // Time from registered to schedulable
 	StateHealthyTimeout                = 1 * time.Minute
-	ConditionRouteBrokenTimeout        = 1 * time.Minute
 	ConditionNetworkUnavailableTimeout = 1 * time.Minute
 	ConditionReadyTimeout              = 1 * time.Minute
 )
