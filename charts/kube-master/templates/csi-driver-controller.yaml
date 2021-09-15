@@ -185,9 +185,9 @@ spec:
         {{- if .Values.csi.leaderElectionNamespace }}
         - --leader-election-namespace={{ .Values.csi.leaderElectionNamespace }}
         {{- end }}
-        {{- if (semverCompare "> 1.20" .Values.version.kubernetes) }}
+        {{- if (semverCompare ">= 1.21" .Values.version.kubernetes) }}
         - --timeout={{ .Values.csi.timeout }}
-        {{ else }}
+        {{- else }}
         - --csiTimeout={{ .Values.csi.timeout }}
         {{- end }}
         - --v=5
