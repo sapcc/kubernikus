@@ -65,7 +65,6 @@ require (
 	k8s.io/apimachinery v0.16.15
 	k8s.io/client-go v0.16.15
 	k8s.io/cluster-bootstrap v0.0.0-20190802024125-9150a5ba960c
-	k8s.io/code-generator v0.0.0-20200429001146-f5af5c5facff
 	k8s.io/helm v2.11.0+incompatible
 	k8s.io/klog v1.0.0
 	k8s.io/utils v0.0.0-20190801114015-581e00157fb1

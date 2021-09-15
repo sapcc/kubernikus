@@ -304,7 +304,6 @@ github.com/stretchr/objx
 github.com/stretchr/testify/assert
 github.com/stretchr/testify/mock
 github.com/stretchr/testify/require
-github.com/stretchr/testify/suite
 # github.com/tredoe/osutil v0.0.0-20161130133508-7d3ee1afa71c
 ## explicit
 github.com/tredoe/osutil/user/crypt
@@ -363,14 +362,6 @@ golang.org/x/text/unicode/norm
 golang.org/x/text/width
 # golang.org/x/time v0.0.0-20191024005414-555d28b269f0
 golang.org/x/time/rate
-# golang.org/x/tools v0.0.0-20200103221440-774c71fcf114
-golang.org/x/tools/go/ast/astutil
-golang.org/x/tools/imports
-golang.org/x/tools/internal/fastwalk
-golang.org/x/tools/internal/gopathwalk
-golang.org/x/tools/internal/imports
-golang.org/x/tools/internal/module
-golang.org/x/tools/internal/semver
 # google.golang.org/appengine v1.5.0
 google.golang.org/appengine/internal
 google.golang.org/appengine/internal/base
@@ -741,34 +732,6 @@ k8s.io/client-go/util/workqueue
 ## explicit
 k8s.io/cluster-bootstrap/token/api
 k8s.io/cluster-bootstrap/token/util
-# k8s.io/code-generator v0.0.0-20200429001146-f5af5c5facff
-## explicit
-k8s.io/code-generator/cmd/client-gen
-k8s.io/code-generator/cmd/client-gen/args
-k8s.io/code-generator/cmd/client-gen/generators
-k8s.io/code-generator/cmd/client-gen/generators/fake
-k8s.io/code-generator/cmd/client-gen/generators/scheme
-k8s.io/code-generator/cmd/client-gen/generators/util
-k8s.io/code-generator/cmd/client-gen/path
-k8s.io/code-generator/cmd/client-gen/types
-k8s.io/code-generator/cmd/deepcopy-gen
-k8s.io/code-generator/cmd/deepcopy-gen/args
-k8s.io/code-generator/cmd/informer-gen
-k8s.io/code-generator/cmd/informer-gen/args
-k8s.io/code-generator/cmd/informer-gen/generators
-k8s.io/code-generator/cmd/lister-gen
-k8s.io/code-generator/cmd/lister-gen/args
-k8s.io/code-generator/cmd/lister-gen/generators
-k8s.io/code-generator/pkg/namer
-k8s.io/code-generator/pkg/util
-# k8s.io/gengo v0.0.0-20190822140433-26a664648505
-k8s.io/gengo/args
-k8s.io/gengo/examples/deepcopy-gen/generators
-k8s.io/gengo/examples/set-gen/sets
-k8s.io/gengo/generator
-k8s.io/gengo/namer
-k8s.io/gengo/parser
-k8s.io/gengo/types
 # k8s.io/helm v2.11.0+incompatible
 ## explicit
 k8s.io/helm/pkg/chartutil
