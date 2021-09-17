@@ -21,6 +21,11 @@ import (
 	"github.com/sapcc/kubernikus/pkg/util/version"
 )
 
+const (
+	AnnotationNodeForceReplace = "kubernikus.cloud.sap/forceReplace"
+	AnnotationNodeSkipReplace  = "kubernikus.cloud.sap/skipReplace"
+)
+
 type (
 	// Lister enumerates Nodes in various states
 	Lister interface {
@@ -213,7 +218,7 @@ func (d *NodeLister) Replace() []*core_v1.Node {
 			if util.IsKubernikusNode(node.Name, d.Kluster.Spec.Name, pool.Name) {
 				nodeNameToPool[node.GetName()] = &d.Kluster.Spec.NodePools[i]
 
-				if *pool.Config.AllowReplace == true || util.IsFlatcarNodeWithRkt(node) {
+				if *pool.Config.AllowReplace == true || util.IsFlatcarNodeWithRkt(node) || util.EnabledValue(node.Annotations[AnnotationNodeForceReplace]) {
 					upgradable = append(upgradable, node)
 				}
 			}
@@ -226,6 +231,15 @@ func (d *NodeLister) Replace() []*core_v1.Node {
 	}
 
 	for _, node := range upgradable {
+		if util.EnabledValue(node.Annotations[AnnotationNodeSkipReplace]) {
+			continue
+		}
+
+		if util.EnabledValue(node.Annotations[AnnotationNodeForceReplace]) {
+			found = append(found, node)
+			continue
+		}
+
 		if util.IsCoreOSNode(node) && util.IsFlatcarNodePool(nodeNameToPool[node.GetName()]) {
 			found = append(found, node)
 			continue
