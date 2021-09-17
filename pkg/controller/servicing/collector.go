@@ -5,6 +5,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"k8s.io/apimachinery/pkg/labels"
 
+	"github.com/sapcc/kubernikus/pkg/api/models"
 	"github.com/sapcc/kubernikus/pkg/controller/config"
 	"github.com/sapcc/kubernikus/pkg/controller/servicing/coreos"
 	"github.com/sapcc/kubernikus/pkg/controller/servicing/flatcar"
@@ -89,6 +90,9 @@ func (c *servicingNodesCollector) Collect(ch chan<- prometheus.Metric) {
 	}
 
 	for _, kluster := range klusters {
+		if klusters.Status.Phase != models.KlusterPhaseRunning {
+			continue
+		}
 		nodes, err := c.nodeListers.Make(kluster)
 		if err != nil {
 			c.logger.Log("msg", "Failed to list nodes", "kluster", kluster.Name, "err", err)
