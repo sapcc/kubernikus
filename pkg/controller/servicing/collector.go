@@ -90,7 +90,7 @@ func (c *servicingNodesCollector) Collect(ch chan<- prometheus.Metric) {
 	}
 
 	for _, kluster := range klusters {
-		if klusters.Status.Phase != models.KlusterPhaseRunning {
+		if kluster.Status.Phase != models.KlusterPhaseRunning {
 			continue
 		}
 		nodes, err := c.nodeListers.Make(kluster)
