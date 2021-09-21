@@ -79,7 +79,7 @@ func (o *OpenstackClient) Validate(c *cobra.Command, args []string) error {
 
 	//Only use environment variables if nothing was given on the command line
 	if o.Username == "" && o.UserID == "" {
-		o.UserID = os.Getenv("OS_USERID")
+		o.UserID = os.Getenv("OS_USER_ID")
 		if o.UserID == "" {
 			o.Username = os.Getenv("OS_USERNAME")
 			if o.DomainName == "" && o.DomainID == "" {
