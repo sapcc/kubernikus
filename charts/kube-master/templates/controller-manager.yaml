@@ -138,7 +138,7 @@ spec:
             - --feature-gates=NodeLease=false
 {{- end }}
 {{- if and (.Values.openstack) (semverCompare ">= 1.20" .Values.version.kubernetes) }}
-            - --feature-gates=CSIMigration=true,CSIMigrationOpenStack=true,ExpandCSIVolumes=true
+            - --feature-gates=CSIMigration=true,CSIMigrationOpenStack=true,ExpandCSIVolumes=true,IPv6DualStack=false
 {{- end }}
             - --leader-elect=false
             - --root-ca-file=/etc/kubernetes/certs/tls-ca.pem
