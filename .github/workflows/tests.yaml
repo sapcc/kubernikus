@@ -51,6 +51,7 @@ jobs:
       with:
         # Optional: version of golangci-lint to use in form of v1.2 or v1.2.3 or `latest` to use the latest version
         version: v1.42.1
+        args: -v --timeout 5m
     - name: Tests
       run: /bin/bash -c make gotest
     - name: Build e2e
