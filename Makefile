@@ -22,8 +22,6 @@ endif
 GO_SWAGGER_VERSION := v0.18.0
 SWAGGER_BIN        ?= bin/$(GOOS)/swagger-$(GO_SWAGGER_VERSION)
 
-GOMETALINTER_BIN ?= gometalinter
-
 .PHONY: all test clean code-gen vendor
 
 all: $(BINARIES:%=bin/$(GOOS)/%)
