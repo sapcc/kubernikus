@@ -16,3 +16,5 @@ linters-settings:
     # put imports beginning with prefix after 3rd-party packages;
     # it's a comma-separated list of prefixes
     local-prefixes: github.com/sapcc/kubernikus
+output:
+  format: github-actions
