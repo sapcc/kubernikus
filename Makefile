@@ -22,8 +22,6 @@ endif
 GO_SWAGGER_VERSION := v0.18.0
 SWAGGER_BIN        ?= bin/$(GOOS)/swagger-$(GO_SWAGGER_VERSION)
 
-GOMETALINTER_BIN ?= gometalinter
-
 .PHONY: all test clean code-gen vendor
 
 all: $(BINARIES:%=bin/$(GOOS)/%)
@@ -35,13 +33,13 @@ bin/$(GOOS)/swagger-%:
 bin/%: $(GOFILES) Makefile
 	GOOS=$(*D) GOARCH=amd64 go build $(GOFLAGS) -v -o $(@D)/$(@F) ./cmd/$(basename $(@F))
 
-test: gofmt linters gotest build-e2e
+test: linters gotest build-e2e
 
 gofmt:
 	test/gofmt.sh pkg/ cmd/ test/
 
 linters:
-	$(GOMETALINTER_BIN) --deadline=60s --vendor -s generated --disable-all -E vet -E ineffassign -E misspell ./cmd/... ./pkg/... ./test/...
+	golangci-lint run -v
 
 gotest:
 	# go 1.11 requires gcc for go test because of reasons: https://github.com/golang/go/issues/28065 (CGO_ENABLED=0 fixes this)

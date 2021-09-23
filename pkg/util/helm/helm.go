@@ -15,9 +15,6 @@ import (
 	"github.com/sapcc/kubernikus/pkg/version"
 )
 
-//contains unamibious characters for generic random passwords
-var randomPasswordChars = []rune("abcdefghjkmnpqrstuvwxABCDEFGHJKLMNPQRSTUVWX23456789")
-
 var ETCDBackupAnnotation = "kubernikus.cloud.sap/backup"
 
 var crc64ISOTable = crc64.MakeTable(crc64.ISO)

@@ -3,6 +3,10 @@ package launch
 import (
 	"fmt"
 
+	"github.com/go-kit/kit/log"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
+
 	"github.com/sapcc/kubernikus/pkg/api/models"
 	v1 "github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
 	openstack_kluster "github.com/sapcc/kubernikus/pkg/client/openstack/kluster"
@@ -14,10 +18,6 @@ import (
 	"github.com/sapcc/kubernikus/pkg/util"
 	"github.com/sapcc/kubernikus/pkg/util/generator"
 	"github.com/sapcc/kubernikus/pkg/version"
-
-	"github.com/go-kit/kit/log"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/labels"
 )
 
 type PoolManager interface {

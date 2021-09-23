@@ -481,23 +481,6 @@ func (d *NodeLister) hasAnnotation(name string) []*core_v1.Node {
 	return found
 }
 
-func (d *NodeLister) withAnnotation(name, expected string) []*core_v1.Node {
-	var found []*core_v1.Node
-
-	for _, node := range d.All() {
-		value, ok := node.ObjectMeta.Annotations[name]
-		if !ok {
-			continue
-		}
-
-		if value == expected {
-			found = append(found, node)
-		}
-	}
-
-	return found
-}
-
 // All logs
 func (l *LoggingLister) All() (nodes []*core_v1.Node) {
 	defer func(begin time.Time) {

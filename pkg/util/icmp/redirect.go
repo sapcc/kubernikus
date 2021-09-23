@@ -36,6 +36,7 @@ func parseRedirectMessageBody(proto int, b []byte) (icmp.MessageBody, error) {
 	p := &Redirect{NextHop: net.IPv4(b[0], b[1], b[2], b[3])}
 	header, err := ipv4.ParseHeader(b[4:])
 	if err != nil {
+		return nil, err
 	}
 	p.Header = header
 	p.Data = b[4+header.Len:]

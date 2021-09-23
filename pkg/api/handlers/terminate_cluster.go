@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"github.com/go-openapi/runtime/middleware"
-
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 

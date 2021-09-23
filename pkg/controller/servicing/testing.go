@@ -5,12 +5,11 @@ import (
 	"os"
 	"time"
 
-	"k8s.io/apimachinery/pkg/util/wait"
-
 	"github.com/go-kit/kit/log"
 	core_v1 "k8s.io/api/core/v1"
 	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/util/wait"
 
 	"github.com/sapcc/kubernikus/pkg/api/models"
 	v1 "github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"

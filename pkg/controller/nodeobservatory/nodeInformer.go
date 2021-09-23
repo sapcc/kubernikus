@@ -1,7 +1,6 @@
 package nodeobservatory
 
 import (
-	"fmt"
 	"time"
 
 	api_v1 "k8s.io/api/core/v1"
@@ -57,15 +56,4 @@ func (ni *NodeInformer) run() {
 
 func (ni *NodeInformer) close() {
 	close(ni.stopCh)
-}
-
-func (ni *NodeInformer) getNodeByKey(key string) (*api_v1.Node, error) {
-	obj, exists, err := ni.SharedIndexInformer.GetIndexer().GetByKey(key)
-	if err != nil {
-		return nil, err
-	}
-	if !exists {
-		return nil, fmt.Errorf("node %s in kluster %s/%s not found", key, ni.kluster.GetNamespace(), ni.kluster.GetName())
-	}
-	return obj.(*api_v1.Node), nil
 }
