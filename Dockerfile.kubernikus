@@ -22,8 +22,8 @@ RUN curl -Lo /bin/dumb-init https://github.com/Yelp/dumb-init/releases/download/
 COPY etc/*.json /etc/kubernikus/
 COPY --from=kubernikus-docs /public/docs /static/docs
 COPY charts/ /etc/kubernikus/charts
-COPY --from=builder /go/src/github.com/sapcc/kubernikus/bin/linux/kubernikus \
-	                  /go/src/github.com/sapcc/kubernikus/bin/linux/apiserver \
-										/go/src/github.com/sapcc/kubernikus/bin/linux/wormhole /usr/local/bin/
+COPY --from=builder /app/bin/linux/kubernikus \
+	                  /app/bin/linux/apiserver \
+										/app/bin/linux/wormhole /usr/local/bin/
 ENTRYPOINT ["dumb-init", "--"]
 CMD ["apiserver"]
