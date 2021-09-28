@@ -18,6 +18,12 @@ passwd:
 
 systemd:
   units:
+    - name: containerd.service
+      dropins:
+        - name: 10-use-cgroupfs.conf
+          contents: |
+            [Service]
+            Environment=CONTAINERD_CONFIG=/usr/share/containerd/config-cgroupfs.toml
     - name: iptables-restore.service
       enable: true
     - name: ccloud-metadata-hostname.service
@@ -43,6 +49,7 @@ systemd:
           contents: |
             [Service]
             Environment="DOCKER_OPTS=--log-opt max-size=5m --log-opt max-file=5 --ip-masq=false --iptables=false --bridge=none"
+            Environment="DOCKER_CGROUPS=--exec-opt native.cgroupdriver=cgroupfs"
     - name: flanneld.service
       enable: true
       contents: |
@@ -296,7 +303,19 @@ networkd:
         Address={{ .ApiserverIP }}/32
 
 storage:
+  filesystems:
+    - name: "OEM"
+      mount:
+        device: "/dev/disk/by-label/OEM"
+        format: "btrfs"
   files:
+    - filesystem: "OEM"
+      path: "/grub.cfg"
+      mode: 0644
+      append: true
+      contents:
+        inline: |
+          set linux_append="$linux_append systemd.unified_cgroup_hierarchy=0 systemd.legacy_systemd_cgroup_controller"
     - path: /etc/udev/rules.d/99-vmware-scsi-udev.rules
       filesystem: root
       mode: 0644

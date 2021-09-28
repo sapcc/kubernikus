@@ -40,6 +40,7 @@ systemd:
           contents: |
             [Service]
             Environment="DOCKER_OPTS=--log-opt max-size=5m --log-opt max-file=5 --ip-masq=false --iptables=false --bridge=none"
+            Environment="DOCKER_CGROUPS=--exec-opt native.cgroupdriver=cgroupfs"
     - name: flanneld.service
       enable: true
       contents: |
