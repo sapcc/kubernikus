@@ -24,6 +24,19 @@ systemd:
           contents: |
             [Service]
             Environment=CONTAINERD_CONFIG=/usr/share/containerd/config-cgroupfs.toml
+    - name: legacy-cgroup-reboot.service
+      enable: true
+      contents: |
+        [Unit]
+        Description=Reboot if legacy cgroups are not enabled yet
+        FailureAction=reboot
+
+        [Service]
+        Type=simple
+        ExecStart=/usr/bin/grep 'cgroup' /proc/cmdline
+
+        [Install]
+        WantedBy=multi-user.target
     - name: iptables-restore.service
       enable: true
     - name: ccloud-metadata-hostname.service
