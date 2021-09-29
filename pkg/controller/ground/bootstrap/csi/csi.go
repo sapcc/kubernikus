@@ -185,6 +185,50 @@ rescan-on-resize = yes
 	return nil
 }
 
+func SeedCinderCSIRoles(client clientset.Interface) error {
+	err := createRole(client, CSIRole)
+	if err != nil {
+		return errors.Wrap(err, "CSIRole")
+	}
+
+	err = createClusterRole(client, CSISnapshotControllerClusterRole)
+	if err != nil {
+		return errors.Wrap(err, "CSISnapshotControllerClusterRole")
+	}
+
+	err = createClusterRole(client, CSIClusterRoleAttacher)
+	if err != nil {
+		return errors.Wrap(err, "CSIClusterRoleAttacher")
+	}
+
+	err = createClusterRole(client, CSIClusterRoleNodePlugin)
+	if err != nil {
+		return errors.Wrap(err, "CSIClusterRoleNodePlugin")
+	}
+
+	err = createClusterRole(client, CSIClusterRoleProvisioner)
+	if err != nil {
+		return errors.Wrap(err, "CSIClusterRoleProvisioner")
+	}
+
+	err = createClusterRole(client, CSIClusterRoleResizer)
+	if err != nil {
+		return errors.Wrap(err, "CSIClusterRoleResizer")
+	}
+
+	err = createClusterRole(client, CSIClusterRoleSnapshotter)
+	if err != nil {
+		return errors.Wrap(err, "CSIClusterRoleSnapshotter")
+	}
+
+	err = createRole(client, CSISnapshotControllerRole)
+	if err != nil {
+		return errors.Wrap(err, "CSISnapshotControllerRole")
+	}
+
+	return nil
+}
+
 func createDynamicResource(dynamicClient dynamic.Interface, manifest string, gvr schema.GroupVersionResource) error {
 	var decUnstructured = yaml.NewDecodingSerializer(unstructured.UnstructuredJSONScheme)
 	resource := &unstructured.Unstructured{}

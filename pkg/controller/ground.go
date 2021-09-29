@@ -651,6 +651,17 @@ func (op *GroundControl) upgradeKluster(kluster *v1.Kluster, toVersion string) e
 		}
 	}
 
+	if !kluster.Spec.NoCloud && strings.HasPrefix(toVersion, "1.21") && strings.HasPrefix(kluster.Status.ApiserverVersion, "1.20") {
+		kubernetes, err := op.Clients.Satellites.ClientFor(kluster)
+		if err != nil {
+			return errors.Wrap(err, "client")
+		}
+
+		if err := csi.SeedCinderCSIRoles(kubernetes); err != nil {
+			return errors.Wrap(err, "seed cinder CSI roles on upgrade")
+		}
+	}
+
 	accessMode, err := util.PVAccessMode(op.Clients.Kubernetes, kluster)
 	if err != nil {
 		return fmt.Errorf("Couldn't determine access mode for pvc: %s", err)
