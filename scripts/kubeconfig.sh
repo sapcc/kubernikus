@@ -13,6 +13,9 @@ case $KUBECONTEXT in
   k-*)
     BASE_URL=kubernikus.${KUBECONTEXT#"k-"}.cloud.sap
     ;;
+  a-*)
+    BASE_URL=kubernikus.admin.${KUBECONTEXT#"a-"}.cloud.sap
+    ;;
   admin)
     BASE_URL=$KUBENAMESPACE.admin.cloud.sap
     ;;
