@@ -810,4 +810,16 @@ storage:
             ${FLANNEL_IMAGE} \
               ${FLANNEL_IMAGE_ARGS} \
               -- "$@"
+    - path: /etc/modules-load.d/br_netfilter.conf
+      filesystem: root
+      mode: 0644
+      contents:
+        inline: br_netfilter
+    - path: /etc/sysctl.d/30-br_netfilter.conf
+      filesystem: root
+      mode: 0644
+      contents:
+        inline: |
+          net.bridge.bridge-nf-call-ip6tables = 1
+          net.bridge.bridge-nf-call-iptables = 1
 `
