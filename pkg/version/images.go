@@ -48,6 +48,7 @@ type KlusterVersion struct {
 	CSILivenessProbe       ImageVersion `yaml:"csiLivenessProbe,omitempty"`
 	CSINodeDriver          ImageVersion `yaml:"csiNodeDriver,omitempty"`
 	CinderCSIPlugin        ImageVersion `yaml:"cinderCSIPlugin,omitempty"`
+	Flannel                ImageVersion `yaml:"flannel,omitempty"`
 }
 
 type ImageRegistry struct {
