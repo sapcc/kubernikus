@@ -90,10 +90,7 @@ systemd:
                                       --volume etc-kubernetes-certs,kind=host,source=/etc/kubernetes/certs,readOnly=true \
                                       --mount volume=etc-kubernetes-certs,target=/etc/kubernetes/certs \
                                       --volume etc-kube-flannel,kind=host,source=/etc/kube-flannel,readOnly=true \
-                                      --mount volume=etc-kube-flannel,target=/etc/kube-flannel \
-                                      --dns=host \
-                                      --volume dns,kind=host,source=/run/systemd/resolve/resolv.conf,readOnly=true \
-                                      --mount volume=dns,target=/etc/resolv.conf"
+                                      --mount volume=etc-kube-flannel,target=/etc/kube-flannel"
     - name: flannel-docker-opts.service
       enable: true
       contents: |
@@ -115,10 +112,8 @@ systemd:
         [Service]
         Environment="RKT_RUN_ARGS=--uuid-file-save=/var/run/kubelet-pod.uuid \
           --inherit-env \
-          --net=host \
           --dns=host \
-          --volume dns,kind=host,source=/run/systemd/resolve/resolv.conf,readOnly=true \
-          --mount volume=dns,target=/etc/resolv.conf \
+          --net=host \
           --volume var-lib-cni,kind=host,source=/var/lib/cni \
           --volume var-log,kind=host,source=/var/log \
           --volume etc-machine-id,kind=host,source=/etc/machine-id,readOnly=true \
@@ -189,8 +184,6 @@ systemd:
           --inherit-env \
           --net=host \
           --dns=host \
-          --volume dns,kind=host,source=/run/systemd/resolve/resolv.conf,readOnly=true \
-          --mount volume=dns,target=/etc/resolv.conf \
           --volume var-lib-kubelet,kind=host,source=/var/lib/kubelet,readOnly=true \
           --mount volume=var-lib-kubelet,target=/var/lib/kubelet \
           --volume etc-kubernetes-certs,kind=host,source=/etc/kubernetes/certs,readOnly=true \
@@ -224,8 +217,6 @@ systemd:
           --inherit-env \
           --net=host \
           --dns=host \
-          --volume dns,kind=host,source=/run/systemd/resolve/resolv.conf,readOnly=true \
-          --mount volume=dns,target=/etc/resolv.conf \
           --volume etc-kubernetes,kind=host,source=/etc/kubernetes,readOnly=true \
           --mount volume=etc-kubernetes,target=/etc/kubernetes \
           --volume lib-modules,kind=host,source=/lib/modules,readOnly=true \
