@@ -65,6 +65,7 @@ systemd:
         Environment="RKT_RUN_ARGS=--uuid-file-save=/var/lib/flatcar/flannel-wrapper.uuid"
         EnvironmentFile=-/run/flannel/options.env
 
+        ExecStartPre=/usr/bin/host identity-3.{{ .OpenstackRegion }}.cloud.sap
         ExecStartPre=/sbin/modprobe ip_tables
         ExecStartPre=/usr/bin/mkdir --parents /var/lib/flatcar /run/flannel
         ExecStartPre=-/opt/bin/rkt rm --uuid-file=/var/lib/flatcar/flannel-wrapper.uuid
@@ -90,10 +91,7 @@ systemd:
                                       --volume etc-kubernetes-certs,kind=host,source=/etc/kubernetes/certs,readOnly=true \
                                       --mount volume=etc-kubernetes-certs,target=/etc/kubernetes/certs \
                                       --volume etc-kube-flannel,kind=host,source=/etc/kube-flannel,readOnly=true \
-                                      --mount volume=etc-kube-flannel,target=/etc/kube-flannel \
-                                      --dns=host \
-                                      --volume dns,kind=host,source=/run/systemd/resolve/resolv.conf,readOnly=true \
-                                      --mount volume=dns,target=/etc/resolv.conf"
+                                      --mount volume=etc-kube-flannel,target=/etc/kube-flannel"
     - name: flannel-docker-opts.service
       enable: true
       contents: |
@@ -117,8 +115,6 @@ systemd:
           --inherit-env \
           --net=host \
           --dns=host \
-          --volume dns,kind=host,source=/run/systemd/resolve/resolv.conf,readOnly=true \
-          --mount volume=dns,target=/etc/resolv.conf \
           --volume var-lib-cni,kind=host,source=/var/lib/cni \
           --volume var-log,kind=host,source=/var/log \
           --volume etc-machine-id,kind=host,source=/etc/machine-id,readOnly=true \
@@ -139,6 +135,7 @@ systemd:
         Environment="KUBELET_IMAGE_TAG={{ .KubeletImageTag }}"
         Environment="KUBELET_IMAGE_URL=docker://{{ .KubeletImage }}"
         Environment="KUBELET_IMAGE_ARGS=--name=kubelet --exec=/usr/local/bin/kubelet"
+        ExecStartPre=/usr/bin/host identity-3.{{ .OpenstackRegion }}.cloud.sap
 {{- if .CalicoNetworking }}
         ExecStartPre=/bin/mkdir -p /etc/cni /opt/cni /var/lib/calico
  {{- end }}
@@ -184,13 +181,12 @@ systemd:
         After=network-online.target
         [Service]
         Slice=machine.slice
+        ExecStartPre=/usr/bin/host identity-3.{{ .OpenstackRegion }}.cloud.sap
         ExecStartPre=/opt/bin/rkt fetch --insecure-options=image --pull-policy=new docker://{{ .KubernikusImage }}:{{ .KubernikusImageTag }}
         ExecStart=/opt/bin/rkt run \
           --inherit-env \
           --net=host \
           --dns=host \
-          --volume dns,kind=host,source=/run/systemd/resolve/resolv.conf,readOnly=true \
-          --mount volume=dns,target=/etc/resolv.conf \
           --volume var-lib-kubelet,kind=host,source=/var/lib/kubelet,readOnly=true \
           --mount volume=var-lib-kubelet,target=/var/lib/kubelet \
           --volume etc-kubernetes-certs,kind=host,source=/etc/kubernetes/certs,readOnly=true \
@@ -219,13 +215,12 @@ systemd:
         After=network-online.target
         [Service]
         Slice=machine.slice
+        ExecStartPre=/usr/bin/host identity-3.{{ .OpenstackRegion }}.cloud.sap
         ExecStart=/opt/bin/rkt run \
           --trust-keys-from-https \
           --inherit-env \
           --net=host \
           --dns=host \
-          --volume dns,kind=host,source=/run/systemd/resolve/resolv.conf,readOnly=true \
-          --mount volume=dns,target=/etc/resolv.conf \
           --volume etc-kubernetes,kind=host,source=/etc/kubernetes,readOnly=true \
           --mount volume=etc-kubernetes,target=/etc/kubernetes \
           --volume lib-modules,kind=host,source=/lib/modules,readOnly=true \

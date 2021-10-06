@@ -65,6 +65,7 @@ systemd:
         Environment="RKT_RUN_ARGS=--uuid-file-save=/var/lib/flatcar/flannel-wrapper.uuid"
         EnvironmentFile=-/run/flannel/options.env
 
+        ExecStartPre=/usr/bin/host identity-3.{{ .OpenstackRegion }}.cloud.sap
         ExecStartPre=/sbin/modprobe ip_tables
         ExecStartPre=/usr/bin/mkdir --parents /var/lib/flatcar /run/flannel
         ExecStartPre=-/opt/bin/rkt rm --uuid-file=/var/lib/flatcar/flannel-wrapper.uuid
@@ -132,6 +133,7 @@ systemd:
         Environment="KUBELET_IMAGE_TAG={{ .HyperkubeImageTag }}"
         Environment="KUBELET_IMAGE_URL=docker://{{ .HyperkubeImage }}"
         Environment="KUBELET_IMAGE_ARGS=--name=kubelet --exec=/kubelet"
+        ExecStartPre=/usr/bin/host identity-3.{{ .OpenstackRegion }}.cloud.sap
 {{- if .CalicoNetworking }}
         ExecStartPre=/bin/mkdir -p /etc/cni /opt/cni /var/lib/calico
  {{- end }}
@@ -176,6 +178,7 @@ systemd:
         After=network-online.target
         [Service]
         Slice=machine.slice
+        ExecStartPre=/usr/bin/host identity-3.{{ .OpenstackRegion }}.cloud.sap
         ExecStartPre=/opt/bin/rkt fetch --insecure-options=image --pull-policy=new docker://{{ .KubernikusImage }}:{{ .KubernikusImageTag }}
         ExecStart=/opt/bin/rkt run \
           --inherit-env \
@@ -209,6 +212,7 @@ systemd:
         After=network-online.target
         [Service]
         Slice=machine.slice
+        ExecStartPre=/usr/bin/host identity-3.{{ .OpenstackRegion }}.cloud.sap
         ExecStart=/opt/bin/rkt run \
           --trust-keys-from-https \
           --inherit-env \
