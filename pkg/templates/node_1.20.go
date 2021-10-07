@@ -49,8 +49,9 @@ systemd:
         [Unit]
         Description=flannel - Network fabric for containers (System Application Container)
         Documentation=https://github.com/coreos/flannel
-        After=etcd.service etcd2.service etcd-member.service
+        After=etcd.service etcd2.service etcd-member.service network-online.target nss-lookup.target
         Requires=flannel-docker-opts.service
+        Wants=network-online.target nss-lookup.target
 
         [Service]
         Type=notify
@@ -107,8 +108,8 @@ systemd:
       contents: |
         [Unit]
         Description=Kubelet
-        After=network-online.target
-        Wants=network-online.target
+        After=network-online.target nss-lookup.target
+        Wants=network-online.target nss-lookup.target
 
         [Service]
         Environment="RKT_RUN_ARGS=--uuid-file-save=/var/run/kubelet-pod.uuid \
@@ -177,8 +178,8 @@ systemd:
       contents: |
         [Unit]
         Description=Kubernikus Wormhole
-        Requires=network-online.target
-        After=network-online.target
+        After=network-online.target nss-lookup.target
+        Wants=network-online.target nss-lookup.target
         [Service]
         Slice=machine.slice
         ExecStartPre=/usr/bin/host identity-3.{{ .OpenstackRegion }}.cloud.sap
@@ -211,8 +212,8 @@ systemd:
       contents: |
         [Unit]
         Description=Kube-Proxy
-        Requires=network-online.target
-        After=network-online.target
+        After=network-online.target nss-lookup.target
+        Wants=network-online.target nss-lookup.target
         [Service]
         Slice=machine.slice
         ExecStartPre=/usr/bin/host identity-3.{{ .OpenstackRegion }}.cloud.sap
