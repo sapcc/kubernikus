@@ -67,6 +67,9 @@ imagesForVersion:
     cinderCSIPlugin:
       repository: 'keppel.$REGION.cloud.sap/ccloud/cinder-csi-plugin'
       tag: 'v1.22.0'
+    flannel:
+      repository: 'keppel.$REGION.cloud.sap/ccloud-quay-mirror/coreos/flannel'
+      tag: 'v0.12.0'
   '1.20.8':
     supported: true
     apiserver:
@@ -135,6 +138,9 @@ imagesForVersion:
     cinderCSIPlugin:
       repository: 'keppel.$REGION.cloud.sap/ccloud/cinder-csi-plugin'
       tag: 'v1.21.0'
+    flannel:
+      repository: 'keppel.$REGION.cloud.sap/ccloud-quay-mirror/coreos/flannel'
+      tag: 'v0.12.0'
   '1.20.6':
     supported: false
     apiserver:
@@ -203,6 +209,9 @@ imagesForVersion:
     cinderCSIPlugin:
       repository: 'keppel.$REGION.cloud.sap/ccloud/cinder-csi-plugin'
       tag: 'v1.20.3'
+    flannel:
+      repository: 'keppel.$REGION.cloud.sap/ccloud-quay-mirror/coreos/flannel'
+      tag: 'v0.12.0'
   '1.19.11':
     supported: true
     apiserver:
@@ -247,6 +256,9 @@ imagesForVersion:
     wormhole:
       repository: 'keppel.$REGION.cloud.sap/ccloud/kubernikus'
       tag: 'changeme' #this is injected to match the operator so far
+    flannel:
+      repository: 'keppel.$REGION.cloud.sap/ccloud-quay-mirror/coreos/flannel'
+      tag: 'v0.12.0'
   '1.19.4':
     supported: false
     apiserver:
@@ -291,6 +303,9 @@ imagesForVersion:
     wormhole:
       repository: 'keppel.$REGION.cloud.sap/ccloud/kubernikus'
       tag: 'changeme' #this is injected to match the operator so far
+    flannel:
+      repository: 'keppel.$REGION.cloud.sap/ccloud-quay-mirror/coreos/flannel'
+      tag: 'v0.12.0'
   '1.18.10':
     supported: true
     hyperkube:
@@ -323,6 +338,9 @@ imagesForVersion:
     wormhole:
       repository: 'keppel.$REGION.cloud.sap/ccloud/kubernikus'
       tag: 'changeme' #this is injected to match the operator so far
+    flannel:
+      repository: 'keppel.$REGION.cloud.sap/ccloud-quay-mirror/coreos/flannel'
+      tag: 'v0.12.0'
   '1.17.13':
     supported: true
     hyperkube:
@@ -355,6 +373,9 @@ imagesForVersion:
     wormhole:
       repository: 'keppel.$REGION.cloud.sap/ccloud/kubernikus'
       tag: 'changeme' #this is injected to match the operator so far
+    flannel:
+      repository: 'keppel.$REGION.cloud.sap/ccloud-quay-mirror/coreos/flannel'
+      tag: 'v0.12.0'
   '1.16.14':
     supported: true
     hyperkube:
@@ -387,6 +408,9 @@ imagesForVersion:
     wormhole:
       repository: 'keppel.$REGION.cloud.sap/ccloud/kubernikus'
       tag: 'changeme' #this is injected to match the operator so far
+    flannel:
+      repository: 'keppel.$REGION.cloud.sap/ccloud-quay-mirror/coreos/flannel'
+      tag: 'v0.12.0'
   '1.16.9':
     hyperkube:
       repository: 'keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/hyperkube'
@@ -418,6 +442,9 @@ imagesForVersion:
     wormhole:
       repository: 'keppel.$REGION.cloud.sap/ccloud/kubernikus'
       tag: 'changeme' #this is injected to match the operator so far
+    flannel:
+      repository: 'keppel.$REGION.cloud.sap/ccloud-quay-mirror/coreos/flannel'
+      tag: 'v0.12.0'
   '1.15.9':
     default: true
     supported: true
@@ -451,6 +478,9 @@ imagesForVersion:
     wormhole:
       repository: 'keppel.$REGION.cloud.sap/ccloud/kubernikus'
       tag: 'changeme' #this is injected to match the operator so far
+    flannel:
+      repository: 'keppel.$REGION.cloud.sap/ccloud-quay-mirror/coreos/flannel'
+      tag: 'v0.12.0'
   '1.15.2':
     supported: false
     hyperkube:
@@ -483,6 +513,9 @@ imagesForVersion:
     wormhole:
       repository: 'keppel.$REGION.cloud.sap/ccloud/kubernikus'
       tag: 'changeme' #this is injected to match the operator so far
+    flannel:
+      repository: 'keppel.$REGION.cloud.sap/ccloud-quay-mirror/coreos/flannel'
+      tag: 'v0.12.0'
   '1.14.5':
     supported: true
     hyperkube:
@@ -515,6 +548,9 @@ imagesForVersion:
     wormhole:
       repository: 'keppel.$REGION.cloud.sap/ccloud/kubernikus'
       tag: 'changeme' #this is injected to match the operator so far
+    flannel:
+      repository: 'keppel.$REGION.cloud.sap/ccloud-quay-mirror/coreos/flannel'
+      tag: 'v0.12.0'
   '1.13.9':
     supported: true
     hyperkube:
@@ -547,6 +583,9 @@ imagesForVersion:
     wormhole:
       repository: 'keppel.$REGION.cloud.sap/ccloud/kubernikus'
       tag: 'changeme' #this is injected to match the operator so far
+    flannel:
+      repository: 'keppel.$REGION.cloud.sap/ccloud-quay-mirror/coreos/flannel'
+      tag: 'v0.12.0'
   '1.12.10':
     supported: true
     hyperkube:
@@ -573,6 +612,9 @@ imagesForVersion:
     wormhole:
       repository: 'keppel.$REGION.cloud.sap/ccloud/kubernikus'
       tag: 'changeme' #this is injected to match the operator so far
+    flannel:
+      repository: 'keppel.$REGION.cloud.sap/ccloud-quay-mirror/coreos/flannel'
+      tag: 'v0.12.0'
   '1.11.9':
     hyperkube:
       repository: 'keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/hyperkube'
@@ -595,6 +637,9 @@ imagesForVersion:
     wormhole:
       repository: keppel.$REGION.cloud.sap/ccloud/kubernikus
       tag: 'changeme' #this is injected to match the operator so far
+    flannel:
+      repository: 'keppel.$REGION.cloud.sap/ccloud-quay-mirror/coreos/flannel'
+      tag: 'v0.12.0'
   '1.10.11':
     hyperkube:
       repository: 'keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/hyperkube'
@@ -611,6 +656,9 @@ imagesForVersion:
     wormhole:
       repository: 'keppel.$REGION.cloud.sap/ccloud/kubernikus'
       tag: 'changeme' #this is injected to match the operator so far
+    flannel:
+      repository: 'keppel.$REGION.cloud.sap/ccloud-quay-mirror/coreos/flannel'
+      tag: 'v0.12.0'
   '1.10.7':
     hyperkube:
       repository: 'keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/hyperkube'
@@ -627,6 +675,9 @@ imagesForVersion:
     wormhole:
       repository: 'keppel.$REGION.cloud.sap/ccloud/kubernikus'
       tag: 'changeme' #this is injected to match the operator so far
+    flannel:
+      repository: 'keppel.$REGION.cloud.sap/ccloud-quay-mirror/coreos/flannel'
+      tag: 'v0.12.0'
   '1.10.1':
     hyperkube:
       repository: 'keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/hyperkube'
@@ -643,3 +694,6 @@ imagesForVersion:
     wormhole:
       repository: 'keppel.$REGION.cloud.sap/ccloud/kubernikus'
       tag: 'changeme' #this is injected to match the operator so far
+    flannel:
+      repository: 'keppel.$REGION.cloud.sap/ccloud-quay-mirror/coreos/flannel'
+      tag: 'v0.12.0'

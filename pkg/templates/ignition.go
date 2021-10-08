@@ -156,6 +156,8 @@ func (i *ignition) GenerateNode(kluster *kubernikusv1.Kluster, pool *models.Node
 		Flatcar                            bool
 		CoreOS                             bool
 		NoCloud                            bool
+		FlannelImage                       string
+		FlannelImageTag                    string
 	}{
 		TLSCA:                              secret.TLSCACertificate,
 		KubeletClientsCA:                   secret.KubeletClientsCACertificate,
@@ -195,6 +197,8 @@ func (i *ignition) GenerateNode(kluster *kubernikusv1.Kluster, pool *models.Node
 		Flatcar:                            isFlatcar,
 		CoreOS:                             !isFlatcar,
 		NoCloud:                            kluster.Spec.NoCloud,
+		FlannelImage:                       images.Flannel.Repository,
+		FlannelImageTag:                    images.Flannel.Tag,
 	}
 
 	var dataOut []byte
