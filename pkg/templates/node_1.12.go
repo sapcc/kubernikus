@@ -15,26 +15,17 @@ passwd:
   groups:
     - name: rkt
       system: true
-
 systemd:
   units:
-    - name: containerd.service
-      dropins:
-        - name: 10-use-cgroupfs.conf
-          contents: |
-            [Service]
-            Environment=CONTAINERD_CONFIG=/usr/share/containerd/config-cgroupfs.toml
     - name: legacy-cgroup-reboot.service
       enable: true
       contents: |
         [Unit]
         Description=Reboot if legacy cgroups are not enabled yet
         FailureAction=reboot
-
         [Service]
         Type=simple
-        ExecStart=/usr/bin/grep 'cgroup' /proc/cmdline
-
+        ExecStart=/usr/bin/grep 'systemd.unified_cgroup_hierarchy=0' /proc/cmdline
         [Install]
         WantedBy=multi-user.target
     - name: iptables-restore.service
@@ -44,7 +35,6 @@ systemd:
       contents: |
         [Unit]
         Description=Workaround for coreos-metadata hostname bug
-
         [Service]
         ExecStartPre=/usr/bin/curl -s http://169.254.169.254/latest/meta-data/hostname
         ExecStartPre=/usr/bin/bash -c "/usr/bin/systemctl set-environment COREOS_OPENSTACK_HOSTNAME=$(curl -s http://169.254.169.254/latest/meta-data/hostname)"
@@ -52,7 +42,6 @@ systemd:
         Restart=on-failure
         RestartSec=5
         RemainAfterExit=yes
-
         [Install]
         WantedBy=multi-user.target
     - name: docker.service
@@ -72,7 +61,6 @@ systemd:
         After=etcd.service etcd2.service etcd-member.service network-online.target nss-lookup.target
         Requires=flannel-docker-opts.service
         Wants=network-online.target nss-lookup.target
-
         [Service]
         Type=notify
         Restart=always
@@ -80,20 +68,17 @@ systemd:
         TimeoutStartSec=300
         LimitNOFILE=40000
         LimitNPROC=1048576
-
         Environment="FLANNEL_IMAGE_URL=docker://{{ .FlannelImage }}"
         Environment="FLANNEL_IMAGE_TAG={{ .FlannelImageTag }}"
         Environment="FLANNEL_OPTS=--ip-masq=true"
         Environment="RKT_RUN_ARGS=--uuid-file-save=/var/lib/flatcar/flannel-wrapper.uuid"
         EnvironmentFile=-/run/flannel/options.env
-
         ExecStartPre=/usr/bin/host identity-3.{{ .OpenstackRegion }}.cloud.sap
         ExecStartPre=/sbin/modprobe ip_tables
         ExecStartPre=/usr/bin/mkdir --parents /var/lib/flatcar /run/flannel
         ExecStartPre=-/opt/bin/rkt rm --uuid-file=/var/lib/flatcar/flannel-wrapper.uuid
         ExecStart=/opt/bin/flannel-wrapper $FLANNEL_OPTS
         ExecStop=-/opt/bin/rkt stop --uuid-file=/var/lib/flatcar/flannel-wrapper.uuid
-
         [Install]
         WantedBy=multi-user.target
     - name: flanneld.service
@@ -131,7 +116,6 @@ systemd:
         Description=Kubelet via Hyperkube ACI
         After=network-online.target nss-lookup.target
         Wants=network-online.target nss-lookup.target
-
         [Service]
         Environment="RKT_RUN_ARGS=--uuid-file-save=/var/run/kubelet-pod.uuid \
           --inherit-env \
@@ -193,7 +177,6 @@ systemd:
         ExecStop=-/opt/bin/rkt stop --uuid-file=/var/run/kubelet-pod.uuid
         Restart=always
         RestartSec=10
-
         [Install]
         WantedBy=multi-user.target
     - name: wormhole.service
@@ -280,7 +263,6 @@ systemd:
       contents: |
         [Unit]
         Description=Garbage Collection for rkt
-
         [Service]
         Environment=GRACE_PERIOD=24h
         Type=oneshot
@@ -291,14 +273,11 @@ systemd:
       contents: |
         [Unit]
         Description=Periodic Garbage Collection for rkt
-
         [Timer]
         OnActiveSec=0s
         OnUnitActiveSec=12h
-
         [Install]
         WantedBy=multi-user.target
-
 networkd:
   units:
     - name: 50-kubernikus.netdev
@@ -314,13 +293,12 @@ networkd:
         [Network]
         DHCP=no
         Address={{ .ApiserverIP }}/32
-
 storage:
   filesystems:
     - name: "OEM"
       mount:
         device: "/dev/disk/by-label/OEM"
-        format: "btrfs"
+        format: "ext4"
   files:
     - filesystem: "OEM"
       path: "/grub.cfg"
@@ -334,13 +312,6 @@ storage:
       mode: 0644
       contents:
         inline: |
-          #
-          # VMware SCSI devices Timeout adjustment
-          #
-          # Modify the timeout value for VMware SCSI devices so that
-          # in the event of a failover, we don't time out.
-          # See Bug 271286 for more information.
-
           ACTION=="add", SUBSYSTEMS=="scsi", ATTRS{vendor}=="VMware  ", ATTRS{model}=="Virtual disk", RUN+="/bin/sh -c 'echo 180 >/sys$DEVPATH/timeout'"
     - path: /etc/ssl/certs/SAPGlobalRootCA.pem
       filesystem: root
