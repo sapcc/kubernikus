@@ -61,7 +61,8 @@ systemd:
         LimitNOFILE=40000
         LimitNPROC=1048576
 
-        Environment="FLANNEL_IMAGE_TAG=v0.12.0"
+        Environment="FLANNEL_IMAGE_URL=docker://{{ .FlannelImage }}"
+        Environment="FLANNEL_IMAGE_TAG={{ .FlannelImageTag }}"
         Environment="FLANNEL_OPTS=--ip-masq=true"
         Environment="RKT_RUN_ARGS=--uuid-file-save=/var/lib/flatcar/flannel-wrapper.uuid"
         EnvironmentFile=-/run/flannel/options.env
