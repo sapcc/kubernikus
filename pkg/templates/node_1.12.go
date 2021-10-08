@@ -638,11 +638,6 @@ storage:
       contents:
         inline: |-
           #!/bin/bash
-          # Wrapper for launching kubelet via rkt-fly.
-          #
-          # Make sure to set KUBELET_IMAGE_TAG to an image tag published here:
-          # https://quay.io/repository/coreos/hyperkube?tab=tags Alternatively,
-          # override KUBELET_IMAGE to a custom image.
           set -e
           function require_ev_all() {
             for rev in $@ ; do
@@ -722,12 +717,6 @@ storage:
       contents:
         inline: |-
           #!/bin/bash -e
-          # Wrapper for launching flannel via rkt.
-          #
-          # Make sure to set FLANNEL_IMAGE_TAG to an image tag published here:
-          # https://quay.io/repository/coreos/flannel?tab=tags Alternatively,
-          # override FLANNEL_IMAGE to a custom image.
-
           function require_ev_all() {
             for rev in $@ ; do
               if [[ -z "${!rev}" ]]; then
@@ -736,7 +725,6 @@ storage:
               fi
             done
           }
-
           function require_ev_one() {
             for rev in $@ ; do
               if [[ ! -z "${!rev}" ]]; then
@@ -746,28 +734,21 @@ storage:
             echo One of $@ must be set
             exit 1
           }
-
           if [[ -n "${FLANNEL_VER}" ]]; then
             echo FLANNEL_VER environment variable is deprecated, please use FLANNEL_IMAGE_TAG instead
           fi
-
           if [[ -n "${FLANNEL_IMG}" ]]; then
             echo FLANNEL_IMG environment variable is deprecated, please use FLANNEL_IMAGE_URL instead
           fi
-
           FLANNEL_IMAGE_TAG="${FLANNEL_IMAGE_TAG:-${FLANNEL_VER}}"
-
           require_ev_one FLANNEL_IMAGE FLANNEL_IMAGE_TAG
-
           FLANNEL_IMAGE_URL="${FLANNEL_IMAGE_URL:-${FLANNEL_IMG:-docker://quay.io/coreos/flannel}}"
           FLANNEL_IMAGE="${FLANNEL_IMAGE:-${FLANNEL_IMAGE_URL}:${FLANNEL_IMAGE_TAG}}"
-
           if [[ "${FLANNEL_IMAGE%%/*}" == "quay.io" ]] && ! (echo "${RKT_RUN_ARGS}" | grep -q trust-keys-from-https); then
             RKT_RUN_ARGS="${RKT_RUN_ARGS} --trust-keys-from-https"
           elif [[ "${FLANNEL_IMAGE%%/*}" == "docker:" ]] && ! (echo "${RKT_RUN_ARGS}" | grep -q insecure-options); then
             RKT_RUN_ARGS="${RKT_RUN_ARGS} --insecure-options=image"
           fi
-
           ETCD_SSL_DIR="${ETCD_SSL_DIR:-/etc/ssl/etcd}"
           if [[ -d "${ETCD_SSL_DIR}" ]]; then
             RKT_RUN_ARGS="${RKT_RUN_ARGS} \
@@ -775,7 +756,6 @@ storage:
               --mount volume=coreos-ssl,target=${ETCD_SSL_DIR} \
             "
           fi
-
           if [[ -S "${NOTIFY_SOCKET}" ]]; then
             RKT_RUN_ARGS="${RKT_RUN_ARGS} \
               --mount volume=coreos-notify,target=/run/systemd/notify \
@@ -783,9 +763,7 @@ storage:
               --set-env=NOTIFY_SOCKET=/run/systemd/notify \
             "
           fi
-
           mkdir --parents /run/flannel
-
           RKT="${RKT:-/opt/bin/rkt}"
           RKT_STAGE1_ARG="${RKT_STAGE1_ARG:---stage1-from-dir=stage1-fly.aci}"
           set -x
