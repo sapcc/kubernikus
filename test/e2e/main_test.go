@@ -107,6 +107,15 @@ func TestRunner(t *testing.T) {
 	if os.Getenv("CP_KLUSTER") != "" {
 		fmt.Printf("CP Kluster Name:           %v\n", os.Getenv("CP_KLUSTER"))
 	}
+	if os.Getenv("KLUSTER_VERSION") != "" {
+		fmt.Printf("Kubernetes Version:        %v\n", os.Getenv("KLUSTER_VERSION"))
+	}
+	if os.Getenv("KLUSTER_CIDR") != "" {
+		fmt.Printf("Cluster CIDR:              %v\n", os.Getenv("KLUSTER_CIDR"))
+	}
+	if os.Getenv("KLUSTER_OS_IMAGE") != "" {
+		fmt.Printf("OS Image:                  %v\n", os.Getenv("KLUSTER_OS_IMAGE"))
+	}
 	fmt.Printf("\n\n")
 
 	authOptions := &tokens.AuthOptions{
