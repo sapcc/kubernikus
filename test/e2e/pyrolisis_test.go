@@ -32,10 +32,11 @@ type PyrolisisTests struct {
 	Kubernikus *framework.Kubernikus
 	OpenStack  *framework.OpenStack
 	Reuse      bool
+	Isolate    bool
 }
 
 func (p *PyrolisisTests) Run(t *testing.T) {
-	if p.Reuse == false {
+	if p.Reuse == false && p.Isolate == false {
 		quota := t.Run("SettingKlustersOnFire", p.SettingKlustersOnFire)
 		require.True(t, quota, "Klusters must burn")
 

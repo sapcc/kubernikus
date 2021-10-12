@@ -32,6 +32,7 @@ type CleanupTests struct {
 	OpenStack   *framework.OpenStack
 	KlusterName string
 	Reuse       bool
+	Isolate     bool
 }
 
 func (s *CleanupTests) Run(t *testing.T) {
@@ -40,7 +41,9 @@ func (s *CleanupTests) Run(t *testing.T) {
 		t.Run("Cluster/IsDeleted", s.WaitForKlusterToBeDeleted)
 
 		if s.Reuse == false {
-			t.Run("QuotaPostFlightCheck", s.QuotaPostFlightCheck)
+			if s.Isolate == false {
+				t.Run("QuotaPostFlightCheck", s.QuotaPostFlightCheck)
+			}
 			t.Run("ServerGroupsGotDeleted", s.ServerGroupsGotDeleted)
 			t.Run("LoadbalancerGotDeleted", s.LoadbalancerGotDeleted)
 		}
