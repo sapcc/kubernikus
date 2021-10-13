@@ -298,13 +298,6 @@ storage:
       mode: 0644
       contents:
         inline: |
-          #
-          # VMware SCSI devices Timeout adjustment
-          #
-          # Modify the timeout value for VMware SCSI devices so that
-          # in the event of a failover, we don't time out.
-          # See Bug 271286 for more information.
-
           ACTION=="add", SUBSYSTEMS=="scsi", ATTRS{vendor}=="VMware  ", ATTRS{model}=="Virtual disk", RUN+="/bin/sh -c 'echo 180 >/sys$DEVPATH/timeout'"
     - path: /etc/ssl/certs/SAPGlobalRootCA.pem
       filesystem: root
@@ -641,7 +634,7 @@ storage:
       contents:
         inline: |-
           #!/bin/bash
-          set -e
+          set -eo pipefail
           function require_ev_all() {
             for rev in $@ ; do
               if [[ -z "${!rev}" ]]; then
@@ -678,6 +671,10 @@ storage:
           elif [[ "${KUBELET_IMAGE%%/*}" == "docker:" ]] && ! (echo "${RKT_RUN_ARGS}" | grep -q insecure-options); then
             RKT_RUN_ARGS="${RKT_RUN_ARGS} --insecure-options=image"
           fi
+          CGROUP_DRIVER="cgroupfs"
+          if mount | grep 'cgroup2 on /sys/fs/cgroup type cgroup2'; then
+            CGROUP_DRIVER="systemd"
+          fi
           mkdir --parents /etc/kubernetes
           mkdir --parents /var/lib/docker
           mkdir --parents /var/lib/kubelet
@@ -712,8 +709,8 @@ storage:
             ${RKT_STAGE1_ARG} \
             ${KUBELET_IMAGE} \
               ${KUBELET_IMAGE_ARGS} \
-              -- "$@"
-
+              -- "$@" \
+              --cgroup-driver=${CGROUP_DRIVER}
     - path: /opt/bin/flannel-wrapper
       filesystem: root
       mode: 0755

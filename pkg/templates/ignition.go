@@ -27,7 +27,7 @@ var Ignition = &ignition{}
 
 var passwordHashRounds = 1000000
 
-const TEMPLATE_VERSION = "3"
+const TEMPLATE_VERSION = "4"
 
 func (i *ignition) getIgnitionTemplate(kluster *kubernikusv1.Kluster) (string, error) {
 	switch {
