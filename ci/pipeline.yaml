@@ -743,6 +743,10 @@ task_e2e_tests: &task_e2e_tests
     CP_KUBERNIKUS_URL:
     CP_KLUSTER:
     NODEPOOL_AVZ:
+    KLUSTER_VERSION:
+    KLUSTER_CIDR:
+    KLUSTER_OS_IMAGE:
+    ISOLATE_TEST:
   
 
 task_github_compare_url: &task_github_compare_url
@@ -1100,7 +1104,6 @@ slack: &slack
 
 
 resources:
-
   - name: docs.git
     type: git
     source:
@@ -1221,12 +1224,19 @@ resources:
     type: time
     source: {interval: 1h}
 
+  - name: all-versions.trigger
+    type: time-version-resource
+    check_every: 525600h
+    source:
+      pipeline: kubernikus
+
 resource_types:
   - name: slack-alert
     type: docker-image
     check_every: 24h
     source:
       repository: keppel.eu-de-1.cloud.sap/ccloud-dockerhub-mirror/arbourd/concourse-slack-alert-resource
+
   - name: slack-notification
     type: docker-image
     check_every: 24h
@@ -1359,7 +1369,13 @@ jobs:
           PRODUCT_TOKEN: ((whitesource-product-token))
     <<: *slack
 
-  - name: e2e
+  - name: all-versions
+    serial: true
+    plan:
+      - put: all-versions.trigger
+
+
+  - name: e2e-1.21.5
     serial: true
     plan:
       - in_parallel:
@@ -1368,20 +1384,234 @@ jobs:
           resource: kubernikus.git
           passed: [master]
           trigger: true
+        - get: all-versions.trigger
+          trigger: true
+          passed: [all-versions]
       - task: e2e_tests
         config:
           <<: *task_e2e_tests
         timeout: 2h
         params:
+          KLUSTER_VERSION: "1.21.5"
+          KLUSTER_CIDR: "100.100.0.0/16"
+          ISOLATE_TEST: "true"
           <<: *auth_e2e_master
     <<: *slack
+
+  - name: e2e-1.20.8
+    serial: true
+    plan:
+      - in_parallel:
+        - get: secrets.git
+        - get: kubernikus.builds
+          resource: kubernikus.git
+          passed: [master]
+          trigger: true
+        - get: all-versions.trigger
+          trigger: true
+          passed: [all-versions]
+      - task: e2e_tests
+        config:
+          <<: *task_e2e_tests
+        timeout: 2h
+        params:
+          KLUSTER_VERSION: "1.20.8"
+          KLUSTER_CIDR: "100.101.0.0/16"
+          ISOLATE_TEST: "true"
+          <<: *auth_e2e_master
+    <<: *slack
+
+  - name: e2e-1.19.11
+    serial: true
+    plan:
+      - in_parallel:
+        - get: secrets.git
+        - get: kubernikus.builds
+          resource: kubernikus.git
+          passed: [master]
+          trigger: true
+        - get: all-versions.trigger
+          trigger: true
+          passed: [all-versions]
+      - task: e2e_tests
+        config:
+          <<: *task_e2e_tests
+        timeout: 2h
+        params:
+          KLUSTER_VERSION: "1.19.11"
+          KLUSTER_CIDR: "100.102.0.0/16"
+          ISOLATE_TEST: "true"
+          <<: *auth_e2e_master
+    <<: *slack
+
+  - name: e2e-1.18.10
+    serial: true
+    plan:
+      - in_parallel:
+        - get: secrets.git
+        - get: kubernikus.builds
+          resource: kubernikus.git
+          passed: [master]
+          trigger: true
+        - get: all-versions.trigger
+          trigger: true
+          passed: [all-versions]
+      - task: e2e_tests
+        config:
+          <<: *task_e2e_tests
+        timeout: 2h
+        params:
+          KLUSTER_VERSION: "1.18.10"
+          KLUSTER_CIDR: "100.103.0.0/16"
+          ISOLATE_TEST: "true"
+          <<: *auth_e2e_master
+    <<: *slack
+
+  - name: e2e-1.17.13
+    serial: true
+    plan:
+      - in_parallel:
+        - get: secrets.git
+        - get: kubernikus.builds
+          resource: kubernikus.git
+          passed: [master]
+          trigger: true
+        - get: all-versions.trigger
+          trigger: true
+          passed: [all-versions]
+      - task: e2e_tests
+        config:
+          <<: *task_e2e_tests
+        timeout: 2h
+        params:
+          KLUSTER_VERSION: "1.17.13"
+          KLUSTER_CIDR: "100.104.0.0/16"
+          ISOLATE_TEST: "true"
+          <<: *auth_e2e_master
+    <<: *slack
+
+  - name: e2e-1.16.14
+    serial: true
+    plan:
+      - in_parallel:
+        - get: secrets.git
+        - get: kubernikus.builds
+          resource: kubernikus.git
+          passed: [master]
+          trigger: true
+        - get: all-versions.trigger
+          trigger: true
+          passed: [all-versions]
+      - task: e2e_tests
+        config:
+          <<: *task_e2e_tests
+        timeout: 2h
+        params:
+          KLUSTER_VERSION: "1.16.14"
+          KLUSTER_CIDR: "100.105.0.0/16"
+          ISOLATE_TEST: "true"
+          <<: *auth_e2e_master
+    <<: *slack
+
+  - name: e2e-1.15.9
+    serial: true
+    plan:
+      - in_parallel:
+        - get: secrets.git
+        - get: kubernikus.builds
+          resource: kubernikus.git
+          passed: [master]
+          trigger: true
+        - get: all-versions.trigger
+          trigger: true
+          passed: [all-versions]
+      - task: e2e_tests
+        config:
+          <<: *task_e2e_tests
+        timeout: 2h
+        params:
+          KLUSTER_VERSION: "1.15.9"
+          KLUSTER_CIDR: "100.106.0.0/16"
+          ISOLATE_TEST: "true"
+          <<: *auth_e2e_master
+    <<: *slack
+
+  - name: e2e-1.14.5
+    serial: true
+    plan:
+      - in_parallel:
+        - get: secrets.git
+        - get: kubernikus.builds
+          resource: kubernikus.git
+          passed: [master]
+          trigger: true
+        - get: all-versions.trigger
+          trigger: true
+          passed: [all-versions]
+      - task: e2e_tests
+        config:
+          <<: *task_e2e_tests
+        timeout: 2h
+        params:
+          KLUSTER_VERSION: "1.14.5"
+          KLUSTER_CIDR: "100.107.0.0/16"
+          ISOLATE_TEST: "true"
+          <<: *auth_e2e_master
+    <<: *slack
+
+  - name: e2e-1.13.9
+    serial: true
+    plan:
+      - in_parallel:
+        - get: secrets.git
+        - get: kubernikus.builds
+          resource: kubernikus.git
+          passed: [master]
+          trigger: true
+        - get: all-versions.trigger
+          trigger: true
+          passed: [all-versions]
+      - task: e2e_tests
+        config:
+          <<: *task_e2e_tests
+        timeout: 2h
+        params:
+          KLUSTER_VERSION: "1.13.9"
+          KLUSTER_CIDR: "100.108.0.0/16"
+          ISOLATE_TEST: "true"
+          <<: *auth_e2e_master
+    <<: *slack
+
+  - name: e2e-1.12.10
+    serial: true
+    plan:
+      - in_parallel:
+        - get: secrets.git
+        - get: kubernikus.builds
+          resource: kubernikus.git
+          passed: [master]
+          trigger: true
+        - get: all-versions.trigger
+          trigger: true
+          passed: [all-versions]
+      - task: e2e_tests
+        config:
+          <<: *task_e2e_tests
+        timeout: 2h
+        params:
+          KLUSTER_VERSION: "1.12.10"
+          KLUSTER_CIDR: "100.109.0.0/16"
+          ISOLATE_TEST: "true"
+          <<: *auth_e2e_master
+    <<: *slack
+
 
   - name: prod
     serial: true
     plan:
       - get: kubernikus.builds
         resource: kubernikus.git
-        passed: [e2e]
+        passed: [e2e-1.21.5]
       - task: changes
         config:
           <<: *task_github_compare_url
@@ -3313,7 +3543,28 @@ groups:
       - cli
       - whitesource
       - tiller_master
-      - e2e
+      - all-versions
+
+      - e2e-1.21.5
+
+      - e2e-1.20.8
+
+      - e2e-1.19.11
+
+      - e2e-1.18.10
+
+      - e2e-1.17.13
+
+      - e2e-1.16.14
+
+      - e2e-1.15.9
+
+      - e2e-1.14.5
+
+      - e2e-1.13.9
+
+      - e2e-1.12.10
+
       - prod
 
       - ASIA
@@ -3469,7 +3720,28 @@ groups:
       - cli
       - whitesource
       - tiller_master
-      - e2e
+      - all-versions
+
+      - e2e-1.21.5
+
+      - e2e-1.20.8
+
+      - e2e-1.19.11
+
+      - e2e-1.18.10
+
+      - e2e-1.17.13
+
+      - e2e-1.16.14
+
+      - e2e-1.15.9
+
+      - e2e-1.14.5
+
+      - e2e-1.13.9
+
+      - e2e-1.12.10
+
       - prod
 
       - ASIA

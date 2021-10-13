@@ -1,4 +1,17 @@
 <%
+VERSIONS = [
+  '1.21.5',
+  '1.20.8',
+  '1.19.11',
+  '1.18.10',
+  '1.17.13',
+  '1.16.14',
+  '1.15.9',
+  '1.14.5',
+  '1.13.9',
+  '1.12.10'
+]
+
 REGIONS = {
   "ap-ae-1": { continent: 'ASIA',     install: 'terraform', e2e: 'terraform', oidc: '9a2d0e1181194fb1bca52e7951666bc3'},
   "ap-au-1": { continent: 'ASIA',     install: 'manual'   , e2e: 'manual',    oidc: 'f34304c03d2147cc964470c31d00ce97' },
@@ -91,7 +104,6 @@ slack: &slack
 
 
 resources:
-
   - name: docs.git
     type: git
     source:
@@ -191,12 +203,19 @@ resources:
     type: time
     source: {interval: 1h}
 
+  - name: all-versions.trigger
+    type: time-version-resource
+    check_every: 525600h
+    source:
+      pipeline: kubernikus
+
 resource_types:
   - name: slack-alert
     type: docker-image
     check_every: 24h
     source:
       repository: keppel.eu-de-1.cloud.sap/ccloud-dockerhub-mirror/arbourd/concourse-slack-alert-resource
+
   - name: slack-notification
     type: docker-image
     check_every: 24h
@@ -329,7 +348,13 @@ jobs:
           PRODUCT_TOKEN: ((whitesource-product-token))
     <<: *slack
 
-  - name: e2e
+  - name: all-versions
+    serial: true
+    plan:
+      - put: all-versions.trigger
+
+<% VERSIONS.each_with_index do |version, index| %>
+  - name: e2e-<%= version %>
     serial: true
     plan:
       - in_parallel:
@@ -338,20 +363,27 @@ jobs:
           resource: kubernikus.git
           passed: [master]
           trigger: true
+        - get: all-versions.trigger
+          trigger: true
+          passed: [all-versions]
       - task: e2e_tests
         config:
           <<: *task_e2e_tests
         timeout: 2h
         params:
+          KLUSTER_VERSION: "<%= version %>"
+          KLUSTER_CIDR: "100.<%= 100+index %>.0.0/16"
+          ISOLATE_TEST: "true"
           <<: *auth_e2e_master
     <<: *slack
+<% end %>
 
   - name: prod
     serial: true
     plan:
       - get: kubernikus.builds
         resource: kubernikus.git
-        passed: [e2e]
+        passed: [e2e-<%= VERSIONS[0] %>]
       - task: changes
         config:
           <<: *task_github_compare_url
@@ -492,7 +524,10 @@ groups:
       - cli
       - whitesource
       - tiller_master
-      - e2e
+      - all-versions
+<% VERSIONS.each do |version| %>
+      - e2e-<%= version %>
+<% end %>
       - prod
 <% GROUPS.each do |group| %>
       - <%= group %>
@@ -514,7 +549,10 @@ groups:
       - cli
       - whitesource
       - tiller_master
-      - e2e
+      - all-versions
+<% VERSIONS.each do |version| %>
+      - e2e-<%= version %>
+<% end %>
       - prod
 <% GROUPS.each do |group| %>
       - <%= group %>
