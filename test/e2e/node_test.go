@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"os"
 	"strings"
 	"testing"
 	"time"
@@ -133,6 +134,10 @@ func (k *NodeTests) Registered(t *testing.T) {
 }
 
 func (k NodeTests) LatestStableContainerLinux(t *testing.T) {
+	if os.Getenv("KLUSTER_OS_IMAGE") != "" && os.Getenv("KLUSTER_OS_IMAGE") != "flatcar-stable-amd64" {
+		return
+	}
+
 	nodes, err := k.Kubernetes.ClientSet.CoreV1().Nodes().List(meta_v1.ListOptions{})
 	if !assert.NoError(t, err) {
 		return
