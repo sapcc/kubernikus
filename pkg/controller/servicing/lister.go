@@ -24,6 +24,7 @@ import (
 const (
 	AnnotationNodeForceReplace = "kubernikus.cloud.sap/forceReplace"
 	AnnotationNodeSkipReplace  = "kubernikus.cloud.sap/skipReplace"
+	LabelMaintenanceController = "cloud.sap/maintenance-profile"
 )
 
 type (
@@ -36,6 +37,7 @@ type (
 		Successful() []*core_v1.Node
 		Failed() []*core_v1.Node
 		NotReady() []*core_v1.Node
+		Maintained() []*core_v1.Node
 	}
 
 	// ListerFactory produces a Lister
@@ -416,6 +418,20 @@ func (d *NodeLister) Failed() []*core_v1.Node {
 	return found
 }
 
+// Returns all nodes that are assumed to be maintained by the maintenance-controller.
+func (d *NodeLister) Maintained() []*core_v1.Node {
+	var found []*core_v1.Node
+
+	for _, node := range d.All() {
+		_, ok := node.Labels[LabelMaintenanceController]
+		if ok {
+			found = append(found, node)
+		}
+	}
+
+	return found
+}
+
 func (d *NodeLister) updateTimeout() []*core_v1.Node {
 	var found []*core_v1.Node
 
@@ -570,6 +586,18 @@ func (l *LoggingLister) Failed() (nodes []*core_v1.Node) {
 		)
 	}(time.Now())
 	return l.Lister.Failed()
+}
+
+func (l *LoggingLister) Maintained() (nodes []*core_v1.Node) {
+	defer func(begin time.Time) {
+		l.Logger.Log(
+			"msg", "listing nodes assumed to be maintained by the maintenance-controller",
+			"took", time.Since(begin),
+			"count", len(nodes),
+			"v", 3,
+		)
+	}(time.Now())
+	return l.Lister.Maintained()
 }
 
 func getKubeletVersion(node *core_v1.Node) (*version.Version, error) {

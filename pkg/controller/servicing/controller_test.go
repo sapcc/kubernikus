@@ -281,6 +281,26 @@ func TestServicingControllerReconcile(t *testing.T) {
 			expectedReboot:  false,
 			expectedReplace: false,
 		},
+		{
+			message: "Klusters assumed to be maintained by the maintenance-controller should neither be rebooted nor replaced",
+			options: &FakeKlusterOptions{
+				Phase: models.KlusterPhaseRunning,
+				NodePools: []FakeNodePoolOptions{
+					{
+						AllowReboot:         true,
+						AllowReplace:        true,
+						NodeHealthy:         true,
+						NodeOSOutdated:      true,
+						NodeKubeletOutdated: true,
+						Size:                2,
+						Labels:              []string{"cloud.sap/maintenance-profile=flatcar"},
+					},
+				},
+			},
+			expectedDrain:   false,
+			expectedReboot:  false,
+			expectedReplace: false,
+		},
 	} {
 		t.Run(string(subject.message), func(t *testing.T) {
 			kluster, nodes := NewFakeKluster(subject.options, true)

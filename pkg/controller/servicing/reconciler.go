@@ -118,7 +118,12 @@ func (r *KlusterReconciler) Do() error {
 	}
 
 	if util.DisabledValue(r.Kluster.ObjectMeta.Annotations[AnnotationServicingSafeguard]) {
-		r.Logger.Log("msg", "Skippig upgrades. Manually disabled with safeguard annotation.")
+		r.Logger.Log("msg", "Skippig upgrades. Manually disabled with safeguard annotation.", "v", 2)
+		return nil
+	}
+
+	if len(r.Lister.Maintained()) > 0 {
+		r.Logger.Log("msg", "Skipping upgrades. At least one node seems to be maintained by the maintenance-controller.", "v", 2)
 		return nil
 	}
 
