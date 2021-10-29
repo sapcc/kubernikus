@@ -130,7 +130,10 @@ func (p *PyrolisisTests) CleanupBackupStorageContainers(t *testing.T) {
 	for _, container := range containersToDelete {
 		if strings.HasPrefix(container, etcd_util.BackupStorageContainerBase) {
 			allPages, err := objects.List(storageClient, container, objectsListOpts).AllPages()
-			require.NoError(t, err, "There should be no error while lising objetcs in container %s", container)
+			if _, ok := err.(gophercloud.ErrDefault404); ok {
+				continue
+			}
+			require.NoError(t, err, "There should be no error while lising objetcs in container %s:", container)
 
 			allObjects, err := objects.ExtractNames(allPages)
 			require.NoError(t, err, "There should be no error while extracting objetcs names for container %s", container)
