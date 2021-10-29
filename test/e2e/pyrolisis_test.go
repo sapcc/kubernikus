@@ -250,6 +250,12 @@ func (p *PyrolisisTests) CleanupLoadbalancers(t *testing.T) {
 	for _, lb := range lbsToDelete {
 		if strings.HasSuffix(lb.Name, "_e2e-lb") {
 			err := loadbalancers.Delete(lbClient, lb.ID, loadbalancers.DeleteOpts{Cascade: true}).ExtractErr()
+
+			// Ignore PENDING_DELETE error
+			if _, ok := err.(gophercloud.Err409er); ok {
+				continue
+			}
+
 			require.NoError(t, err, "There should be no error while deleting loadbalancer %s", lb.Name)
 		}
 	}
