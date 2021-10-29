@@ -48,11 +48,12 @@ func (p *PyrolisisTests) Run(t *testing.T) {
 
 		t.Run("CleanupVolumes", p.CleanupVolumes)
 		t.Run("CleanupInstances", p.CleanupInstances)
-		t.Run("CleanupLoadbalancers", p.CleanupLoadbalancers)
 	}
 
 	cleanupStorageContainer := t.Run("CleanupBackupStorageContainers", p.CleanupBackupStorageContainers)
 	require.True(t, cleanupStorageContainer, "Etcd backup storage container cleanup failed")
+
+	t.Run("CleanupLoadbalancers", p.CleanupLoadbalancers)
 }
 
 func (p *PyrolisisTests) SettingKlustersOnFire(t *testing.T) {
@@ -227,7 +228,26 @@ func (p *PyrolisisTests) CleanupLoadbalancers(t *testing.T) {
 	allLoadbalancers, err := loadbalancers.ExtractLoadBalancers(allPages)
 	require.NoError(t, err, "There should be no error while extracting loadbalancers")
 
+	klusters, err := listKlusters(p.Kubernikus.Client.Operations, p.Kubernikus.AuthInfo)
+	require.NoError(t, err, "There should be no error while listing klusters")
+
+	// do not delete loadbalancers where there is still a kluster running
+	var lbsToDelete []loadbalancers.LoadBalancer
 	for _, lb := range allLoadbalancers {
+		found := false
+
+		for _, kluster := range klusters {
+			if strings.HasPrefix(lb.Name, fmt.Sprintf("kube_service_%s", kluster.Name)) {
+				found = true
+			}
+		}
+
+		if !found {
+			lbsToDelete = append(lbsToDelete, lb)
+		}
+	}
+
+	for _, lb := range lbsToDelete {
 		if strings.HasSuffix(lb.Name, "_e2e-lb") {
 			err := loadbalancers.Delete(lbClient, lb.ID, loadbalancers.DeleteOpts{Cascade: true}).ExtractErr()
 			require.NoError(t, err, "There should be no error while deleting loadbalancer %s", lb.Name)
