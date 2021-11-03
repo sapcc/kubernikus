@@ -467,6 +467,9 @@ definitions:
     properties:
       openstack:
         $ref: '#/definitions/OpenstackSpec'
+      audit:
+        type: boolean
+        x-nullable: true
       noCloud:
         type: boolean
       dashboard:

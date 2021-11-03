@@ -121,6 +121,14 @@ spec:
             items:
               - key: local-kubeconfig
                 path: kubeconfig
+        {{- if .Values.audit }}
+        - name: audit-policy
+          configMap:
+            name: {{ include "master.fullname" . }}
+            items:
+              - key: audit-policy.yaml
+                path: audit-policy.yaml
+        {{- end }}
       initContainers:
         - name: etcd-wait
           image: "{{ include "etcd.image" . }}"
@@ -244,6 +252,11 @@ spec:
             - --oidc-username-prefix=-
             - --oidc-username-claim=name
             {{ end }}
+            {{- if .Values.audit }}
+            - --audit-policy-file=/audit/audit-policy.yaml
+            - --audit-log-path=/var/log/audit.log
+            - --audit-log-maxage=24h
+            {{- end }}
           volumeMounts:
             - mountPath: /etc/kubernetes/certs
               name: certs
@@ -265,6 +278,11 @@ spec:
             - mountPath: /liveness-probe
               name: liveness-probe
 {{- end }}
+            {{- if .Values.audit }}
+            - mountPath: /audit
+              name: audit-policy
+              readOnly: true
+            {{- end}}
           livenessProbe:
 {{- if .Values.etcd.backup.enabled }}
             exec:

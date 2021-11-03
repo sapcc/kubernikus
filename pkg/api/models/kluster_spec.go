@@ -26,6 +26,9 @@ type KlusterSpec struct {
 	// advertise port
 	AdvertisePort int64 `json:"advertisePort"`
 
+	// audit
+	Audit *bool `json:"audit,omitempty"`
+
 	// backup
 	// Enum: [on off externalAWS]
 	Backup string `json:"backup,omitempty"`

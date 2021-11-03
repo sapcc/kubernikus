@@ -85,3 +85,45 @@ data:
     except requests.exceptions.RequestException as e:
       print e
       sys.exit(0)
+{{- if .Values.audit }}
+  audit-policy.yaml: |-
+    apiVersion: audit.k8s.io/v1
+    kind: Policy
+    rules:
+    - level: None
+      userGroups:
+      - system:nodes
+    - level: None
+      users:
+      - gardener
+      - kubelet
+      - system:kube-controller-manager
+      - system:kube-scheduler
+      - system:gardener-resource-manager
+      - system:kube-aggregator
+      - system:kube-proxy
+      - system:apiserver
+      - system:serviceaccount:garden:gardener-controller-manager
+      - system:serviceaccount:garden:gardener-metrics-exporter
+      - system:serviceaccount:kube-system:generic-garbage-collector
+      - system:serviceaccount:kube-system:namespace-controller
+      - garden.sapcloud.io:monitoring
+      - garden.sapcloud.io:monitoring:prometheus
+      - garden.sapcloud.io:monitoring:kube-state-metrics
+      - gardener.cloud:monitoring
+      - gardener.cloud:monitoring:prometheus
+      - gardener.cloud:monitoring:kube-state-metrics
+    - level: None
+      nonResourceURLs:
+      - /healthz*
+      - /version
+      - /openapi/*
+      - /swagger* # Swagger endpoint is deprecated with https://github.com/kubernetes/kubernetes/pull/73148
+    - level: None
+      resources:
+      - group: ""
+        resources: ["events"]
+    - level: None
+      verbs: ["get", "list", "watch"]
+    - level: Metadata
+{{- end }}
