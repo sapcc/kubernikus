@@ -86,3 +86,14 @@ func (d *FakeDeorbiter) IsAPIUnavailableTimeout() bool {
 func (d *FakeDeorbiter) IsDeorbitHangingTimeout() bool {
 	return d.Hanging
 }
+
+/*
+type FakeOpenstackFactory struct {
+	KlusterClientFor(*kubernikus_v1.Kluster) (openstack_kluster.KlusterClient, error)
+	ProjectClientFor(authOptions *tokens.AuthOptions) (openstack_project.ProjectClient, error)
+	ProjectAdminClientFor(string) (openstack_project.ProjectClient, error)
+	ProviderClientFor(authOptions *tokens.AuthOptions, logger log.Logger) (*gophercloud.ProviderClient, error)
+	ProviderClientForKluster(kluster *kubernikus_v1.Kluster, logger log.Logger) (*gophercloud.ProviderClient, error)
+	AdminClient() (admin.AdminClient, error)
+}
+*/
