@@ -1,9 +1,12 @@
 package deorbit
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/go-kit/kit/log"
+	"github.com/gophercloud/gophercloud"
+	"github.com/gophercloud/gophercloud/openstack/blockstorage/v3/volumes"
 	core_v1 "k8s.io/api/core/v1"
 	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
@@ -53,20 +56,21 @@ type Deorbiter interface {
 }
 
 type ConcreteDeorbiter struct {
-	Kluster *v1.Kluster
-	Stop    <-chan struct{}
-	Client  kubernetes.Interface
-	Logger  log.Logger
+	Kluster       *v1.Kluster
+	Stop          <-chan struct{}
+	Client        kubernetes.Interface
+	Logger        log.Logger
+	ServiceClient *gophercloud.ServiceClient
 }
 
-func NewDeorbiter(kluster *v1.Kluster, stopCh <-chan struct{}, clients config.Clients, recorder record.EventRecorder, logger log.Logger) (Deorbiter, error) {
+func NewDeorbiter(kluster *v1.Kluster, stopCh <-chan struct{}, clients config.Clients, recorder record.EventRecorder, logger log.Logger, serviceClient *gophercloud.ServiceClient) (Deorbiter, error) {
 	client, err := clients.Satellites.ClientFor(kluster)
 	if err != nil {
 		return nil, err
 	}
 
 	var deorbiter Deorbiter
-	deorbiter = &ConcreteDeorbiter{kluster, stopCh, client, logger}
+	deorbiter = &ConcreteDeorbiter{kluster, stopCh, client, logger, serviceClient}
 	deorbiter = &LoggingDeorbiter{deorbiter, logger}
 	deorbiter = &EventingDeorbiter{deorbiter, kluster, recorder}
 	deorbiter = &InstrumentingDeorbiter{
@@ -180,13 +184,32 @@ func (d *ConcreteDeorbiter) isPersistentVolumesCleanupFinished() (bool, error) {
 		return false, err
 	}
 
+	volumeListOpts := volumes.ListOpts{
+		TenantID: d.Kluster.Account(),
+	}
+
+	allPages, err := volumes.List(d.ServiceClient, volumeListOpts).AllPages()
+	if err != nil {
+		return false, fmt.Errorf("There should be no error while retrieving volume pages: %v", err)
+	}
+
+	allVolumes, err := volumes.ExtractVolumes(allPages)
+	if err != nil {
+		return false, fmt.Errorf("There should be no error while extracting volumes: %v", err)
+	}
+
 	for _, pv := range pvs.Items {
-		//ignore failed PVs
+		// ignore failed PVs
 		if pv.Status.Phase == core_v1.VolumeFailed {
 			continue
 		}
-		if pv.Spec.PersistentVolumeSource.Cinder != nil || (pv.Spec.PersistentVolumeSource.CSI != nil && pv.Spec.PersistentVolumeSource.CSI.Driver == "cinder.csi.openstack.org") {
-			return false, nil
+
+		// ignore volumes already deleted in openstack
+		for _, volume := range allVolumes {
+			if (pv.Spec.PersistentVolumeSource.Cinder != nil && pv.Spec.PersistentVolumeSource.Cinder.VolumeID == volume.ID) ||
+				(pv.Spec.PersistentVolumeSource.CSI != nil && pv.Spec.PersistentVolumeSource.CSI.VolumeHandle == volume.ID) {
+				return false, nil
+			}
 		}
 	}
 
