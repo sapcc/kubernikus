@@ -623,7 +623,7 @@ storage:
       contents:
         inline: |-
           #!/bin/bash
-          set -eo pipefail
+          set -e
           function require_ev_all() {
             for rev in $@ ; do
               if [[ -z "${!rev}" ]]; then
