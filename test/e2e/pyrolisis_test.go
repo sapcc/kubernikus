@@ -255,7 +255,7 @@ func (p *PyrolisisTests) CleanupLoadbalancers(t *testing.T) {
 			err := loadbalancers.Delete(lbClient, lb.ID, loadbalancers.DeleteOpts{Cascade: true}).ExtractErr()
 
 			// Ignore PENDING_DELETE error
-			if _, ok := err.(gophercloud.Err409er); ok {
+			if _, ok := err.(gophercloud.ErrDefault409); ok {
 				continue
 			}
 
