@@ -497,6 +497,7 @@ storage:
               enabled: true
           rotateCertificates: true
           nodeLeaseDurationSeconds: 20
+          cgroupDriver: systemd
           featureGates:
             IPv6DualStack: false
 {{- if not .NoCloud }}
@@ -622,7 +623,7 @@ storage:
       contents:
         inline: |-
           #!/bin/bash
-          set -eo pipefail
+          set -e
           function require_ev_all() {
             for rev in $@ ; do
               if [[ -z "${!rev}" ]]; then
@@ -659,10 +660,6 @@ storage:
           elif [[ "${KUBELET_IMAGE%%/*}" == "docker:" ]] && ! (echo "${RKT_RUN_ARGS}" | grep -q insecure-options); then
             RKT_RUN_ARGS="${RKT_RUN_ARGS} --insecure-options=image"
           fi
-          CGROUP_DRIVER="cgroupfs"
-          if mount | grep 'cgroup2 on /sys/fs/cgroup type cgroup2'; then
-            CGROUP_DRIVER="systemd"
-          fi
           mkdir --parents /etc/kubernetes
           mkdir --parents /var/lib/docker
           mkdir --parents /var/lib/kubelet
@@ -697,8 +694,7 @@ storage:
             ${RKT_STAGE1_ARG} \
             ${KUBELET_IMAGE} \
               ${KUBELET_IMAGE_ARGS} \
-              -- "$@" \
-              --cgroup-driver=${CGROUP_DRIVER}
+              -- "$@"
     - path: /opt/bin/flannel-wrapper
       filesystem: root
       mode: 0755
