@@ -67,10 +67,10 @@ type (
 )
 
 // NewKlusterReconcilerFactory produces a new Factory
-func NewKlusterReconcilerFactory(logger log.Logger, recorder record.EventRecorder, factories config.Factories, clients config.Clients) ReconcilerFactory {
+func NewKlusterReconcilerFactory(logger log.Logger, recorder record.EventRecorder, factories config.Factories, clients config.Clients, holdoff time.Duration) ReconcilerFactory {
 	return &KlusterReconcilerFactory{
 		Logger:            logger,
-		ListerFactory:     NewNodeListerFactory(logger, recorder, factories, clients),
+		ListerFactory:     NewNodeListerFactory(logger, recorder, factories, clients, holdoff),
 		LifeCyclerFactory: NewNodeLifeCyclerFactory(logger, recorder, factories, clients),
 		KlusterLister:     factories.Kubernikus.Kubernikus().V1().Klusters().Lister(),
 		KubernikusClient:  clients.Kubernikus.KubernikusV1(),

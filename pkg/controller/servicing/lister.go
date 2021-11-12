@@ -47,23 +47,25 @@ type (
 
 	// NodeListerFactory produces a NodeLister
 	NodeListerFactory struct {
-		Logger          log.Logger
-		NodeObservatory *nodeobservatory.NodeObservatory
-		CoreOSVersion   *coreos.Version
-		CoreOSRelease   *coreos.Release
-		FlatcarVersion  *flatcar.Version
-		FlatcarRelease  *flatcar.Release
+		Logger            log.Logger
+		NodeObservatory   *nodeobservatory.NodeObservatory
+		CoreOSVersion     *coreos.Version
+		CoreOSRelease     *coreos.Release
+		FlatcarVersion    *flatcar.Version
+		FlatcarRelease    *flatcar.Release
+		NodeUpdateHoldoff time.Duration
 	}
 
 	// NodeLister knows how to figure out the state of Nodes
 	NodeLister struct {
-		Logger         log.Logger
-		Kluster        *v1.Kluster
-		Lister         listers_core_v1.NodeLister
-		CoreOSVersion  *coreos.Version
-		CoreOSRelease  *coreos.Release
-		FlatcarVersion *flatcar.Version
-		FlatcarRelease *flatcar.Release
+		Logger            log.Logger
+		Kluster           *v1.Kluster
+		Lister            listers_core_v1.NodeLister
+		CoreOSVersion     *coreos.Version
+		CoreOSRelease     *coreos.Release
+		FlatcarVersion    *flatcar.Version
+		FlatcarRelease    *flatcar.Release
+		NodeUpdateHoldoff time.Duration
 	}
 
 	// LoggingLister writes log messages
@@ -74,14 +76,15 @@ type (
 )
 
 // NewNodeListerFactory produces a new factory
-func NewNodeListerFactory(logger log.Logger, recorder record.EventRecorder, factories config.Factories, clients config.Clients) ListerFactory {
+func NewNodeListerFactory(logger log.Logger, recorder record.EventRecorder, factories config.Factories, clients config.Clients, holdoff time.Duration) ListerFactory {
 	return &NodeListerFactory{
-		Logger:          logger,
-		NodeObservatory: factories.NodesObservatory.NodeInformer(),
-		CoreOSVersion:   &coreos.Version{},
-		CoreOSRelease:   &coreos.Release{},
-		FlatcarVersion:  &flatcar.Version{},
-		FlatcarRelease:  &flatcar.Release{},
+		Logger:            logger,
+		NodeObservatory:   factories.NodesObservatory.NodeInformer(),
+		CoreOSVersion:     &coreos.Version{},
+		CoreOSRelease:     &coreos.Release{},
+		FlatcarVersion:    &flatcar.Version{},
+		FlatcarRelease:    &flatcar.Release{},
+		NodeUpdateHoldoff: holdoff,
 	}
 }
 
@@ -96,13 +99,14 @@ func (f *NodeListerFactory) Make(k *v1.Kluster) (Lister, error) {
 	}
 
 	lister = &NodeLister{
-		Logger:         logger,
-		Kluster:        k,
-		Lister:         klusterLister,
-		CoreOSVersion:  f.CoreOSVersion,
-		CoreOSRelease:  f.CoreOSRelease,
-		FlatcarVersion: f.FlatcarVersion,
-		FlatcarRelease: f.FlatcarRelease,
+		Logger:            logger,
+		Kluster:           k,
+		Lister:            klusterLister,
+		CoreOSVersion:     f.CoreOSVersion,
+		CoreOSRelease:     f.CoreOSRelease,
+		FlatcarVersion:    f.FlatcarVersion,
+		FlatcarRelease:    f.FlatcarRelease,
+		NodeUpdateHoldoff: f.NodeUpdateHoldoff,
 	}
 
 	lister = &LoggingLister{
@@ -139,7 +143,7 @@ func (d *NodeLister) Reboot() []*core_v1.Node {
 		return found
 	}
 
-	releasedFlatcar, err := d.FlatcarRelease.GrownUp(latestFlatcar)
+	releasedFlatcar, err := d.FlatcarRelease.GrownUp(latestFlatcar, d.NodeUpdateHoldoff)
 	if err != nil {
 		d.Logger.Log(
 			"msg", "Couldn't get Flatcar releases.",
@@ -207,7 +211,7 @@ func (d *NodeLister) Replace() []*core_v1.Node {
 		return found
 	}
 
-	releasedFlatcar, err := d.FlatcarRelease.GrownUp(latestFlatcar)
+	releasedFlatcar, err := d.FlatcarRelease.GrownUp(latestFlatcar, d.NodeUpdateHoldoff)
 	if err != nil {
 		d.Logger.Log(
 			"msg", "Couldn't get Flatcar releases.",

@@ -56,6 +56,9 @@ spec:
             - --region={{ .Values.openstack.region }}
             {{- end }}
             {{- end }}
+            {{- if .Values.operator.nodeUpdateHoldoff }}
+            - --node-update-holdoff={{ .Values.operator.nodeUpdateHoldoff }}
+            {{- end }}
           env:
             {{- if .Values.operator.nodeAffinity }}
             - name: NODEPOOL_AFFINITY
