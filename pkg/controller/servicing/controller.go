@@ -48,13 +48,13 @@ type Controller struct {
 }
 
 // NewController is a helper to create a Servicing Controller instance
-func NewController(threadiness int, factories config.Factories, clients config.Clients, recorder record.EventRecorder, logger log.Logger) base.Controller {
+func NewController(threadiness int, factories config.Factories, clients config.Clients, recorder record.EventRecorder, holdoff time.Duration, logger log.Logger) base.Controller {
 	logger = log.With(logger, "controller", "servicing")
 
 	var controller base.Reconciler
 	controller = &Controller{
 		Logger:     logger,
-		Reconciler: NewKlusterReconcilerFactory(logger, recorder, factories, clients),
+		Reconciler: NewKlusterReconcilerFactory(logger, recorder, factories, clients, holdoff),
 	}
 
 	RegisterServicingNodesCollector(logger, factories)

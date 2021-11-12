@@ -15,7 +15,6 @@ import (
 var (
 	versionURL   = "https://%s.release.flatcar-linux.net/amd64-usr/%s/version.txt"
 	timeREString = `%s\s*FLATCAR_BUILD_ID="(.+)"`
-	holdoff      = 7 * 24 * time.Hour
 )
 
 type Release struct {
@@ -83,7 +82,7 @@ func (r *Release) fetch(c channel, v *version.Version) (time.Time, error) {
 	return t, nil
 }
 
-func (r *Release) GrownUp(v *version.Version) (bool, error) {
+func (r *Release) GrownUp(v *version.Version, holdoff time.Duration) (bool, error) {
 	released, err := r.releasedAt(stable, v)
 	if err != nil {
 		return false, err

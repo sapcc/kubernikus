@@ -16,14 +16,14 @@ func TestReleaseGrownup(t *testing.T) {
 	subject := &Release{}
 	subject.Client = NewTestClient(t, "https://stable.release.flatcar-linux.net/amd64-usr/2303.4.0/version.txt", ReleasesStable, &count)
 	t.Run("fetches versions", func(t *testing.T) {
-		_, err := subject.GrownUp(version.MustParseSemantic("2303.4.0"))
+		_, err := subject.GrownUp(version.MustParseSemantic("2303.4.0"), 7*24*time.Hour)
 		assert.NoError(t, err)
 	})
 
 	subject = &Release{}
 	subject.Client = NewTestClient(t, "https://stable.release.flatcar-linux.net/amd64-usr/2079.99.0/version.txt", ReleasesStable, &count)
 	t.Run("unknown version", func(t *testing.T) {
-		result, err := subject.GrownUp(version.MustParseSemantic("2079.99.0"))
+		result, err := subject.GrownUp(version.MustParseSemantic("2079.99.0"), 7*24*time.Hour)
 		assert.Error(t, err)
 		assert.False(t, result)
 	})
@@ -31,7 +31,7 @@ func TestReleaseGrownup(t *testing.T) {
 	subject = &Release{}
 	subject.Client = NewTestClient(t, "https://stable.release.flatcar-linux.net/amd64-usr/2303.4.0/version.txt", ReleasesStable, &count)
 	t.Run("holdoff time not up yet", func(t *testing.T) {
-		result, err := subject.GrownUp(version.MustParseSemantic("2303.4.0"))
+		result, err := subject.GrownUp(version.MustParseSemantic("2303.4.0"), 7*24*time.Hour)
 		assert.NoError(t, err)
 		assert.False(t, result)
 	})
@@ -40,7 +40,7 @@ func TestReleaseGrownup(t *testing.T) {
 	subject.Client = NewTestClient(t, "https://stable.release.flatcar-linux.net/amd64-usr/2303.4.0/version.txt", ReleasesStable, &count)
 	t.Run("holdoff time up", func(t *testing.T) {
 		now = func() time.Time { return time.Date(2020, 2, 15, 10, 11, 0, 0, time.UTC) }
-		result, err := subject.GrownUp(version.MustParseSemantic("2303.4.0"))
+		result, err := subject.GrownUp(version.MustParseSemantic("2303.4.0"), 7*24*time.Hour)
 		assert.NoError(t, err)
 		assert.True(t, result)
 	})

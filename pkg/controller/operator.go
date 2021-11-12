@@ -56,6 +56,8 @@ type KubernikusOperatorOptions struct {
 	Controllers         []string
 	MetricPort          int
 	LogLevel            int
+
+	NodeUpdateHoldoff time.Duration
 }
 
 type KubernikusOperator struct {
@@ -194,7 +196,7 @@ func NewKubernikusOperator(options *KubernikusOperatorOptions, logger log.Logger
 		case "hammertime":
 			o.Config.Kubernikus.Controllers["hammertime"] = hammertime.New(10*time.Second, 20*time.Second, o.Factories, o.Clients, recorder, logger)
 		case "servicing":
-			o.Config.Kubernikus.Controllers["servicing"] = servicing.NewController(10, o.Factories, o.Clients, recorder, logger)
+			o.Config.Kubernikus.Controllers["servicing"] = servicing.NewController(10, o.Factories, o.Clients, recorder, options.NodeUpdateHoldoff, logger)
 		case "certs":
 			o.Config.Kubernikus.Controllers["certs"] = certs.New(12*time.Hour, o.Factories, o.Config, o.Clients, logger)
 		}
