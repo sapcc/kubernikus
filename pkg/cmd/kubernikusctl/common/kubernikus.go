@@ -56,6 +56,25 @@ func (k *KubernikusClient) GetCredentials(name string) (string, error) {
 	return ok.Payload.Kubeconfig, nil
 }
 
+func (k *KubernikusClient) GetCredentialsOIDC(name string) (string, error) {
+	ok, err := k.client.Operations.GetClusterCredentialsOIDC(
+		operations.NewGetClusterCredentialsOIDCParams().WithName(name),
+		k.authFunc())
+
+	switch err.(type) {
+	case *operations.GetClusterCredentialsOIDCDefault:
+		result := err.(*operations.GetClusterCredentialsOIDCDefault)
+		if result.Code() == 404 {
+			return "", errors.Errorf("Cluster %v not found", name)
+		}
+		return "", errors.Errorf(result.Payload.Message)
+	case error:
+		return "", errors.Wrapf(err, "A generic error occurred")
+	}
+
+	return ok.Payload.Kubeconfig, nil
+}
+
 func (k *KubernikusClient) CreateCluster(cluster *models.Kluster) error {
 	params := operations.NewCreateClusterParams().WithBody(cluster)
 	_, err := k.client.Operations.CreateCluster(params, k.authFunc())
