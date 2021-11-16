@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/pkg/errors"
-	rbac "k8s.io/api/rbac/v1beta1"
+	rbac "k8s.io/api/rbac/v1"
 	storage "k8s.io/api/storage/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -198,7 +198,7 @@ func DeleteCinderStorageClasses(client clientset.Interface, openstack openstack_
 }
 
 func SeedKubernikusAdmin(client clientset.Interface) error {
-	return bootstrap.CreateOrUpdateClusterRoleBinding(client, &rbac.ClusterRoleBinding{
+	return bootstrap.CreateOrUpdateClusterRoleBindingV1(client, &rbac.ClusterRoleBinding{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: "kubernikus:admin",
 		},
@@ -217,7 +217,7 @@ func SeedKubernikusAdmin(client clientset.Interface) error {
 }
 
 func SeedKubernikusMember(client clientset.Interface) error {
-	return bootstrap.CreateOrUpdateRoleBinding(client, &rbac.RoleBinding{
+	return bootstrap.CreateOrUpdateRoleBindingV1(client, &rbac.RoleBinding{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "kubernikus:member",
 			Namespace: "default",
@@ -237,7 +237,7 @@ func SeedKubernikusMember(client clientset.Interface) error {
 }
 
 func SeedAllowBootstrapTokensToPostCSRs(client clientset.Interface) error {
-	return bootstrap.CreateOrUpdateClusterRoleBinding(client, &rbac.ClusterRoleBinding{
+	return bootstrap.CreateOrUpdateClusterRoleBindingV1(client, &rbac.ClusterRoleBinding{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: "kubernikus:kubelet-bootstrap",
 		},
@@ -256,7 +256,7 @@ func SeedAllowBootstrapTokensToPostCSRs(client clientset.Interface) error {
 }
 
 func SeedAllowApiserverToAccessKubeletAPI(client clientset.Interface) error {
-	return bootstrap.CreateOrUpdateClusterRoleBinding(client, &rbac.ClusterRoleBinding{
+	return bootstrap.CreateOrUpdateClusterRoleBindingV1(client, &rbac.ClusterRoleBinding{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: "kubernikus:apiserver-kubeletapi",
 		},
@@ -275,7 +275,7 @@ func SeedAllowApiserverToAccessKubeletAPI(client clientset.Interface) error {
 }
 
 func SeedAutoApproveNodeBootstrapTokens(client clientset.Interface) error {
-	err := bootstrap.CreateOrUpdateClusterRole(client, &rbac.ClusterRole{
+	err := bootstrap.CreateOrUpdateClusterRoleV1(client, &rbac.ClusterRole{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: "kubernikus:approve-node-client-csr",
 		},
@@ -291,7 +291,7 @@ func SeedAutoApproveNodeBootstrapTokens(client clientset.Interface) error {
 		return err
 	}
 
-	return bootstrap.CreateOrUpdateClusterRoleBinding(client, &rbac.ClusterRoleBinding{
+	return bootstrap.CreateOrUpdateClusterRoleBindingV1(client, &rbac.ClusterRoleBinding{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: "kubernikus:node-client-csr-autoapprove",
 		},
@@ -310,7 +310,7 @@ func SeedAutoApproveNodeBootstrapTokens(client clientset.Interface) error {
 }
 
 func SeedAutoRenewalNodeCertificates(client clientset.Interface) error {
-	err := bootstrap.CreateOrUpdateClusterRole(client, &rbac.ClusterRole{
+	err := bootstrap.CreateOrUpdateClusterRoleV1(client, &rbac.ClusterRole{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: "system:certificates.k8s.io:certificatesigningrequests:selfnodeclient",
 		},
@@ -326,7 +326,7 @@ func SeedAutoRenewalNodeCertificates(client clientset.Interface) error {
 		return err
 	}
 
-	return bootstrap.CreateOrUpdateClusterRoleBinding(client, &rbac.ClusterRoleBinding{
+	return bootstrap.CreateOrUpdateClusterRoleBindingV1(client, &rbac.ClusterRoleBinding{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: "kubernikus:auto-approve-renewals-for-nodes",
 		},
@@ -347,7 +347,7 @@ func SeedAutoRenewalNodeCertificates(client clientset.Interface) error {
 
 func SeedOpenStackClusterRoleBindings(client clientset.Interface) error {
 
-	err := bootstrap.CreateOrUpdateClusterRoleBinding(client, &rbac.ClusterRoleBinding{
+	err := bootstrap.CreateOrUpdateClusterRoleBindingV1(client, &rbac.ClusterRoleBinding{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: "kubernikus:openstack-kubernetes-admin",
 		},
@@ -376,7 +376,7 @@ func SeedOpenStackClusterRoleBindings(client clientset.Interface) error {
 		return err
 	}
 
-	err = bootstrap.CreateOrUpdateClusterRoleBinding(client, &rbac.ClusterRoleBinding{
+	err = bootstrap.CreateOrUpdateClusterRoleBindingV1(client, &rbac.ClusterRoleBinding{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: "kubernikus:openstack-kubernetes-member",
 		},

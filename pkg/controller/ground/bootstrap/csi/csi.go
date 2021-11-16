@@ -176,7 +176,7 @@ rescan-on-resize = yes
 		return errors.Wrap(err, "CSISnapshotControllerRoleBinding")
 	}
 
-	gvrSnapClass := schema.GroupVersionResource{Group: "snapshot.storage.k8s.io", Version: "v1beta1", Resource: "volumesnapshotclasses"}
+	gvrSnapClass := schema.GroupVersionResource{Group: "snapshot.storage.k8s.io", Version: "v1", Resource: "volumesnapshotclasses"}
 	err = createDynamicResource(dynamicClient, CSIVolumeSnapshotClass, gvrSnapClass)
 	if err != nil {
 		return errors.Wrap(err, "CSIVolumeSnapshotClass")
