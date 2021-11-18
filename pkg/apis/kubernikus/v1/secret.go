@@ -16,6 +16,9 @@ type Secret struct {
 	DexClientSecret   string `json:"dex-client-secret,omitempty"`
 	DexStaticPassword string `json:"dex-static-password,omitempty"`
 
+	AuditUsername string `json:"audit-username"`
+	AuditPassword string `json:"audit-password"`
+
 	Certificates
 
 	ExtraValues string `json:"extra-values,omitempty"`

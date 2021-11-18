@@ -141,6 +141,9 @@ imagesForVersion:
     flannel:
       repository: 'keppel.$REGION.cloud.sap/ccloud-quay-mirror/coreos/flannel'
       tag: 'v0.12.0'
+    fluentd:
+      repository: 'keppel.$REGION.cloud.sap/ccloud/kubernikus-fluentd'
+      tag: 'v1.14-1'
   '1.20.8':
     default: true
     supported: true
@@ -213,6 +216,9 @@ imagesForVersion:
     flannel:
       repository: 'keppel.$REGION.cloud.sap/ccloud-quay-mirror/coreos/flannel'
       tag: 'v0.12.0'
+    fluentd:
+      repository: 'keppel.$REGION.cloud.sap/ccloud/kubernikus-fluentd'
+      tag: 'v1.14-1'
   '1.20.6':
     supported: false
     apiserver:
@@ -284,6 +290,9 @@ imagesForVersion:
     flannel:
       repository: 'keppel.$REGION.cloud.sap/ccloud-quay-mirror/coreos/flannel'
       tag: 'v0.12.0'
+    fluentd:
+      repository: 'keppel.$REGION.cloud.sap/ccloud/kubernikus-fluentd'
+      tag: 'v1.14-1'
   '1.19.11':
     supported: true
     apiserver:
@@ -331,6 +340,9 @@ imagesForVersion:
     flannel:
       repository: 'keppel.$REGION.cloud.sap/ccloud-quay-mirror/coreos/flannel'
       tag: 'v0.12.0'
+    fluentd:
+      repository: 'keppel.$REGION.cloud.sap/ccloud/kubernikus-fluentd'
+      tag: 'v1.14-1'
   '1.19.4':
     supported: false
     apiserver:
@@ -378,6 +390,9 @@ imagesForVersion:
     flannel:
       repository: 'keppel.$REGION.cloud.sap/ccloud-quay-mirror/coreos/flannel'
       tag: 'v0.12.0'
+    fluentd:
+      repository: 'keppel.$REGION.cloud.sap/ccloud/kubernikus-fluentd'
+      tag: 'v1.14-1'
   '1.18.10':
     supported: true
     hyperkube:
@@ -413,6 +428,9 @@ imagesForVersion:
     flannel:
       repository: 'keppel.$REGION.cloud.sap/ccloud-quay-mirror/coreos/flannel'
       tag: 'v0.12.0'
+    fluentd:
+      repository: 'keppel.$REGION.cloud.sap/ccloud/kubernikus-fluentd'
+      tag: 'v1.14-1'
   '1.17.13':
     supported: true
     hyperkube:
@@ -448,6 +466,9 @@ imagesForVersion:
     flannel:
       repository: 'keppel.$REGION.cloud.sap/ccloud-quay-mirror/coreos/flannel'
       tag: 'v0.12.0'
+    fluentd:
+      repository: 'keppel.$REGION.cloud.sap/ccloud/kubernikus-fluentd'
+      tag: 'v1.14-1'
   '1.16.14':
     supported: true
     hyperkube:
@@ -483,6 +504,9 @@ imagesForVersion:
     flannel:
       repository: 'keppel.$REGION.cloud.sap/ccloud-quay-mirror/coreos/flannel'
       tag: 'v0.12.0'
+    fluentd:
+      repository: 'keppel.$REGION.cloud.sap/ccloud/kubernikus-fluentd'
+      tag: 'v1.14-1'
   '1.16.9':
     hyperkube:
       repository: 'keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/hyperkube'
@@ -517,6 +541,9 @@ imagesForVersion:
     flannel:
       repository: 'keppel.$REGION.cloud.sap/ccloud-quay-mirror/coreos/flannel'
       tag: 'v0.12.0'
+    fluentd:
+      repository: 'keppel.$REGION.cloud.sap/ccloud/kubernikus-fluentd'
+      tag: 'v1.14-1'
   '1.15.9':
     supported: true
     hyperkube:
@@ -552,6 +579,9 @@ imagesForVersion:
     flannel:
       repository: 'keppel.$REGION.cloud.sap/ccloud-quay-mirror/coreos/flannel'
       tag: 'v0.12.0'
+    fluentd:
+      repository: 'keppel.$REGION.cloud.sap/ccloud/kubernikus-fluentd'
+      tag: 'v1.14-1'
   '1.15.2':
     supported: false
     hyperkube:
@@ -587,6 +617,9 @@ imagesForVersion:
     flannel:
       repository: 'keppel.$REGION.cloud.sap/ccloud-quay-mirror/coreos/flannel'
       tag: 'v0.12.0'
+    fluentd:
+      repository: 'keppel.$REGION.cloud.sap/ccloud/kubernikus-fluentd'
+      tag: 'v1.14-1'
   '1.14.5':
     supported: true
     hyperkube:
@@ -622,6 +655,9 @@ imagesForVersion:
     flannel:
       repository: 'keppel.$REGION.cloud.sap/ccloud-quay-mirror/coreos/flannel'
       tag: 'v0.12.0'
+    fluentd:
+      repository: 'keppel.$REGION.cloud.sap/ccloud/kubernikus-fluentd'
+      tag: 'v1.14-1'
   '1.13.9':
     supported: true
     hyperkube:
@@ -657,6 +693,9 @@ imagesForVersion:
     flannel:
       repository: 'keppel.$REGION.cloud.sap/ccloud-quay-mirror/coreos/flannel'
       tag: 'v0.12.0'
+    fluentd:
+      repository: 'keppel.$REGION.cloud.sap/ccloud/kubernikus-fluentd'
+      tag: 'v1.14-1'
   '1.12.10':
     supported: true
     hyperkube:
@@ -686,6 +725,9 @@ imagesForVersion:
     flannel:
       repository: 'keppel.$REGION.cloud.sap/ccloud-quay-mirror/coreos/flannel'
       tag: 'v0.12.0'
+    fluentd:
+      repository: 'keppel.$REGION.cloud.sap/ccloud/kubernikus-fluentd'
+      tag: 'v1.14-1'
   '1.11.9':
     hyperkube:
       repository: 'keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/hyperkube'
@@ -711,6 +753,9 @@ imagesForVersion:
     flannel:
       repository: 'keppel.$REGION.cloud.sap/ccloud-quay-mirror/coreos/flannel'
       tag: 'v0.12.0'
+    fluentd:
+      repository: 'keppel.$REGION.cloud.sap/ccloud/kubernikus-fluentd'
+      tag: 'v1.14-1'
   '1.10.11':
     hyperkube:
       repository: 'keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/hyperkube'
@@ -730,6 +775,9 @@ imagesForVersion:
     flannel:
       repository: 'keppel.$REGION.cloud.sap/ccloud-quay-mirror/coreos/flannel'
       tag: 'v0.12.0'
+    fluentd:
+      repository: 'keppel.$REGION.cloud.sap/ccloud/kubernikus-fluentd'
+      tag: 'v1.14-1'
   '1.10.7':
     hyperkube:
       repository: 'keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/hyperkube'
@@ -749,6 +797,9 @@ imagesForVersion:
     flannel:
       repository: 'keppel.$REGION.cloud.sap/ccloud-quay-mirror/coreos/flannel'
       tag: 'v0.12.0'
+    fluentd:
+      repository: 'keppel.$REGION.cloud.sap/ccloud/kubernikus-fluentd'
+      tag: 'v1.14-1'
   '1.10.1':
     hyperkube:
       repository: 'keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/hyperkube'
@@ -768,3 +819,6 @@ imagesForVersion:
     flannel:
       repository: 'keppel.$REGION.cloud.sap/ccloud-quay-mirror/coreos/flannel'
       tag: 'v0.12.0'
+    fluentd:
+      repository: 'keppel.$REGION.cloud.sap/ccloud/kubernikus-fluentd'
+      tag: 'v1.14-1'

@@ -27,7 +27,7 @@ type KlusterSpec struct {
 	AdvertisePort int64 `json:"advertisePort"`
 
 	// audit
-	Audit *bool `json:"audit,omitempty"`
+	Audit *KlusterSpecAudit `json:"audit,omitempty"`
 
 	// backup
 	// Enum: [on off externalAWS]
@@ -80,6 +80,10 @@ type KlusterSpec struct {
 func (m *KlusterSpec) Validate(formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.validateAudit(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateBackup(formats); err != nil {
 		res = append(res, err)
 	}
@@ -115,6 +119,24 @@ func (m *KlusterSpec) Validate(formats strfmt.Registry) error {
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *KlusterSpec) validateAudit(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.Audit) { // not required
+		return nil
+	}
+
+	if m.Audit != nil {
+		if err := m.Audit.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("audit")
+			}
+			return err
+		}
+	}
+
 	return nil
 }
 

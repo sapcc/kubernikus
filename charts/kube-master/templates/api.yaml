@@ -121,13 +121,15 @@ spec:
             items:
               - key: local-kubeconfig
                 path: kubeconfig
-        {{- if .Values.audit }}
+        {{- if .Values.audit.enabled }}
         - name: audit-policy
           configMap:
             name: {{ include "master.fullname" . }}
             items:
               - key: audit-policy.yaml
                 path: audit-policy.yaml
+        - name: logs
+          emptyDir: {}
         {{- end }}
       initContainers:
         - name: etcd-wait
@@ -252,10 +254,10 @@ spec:
             - --oidc-username-prefix=-
             - --oidc-username-claim=name
             {{ end }}
-            {{- if .Values.audit }}
+            {{- if .Values.audit.enabled }}
             - --audit-policy-file=/audit/audit-policy.yaml
             - --audit-log-path=/var/log/audit.log
-            - --audit-log-maxage=24h
+            - --audit-log-maxage=1
             {{- end }}
           volumeMounts:
             - mountPath: /etc/kubernetes/certs
@@ -278,10 +280,12 @@ spec:
             - mountPath: /liveness-probe
               name: liveness-probe
 {{- end }}
-            {{- if .Values.audit }}
+            {{- if .Values.audit.enabled }}
             - mountPath: /audit
               name: audit-policy
               readOnly: true
+            - mountPath: /var/log
+              name: logs
             {{- end}}
           livenessProbe:
 {{- if .Values.etcd.backup.enabled }}
@@ -338,3 +342,23 @@ spec:
             - mountPath: /etc/kubernetes/config
               name: wormhole-config
               readOnly: true
+        - name: fluentd
+          image: {{ include "fluentd.image" . | quote }}
+          imagePullPolicy: Always
+          env:
+          - name: AUDIT_USERNAME
+            valueFrom:
+              secretKeyRef:
+                name: {{ required "secretName undefined" .Values.secretName }}
+                key: audit-username
+          - name: AUDIT_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: {{ required "secretName undefined" .Values.secretName }}
+                key: audit-password
+          volumeMounts:
+            - mountPath: /fluentd/etc
+              name: config
+              readOnly: true
+            - mountPath: /var/log
+              name: logs
