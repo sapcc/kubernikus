@@ -121,7 +121,7 @@ spec:
             items:
               - key: local-kubeconfig
                 path: kubeconfig
-        {{- if .Values.audit.enabled }}
+        {{- if ne .Values.audit "" }}
         - name: audit-policy
           configMap:
             name: {{ include "master.fullname" . }}
@@ -254,10 +254,11 @@ spec:
             - --oidc-username-prefix=-
             - --oidc-username-claim=name
             {{ end }}
-            {{- if .Values.audit.enabled }}
+            {{- if ne .Values.audit "" }}
             - --audit-policy-file=/audit/audit-policy.yaml
             - --audit-log-path=/var/log/audit.log
             - --audit-log-maxage=1
+            - --audit-log-maxbackup=1
             {{- end }}
           volumeMounts:
             - mountPath: /etc/kubernetes/certs
@@ -280,7 +281,7 @@ spec:
             - mountPath: /liveness-probe
               name: liveness-probe
 {{- end }}
-            {{- if .Values.audit.enabled }}
+            {{- if ne .Values.audit "" }}
             - mountPath: /audit
               name: audit-policy
               readOnly: true
@@ -342,23 +343,32 @@ spec:
             - mountPath: /etc/kubernetes/config
               name: wormhole-config
               readOnly: true
+        {{- if ne .Values.audit "" }}
         - name: fluentd
           image: {{ include "fluentd.image" . | quote }}
           imagePullPolicy: Always
           env:
-          - name: AUDIT_USERNAME
+          {{- if eq .Values.audit "elasticsearch" }}
+          - name: ELK_USERNAME
             valueFrom:
               secretKeyRef:
-                name: {{ required "secretName undefined" .Values.secretName }}
-                key: audit-username
-          - name: AUDIT_PASSWORD
+                name: {{ include "master.fullname" . }}-elk
+                key: elk-username
+          - name: ELK_PASSWORD
             valueFrom:
               secretKeyRef:
-                name: {{ required "secretName undefined" .Values.secretName }}
-                key: audit-password
+                name: {{ include "master.fullname" . }}-elk
+                key: elk-password
+          - name: ELK_HOSTS
+            valueFrom:
+              secretKeyRef:
+                name: {{ include "master.fullname" . }}-elk
+                key: elk-hosts
+          {{- end }}
           volumeMounts:
             - mountPath: /fluentd/etc
               name: config
               readOnly: true
             - mountPath: /var/log
               name: logs
+        {{- end }}

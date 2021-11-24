@@ -468,17 +468,8 @@ definitions:
       openstack:
         $ref: '#/definitions/OpenstackSpec'
       audit:
-        type: object
+        type: string
         x-nullable: true
-        properties:
-          username:
-            type: string
-          password:
-            type: string
-          endpoint:
-            type: string
-          type:
-            type: string
       noCloud:
         type: boolean
       dashboard:

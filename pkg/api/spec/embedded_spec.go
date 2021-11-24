@@ -595,21 +595,7 @@ func init() {
           "x-nullable": false
         },
         "audit": {
-          "type": "object",
-          "properties": {
-            "endpoint": {
-              "type": "string"
-            },
-            "password": {
-              "type": "string"
-            },
-            "type": {
-              "type": "string"
-            },
-            "username": {
-              "type": "string"
-            }
-          },
+          "type": "string",
           "x-nullable": true
         },
         "backup": {
@@ -1650,7 +1636,8 @@ func init() {
           "x-nullable": false
         },
         "audit": {
-          "$ref": "#/definitions/klusterSpecAudit"
+          "type": "string",
+          "x-nullable": true
         },
         "backup": {
           "type": "string",
@@ -2042,25 +2029,6 @@ func init() {
       "x-go-gen-location": "models",
       "x-go-name": "Link",
       "x-nullable": false
-    },
-    "klusterSpecAudit": {
-      "type": "object",
-      "properties": {
-        "endpoint": {
-          "type": "string"
-        },
-        "password": {
-          "type": "string"
-        },
-        "type": {
-          "type": "string"
-        },
-        "username": {
-          "type": "string"
-        }
-      },
-      "x-go-gen-location": "models",
-      "x-nullable": true
     },
     "openstackMetadataAvailabilityZonesItems": {
       "type": "object",

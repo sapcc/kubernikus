@@ -85,7 +85,7 @@ data:
     except requests.exceptions.RequestException as e:
       print e
       sys.exit(0)
-{{- if .Values.audit.enabled }}
+{{- if ne .Values.audit "" }}
   audit-policy.yaml: |-
     apiVersion: audit.k8s.io/v1
     kind: Policy
@@ -145,12 +145,14 @@ data:
       </record>
     </filter>
 
+    {{- if eq .Values.audit "elasticsearch" }}
     <match apiserver.audit>
       @type elasticsearch
-      hosts "{{ .Values.audit.endpoint }}"
+      hosts "#{ENV['ELK_HOSTS']}"
       logstash_format true
-      user "#{ENV['AUDIT_USERNAME']}"
-      password "#{ENV['AUDIT_PASSWORD']}"
+      user "#{ENV['ELK_USERNAME']}"
+      password "#{ENV['ELK_PASSWORD']}"
       index_name logstash-%Y.%m.%d
     </match>
+    {{- end }}
 {{- end }}

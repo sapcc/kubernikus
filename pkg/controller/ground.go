@@ -578,11 +578,6 @@ func (op *GroundControl) createKluster(kluster *v1.Kluster) error {
 		}
 	}
 
-	if kluster.Spec.Audit != nil {
-		klusterSecret.AuditUsername = kluster.Spec.Audit.Username
-		klusterSecret.AuditPassword = kluster.Spec.Audit.Password
-	}
-
 	if err := util.UpdateKlusterSecret(op.Clients.Kubernetes, kluster, klusterSecret); err != nil {
 		return fmt.Errorf("Failed to update kluster secret: %s", err)
 	}

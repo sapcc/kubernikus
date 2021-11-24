@@ -98,17 +98,9 @@ type staticPassword struct {
 	HashedPassword string `yaml:"hashedPassword,omitempty"`
 }
 
-type auditValues struct {
-	Enabled  bool   `yaml:"enabled,omitempty"`
-	Username string `yaml:"username,omitempty"`
-	Password string `yaml:"password,omitempty"`
-	Endpoint string `yaml:"endpoint,omitempty"`
-	Type     string `yaml:"type,omitempty"`
-}
-
 type kubernikusHelmValues struct {
 	Openstack        openstackValues        `yaml:"openstack,omitempty"`
-	Audit            auditValues            `yaml:"audit"`
+	Audit            string                 `yaml:"audit"`
 	ClusterCIDR      string                 `yaml:"clusterCIDR,omitempty"`
 	ServiceCIDR      string                 `yaml:"serviceCIDR,omitempty"`
 	AdvertiseAddress string                 `yaml:"advertiseAddress,omitempty"`
@@ -164,19 +156,10 @@ func KlusterToHelmValues(kluster *v1.Kluster, secret *v1.Secret, kubernetesVersi
 		},
 	}
 
-	audit := auditValues{Enabled: false}
-	if kluster.Spec.Audit != nil {
-		audit.Enabled = true
-		audit.Endpoint = kluster.Spec.Audit.Endpoint
-		audit.Username = kluster.Spec.Audit.Username
-		audit.Password = kluster.Spec.Audit.Password
-		audit.Type = kluster.Spec.Audit.Type
-	}
-
 	values := kubernikusHelmValues{
 		Account:          kluster.Account(),
 		BoostrapToken:    secret.BootstrapToken,
-		Audit:            audit,
+		Audit:            swag.StringValue(kluster.Spec.Audit),
 		ClusterCIDR:      kluster.ClusterCIDR(),
 		SecretName:       kluster.Name + "-secret",
 		ServiceCIDR:      kluster.Spec.ServiceCIDR,
