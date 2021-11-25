@@ -115,8 +115,8 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
 {{- end -}}
 
 {{- define "fluentd.image" }}
-  {{- required "repository for wormhole missing" .Values.images.fluentd.repository }}:
-    {{- required "tag for wormhole missing" .Values.images.fluentd.tag }}
+  {{- required "repository for fluentd missing" .Values.images.fluentd.repository }}:
+    {{- required "tag for fluentd missing" .Values.images.fluentd.tag }}
 {{- end -}}
 
 {{- define "dashboard.url" -}}
