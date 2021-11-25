@@ -558,6 +558,19 @@ func (op *GroundControl) createKluster(kluster *v1.Kluster) error {
 		}
 		klusterSecret.Openstack.ProjectDomainName = domainNameByProject
 
+		if swag.StringValue(kluster.Spec.Audit) == "swift" {
+			userDomainID, err := adminClient.GetDomainID("kubernikus")
+			if err != nil {
+				return err
+			}
+			projectDomainID, err := adminClient.GetDomainID(domainNameByProject)
+			if err != nil {
+				return err
+			}
+			klusterSecret.AuditUserDomainID = userDomainID
+			klusterSecret.AuditProjectDomainID = projectDomainID
+		}
+
 		if klusterSecret.Openstack.Password, err = goutils.Random(20, 32, 127, true, true); err != nil {
 			return fmt.Errorf("Failed to generated password for cluster service user: %s", err)
 		}

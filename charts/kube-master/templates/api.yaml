@@ -365,6 +365,43 @@ spec:
                 name: {{ include "master.fullname" . }}-elk
                 key: elk-hosts
           {{- end }}
+          {{- if eq .Values.audit "swift" }}
+          - name: OS_AUTH_URL
+            valueFrom:
+              secretKeyRef:
+                name: {{ include "master.fullname" . }}-secret
+                key: openstack-auth-url
+          - name: OS_USERNAME
+            valueFrom:
+              secretKeyRef:
+                name: {{ include "master.fullname" . }}-secret
+                key: openstack-username
+          - name: OS_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: {{ include "master.fullname" . }}-secret
+                key: openstack-password
+          - name: OS_PROJECT_ID
+            valueFrom:
+              secretKeyRef:
+                name: {{ include "master.fullname" . }}-secret
+                key: openstack-project-id
+          - name: OS_USER_DOMAIN_ID
+            valueFrom:
+              secretKeyRef:
+                name: {{ include "master.fullname" . }}-secret
+                key: audit-user-domain-id
+          - name: OS_PROJECT_DOMAIN_ID
+            valueFrom:
+              secretKeyRef:
+                name: {{ include "master.fullname" . }}-secret
+                key: audit-project-domain-id
+          - name: OS_REGION
+            valueFrom:
+              secretKeyRef:
+                name: {{ include "master.fullname" . }}-secret
+                key: openstack-region
+          {{- end}}
           volumeMounts:
             - mountPath: /fluentd/etc
               name: config

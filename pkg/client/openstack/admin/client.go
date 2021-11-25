@@ -21,13 +21,14 @@ import (
 	"github.com/sapcc/kubernikus/pkg/client/openstack/roles"
 )
 
-var serviceUserRoles = []string{"network_admin", "member"}
+var serviceUserRoles = []string{"network_admin", "member", "swiftoperator"}
 
 type AdminClient interface {
 	CreateKlusterServiceUser(username, password, domainName, projectID string) error
 	DeleteUser(username, domainName string) error
 	GetKubernikusCatalogEntry() (string, error)
 	GetRegion() (string, error)
+	GetDomainID(domainName string) (string, error)
 	CreateStorageContainer(projectID, containerName, serviceUserName, serviceUserDomainName string) error
 	AssignUserRoles(projectID, userName, domainName string, userRoles []string) error
 	GetUserRoles(projectID, userName, domainName string) ([]string, error)
@@ -60,7 +61,7 @@ func NewAdminClient(providerClient *gophercloud.ProviderClient) (AdminClient, er
 }
 
 func (c *adminClient) CreateKlusterServiceUser(username, password, domainName, projectID string) error {
-	domainID, err := c.getDomainID(domainName)
+	domainID, err := c.GetDomainID(domainName)
 	if err != nil {
 		return err
 	}
@@ -100,7 +101,7 @@ func (c *adminClient) CreateKlusterServiceUser(username, password, domainName, p
 }
 
 func (c *adminClient) AssignUserRoles(projectID, userName, domainName string, userRoles []string) error {
-	domainID, err := c.getDomainID(domainName)
+	domainID, err := c.GetDomainID(domainName)
 	if err != nil {
 		return err
 	}
@@ -126,7 +127,7 @@ func (c *adminClient) AssignUserRoles(projectID, userName, domainName string, us
 }
 
 func (c *adminClient) GetUserRoles(projectID, userName, domainName string) ([]string, error) {
-	domainID, err := c.getDomainID(domainName)
+	domainID, err := c.GetDomainID(domainName)
 	if err != nil {
 		return nil, err
 	}
@@ -179,7 +180,7 @@ func (c *adminClient) GetDefaultServiceUserRoles() []string {
 }
 
 func (c *adminClient) DeleteUser(username, domainName string) error {
-	domainID, err := c.getDomainID(domainName)
+	domainID, err := c.GetDomainID(domainName)
 	if err != nil {
 		return err
 	}
@@ -268,7 +269,7 @@ func (c *adminClient) GetKubernikusCatalogEntry() (string, error) {
 	return "", err
 }
 
-func (c *adminClient) getDomainID(domainName string) (string, error) {
+func (c *adminClient) GetDomainID(domainName string) (string, error) {
 	if id, ok := c.domainNameToID.Load(domainName); ok {
 		return id.(string), nil
 	}
@@ -355,7 +356,7 @@ func (c *adminClient) CreateStorageContainer(projectID, containerName, serviceUs
 	}
 	storageClient.Endpoint = endpointURL
 
-	domainID, err := c.getDomainID(serviceUserDomainName)
+	domainID, err := c.GetDomainID(serviceUserDomainName)
 	if err != nil {
 		return err
 	}

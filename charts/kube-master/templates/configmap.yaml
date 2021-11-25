@@ -153,6 +153,31 @@ data:
       user "#{ENV['ELK_USERNAME']}"
       password "#{ENV['ELK_PASSWORD']}"
       index_name logstash-%Y.%m.%d
+      <buffer>
+        @type file
+        path /var/log/audit.buf
+      </buffer>
+    </match>
+    {{- end }}
+
+    {{- if eq .Values.audit "swift" }}
+    <match apiserver.audit>
+      @type swift
+      auth_url "#{ENV['OS_AUTH_URL']}"
+      auth_user "#{ENV['OS_USERNAME']}"
+      auth_api_key "#{ENV['OS_PASSWORD']}"
+      auth_region "#{ENV['OS_REGION']}"
+      auth_project_id "#{ENV['OS_PROJECT_ID']}"
+      auth_project_domain_id "#{ENV['OS_PROJECT_DOMAIN_ID']}"
+      auth_user_domain_id "#{ENV['OS_USER_DOMAIN_ID']}"
+      ssl_verify true
+      swift_container "{{ include "master.fullname" . }}-audit-log"
+      <buffer>
+        @type file
+        path /var/log/audit.buf
+        flush_mode interval
+        flush_interval 5m
+      </buffer>
     </match>
     {{- end }}
 {{- end }}
