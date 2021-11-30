@@ -919,8 +919,8 @@ task_oci_build: &task_oci_build
   image_resource:
     type: registry-image
     source:
-      repository: keppel.eu-de-2.cloud.sap/ci/oci-build-task
-      #repository: vito/oci-build-task
+      repository: keppel.eu-de-2.cloud.sap/ccloud-dockerhub-mirror/concourse/oci-build-task
+      tag: 0.8.1
   
   inputs:
   - name: context
