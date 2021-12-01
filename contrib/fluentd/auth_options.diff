@@ -1,12 +1,14 @@
 diff --git a/lib/fluent/plugin/out_swift.rb b/lib/fluent/plugin/out_swift.rb
-index e6c071d..3a7a545 100644
+index e6c071d..e307795 100644
 --- a/lib/fluent/plugin/out_swift.rb
 +++ b/lib/fluent/plugin/out_swift.rb
-@@ -24,7 +24,9 @@ module Fluent::Plugin
+@@ -23,8 +23,10 @@ module Fluent::Plugin
+     desc "Authentication User Name. If you use TempAuth, auth_user is ACCOUNT:USER. Set a value or use `#{ENV['OS_USERNAME']}`"
      config_param :auth_user, :string
      desc "Authentication Key (Password). Set a value or use `#{ENV['OS_PASSWORD']}`"
-     config_param :auth_api_key, :string
+-    config_param :auth_api_key, :string
 -    config_param :auth_tenant, :string, default: nil
++    config_param :auth_api_key, :string, secret: true
 +    config_param :auth_project_id, :string, default: nil
 +    config_param :auth_project_domain_id, :string, default: nil
 +    config_param :auth_user_domain_id, :string, default: nil
