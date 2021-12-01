@@ -166,4 +166,4 @@ csi:
         cpu: 100m
         memory: 100Mi
 
-audit: "swift"
+audit: ""
