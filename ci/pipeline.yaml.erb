@@ -126,7 +126,7 @@ resources:
     source:
       username: ((keppel.username))
       password: ((keppel.password))
-      repository: keppel.eu-de-1.cloud.sap/ccloud/kubernikus-docs-builder
+      repository: keppel.eu-de-2.cloud.sap/ccloud/kubernikus-docs-builder
       tag: latest
 
   - name: kubernikus.image
@@ -136,7 +136,7 @@ resources:
     source:
       username: ((keppel.username))
       password: ((keppel.password))
-      repository: keppel.eu-de-1.cloud.sap/ccloud/kubernikus
+      repository: keppel.eu-de-2.cloud.sap/ccloud/kubernikus
       tag: latest
 
   - name: kubernikusctl.release
@@ -148,7 +148,7 @@ resources:
 
   - name: secrets.git
     icon: key-variant
-    type: git
+    type: git-proxy
     webhook_token: aldhjalkdhahdjkahdjkhjadhjadhkjadlkjhAAdd
     check_every: 1h
     source:
@@ -159,7 +159,7 @@ resources:
 
   - name: tiller-version.git
     icon: key-variant
-    type: git
+    type: git-proxy
     webhook_token: aldhjalkdhahdjkahdjkhjadhjadhkjadlkjhAAdd
     check_every: 1h
     source:
@@ -214,21 +214,28 @@ resource_types:
     type: docker-image
     check_every: 24h
     source:
-      repository: keppel.eu-de-1.cloud.sap/ccloud-dockerhub-mirror/arbourd/concourse-slack-alert-resource
+      repository: keppel.eu-de-2.cloud.sap/ccloud-dockerhub-mirror/arbourd/concourse-slack-alert-resource
 
   - name: slack-notification
     type: docker-image
     check_every: 24h
     source:
-      repository: keppel.eu-de-1.cloud.sap/ccloud-dockerhub-mirror/cfcommunity/slack-notification-resource
+      repository: keppel.eu-de-2.cloud.sap/ccloud-dockerhub-mirror/cfcommunity/slack-notification-resource
       tag: latest
 
   - name: time-version-resource
     type: docker-image
     check_every: 24h
     source:
-      repository: keppel.eu-de-1.cloud.sap/ccloud/concourse-time-version-resource
+      repository: keppel.eu-de-2.cloud.sap/ccloud/concourse-time-version-resource
       tag: v2
+
+  - name: git-proxy
+    type: registry-image
+    check_every: 24h
+    source:
+      repository: keppel.eu-de-2.cloud.sap/ccloud-dockerhub-mirror/sapcc/concourse-git-resource-proxy
+      tag: 0.5.0
 
 jobs:
   - name: docs
