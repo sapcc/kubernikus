@@ -121,7 +121,7 @@ spec:
             items:
               - key: local-kubeconfig
                 path: kubeconfig
-        {{- if ne .Values.audit "" }}
+        {{- if .Values.audit }}
         - name: audit-policy
           configMap:
             name: {{ include "master.fullname" . }}
@@ -254,7 +254,7 @@ spec:
             - --oidc-username-prefix=-
             - --oidc-username-claim=name
             {{ end }}
-            {{- if ne .Values.audit "" }}
+            {{- if .Values.audit }}
             - --audit-policy-file=/audit/audit-policy.yaml
             - --audit-log-path=/var/log/audit.log
             - --audit-log-maxage=1
@@ -281,7 +281,7 @@ spec:
             - mountPath: /liveness-probe
               name: liveness-probe
 {{- end }}
-            {{- if ne .Values.audit "" }}
+            {{- if .Values.audit }}
             - mountPath: /audit
               name: audit-policy
               readOnly: true
@@ -343,7 +343,7 @@ spec:
             - mountPath: /etc/kubernetes/config
               name: wormhole-config
               readOnly: true
-        {{- if ne .Values.audit "" }}
+        {{- if .Values.audit }}
         - name: fluentd
           image: {{ include "fluentd.image" . | quote }}
           imagePullPolicy: Always
