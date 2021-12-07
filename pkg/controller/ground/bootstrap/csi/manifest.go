@@ -1067,7 +1067,7 @@ roleRef:
   apiGroup: rbac.authorization.k8s.io
 `
 	CSIVolumeSnapshotClass = `
-apiVersion: snapshot.storage.k8s.io/v1beta1
+apiVersion: snapshot.storage.k8s.io/v1
 kind: VolumeSnapshotClass
 metadata:
   name: csi-cinder-snapclass

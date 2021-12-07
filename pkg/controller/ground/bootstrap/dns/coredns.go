@@ -5,7 +5,7 @@ import (
 	apps "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
 	extensions "k8s.io/api/extensions/v1beta1"
-	rbac "k8s.io/api/rbac/v1beta1"
+	rbac "k8s.io/api/rbac/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
 	clientset "k8s.io/client-go/kubernetes"
@@ -84,7 +84,7 @@ func createCoreDNSServiceAccount(client clientset.Interface) error {
 }
 
 func createCoreDNSClusterRole(client clientset.Interface) error {
-	return bootstrap.CreateOrUpdateClusterRole(client, &rbac.ClusterRole{
+	return bootstrap.CreateOrUpdateClusterRoleV1(client, &rbac.ClusterRole{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: "system:coredns",
 			Labels: map[string]string{
@@ -108,7 +108,7 @@ func createCoreDNSClusterRole(client clientset.Interface) error {
 }
 
 func createCoreDNSClusterRoleBinding(client clientset.Interface) error {
-	return bootstrap.CreateOrUpdateClusterRoleBinding(client, &rbac.ClusterRoleBinding{
+	return bootstrap.CreateOrUpdateClusterRoleBindingV1(client, &rbac.ClusterRoleBinding{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: "system:coredns",
 			Labels: map[string]string{
