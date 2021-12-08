@@ -21,7 +21,7 @@ import (
 	"github.com/sapcc/kubernikus/pkg/client/openstack/roles"
 )
 
-var serviceUserRoles = []string{"network_admin", "member", "swiftoperator"}
+var serviceUserRoles = []string{"network_admin", "member"}
 
 type AdminClient interface {
 	CreateKlusterServiceUser(username, password, domainName, projectID string) error
@@ -30,6 +30,7 @@ type AdminClient interface {
 	GetRegion() (string, error)
 	GetDomainID(domainName string) (string, error)
 	CreateStorageContainer(projectID, containerName, serviceUserName, serviceUserDomainName string) error
+	ExistsStorageContainer(projectID, containerName string) (bool, error)
 	AssignUserRoles(projectID, userName, domainName string, userRoles []string) error
 	GetUserRoles(projectID, userName, domainName string) ([]string, error)
 	GetDefaultServiceUserRoles() []string
@@ -375,6 +376,31 @@ func (c *adminClient) CreateStorageContainer(projectID, containerName, serviceUs
 	_, err = containers.Create(storageClient, containerName, createOpts).Extract()
 
 	return err
+}
+
+func (c *adminClient) ExistsStorageContainer(projectID, containerName string) (bool, error) {
+	endpointURL, err := c.getPublicObjectStoreEndpointURL(projectID)
+	if err != nil {
+		return false, err
+	}
+
+	storageClient, err := openstack.NewObjectStorageV1(c.ProviderClient, gophercloud.EndpointOpts{})
+	if err != nil {
+		return false, err
+	}
+	storageClient.Endpoint = endpointURL
+
+	_, err = containers.Get(storageClient, containerName, containers.GetOpts{}).Extract()
+	if err != nil {
+		err404 := gophercloud.ErrDefault404{}
+		// errors.Is() does not work here as gopherclouds
+		// error types aren't trivially comparable.
+		if errors.As(err, &err404) {
+			return false, nil
+		}
+		return false, err
+	}
+	return true, nil
 }
 
 func (c *adminClient) getPublicObjectStoreEndpointURL(projectID string) (string, error) {

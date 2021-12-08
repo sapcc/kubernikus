@@ -165,6 +165,7 @@ data:
       auth_user_domain_id "#{ENV['OS_USER_DOMAIN_ID']}"
       ssl_verify true
       swift_container "{{ include "master.fullname" . }}-audit-log"
+      auto_create_container false
       <buffer>
         @type file
         path /var/log/audit.buf

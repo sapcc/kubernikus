@@ -288,6 +288,14 @@ func (op *GroundControl) handler(key string) error {
 				return err
 			}
 
+			klusterSecret, err := util.KlusterSecret(op.Clients.Kubernetes, kluster)
+			if err != nil {
+				return err
+			}
+			if err := op.ensureStorageContainers(kluster, klusterSecret); err != nil {
+				return err
+			}
+
 			updated, err := op.updateVersionStatus(kluster)
 			if err != nil {
 				op.Logger.Log(
@@ -558,7 +566,7 @@ func (op *GroundControl) createKluster(kluster *v1.Kluster) error {
 		}
 		klusterSecret.Openstack.ProjectDomainName = domainNameByProject
 
-		userDomainID, err := adminClient.GetDomainID("kubernikus")
+		userDomainID, err := adminClient.GetDomainID(klusterSecret.Openstack.DomainName)
 		if err != nil {
 			return err
 		}
@@ -593,19 +601,8 @@ func (op *GroundControl) createKluster(kluster *v1.Kluster) error {
 		return fmt.Errorf("Failed to update kluster secret: %s", err)
 	}
 
-	if !kluster.Spec.NoCloud && kluster.Spec.Backup == "on" {
-		adminClient, err := op.Factories.Openstack.AdminClient()
-		if err != nil {
-			return err
-		}
-		if err := adminClient.CreateStorageContainer(
-			klusterSecret.Openstack.ProjectID,
-			etcd_util.DefaultStorageContainer(kluster),
-			klusterSecret.Openstack.Username,
-			klusterSecret.Openstack.DomainName,
-		); err != nil {
-			return fmt.Errorf("Failed to create container for etcd backups. Check if the project has quota for object-store usage: %s", err)
-		}
+	if err = op.ensureStorageContainers(kluster, klusterSecret); err != nil {
+		return err
 	}
 
 	rawValues, err := helm_util.KlusterToHelmValues(kluster, klusterSecret, kluster.Spec.Version, &op.Config.Images, accessMode)
@@ -945,6 +942,46 @@ func (op *GroundControl) discoverOpenstackInfo(kluster *v1.Kluster) error {
 			"project", kluster.Account())
 	}
 
+	return nil
+}
+
+func (op *GroundControl) ensureStorageContainers(kluster *v1.Kluster, klusterSecret *v1.Secret) error {
+	if kluster.Spec.NoCloud {
+		return nil
+	}
+	adminClient, err := op.Factories.Openstack.AdminClient()
+	if err != nil {
+		return err
+	}
+
+	ensureContainer := func(name string) error {
+		exists, err := adminClient.ExistsStorageContainer(klusterSecret.Openstack.ProjectID, name)
+		if err != nil {
+			return err
+		}
+		if !exists {
+			if err := adminClient.CreateStorageContainer(
+				klusterSecret.Openstack.ProjectID,
+				name,
+				klusterSecret.Openstack.Username,
+				klusterSecret.Openstack.DomainName,
+			); err != nil {
+				return fmt.Errorf("Failed to create container %s. Check if the project has quota for object-store usage: %w", name, err)
+			}
+		}
+		return nil
+	}
+
+	if kluster.Spec.Backup == "on" {
+		if err = ensureContainer(etcd_util.DefaultStorageContainer(kluster)); err != nil {
+			return err
+		}
+	}
+	if swag.StringValue(kluster.Spec.Audit) == "swift" {
+		if err = ensureContainer(kluster.Name + "-audit-log"); err != nil {
+			return err
+		}
+	}
 	return nil
 }
 
