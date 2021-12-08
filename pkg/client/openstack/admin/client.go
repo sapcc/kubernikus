@@ -30,7 +30,7 @@ type AdminClient interface {
 	GetRegion() (string, error)
 	GetDomainID(domainName string) (string, error)
 	CreateStorageContainer(projectID, containerName, serviceUserName, serviceUserDomainName string) error
-	ExistsStorageContainer(projectID, containerName string) (bool, error)
+	StorageContainerExists(projectID, containerName string) (bool, error)
 	AssignUserRoles(projectID, userName, domainName string, userRoles []string) error
 	GetUserRoles(projectID, userName, domainName string) ([]string, error)
 	GetDefaultServiceUserRoles() []string
@@ -378,7 +378,7 @@ func (c *adminClient) CreateStorageContainer(projectID, containerName, serviceUs
 	return err
 }
 
-func (c *adminClient) ExistsStorageContainer(projectID, containerName string) (bool, error) {
+func (c *adminClient) StorageContainerExists(projectID, containerName string) (bool, error) {
 	endpointURL, err := c.getPublicObjectStoreEndpointURL(projectID)
 	if err != nil {
 		return false, err
@@ -392,10 +392,7 @@ func (c *adminClient) ExistsStorageContainer(projectID, containerName string) (b
 
 	_, err = containers.Get(storageClient, containerName, containers.GetOpts{}).Extract()
 	if err != nil {
-		err404 := gophercloud.ErrDefault404{}
-		// errors.Is() does not work here as gopherclouds
-		// error types aren't trivially comparable.
-		if errors.As(err, &err404) {
+		if _, ok := err.(gophercloud.ErrDefault404); ok {
 			return false, nil
 		}
 		return false, err

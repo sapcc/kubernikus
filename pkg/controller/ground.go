@@ -574,8 +574,8 @@ func (op *GroundControl) createKluster(kluster *v1.Kluster) error {
 		if err != nil {
 			return err
 		}
-		klusterSecret.AuditUserDomainID = userDomainID
-		klusterSecret.AuditProjectDomainID = projectDomainID
+		klusterSecret.UserDomainID = userDomainID
+		klusterSecret.ProjectDomainID = projectDomainID
 
 		if klusterSecret.Openstack.Password, err = goutils.Random(20, 32, 127, true, true); err != nil {
 			return fmt.Errorf("Failed to generated password for cluster service user: %s", err)
@@ -955,7 +955,7 @@ func (op *GroundControl) ensureStorageContainers(kluster *v1.Kluster, klusterSec
 	}
 
 	ensureContainer := func(name string) error {
-		exists, err := adminClient.ExistsStorageContainer(klusterSecret.Openstack.ProjectID, name)
+		exists, err := adminClient.StorageContainerExists(klusterSecret.Openstack.ProjectID, name)
 		if err != nil {
 			return err
 		}

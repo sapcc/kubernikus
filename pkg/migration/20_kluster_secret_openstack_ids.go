@@ -14,7 +14,7 @@ func KlusterSecretOpenStackIds(rawKluster []byte, current *v1.Kluster, clients c
 	if err != nil {
 		return err
 	}
-	if secret.AuditUserDomainID != "" && secret.AuditProjectDomainID != "" {
+	if secret.UserDomainID != "" && secret.ProjectDomainID != "" {
 		return nil
 	}
 	adminClient, err := factories.Openstack.AdminClient()
@@ -33,8 +33,8 @@ func KlusterSecretOpenStackIds(rawKluster []byte, current *v1.Kluster, clients c
 	if err != nil {
 		return err
 	}
-	secret.AuditUserDomainID = userDomainID
-	secret.AuditProjectDomainID = projectDomainID
+	secret.UserDomainID = userDomainID
+	secret.ProjectDomainID = projectDomainID
 	err = util.UpdateKlusterSecret(clients.Kubernetes, current, secret)
 	if err != nil {
 		return err

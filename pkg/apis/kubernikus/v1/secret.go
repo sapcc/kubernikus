@@ -16,9 +16,6 @@ type Secret struct {
 	DexClientSecret   string `json:"dex-client-secret,omitempty"`
 	DexStaticPassword string `json:"dex-static-password,omitempty"`
 
-	AuditUserDomainID    string `json:"audit-user-domain-id,omitempty"`
-	AuditProjectDomainID string `json:"audit-project-domain-id,omitempty"`
-
 	Certificates
 
 	ExtraValues string `json:"extra-values,omitempty"`
@@ -73,6 +70,8 @@ type Openstack struct {
 	Password          string `json:"openstack-password"`
 	ProjectID         string `json:"openstack-project-id"`
 	ProjectDomainName string `json:"openstack-project-domain-name,omitempty"`
+	UserDomainID      string `json:"openstack-user-domain-id,omitempty"`
+	ProjectDomainID   string `json:"openstack-project-domain-id,omitempty"`
 }
 
 type Certificates struct {

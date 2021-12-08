@@ -83,7 +83,7 @@ func (c LoggingClient) CreateStorageContainer(projectID, containerName, serviceU
 	return c.Client.CreateStorageContainer(projectID, containerName, serviceUserName, serviceUserDomainName)
 }
 
-func (c LoggingClient) ExistsStorageContainer(projectID, containerName string) (result bool, err error) {
+func (c LoggingClient) StorageContainerExists(projectID, containerName string) (result bool, err error) {
 	defer func(begin time.Time) {
 		c.Logger.Log(
 			"msg", "checking if storage container exists",
@@ -95,7 +95,7 @@ func (c LoggingClient) ExistsStorageContainer(projectID, containerName string) (
 			"err", err,
 		)
 	}(time.Now())
-	return c.Client.ExistsStorageContainer(projectID, containerName)
+	return c.Client.StorageContainerExists(projectID, containerName)
 }
 
 func (c LoggingClient) AssignUserRoles(projectID, userName, domainName string, userRoles []string) (err error) {

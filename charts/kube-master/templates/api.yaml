@@ -390,12 +390,12 @@ spec:
             valueFrom:
               secretKeyRef:
                 name: {{ include "master.fullname" . }}-secret
-                key: audit-user-domain-id
+                key: openstack-user-domain-id
           - name: OS_PROJECT_DOMAIN_ID
             valueFrom:
               secretKeyRef:
                 name: {{ include "master.fullname" . }}-secret
-                key: audit-project-domain-id
+                key: openstack-project-domain-id
           - name: OS_REGION
             valueFrom:
               secretKeyRef:
