@@ -100,6 +100,7 @@ type staticPassword struct {
 
 type kubernikusHelmValues struct {
 	Openstack        openstackValues        `yaml:"openstack,omitempty"`
+	Audit            string                 `yaml:"audit"`
 	ClusterCIDR      string                 `yaml:"clusterCIDR,omitempty"`
 	ServiceCIDR      string                 `yaml:"serviceCIDR,omitempty"`
 	AdvertiseAddress string                 `yaml:"advertiseAddress,omitempty"`
@@ -158,6 +159,7 @@ func KlusterToHelmValues(kluster *v1.Kluster, secret *v1.Secret, kubernetesVersi
 	values := kubernikusHelmValues{
 		Account:          kluster.Account(),
 		BoostrapToken:    secret.BootstrapToken,
+		Audit:            swag.StringValue(kluster.Spec.Audit),
 		ClusterCIDR:      kluster.ClusterCIDR(),
 		SecretName:       kluster.Name + "-secret",
 		ServiceCIDR:      kluster.Spec.ServiceCIDR,

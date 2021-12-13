@@ -114,6 +114,11 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
     {{- required "tag for csiSnapshotController missing" .Values.images.csiSnapshotController.tag }}
 {{- end -}}
 
+{{- define "fluentd.image" }}
+  {{- required "repository for fluentd missing" .Values.images.fluentd.repository }}:
+    {{- required "tag for fluentd missing" .Values.images.fluentd.tag }}
+{{- end -}}
+
 {{- define "dashboard.url" -}}
   {{- printf "dashboard-%s" ( .Values.api.apiserverHost | replace (include "master.fullname" .) (printf "%s.ingress" (include "master.fullname" .) ) ) -}}
 {{- end -}}

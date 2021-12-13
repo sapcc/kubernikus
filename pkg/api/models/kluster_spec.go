@@ -26,6 +26,10 @@ type KlusterSpec struct {
 	// advertise port
 	AdvertisePort int64 `json:"advertisePort"`
 
+	// audit
+	// Enum: [elasticsearch swift]
+	Audit *string `json:"audit,omitempty"`
+
 	// backup
 	// Enum: [on off externalAWS]
 	Backup string `json:"backup,omitempty"`
@@ -77,6 +81,10 @@ type KlusterSpec struct {
 func (m *KlusterSpec) Validate(formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.validateAudit(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateBackup(formats); err != nil {
 		res = append(res, err)
 	}
@@ -112,6 +120,49 @@ func (m *KlusterSpec) Validate(formats strfmt.Registry) error {
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+var klusterSpecTypeAuditPropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["elasticsearch","swift"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		klusterSpecTypeAuditPropEnum = append(klusterSpecTypeAuditPropEnum, v)
+	}
+}
+
+const (
+
+	// KlusterSpecAuditElasticsearch captures enum value "elasticsearch"
+	KlusterSpecAuditElasticsearch string = "elasticsearch"
+
+	// KlusterSpecAuditSwift captures enum value "swift"
+	KlusterSpecAuditSwift string = "swift"
+)
+
+// prop value enum
+func (m *KlusterSpec) validateAuditEnum(path, location string, value string) error {
+	if err := validate.Enum(path, location, value, klusterSpecTypeAuditPropEnum); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *KlusterSpec) validateAudit(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.Audit) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateAuditEnum("audit", "body", *m.Audit); err != nil {
+		return err
+	}
+
 	return nil
 }
 

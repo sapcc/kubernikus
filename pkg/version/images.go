@@ -49,6 +49,7 @@ type KlusterVersion struct {
 	CSINodeDriver          ImageVersion `yaml:"csiNodeDriver,omitempty"`
 	CinderCSIPlugin        ImageVersion `yaml:"cinderCSIPlugin,omitempty"`
 	Flannel                ImageVersion `yaml:"flannel,omitempty"`
+	Fluentd                ImageVersion `yaml:"fluentd,omitempty"`
 }
 
 type ImageRegistry struct {
@@ -108,6 +109,12 @@ func NewImageRegistry(filepath string, region string) (*ImageRegistry, error) {
 			}
 			if info.KubeProxy.Tag == "" {
 				return nil, fmt.Errorf("Tag for kube-proxy image missing for version %s", v)
+			}
+			if info.Fluentd.Repository == "" {
+				return nil, fmt.Errorf("Repository for fluentd image missing for version %s", v)
+			}
+			if info.Fluentd.Tag == "" {
+				return nil, fmt.Errorf("Tag for fluentd image missing for version %s", v)
 			}
 		} else {
 			if info.Hyperkube.Repository == "" {

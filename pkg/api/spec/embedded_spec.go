@@ -594,6 +594,14 @@ func init() {
           "default": 6443,
           "x-nullable": false
         },
+        "audit": {
+          "type": "string",
+          "enum": [
+            "elasticsearch",
+            "swift"
+          ],
+          "x-nullable": true
+        },
         "backup": {
           "type": "string",
           "default": "on",
@@ -1630,6 +1638,14 @@ func init() {
           "type": "integer",
           "default": 6443,
           "x-nullable": false
+        },
+        "audit": {
+          "type": "string",
+          "enum": [
+            "elasticsearch",
+            "swift"
+          ],
+          "x-nullable": true
         },
         "backup": {
           "type": "string",

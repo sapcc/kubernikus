@@ -70,6 +70,8 @@ type Openstack struct {
 	Password          string `json:"openstack-password"`
 	ProjectID         string `json:"openstack-project-id"`
 	ProjectDomainName string `json:"openstack-project-domain-name,omitempty"`
+	UserDomainID      string `json:"openstack-user-domain-id,omitempty"`
+	ProjectDomainID   string `json:"openstack-project-domain-id,omitempty"`
 }
 
 type Certificates struct {

@@ -49,8 +49,13 @@ images:
   etcdBackup:
     repository: abc
     tag: xyz
+  fluentd:
+    repository: abc
+    tag: xyz
 
 dashboard:
   enabled: false
 dex:
   enabled: false
+
+audit: "swift"

@@ -28,7 +28,9 @@ type AdminClient interface {
 	DeleteUser(username, domainName string) error
 	GetKubernikusCatalogEntry() (string, error)
 	GetRegion() (string, error)
+	GetDomainID(domainName string) (string, error)
 	CreateStorageContainer(projectID, containerName, serviceUserName, serviceUserDomainName string) error
+	StorageContainerExists(projectID, containerName string) (bool, error)
 	AssignUserRoles(projectID, userName, domainName string, userRoles []string) error
 	GetUserRoles(projectID, userName, domainName string) ([]string, error)
 	GetDefaultServiceUserRoles() []string
@@ -60,7 +62,7 @@ func NewAdminClient(providerClient *gophercloud.ProviderClient) (AdminClient, er
 }
 
 func (c *adminClient) CreateKlusterServiceUser(username, password, domainName, projectID string) error {
-	domainID, err := c.getDomainID(domainName)
+	domainID, err := c.GetDomainID(domainName)
 	if err != nil {
 		return err
 	}
@@ -100,7 +102,7 @@ func (c *adminClient) CreateKlusterServiceUser(username, password, domainName, p
 }
 
 func (c *adminClient) AssignUserRoles(projectID, userName, domainName string, userRoles []string) error {
-	domainID, err := c.getDomainID(domainName)
+	domainID, err := c.GetDomainID(domainName)
 	if err != nil {
 		return err
 	}
@@ -126,7 +128,7 @@ func (c *adminClient) AssignUserRoles(projectID, userName, domainName string, us
 }
 
 func (c *adminClient) GetUserRoles(projectID, userName, domainName string) ([]string, error) {
-	domainID, err := c.getDomainID(domainName)
+	domainID, err := c.GetDomainID(domainName)
 	if err != nil {
 		return nil, err
 	}
@@ -179,7 +181,7 @@ func (c *adminClient) GetDefaultServiceUserRoles() []string {
 }
 
 func (c *adminClient) DeleteUser(username, domainName string) error {
-	domainID, err := c.getDomainID(domainName)
+	domainID, err := c.GetDomainID(domainName)
 	if err != nil {
 		return err
 	}
@@ -268,7 +270,7 @@ func (c *adminClient) GetKubernikusCatalogEntry() (string, error) {
 	return "", err
 }
 
-func (c *adminClient) getDomainID(domainName string) (string, error) {
+func (c *adminClient) GetDomainID(domainName string) (string, error) {
 	if id, ok := c.domainNameToID.Load(domainName); ok {
 		return id.(string), nil
 	}
@@ -355,7 +357,7 @@ func (c *adminClient) CreateStorageContainer(projectID, containerName, serviceUs
 	}
 	storageClient.Endpoint = endpointURL
 
-	domainID, err := c.getDomainID(serviceUserDomainName)
+	domainID, err := c.GetDomainID(serviceUserDomainName)
 	if err != nil {
 		return err
 	}
@@ -374,6 +376,28 @@ func (c *adminClient) CreateStorageContainer(projectID, containerName, serviceUs
 	_, err = containers.Create(storageClient, containerName, createOpts).Extract()
 
 	return err
+}
+
+func (c *adminClient) StorageContainerExists(projectID, containerName string) (bool, error) {
+	endpointURL, err := c.getPublicObjectStoreEndpointURL(projectID)
+	if err != nil {
+		return false, err
+	}
+
+	storageClient, err := openstack.NewObjectStorageV1(c.ProviderClient, gophercloud.EndpointOpts{})
+	if err != nil {
+		return false, err
+	}
+	storageClient.Endpoint = endpointURL
+
+	_, err = containers.Get(storageClient, containerName, containers.GetOpts{}).Extract()
+	if err != nil {
+		if _, ok := err.(gophercloud.ErrDefault404); ok {
+			return false, nil
+		}
+		return false, err
+	}
+	return true, nil
 }
 
 func (c *adminClient) getPublicObjectStoreEndpointURL(projectID string) (string, error) {

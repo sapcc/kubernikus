@@ -467,6 +467,11 @@ definitions:
     properties:
       openstack:
         $ref: '#/definitions/OpenstackSpec'
+      audit:
+        type: string
+        x-nullable: true
+        enum: ["elasticsearch", "swift"]
+        default: null
       noCloud:
         type: boolean
       dashboard:
