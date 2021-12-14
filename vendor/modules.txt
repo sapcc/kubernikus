@@ -51,6 +51,9 @@ github.com/coreos/go-systemd/unit
 github.com/coreos/ignition/config/v2_0/types
 github.com/coreos/ignition/config/validate
 github.com/coreos/ignition/config/validate/report
+# github.com/cyphar/filepath-securejoin v0.2.3
+## explicit
+github.com/cyphar/filepath-securejoin
 # github.com/danieljoos/wincred v1.0.1
 ## explicit
 github.com/danieljoos/wincred
@@ -750,7 +753,7 @@ k8s.io/client-go/util/workqueue
 ## explicit
 k8s.io/cluster-bootstrap/token/api
 k8s.io/cluster-bootstrap/token/util
-# k8s.io/helm v2.11.0+incompatible
+# k8s.io/helm v2.16.9+incompatible
 ## explicit
 k8s.io/helm/pkg/chartutil
 k8s.io/helm/pkg/engine

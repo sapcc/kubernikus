@@ -13,6 +13,7 @@ require (
 	github.com/coreos/container-linux-config-transpiler v0.4.2
 	github.com/coreos/go-oidc/v3 v3.0.0
 	github.com/coreos/ignition v0.17.2
+	github.com/cyphar/filepath-securejoin v0.2.3 // indirect
 	github.com/danieljoos/wincred v1.0.1 // indirect
 	github.com/databus23/goslo.policy v0.0.0-20170317131957-3ae74dd07ebf
 	github.com/databus23/guttle v0.0.0-20210623071842-89102dbdfc85
@@ -66,7 +67,7 @@ require (
 	k8s.io/apimachinery v0.17.8
 	k8s.io/client-go v0.17.8
 	k8s.io/cluster-bootstrap v0.0.0-20190802024125-9150a5ba960c
-	k8s.io/helm v2.11.0+incompatible
+	k8s.io/helm v2.16.9+incompatible
 	k8s.io/klog v1.0.0
 	k8s.io/utils v0.0.0-20191114184206-e782cd3c129f
 )
