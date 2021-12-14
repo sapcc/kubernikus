@@ -431,7 +431,7 @@ redirectLoop:
 
 		// Only follow redirects to the same host. Otherwise, propagate the redirect response back.
 		if requireSameHostRedirects && location.Hostname() != originalLocation.Hostname() {
-			return nil, nil, fmt.Errorf("hostname mismatch: expected %s, found %s", originalLocation.Hostname(), location.Hostname())
+			break redirectLoop
 		}
 
 		// Reset the connection.

@@ -1,6 +1,8 @@
-VERSION ?= $(shell git rev-parse --verify HEAD)
-GOOS    ?= $(shell go env GOOS)
+VERSION  ?= $(shell git rev-parse --verify HEAD)
+GOOS     ?= $(shell go env GOOS)
 GOARCH  ?= $(shell go env GOARCH)
+SHELL = /bin/bash
+
 ifeq ($(GOOS),darwin)
 export CGO_ENABLED=0
 endif
