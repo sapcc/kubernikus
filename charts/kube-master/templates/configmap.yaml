@@ -104,6 +104,11 @@ data:
       - system:serviceaccount:kube-system:generic-garbage-collector
       - system:serviceaccount:kube-system:namespace-controller
     - level: None
+      resources:
+      - group: ""
+        resources: ["configmaps", "leases"]
+        resourceNames: ["maintenance-controller-leader-election.cloud.sap"]
+    - level: None
       nonResourceURLs:
       - /healthz*
       - /version
@@ -142,10 +147,12 @@ data:
       logstash_format true
       user "#{ENV['ELK_USERNAME']}"
       password "#{ENV['ELK_PASSWORD']}"
-      index_name logstash-%Y.%m.%d
+      index_name "#{ENV['ELK_INDEX']}"
+      request_timeout 60s
       <buffer>
         @type file
         path /var/log/audit.buf
+        chunk_limit_size 8m
       </buffer>
     </match>
     {{- end }}

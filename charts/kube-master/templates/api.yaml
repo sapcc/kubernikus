@@ -364,6 +364,11 @@ spec:
               secretKeyRef:
                 name: {{ include "master.fullname" . }}-elk
                 key: elk-hosts
+          - name: ELK_INDEX
+            valueFrom:
+              secretKeyRef:
+                name: {{ include "master.fullname" . }}-elk
+                key: elk-index
           {{- end }}
           {{- if eq .Values.audit "swift" }}
           - name: OS_AUTH_URL
