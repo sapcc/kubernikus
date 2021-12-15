@@ -5,7 +5,7 @@ go 1.16
 require (
 	github.com/BurntSushi/toml v0.3.1
 	github.com/Masterminds/goutils v1.1.0
-	github.com/Masterminds/semver v1.3.1
+	github.com/Masterminds/semver v1.5.0
 	github.com/Masterminds/sprig v2.22.0+incompatible
 	github.com/ajeddeloh/yaml v0.0.0-20160722214022-1072abfea311 // indirect
 	github.com/aokoli/goutils v1.0.1
@@ -32,10 +32,13 @@ require (
 	github.com/go-stack/stack v1.8.0
 	github.com/gobwas/glob v0.2.3 // indirect
 	github.com/godbus/dbus v4.1.0+incompatible // indirect
+	github.com/gogo/protobuf v1.3.1 // indirect
+	github.com/golang/protobuf v1.4.2 // indirect
 	github.com/google/uuid v1.1.2 // indirect
 	github.com/gophercloud/gophercloud v0.19.0
 	github.com/gophercloud/utils v0.0.0-20210720165645-8a3ad2ad9e70
 	github.com/hashicorp/yamux v0.0.0-20180826203732-cc6d2ea263b2 // indirect
+	github.com/helm/helm-2to3 v0.6.0 // indirect
 	github.com/howeyc/gopass v0.0.0-20170109162249-bf9dde6d0d2c
 	github.com/huandu/xstrings v1.3.2 // indirect
 	github.com/imdario/mergo v0.3.7
@@ -49,7 +52,7 @@ require (
 	github.com/prometheus/client_golang v1.3.0
 	github.com/rs/cors v0.0.0-20170801073201-eabcc6af4bbe
 	github.com/satori/go.uuid v1.2.0
-	github.com/spf13/cobra v0.0.5
+	github.com/spf13/cobra v1.0.0
 	github.com/spf13/pflag v1.0.5
 	github.com/stretchr/testify v1.7.0
 	github.com/tredoe/osutil v0.0.0-20161130133508-7d3ee1afa71c
@@ -62,6 +65,7 @@ require (
 	google.golang.org/grpc v1.27.0
 	gopkg.in/yaml.v2 v2.4.0
 	gopkg.in/yaml.v3 v3.0.0-20200615113413-eeeca48fe776 // indirect
+	helm.sh/helm/v3 v3.1.3 // indirect
 	k8s.io/api v0.17.8
 	k8s.io/apiextensions-apiserver v0.17.8
 	k8s.io/apimachinery v0.17.8
