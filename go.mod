@@ -64,8 +64,8 @@ require (
 	golang.org/x/sys v0.0.0-20201119102817-f84b799fce68
 	google.golang.org/grpc v1.27.0
 	gopkg.in/yaml.v2 v2.4.0
-	gopkg.in/yaml.v3 v3.0.0-20200615113413-eeeca48fe776 // indirect
-	helm.sh/helm/v3 v3.1.3 // indirect
+	gopkg.in/yaml.v3 v3.0.0-20200615113413-eeeca48fe776
+	helm.sh/helm/v3 v3.1.3
 	k8s.io/api v0.17.8
 	k8s.io/apiextensions-apiserver v0.17.8
 	k8s.io/apimachinery v0.17.8
@@ -74,6 +74,7 @@ require (
 	k8s.io/helm v2.16.9+incompatible
 	k8s.io/klog v1.0.0
 	k8s.io/utils v0.0.0-20191114184206-e782cd3c129f
+	sigs.k8s.io/yaml v1.1.0
 )
 
 replace k8s.io/klog => github.com/simonpasquier/klog-gokit v0.3.1-0.20210409073344-020c8028ac9e

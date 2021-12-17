@@ -103,6 +103,8 @@ func NewKubernikusOperator(options *KubernikusOperatorOptions, logger log.Logger
 		Logger: logger,
 	}
 
+	o.Config.Kubernikus.KubeContext = options.Context
+	o.Config.Kubernikus.KubeConfig = options.KubeConfig
 	o.Clients.Kubernetes, err = kube.NewClient(options.KubeConfig, options.Context, logger)
 
 	if err != nil {

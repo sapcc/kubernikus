@@ -13,6 +13,8 @@ import (
 	"github.com/go-openapi/swag"
 	"github.com/pkg/errors"
 	"google.golang.org/grpc"
+	"helm.sh/helm/v3/pkg/action"
+	"helm.sh/helm/v3/pkg/chart/loader"
 	api_v1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -21,7 +23,6 @@ import (
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/record"
 	"k8s.io/client-go/util/workqueue"
-	"k8s.io/helm/pkg/helm"
 
 	"github.com/sapcc/kubernikus/pkg/api/models"
 	v1 "github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
@@ -605,7 +606,7 @@ func (op *GroundControl) createKluster(kluster *v1.Kluster) error {
 		return err
 	}
 
-	rawValues, err := helm_util.KlusterToHelmValues(kluster, klusterSecret, kluster.Spec.Version, &op.Config.Images, accessMode)
+	helmValues, err := helm_util.KlusterToHelmValues(kluster, klusterSecret, kluster.Spec.Version, &op.Config.Images, accessMode)
 	if err != nil {
 		return err
 	}
@@ -617,10 +618,29 @@ func (op *GroundControl) createKluster(kluster *v1.Kluster) error {
 
 	op.Logger.Log(
 		"msg", "Debug Chart Values",
-		"values", string(rawValues),
+		"values", fmt.Sprintf("%#v", helmValues),
 		"v", 6)
 
-	_, err = op.Clients.Helm.InstallRelease(path.Join(op.Config.Helm.ChartDirectory, "kube-master"), kluster.Namespace, helm.ValueOverrides(rawValues), helm.ReleaseName(kluster.GetName()))
+	helmConfig, err := op.Config.GetHelm3Config(kluster.Namespace, op.Logger)
+	if err != nil {
+		return err
+	}
+	op.Logger.Log(
+		"msg", "Got helm config :)",
+		"kluster", kluster.GetName(),
+		"project", kluster.Account())
+	chart, err := loader.Load(path.Join(op.Config.Helm.ChartDirectory, "kube-master"))
+	if err != nil {
+		return err
+	}
+	op.Logger.Log(
+		"msg", "Got chart :)",
+		"values", fmt.Sprintf("%#v", helmValues),
+		"kluster", kluster.GetName(),
+		"project", kluster.Account())
+	install := action.NewInstall(helmConfig)
+	install.ReleaseName = kluster.GetName()
+	_, err = install.Run(chart, helmValues)
 	return err
 }
 
@@ -681,16 +701,16 @@ func (op *GroundControl) upgradeKluster(kluster *v1.Kluster, toVersion string) e
 		}
 	}
 
-	accessMode, err := util.PVAccessMode(op.Clients.Kubernetes, kluster)
-	if err != nil {
-		return fmt.Errorf("Couldn't determine access mode for pvc: %s", err)
-	}
+	// accessMode, err := util.PVAccessMode(op.Clients.Kubernetes, kluster)
+	// if err != nil {
+	// 	return fmt.Errorf("Couldn't determine access mode for pvc: %s", err)
+	// }
 
-	rawValues, err := helm_util.KlusterToHelmValues(kluster, klusterSecret, toVersion, &op.Config.Images, accessMode)
+	// rawValues, err := helm_util.KlusterToHelmValues(kluster, klusterSecret, toVersion, &op.Config.Images, accessMode)
 	if err != nil {
 		return err
 	}
-	_, err = op.Clients.Helm.UpdateRelease(kluster.GetName(), path.Join(op.Config.Helm.ChartDirectory, "kube-master"), helm.UpdateValueOverrides(rawValues))
+	// _, err = op.Clients.Helm.UpdateRelease(kluster.GetName(), path.Join(op.Config.Helm.ChartDirectory, "kube-master"), helm.UpdateValueOverrides(rawValues))
 	return err
 }
 
@@ -725,7 +745,17 @@ func (op *GroundControl) terminateKluster(kluster *v1.Kluster) error {
 		"kluster", kluster.GetName(),
 		"project", kluster.Account())
 
-	_, err := op.Clients.Helm.DeleteRelease(kluster.GetName(), helm.DeletePurge(true))
+	helmConfig, err := op.Config.GetHelm3Config(kluster.Namespace, op.Logger)
+	if err != nil {
+		return err
+	}
+	uninstall := action.NewUninstall(helmConfig)
+	_, err = uninstall.Run(kluster.GetName())
+	if err != nil {
+		return err
+	}
+
+	// TODO
 	if err != nil && !strings.Contains(grpc.ErrorDesc(err), fmt.Sprintf(`release: "%s" not found`, kluster.GetName())) { //nolint:staticcheck
 		return err
 	}

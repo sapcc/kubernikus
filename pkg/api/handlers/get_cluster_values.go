@@ -4,6 +4,7 @@ import (
 	"github.com/go-openapi/runtime/middleware"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"sigs.k8s.io/yaml"
 
 	"github.com/sapcc/kubernikus/pkg/api"
 	"github.com/sapcc/kubernikus/pkg/api/models"
@@ -43,11 +44,15 @@ func (d *getClusterValues) Handle(params operations.GetClusterValuesParams, prin
 		return NewErrorResponse(&operations.GetClusterCredentialsDefault{}, 500, "Couldn't determine access mode for pvc: %s", err)
 	}
 
-	yamlData, err := helm.KlusterToHelmValues(kluster, secret, kluster.Spec.Version, d.Images, accessMode)
+	values, err := helm.KlusterToHelmValues(kluster, secret, kluster.Spec.Version, d.Images, accessMode)
 	if err != nil {
 		return NewErrorResponse(&operations.GetClusterCredentialsDefault{}, 500, "Failed to generate helm values: %s", err)
 	}
 
+	yamlData, err := yaml.Marshal(&values)
+	if err != nil {
+		return NewErrorResponse(&operations.GetClusterCredentialsDefault{}, 500, "Failed to marshal helm values: %s", err)
+	}
 	payload := &models.GetClusterValuesOKBody{Values: string(yamlData)}
 
 	return operations.NewGetClusterValuesOK().WithPayload(payload)
