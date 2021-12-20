@@ -346,7 +346,9 @@ spec:
         {{- if .Values.audit }}
         - name: fluentd
           image: {{ include "fluentd.image" . | quote }}
-          imagePullPolicy: Always
+          resources:
+            requests:
+              ephemeral-storage: "2Gi"
           env:
           {{- if eq .Values.audit "elasticsearch" }}
           - name: ELK_USERNAME
