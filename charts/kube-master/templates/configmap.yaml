@@ -171,4 +171,25 @@ data:
       </buffer>
     </match>
     {{- end }}
+
+    {{- if eq .Values.audit "http" }}
+    <match apiserver.audit>
+      @type http
+      endpoint "#{ENV['HTTP_ENDPOINT']}"
+      json_array true
+      <auth>
+        method basic
+        username "#{ENV['HTTP_USERNAME']}"
+        password "#{ENV['HTTP_PASSWORD']}"
+      </auth>
+      <format>
+        @type json
+      </format>
+      <buffer>
+        @type file
+        path /var/log/audit.buf
+        chunk_limit_size 8m
+      </buffer>
+    </match>
+    {{- end}}
 {{- end }}
