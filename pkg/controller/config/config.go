@@ -38,8 +38,6 @@ type KubernikusConfig struct {
 	Namespace   string
 	ProjectID   string
 	NetworkID   string
-	KubeConfig  string
-	KubeContext string
 	Controllers map[string]Controller
 }
 

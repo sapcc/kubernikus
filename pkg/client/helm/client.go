@@ -13,7 +13,6 @@ import (
 	"k8s.io/helm/pkg/helm"
 
 	"github.com/sapcc/kubernikus/pkg/client/helm/portforwarder"
-	"github.com/sapcc/kubernikus/pkg/controller/config"
 )
 
 func NewClient(kubeClient kubernetes.Interface, kubeConfig *rest.Config, logger log.Logger) (*helm.Client, error) {
@@ -52,9 +51,9 @@ func NewClient(kubeClient kubernetes.Interface, kubeConfig *rest.Config, logger 
 	return helm.NewClient(helm.Host(tillerHost)), nil
 }
 
-func NewClient3(releaseNamespace string, config *config.Config, logger log.Logger) (*action.Configuration, error) {
+func NewClient3(releaseNamespace, kubeConfig, kubeContext string, logger log.Logger) (*action.Configuration, error) {
 	client3 := &action.Configuration{}
-	err := client3.Init(kube.GetConfig(config.Kubernikus.KubeConfig, config.Kubernikus.KubeContext, releaseNamespace), releaseNamespace, "secrets", func(format string, v ...interface{}) {
+	err := client3.Init(kube.GetConfig(kubeConfig, kubeContext, releaseNamespace), releaseNamespace, "secrets", func(format string, v ...interface{}) {
 		logger.Log("component", "helm3", "msg", fmt.Sprintf(format, v), "v", 2)
 	})
 	if err != nil {
