@@ -598,7 +598,8 @@ func init() {
           "type": "string",
           "enum": [
             "elasticsearch",
-            "swift"
+            "swift",
+            "http"
           ],
           "x-nullable": true
         },
@@ -1643,7 +1644,8 @@ func init() {
           "type": "string",
           "enum": [
             "elasticsearch",
-            "swift"
+            "swift",
+            "http"
           ],
           "x-nullable": true
         },

@@ -402,6 +402,23 @@ spec:
                 name: {{ include "master.fullname" . }}-secret
                 key: openstack-region
           {{- end}}
+          {{- if eq .Values.audit "http" }}
+          - name: HTTP_USERNAME
+            valueFrom:
+              secretKeyRef:
+                name: {{ include "master.fullname" . }}-http
+                key: http-username
+          - name: HTTP_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: {{ include "master.fullname" . }}-http
+                key: http-password
+          - name: HTTP_ENDPOINT
+            valueFrom:
+              secretKeyRef:
+                name: {{ include "master.fullname" . }}-http
+                key: http-endpoint
+          {{- end }}
           volumeMounts:
             - mountPath: /fluentd/etc
               name: config

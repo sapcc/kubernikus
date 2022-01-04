@@ -27,7 +27,7 @@ type KlusterSpec struct {
 	AdvertisePort int64 `json:"advertisePort"`
 
 	// audit
-	// Enum: [elasticsearch swift]
+	// Enum: [elasticsearch swift http]
 	Audit *string `json:"audit,omitempty"`
 
 	// backup
@@ -127,7 +127,7 @@ var klusterSpecTypeAuditPropEnum []interface{}
 
 func init() {
 	var res []string
-	if err := json.Unmarshal([]byte(`["elasticsearch","swift"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["elasticsearch","swift","http"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {
@@ -142,6 +142,9 @@ const (
 
 	// KlusterSpecAuditSwift captures enum value "swift"
 	KlusterSpecAuditSwift string = "swift"
+
+	// KlusterSpecAuditHTTP captures enum value "http"
+	KlusterSpecAuditHTTP string = "http"
 )
 
 // prop value enum
