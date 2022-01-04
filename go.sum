@@ -388,6 +388,7 @@ github.com/hashicorp/memberlist v0.1.3/go.mod h1:ajVTdAv/9Im8oMAAj5G31PhhMCZJV2p
 github.com/hashicorp/serf v0.8.2/go.mod h1:6hOLApaqBFA1NXqRQAsxw9QxuDEvNxSQRwA/JwenrHc=
 github.com/hashicorp/yamux v0.0.0-20180826203732-cc6d2ea263b2 h1:QWdAspPPc/c5mh+D7cedfGmL8cxGXKxUGZiNMduza68=
 github.com/hashicorp/yamux v0.0.0-20180826203732-cc6d2ea263b2/go.mod h1:+NfK9FKeTrX5uv1uIXGdwYDTeHna2qgaIlx54MXqjAM=
+github.com/helm/helm-2to3 v0.6.0 h1:C8x5/8KmiS46/qT5jyVoIr1JslhDD2JsO7vhB0/zBHc=
 github.com/helm/helm-2to3 v0.6.0/go.mod h1:4AvB1eSK9Fo0Mh6OAr7we2+IkEfRXCGJeZvC6ukuCXk=
 github.com/howeyc/gopass v0.0.0-20170109162249-bf9dde6d0d2c h1:kQWxfPIHVLbgLzphqk3QUflDy9QdksZR4ygR807bpy0=
 github.com/howeyc/gopass v0.0.0-20170109162249-bf9dde6d0d2c/go.mod h1:lADxMC39cJJqL93Duh1xhAs4I2Zs8mKS89XWXFGp9cs=

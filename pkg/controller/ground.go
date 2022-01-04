@@ -468,8 +468,9 @@ func (op *GroundControl) updateVersionStatus(kluster *v1.Kluster) (bool, error) 
 			}
 		}
 	}
-	if rlsContent, err := op.Clients.Helm.ReleaseContent(kluster.GetName()); err == nil {
-		chartMD := rlsContent.Release.Chart.GetMetadata()
+	get := action.NewGet(op.Clients.Helm3)
+	if release, err := get.Run(kluster.Name); err == nil {
+		chartMD := release.Chart.Metadata
 		if kluster.Status.ChartName != chartMD.Name || kluster.Status.ChartVersion != chartMD.Version {
 			if err := op.updateKluster(kluster, func(k *v1.Kluster) error {
 				k.Status.ChartName = chartMD.Name
@@ -621,24 +622,11 @@ func (op *GroundControl) createKluster(kluster *v1.Kluster) error {
 		"values", fmt.Sprintf("%#v", helmValues),
 		"v", 6)
 
-	helmConfig, err := op.Config.GetHelm3Config(kluster.Namespace, op.Logger)
-	if err != nil {
-		return err
-	}
-	op.Logger.Log(
-		"msg", "Got helm config :)",
-		"kluster", kluster.GetName(),
-		"project", kluster.Account())
 	chart, err := loader.Load(path.Join(op.Config.Helm.ChartDirectory, "kube-master"))
 	if err != nil {
 		return err
 	}
-	op.Logger.Log(
-		"msg", "Got chart :)",
-		"values", fmt.Sprintf("%#v", helmValues),
-		"kluster", kluster.GetName(),
-		"project", kluster.Account())
-	install := action.NewInstall(helmConfig)
+	install := action.NewInstall(op.Helm3)
 	install.ReleaseName = kluster.GetName()
 	_, err = install.Run(chart, helmValues)
 	return err
@@ -701,16 +689,21 @@ func (op *GroundControl) upgradeKluster(kluster *v1.Kluster, toVersion string) e
 		}
 	}
 
-	// accessMode, err := util.PVAccessMode(op.Clients.Kubernetes, kluster)
-	// if err != nil {
-	// 	return fmt.Errorf("Couldn't determine access mode for pvc: %s", err)
-	// }
+	accessMode, err := util.PVAccessMode(op.Clients.Kubernetes, kluster)
+	if err != nil {
+		return fmt.Errorf("Couldn't determine access mode for pvc: %s", err)
+	}
 
-	// rawValues, err := helm_util.KlusterToHelmValues(kluster, klusterSecret, toVersion, &op.Config.Images, accessMode)
+	values, err := helm_util.KlusterToHelmValues(kluster, klusterSecret, toVersion, &op.Config.Images, accessMode)
 	if err != nil {
 		return err
 	}
-	// _, err = op.Clients.Helm.UpdateRelease(kluster.GetName(), path.Join(op.Config.Helm.ChartDirectory, "kube-master"), helm.UpdateValueOverrides(rawValues))
+	chart, err := loader.Load(path.Join(op.Config.Helm.ChartDirectory, "kube-master"))
+	if err != nil {
+		return err
+	}
+	upgrade := action.NewUpgrade(op.Helm3)
+	_, err = upgrade.Run(kluster.Name, chart, values)
 	return err
 }
 
@@ -745,18 +738,13 @@ func (op *GroundControl) terminateKluster(kluster *v1.Kluster) error {
 		"kluster", kluster.GetName(),
 		"project", kluster.Account())
 
-	helmConfig, err := op.Config.GetHelm3Config(kluster.Namespace, op.Logger)
-	if err != nil {
-		return err
-	}
-	uninstall := action.NewUninstall(helmConfig)
-	_, err = uninstall.Run(kluster.GetName())
+	uninstall := action.NewUninstall(op.Helm3)
+	_, err := uninstall.Run(kluster.GetName())
 	if err != nil {
 		return err
 	}
 
-	// TODO
-	if err != nil && !strings.Contains(grpc.ErrorDesc(err), fmt.Sprintf(`release: "%s" not found`, kluster.GetName())) { //nolint:staticcheck
+	if err != nil && !strings.Contains(grpc.ErrorDesc(err), fmt.Sprintf(`%s: release: not found`, kluster.GetName())) { //nolint:staticcheck
 		return err
 	}
 

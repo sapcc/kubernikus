@@ -38,7 +38,7 @@ require (
 	github.com/gophercloud/gophercloud v0.19.0
 	github.com/gophercloud/utils v0.0.0-20210720165645-8a3ad2ad9e70
 	github.com/hashicorp/yamux v0.0.0-20180826203732-cc6d2ea263b2 // indirect
-	github.com/helm/helm-2to3 v0.6.0 // indirect
+	github.com/helm/helm-2to3 v0.6.0
 	github.com/howeyc/gopass v0.0.0-20170109162249-bf9dde6d0d2c
 	github.com/huandu/xstrings v1.3.2 // indirect
 	github.com/imdario/mergo v0.3.7
@@ -64,7 +64,7 @@ require (
 	golang.org/x/sys v0.0.0-20201119102817-f84b799fce68
 	google.golang.org/grpc v1.27.0
 	gopkg.in/yaml.v2 v2.4.0
-	gopkg.in/yaml.v3 v3.0.0-20200615113413-eeeca48fe776
+	gopkg.in/yaml.v3 v3.0.0-20200615113413-eeeca48fe776 // indirect
 	helm.sh/helm/v3 v3.1.3
 	k8s.io/api v0.17.8
 	k8s.io/apiextensions-apiserver v0.17.8
