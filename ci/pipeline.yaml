@@ -20,6 +20,8 @@ auth_e2e_ap-ae-1: &auth_e2e_ap-ae-1
   KUBERNIKUS_NAME: e2e
   OS_PROJECT_DOMAIN_NAME: ccadmin
 
+  NODEPOOL_AVZ: ap-ae-1a
+
 
   OS_AUTH_URL: https://identity-3.ap-ae-1.cloud.sap/v3
   OS_USERNAME: kubernikus-pipeline
@@ -51,6 +53,8 @@ auth_e2e_ap-au-1: &auth_e2e_ap-au-1
 
   KUBERNIKUS_NAME: e2e
   OS_PROJECT_DOMAIN_NAME: ccadmin
+
+  NODEPOOL_AVZ: ap-au-1a
 
 
 
@@ -84,6 +88,8 @@ auth_e2e_ap-cn-1: &auth_e2e_ap-cn-1
   KUBERNIKUS_NAME: e2e
   OS_PROJECT_DOMAIN_NAME: ccadmin
 
+  NODEPOOL_AVZ: ap-cn-1a
+
 
   OS_AUTH_URL: https://identity-3.ap-cn-1.cloud.sap/v3
   OS_USERNAME: kubernikus-pipeline
@@ -115,6 +121,8 @@ auth_e2e_ap-jp-1: &auth_e2e_ap-jp-1
 
   KUBERNIKUS_NAME: e2e
   OS_PROJECT_DOMAIN_NAME: ccadmin
+
+  NODEPOOL_AVZ: ap-jp-1a
 
 
   OS_AUTH_URL: https://identity-3.ap-jp-1.cloud.sap/v3
@@ -148,6 +156,8 @@ auth_e2e_ap-jp-2: &auth_e2e_ap-jp-2
   KUBERNIKUS_NAME: e2e
   OS_PROJECT_DOMAIN_NAME: ccadmin
 
+  NODEPOOL_AVZ: ap-jp-2a
+
 
   OS_AUTH_URL: https://identity-3.ap-jp-2.cloud.sap/v3
   OS_USERNAME: kubernikus-pipeline
@@ -179,6 +189,8 @@ auth_e2e_ap-sa-1: &auth_e2e_ap-sa-1
 
   KUBERNIKUS_NAME: e2e
   OS_PROJECT_DOMAIN_NAME: ccadmin
+
+  NODEPOOL_AVZ: ap-sa-1a
 
 
   OS_AUTH_URL: https://identity-3.ap-sa-1.cloud.sap/v3
@@ -212,6 +224,8 @@ auth_e2e_ap-sa-2: &auth_e2e_ap-sa-2
   KUBERNIKUS_NAME: e2e
   OS_PROJECT_DOMAIN_NAME: ccadmin
 
+  NODEPOOL_AVZ: ap-sa-2a
+
 
   OS_AUTH_URL: https://identity-3.ap-sa-2.cloud.sap/v3
   OS_USERNAME: kubernikus-pipeline
@@ -243,6 +257,8 @@ auth_e2e_eu-de-1: &auth_e2e_eu-de-1
 
   KUBERNIKUS_NAME: e2e
   OS_PROJECT_DOMAIN_NAME: ccadmin
+
+  NODEPOOL_AVZ: eu-de-1d
 
 
 
@@ -276,6 +292,8 @@ auth_e2e_eu-de-2: &auth_e2e_eu-de-2
   KUBERNIKUS_NAME: e2e
   OS_PROJECT_DOMAIN_NAME: ccadmin
 
+  NODEPOOL_AVZ: eu-de-2b
+
 
 
   OS_AUTH_URL: https://identity-3.eu-de-2.cloud.sap/v3
@@ -307,6 +325,8 @@ auth_e2e_eu-nl-1: &auth_e2e_eu-nl-1
 
   KUBERNIKUS_NAME: e2e
   OS_PROJECT_DOMAIN_NAME: ccadmin
+
+  NODEPOOL_AVZ: eu-nl-1a
 
 
   OS_AUTH_URL: https://identity-3.eu-nl-1.cloud.sap/v3
@@ -340,6 +360,8 @@ auth_e2e_eu-ru-1: &auth_e2e_eu-ru-1
   KUBERNIKUS_NAME: e2e
   OS_PROJECT_DOMAIN_NAME: ccadmin
 
+  NODEPOOL_AVZ: eu-ru-1a
+
 
   OS_AUTH_URL: https://identity-3.eu-ru-1.cloud.sap/v3
   OS_USERNAME: kubernikus-pipeline
@@ -372,6 +394,8 @@ auth_e2e_la-br-1: &auth_e2e_la-br-1
   KUBERNIKUS_NAME: e2e
   OS_PROJECT_DOMAIN_NAME: ccadmin
 
+  NODEPOOL_AVZ: la-br-1b
+
 
   OS_AUTH_URL: https://identity-3.la-br-1.cloud.sap/v3
   OS_USERNAME: kubernikus-pipeline
@@ -403,6 +427,8 @@ auth_e2e_na-ca-1: &auth_e2e_na-ca-1
 
   KUBERNIKUS_NAME: e2e
   OS_PROJECT_DOMAIN_NAME: ccadmin
+
+  NODEPOOL_AVZ: na-ca-1b
 
 
   OS_AUTH_URL: https://identity-3.na-ca-1.cloud.sap/v3
@@ -470,6 +496,8 @@ auth_e2e_na-us-2: &auth_e2e_na-us-2
   KUBERNIKUS_NAME: e2e
   OS_PROJECT_DOMAIN_NAME: ccadmin
 
+  NODEPOOL_AVZ: na-us-2b
+
 
   OS_AUTH_URL: https://identity-3.na-us-2.cloud.sap/v3
   OS_USERNAME: kubernikus-pipeline
@@ -501,6 +529,8 @@ auth_e2e_na-us-3: &auth_e2e_na-us-3
 
   KUBERNIKUS_NAME: e2e
   OS_PROJECT_DOMAIN_NAME: ccadmin
+
+  NODEPOOL_AVZ: na-us-3a
 
 
   OS_AUTH_URL: https://identity-3.na-us-3.cloud.sap/v3
@@ -567,6 +597,8 @@ auth_e2e_master: &auth_e2e_master
 
   KUBERNIKUS_NAME: e2e
   OS_PROJECT_DOMAIN_NAME: ccadmin
+
+  NODEPOOL_AVZ: eu-nl-1a
 
 
 
@@ -1126,7 +1158,7 @@ resources:
     source:
       username: ((keppel.username))
       password: ((keppel.password))
-      repository: keppel.eu-de-2.cloud.sap/ccloud/kubernikus-docs-builder
+      repository: keppel.eu-de-1.cloud.sap/ccloud/kubernikus-docs-builder
       tag: latest
 
   - name: kubernikus.image
@@ -1136,7 +1168,7 @@ resources:
     source:
       username: ((keppel.username))
       password: ((keppel.password))
-      repository: keppel.eu-de-2.cloud.sap/ccloud/kubernikus
+      repository: keppel.eu-de-1.cloud.sap/ccloud/kubernikus
       tag: latest
 
   - name: kubernikusctl.release
@@ -1382,6 +1414,29 @@ jobs:
       - put: all-versions.trigger
 
 
+  - name: e2e-1.22.4
+    serial: true
+    plan:
+      - in_parallel:
+        - get: secrets.git
+        - get: kubernikus.builds
+          resource: kubernikus.git
+          passed: [master]
+          trigger: true
+        - get: all-versions.trigger
+          trigger: true
+          passed: [all-versions]
+      - task: e2e_tests
+        config:
+          <<: *task_e2e_tests
+        timeout: 2h
+        params:
+          KLUSTER_VERSION: "1.22.4"
+          KLUSTER_CIDR: "100.100.0.0/16"
+          ISOLATE_TEST: "true"
+          <<: *auth_e2e_master
+    <<: *slack
+
   - name: e2e-1.21.5
     serial: true
     plan:
@@ -1400,7 +1455,7 @@ jobs:
         timeout: 2h
         params:
           KLUSTER_VERSION: "1.21.5"
-          KLUSTER_CIDR: "100.100.0.0/16"
+          KLUSTER_CIDR: "100.101.0.0/16"
           ISOLATE_TEST: "true"
           <<: *auth_e2e_master
     <<: *slack
@@ -1423,7 +1478,7 @@ jobs:
         timeout: 2h
         params:
           KLUSTER_VERSION: "1.20.8"
-          KLUSTER_CIDR: "100.101.0.0/16"
+          KLUSTER_CIDR: "100.102.0.0/16"
           ISOLATE_TEST: "true"
           <<: *auth_e2e_master
     <<: *slack
@@ -1446,7 +1501,7 @@ jobs:
         timeout: 2h
         params:
           KLUSTER_VERSION: "1.19.11"
-          KLUSTER_CIDR: "100.102.0.0/16"
+          KLUSTER_CIDR: "100.103.0.0/16"
           ISOLATE_TEST: "true"
           <<: *auth_e2e_master
     <<: *slack
@@ -1469,7 +1524,7 @@ jobs:
         timeout: 2h
         params:
           KLUSTER_VERSION: "1.18.10"
-          KLUSTER_CIDR: "100.103.0.0/16"
+          KLUSTER_CIDR: "100.104.0.0/16"
           ISOLATE_TEST: "true"
           <<: *auth_e2e_master
     <<: *slack
@@ -1492,7 +1547,7 @@ jobs:
         timeout: 2h
         params:
           KLUSTER_VERSION: "1.17.13"
-          KLUSTER_CIDR: "100.104.0.0/16"
+          KLUSTER_CIDR: "100.105.0.0/16"
           ISOLATE_TEST: "true"
           <<: *auth_e2e_master
     <<: *slack
@@ -1515,7 +1570,7 @@ jobs:
         timeout: 2h
         params:
           KLUSTER_VERSION: "1.16.14"
-          KLUSTER_CIDR: "100.105.0.0/16"
+          KLUSTER_CIDR: "100.106.0.0/16"
           ISOLATE_TEST: "true"
           <<: *auth_e2e_master
     <<: *slack
@@ -1538,7 +1593,7 @@ jobs:
         timeout: 2h
         params:
           KLUSTER_VERSION: "1.15.9"
-          KLUSTER_CIDR: "100.106.0.0/16"
+          KLUSTER_CIDR: "100.107.0.0/16"
           ISOLATE_TEST: "true"
           <<: *auth_e2e_master
     <<: *slack
@@ -1561,7 +1616,7 @@ jobs:
         timeout: 2h
         params:
           KLUSTER_VERSION: "1.14.5"
-          KLUSTER_CIDR: "100.107.0.0/16"
+          KLUSTER_CIDR: "100.108.0.0/16"
           ISOLATE_TEST: "true"
           <<: *auth_e2e_master
     <<: *slack
@@ -1584,7 +1639,7 @@ jobs:
         timeout: 2h
         params:
           KLUSTER_VERSION: "1.13.9"
-          KLUSTER_CIDR: "100.108.0.0/16"
+          KLUSTER_CIDR: "100.109.0.0/16"
           ISOLATE_TEST: "true"
           <<: *auth_e2e_master
     <<: *slack
@@ -1607,7 +1662,7 @@ jobs:
         timeout: 2h
         params:
           KLUSTER_VERSION: "1.12.10"
-          KLUSTER_CIDR: "100.109.0.0/16"
+          KLUSTER_CIDR: "100.110.0.0/16"
           ISOLATE_TEST: "true"
           <<: *auth_e2e_master
     <<: *slack
@@ -1618,7 +1673,7 @@ jobs:
     plan:
       - get: kubernikus.builds
         resource: kubernikus.git
-        passed: [e2e-1.21.5]
+        passed: [e2e-1.22.4]
       - task: changes
         config:
           <<: *task_github_compare_url
@@ -3552,6 +3607,8 @@ groups:
       - tiller_master
       - all-versions
 
+      - e2e-1.22.4
+
       - e2e-1.21.5
 
       - e2e-1.20.8
@@ -3728,6 +3785,8 @@ groups:
       - whitesource
       - tiller_master
       - all-versions
+
+      - e2e-1.22.4
 
       - e2e-1.21.5
 
