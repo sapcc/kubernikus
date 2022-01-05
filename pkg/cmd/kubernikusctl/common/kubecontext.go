@@ -117,6 +117,7 @@ func (ktx *KubernikusContext) ProjectID() (string, error) {
 		return "", err
 	}
 	if len(cert.Subject.Province) < 2 {
+		return "", errors.New("Client certificate is missing kubernikus metadata")
 	}
 	//With go 1.16, the order of multivalued fields in parsed certs became unreliable: https://github.com/golang/go/issues/45882
 	for _, p := range cert.Subject.Province {
@@ -124,7 +125,7 @@ func (ktx *KubernikusContext) ProjectID() (string, error) {
 			return p, nil
 		}
 	}
-	return "", errors.Errorf("Client certificate didn't contain OpenStack metadata")
+	return "", errors.New("Client certificate didn't contain OpenStack metadata")
 }
 
 func (ktx *KubernikusContext) MergeAndPersist(rawConfig string) error {

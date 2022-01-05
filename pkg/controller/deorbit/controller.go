@@ -1,10 +1,13 @@
 package deorbit
 
 import (
+	"fmt"
 	"sync"
 	"time"
 
 	"github.com/go-kit/kit/log"
+	"github.com/gophercloud/gophercloud"
+	"github.com/gophercloud/gophercloud/openstack"
 	"github.com/prometheus/client_golang/prometheus"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/client-go/tools/record"
@@ -44,13 +47,21 @@ type DeorbitReconciler struct {
 	Logger   log.Logger
 
 	klusterInformer informers_kubernikus.KlusterInformer
+
+	config.Factories
 }
 
 func NewController(threadiness int, factories config.Factories, clients config.Clients, recorder record.EventRecorder, logger log.Logger) base.Controller {
 	logger = log.With(logger, "controller", "deorbit")
 
 	var reconciler base.Reconciler
-	reconciler = &DeorbitReconciler{clients, recorder, logger, factories.Kubernikus.Kubernikus().V1().Klusters()}
+	reconciler = &DeorbitReconciler{
+		clients,
+		recorder,
+		logger,
+		factories.Kubernikus.Kubernikus().V1().Klusters(),
+		factories,
+	}
 	reconciler = &base.LoggingReconciler{Reconciler: reconciler, Logger: logger}
 	reconciler = &base.InstrumentingReconciler{
 		Reconciler: reconciler,
@@ -66,7 +77,7 @@ func NewController(threadiness int, factories config.Factories, clients config.C
 func (d *DeorbitReconciler) Reconcile(kluster *v1.Kluster) (bool, error) {
 	switch kluster.Status.Phase {
 	case models.KlusterPhaseRunning:
-		return false, util.EnsureFinalizerCreated(d.Kubernikus.KubernikusV1(), d.klusterInformer.Lister(), kluster, DeorbiterFinalizer)
+		return false, util.EnsureFinalizerCreated(d.Clients.Kubernikus.KubernikusV1(), d.klusterInformer.Lister(), kluster, DeorbiterFinalizer)
 	case models.KlusterPhaseTerminating:
 		if kluster.TerminationProtection() {
 			return false, nil
@@ -75,7 +86,7 @@ func (d *DeorbitReconciler) Reconcile(kluster *v1.Kluster) (bool, error) {
 			if err := d.deorbit(kluster); err != nil {
 				return false, err
 			}
-			return false, util.EnsureFinalizerRemoved(d.Kubernikus.KubernikusV1(), d.klusterInformer.Lister(), kluster, DeorbiterFinalizer)
+			return false, util.EnsureFinalizerRemoved(d.Clients.Kubernikus.KubernikusV1(), d.klusterInformer.Lister(), kluster, DeorbiterFinalizer)
 		}
 	}
 	return false, nil
@@ -98,7 +109,17 @@ func (d *DeorbitReconciler) deorbit(kluster *v1.Kluster) (err error) {
 	//We need to ensure the done channel is closed otherwise we leak goroutines (thanks to wait.PollUntil)
 	defer once.Do(func() { close(done) })
 
-	deorbiter, err := NewDeorbiter(kluster, done, d.Clients, d.Recorder, logger)
+	providerClient, err := d.Factories.Openstack.ProviderClientForKluster(kluster, logger)
+	if err != nil {
+		return fmt.Errorf("Could not get openstack provider client: %v", err)
+	}
+
+	serviceClient, err := openstack.NewBlockStorageV3(providerClient, gophercloud.EndpointOpts{})
+	if err != nil {
+		return fmt.Errorf("Could not create block storage client: %v", err)
+	}
+
+	deorbiter, err := NewDeorbiter(kluster, done, d.Clients, d.Recorder, logger, serviceClient)
 	if err != nil {
 		return err
 	}

@@ -1,0 +1,30 @@
+diff --git a/lib/fluent/plugin/out_swift.rb b/lib/fluent/plugin/out_swift.rb
+index e6c071d..e307795 100644
+--- a/lib/fluent/plugin/out_swift.rb
++++ b/lib/fluent/plugin/out_swift.rb
+@@ -23,8 +23,10 @@ module Fluent::Plugin
+     desc "Authentication User Name. If you use TempAuth, auth_user is ACCOUNT:USER. Set a value or use `#{ENV['OS_USERNAME']}`"
+     config_param :auth_user, :string
+     desc "Authentication Key (Password). Set a value or use `#{ENV['OS_PASSWORD']}`"
+-    config_param :auth_api_key, :string
+-    config_param :auth_tenant, :string, default: nil
++    config_param :auth_api_key, :string, secret: true
++    config_param :auth_project_id, :string, default: nil
++    config_param :auth_project_domain_id, :string, default: nil
++    config_param :auth_user_domain_id, :string, default: nil
+     desc "Authentication Region. Optional, not required if there is only one region available. Set a value or use `#{ENV['OS_REGION_NAME']}`"
+     config_param :auth_region, :string, default: nil
+     config_param :swift_account, :string, default: nil
+@@ -116,8 +118,10 @@ module Fluent::Plugin
+           openstack_auth_url: auth_url,
+           openstack_username: auth_user,
+           openstack_api_key: auth_api_key,
+-          openstack_tenant: auth_tenant,
+-          openstack_region: auth_region
++          openstack_region: auth_region,
++          openstack_project_id: auth_project_id,
++          openstack_project_domain_id: auth_project_domain_id,
++          openstack_user_domain_id: auth_user_domain_id
+         )
+       rescue StandardError => e
+         raise "Can't call Swift API. Please check your ENV OS_*, your credentials or `auth_url` configuration. Error: #{e.inspect}"

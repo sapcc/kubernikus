@@ -22,6 +22,7 @@ var (
 	kluster       = flag.String("kluster", "", "Use existing Kluster")
 	reuse         = flag.Bool("reuse", false, "Reuse exisiting Kluster")
 	cleanup       = flag.Bool("cleanup", true, "Cleanup after tests have been run")
+	isolate       = flag.Bool("isolate", false, "Do not destroy or depend on resources of other tests running in the same project")
 )
 
 const (
@@ -74,6 +75,10 @@ func TestRunner(t *testing.T) {
 	require.NoError(t, err, "Must be able to parse Kubernikus URL")
 	require.NotEmpty(t, kurl.Host, "There must be a host in the Kubernikus URL")
 
+	if os.Getenv("ISOLATE_TEST") == "true" {
+		*isolate = true
+	}
+
 	fmt.Printf("========================================================================\n")
 	fmt.Printf("Authentication\n")
 	fmt.Printf("========================================================================\n")
@@ -102,10 +107,20 @@ func TestRunner(t *testing.T) {
 	fmt.Printf("Kluster Name:              %v\n", klusterName)
 	fmt.Printf("Reuse:                     %v\n", *reuse)
 	fmt.Printf("Cleanup:                   %v\n", *cleanup)
+	fmt.Printf("Isolate:                   %v\n", *isolate)
 	fmt.Println("")
 	fmt.Printf("Dashboard:                 https://dashboard.%s.cloud.sap/%s/%s/kubernetes\n", os.Getenv("OS_REGION_NAME"), os.Getenv("OS_PROJECT_DOMAIN_NAME"), os.Getenv("OS_PROJECT_NAME"))
 	if os.Getenv("CP_KLUSTER") != "" {
 		fmt.Printf("CP Kluster Name:           %v\n", os.Getenv("CP_KLUSTER"))
+	}
+	if os.Getenv("KLUSTER_VERSION") != "" {
+		fmt.Printf("Kubernetes Version:        %v\n", os.Getenv("KLUSTER_VERSION"))
+	}
+	if os.Getenv("KLUSTER_CIDR") != "" {
+		fmt.Printf("Cluster CIDR:              %v\n", os.Getenv("KLUSTER_CIDR"))
+	}
+	if os.Getenv("KLUSTER_OS_IMAGE") != "" {
+		fmt.Printf("OS Image:                  %v\n", os.Getenv("KLUSTER_OS_IMAGE"))
 	}
 	fmt.Printf("\n\n")
 
@@ -162,7 +177,7 @@ func TestRunner(t *testing.T) {
 	fullKlusterName := fmt.Sprintf("%s-%s", klusterName, project.ID)
 
 	// Pyrolize garbage left from previous e2e runs
-	pyrolisisTests := &PyrolisisTests{kubernikus, openstack, *reuse}
+	pyrolisisTests := &PyrolisisTests{kubernikus, openstack, *reuse, *isolate}
 	if !t.Run("Pyrolisis", pyrolisisTests.Run) {
 		return
 	}
@@ -173,7 +188,7 @@ func TestRunner(t *testing.T) {
 	}
 
 	if cleanup != nil && *cleanup == true {
-		cleanupTests := &CleanupTests{kubernikus, openstack, klusterName, *reuse}
+		cleanupTests := &CleanupTests{kubernikus, openstack, klusterName, *reuse, *isolate}
 		defer t.Run("Cleanup", cleanupTests.Run)
 	}
 

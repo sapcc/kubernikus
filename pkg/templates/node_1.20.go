@@ -49,8 +49,9 @@ systemd:
         [Unit]
         Description=flannel - Network fabric for containers (System Application Container)
         Documentation=https://github.com/coreos/flannel
-        After=etcd.service etcd2.service etcd-member.service
+        After=etcd.service etcd2.service etcd-member.service network-online.target nss-lookup.target
         Requires=flannel-docker-opts.service
+        Wants=network-online.target nss-lookup.target
 
         [Service]
         Type=notify
@@ -60,11 +61,13 @@ systemd:
         LimitNOFILE=40000
         LimitNPROC=1048576
 
-        Environment="FLANNEL_IMAGE_TAG=v0.12.0"
+        Environment="FLANNEL_IMAGE_URL=docker://{{ .FlannelImage }}"
+        Environment="FLANNEL_IMAGE_TAG={{ .FlannelImageTag }}"
         Environment="FLANNEL_OPTS=--ip-masq=true"
         Environment="RKT_RUN_ARGS=--uuid-file-save=/var/lib/flatcar/flannel-wrapper.uuid"
         EnvironmentFile=-/run/flannel/options.env
 
+        ExecStartPre=/usr/bin/host identity-3.{{ .OpenstackRegion }}.cloud.sap
         ExecStartPre=/sbin/modprobe ip_tables
         ExecStartPre=/usr/bin/mkdir --parents /var/lib/flatcar /run/flannel
         ExecStartPre=-/opt/bin/rkt rm --uuid-file=/var/lib/flatcar/flannel-wrapper.uuid
@@ -90,10 +93,7 @@ systemd:
                                       --volume etc-kubernetes-certs,kind=host,source=/etc/kubernetes/certs,readOnly=true \
                                       --mount volume=etc-kubernetes-certs,target=/etc/kubernetes/certs \
                                       --volume etc-kube-flannel,kind=host,source=/etc/kube-flannel,readOnly=true \
-                                      --mount volume=etc-kube-flannel,target=/etc/kube-flannel \
-                                      --dns=host \
-                                      --volume dns,kind=host,source=/run/systemd/resolve/resolv.conf,readOnly=true \
-                                      --mount volume=dns,target=/etc/resolv.conf"
+                                      --mount volume=etc-kube-flannel,target=/etc/kube-flannel"
     - name: flannel-docker-opts.service
       enable: true
       contents: |
@@ -109,16 +109,14 @@ systemd:
       contents: |
         [Unit]
         Description=Kubelet
-        After=network-online.target
-        Wants=network-online.target
+        After=network-online.target nss-lookup.target
+        Wants=network-online.target nss-lookup.target
 
         [Service]
         Environment="RKT_RUN_ARGS=--uuid-file-save=/var/run/kubelet-pod.uuid \
           --inherit-env \
-          --net=host \
           --dns=host \
-          --volume dns,kind=host,source=/run/systemd/resolve/resolv.conf,readOnly=true \
-          --mount volume=dns,target=/etc/resolv.conf \
+          --net=host \
           --volume var-lib-cni,kind=host,source=/var/lib/cni \
           --volume var-log,kind=host,source=/var/log \
           --volume etc-machine-id,kind=host,source=/etc/machine-id,readOnly=true \
@@ -139,6 +137,7 @@ systemd:
         Environment="KUBELET_IMAGE_TAG={{ .KubeletImageTag }}"
         Environment="KUBELET_IMAGE_URL=docker://{{ .KubeletImage }}"
         Environment="KUBELET_IMAGE_ARGS=--name=kubelet --exec=/usr/local/bin/kubelet"
+        ExecStartPre=/usr/bin/host identity-3.{{ .OpenstackRegion }}.cloud.sap
 {{- if .CalicoNetworking }}
         ExecStartPre=/bin/mkdir -p /etc/cni /opt/cni /var/lib/calico
  {{- end }}
@@ -180,17 +179,16 @@ systemd:
       contents: |
         [Unit]
         Description=Kubernikus Wormhole
-        Requires=network-online.target
-        After=network-online.target
+        After=network-online.target nss-lookup.target
+        Wants=network-online.target nss-lookup.target
         [Service]
         Slice=machine.slice
+        ExecStartPre=/usr/bin/host identity-3.{{ .OpenstackRegion }}.cloud.sap
         ExecStartPre=/opt/bin/rkt fetch --insecure-options=image --pull-policy=new docker://{{ .KubernikusImage }}:{{ .KubernikusImageTag }}
         ExecStart=/opt/bin/rkt run \
           --inherit-env \
           --net=host \
           --dns=host \
-          --volume dns,kind=host,source=/run/systemd/resolve/resolv.conf,readOnly=true \
-          --mount volume=dns,target=/etc/resolv.conf \
           --volume var-lib-kubelet,kind=host,source=/var/lib/kubelet,readOnly=true \
           --mount volume=var-lib-kubelet,target=/var/lib/kubelet \
           --volume etc-kubernetes-certs,kind=host,source=/etc/kubernetes/certs,readOnly=true \
@@ -215,17 +213,16 @@ systemd:
       contents: |
         [Unit]
         Description=Kube-Proxy
-        Requires=network-online.target
-        After=network-online.target
+        After=network-online.target nss-lookup.target
+        Wants=network-online.target nss-lookup.target
         [Service]
         Slice=machine.slice
+        ExecStartPre=/usr/bin/host identity-3.{{ .OpenstackRegion }}.cloud.sap
         ExecStart=/opt/bin/rkt run \
           --trust-keys-from-https \
           --inherit-env \
           --net=host \
           --dns=host \
-          --volume dns,kind=host,source=/run/systemd/resolve/resolv.conf,readOnly=true \
-          --mount volume=dns,target=/etc/resolv.conf \
           --volume etc-kubernetes,kind=host,source=/etc/kubernetes,readOnly=true \
           --mount volume=etc-kubernetes,target=/etc/kubernetes \
           --volume lib-modules,kind=host,source=/lib/modules,readOnly=true \
@@ -301,13 +298,6 @@ storage:
       mode: 0644
       contents:
         inline: |
-          #
-          # VMware SCSI devices Timeout adjustment
-          #
-          # Modify the timeout value for VMware SCSI devices so that
-          # in the event of a failover, we don't time out.
-          # See Bug 271286 for more information.
-
           ACTION=="add", SUBSYSTEMS=="scsi", ATTRS{vendor}=="VMware  ", ATTRS{model}=="Virtual disk", RUN+="/bin/sh -c 'echo 180 >/sys$DEVPATH/timeout'"
     - path: /etc/ssl/certs/SAPGlobalRootCA.pem
       filesystem: root
@@ -521,6 +511,7 @@ storage:
               enabled: true
           rotateCertificates: true
           nodeLeaseDurationSeconds: 20
+          cgroupDriver: systemd
           featureGates:
 {{- if not .NoCloud }}
             CSIMigration: true
@@ -644,11 +635,6 @@ storage:
       contents:
         inline: |-
           #!/bin/bash
-          # Wrapper for launching kubelet via rkt-fly.
-          #
-          # Make sure to set KUBELET_IMAGE_TAG to an image tag published here:
-          # https://quay.io/repository/coreos/hyperkube?tab=tags Alternatively,
-          # override KUBELET_IMAGE to a custom image.
           set -e
           function require_ev_all() {
             for rev in $@ ; do
@@ -721,19 +707,12 @@ storage:
             ${KUBELET_IMAGE} \
               ${KUBELET_IMAGE_ARGS} \
               -- "$@"
-
     - path: /opt/bin/flannel-wrapper
       filesystem: root
       mode: 0755
       contents:
         inline: |-
           #!/bin/bash -e
-          # Wrapper for launching flannel via rkt.
-          #
-          # Make sure to set FLANNEL_IMAGE_TAG to an image tag published here:
-          # https://quay.io/repository/coreos/flannel?tab=tags Alternatively,
-          # override FLANNEL_IMAGE to a custom image.
-
           function require_ev_all() {
             for rev in $@ ; do
               if [[ -z "${!rev}" ]]; then
@@ -742,7 +721,6 @@ storage:
               fi
             done
           }
-
           function require_ev_one() {
             for rev in $@ ; do
               if [[ ! -z "${!rev}" ]]; then
@@ -752,28 +730,21 @@ storage:
             echo One of $@ must be set
             exit 1
           }
-
           if [[ -n "${FLANNEL_VER}" ]]; then
             echo FLANNEL_VER environment variable is deprecated, please use FLANNEL_IMAGE_TAG instead
           fi
-
           if [[ -n "${FLANNEL_IMG}" ]]; then
             echo FLANNEL_IMG environment variable is deprecated, please use FLANNEL_IMAGE_URL instead
           fi
-
           FLANNEL_IMAGE_TAG="${FLANNEL_IMAGE_TAG:-${FLANNEL_VER}}"
-
           require_ev_one FLANNEL_IMAGE FLANNEL_IMAGE_TAG
-
           FLANNEL_IMAGE_URL="${FLANNEL_IMAGE_URL:-${FLANNEL_IMG:-docker://quay.io/coreos/flannel}}"
           FLANNEL_IMAGE="${FLANNEL_IMAGE:-${FLANNEL_IMAGE_URL}:${FLANNEL_IMAGE_TAG}}"
-
           if [[ "${FLANNEL_IMAGE%%/*}" == "quay.io" ]] && ! (echo "${RKT_RUN_ARGS}" | grep -q trust-keys-from-https); then
             RKT_RUN_ARGS="${RKT_RUN_ARGS} --trust-keys-from-https"
           elif [[ "${FLANNEL_IMAGE%%/*}" == "docker:" ]] && ! (echo "${RKT_RUN_ARGS}" | grep -q insecure-options); then
             RKT_RUN_ARGS="${RKT_RUN_ARGS} --insecure-options=image"
           fi
-
           ETCD_SSL_DIR="${ETCD_SSL_DIR:-/etc/ssl/etcd}"
           if [[ -d "${ETCD_SSL_DIR}" ]]; then
             RKT_RUN_ARGS="${RKT_RUN_ARGS} \
@@ -781,7 +752,6 @@ storage:
               --mount volume=coreos-ssl,target=${ETCD_SSL_DIR} \
             "
           fi
-
           if [[ -S "${NOTIFY_SOCKET}" ]]; then
             RKT_RUN_ARGS="${RKT_RUN_ARGS} \
               --mount volume=coreos-notify,target=/run/systemd/notify \
@@ -789,9 +759,7 @@ storage:
               --set-env=NOTIFY_SOCKET=/run/systemd/notify \
             "
           fi
-
           mkdir --parents /run/flannel
-
           RKT="${RKT:-/opt/bin/rkt}"
           RKT_STAGE1_ARG="${RKT_STAGE1_ARG:---stage1-from-dir=stage1-fly.aci}"
           set -x
@@ -813,4 +781,16 @@ storage:
             ${FLANNEL_IMAGE} \
               ${FLANNEL_IMAGE_ARGS} \
               -- "$@"
+    - path: /etc/modules-load.d/br_netfilter.conf
+      filesystem: root
+      mode: 0644
+      contents:
+        inline: br_netfilter
+    - path: /etc/sysctl.d/30-br_netfilter.conf
+      filesystem: root
+      mode: 0644
+      contents:
+        inline: |
+          net.bridge.bridge-nf-call-ip6tables = 1
+          net.bridge.bridge-nf-call-iptables = 1
 `

@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"net"
 
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
 	"github.com/sapcc/kubernikus/pkg/api/models"
 	"github.com/sapcc/kubernikus/pkg/util/ip"
-
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 var TerminationProtectionAnnotationKey = "kubernikus.cloud.sap/termination-protection"

@@ -592,7 +592,6 @@ const (
 	// RSAPrivateKeyBlockType is a possible value for pem.Block.Type.
 	RSAPrivateKeyBlockType = "RSA PRIVATE KEY"
 	rsaKeySize             = 2048
-	duration365d           = time.Hour * 24 * 365
 )
 
 func EncodeCertPEM(cert *x509.Certificate) []byte {

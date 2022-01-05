@@ -85,3 +85,111 @@ data:
     except requests.exceptions.RequestException as e:
       print e
       sys.exit(0)
+{{- if .Values.audit }}
+  audit-policy.yaml: |-
+    apiVersion: audit.k8s.io/v1
+    kind: Policy
+    rules:
+    - level: None
+      userGroups:
+      - system:nodes
+    - level: None
+      users:
+      - kubelet
+      - system:kube-controller-manager
+      - system:kube-scheduler
+      - system:kube-aggregator
+      - system:kube-proxy
+      - system:apiserver
+      - system:serviceaccount:kube-system:generic-garbage-collector
+      - system:serviceaccount:kube-system:namespace-controller
+    - level: None
+      nonResourceURLs:
+      - /healthz*
+      - /version
+      - /openapi/*
+      - /swagger* # Swagger endpoint is deprecated with https://github.com/kubernetes/kubernetes/pull/73148
+    - level: None
+      resources:
+      - group: ""
+        resources: ["events"]
+    - level: None
+      verbs: ["get", "list", "watch"]
+    - level: Metadata
+  fluent.conf: |-
+    <source>
+      @type tail
+      path /var/log/audit.log
+      read_from_head true
+      pos_file /var/log/audit.log.pos
+      tag apiserver.audit
+      <parse>
+        @type json
+      </parse>
+    </source>
+
+    <filter apiserver.audit>
+      @type record_transformer
+      <record>
+        kluster "{{ include "master.fullname" . }}"
+      </record>
+    </filter>
+
+    {{- if eq .Values.audit "elasticsearch" }}
+    <match apiserver.audit>
+      @type elasticsearch
+      hosts "#{ENV['ELK_HOSTS']}"
+      logstash_format true
+      user "#{ENV['ELK_USERNAME']}"
+      password "#{ENV['ELK_PASSWORD']}"
+      index_name logstash-%Y.%m.%d
+      <buffer>
+        @type file
+        path /var/log/audit.buf
+      </buffer>
+    </match>
+    {{- end }}
+
+    {{- if eq .Values.audit "swift" }}
+    <match apiserver.audit>
+      @type swift
+      auth_url "#{ENV['OS_AUTH_URL']}"
+      auth_user "#{ENV['OS_USERNAME']}"
+      auth_api_key "#{ENV['OS_PASSWORD']}"
+      auth_region "#{ENV['OS_REGION']}"
+      auth_project_id "#{ENV['OS_PROJECT_ID']}"
+      auth_project_domain_id "#{ENV['OS_PROJECT_DOMAIN_ID']}"
+      auth_user_domain_id "#{ENV['OS_USER_DOMAIN_ID']}"
+      ssl_verify true
+      swift_container "{{ include "master.fullname" . }}-audit-log"
+      auto_create_container false
+      <buffer>
+        @type file
+        path /var/log/audit.buf
+        flush_mode interval
+        flush_interval 5m
+      </buffer>
+    </match>
+    {{- end }}
+
+    {{- if eq .Values.audit "http" }}
+    <match apiserver.audit>
+      @type http
+      endpoint "#{ENV['HTTP_ENDPOINT']}"
+      json_array true
+      <auth>
+        method basic
+        username "#{ENV['HTTP_USERNAME']}"
+        password "#{ENV['HTTP_PASSWORD']}"
+      </auth>
+      <format>
+        @type json
+      </format>
+      <buffer>
+        @type file
+        path /var/log/audit.buf
+        chunk_limit_size 8m
+      </buffer>
+    </match>
+    {{- end}}
+{{- end }}

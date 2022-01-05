@@ -4,3 +4,4 @@ _output
 *.swp
 .envrc
 .idea
+.env

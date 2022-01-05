@@ -70,6 +70,7 @@ func init() {
 
 	imageRegistry = version.ImageRegistry{
 		Versions: map[string]version.KlusterVersion{
+			"1.21": {Kubelet: version.ImageVersion{Repository: "nase", Tag: "v1.21"}},
 			"1.20": {Kubelet: version.ImageVersion{Repository: "nase", Tag: "v1.20"}},
 			"1.19": {Kubelet: version.ImageVersion{Repository: "nase", Tag: "v1.19"}},
 			"1.18": {Hyperkube: version.ImageVersion{Repository: "nase", Tag: "v1.18"}},
@@ -110,7 +111,7 @@ func TestGenerateNode(t *testing.T) {
 
 func TestNodeLabels(t *testing.T) {
 	kluster := testKluster.DeepCopy()
-	kluster.Spec.Version = "1.20"
+	kluster.Spec.Version = "1.21"
 
 	pool := &models.NodePool{Name: "some-name"}
 

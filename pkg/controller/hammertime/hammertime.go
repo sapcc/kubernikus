@@ -6,10 +6,9 @@ import (
 
 	kitlog "github.com/go-kit/kit/log"
 	autoscalingv1 "k8s.io/api/autoscaling/v1"
-	coord_v1beta1 "k8s.io/api/coordination/v1beta1"
+	coord_v1 "k8s.io/api/coordination/v1"
 	core_v1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
-	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/client-go/kubernetes"
@@ -173,7 +172,7 @@ func nodeReadyCondition(node *core_v1.Node) *core_v1.NodeCondition {
 	return nil
 }
 
-func getNodeLease(node *core_v1.Node, clientset kubernetes.Interface) (*coord_v1beta1.Lease, error) {
-	leaseClient := clientset.CoordinationV1beta1().Leases(core_v1.NamespaceNodeLease)
-	return leaseClient.Get(node.Name, meta_v1.GetOptions{})
+func getNodeLease(node *core_v1.Node, clientset kubernetes.Interface) (*coord_v1.Lease, error) {
+	leaseClient := clientset.CoordinationV1().Leases(core_v1.NamespaceNodeLease)
+	return leaseClient.Get(node.Name, metav1.GetOptions{})
 }

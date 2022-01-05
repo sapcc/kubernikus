@@ -26,6 +26,10 @@ type updateCluster struct {
 func (d *updateCluster) Handle(params operations.UpdateClusterParams, principal *models.Principal) middleware.Responder {
 
 	kluster, err := editCluster(d.Kubernikus.KubernikusV1().Klusters(d.Namespace), principal, params.Name, func(kluster *v1.Kluster) error {
+		// ensure audit value reaches the spec so it
+		// can be considered when upgrading the kluster
+		kluster.Spec.Audit = params.Body.Spec.Audit
+
 		// find the deleted nodepools
 		deletedNodePoolNames, err := detectNodePoolChanges(kluster.Spec.NodePools, params.Body.Spec.NodePools)
 		if err != nil {

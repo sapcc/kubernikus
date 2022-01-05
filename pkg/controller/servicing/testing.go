@@ -3,14 +3,14 @@ package servicing
 import (
 	"fmt"
 	"os"
+	"strings"
 	"time"
-
-	"k8s.io/apimachinery/pkg/util/wait"
 
 	"github.com/go-kit/kit/log"
 	core_v1 "k8s.io/api/core/v1"
 	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/util/wait"
 
 	"github.com/sapcc/kubernikus/pkg/api/models"
 	v1 "github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
@@ -48,6 +48,7 @@ type FakeNodePoolOptions struct {
 	NodeKubeletOutdated bool
 	NodeUpdating        *time.Time
 	Size                int
+	Labels              []string
 }
 
 // NewFakeKluster creates a Kluster Object for tests
@@ -82,15 +83,23 @@ func NewFakeKluster(opts *FakeKlusterOptions, afterFlatCarRktRemoval bool) (*v1.
 				AllowReplace: &allowReboot,
 				AllowReboot:  &allowReplace,
 			},
+			Labels: p.Labels,
 		}
 		kluster.Spec.NodePools = append(kluster.Spec.NodePools, pool)
 
 		for j := 0; j < p.Size; j++ {
+			labels := make(map[string]string)
+			for _, label := range p.Labels {
+				splitted := strings.Split(label, "=")
+				labels[splitted[0]] = splitted[1]
+			}
+
 			nodeName := fmt.Sprintf("test-%s-0000%d", poolName, j)
 			node := &core_v1.Node{
 				ObjectMeta: meta_v1.ObjectMeta{
 					Name:        nodeName,
 					Annotations: map[string]string{},
+					Labels:      labels,
 				},
 				Status: core_v1.NodeStatus{
 					Phase:    core_v1.NodeRunning,

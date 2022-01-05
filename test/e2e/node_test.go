@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"os"
 	"strings"
 	"testing"
 	"time"
@@ -29,7 +30,6 @@ const (
 	RegisteredTimeout                  = 15 * time.Minute // Time from node created to registered
 	StateSchedulableTimeout            = 1 * time.Minute  // Time from registered to schedulable
 	StateHealthyTimeout                = 1 * time.Minute
-	ConditionRouteBrokenTimeout        = 1 * time.Minute
 	ConditionNetworkUnavailableTimeout = 1 * time.Minute
 	ConditionReadyTimeout              = 1 * time.Minute
 )
@@ -134,6 +134,10 @@ func (k *NodeTests) Registered(t *testing.T) {
 }
 
 func (k NodeTests) LatestStableContainerLinux(t *testing.T) {
+	if os.Getenv("KLUSTER_OS_IMAGE") != "" && os.Getenv("KLUSTER_OS_IMAGE") != "flatcar-stable-amd64" {
+		return
+	}
+
 	nodes, err := k.Kubernetes.ClientSet.CoreV1().Nodes().List(meta_v1.ListOptions{})
 	if !assert.NoError(t, err) {
 		return

@@ -8,13 +8,6 @@ on:
 name: Tests
 jobs:
   test:
-    env:
-      GOPATH: ${{ github.workspace }}
-      GO111MODULE: off
-      GOMETALINTER_BIN: /home/runner/bin/gometalinter
-    defaults:
-      run:
-        working-directory: ${{ env.GOPATH }}/src/github.com/sapcc/kubernikus
     strategy:
       matrix:
         go-version: [1.15.x, 1.16.x, 1.17.x]
@@ -27,42 +20,28 @@ jobs:
         go-version: ${{ matrix.go-version }}
     - name: Checkout code
       uses: actions/checkout@v2
-      with:
-        path: ${{ env.GOPATH }}/src/github.com/sapcc/kubernikus
-    - name: Setup
-      run: |
-        mkdir -p ~/bin
-        echo "$HOME/bin" >> $GITHUB_PATH
-        env
     - name: Cache
       uses: actions/cache@v2
       with:
         path: |
-          ${{ env.GOPATH }}/pkg/mod # Module download cache
+          ~/go/pkg/mod
           ~/.cache/go-build         # Build cache (Linux)
-          ~/bin
         key: ${{ runner.os }}-go-${{ matrix.go-version }}-${{ hashFiles('**/go.sum') }}
         restore-keys: |
           ${{ runner.os }}-go-${{ matrix.go-version }}-
-    - name: Install tooling
-      run: |
-        if [ ! -f "$GOMETALINTER_BIN" ]; then
-          curl -Lf https://github.com/alecthomas/gometalinter/releases/download/v2.0.11/gometalinter-2.0.11-linux-amd64.tar.gz | tar --strip-components=1 -C ~/bin -zxv
-        fi
     - name: Build
       run: make all
-    - name: gofmt
-      run: make gofmt
-    - name: Linters
-      run: make linters
+    - name: golangci-lint
+      uses: golangci/golangci-lint-action@v2
+      with:
+        # Optional: version of golangci-lint to use in form of v1.2 or v1.2.3 or `latest` to use the latest version
+        version: v1.42.1
     - name: Tests
       run: /bin/bash -c make gotest
     - name: Build e2e
       run: make build-e2e
     - name: Charts
       run: make test-charts
-    - name: Loopref
-      run: make test-loopref
 #    - name: Slack
 #      uses: 8398a7/action-slack@v3
 #      with:

@@ -24,6 +24,7 @@ import (
 const (
 	AnnotationNodeForceReplace = "kubernikus.cloud.sap/forceReplace"
 	AnnotationNodeSkipReplace  = "kubernikus.cloud.sap/skipReplace"
+	LabelMaintenanceController = "cloud.sap/maintenance-profile"
 )
 
 type (
@@ -36,6 +37,7 @@ type (
 		Successful() []*core_v1.Node
 		Failed() []*core_v1.Node
 		NotReady() []*core_v1.Node
+		Maintained() []*core_v1.Node
 	}
 
 	// ListerFactory produces a Lister
@@ -45,23 +47,25 @@ type (
 
 	// NodeListerFactory produces a NodeLister
 	NodeListerFactory struct {
-		Logger          log.Logger
-		NodeObservatory *nodeobservatory.NodeObservatory
-		CoreOSVersion   *coreos.Version
-		CoreOSRelease   *coreos.Release
-		FlatcarVersion  *flatcar.Version
-		FlatcarRelease  *flatcar.Release
+		Logger            log.Logger
+		NodeObservatory   *nodeobservatory.NodeObservatory
+		CoreOSVersion     *coreos.Version
+		CoreOSRelease     *coreos.Release
+		FlatcarVersion    *flatcar.Version
+		FlatcarRelease    *flatcar.Release
+		NodeUpdateHoldoff time.Duration
 	}
 
 	// NodeLister knows how to figure out the state of Nodes
 	NodeLister struct {
-		Logger         log.Logger
-		Kluster        *v1.Kluster
-		Lister         listers_core_v1.NodeLister
-		CoreOSVersion  *coreos.Version
-		CoreOSRelease  *coreos.Release
-		FlatcarVersion *flatcar.Version
-		FlatcarRelease *flatcar.Release
+		Logger            log.Logger
+		Kluster           *v1.Kluster
+		Lister            listers_core_v1.NodeLister
+		CoreOSVersion     *coreos.Version
+		CoreOSRelease     *coreos.Release
+		FlatcarVersion    *flatcar.Version
+		FlatcarRelease    *flatcar.Release
+		NodeUpdateHoldoff time.Duration
 	}
 
 	// LoggingLister writes log messages
@@ -72,14 +76,15 @@ type (
 )
 
 // NewNodeListerFactory produces a new factory
-func NewNodeListerFactory(logger log.Logger, recorder record.EventRecorder, factories config.Factories, clients config.Clients) ListerFactory {
+func NewNodeListerFactory(logger log.Logger, recorder record.EventRecorder, factories config.Factories, clients config.Clients, holdoff time.Duration) ListerFactory {
 	return &NodeListerFactory{
-		Logger:          logger,
-		NodeObservatory: factories.NodesObservatory.NodeInformer(),
-		CoreOSVersion:   &coreos.Version{},
-		CoreOSRelease:   &coreos.Release{},
-		FlatcarVersion:  &flatcar.Version{},
-		FlatcarRelease:  &flatcar.Release{},
+		Logger:            logger,
+		NodeObservatory:   factories.NodesObservatory.NodeInformer(),
+		CoreOSVersion:     &coreos.Version{},
+		CoreOSRelease:     &coreos.Release{},
+		FlatcarVersion:    &flatcar.Version{},
+		FlatcarRelease:    &flatcar.Release{},
+		NodeUpdateHoldoff: holdoff,
 	}
 }
 
@@ -94,13 +99,14 @@ func (f *NodeListerFactory) Make(k *v1.Kluster) (Lister, error) {
 	}
 
 	lister = &NodeLister{
-		Logger:         logger,
-		Kluster:        k,
-		Lister:         klusterLister,
-		CoreOSVersion:  f.CoreOSVersion,
-		CoreOSRelease:  f.CoreOSRelease,
-		FlatcarVersion: f.FlatcarVersion,
-		FlatcarRelease: f.FlatcarRelease,
+		Logger:            logger,
+		Kluster:           k,
+		Lister:            klusterLister,
+		CoreOSVersion:     f.CoreOSVersion,
+		CoreOSRelease:     f.CoreOSRelease,
+		FlatcarVersion:    f.FlatcarVersion,
+		FlatcarRelease:    f.FlatcarRelease,
+		NodeUpdateHoldoff: f.NodeUpdateHoldoff,
 	}
 
 	lister = &LoggingLister{
@@ -137,7 +143,7 @@ func (d *NodeLister) Reboot() []*core_v1.Node {
 		return found
 	}
 
-	releasedFlatcar, err := d.FlatcarRelease.GrownUp(latestFlatcar)
+	releasedFlatcar, err := d.FlatcarRelease.GrownUp(latestFlatcar, d.NodeUpdateHoldoff)
 	if err != nil {
 		d.Logger.Log(
 			"msg", "Couldn't get Flatcar releases.",
@@ -205,7 +211,7 @@ func (d *NodeLister) Replace() []*core_v1.Node {
 		return found
 	}
 
-	releasedFlatcar, err := d.FlatcarRelease.GrownUp(latestFlatcar)
+	releasedFlatcar, err := d.FlatcarRelease.GrownUp(latestFlatcar, d.NodeUpdateHoldoff)
 	if err != nil {
 		d.Logger.Log(
 			"msg", "Couldn't get Flatcar releases.",
@@ -416,6 +422,20 @@ func (d *NodeLister) Failed() []*core_v1.Node {
 	return found
 }
 
+// Returns all nodes that are assumed to be maintained by the maintenance-controller.
+func (d *NodeLister) Maintained() []*core_v1.Node {
+	var found []*core_v1.Node
+
+	for _, node := range d.All() {
+		_, ok := node.Labels[LabelMaintenanceController]
+		if ok {
+			found = append(found, node)
+		}
+	}
+
+	return found
+}
+
 func (d *NodeLister) updateTimeout() []*core_v1.Node {
 	var found []*core_v1.Node
 
@@ -476,23 +496,6 @@ func (d *NodeLister) hasAnnotation(name string) []*core_v1.Node {
 		}
 
 		found = append(found, node)
-	}
-
-	return found
-}
-
-func (d *NodeLister) withAnnotation(name, expected string) []*core_v1.Node {
-	var found []*core_v1.Node
-
-	for _, node := range d.All() {
-		value, ok := node.ObjectMeta.Annotations[name]
-		if !ok {
-			continue
-		}
-
-		if value == expected {
-			found = append(found, node)
-		}
 	}
 
 	return found
@@ -587,6 +590,18 @@ func (l *LoggingLister) Failed() (nodes []*core_v1.Node) {
 		)
 	}(time.Now())
 	return l.Lister.Failed()
+}
+
+func (l *LoggingLister) Maintained() (nodes []*core_v1.Node) {
+	defer func(begin time.Time) {
+		l.Logger.Log(
+			"msg", "listing nodes assumed to be maintained by the maintenance-controller",
+			"took", time.Since(begin),
+			"count", len(nodes),
+			"v", 3,
+		)
+	}(time.Now())
+	return l.Lister.Maintained()
 }
 
 func getKubeletVersion(node *core_v1.Node) (*version.Version, error) {

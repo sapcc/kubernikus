@@ -121,6 +121,16 @@ spec:
             items:
               - key: local-kubeconfig
                 path: kubeconfig
+        {{- if .Values.audit }}
+        - name: audit-policy
+          configMap:
+            name: {{ include "master.fullname" . }}
+            items:
+              - key: audit-policy.yaml
+                path: audit-policy.yaml
+        - name: logs
+          emptyDir: {}
+        {{- end }}
       initContainers:
         - name: etcd-wait
           image: "{{ include "etcd.image" . }}"
@@ -244,6 +254,12 @@ spec:
             - --oidc-username-prefix=-
             - --oidc-username-claim=name
             {{ end }}
+            {{- if .Values.audit }}
+            - --audit-policy-file=/audit/audit-policy.yaml
+            - --audit-log-path=/var/log/audit.log
+            - --audit-log-maxage=1
+            - --audit-log-maxbackup=1
+            {{- end }}
           volumeMounts:
             - mountPath: /etc/kubernetes/certs
               name: certs
@@ -265,6 +281,13 @@ spec:
             - mountPath: /liveness-probe
               name: liveness-probe
 {{- end }}
+            {{- if .Values.audit }}
+            - mountPath: /audit
+              name: audit-policy
+              readOnly: true
+            - mountPath: /var/log
+              name: logs
+            {{- end}}
           livenessProbe:
 {{- if .Values.etcd.backup.enabled }}
             exec:
@@ -320,3 +343,86 @@ spec:
             - mountPath: /etc/kubernetes/config
               name: wormhole-config
               readOnly: true
+        {{- if .Values.audit }}
+        - name: fluentd
+          image: {{ include "fluentd.image" . | quote }}
+          imagePullPolicy: Always
+          env:
+          {{- if eq .Values.audit "elasticsearch" }}
+          - name: ELK_USERNAME
+            valueFrom:
+              secretKeyRef:
+                name: {{ include "master.fullname" . }}-elk
+                key: elk-username
+          - name: ELK_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: {{ include "master.fullname" . }}-elk
+                key: elk-password
+          - name: ELK_HOSTS
+            valueFrom:
+              secretKeyRef:
+                name: {{ include "master.fullname" . }}-elk
+                key: elk-hosts
+          {{- end }}
+          {{- if eq .Values.audit "swift" }}
+          - name: OS_AUTH_URL
+            valueFrom:
+              secretKeyRef:
+                name: {{ include "master.fullname" . }}-secret
+                key: openstack-auth-url
+          - name: OS_USERNAME
+            valueFrom:
+              secretKeyRef:
+                name: {{ include "master.fullname" . }}-secret
+                key: openstack-username
+          - name: OS_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: {{ include "master.fullname" . }}-secret
+                key: openstack-password
+          - name: OS_PROJECT_ID
+            valueFrom:
+              secretKeyRef:
+                name: {{ include "master.fullname" . }}-secret
+                key: openstack-project-id
+          - name: OS_USER_DOMAIN_ID
+            valueFrom:
+              secretKeyRef:
+                name: {{ include "master.fullname" . }}-secret
+                key: openstack-user-domain-id
+          - name: OS_PROJECT_DOMAIN_ID
+            valueFrom:
+              secretKeyRef:
+                name: {{ include "master.fullname" . }}-secret
+                key: openstack-project-domain-id
+          - name: OS_REGION
+            valueFrom:
+              secretKeyRef:
+                name: {{ include "master.fullname" . }}-secret
+                key: openstack-region
+          {{- end}}
+          {{- if eq .Values.audit "http" }}
+          - name: HTTP_USERNAME
+            valueFrom:
+              secretKeyRef:
+                name: {{ include "master.fullname" . }}-http
+                key: http-username
+          - name: HTTP_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: {{ include "master.fullname" . }}-http
+                key: http-password
+          - name: HTTP_ENDPOINT
+            valueFrom:
+              secretKeyRef:
+                name: {{ include "master.fullname" . }}-http
+                key: http-endpoint
+          {{- end }}
+          volumeMounts:
+            - mountPath: /fluentd/etc
+              name: config
+              readOnly: true
+            - mountPath: /var/log
+              name: logs
+        {{- end }}
