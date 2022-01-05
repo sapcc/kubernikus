@@ -88,7 +88,7 @@ auth_e2e_ap-cn-1: &auth_e2e_ap-cn-1
   KUBERNIKUS_NAME: e2e
   OS_PROJECT_DOMAIN_NAME: ccadmin
 
-  NODEPOOL_AVZ: ap-cn-1a
+  NODEPOOL_AVZ: ap-cn-1b
 
 
   OS_AUTH_URL: https://identity-3.ap-cn-1.cloud.sap/v3
