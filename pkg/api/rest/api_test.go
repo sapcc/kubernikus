@@ -24,7 +24,6 @@ import (
 
 	apipkg "github.com/sapcc/kubernikus/pkg/api"
 	"github.com/sapcc/kubernikus/pkg/api/auth"
-	"github.com/sapcc/kubernikus/pkg/api/handlers"
 	"github.com/sapcc/kubernikus/pkg/api/models"
 	"github.com/sapcc/kubernikus/pkg/api/rest/operations"
 	"github.com/sapcc/kubernikus/pkg/api/spec"
@@ -260,15 +259,6 @@ func TestClusterList(t *testing.T) {
 
 func TestClusterUpdate(t *testing.T) {
 
-	handlers.FetchOpenstackMetadataFunc = func(request *http.Request, principal *models.Principal) (*models.OpenstackMetadata, error) {
-		return &models.OpenstackMetadata{
-			AvailabilityZones: []models.AvailabilityZone{
-				{Name: "us-west-1a"},
-				{Name: "us-east-1a"},
-			},
-		}, nil
-	}
-
 	on := true
 	off := false
 
@@ -292,10 +282,11 @@ func TestClusterUpdate(t *testing.T) {
 			},
 			NodePools: []models.NodePool{
 				{
-					Flavor: "flavour",
-					Image:  "image",
-					Name:   "poolname",
-					Size:   2,
+					AvailabilityZone: "us-west-1a",
+					Flavor:           "flavour",
+					Image:            "image",
+					Name:             "poolname",
+					Size:             2,
 					Config: &models.NodePoolConfig{
 						AllowReboot:  &off,
 						AllowReplace: &off,

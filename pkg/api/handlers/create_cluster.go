@@ -46,32 +46,11 @@ func (d *createCluster) Handle(params operations.CreateClusterParams, principal 
 		}
 	}
 
-	var metadata *models.OpenstackMetadata
-	var defaultAVZ string
-	if len(spec.NodePools) > 0 {
-		m, err := FetchOpenstackMetadataFunc(params.HTTPRequest, principal)
-		if err != nil {
-			return NewErrorResponse(&operations.CreateClusterDefault{}, 500, err.Error())
-		}
-		metadata = m
-
-		avz, err := getDefaultAvailabilityZone(metadata)
-		if err != nil {
-			return NewErrorResponse(&operations.CreateClusterDefault{}, 500, err.Error())
-		}
-		defaultAVZ = avz
-	}
-
 	spec.Name = name
 	for i, pool := range spec.NodePools {
 		// Set default image
 		if pool.Image == "" {
 			spec.NodePools[i].Image = DEFAULT_IMAGE
-		}
-
-		// Set default AvailabilityZone
-		if pool.AvailabilityZone == "" {
-			spec.NodePools[i].AvailabilityZone = defaultAVZ
 		}
 
 		allowReboot := true
@@ -91,10 +70,6 @@ func (d *createCluster) Handle(params operations.CreateClusterParams, principal 
 			spec.NodePools[i].Config.AllowReplace = &allowReplace
 		}
 
-		// Validate AVZ
-		if err := validateAavailabilityZone(spec.NodePools[i].AvailabilityZone, metadata); err != nil {
-			return NewErrorResponse(&operations.CreateClusterDefault{}, 409, "Availability Zone %s is invalid: %s", spec.NodePools[i].AvailabilityZone, err)
-		}
 	}
 
 	kluster, err := kubernikus.NewKlusterFactory().KlusterFor(spec)

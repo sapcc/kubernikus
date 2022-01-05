@@ -552,6 +552,7 @@ definitions:
     required:
       - name
       - flavor
+      - availabilityZone
     properties:
       name:
         x-nullable: false

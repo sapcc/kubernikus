@@ -25,20 +25,6 @@ type updateCluster struct {
 
 func (d *updateCluster) Handle(params operations.UpdateClusterParams, principal *models.Principal) middleware.Responder {
 
-	var metadata *models.OpenstackMetadata
-	var defaultAVZ string
-	var err error
-
-	if len(params.Body.Spec.NodePools) > 0 {
-		if metadata, err = FetchOpenstackMetadataFunc(params.HTTPRequest, principal); err != nil {
-			return NewErrorResponse(&operations.UpdateClusterDefault{}, 500, err.Error())
-		}
-
-		if defaultAVZ, err = getDefaultAvailabilityZone(metadata); err != nil {
-			return NewErrorResponse(&operations.UpdateClusterDefault{}, 500, err.Error())
-		}
-	}
-
 	kluster, err := editCluster(d.Kubernikus.KubernikusV1().Klusters(d.Namespace), principal, params.Name, func(kluster *v1.Kluster) error {
 		// ensure audit value reaches the spec so it
 		// can be considered when upgrading the kluster
@@ -97,10 +83,6 @@ func (d *updateCluster) Handle(params operations.UpdateClusterParams, principal 
 
 		// restore defaults
 		for i, paramPool := range nodePools {
-			// Set default AvailabilityZone
-			if paramPool.AvailabilityZone == "" {
-				nodePools[i].AvailabilityZone = defaultAVZ
-			}
 
 			allowReboot := true
 			allowReplace := true
@@ -119,9 +101,6 @@ func (d *updateCluster) Handle(params operations.UpdateClusterParams, principal 
 				nodePools[i].Config.AllowReplace = &allowReplace
 			}
 
-			if err := validateAavailabilityZone(nodePools[i].AvailabilityZone, metadata); err != nil {
-				return apierrors.NewBadRequest(fmt.Sprintf("Availability Zone %s is invalid: %s", nodePools[i].AvailabilityZone, err))
-			}
 		}
 
 		// Update nodepool
