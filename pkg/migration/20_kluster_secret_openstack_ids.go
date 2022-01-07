@@ -10,6 +10,10 @@ import (
 // due to a bug in the auth of its OpenStack provider (so project domain name) cannot
 // be used.
 func KlusterSecretOpenStackIds(rawKluster []byte, current *v1.Kluster, clients config.Clients, factories config.Factories) error {
+
+	if current.Spec.NoCloud {
+		return nil //migration does not apply to noCloud clusters
+	}
 	secret, err := util.KlusterSecret(clients.Kubernetes, current)
 	if err != nil {
 		return err
