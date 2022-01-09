@@ -50,11 +50,11 @@ func (k *Kluster) printTable(options printers.PrintOptions) {
 	if options.WithHeaders {
 		fmt.Print("NAME")
 		fmt.Print("\t")
-		fmt.Print("STATUS")
+		fmt.Println("STATUS")
 	}
 	fmt.Print(k.Name)
 	fmt.Print("\t")
-	fmt.Print(k.Status.Phase)
+	fmt.Println(k.Status.Phase)
 }
 
 func (p NodePool) GetFormats() map[printers.PrintFormat]struct{} {
