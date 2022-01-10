@@ -23,6 +23,7 @@ systemd:
         [Unit]
         Description=Reboot if legacy cgroups are not enabled yet
         FailureAction=reboot
+        After=extend-filesystems.service
         [Service]
         Type=simple
         ExecStart=/usr/bin/grep 'systemd.unified_cgroup_hierarchy=0' /proc/cmdline
