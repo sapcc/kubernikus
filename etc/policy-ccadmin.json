@@ -1,7 +1,7 @@
 {
   "kubernetes_admin": "role:kubernetes_admin and (domain_name:ccadmin or domain_name:Default)",
   "kubernetes_user": "(role:kubernetes_member or role:kubernetes_admin) and (domain_name:ccadmin or domain_name:Default)",
-  "kubernetes_cloud_admin": "domain_name:ccadmin and project_name:cloud_admin",
+  "kubernetes_cloud_admin": "(domain_name:ccadmin or domain_name:Default) and project_name:cloud_admin",
 
   "GetOpenstackMetadata": "rule:kubernetes_admin",
   "ListClusters": "rule:kubernetes_user",
