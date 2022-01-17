@@ -55,8 +55,9 @@ func (f *flightReconcilerFactory) FlightReconciler(kluster *v1.Kluster) (FlightR
 	}
 
 	var reconciler FlightReconciler
-	reconciler = &flightReconciler{kluster, instances, nodes, client, f.KubernetesClient, adminClient, f.Logger}
-	reconciler = &LoggingFlightReconciler{reconciler, f.Logger}
+	logger := log.With(f.Logger, "kluster", kluster.Spec.Name, "project", kluster.Account())
+	reconciler = &flightReconciler{kluster, instances, nodes, client, f.KubernetesClient, adminClient, logger}
+	reconciler = &LoggingFlightReconciler{reconciler, logger}
 	return reconciler, nil
 }
 
