@@ -97,7 +97,7 @@ data:
     - level: Metadata
       resources:
       - group: "rbac.authorization.k8s.io"
-        resources: ["clusterroles, clusterrolebindings", "roles", "rolebindings"]
+        resources: ["clusterroles", "clusterrolebindings", "roles", "rolebindings"]
     - level: None
       userGroups:
       - system:nodes
