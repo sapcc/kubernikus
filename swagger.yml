@@ -470,7 +470,7 @@ definitions:
       audit:
         type: string
         x-nullable: true
-        enum: ["elasticsearch", "swift", "http"]
+        enum: ["elasticsearch", "swift", "http", "stdout"]
         default: null
       noCloud:
         type: boolean
