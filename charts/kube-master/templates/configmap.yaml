@@ -90,6 +90,14 @@ data:
     apiVersion: audit.k8s.io/v1
     kind: Policy
     rules:
+    - level: Metadata
+      resources:
+      - group: ""
+        resources: ["secrets", "serviceaccounts"]
+    - level: Metadata
+      resources:
+      - group: "rbac.authorization.k8s.io"
+        resources: ["clusterroles", "clusterrolebindings", "roles", "rolebindings"]
     - level: None
       userGroups:
       - system:nodes
@@ -103,6 +111,11 @@ data:
       - system:apiserver
       - system:serviceaccount:kube-system:generic-garbage-collector
       - system:serviceaccount:kube-system:namespace-controller
+    - level: None
+      resources:
+      - group: ""
+        resources: ["configmaps", "leases"]
+        resourceNames: ["maintenance-controller-leader-election.cloud.sap"]
     - level: None
       nonResourceURLs:
       - /healthz*
@@ -142,10 +155,14 @@ data:
       logstash_format true
       user "#{ENV['ELK_USERNAME']}"
       password "#{ENV['ELK_PASSWORD']}"
-      index_name logstash-%Y.%m.%d
+      index_name "#{ENV['ELK_INDEX']}"
+      request_timeout 60s
       <buffer>
         @type file
         path /var/log/audit.buf
+        chunk_limit_size 8m
+        flush_thread_count 2
+        flush_at_shutdown true
       </buffer>
     </match>
     {{- end }}
@@ -168,6 +185,7 @@ data:
         path /var/log/audit.buf
         flush_mode interval
         flush_interval 5m
+        flush_at_shutdown true
       </buffer>
     </match>
     {{- end }}
@@ -177,6 +195,9 @@ data:
       @type http
       endpoint "#{ENV['HTTP_ENDPOINT']}"
       json_array true
+      open_timeout 60
+      read_timeout 60
+      ssl_timeout 60
       <auth>
         method basic
         username "#{ENV['HTTP_USERNAME']}"
@@ -189,6 +210,8 @@ data:
         @type file
         path /var/log/audit.buf
         chunk_limit_size 8m
+        flush_thread_count 2
+        flush_at_shutdown true
       </buffer>
     </match>
     {{- end}}
