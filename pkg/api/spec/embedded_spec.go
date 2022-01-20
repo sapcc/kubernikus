@@ -599,7 +599,8 @@ func init() {
           "enum": [
             "elasticsearch",
             "swift",
-            "http"
+            "http",
+            "stdout"
           ],
           "x-nullable": true
         },
@@ -1646,7 +1647,8 @@ func init() {
           "enum": [
             "elasticsearch",
             "swift",
-            "http"
+            "http",
+            "stdout"
           ],
           "x-nullable": true
         },
