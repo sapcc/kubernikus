@@ -209,7 +209,7 @@ imagesForVersion:
       tag: 'v0.5.1'
     csiLivenessProbe:
       repository: 'keppel.$REGION.cloud.sap/ccloud/csi-livenessprobe'
-      tag: 'v2.1.0'
+      tag: 'v2.4.0'
     csiNodeDriver:
       repository: 'keppel.$REGION.cloud.sap/ccloud/csi-node-driver-registrar'
       tag: 'v1.3.0'
@@ -283,7 +283,7 @@ imagesForVersion:
       tag: 'v0.5.1'
     csiLivenessProbe:
       repository: 'keppel.$REGION.cloud.sap/ccloud/csi-livenessprobe'
-      tag: 'v2.1.0'
+      tag: 'v2.4.0'
     csiNodeDriver:
       repository: 'keppel.$REGION.cloud.sap/ccloud/csi-node-driver-registrar'
       tag: 'v1.3.0'
