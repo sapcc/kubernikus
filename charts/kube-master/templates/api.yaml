@@ -150,6 +150,18 @@ spec:
 {{- else }}
             - until etcdctl --total-timeout=4s --endpoints http://{{ include "etcd.fullname" . }}:2379 cluster-health; do sleep 5; done;
 {{- end }}
+{{- if and (semverCompare ">= 1.22" .Values.version.kubernetes) .Values.audit }}
+        - name: auditlog-permission-fix
+          image: "{{ include "fluentd.image" . }}"
+          command:
+            - sh
+            - -c
+          args:
+            - touch /var/log/audit.log && chmod 644 /var/log/audit.log
+          volumeMounts:
+            - mountPath: /var/log
+              name: logs
+{{- end}}
       containers:
         - name: apiserver
           ports:
