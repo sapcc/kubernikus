@@ -15,7 +15,7 @@ data:
       config:
         inCluster: true
     web:
-      http: 0.0.0.0:80
+      http: 0.0.0.0:8082
     frontend:
       theme: ccloud
       issuer: "Converged Cloud Kubernetes"
