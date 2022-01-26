@@ -21,7 +21,7 @@ dex:
       groupSearch: {}
         # baseDN:
         # filter:
-  image: keppel.eu-de-1.cloud.sap/ccloud/dex:38f4f8ea8d487470a1dd5b83d66b428d8b502f81
+  image: keppel.eu-de-1.cloud.sap/ccloud-dockerhub-mirror/dexidp/dex:v2.30.2
   enabled: false
   clientID: kubernikus
   #clientSecret:

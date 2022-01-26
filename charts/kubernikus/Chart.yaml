@@ -1,4 +1,4 @@
 apiVersion: v1
 description: A Helm chart for Kubernetes
 name: kubernikus
-version: 0.3.5
+version: 0.3.6

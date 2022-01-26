@@ -28,23 +28,27 @@ spec:
         command: ["/usr/local/bin/dex", "serve", "/etc/dex/cfg/config.yaml"]
         ports:
         - name: http
-          containerPort: 80
+          containerPort: 8082
         env:
         - name: LDAP_CONFIG_BIND_PW
           valueFrom:
             secretKeyRef:
               name: kubernikus-api-dex
               key: bindPW
+        - name: KUBERNETES_POD_NAMESPACE
+          valueFrom:
+           fieldRef:
+             fieldPath: metadata.namespace
         livenessProbe:
           httpGet:
             path: /keys
-            port: 80
+            port: 8082
           initialDelaySeconds: 3
           timeoutSeconds: 2
         readinessProbe:
           httpGet:
             path: /keys
-            port: 80
+            port: 8082
           initialDelaySeconds: 3
           timeoutSeconds: 2
         volumeMounts:
@@ -71,7 +75,7 @@ spec:
   ports:
   - protocol: TCP
     port: 80
-    targetPort: 80
+    targetPort: 8082
     name: http
   selector:
     app: kubernikus-api-dex
