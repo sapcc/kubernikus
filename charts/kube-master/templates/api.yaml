@@ -361,6 +361,7 @@ spec:
           resources:
             requests:
               ephemeral-storage: "2Gi"
+          args: ["--suppress-config-dump"]
           env:
           {{- if eq .Values.audit "elasticsearch" }}
           - name: ELK_USERNAME
