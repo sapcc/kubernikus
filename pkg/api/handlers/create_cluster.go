@@ -208,11 +208,19 @@ func (d *createCluster) controlPlaneClusterCIDR() *net.IPNet {
 	if d.cpClusterCIDR != nil {
 		return d.cpClusterCIDR
 	}
-	podList, err := d.Kubernetes.CoreV1().Pods(metav1.NamespaceAll).List(metav1.ListOptions{Limit: 1})
+	podList, err := d.Kubernetes.CoreV1().Pods(metav1.NamespaceAll).List(metav1.ListOptions{})
+
 	if err != nil || len(podList.Items) == 0 {
 		return nil
 	}
-	_, ipnet, err := net.ParseCIDR(podList.Items[0].Status.PodIP + "/16")
+	//find pod which is not in hostNetwork mode
+	idx := 0
+	for idx = range podList.Items {
+		if !podList.Items[idx].Spec.HostNetwork {
+			break
+		}
+	}
+	_, ipnet, err := net.ParseCIDR(podList.Items[idx].Status.PodIP + "/16")
 
 	if err != nil {
 		return nil
