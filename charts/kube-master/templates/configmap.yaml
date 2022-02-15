@@ -94,7 +94,9 @@ data:
       resources:
       - group: ""
         resources: ["secrets", "serviceaccounts"]
-    - level: Metadata
+      - group: ""
+        resources: ["pods/log"]
+    - level: Request
       resources:
       - group: "rbac.authorization.k8s.io"
         resources: ["clusterroles", "clusterrolebindings", "roles", "rolebindings"]
@@ -114,7 +116,10 @@ data:
     - level: None
       resources:
       - group: ""
-        resources: ["configmaps", "leases"]
+        resources: ["configmaps"]
+        resourceNames: ["maintenance-controller-leader-election.cloud.sap"]
+      - group: "coordination.k8s.io"
+        resources: ["leases"]
         resourceNames: ["maintenance-controller-leader-election.cloud.sap"]
     - level: None
       nonResourceURLs:
