@@ -1,5 +1,6 @@
-VERSION  ?= $(shell git rev-parse --verify HEAD)
-GOOS     ?= $(shell go env GOOS)
+VERSION ?= $(shell git rev-parse --verify HEAD)
+GOOS    ?= $(shell go env GOOS)
+GOARCH  ?= $(shell go env GOARCH)
 ifeq ($(GOOS),darwin)
 export CGO_ENABLED=0
 endif
@@ -31,7 +32,7 @@ bin/$(GOOS)/swagger-%:
 	chmod +x $@
 
 bin/%: $(GOFILES) Makefile
-	GOOS=$(*D) GOARCH=amd64 go build $(GOFLAGS) -v -o $(@D)/$(@F) ./cmd/$(basename $(@F))
+	GOOS=$(*D) GOARCH=$(GOARCH) go build $(GOFLAGS) -v -o $(@D)/$(@F) ./cmd/$(basename $(@F))
 
 test: linters gotest build-e2e
 
