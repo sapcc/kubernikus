@@ -24,6 +24,9 @@ run:
 
       keppel validate $IMAGE:$VERSION
 
+      #Interpolate secrets
+      vault-injector interpolate secrets.git/global/values/kubernikus.yaml secrets.git/kubernikus/$KUBERNIKUS_NAME/values/kubernikus.yaml
+
       helm diff upgrade kubernikus kubernikus.builds/charts/kubernikus/ \
         --suppress-secrets --allow-unreleased --context 5 \
         --values secrets.git/global/values/kubernikus.yaml \
@@ -50,3 +53,7 @@ params:
   KUBERNIKUS_NAME:
   KUBERNIKUS_URL:
   HELM_VERSION: 2.11.0
+  VAULT_ADDR:      https://vault.global.cloud.sap # DO NOT CHANGE
+  VAULT_KV_ENGINE: secrets                        # DO NOT CHANGE
+  VAULT_ROLE_ID:   # (required) set this to ((auth.role_id)) to receive credentials automatically from Concourse
+  VAULT_SECRET_ID: # (required) set this to ((auth.secret_id)) to receive credentials automatically from Concourse

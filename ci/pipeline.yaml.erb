@@ -40,20 +40,24 @@ DEPLOYABLE_REGIONS = REGIONS.select{ |k, v| ["terraform", "manual"].include?(v[:
 
 <% REGIONS.each do |region, meta| %>
 auth_<%= region %>: &auth_<%= region %>
-  KUBELOGON_USER:     ((KUBELOGON_USER))
-  KUBELOGON_PASSWORD: ((KUBELOGON_PASSWORD))
+  KUBELOGON_USER:     ((unified-kubernetes-auth/default.username))
+  KUBELOGON_PASSWORD: ((unified-kubernetes-auth/default.password))
   KUBERNIKUS_NAME: k-<%= region %>
   KUBERNIKUS_URL: https://kubernikus.admin.<%= region == :master ? "eu-nl-1": region %>.cloud.sap
+  VAULT_ROLE_ID: ((auth.role_id))
+  VAULT_SECRET_ID: ((auth.secret_id))
 
 auth_e2e_<%= region %>: &auth_e2e_<%= region %>
   CP_KLUSTER: k-<%= region %>
   CP_KUBERNIKUS_URL: https://kubernikus.admin.<%= region == :master ? "eu-nl-1" : region %>.cloud.sap
   CP_OS_PROJECT_DOMAIN_NAME: ccadmin
+  VAULT_ROLE_ID: ((auth.role_id))
+  VAULT_SECRET_ID: ((auth.secret_id))
 <% if meta[:oidc] %>
   CP_OIDC_AUTH_URL: https://kubernikus.admin.<%= region == :master ? "eu-nl-1" : region %>.cloud.sap/auth/login
   CP_OIDC_CONNECTOR_ID: <%= meta[:oidc] %>
-  CP_OIDC_USERNAME: ((KUBELOGON_USER))
-  CP_OIDC_PASSWORD: ((KUBELOGON_PASSWORD))
+  CP_OIDC_USERNAME: ((unified-kubernetes-auth/default.username))
+  CP_OIDC_PASSWORD: ((unified-kubernetes-auth/default.password))
 <% end %>
   KUBERNIKUS_NAME: e2e
   OS_PROJECT_DOMAIN_NAME: ccadmin
@@ -63,7 +67,7 @@ auth_e2e_<%= region %>: &auth_e2e_<%= region %>
 <% if meta[:e2e] == "terraform" %>
   OS_AUTH_URL: https://identity-3.<%= region %>.cloud.sap/v3
   OS_USERNAME: kubernikus-pipeline
-  OS_PASSWORD: ((kubernikus-pipeline-password))
+  OS_PASSWORD: ((keystone-user-password/kubernikus-pipeline))
   OS_USER_DOMAIN_NAME: Default
   OS_PROJECT_NAME: kubernikus_e2e
   OS_REGION_NAME: <%= region %>
@@ -72,8 +76,8 @@ auth_e2e_<%= region %>: &auth_e2e_<%= region %>
 <% end %>
 <% if meta[:e2e] == "manual" %>
   OS_AUTH_URL: https://identity-3.<%= region %>.cloud.sap/v3
-  OS_USERNAME: ((kubernikus-prod-username))
-  OS_PASSWORD: ((kubernikus-prod-password))
+  OS_USERNAME: T175B19A704E280EC
+  OS_PASSWORD: ((ldap-user-password/T175B19A704E280EC))
   OS_USER_DOMAIN_NAME: ccadmin
   OS_PROJECT_NAME: kubernikus-e2e
   OS_REGION_NAME: <%= region %>
@@ -82,8 +86,8 @@ auth_e2e_<%= region %>: &auth_e2e_<%= region %>
 <% end %>
 <% if meta[:e2e] == "virtual" %>
   OS_AUTH_URL: https://identity-3.eu-nl-1.cloud.sap/v3
-  OS_USERNAME: ((kubernikus-prod-username))
-  OS_PASSWORD: ((kubernikus-prod-password))
+  OS_USERNAME: T175B19A704E280EC
+  OS_PASSWORD: ((ldap-user-password/T175B19A704E280EC))
   OS_USER_DOMAIN_NAME: ccadmin
   OS_PROJECT_NAME: kubernikus-e2e
   OS_REGION_NAME: eu-nl-1
@@ -125,8 +129,8 @@ resources:
     source:
     check_every: 24h
     source:
-      username: ((keppel.username))
-      password: ((keppel.password))
+      username: ((registry-user/keppel-ccloud.username))
+      password: ((registry-user/keppel-ccloud.password))
       repository: keppel.eu-de-1.cloud.sap/ccloud/kubernikus-docs-builder
       tag: latest
 
@@ -135,8 +139,8 @@ resources:
     source:
     check_every: 24h
     source:
-      username: ((keppel.username))
-      password: ((keppel.password))
+      username: ((registry-user/keppel-ccloud.username))
+      password: ((registry-user/keppel-ccloud.password))
       repository: keppel.eu-de-1.cloud.sap/ccloud/kubernikus
       tag: latest
 
@@ -145,7 +149,7 @@ resources:
     source:
       owner: sapcc
       repository: kubernikus
-      access_token: ((github-com-access-token))
+      access_token: ((github-access-token/sapcc-bot))
 
   - name: secrets.git
     icon: key-variant
@@ -154,7 +158,7 @@ resources:
     check_every: 1h
     source:
       uri:         git@github.wdf.sap.corp:cc/secrets.git
-      private_key: ((secrets-ssh-key))
+      private_key: ((github-private-key/cc-secrets))
       branch:      master
       depth: 1
 
@@ -165,7 +169,7 @@ resources:
     check_every: 1h
     source:
       uri:         git@github.wdf.sap.corp:cc/secrets.git
-      private_key: ((secrets-ssh-key))
+      private_key: ((github-private-key/cc-secrets))
       branch:      master
       depth: 1
       paths: [ kubernikus/tiller.version, kubernikus/*/tiller.version ]
@@ -182,14 +186,14 @@ resources:
     type: slack-alert
     icon: slack
     source:
-      url: ((slack-webhook-url))
+      url: ((slack-webhook-url/kubernikus-ci))
       channel: '#kubernikus-ci'
 
   - name: slack-notification
     type: slack-notification
     icon: slack
     source:
-      url: ((slack-webhook-url))
+      url: ((slack-webhook-url/kubernikus-ci))
 
 <% GROUPS.each do |group| %>
   - name: <%= group %>.tag
@@ -350,10 +354,10 @@ jobs:
       - task: build
         file: kubernikus.builds/ci/task_whitesource.yaml
         params:
-          API_KEY: ((whitesource-api-key))
-          USER_KEY: ((whitesource-user-key))
+          API_KEY: ((whitesource-auth/credentials.api-key))
+          USER_KEY: ((whitesource-auth/credentials.user-key))
           PROJECT_NAME: CCloud Kubernikus
-          PRODUCT_TOKEN: ((whitesource-product-token))
+          PRODUCT_TOKEN: ((whitesource-auth/credentials.product-token))
     <<: *slack
 
   - name: all-versions

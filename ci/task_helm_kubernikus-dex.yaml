@@ -29,6 +29,9 @@ run:
       touch /tmp/kubernikus-dex.yaml
       [[ "${KUBERNIKUS_NAME}" == "k-master" ]] && printf "dex:\n  dns:\n    zone: ingress.kubernikus-master" > /tmp/kubernikus-dex.yaml
 
+      # Interpolate secrets
+      vault-injector interpolate secrets.git/$REGION/values/keystone.yaml secrets.git/$REGION/values/globals.yaml /tmp/kubernikus-dex.yaml
+
       helm diff upgrade kubernikus-dex kubernikus-copy.builds/charts/kubernikus-dex/ \
         --values secrets.git/$REGION/values/keystone.yaml \
         --values secrets.git/$REGION/values/globals.yaml \
@@ -50,3 +53,7 @@ params:
   KUBERNIKUS_NAME:
   KUBERNIKUS_URL:
   HELM_VERSION: 2.11.0
+  VAULT_ADDR:      https://vault.global.cloud.sap # DO NOT CHANGE
+  VAULT_KV_ENGINE: secrets                        # DO NOT CHANGE
+  VAULT_ROLE_ID:   # (required) set this to ((auth.role_id)) to receive credentials automatically from Concourse
+  VAULT_SECRET_ID: # (required) set this to ((auth.secret_id)) to receive credentials automatically from Concourse
