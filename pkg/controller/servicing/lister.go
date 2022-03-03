@@ -1,6 +1,7 @@
 package servicing
 
 import (
+	"fmt"
 	"strings"
 	"time"
 
@@ -130,6 +131,28 @@ func (d *NodeLister) All() []*core_v1.Node {
 	return nodes
 }
 
+func (d *NodeLister) GetNodeCountByPoolName(name string) int {
+	label, err := labels.Parse(fmt.Sprintf("ccloud.sap.com/nodepool=%s", name))
+	if err != nil {
+		d.Logger.Log(
+			"msg", "Couldn't get nodepool label. Skipping pool upgrade.",
+			"err", err,
+		)
+		return -1
+	}
+
+	nodes, err := d.Lister.List(label)
+	if err != nil {
+		d.Logger.Log(
+			"msg", "Couldn't list nodes. Skipping pool upgrade.",
+			"err", err,
+		)
+		return -1
+	}
+
+	return len(nodes)
+}
+
 // Reboot lists nodes that have an outdated OS version
 func (d *NodeLister) Reboot() []*core_v1.Node {
 	var rebootable, found []*core_v1.Node
@@ -152,6 +175,10 @@ func (d *NodeLister) Reboot() []*core_v1.Node {
 	}
 
 	for _, pool := range d.Kluster.Spec.NodePools {
+		if int(pool.Size) > d.GetNodeCountByPoolName(pool.Name) {
+			continue
+		}
+
 		for _, node := range d.All() {
 			if util.IsKubernikusNode(node.Name, d.Kluster.Spec.Name, pool.Name) {
 				if util.IsFlatcarNodeWithRkt(node) {
