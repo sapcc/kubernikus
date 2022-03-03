@@ -148,6 +148,15 @@ func (r *KlusterReconciler) Do() error {
 		return nil
 	}
 
+	var nodeCount = 0
+	for i := range r.Kluster.Spec.NodePools {
+		nodeCount += int(r.Kluster.Spec.NodePools[i].Size)
+	}
+	if nodeCount > len(r.Lister.All()) {
+		r.Logger.Log("msg", "skipped upgrades because nodes are already missing", "v", 2)
+		return nil
+	}
+
 	if err := r.updateLastServicingTime(); err != nil {
 		return errors.Wrap(err, "Failed to update servicing timestamp")
 	}
