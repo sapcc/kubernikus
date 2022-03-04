@@ -247,6 +247,10 @@ func (d *NodeLister) Replace() []*core_v1.Node {
 	}
 
 	for i, pool := range d.Kluster.Spec.NodePools {
+		if int(pool.Size) > d.GetNodeCountByPoolName(pool.Name) {
+			continue
+		}
+
 		for _, node := range d.All() {
 			if util.IsKubernikusNode(node.Name, d.Kluster.Spec.Name, pool.Name) {
 				nodeNameToPool[node.GetName()] = &d.Kluster.Spec.NodePools[i]
