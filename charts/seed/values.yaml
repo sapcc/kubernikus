@@ -1,0 +1,169 @@
+# Default values for kube-master.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+image:
+  #repository and tag from from hyperkube.image helper
+  pullPolicy: IfNotPresent
+
+# Settings for the openstack cloudprovider
+openstack: {}
+  #authURL:
+  #username:
+  #password:
+  #domainName:
+  #projectID:
+  #region:
+  #lbSubnetID:
+  #lbFloatingNetworkID
+  #routerID:
+  #region
+  #projectDomainName:
+
+# specify a different certsSecretName if you want to use
+# an exiting secret
+# certsSecretName:
+#
+# Use these keys to specify the certs as helm values
+certs: {}
+
+#clusterCIDR: 198.19.0.0/16
+serviceCIDR: 198.18.128.0/17
+advertiseAddress: 198.18.128.1
+advertisePort: 6443
+#bootstrapToken
+#nodePassword:
+#name:
+#account:
+
+version: {}
+# kubernikus:
+# kubernetes: 1.10.11
+
+api:
+  replicaCount: 1
+  # apiserverHost:
+  # wormholeHost:
+  resources:
+    requests:
+      cpu: 200m
+      memory: 512Mi
+    limits:
+      cpu: 1
+      memory: 2Gi
+
+cloudControllerManager:
+  replicaCount: 1
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512M
+
+controllerManager:
+  replicaCount: 1
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+scheduler:
+  replicaCount: 1
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+revisionHistoryLimit: 3
+
+dex:
+  enabled: false 
+  connectors:
+    keystone: 
+      enabled: true
+      secret: kubernikus-dex-keystone
+    ldap:
+      enabled: false
+      secret: kubernikus-dex-ldap
+  staticPasword:
+    enabled: false
+    email: kubernikus@cloud.sap
+    # hashedPassword:
+  #staticClientSecret: 
+  ingressSecret: kubernikus-dex
+
+dashboard:
+  enabled: false
+  ingressSecret: kubernikus-dex
+
+images:
+  csi-driver-cinder: image-repository:image-tag
+  csi-provisioner: image-repository:image-tag
+  csi-attacher: image-repository:image-tag
+  csi-snapshotter: image-repository:image-tag
+  csi-resizer: image-repository:image-tag
+  csi-liveness-probe: image-repository:image-tag
+  csi-snapshot-controller: image-repository:image-tag
+
+socketPath: /var/lib/csi/sockets/pluginproxy
+timeout: 3m
+
+csi:
+  replicas: 1
+  leaderElection: "false"
+  podAnnotations: {}
+  socketPath: /var/lib/csi/sockets/pluginproxy
+  timeout: 3m
+
+  resources:
+    driver:
+      requests:
+        cpu: 20m
+        memory: 50Mi
+      limits:
+        cpu: 100m
+        memory: 100Mi
+    provisioner:
+      requests:
+        cpu: 10m
+        memory: 32Mi
+      limits:
+        cpu: 30m
+        memory: 50Mi
+    attacher:
+      requests:
+        cpu: 10m
+        memory: 32Mi
+      limits:
+        cpu: 100m
+        memory: 100Mi
+    snapshotter:
+      requests:
+        cpu: 10m
+        memory: 32Mi
+      limits:
+        cpu: 30m
+        memory: 50Mi
+    snapshotController:
+      requests:
+        cpu: 10m
+        memory: 32Mi
+      limits:
+        cpu: 30m
+        memory: 50Mi
+    resizer:
+      requests:
+        cpu: 10m
+        memory: 32Mi
+      limits:
+        cpu: 100m
+        memory: 100Mi
+
+audit: ""

@@ -270,9 +270,23 @@ func (op *GroundControl) handler(key string) error {
 				"expected", expectedPods,
 				"actual", podsReady)
 			if podsReady == expectedPods {
-				if err := ground.SeedKluster(op.Clients, op.Factories, op.Images, kluster); err != nil {
+				klusterSecret, err := util.KlusterSecret(op.Clients.Kubernetes, kluster)
+				if err != nil {
 					return err
 				}
+				accessMode, err := util.PVAccessMode(op.Clients.Kubernetes, nil)
+				if err != nil {
+					return err
+				}
+				helmValues, err := helm_util.KlusterToHelmValues(kluster, klusterSecret, kluster.Spec.Version, &op.Config.Images, accessMode)
+				if err != nil {
+					return err
+				}
+				seedReconciler := ground.NewSeedReconciler(&op.Clients, kluster, op.Logger)
+				if err := seedReconciler.ReconcileSeeding(helmValues); err != nil {
+					return fmt.Errorf("Seeding reconciliation failed: %w", err)
+				}
+				op.Logger.Log("msg", "reconciled seeding successfully", "kluster", kluster.GetName(), "v", 2)
 				if err := op.updatePhase(kluster, models.KlusterPhaseRunning); err != nil {
 					op.Logger.Log(
 						"msg", "failed to update status of kluster",
@@ -297,6 +311,19 @@ func (op *GroundControl) handler(key string) error {
 			}
 			if err := op.ensureStorageContainers(kluster, klusterSecret); err != nil {
 				return err
+			}
+
+			accessMode, err := util.PVAccessMode(op.Clients.Kubernetes, nil)
+			if err != nil {
+				return err
+			}
+			helmValues, err := helm_util.KlusterToHelmValues(kluster, klusterSecret, kluster.Spec.Version, &op.Config.Images, accessMode)
+			if err != nil {
+				return err
+			}
+			seedReconciler := ground.NewSeedReconciler(&op.Clients, kluster, op.Logger)
+			if err := seedReconciler.ReconcileSeeding(helmValues); err != nil {
+				return fmt.Errorf("Seeding reconciliation failed: %w", err)
 			}
 
 			updated, err := op.updateVersionStatus(kluster)

@@ -1,0 +1,96 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: kubernikus:kubelet-bootstrap
+subjects:
+- kind: Group
+  apiGroup: rbac.authorization.k8s.io
+  name: system:bootstrappers
+roleRef:
+  kind: ClusterRole
+  name: system:node-bootstrapper
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: kubernikus:approve-node-client-csr
+rules:
+- apiGroups: ["certificates.k8s.io"]
+  verbs: ["create"]
+  resources: ["certificatesigningrequests/nodeclient"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: kubernikus:node-client-csr-autoapprove
+subjects:
+- kind: Group
+  apiGroup: rbac.authorization.k8s.io
+  name: system:bootstrappers
+roleRef:
+  kind: ClusterRole
+  name: kubernikus:approve-node-client-csr
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: system:certificates.k8s.io:certificatesigningrequests:selfnodeclient
+rules:
+- apiGroups: ["certificates.k8s.io"]
+  verbs: ["create"]
+  resources: ["certificatesigningrequests/selfnodeclient"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: kubernikus:auto-approve-renewals-for-nodes
+subjects:
+- kind: Group
+  apiGroup: rbac.authorization.k8s.io
+  name: system:nodes
+roleRef:
+  kind: ClusterRole
+  name: system:certificates.k8s.io:certificatesigningrequests:selfnodeclient
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: kubernikus:admin
+subjects:
+- kind: Group
+  apiGroup: rbac.authorization.k8s.io
+  name: os:kubernetes_admin
+roleRef:
+  kind: ClusterRole
+  name: cluster-admin
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: kubernikus:member
+  namespace: default
+subjects:
+- kind: Group
+  apiGroup: rbac.authorization.k8s.io
+  name: os:kubernetes_member
+roleRef:
+  kind: ClusterRole
+  name: edit
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: kubernikus:apiserver-kubeletapi
+subjects:
+- kind: User
+  apiGroup: rbac.authorization.k8s.io
+  name: apiserver
+roleRef:
+  kind: ClusterRole
+  name: system:kubelet-api-admin
+  apiGroup: rbac.authorization.k8s.io
