@@ -118,11 +118,7 @@ func (op *GroundControl) Run(stopCh <-chan struct{}, wg *sync.WaitGroup) {
 		for {
 			select {
 			case <-ticker.C:
-				op.Logger.Log(
-					"msg", "I now would do reconciliation if it was implemented",
-					"kluster_recheck_interval", KLUSTER_RECHECK_INTERVAL,
-					"v", 2)
-				//op.queue.Add(true)
+				op.enqueueAllKlusters()
 			case <-stopCh:
 				ticker.Stop()
 				return
@@ -131,6 +127,20 @@ func (op *GroundControl) Run(stopCh <-chan struct{}, wg *sync.WaitGroup) {
 	}()
 
 	<-stopCh
+}
+
+func (op *GroundControl) enqueueAllKlusters() {
+	klusterList, err := op.Clients.Kubernikus.KubernikusV1().Klusters(op.Config.Kubernikus.Namespace).List(meta_v1.ListOptions{})
+	if err != nil {
+		op.Logger.Log(
+			"msg", "Error enqueuing klusters",
+			"err", err)
+		return
+	}
+	for _, kluster := range klusterList.Items {
+		klusterKey := kluster.Namespace + "/" + kluster.Name
+		op.queue.AddRateLimited(klusterKey)
+	}
 }
 
 func (op *GroundControl) runWorker() {
