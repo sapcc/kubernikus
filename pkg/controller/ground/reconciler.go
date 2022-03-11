@@ -6,8 +6,6 @@ import (
 
 	jsonpatch "github.com/evanphx/json-patch"
 	"github.com/go-kit/kit/log"
-	v1 "github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
-	"github.com/sapcc/kubernikus/pkg/controller/config"
 	"helm.sh/helm/v3/pkg/action"
 	"helm.sh/helm/v3/pkg/chart/loader"
 	"helm.sh/helm/v3/pkg/chartutil"
@@ -18,12 +16,14 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/apimachinery/pkg/util/yaml"
 	"k8s.io/client-go/discovery"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/restmapper"
 
-	"k8s.io/apimachinery/pkg/util/yaml"
+	v1 "github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
+	"github.com/sapcc/kubernikus/pkg/controller/config"
 )
 
 const SeedChartPath string = "charts/seed"
