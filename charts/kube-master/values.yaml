@@ -43,6 +43,12 @@ api:
   replicaCount: 1
   # apiserverHost:
   # wormholeHost:
+  oidc:
+    # issuerURL:
+    clientID: kubernetes
+    groupsClaim: groups
+    usernamePrefix: "-"
+    usernameClaim: name
   resources:
     requests:
       cpu: 200m
