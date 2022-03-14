@@ -62,7 +62,7 @@ func (s *SetupTests) CreateCluster(t *testing.T) {
 			NodePools: []models.NodePool{
 				{
 					Name:             "small",
-					Flavor:           "m1.small",
+					Flavor:           "c_c2_m2",
 					Size:             SmokeTestNodeCount,
 					AvailabilityZone: os.Getenv("NODEPOOL_AVZ"),
 					Image:            osImage,
