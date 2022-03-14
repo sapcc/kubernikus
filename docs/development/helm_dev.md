@@ -42,7 +42,7 @@ These openstack things need also be added:
 
 ### The user
 
-The technical user which you use to interact has to have a default project set. This is very problematic as we have no way of changing a normal user whcih is in LDAP.
+The technical user which you use to interact has to have a default project set. This is very problematic as we have no way of changing a normal user which is in LDAP.
 
 Thus the user has to be a technical user and created via commandline.
 To be able to do this it has to be created outside of any LDAP configured domain.
