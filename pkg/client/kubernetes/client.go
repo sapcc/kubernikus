@@ -93,7 +93,7 @@ func NewClientConfigV1(name, user, url string, key, cert, ca []byte, token strin
 	}
 }
 
-func NewClientConfigV1OIDC(name, user, url, secret, issuer string, ca []byte) clientcmdapiv1.Config {
+func NewClientConfigV1OIDC(name, user, url, clientID, secret, issuer string, ca []byte) clientcmdapiv1.Config {
 	return clientcmdapiv1.Config{
 		APIVersion:     "v1",
 		Kind:           "Config",
@@ -124,7 +124,7 @@ func NewClientConfigV1OIDC(name, user, url, secret, issuer string, ca []byte) cl
 					AuthProvider: &clientcmdapiv1.AuthProviderConfig{
 						Name: "oidc",
 						Config: map[string]string{
-							"client-id":      "kubernetes",
+							"client-id":      clientID,
 							"client-secret":  secret,
 							"idp-issuer-url": issuer,
 						},

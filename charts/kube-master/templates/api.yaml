@@ -259,12 +259,12 @@ spec:
 {{- if .Values.api.corsAllowedOrigins }}
             - --cors-allowed-origins={{ .Values.api.corsAllowedOrigins }}
 {{- end }}
-            {{ if .Values.dex.enabled }}
-            - --oidc-issuer-url=https://{{ include "dex.url" . }}
-            - --oidc-client-id=kubernetes
-            - --oidc-groups-claim=groups
-            - --oidc-username-prefix=-
-            - --oidc-username-claim=name
+            {{ if or .Values.dex.enabled .Values.api.oidc.issuerURL }}
+            - --oidc-issuer-url={{ default  (printf "https://%s" (include "dex.url" .)) .Values.api.oidc.issuerURL }}
+            - --oidc-client-id={{ .Values.api.oidc.clientID }}
+            - --oidc-groups-claim={{ .Values.api.oidc.groupsClaim }}
+            - --oidc-username-prefix={{ .Values.api.oidc.usernamePrefix }}
+            - --oidc-username-claim={{ .Values.api.oidc.usernameClaim }}
             {{ end }}
             {{- if .Values.audit }}
             - --audit-policy-file=/audit/audit-policy.yaml

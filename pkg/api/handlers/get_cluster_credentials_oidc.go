@@ -34,10 +34,6 @@ func (d *getClusterCredentialsOIDC) Handle(params operations.GetClusterCredentia
 		return NewErrorResponse(&operations.GetClusterCredentialsDefault{}, 500, err.Error())
 	}
 
-	if !swag.BoolValue(kluster.Spec.Dex) {
-		return NewErrorResponse(&operations.GetClusterCredentialsDefault{}, 404, "Dex not enabled, no OIDC credentials")
-	}
-
 	secret, err := util.KlusterSecret(d.Kubernetes, kluster)
 	if err != nil {
 		if apierrors.IsNotFound(err) {
@@ -46,20 +42,44 @@ func (d *getClusterCredentialsOIDC) Handle(params operations.GetClusterCredentia
 		return NewErrorResponse(&operations.GetClusterCredentialsDefault{}, 500, err.Error())
 	}
 
-	idpURL := ""
+	secretID := secret.DexClientSecret
+	clientID := "kubernetes"
+	issuerURL := ""
 	if kluster.Status.Apiserver != "" {
 		apiURL := kluster.Status.Apiserver
-		idpURL = strings.Replace(apiURL, kluster.GetName(), fmt.Sprintf("auth-%s.ingress", kluster.GetName()), -1)
-	} else {
-		return NewErrorResponse(&operations.GetClusterCredentialsOIDCDefault{}, 500, "no apiserver url in kluster status")
+		issuerURL = strings.Replace(apiURL, kluster.GetName(), fmt.Sprintf("auth-%s.ingress", kluster.GetName()), -1)
+	}
+
+	if !swag.BoolValue(kluster.Spec.Dex) {
+		if secret.ExtraValues != "" {
+			var oidcValues struct {
+				API struct {
+					OIDC struct {
+						ClientID  string `yaml:"clientID,omitempty"`
+						SecretID  string `yaml:"secretID,omitempty"`
+						IssuerURL string `yaml:"issuerURL,omitempty"`
+					} `yaml:"oidc"`
+				} `yaml:"api"`
+			}
+			if err := yaml.Unmarshal([]byte(secret.ExtraValues), &oidcValues); err == nil && oidcValues.API.OIDC.IssuerURL != "" {
+				issuerURL = oidcValues.API.OIDC.IssuerURL
+				clientID = oidcValues.API.OIDC.ClientID
+				secretID = oidcValues.API.OIDC.SecretID
+			} else {
+				return NewErrorResponse(&operations.GetClusterCredentialsDefault{}, 404, "Dex not enabled, no OIDC credentials")
+			}
+		} else {
+			return NewErrorResponse(&operations.GetClusterCredentialsDefault{}, 404, "Dex not enabled, no OIDC credentials")
+		}
 	}
 
 	config := kubernetes.NewClientConfigV1OIDC(
 		params.Name,
 		fmt.Sprintf("oidc@%v", params.Name),
 		kluster.Status.Apiserver,
-		secret.DexClientSecret,
-		idpURL,
+		clientID,
+		secretID,
+		issuerURL,
 		[]byte(secret.TLSCACertificate),
 	)
 
