@@ -292,6 +292,14 @@ func (op *GroundControl) handler(key string) error {
 				if err != nil {
 					return err
 				}
+				projectClient, err := op.Factories.Openstack.ProjectAdminClientFor(kluster.Account())
+				if err != nil {
+					return err
+				}
+				err = ground.EnrichHelmValuesForSeed(projectClient, kluster, helmValues)
+				if err != nil {
+					return err
+				}
 				seedReconciler := ground.NewSeedReconciler(&op.Clients, kluster, op.Logger)
 				if err := seedReconciler.ReconcileSeeding(helmValues); err != nil {
 					return fmt.Errorf("Seeding reconciliation failed: %w", err)
@@ -328,6 +336,14 @@ func (op *GroundControl) handler(key string) error {
 				return err
 			}
 			helmValues, err := helm_util.KlusterToHelmValues(kluster, klusterSecret, kluster.Spec.Version, &op.Config.Images, accessMode)
+			if err != nil {
+				return err
+			}
+			projectClient, err := op.Factories.Openstack.ProjectAdminClientFor(kluster.Account())
+			if err != nil {
+				return err
+			}
+			err = ground.EnrichHelmValuesForSeed(projectClient, kluster, helmValues)
 			if err != nil {
 				return err
 			}

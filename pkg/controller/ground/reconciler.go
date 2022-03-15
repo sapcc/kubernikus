@@ -17,12 +17,14 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/yaml"
+	"k8s.io/apimachinery/pkg/version"
 	"k8s.io/client-go/discovery"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/restmapper"
 
 	v1 "github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
+	"github.com/sapcc/kubernikus/pkg/client/openstack/project"
 	"github.com/sapcc/kubernikus/pkg/controller/config"
 )
 
@@ -40,6 +42,27 @@ type SeedReconciler struct {
 	Clients *config.Clients
 	Kluster *v1.Kluster
 	Logger  log.Logger
+}
+
+func EnrichHelmValuesForSeed(client project.ProjectClient, kluster *v1.Kluster, values map[string]interface{}) error {
+	metadata, err := client.GetMetadata()
+	if err != nil {
+		return err
+	}
+	azNames := make([]interface{}, 0)
+	for _, az := range metadata.AvailabilityZones {
+		azNames = append(azNames, az.Name)
+	}
+	if osValues, ok := values["openstack"]; ok {
+		casted := osValues.(map[string]interface{})
+		casted["azs"] = azNames
+	}
+
+	values["dns"] = map[string]interface{}{
+		"address": kluster.Spec.DNSAddress,
+		"domain":  kluster.Spec.DNSDomain,
+	}
+	return nil
 }
 
 func NewSeedReconciler(clients *config.Clients, kluster *v1.Kluster, logger log.Logger) SeedReconciler {
@@ -60,7 +83,11 @@ func (sr *SeedReconciler) ReconcileSeeding(values map[string]interface{}) error 
 		return err
 	}
 
-	planned, err := getPlannedObjects(&config, apiVersions, values)
+	version, err := discover.ServerVersion()
+	if err != nil {
+		return err
+	}
+	planned, err := getPlannedObjects(&config, version, apiVersions, values)
 	if err != nil {
 		return err
 	}
@@ -95,17 +122,32 @@ func (sr *SeedReconciler) ReconcileSeeding(values map[string]interface{}) error 
 	if err != nil {
 		return err
 	}
+	sr.Logger.Log(
+		"msg", "Seed reconciliation: successful",
+		"kluster", sr.Kluster.Name,
+		"v", 5)
 	return nil
 }
 
 // Gets all resources as rendered by the seed chart
-func getPlannedObjects(config *rest.Config, apiVersions chartutil.VersionSet, values map[string]interface{}) ([]unstructured.Unstructured, error) {
+func getPlannedObjects(config *rest.Config, kubeVersion *version.Info, apiVersions chartutil.VersionSet, values map[string]interface{}) ([]unstructured.Unstructured, error) {
 	planned := make([]unstructured.Unstructured, 0)
 	seedChart, err := loader.Load(SeedChartPath)
 	if err != nil {
 		return planned, err
 	}
-	rendered, err := engine.RenderWithClient(seedChart, values, config)
+	renderValues, err := chartutil.ToRenderValues(seedChart, values, chartutil.ReleaseOptions{}, &chartutil.Capabilities{
+		APIVersions: apiVersions,
+		KubeVersion: chartutil.KubeVersion{
+			Version: kubeVersion.GitVersion,
+			Major:   kubeVersion.Major,
+			Minor:   kubeVersion.Minor,
+		},
+	})
+	if err != nil {
+		return planned, err
+	}
+	rendered, err := engine.RenderWithClient(seedChart, renderValues, config)
 	if err != nil {
 		return planned, err
 	}
@@ -113,9 +155,19 @@ func getPlannedObjects(config *rest.Config, apiVersions chartutil.VersionSet, va
 	if err != nil {
 		return planned, err
 	}
+
+	crds := make([][]byte, 0)
+	for _, crdObject := range seedChart.CRDObjects() {
+		crds = append(crds, crdObject.File.Data)
+	}
+	zipped := make([][]byte, 0)
+	zipped = append(zipped, crds...)
 	for _, manifest := range manifests {
+		zipped = append(zipped, []byte(manifest.Content))
+	}
+	for _, manifest := range zipped {
 		decoded := make(map[string]interface{})
-		err := yaml.NewYAMLOrJSONDecoder(bytes.NewReader([]byte(manifest.Content)), 1024).Decode(&decoded)
+		err := yaml.NewYAMLOrJSONDecoder(bytes.NewReader([]byte(manifest)), 1024).Decode(&decoded)
 		if err != nil {
 			return planned, err
 		}
@@ -169,8 +221,11 @@ func getDiffObjects(client dynamic.Interface, mapper meta.RESTMapper, planned []
 	diffs := make([]objectDiff, 0)
 	for _, onePlanned := range planned {
 		mapping, err := mapper.RESTMapping(onePlanned.GroupVersionKind().GroupKind(), onePlanned.GroupVersionKind().Version)
-		if err != nil {
-			return diffs, err
+		if meta.IsNoMatchError(err) {
+			// a planned instace of a CRD could come along here, which cannot be found, as the CRD has not been created yet
+			continue
+		} else if err != nil {
+			return nil, err
 		}
 		oneDeployed, err := makeScopedClient(client, mapping, onePlanned.GetNamespace()).Get(onePlanned.GetName(), metav1.GetOptions{})
 		if errors.IsNotFound(err) {
@@ -232,6 +287,12 @@ func (sr *SeedReconciler) deleteOrphanedObjects(client dynamic.Interface, mapper
 func (sr *SeedReconciler) createOrUpdateObjects(client dynamic.Interface, mapper meta.RESTMapper, diffs []objectDiff) error {
 	for _, oneDiff := range diffs {
 		mapping, err := mapper.RESTMapping(oneDiff.planned.GroupVersionKind().GroupKind(), oneDiff.planned.GroupVersionKind().Version)
+		if meta.IsNoMatchError(err) {
+			// a planned instace of a CRD could come along here, which cannot be found, as the CRD has not been created yet
+			continue
+		} else if err != nil {
+			return err
+		}
 		if err != nil {
 			return err
 		}
@@ -269,6 +330,9 @@ func (sr *SeedReconciler) patchDeployed(client dynamic.Interface, mapping *meta.
 	plannedMetadata["managedFields"] = deployedMetadata["managedFields"]
 	plannedMetadata["resourceVersion"] = deployedMetadata["resourceVersion"]
 	plannedMetadata["uid"] = deployedMetadata["uid"]
+	if _, ok := deployed.Object["reclaimPolicy"]; ok {
+		planned.Object["reclaimPolicy"] = deployed.Object["reclaimPolicy"]
+	}
 
 	original, err := deployed.MarshalJSON()
 	if err != nil {
@@ -291,7 +355,8 @@ func (sr *SeedReconciler) patchDeployed(client dynamic.Interface, mapping *meta.
 		"name", deployed.GetName(),
 		"namespace", deployed.GetNamespace(),
 		"kind", fmt.Sprintf("%s", deployed.GetKind()),
-		"v", 6)
+		"patch", string(patch),
+		"v", 1)
 	_, err = makeScopedClient(client, mapping, deployed.GetNamespace()).Patch(deployed.GetName(), types.MergePatchType, patch, metav1.PatchOptions{})
 	return err
 }

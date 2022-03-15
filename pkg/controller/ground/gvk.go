@@ -27,13 +27,48 @@ var managedGVKs = []schema.GroupVersionKind{
 		Kind:    "RoleBinding",
 	},
 	{
+		Group:   "storage.k8s.io/v1",
+		Version: "v1",
+		Kind:    "StorageClass",
+	},
+	{
+		Group:   "storage.k8s.io/v1",
+		Version: "v1",
+		Kind:    "VolumeSnapshotClass",
+	},
+	{
+		Group:   "storage.k8s.io/v1",
+		Version: "v1",
+		Kind:    "CSIDriver",
+	},
+	{
 		Group:   "apps",
 		Version: "v1",
 		Kind:    "Deployment",
 	},
 	{
+		Group:   "apps",
+		Version: "v1",
+		Kind:    "DaemonSet",
+	},
+	{
 		Group:   "",
 		Version: "v1",
 		Kind:    "ConfigMap",
+	},
+	{
+		Group:   "",
+		Version: "v1",
+		Kind:    "Secret",
+	},
+	{
+		Group:   "",
+		Version: "v1",
+		Kind:    "ServiceAccount",
+	},
+	{
+		Group:   "apiextensions.k8s.io/v1",
+		Version: "v1",
+		Kind:    "CustomResourceDefinition",
 	},
 }

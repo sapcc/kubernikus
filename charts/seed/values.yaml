@@ -104,6 +104,15 @@ dashboard:
   ingressSecret: kubernikus-dex
 
 images:
+  csiNodeDriver:
+    repository: keppelsomething.cloud.sap
+    tag: tag
+  csiLivenessProbe:
+    repository: keppelsomething.cloud.sap
+    tag: tag
+  cinderCSIPlugin:
+    repository: keppelsomething.cloud.sap
+    tag: tag
   csi-driver-cinder: image-repository:image-tag
   csi-provisioner: image-repository:image-tag
   csi-attacher: image-repository:image-tag
