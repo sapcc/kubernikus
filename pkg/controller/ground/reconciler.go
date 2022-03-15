@@ -32,6 +32,8 @@ const SeedChartPath string = "charts/seed"
 
 const ManagedByLabelKey string = "cloud.sap/managed-by"
 const ManagedByLabelValue string = "kubernikus"
+const SkipPatchKey string = "kubernikus.cloud.sap/skip-manage"
+const SkipPatchValue string = "true"
 
 type objectDiff struct {
 	planned  unstructured.Unstructured
@@ -323,6 +325,10 @@ func (sr *SeedReconciler) createPlanned(client dynamic.Interface, mapping *meta.
 }
 
 func (sr *SeedReconciler) patchDeployed(client dynamic.Interface, mapping *meta.RESTMapping, planned, deployed *unstructured.Unstructured) error {
+	// skip if flagged
+	if val, ok := deployed.GetLabels()[SkipPatchKey]; ok && val == SkipPatchValue {
+		return nil
+	}
 	// copy over certain values to keep patches small
 	deployedMetadata := deployed.Object["metadata"].(map[string]interface{})
 	plannedMetadata := planned.Object["metadata"].(map[string]interface{})
@@ -330,6 +336,7 @@ func (sr *SeedReconciler) patchDeployed(client dynamic.Interface, mapping *meta.
 	plannedMetadata["managedFields"] = deployedMetadata["managedFields"]
 	plannedMetadata["resourceVersion"] = deployedMetadata["resourceVersion"]
 	plannedMetadata["uid"] = deployedMetadata["uid"]
+	plannedMetadata["status"] = deployedMetadata["status"]
 	if _, ok := deployed.Object["reclaimPolicy"]; ok {
 		planned.Object["reclaimPolicy"] = deployed.Object["reclaimPolicy"]
 	}
