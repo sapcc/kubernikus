@@ -1,3 +1,5 @@
+ARG BASE_IMAGE
+
 FROM alpine as builder
 
 WORKDIR /tmp
@@ -11,16 +13,40 @@ RUN wget https://storage.googleapis.com/kubernetes-release/release/$KUBERNETES_V
     wget https://storage.googleapis.com/kubernetes-release/release/$KUBERNETES_VERSION/bin/linux/amd64/kubectl && \
     chmod +x kubectl
 
-FROM k8s.gcr.io/build-image/debian-hyperkube-base-amd64:v1.1.0 
+FROM $BASE_IMAGE
 
 LABEL source_repository="https://github.com/sapcc/kubernikus"
-
-RUN rm -rf /usr/local/bin/* /apiserver /cloud-controller-manager /controller-manager /kubectl /kubelet /proxy /scheduler
 
 COPY --from=builder /tmp/kubelet /usr/local/bin/kubelet
 COPY --from=builder /tmp/kubectl /usr/local/bin/kubectl
 
-RUN apt-get update && \
-    apt-get -y --no-install-recommends install iproute2 && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+RUN echo CACHEBUST>/dev/null && clean-install \
+    bash
+
+RUN echo "dash dash/sh boolean false" | debconf-set-selections
+RUN DEBIAN_FRONTEND=noninteractive dpkg-reconfigure dash
+RUN ln -fs /usr/share/zoneinfo/Europe/Berlin /etc/localtime
+
+RUN echo CACHEBUST>/dev/null && clean-install --allow-change-held-packages \
+    ca-certificates \
+    ceph-common \
+    cifs-utils \
+    conntrack \
+    e2fsprogs \
+    xfsprogs \
+    ebtables \
+    ethtool \
+    git \
+    glusterfs-client \
+    iptables \
+    ipset \
+    jq \
+    kmod \
+    openssh-client \
+    netbase \
+    nfs-common \
+    socat \
+    udev \
+    util-linux \
+    libcap2 \
+    iproute2
