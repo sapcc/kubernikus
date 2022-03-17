@@ -336,10 +336,17 @@ func (sr *SeedReconciler) patchDeployed(client dynamic.Interface, mapping *meta.
 	plannedMetadata["managedFields"] = deployedMetadata["managedFields"]
 	plannedMetadata["resourceVersion"] = deployedMetadata["resourceVersion"]
 	plannedMetadata["uid"] = deployedMetadata["uid"]
-	plannedMetadata["status"] = deployedMetadata["status"]
+	if _, ok := deployed.Object["status"]; ok {
+		planned.Object["status"] = deployed.Object["status"]
+	}
 	if _, ok := deployed.Object["reclaimPolicy"]; ok {
 		planned.Object["reclaimPolicy"] = deployed.Object["reclaimPolicy"]
 	}
+	// Depending on the concrete resource there still patches that are not strictly
+	// required fallthrough here. A prime example is the Container Spec of Deployments,
+	// DaemonSets and so on, which has a bunch of optional fields, which aren't part
+	// of the planned maifest but of the deployed resources. That in turn creates some
+	// larger patches.
 
 	original, err := deployed.MarshalJSON()
 	if err != nil {
@@ -363,7 +370,7 @@ func (sr *SeedReconciler) patchDeployed(client dynamic.Interface, mapping *meta.
 		"namespace", deployed.GetNamespace(),
 		"kind", fmt.Sprintf("%s", deployed.GetKind()),
 		"patch", string(patch),
-		"v", 1)
+		"v", 6)
 	_, err = makeScopedClient(client, mapping, deployed.GetNamespace()).Patch(deployed.GetName(), types.MergePatchType, patch, metav1.PatchOptions{})
 	return err
 }

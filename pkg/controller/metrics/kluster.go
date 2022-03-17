@@ -7,6 +7,14 @@ import (
 	kubernikus_lister "github.com/sapcc/kubernikus/pkg/generated/listers/kubernikus/v1"
 )
 
+var SeedReconciliationFailuresTotal = prometheus.NewCounterVec(
+	prometheus.CounterOpts{
+		Namespace: "kubernikus",
+		Subsystem: "seed_reconciliation",
+		Name:      "failures_total",
+		Help:      "Number of failed seed reconciliations."},
+	[]string{"kluster_name"})
+
 type klusterCollector struct {
 	infoMetric *prometheus.Desc
 	lister     kubernikus_lister.KlusterLister

@@ -13,6 +13,7 @@ import (
 	"github.com/go-kit/kit/log"
 	"github.com/go-openapi/swag"
 	"github.com/pkg/errors"
+	"github.com/prometheus/client_golang/prometheus"
 	"helm.sh/helm/v3/pkg/action"
 	"helm.sh/helm/v3/pkg/chart/loader"
 	api_v1 "k8s.io/api/core/v1"
@@ -85,6 +86,7 @@ func NewGroundController(threadiness int, factories config.Factories, clients co
 
 	//Register kluster collector
 	metrics.RegisterKlusterCollector(operator.klusterInformer.Lister())
+	prometheus.MustRegister(metrics.SeedReconciliationFailuresTotal)
 
 	operator.klusterInformer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
 		AddFunc:    operator.klusterAdd,
@@ -130,7 +132,7 @@ func (op *GroundControl) Run(stopCh <-chan struct{}, wg *sync.WaitGroup) {
 }
 
 func (op *GroundControl) enqueueAllKlusters() {
-	klusterList, err := op.Clients.Kubernikus.KubernikusV1().Klusters(op.Config.Kubernikus.Namespace).List(meta_v1.ListOptions{})
+	klusterList, err := op.Clients.Kubernikus.KubernikusV1().Klusters(op.Config.Kubernikus.Namespace).List(context.TODO(), meta_v1.ListOptions{})
 	if err != nil {
 		op.Logger.Log(
 			"msg", "Error enqueuing klusters",
@@ -302,6 +304,7 @@ func (op *GroundControl) handler(key string) error {
 				}
 				seedReconciler := ground.NewSeedReconciler(&op.Clients, kluster, op.Logger)
 				if err := seedReconciler.ReconcileSeeding(helmValues); err != nil {
+					metrics.SeedReconciliationFailuresTotal.With(prometheus.Labels{"kluster_name": kluster.Spec.Name}).Inc()
 					return fmt.Errorf("Seeding reconciliation failed: %w", err)
 				}
 				op.Logger.Log("msg", "reconciled seeding successfully", "kluster", kluster.GetName(), "v", 2)
@@ -349,6 +352,7 @@ func (op *GroundControl) handler(key string) error {
 			}
 			seedReconciler := ground.NewSeedReconciler(&op.Clients, kluster, op.Logger)
 			if err := seedReconciler.ReconcileSeeding(helmValues); err != nil {
+				metrics.SeedReconciliationFailuresTotal.With(prometheus.Labels{"kluster_name": kluster.Spec.Name}).Inc()
 				return fmt.Errorf("Seeding reconciliation failed: %w", err)
 			}
 
