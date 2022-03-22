@@ -46,7 +46,7 @@ type SeedReconciler struct {
 	Logger  log.Logger
 }
 
-func EnrichHelmValuesForSeed(client project.ProjectClient, kluster *v1.Kluster, values map[string]interface{}) error {
+func (sr *SeedReconciler) EnrichHelmValuesForSeed(client project.ProjectClient, values map[string]interface{}) error {
 	metadata, err := client.GetMetadata()
 	if err != nil {
 		return err
@@ -60,9 +60,25 @@ func EnrichHelmValuesForSeed(client project.ProjectClient, kluster *v1.Kluster, 
 		casted["azs"] = azNames
 	}
 
+	k8sClient, err := sr.Clients.Satellites.ClientFor(sr.Kluster)
+	if err != nil {
+		return err
+	}
+	// required to adapat old kube-dns deployments
+	_, err = k8sClient.ExtensionsV1beta1().Deployments("kube-system").Get("kube-dns", metav1.GetOptions{})
+	var isKubeDns bool
+	if err == nil {
+		isKubeDns = true
+	} else if errors.IsNotFound(err) {
+		isKubeDns = false
+	} else {
+		return err
+	}
+	fmt.Printf("######################### isKubedns: %v\n", isKubeDns)
 	values["dns"] = map[string]interface{}{
-		"address": kluster.Spec.DNSAddress,
-		"domain":  kluster.Spec.DNSDomain,
+		"address": sr.Kluster.Spec.DNSAddress,
+		"domain":  sr.Kluster.Spec.DNSDomain,
+		"kube":    isKubeDns,
 	}
 	return nil
 }

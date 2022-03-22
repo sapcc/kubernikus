@@ -298,11 +298,11 @@ func (op *GroundControl) handler(key string) error {
 				if err != nil {
 					return err
 				}
-				err = ground.EnrichHelmValuesForSeed(projectClient, kluster, helmValues)
+				seedReconciler := ground.NewSeedReconciler(&op.Clients, kluster, op.Logger)
+				err = seedReconciler.EnrichHelmValuesForSeed(projectClient, helmValues)
 				if err != nil {
 					return err
 				}
-				seedReconciler := ground.NewSeedReconciler(&op.Clients, kluster, op.Logger)
 				if err := seedReconciler.ReconcileSeeding(helmValues); err != nil {
 					metrics.SeedReconciliationFailuresTotal.With(prometheus.Labels{"kluster_name": kluster.Spec.Name}).Inc()
 					return fmt.Errorf("Seeding reconciliation failed: %w", err)
@@ -346,11 +346,11 @@ func (op *GroundControl) handler(key string) error {
 			if err != nil {
 				return err
 			}
-			err = ground.EnrichHelmValuesForSeed(projectClient, kluster, helmValues)
+			seedReconciler := ground.NewSeedReconciler(&op.Clients, kluster, op.Logger)
+			err = seedReconciler.EnrichHelmValuesForSeed(projectClient, helmValues)
 			if err != nil {
 				return err
 			}
-			seedReconciler := ground.NewSeedReconciler(&op.Clients, kluster, op.Logger)
 			if err := seedReconciler.ReconcileSeeding(helmValues); err != nil {
 				metrics.SeedReconciliationFailuresTotal.With(prometheus.Labels{"kluster_name": kluster.Spec.Name}).Inc()
 				return fmt.Errorf("Seeding reconciliation failed: %w", err)
