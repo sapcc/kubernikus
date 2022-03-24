@@ -6,7 +6,7 @@ image:
   pullPolicy: IfNotPresent
 
 # Settings for the openstack cloudprovider
-openstack:
+openstack: {}
   #authURL:
   #username:
   #password:
