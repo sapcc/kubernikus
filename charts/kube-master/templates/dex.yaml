@@ -138,9 +138,9 @@ spec:
 {{- end }}
       volumes:
       - name: config
-        defaultMode: 420
         configMap:
           name: {{ include "master.fullname" . }}-dex
+          defaultMode: 0420
           items:
           - key: config.yaml
             path: config.yaml
