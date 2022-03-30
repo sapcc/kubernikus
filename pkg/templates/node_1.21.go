@@ -499,7 +499,6 @@ storage:
           nodeLeaseDurationSeconds: 20
           cgroupDriver: systemd
           featureGates:
-            IPv6DualStack: false
 {{- if not .NoCloud }}
             CSIMigration: true
             CSIMigrationOpenStack: true
@@ -529,7 +528,6 @@ storage:
             tcpEstablishedTimeout: 24h0m0s
           enableProfiling: false
           featureGates:
-            IPv6DualStack: false
           healthzBindAddress: 0.0.0.0:10256
           hostnameOverride: {{ .NodeName }}
           iptables:
