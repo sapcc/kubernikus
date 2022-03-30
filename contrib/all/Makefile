@@ -3,7 +3,9 @@ VERSION_CCM?=v1.22.0
 REGISTRY?=k8s.gcr.io
 IMAGE?=keppel.eu-de-1.cloud.sap/ccloud
 ARCH?=amd64
-BASE_VERSION?=bullseye-v1.0.0
+
+# see https://github.com/kubernetes/release/blob/master/images/build/debian-base/variants.yaml
+BASE_VERSION?=bullseye-v1.1.0
 BASE_IMAGE?=k8s.gcr.io/build-image/debian-base:${BASE_VERSION}
 
 #CNI_PLUGINS_RELEASE=v0.8.5

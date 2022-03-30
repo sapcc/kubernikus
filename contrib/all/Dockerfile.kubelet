@@ -20,14 +20,14 @@ LABEL source_repository="https://github.com/sapcc/kubernikus"
 COPY --from=builder /tmp/kubelet /usr/local/bin/kubelet
 COPY --from=builder /tmp/kubectl /usr/local/bin/kubectl
 
-RUN echo CACHEBUST>/dev/null && clean-install \
+RUN clean-install \
     bash
 
 RUN echo "dash dash/sh boolean false" | debconf-set-selections
 RUN DEBIAN_FRONTEND=noninteractive dpkg-reconfigure dash
-RUN ln -fs /usr/share/zoneinfo/Europe/Berlin /etc/localtime
+RUN ln -fs /usr/share/zoneinfo/Etc/UTC /etc/localtime
 
-RUN echo CACHEBUST>/dev/null && clean-install --allow-change-held-packages \
+RUN clean-install --allow-change-held-packages \
     ca-certificates \
     ceph-common \
     cifs-utils \
