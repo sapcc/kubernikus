@@ -70,6 +70,33 @@ func SeedCoreDNS116(client clientset.Interface, image, domain, clusterIP string)
 	return nil
 }
 
+func SeedCoreDNS123(client clientset.Interface, image, domain, clusterIP string) error {
+	if err := createCoreDNSServiceAccount(client); err != nil {
+		return errors.Wrap(err, "Failed to ensure coredns service account")
+	}
+
+	if err := createCoreDNSClusterRole123(client); err != nil {
+		return errors.Wrap(err, "Failed to ensure coredns cluster role")
+	}
+
+	if err := createCoreDNSClusterRoleBinding(client); err != nil {
+		return errors.Wrap(err, "Failed to ensure coredns cluster role binding")
+	}
+
+	if err := createCoreDNSConfigMap(client, domain); err != nil {
+		return errors.Wrap(err, "Failed to ensure coredns config map")
+	}
+
+	if err := createCoreDNSService(client, clusterIP); err != nil {
+		return errors.Wrap(err, "Failed to ensure coredns service")
+	}
+	if err := createCoreDNSDeployment116(client, image); err != nil {
+		return errors.Wrap(err, "Failed to ensure coredns deployment")
+	}
+
+	return nil
+}
+
 func createCoreDNSServiceAccount(client clientset.Interface) error {
 	return bootstrap.CreateOrUpdateServiceAccount(client, &v1.ServiceAccount{
 		ObjectMeta: metav1.ObjectMeta{
@@ -102,6 +129,30 @@ func createCoreDNSClusterRole(client clientset.Interface) error {
 				Verbs:     []string{"get"},
 				APIGroups: []string{""},
 				Resources: []string{"nodes"},
+			},
+		},
+	})
+}
+
+func createCoreDNSClusterRole123(client clientset.Interface) error {
+	return bootstrap.CreateOrUpdateClusterRoleV1(client, &rbac.ClusterRole{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "system:coredns",
+			Labels: map[string]string{
+				"kubernetes.io/bootstrapping":     "rbac-defaults",
+				"addonmanager.kubernetes.io/mode": "Reconcile",
+			},
+		},
+		Rules: []rbac.PolicyRule{
+			{
+				Verbs:     []string{"list", "watch"},
+				APIGroups: []string{""},
+				Resources: []string{"endpoints", "services", "pods", "namespaces"},
+			},
+			{
+				Verbs:     []string{"list", "watch"},
+				APIGroups: []string{"discovery.k8s.io"},
+				Resources: []string{"endpointslices"},
 			},
 		},
 	})

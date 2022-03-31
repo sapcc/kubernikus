@@ -60,7 +60,11 @@ func SeedKluster(clients config.Clients, factories config.Factories, images vers
 		images.Versions[kluster.Spec.Version].CoreDNS.Tag != "" {
 		coreDNSImage = images.Versions[kluster.Spec.Version].CoreDNS.Repository + ":" + images.Versions[kluster.Spec.Version].CoreDNS.Tag
 	}
-	if ok, _ := util.KlusterVersionConstraint(kluster, ">= 1.16"); ok {
+	if ok, _ := util.KlusterVersionConstraint(kluster, ">= 1.23"); ok {
+		if err := dns.SeedCoreDNS123(kubernetes, coreDNSImage, kluster.Spec.DNSDomain, kluster.Spec.DNSAddress); err != nil {
+			return errors.Wrap(err, "seed coredns")
+		}
+	} else if ok, _ := util.KlusterVersionConstraint(kluster, ">= 1.16"); ok {
 		if err := dns.SeedCoreDNS116(kubernetes, coreDNSImage, kluster.Spec.DNSDomain, kluster.Spec.DNSAddress); err != nil {
 			return errors.Wrap(err, "seed coredns")
 		}
