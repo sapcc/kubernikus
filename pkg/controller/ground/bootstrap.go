@@ -95,8 +95,14 @@ func SeedKluster(clients config.Clients, factories config.Factories, images vers
 			return errors.Wrap(err, "get kluster secret")
 		}
 
-		if err := csi.SeedCinderCSIPlugin(kubernetes, dynamicKubernetes, klusterSecret, images.Versions[kluster.Spec.Version]); err != nil {
-			return errors.Wrap(err, "seed cinder CSI plugin")
+		if ok, _ := util.KlusterVersionConstraint(kluster, ">= 1.23"); ok {
+			if err := csi.SeedCinderCSIPlugin123(kubernetes, dynamicKubernetes, klusterSecret, images.Versions[kluster.Spec.Version]); err != nil {
+				return errors.Wrap(err, "seed cinder CSI plugin")
+			}
+		} else {
+			if err := csi.SeedCinderCSIPlugin(kubernetes, dynamicKubernetes, klusterSecret, images.Versions[kluster.Spec.Version]); err != nil {
+				return errors.Wrap(err, "seed cinder CSI plugin")
+			}
 		}
 	}
 
