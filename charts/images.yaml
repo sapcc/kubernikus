@@ -11,11 +11,11 @@ imagesForVersion:
       repository: 'keppel.$REGION.cloud.sap/ccloud/kube-scheduler'
       tag: 'v1.23.5'
     etcd:
-      repository: 'keppel.$REGION.cloud.sap/ccloud-quay-mirror/coreos/etcd'
-      tag: 'v3.3.27'
+      repository: 'keppel.$REGION.cloud.sap/ccloud/etcd'
+      tag: 'v3.4.13-bootstrap-3'
     etcdBackup:
-      repository: 'keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/etcdbrctl'
-      tag: 'v0.10.0'
+      repository: 'keppel.$REGION.cloud.sap/ccloud/etcdbrctl'
+      tag: 'v0.15.1'
     kubelet:
       repository: 'keppel.$REGION.cloud.sap/ccloud/kubelet'
       tag: 'v1.23.5'

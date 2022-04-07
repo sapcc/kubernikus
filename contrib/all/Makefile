@@ -19,8 +19,8 @@ CSI_LIVENESSPROBE_VERSION=v2.6.0
 CSI_NODE_DRIVER_VERSION=v2.5.0
 CSI_PLUGIN_VERSION?=v1.23.0
 
-ETCD_VERSION=v3.3.27
-ETCDBRCTL_VERSION=v0.10.0
+ETCD_VERSION=v3.4.13-bootstrap-3
+ETCDBRCTL_VERSION=v0.15.1
 FLANNEL_VERSION=v0.17.0
 COREDNS_VERSION=1.9.1
 
@@ -35,6 +35,7 @@ build:
 	docker build ${OPTS} -t ${IMAGE}/kube-proxy:${VERSION} --build-arg IMAGE=${REGISTRY}/kube-proxy:${VERSION} .
 	docker build ${OPTS} -t ${IMAGE}/kubelet:${VERSION} --build-arg BASE_IMAGE=${BASE_IMAGE} --build-arg KUBERNETES_VERSION=${VERSION} --build-arg ARCH=${ARCH} --build-arg CNI_PLUGINS_RELEASE=${CNI_PLUGINS_RELEASE} - < Dockerfile.kubelet
 	docker build ${OPTS} -t ${IMAGE}/openstack-cloud-controller-manager:${VERSION_CCM} --build-arg IMAGE=k8scloudprovider/openstack-cloud-controller-manager:${VERSION_CCM} .
+	docker build ${OPTS} -t ${IMAGE}/etcd:${ETCD_VERSION} --build-arg IMAGE=eu.gcr.io/gardener-project/gardener/etcd:${ETCD_VERSION} .
 	docker build ${OPTS} -t ${IMAGE}/etcdbrctl:${ETCDBRCTL_VERSION} --build-arg IMAGE=eu.gcr.io/gardener-project/gardener/etcdbrctl:${ETCDBRCTL_VERSION} .
 
 build-csi:
@@ -54,6 +55,7 @@ push:
 	docker push ${IMAGE}/kube-proxy:${VERSION}
 	docker push ${IMAGE}/kubelet:${VERSION}
 	docker push ${IMAGE}/openstack-cloud-controller-manager:${VERSION_CCM}
+	docker push ${IMAGE}/etcd:${ETCD_VERSION}
 	docker push ${IMAGE}/etcdbrctl:${ETCDBRCTL_VERSION}
 
 push-csi:
@@ -67,7 +69,6 @@ push-csi:
 	docker push ${IMAGE}/cinder-csi-plugin:${CSI_PLUGIN_VERSION}
 
 pull:
-	docker pull keppel.eu-de-1.cloud.sap/ccloud-quay-mirror/coreos/etcd:${ETCD_VERSION}
 	docker pull keppel.eu-de-1.cloud.sap/ccloud-dockerhub-mirror/flannelcni/flannel:${FLANNEL_VERSION}
 	docker pull keppel.eu-de-1.cloud.sap/ccloud-dockerhub-mirror/coredns/coredns:${COREDNS_VERSION}
 
