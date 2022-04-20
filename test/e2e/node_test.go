@@ -46,7 +46,7 @@ func (k *NodeTests) Run(t *testing.T) {
 	_ = t.Run("Created", k.StateRunning) &&
 		t.Run("Tagged", k.Tagged) &&
 		t.Run("Registered", k.Registered) &&
-		t.Run("LatestStableContainerLinux", k.LatestStableContainerLinux) &&
+		t.Run("LatestContainerLinux", k.LatestContainerLinux) &&
 		t.Run("Schedulable", k.StateSchedulable) &&
 		t.Run("NetworkUnavailable", k.ConditionNetworkUnavailable) &&
 		t.Run("Healthy", k.StateHealthy) &&
@@ -133,9 +133,15 @@ func (k *NodeTests) Registered(t *testing.T) {
 	assert.Equal(t, k.ExpectedNodeCount, count)
 }
 
-func (k NodeTests) LatestStableContainerLinux(t *testing.T) {
-	if os.Getenv("KLUSTER_OS_IMAGE") != "" && os.Getenv("KLUSTER_OS_IMAGE") != "flatcar-stable-amd64" {
-		return
+func (k NodeTests) LatestContainerLinux(t *testing.T) {
+
+	release_channel := "stable"
+
+	if strings.Contains(os.Getenv("KLUSTER_OS_IMAGE"), "flatcar-beta") {
+		release_channel = "beta"
+	}
+	if strings.Contains(os.Getenv("KLUSTER_OS_IMAGE"), "flatcar-alpha") {
+		release_channel = "alpha"
 	}
 
 	nodes, err := k.Kubernetes.ClientSet.CoreV1().Nodes().List(meta_v1.ListOptions{})
@@ -158,11 +164,13 @@ func (k NodeTests) LatestStableContainerLinux(t *testing.T) {
 		} `json:"current"`
 	}
 
-	resp, err := http.Get("https://kinvolk.io/flatcar-container-linux/releases-json/releases-stable.json")
-	if !assert.NoError(t, err) {
+	feed_url := fmt.Sprintf("https://kinvolk.io/flatcar-container-linux/releases-json/releases-%s.json", release_channel)
+
+	resp, err := http.Get(feed_url)
+	if !assert.NoError(t, err, "Error fetching %s: %s", feed_url, err) {
 		return
 	}
-	if !assert.Equal(t, 200, resp.StatusCode) {
+	if !assert.Equal(t, 200, resp.StatusCode, "Invalid response fetching %s", feed_url) {
 		return
 	}
 	body, err := ioutil.ReadAll(resp.Body)
@@ -188,12 +196,13 @@ func (k NodeTests) LatestStableContainerLinux(t *testing.T) {
 			return
 		}
 	}
+	txt_url := fmt.Sprintf("https://%s.release.flatcar-linux.net/amd64-usr/current/version.txt", release_channel)
 
-	resp, err = http.Get("https://stable.release.flatcar-linux.net/amd64-usr/current/version.txt")
-	if !assert.NoError(t, err) {
+	resp, err = http.Get(txt_url)
+	if !assert.NoError(t, err, "Error fetching: %s: %s", txt_url, err) {
 		return
 	}
-	if !assert.Equal(t, 200, resp.StatusCode) {
+	if !assert.Equal(t, 200, resp.StatusCode, "Invalid response fetching %s", txt_url) {
 		return
 	}
 	version := ""
