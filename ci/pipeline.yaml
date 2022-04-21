@@ -1163,7 +1163,7 @@ task_whitesource: &task_whitesource
         
         #wss.connectionTimeoutMinutes=60
         # URL to your WhiteSource server.
-        wss.url=https://saas.whitesourcesoftware.com/agent
+        wss.url=https://sap.whitesourcesoftware.com/agent
         
         # resolveDependencies parameter is important and need to be true
         go.resolveDependencies=true
