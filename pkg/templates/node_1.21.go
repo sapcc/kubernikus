@@ -69,8 +69,6 @@ systemd:
         ExecStop=-/opt/bin/rkt stop --uuid-file=/var/lib/flatcar/flannel-wrapper.uuid
         [Install]
         WantedBy=multi-user.target
-    - name: flanneld.service
-      enable: true
       dropins:
         - name: 10-ccloud-opts.conf
           contents: |
