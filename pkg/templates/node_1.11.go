@@ -284,7 +284,7 @@ storage:
     - name: "OEM"
       mount:
         device: "/dev/disk/by-label/OEM"
-        format: "ext4"
+        format: "btrfs"
   files:
     - filesystem: "OEM"
       path: "/grub.cfg"
@@ -293,6 +293,13 @@ storage:
       contents:
         inline: |
           set linux_append="$linux_append systemd.unified_cgroup_hierarchy=0 systemd.legacy_systemd_cgroup_controller"
+    - path: /etc/systemd/resolved.conf
+      filesystem: root
+      mode: 0644
+      contents:
+        inline: |
+          [Resolve]
+          DNSStubListener=no
     - path: /etc/systemd/network/50-kubernikus.netdev
       filesystem: root
       mode: 0644

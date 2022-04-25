@@ -275,6 +275,13 @@ systemd:
 
 storage:
   files:
+    - path: /etc/systemd/resolved.conf
+      filesystem: root
+      mode: 0644
+      contents:
+        inline: |
+          [Resolve]
+          DNSStubListener=no
     - path: /etc/systemd/network/50-kubernikus.netdev
       filesystem: root
       mode: 0644
