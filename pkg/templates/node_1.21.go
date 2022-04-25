@@ -262,23 +262,27 @@ systemd:
         OnUnitActiveSec=12h
         [Install]
         WantedBy=multi-user.target
-networkd:
-  units:
-    - name: 50-kubernikus.netdev
-      contents: |
-        [NetDev]
-        Description=Kubernikus Dummy Interface
-        Name=kubernikus
-        Kind=dummy
-    - name: 51-kubernikus.network
-      contents: |
-        [Match]
-        Name=kubernikus
-        [Network]
-        DHCP=no
-        Address={{ .ApiserverIP }}/32
 storage:
   files:
+    - path: /etc/systemd/network/50-kubernikus.netdev
+      filesystem: root
+      mode: 0644
+      contents:
+        inline: |
+          [NetDev]
+          Description=Kubernikus Dummy Interface
+          Name=kubernikus
+          Kind=dummy
+    - path: /etc/systemd/network/51-kubernikus.network
+      filesystem: root
+      mode: 0644
+      contents:
+        inline: |
+          [Match]
+          Name=kubernikus
+          [Network]
+          DHCP=no
+          Address={{ .ApiserverIP }}/32
     - path: /etc/udev/rules.d/99-vmware-scsi-udev.rules
       filesystem: root
       mode: 0644
