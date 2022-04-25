@@ -82,8 +82,6 @@ systemd:
         ExecStop=-/opt/bin/rkt stop --uuid-file=/var/lib/flatcar/flannel-wrapper.uuid
         [Install]
         WantedBy=multi-user.target
-    - name: flanneld.service
-      enable: true
       dropins:
         - name: 10-ccloud-opts.conf
           contents: |
@@ -295,21 +293,6 @@ systemd:
         OnUnitActiveSec=12h
         [Install]
         WantedBy=multi-user.target
-networkd:
-  units:
-    - name: 50-kubernikus.netdev
-      contents: |
-        [NetDev]
-        Description=Kubernikus Dummy Interface
-        Name=kubernikus
-        Kind=dummy
-    - name: 51-kubernikus.network
-      contents: |
-        [Match]
-        Name=kubernikus
-        [Network]
-        DHCP=no
-        Address={{ .ApiserverIP }}/32
 storage:
   filesystems:
     - name: "OEM"
@@ -324,6 +307,25 @@ storage:
       contents:
         inline: |
           set linux_append="$linux_append systemd.unified_cgroup_hierarchy=0 systemd.legacy_systemd_cgroup_controller"
+    - path: /etc/systemd/network/50-kubernikus.netdev
+      filesystem: root
+      mode: 0644
+      contents:
+        inline: |
+          [NetDev]
+          Description=Kubernikus Dummy Interface
+          Name=kubernikus
+          Kind=dummy
+    - path: /etc/systemd/network/51-kubernikus.network
+      filesystem: root
+      mode: 0644
+      contents:
+        inline: |
+          [Match]
+          Name=kubernikus
+          [Network]
+          DHCP=no
+          Address={{ .ApiserverIP }}/32
     - path: /etc/udev/rules.d/99-vmware-scsi-udev.rules
       filesystem: root
       mode: 0644
