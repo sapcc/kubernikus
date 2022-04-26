@@ -386,7 +386,7 @@ jobs:
           KLUSTER_VERSION: "<%= version %>"
           KLUSTER_CIDR: "100.<%= 100+index %>.0.0/16"
           ISOLATE_TEST: "true"
-          KLUSTER_OS_IMAGE: flatcar-beta-amd64
+          KLUSTER_OS_IMAGES: flatcar-stable-amd64,flatcar-beta-amd64
           <<: *auth_e2e_master
     <<: *slack
 <% end %>
@@ -509,7 +509,7 @@ jobs:
         params:
           <<: *auth_e2e_<%= region %>
 <% if region == "qa-de-1" %>
-          KLUSTER_OS_IMAGE: flatcar-beta-amd64
+          KLUSTER_OS_IMAGES: flatcar-stable-amd64,flatcar-beta-amd64
 <% end %>
         on_failure:
           put: slack-notification
