@@ -68,7 +68,7 @@ func (s *SetupTests) CreateCluster(t *testing.T) {
 		})
 	}
 	//we fill up the first pool in case the number of images is smaller then the  smoke test node count
-	pools[0].Size = int64(SmokeTestNodeCount - len(pools) - 1)
+	pools[0].Size = int64(SmokeTestNodeCount - (len(pools) - 1))
 
 	kluster := &models.Kluster{
 		Name: s.KlusterName,
