@@ -120,7 +120,7 @@ func TestRunner(t *testing.T) {
 		fmt.Printf("Cluster CIDR:              %v\n", os.Getenv("KLUSTER_CIDR"))
 	}
 	if os.Getenv("KLUSTER_OS_IMAGES") != "" {
-		fmt.Printf("OS Image(s):                  %v\n", os.Getenv("KLUSTER_OS_IMAGES"))
+		fmt.Printf("OS Image(s):               %v\n", os.Getenv("KLUSTER_OS_IMAGES"))
 	}
 	fmt.Printf("\n\n")
 
