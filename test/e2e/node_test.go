@@ -251,8 +251,10 @@ func (k *NodeTests) checkState(t *testing.T, fn poolCount, timeout time.Duration
 			if err != nil {
 				return false, err
 			}
+			for _, pool := range cluster.Payload.Status.NodePools {
+				count += int(fn(pool))
+			}
 
-			count = int(fn(cluster.Payload.Status.NodePools[0]))
 			return count >= k.ExpectedNodeCount, nil
 		})
 
