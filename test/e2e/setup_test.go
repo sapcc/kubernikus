@@ -52,7 +52,7 @@ func (s *SetupTests) CreateCluster(t *testing.T) {
 
 	osImages := []string{"flatcar-stable-amd64"}
 	if image := os.Getenv("KLUSTER_OS_IMAGES"); image != "" {
-		osImages = strings.Split(image, "")
+		osImages = strings.Split(image, ",")
 	}
 	require.LessOrEqual(t, len(osImages), SmokeTestNodeCount, "more os images then smoke test node specified")
 
