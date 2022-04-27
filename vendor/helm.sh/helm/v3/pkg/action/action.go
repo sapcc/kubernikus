@@ -19,6 +19,7 @@ package action
 import (
 	"bytes"
 	"fmt"
+	"os"
 	"path"
 	"path/filepath"
 	"regexp"
@@ -57,20 +58,22 @@ var (
 	errMissingRelease = errors.New("no release provided")
 	// errInvalidRevision indicates that an invalid release revision number was provided.
 	errInvalidRevision = errors.New("invalid release revision")
-	// errInvalidName indicates that an invalid release name was provided
-	errInvalidName = errors.New("invalid release name, must match regex ^(([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9])+$ and the length must not longer than 53")
 )
 
-// ValidName is a regular expression for names.
+// ValidName is a regular expression for resource names.
+//
+// DEPRECATED: This will be removed in Helm 4, and is no longer used here. See
+// pkg/chartutil.ValidateName for the replacement.
 //
 // According to the Kubernetes help text, the regular expression it uses is:
 //
-//	(([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9])?
+//	[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*
 //
-// We modified that. First, we added start and end delimiters. Second, we changed
-// the final ? to + to require that the pattern match at least once. This modification
-// prevents an empty string from matching.
-var ValidName = regexp.MustCompile("^(([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9])+$")
+// This follows the above regular expression (but requires a full string match, not partial).
+//
+// The Kubernetes documentation is here, though it is not entirely correct:
+// https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+var ValidName = regexp.MustCompile(`^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$`)
 
 // Configuration injects the dependencies that all actions share.
 type Configuration struct {
@@ -95,6 +98,8 @@ type Configuration struct {
 // renderResources renders the templates in a chart
 //
 // TODO: This function is badly in need of a refactor.
+// TODO: As part of the refactor the duplicate code in cmd/helm/template.go should be removed
+//       This code has to do with writing files to disk.
 func (c *Configuration) renderResources(ch *chart.Chart, values chartutil.Values, releaseName, outputDir string, subNotes, useReleaseName, includeCrds bool, pr postrender.PostRenderer, dryRun bool) ([]*release.Hook, *bytes.Buffer, string, error) {
 	hs := []*release.Hook{}
 	b := bytes.NewBuffer(nil)
@@ -269,6 +274,7 @@ func (c *Configuration) getCapabilities() (*chartutil.Capabilities, error) {
 	return c.Capabilities, nil
 }
 
+// KubernetesClientSet creates a new kubernetes ClientSet based on the configuration
 func (c *Configuration) KubernetesClientSet() (kubernetes.Interface, error) {
 	conf, err := c.RESTClientGetter.ToRESTConfig()
 	if err != nil {
@@ -287,7 +293,7 @@ func (c *Configuration) Now() time.Time {
 }
 
 func (c *Configuration) releaseContent(name string, version int) (*release.Release, error) {
-	if err := validateReleaseName(name); err != nil {
+	if err := chartutil.ValidateReleaseName(name); err != nil {
 		return nil, errors.Errorf("releaseContent: Release name is invalid: %s", name)
 	}
 
@@ -353,29 +359,50 @@ func (c *Configuration) recordRelease(r *release.Release) {
 	}
 }
 
-// InitActionConfig initializes the action configuration
-func (c *Configuration) Init(getter genericclioptions.RESTClientGetter, namespace string, helmDriver string, log DebugLog) error {
+// Init initializes the action configuration
+func (c *Configuration) Init(getter genericclioptions.RESTClientGetter, namespace, helmDriver string, log DebugLog) error {
 	kc := kube.New(getter)
 	kc.Log = log
 
-	clientset, err := kc.Factory.KubernetesClientSet()
-	if err != nil {
-		return err
+	lazyClient := &lazyClient{
+		namespace: namespace,
+		clientFn:  kc.Factory.KubernetesClientSet,
 	}
 
 	var store *storage.Storage
 	switch helmDriver {
 	case "secret", "secrets", "":
-		d := driver.NewSecrets(clientset.CoreV1().Secrets(namespace))
+		d := driver.NewSecrets(newSecretClient(lazyClient))
 		d.Log = log
 		store = storage.Init(d)
 	case "configmap", "configmaps":
-		d := driver.NewConfigMaps(clientset.CoreV1().ConfigMaps(namespace))
+		d := driver.NewConfigMaps(newConfigMapClient(lazyClient))
 		d.Log = log
 		store = storage.Init(d)
 	case "memory":
-		d := driver.NewMemory()
+		var d *driver.Memory
+		if c.Releases != nil {
+			if mem, ok := c.Releases.Driver.(*driver.Memory); ok {
+				// This function can be called more than once (e.g., helm list --all-namespaces).
+				// If a memory driver was already initialized, re-use it but set the possibly new namespace.
+				// We re-use it in case some releases where already created in the existing memory driver.
+				d = mem
+			}
+		}
+		if d == nil {
+			d = driver.NewMemory()
+		}
 		d.SetNamespace(namespace)
+		store = storage.Init(d)
+	case "sql":
+		d, err := driver.NewSQL(
+			os.Getenv("HELM_DRIVER_SQL_CONNECTION_STRING"),
+			log,
+			namespace,
+		)
+		if err != nil {
+			panic(fmt.Sprintf("Unable to instantiate SQL driver: %v", err))
+		}
 		store = storage.Init(d)
 	default:
 		// Not sure what to do here.

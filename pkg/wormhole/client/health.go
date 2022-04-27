@@ -1,6 +1,7 @@
 package client
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net"
@@ -89,7 +90,7 @@ func (hc *healthChecker) reconcile() error {
 		return fmt.Errorf("Failed to discover own node name: %s", err)
 	}
 
-	node, err := hc.client.Get(nodeName, meta_v1.GetOptions{})
+	node, err := hc.client.Get(context.TODO(), nodeName, meta_v1.GetOptions{})
 	if err != nil {
 		return fmt.Errorf("Couldn't get node %s from api: %s", nodeName, err)
 	}
@@ -137,7 +138,7 @@ func (hc *healthChecker) SetConditions(newConditions []v1.NodeCondition, node st
 	if err != nil {
 		return err
 	}
-	_, err = hc.client.PatchStatus(node, patch)
+	_, err = hc.client.PatchStatus(context.TODO(), node, patch)
 	return err
 }
 
@@ -145,7 +146,7 @@ func (hc *healthChecker) myNodeName() (string, error) {
 	if hc.nodeName != "" {
 		return hc.nodeName, nil
 	}
-	list, err := hc.client.List(meta_v1.ListOptions{})
+	list, err := hc.client.List(context.TODO(), meta_v1.ListOptions{})
 	if err != nil {
 		return "", err
 	}

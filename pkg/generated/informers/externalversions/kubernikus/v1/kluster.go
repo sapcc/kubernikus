@@ -3,6 +3,7 @@
 package v1
 
 import (
+	"context"
 	time "time"
 
 	kubernikusv1 "github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
@@ -45,13 +46,13 @@ func NewFilteredKlusterInformer(client clientset.Interface, namespace string, re
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.KubernikusV1().Klusters(namespace).List(options)
+				return client.KubernikusV1().Klusters(namespace).List(context.TODO(), options)
 			},
 			WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.KubernikusV1().Klusters(namespace).Watch(options)
+				return client.KubernikusV1().Klusters(namespace).Watch(context.TODO(), options)
 			},
 		},
 		&kubernikusv1.Kluster{},

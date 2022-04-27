@@ -1,11 +1,13 @@
 package migration
 
 import (
+	"context"
 	"fmt"
 
 	v1 "github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
 	"github.com/sapcc/kubernikus/pkg/controller/config"
 	kubernikusfake "github.com/sapcc/kubernikus/pkg/generated/clientset/fake"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 var defaultRegistry Registry
@@ -75,7 +77,7 @@ func migrateKluster(kluster *v1.Kluster, version int, migration Migration, clien
 	//TODO: Don't import fake pkg outside of test code
 	if _, ok := clients.Kubernikus.(*kubernikusfake.Clientset); !ok {
 		request := clients.Kubernikus.KubernikusV1().RESTClient().Get().Namespace(kluster.Namespace).Resource("klusters").Name(kluster.Name)
-		if rawData, err = request.DoRaw(); err != nil {
+		if rawData, err = request.DoRaw(context.TODO()); err != nil {
 			return nil, err
 		}
 	}
@@ -84,5 +86,5 @@ func migrateKluster(kluster *v1.Kluster, version int, migration Migration, clien
 		return nil, err
 	}
 	kluster.Status.SpecVersion = int64(version)
-	return clients.Kubernikus.KubernikusV1().Klusters(kluster.Namespace).Update(kluster)
+	return clients.Kubernikus.KubernikusV1().Klusters(kluster.Namespace).Update(context.TODO(), kluster, metav1.UpdateOptions{})
 }

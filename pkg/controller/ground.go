@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"context"
 	"fmt"
 	"path"
 	"reflect"
@@ -773,7 +774,7 @@ func (op *GroundControl) terminateKluster(kluster *v1.Kluster) error {
 	//
 	// See: https://github.com/kubernetes/kubernetes/issues/50528
 	propagationPolicy := meta_v1.DeletePropagationBackground
-	err = op.Clients.Kubernikus.KubernikusV1().Klusters(kluster.Namespace).Delete(kluster.Name, &meta_v1.DeleteOptions{PropagationPolicy: &propagationPolicy})
+	err = op.Clients.Kubernikus.KubernikusV1().Klusters(kluster.Namespace).Delete(context.TODO(), kluster.Name, meta_v1.DeleteOptions{PropagationPolicy: &propagationPolicy})
 
 	if err != nil && !apierrors.IsNotFound(err) {
 		return err

@@ -1,12 +1,14 @@
 package handlers
 
 import (
+	"context"
 	"strings"
 	"text/template"
 
 	"github.com/ghodss/yaml"
 	"github.com/go-openapi/runtime/middleware"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/sapcc/kubernikus/pkg/api"
 	"github.com/sapcc/kubernikus/pkg/api/models"
@@ -81,7 +83,7 @@ func (d *getBootstrapConfig) Handle(params operations.GetBootstrapConfigParams, 
 	if err != nil {
 		return NewErrorResponse(&operations.GetBootstrapConfigDefault{}, 500, "Failed to generate bootstrap token: %s", err)
 	}
-	if _, err := client.CoreV1().Secrets(tokenSecret.Namespace).Create(tokenSecret); err != nil {
+	if _, err := client.CoreV1().Secrets(tokenSecret.Namespace).Create(context.TODO(), tokenSecret, metav1.CreateOptions{}); err != nil {
 		return NewErrorResponse(&operations.GetBootstrapConfigDefault{}, 500, "Failed to store bootstrap token: %s", err)
 	}
 

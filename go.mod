@@ -9,7 +9,7 @@ require (
 	github.com/Masterminds/sprig v2.22.0+incompatible
 	github.com/ajeddeloh/yaml v0.0.0-20160722214022-1072abfea311 // indirect
 	github.com/aokoli/goutils v1.0.1
-	github.com/asaskevich/govalidator v0.0.0-20200108200545-475eaeb16496
+	github.com/asaskevich/govalidator v0.0.0-20200428143746-21a406dcc535
 	github.com/coreos/container-linux-config-transpiler v0.4.2
 	github.com/coreos/go-oidc/v3 v3.0.0
 	github.com/coreos/ignition v0.17.2
@@ -30,21 +30,17 @@ require (
 	github.com/go-openapi/swag v0.19.5
 	github.com/go-openapi/validate v0.19.5
 	github.com/go-stack/stack v1.8.0
-	github.com/gobwas/glob v0.2.3 // indirect
 	github.com/godbus/dbus v4.1.0+incompatible // indirect
-	github.com/gogo/protobuf v1.3.1 // indirect
-	github.com/golang/protobuf v1.4.2 // indirect
 	github.com/google/uuid v1.1.2 // indirect
 	github.com/gophercloud/gophercloud v0.19.0
 	github.com/gophercloud/utils v0.0.0-20210720165645-8a3ad2ad9e70
 	github.com/hashicorp/yamux v0.0.0-20180826203732-cc6d2ea263b2 // indirect
-	github.com/helm/helm-2to3 v0.6.0
+	github.com/helm/helm-2to3 v0.7.0
 	github.com/howeyc/gopass v0.0.0-20170109162249-bf9dde6d0d2c
 	github.com/huandu/xstrings v1.3.2 // indirect
-	github.com/imdario/mergo v0.3.7
+	github.com/imdario/mergo v0.3.8
 	github.com/joeshaw/envdecode v0.0.0-20170502020559-6326cbed175e
 	github.com/justinas/alice v0.0.0-20171023064455-03f45bd4b7da
-	github.com/mitchellh/copystructure v1.0.0 // indirect
 	github.com/mitchellh/reflectwalk v1.0.1 // indirect
 	github.com/oklog/run v1.0.1-0.20180308005104-6934b124db28
 	github.com/pkg/errors v0.9.1
@@ -65,16 +61,18 @@ require (
 	google.golang.org/grpc v1.27.0
 	gopkg.in/yaml.v2 v2.4.0
 	gopkg.in/yaml.v3 v3.0.0-20200615113413-eeeca48fe776 // indirect
-	helm.sh/helm/v3 v3.1.3
-	k8s.io/api v0.17.8
-	k8s.io/apiextensions-apiserver v0.17.8
-	k8s.io/apimachinery v0.17.8
-	k8s.io/client-go v0.17.8
+	helm.sh/helm/v3 v3.3.4
+	k8s.io/api v0.18.8
+	k8s.io/apiextensions-apiserver v0.18.8
+	k8s.io/apimachinery v0.18.8
+	k8s.io/client-go v0.18.8
 	k8s.io/cluster-bootstrap v0.0.0-20190802024125-9150a5ba960c
-	k8s.io/helm v2.16.9+incompatible
+	k8s.io/helm v2.16.10+incompatible
 	k8s.io/klog v1.0.0
-	k8s.io/utils v0.0.0-20191114184206-e782cd3c129f
-	sigs.k8s.io/yaml v1.1.0
+	k8s.io/kube-openapi v0.0.0-20200410145947-bcb3869e6f29 // indirect
+	k8s.io/utils v0.0.0-20200731180307-f00132d28269
+	rsc.io/letsencrypt v0.0.3 // indirect
+	sigs.k8s.io/yaml v1.2.0
 )
 
 replace k8s.io/klog => github.com/simonpasquier/klog-gokit v0.3.1-0.20210409073344-020c8028ac9e

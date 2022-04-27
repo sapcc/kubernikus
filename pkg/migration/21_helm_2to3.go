@@ -1,6 +1,7 @@
 package migration
 
 import (
+	"context"
 	"fmt"
 	"path"
 	"strconv"
@@ -76,7 +77,7 @@ func migrateHelmReleases(kluster *v1.Kluster, clients config.Clients) error {
 }
 
 func getHelm2ReleaseVersions(releaseName string, clients config.Clients) ([]int, error) {
-	configMaps, err := clients.Kubernetes.CoreV1().ConfigMaps("kube-system").List(meta_v1.ListOptions{
+	configMaps, err := clients.Kubernetes.CoreV1().ConfigMaps("kube-system").List(context.TODO(), meta_v1.ListOptions{
 		LabelSelector: fmt.Sprintf("OWNER=TILLER,NAME=%s", releaseName),
 	})
 	if err != nil {

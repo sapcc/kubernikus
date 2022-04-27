@@ -1,6 +1,8 @@
 package csi
 
 import (
+	"context"
+
 	"github.com/pkg/errors"
 	apps "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
@@ -237,7 +239,7 @@ func createDynamicResource(dynamicClient dynamic.Interface, manifest string, gvr
 		return errors.Wrap(err, "Decode")
 	}
 
-	_, err = dynamicClient.Resource(gvr).Create(resource, metav1.CreateOptions{})
+	_, err = dynamicClient.Resource(gvr).Create(context.TODO(), resource, metav1.CreateOptions{})
 	if err != nil {
 		return errors.Wrap(err, "Create")
 	}

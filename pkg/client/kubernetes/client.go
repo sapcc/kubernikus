@@ -1,6 +1,7 @@
 package kubernetes
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"reflect"
@@ -151,14 +152,14 @@ func EnsureCRD(clientset apiextensionsclient.Interface, logger kitlog.Logger) er
 			},
 		},
 	}
-	_, err := clientset.ApiextensionsV1beta1().CustomResourceDefinitions().Create(crd)
+	_, err := clientset.ApiextensionsV1beta1().CustomResourceDefinitions().Create(context.TODO(), crd, metav1.CreateOptions{})
 	//TODO: Should this error if it already exit?
 	if err != nil && !apierrors.IsAlreadyExists(err) {
 		return err
 	}
 	// wait for CRD being established
 	err = wait.Poll(500*time.Millisecond, 60*time.Second, func() (bool, error) {
-		crd, err = clientset.ApiextensionsV1beta1().CustomResourceDefinitions().Get(klusterCRDName, metav1.GetOptions{})
+		crd, err = clientset.ApiextensionsV1beta1().CustomResourceDefinitions().Get(context.TODO(), klusterCRDName, metav1.GetOptions{})
 		if err != nil {
 			return false, err
 		}
@@ -180,7 +181,7 @@ func EnsureCRD(clientset apiextensionsclient.Interface, logger kitlog.Logger) er
 		return false, err
 	})
 	if err != nil {
-		deleteErr := clientset.ApiextensionsV1beta1().CustomResourceDefinitions().Delete(klusterCRDName, nil)
+		deleteErr := clientset.ApiextensionsV1beta1().CustomResourceDefinitions().Delete(context.TODO(), klusterCRDName, metav1.DeleteOptions{})
 		if deleteErr != nil {
 			return apiutilerrors.NewAggregate([]error{err, deleteErr})
 		}
@@ -194,7 +195,7 @@ func WaitForServer(client kubernetes.Interface, stopCh <-chan struct{}, logger k
 
 	err := wait.PollUntil(time.Second, func() (bool, error) {
 		healthStatus := 0
-		resp := client.Discovery().RESTClient().Get().AbsPath("/healthz").Do().StatusCode(&healthStatus)
+		resp := client.Discovery().RESTClient().Get().AbsPath("/healthz").Do(context.TODO()).StatusCode(&healthStatus)
 		if healthStatus != http.StatusOK {
 			logger.Log(
 				"msg", "server isn't health yet. Waiting a little while.",

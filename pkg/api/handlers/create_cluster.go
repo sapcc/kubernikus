@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net"
@@ -117,7 +118,7 @@ func (d *createCluster) Handle(params operations.CreateClusterParams, principal 
 	}
 
 	k8sutil.EnsureNamespace(d.Kubernetes, d.Namespace)
-	kluster, err = d.Kubernikus.KubernikusV1().Klusters(d.Namespace).Create(kluster)
+	kluster, err = d.Kubernikus.KubernikusV1().Klusters(d.Namespace).Create(context.TODO(), kluster, metav1.CreateOptions{})
 	if err != nil {
 		logger.Log(
 			"msg", "failed to create cluster",
@@ -161,7 +162,7 @@ func (d *createCluster) overlapWithControlPlane(cidr string) (bool, error) {
 
 func (d *createCluster) overlapWithSiblingCluster(cidr string, routerID string, principal *models.Principal) (bool, error) {
 	listOpts := metav1.ListOptions{LabelSelector: accountSelector(principal).String()}
-	klusterList, err := d.Kubernikus.KubernikusV1().Klusters(d.Namespace).List(listOpts)
+	klusterList, err := d.Kubernikus.KubernikusV1().Klusters(d.Namespace).List(context.TODO(), listOpts)
 	if err != nil {
 		return false, err
 	}
@@ -191,7 +192,7 @@ func (d *createCluster) controlPlaneServiceCIDR() *net.IPNet {
 	if d.cpServiceCIDR != nil {
 		return d.cpServiceCIDR
 	}
-	svc, err := d.Kubernetes.CoreV1().Services("default").Get("kubernetes", metav1.GetOptions{})
+	svc, err := d.Kubernetes.CoreV1().Services("default").Get(context.TODO(), "kubernetes", metav1.GetOptions{})
 	if err != nil {
 		return nil
 	}
@@ -208,7 +209,7 @@ func (d *createCluster) controlPlaneClusterCIDR() *net.IPNet {
 	if d.cpClusterCIDR != nil {
 		return d.cpClusterCIDR
 	}
-	podList, err := d.Kubernetes.CoreV1().Pods(metav1.NamespaceAll).List(metav1.ListOptions{})
+	podList, err := d.Kubernetes.CoreV1().Pods(metav1.NamespaceAll).List(context.TODO(), metav1.ListOptions{})
 
 	if err != nil || len(podList.Items) == 0 {
 		return nil
