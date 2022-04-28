@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"testing"
 	"time"
 
@@ -32,7 +33,7 @@ func (v *VolumeTests) Run(t *testing.T) {
 	v.Namespace = generator.SimpleNameGenerator.GenerateName("e2e-volumes-")
 
 	var err error
-	v.Nodes, err = v.Kubernetes.ClientSet.CoreV1().Nodes().List(meta_v1.ListOptions{})
+	v.Nodes, err = v.Kubernetes.ClientSet.CoreV1().Nodes().List(context.Background(), meta_v1.ListOptions{})
 	require.NoError(t, err, "There must be no error while listing the kluster's nodes")
 	require.NotEmpty(t, v.Nodes.Items, "No nodes returned by list")
 
@@ -46,7 +47,7 @@ func (v *VolumeTests) Run(t *testing.T) {
 }
 
 func (p *VolumeTests) CreateNamespace(t *testing.T) {
-	_, err := p.Kubernetes.ClientSet.CoreV1().Namespaces().Create(&v1.Namespace{ObjectMeta: meta_v1.ObjectMeta{Name: p.Namespace}})
+	_, err := p.Kubernetes.ClientSet.CoreV1().Namespaces().Create(context.Background(), &v1.Namespace{ObjectMeta: meta_v1.ObjectMeta{Name: p.Namespace}}, meta_v1.CreateOptions{})
 	require.NoError(t, err, "There must be no error while creating a namespace")
 }
 
@@ -56,12 +57,12 @@ func (p *VolumeTests) WaitForNamespace(t *testing.T) {
 }
 
 func (p *VolumeTests) DeleteNamespace(t *testing.T) {
-	err := p.Kubernetes.ClientSet.CoreV1().Namespaces().Delete(p.Namespace, nil)
+	err := p.Kubernetes.ClientSet.CoreV1().Namespaces().Delete(context.Background(), p.Namespace, meta_v1.DeleteOptions{})
 	require.NoError(t, err, "There must be no error while deleting a namespace")
 }
 
 func (p *VolumeTests) CreatePod(t *testing.T) {
-	_, err := p.Kubernetes.ClientSet.CoreV1().Pods(p.Namespace).Create(&v1.Pod{
+	_, err := p.Kubernetes.ClientSet.CoreV1().Pods(p.Namespace).Create(context.Background(), &v1.Pod{
 		ObjectMeta: meta_v1.ObjectMeta{
 			Name:      "pvc-hostname",
 			Namespace: p.Namespace,
@@ -93,7 +94,7 @@ func (p *VolumeTests) CreatePod(t *testing.T) {
 				},
 			},
 		},
-	})
+	}, meta_v1.CreateOptions{})
 	assert.NoError(t, err, "There should be no error while creating a pod with a volume")
 }
 
@@ -104,7 +105,7 @@ func (p *VolumeTests) WaitForPVCPodsRunning(t *testing.T) {
 }
 
 func (p *VolumeTests) CreatePVC(t *testing.T) {
-	_, err := p.Kubernetes.ClientSet.CoreV1().PersistentVolumeClaims(p.Namespace).Create(&v1.PersistentVolumeClaim{
+	_, err := p.Kubernetes.ClientSet.CoreV1().PersistentVolumeClaims(p.Namespace).Create(context.Background(), &v1.PersistentVolumeClaim{
 		ObjectMeta: meta_v1.ObjectMeta{
 			Namespace: p.Namespace,
 			Name:      "pvc-hostname",
@@ -119,7 +120,7 @@ func (p *VolumeTests) CreatePVC(t *testing.T) {
 				},
 			},
 		},
-	})
+	}, meta_v1.CreateOptions{})
 	assert.NoError(t, err)
 }
 

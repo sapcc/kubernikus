@@ -4,10 +4,11 @@ import (
 	"context"
 	"fmt"
 
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
 	v1 "github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
 	"github.com/sapcc/kubernikus/pkg/controller/config"
 	kubernikusfake "github.com/sapcc/kubernikus/pkg/generated/clientset/fake"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 var defaultRegistry Registry

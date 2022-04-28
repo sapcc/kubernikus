@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -86,7 +87,7 @@ func (k *NodeTests) ConditionReady(t *testing.T) {
 }
 
 func (k *NodeTests) Labeled(t *testing.T) {
-	nodeList, err := k.Kubernetes.ClientSet.CoreV1().Nodes().List(meta_v1.ListOptions{})
+	nodeList, err := k.Kubernetes.ClientSet.CoreV1().Nodes().List(context.Background(), meta_v1.ListOptions{})
 	require.NoError(t, err, "There must be no error while listing the kluster's nodes")
 
 	for _, node := range nodeList.Items {
@@ -119,7 +120,7 @@ func (k *NodeTests) Registered(t *testing.T) {
 	count := 0
 	err := wait.PollImmediate(framework.Poll, RegisteredTimeout,
 		func() (bool, error) {
-			nodes, err := k.Kubernetes.ClientSet.CoreV1().Nodes().List(meta_v1.ListOptions{})
+			nodes, err := k.Kubernetes.ClientSet.CoreV1().Nodes().List(context.Background(), meta_v1.ListOptions{})
 			if err != nil {
 				return false, fmt.Errorf("Failed to list nodes: %v", err)
 			}
@@ -134,7 +135,7 @@ func (k *NodeTests) Registered(t *testing.T) {
 
 func (k NodeTests) LatestContainerLinux(t *testing.T) {
 
-	nodes, err := k.Kubernetes.ClientSet.CoreV1().Nodes().List(meta_v1.ListOptions{})
+	nodes, err := k.Kubernetes.ClientSet.CoreV1().Nodes().List(context.Background(), meta_v1.ListOptions{})
 	if !assert.NoError(t, err) {
 		return
 	}
@@ -233,7 +234,7 @@ func (k NodeTests) currentFlatcarVersion(channel string) (string, error) {
 }
 
 func (k *NodeTests) Sufficient(t *testing.T) {
-	nodeList, err := k.Kubernetes.ClientSet.CoreV1().Nodes().List(meta_v1.ListOptions{})
+	nodeList, err := k.Kubernetes.ClientSet.CoreV1().Nodes().List(context.Background(), meta_v1.ListOptions{})
 	require.NoError(t, err, "There must be no error while listing the kluster's nodes")
 	require.Equal(t, len(nodeList.Items), SmokeTestNodeCount, "There must be exactly %d nodes", SmokeTestNodeCount)
 }
@@ -266,7 +267,7 @@ func (k *NodeTests) checkCondition(t *testing.T, conditionType v1.NodeConditionT
 	count := 0
 	err := wait.PollImmediate(framework.Poll, timeout,
 		func() (bool, error) {
-			nodes, err := k.Kubernetes.ClientSet.CoreV1().Nodes().List(meta_v1.ListOptions{})
+			nodes, err := k.Kubernetes.ClientSet.CoreV1().Nodes().List(context.Background(), meta_v1.ListOptions{})
 			if err != nil {
 				return false, fmt.Errorf("Failed to list nodes: %v", err)
 			}

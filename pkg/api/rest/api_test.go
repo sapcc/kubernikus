@@ -1,6 +1,7 @@
 package rest
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -117,7 +118,7 @@ func TestCreateCluster(t *testing.T) {
 	}
 
 	//Test create
-	crd, err := rt.Kubernikus.KubernikusV1().Klusters(rt.Namespace).Get(fmt.Sprintf("%s-%s", "nase", ACCOUNT), metav1.GetOptions{})
+	crd, err := rt.Kubernikus.KubernikusV1().Klusters(rt.Namespace).Get(context.Background(), fmt.Sprintf("%s-%s", "nase", ACCOUNT), metav1.GetOptions{})
 	assert.NoError(t, err, "resource not persisted")
 	assert.Equal(t, crd.Labels["account"], ACCOUNT)
 
@@ -174,7 +175,7 @@ func TestCreateCluster(t *testing.T) {
 
 	code, _, body = result(handler, req)
 	assert.Equal(t, 201, code, "Creating a cluster with empty clusterCIDR should not fail. response: %s", string(body))
-	k, err := rt.Kubernikus.KubernikusV1().Klusters(NAMESPACE).Get("nocidr-"+ACCOUNT, metav1.GetOptions{})
+	k, err := rt.Kubernikus.KubernikusV1().Klusters(NAMESPACE).Get(context.Background(), "nocidr-"+ACCOUNT, metav1.GetOptions{})
 	assert.NoError(t, err)
 	assert.Empty(t, k.Spec.ClusterCIDR)
 
