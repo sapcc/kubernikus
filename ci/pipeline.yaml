@@ -3695,6 +3695,8 @@ jobs:
         params:
           <<: *auth_e2e_qa-de-1
 
+          KLUSTER_OS_IMAGES: flatcar-stable-amd64,flatcar-beta-amd64
+
         on_failure:
           put: slack-notification
           params:
