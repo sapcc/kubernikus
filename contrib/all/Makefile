@@ -1,4 +1,4 @@
-VERSION?=v1.23.5
+VERSION?=v1.23.6
 VERSION_CCM?=v1.23.1
 REGISTRY?=k8s.gcr.io
 IMAGE?=keppel.eu-de-1.cloud.sap/ccloud

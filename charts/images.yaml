@@ -1,15 +1,15 @@
 imagesForVersion:
-  '1.23.5':
+  '1.23.6':
     supported: true
     apiserver:
       repository: 'keppel.$REGION.cloud.sap/ccloud/kube-apiserver'
-      tag: 'v1.23.5'
+      tag: 'v1.23.6'
     controllerManager:
       repository: 'keppel.$REGION.cloud.sap/ccloud/kube-controller-manager'
-      tag: 'v1.23.5'
+      tag: 'v1.23.6'
     scheduler:
       repository: 'keppel.$REGION.cloud.sap/ccloud/kube-scheduler'
-      tag: 'v1.23.5'
+      tag: 'v1.23.6'
     etcd:
       repository: 'keppel.$REGION.cloud.sap/ccloud/etcd'
       tag: 'v3.4.13-bootstrap-3'
@@ -18,10 +18,10 @@ imagesForVersion:
       tag: 'v0.15.1'
     kubelet:
       repository: 'keppel.$REGION.cloud.sap/ccloud/kubelet'
-      tag: 'v1.23.5'
+      tag: 'v1.23.6'
     kubeProxy:
       repository: 'keppel.$REGION.cloud.sap/ccloud/kube-proxy'
-      tag: 'v1.23.5'
+      tag: 'v1.23.6'
     cloudControllerManager:
       repository: 'keppel.$REGION.cloud.sap/ccloud/openstack-cloud-controller-manager'
       tag: 'v1.23.1'
