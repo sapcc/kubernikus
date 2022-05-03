@@ -3,10 +3,10 @@ package main
 import (
 	"bufio"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"os"
 	"strings"
 	"testing"
 	"time"
@@ -46,7 +46,7 @@ func (k *NodeTests) Run(t *testing.T) {
 	_ = t.Run("Created", k.StateRunning) &&
 		t.Run("Tagged", k.Tagged) &&
 		t.Run("Registered", k.Registered) &&
-		t.Run("LatestStableContainerLinux", k.LatestStableContainerLinux) &&
+		t.Run("LatestContainerLinux", k.LatestContainerLinux) &&
 		t.Run("Schedulable", k.StateSchedulable) &&
 		t.Run("NetworkUnavailable", k.ConditionNetworkUnavailable) &&
 		t.Run("Healthy", k.StateHealthy) &&
@@ -102,12 +102,11 @@ func (k *NodeTests) Tagged(t *testing.T) {
 	}
 	assert.Len(t, instances, k.ExpectedNodeCount, "Didn't find expected number of cloud instances")
 	for _, instance := range instances {
-		assert.Subset(t, *instance.Tags, []string{"kubernikus", "kubernikus:kluster=" + k.KlusterName, "kubernikus:nodepool=small"})
+		assert.Subset(t, *instance.Tags, []string{"kubernikus", "kubernikus:kluster=" + k.KlusterName, "kubernikus:nodepool=" + instance.Metadata["kubernikus:nodepool"]})
 
 		expect := map[string]string{
-			"provisioner":         "kubernikus",
-			"kubernikus:kluster":  k.KlusterName,
-			"kubernikus:nodepool": "small",
+			"provisioner":        "kubernikus",
+			"kubernikus:kluster": k.KlusterName,
 		}
 		for k, v := range expect {
 			assert.Equalf(t, v, instance.Metadata[k], "metadata key %s incorrect", k)
@@ -133,15 +132,31 @@ func (k *NodeTests) Registered(t *testing.T) {
 	assert.Equal(t, k.ExpectedNodeCount, count)
 }
 
-func (k NodeTests) LatestStableContainerLinux(t *testing.T) {
-	if os.Getenv("KLUSTER_OS_IMAGE") != "" && os.Getenv("KLUSTER_OS_IMAGE") != "flatcar-stable-amd64" {
-		return
-	}
+func (k NodeTests) LatestContainerLinux(t *testing.T) {
 
 	nodes, err := k.Kubernetes.ClientSet.CoreV1().Nodes().List(meta_v1.ListOptions{})
 	if !assert.NoError(t, err) {
 		return
 	}
+
+	for _, node := range nodes.Items {
+		release_channel := "stable"
+		if strings.Contains(node.Labels["image"], "flatcar-beta") {
+			release_channel = "beta"
+		}
+		if strings.Contains(node.Labels["image"], "flatcar-alpha") {
+			release_channel = "alpha"
+		}
+		version, err := k.currentFlatcarVersion(release_channel)
+		if assert.NoError(t, err) {
+			if version != "" {
+				assert.Contains(t, node.Status.NodeInfo.OSImage, version, "Node %s is not on latest version", node.Name)
+			}
+		}
+	}
+}
+
+func (k NodeTests) currentFlatcarVersion(channel string) (string, error) {
 
 	type FlatcarReleases struct {
 		Current struct {
@@ -158,43 +173,45 @@ func (k NodeTests) LatestStableContainerLinux(t *testing.T) {
 		} `json:"current"`
 	}
 
-	resp, err := http.Get("https://kinvolk.io/flatcar-container-linux/releases-json/releases-stable.json")
-	if !assert.NoError(t, err) {
-		return
+	feed_url := fmt.Sprintf("https://kinvolk.io/flatcar-container-linux/releases-json/releases-%s.json", channel)
+
+	resp, err := http.Get(feed_url)
+	if err != nil {
+		return "", fmt.Errorf("Error fetching %s: %w", feed_url, err)
 	}
-	if !assert.Equal(t, 200, resp.StatusCode) {
-		return
+	if resp.StatusCode != 200 {
+		return "", fmt.Errorf("Invalid %d response code fetching %s", resp.StatusCode, feed_url)
 	}
 	body, err := ioutil.ReadAll(resp.Body)
-	if !assert.NoError(t, err) {
-		return
+	if err != nil {
+		return "", fmt.Errorf("Failed reading %s feed response: %w", channel, err)
 	}
 	var current FlatcarReleases
-	err = json.Unmarshal(body, &current)
-	if !assert.NoError(t, err) {
-		return
+	if err := json.Unmarshal(body, &current); err != nil {
+		return "", fmt.Errorf("Error unmarshalling flatcar %s release feed: %w", channel, err)
 	}
 
 	if current.Current.ReleaseDate != "" {
 		date, err := time.Parse("2006-01-02", current.Current.ReleaseDate[0:10])
-		if !assert.NoError(t, err) {
-			return
+		if err != nil {
+			return "", fmt.Errorf("Error parsing release date: %w", err)
 		}
-		if !assert.NotEmpty(t, date, "Could not get release date") {
-			return
+		if date.IsZero() {
+			return "", errors.New("No release date")
 		}
 		// check if release is at least 3 days old, otherwise image might not be up-to-date
 		if time.Since(date).Hours() < 72 {
-			return
+			return "", nil
 		}
 	}
+	txt_url := fmt.Sprintf("https://%s.release.flatcar-linux.net/amd64-usr/current/version.txt", channel)
 
-	resp, err = http.Get("https://stable.release.flatcar-linux.net/amd64-usr/current/version.txt")
-	if !assert.NoError(t, err) {
-		return
+	resp, err = http.Get(txt_url)
+	if err != nil {
+		return "", fmt.Errorf("Error fetching: %s: %s", txt_url, err)
 	}
-	if !assert.Equal(t, 200, resp.StatusCode) {
-		return
+	if resp.StatusCode != 200 {
+		return "", fmt.Errorf("Invalid %d response fetching %s", resp.StatusCode, txt_url)
 	}
 	version := ""
 	scanner := bufio.NewScanner(resp.Body)
@@ -203,19 +220,16 @@ func (k NodeTests) LatestStableContainerLinux(t *testing.T) {
 
 		if len(keyval) == 2 && keyval[0] == "FLATCAR_VERSION" {
 			version = keyval[1]
-			if !assert.NotEmpty(t, version, "Failed to detect latest stable Container Linux version") {
-				return
+			if version == "" {
+				return "", fmt.Errorf("Failed to find FLATCAR_VERSION in version.txt")
 			}
 		}
 	}
 
-	if !assert.NotEmpty(t, version, "Failed to detect latest stable Container Linux version") {
-		return
+	if version == "" {
+		return "", fmt.Errorf("Failed to find latest stable Flatcar version")
 	}
-
-	for _, node := range nodes.Items {
-		assert.Contains(t, node.Status.NodeInfo.OSImage, version, "Node %s is not on latest version", node.Name)
-	}
+	return version, nil
 }
 
 func (k *NodeTests) Sufficient(t *testing.T) {
@@ -237,8 +251,11 @@ func (k *NodeTests) checkState(t *testing.T, fn poolCount, timeout time.Duration
 			if err != nil {
 				return false, err
 			}
+			count = 0
+			for _, pool := range cluster.Payload.Status.NodePools {
+				count += int(fn(pool))
+			}
 
-			count = int(fn(cluster.Payload.Status.NodePools[0]))
 			return count >= k.ExpectedNodeCount, nil
 		})
 

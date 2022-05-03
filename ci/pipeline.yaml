@@ -849,7 +849,7 @@ task_e2e_tests: &task_e2e_tests
     NODEPOOL_AVZ:
     KLUSTER_VERSION:
     KLUSTER_CIDR:
-    KLUSTER_OS_IMAGE:
+    KLUSTER_OS_IMAGES:
     ISOLATE_TEST:
   
 
@@ -1163,7 +1163,7 @@ task_whitesource: &task_whitesource
         
         #wss.connectionTimeoutMinutes=60
         # URL to your WhiteSource server.
-        wss.url=https://saas.whitesourcesoftware.com/agent
+        wss.url=https://sap.whitesourcesoftware.com/agent
         
         # resolveDependencies parameter is important and need to be true
         go.resolveDependencies=true
@@ -1527,6 +1527,7 @@ jobs:
           KLUSTER_VERSION: "1.22.4"
           KLUSTER_CIDR: "100.100.0.0/16"
           ISOLATE_TEST: "true"
+          KLUSTER_OS_IMAGES: flatcar-stable-amd64,flatcar-beta-amd64
           <<: *auth_e2e_master
     <<: *slack
 
@@ -1550,6 +1551,7 @@ jobs:
           KLUSTER_VERSION: "1.21.5"
           KLUSTER_CIDR: "100.101.0.0/16"
           ISOLATE_TEST: "true"
+          KLUSTER_OS_IMAGES: flatcar-stable-amd64,flatcar-beta-amd64
           <<: *auth_e2e_master
     <<: *slack
 
@@ -1573,6 +1575,7 @@ jobs:
           KLUSTER_VERSION: "1.20.8"
           KLUSTER_CIDR: "100.102.0.0/16"
           ISOLATE_TEST: "true"
+          KLUSTER_OS_IMAGES: flatcar-stable-amd64,flatcar-beta-amd64
           <<: *auth_e2e_master
     <<: *slack
 
@@ -1596,6 +1599,7 @@ jobs:
           KLUSTER_VERSION: "1.19.11"
           KLUSTER_CIDR: "100.103.0.0/16"
           ISOLATE_TEST: "true"
+          KLUSTER_OS_IMAGES: flatcar-stable-amd64,flatcar-beta-amd64
           <<: *auth_e2e_master
     <<: *slack
 
@@ -1619,6 +1623,7 @@ jobs:
           KLUSTER_VERSION: "1.18.10"
           KLUSTER_CIDR: "100.104.0.0/16"
           ISOLATE_TEST: "true"
+          KLUSTER_OS_IMAGES: flatcar-stable-amd64,flatcar-beta-amd64
           <<: *auth_e2e_master
     <<: *slack
 
@@ -1642,6 +1647,7 @@ jobs:
           KLUSTER_VERSION: "1.17.13"
           KLUSTER_CIDR: "100.105.0.0/16"
           ISOLATE_TEST: "true"
+          KLUSTER_OS_IMAGES: flatcar-stable-amd64,flatcar-beta-amd64
           <<: *auth_e2e_master
     <<: *slack
 
@@ -1665,6 +1671,7 @@ jobs:
           KLUSTER_VERSION: "1.16.14"
           KLUSTER_CIDR: "100.106.0.0/16"
           ISOLATE_TEST: "true"
+          KLUSTER_OS_IMAGES: flatcar-stable-amd64,flatcar-beta-amd64
           <<: *auth_e2e_master
     <<: *slack
 
@@ -1688,6 +1695,7 @@ jobs:
           KLUSTER_VERSION: "1.15.9"
           KLUSTER_CIDR: "100.107.0.0/16"
           ISOLATE_TEST: "true"
+          KLUSTER_OS_IMAGES: flatcar-stable-amd64,flatcar-beta-amd64
           <<: *auth_e2e_master
     <<: *slack
 
@@ -1711,6 +1719,7 @@ jobs:
           KLUSTER_VERSION: "1.14.5"
           KLUSTER_CIDR: "100.108.0.0/16"
           ISOLATE_TEST: "true"
+          KLUSTER_OS_IMAGES: flatcar-stable-amd64,flatcar-beta-amd64
           <<: *auth_e2e_master
     <<: *slack
 
@@ -1734,6 +1743,7 @@ jobs:
           KLUSTER_VERSION: "1.13.9"
           KLUSTER_CIDR: "100.109.0.0/16"
           ISOLATE_TEST: "true"
+          KLUSTER_OS_IMAGES: flatcar-stable-amd64,flatcar-beta-amd64
           <<: *auth_e2e_master
     <<: *slack
 
@@ -1757,6 +1767,7 @@ jobs:
           KLUSTER_VERSION: "1.12.10"
           KLUSTER_CIDR: "100.110.0.0/16"
           ISOLATE_TEST: "true"
+          KLUSTER_OS_IMAGES: flatcar-stable-amd64,flatcar-beta-amd64
           <<: *auth_e2e_master
     <<: *slack
 
@@ -1878,6 +1889,7 @@ jobs:
         timeout: 45m
         params:
           <<: *auth_e2e_ap-ae-1
+
         on_failure:
           put: slack-notification
           params:
@@ -1987,6 +1999,7 @@ jobs:
         timeout: 45m
         params:
           <<: *auth_e2e_ap-au-1
+
         on_failure:
           put: slack-notification
           params:
@@ -2096,6 +2109,7 @@ jobs:
         timeout: 45m
         params:
           <<: *auth_e2e_ap-cn-1
+
         on_failure:
           put: slack-notification
           params:
@@ -2205,6 +2219,7 @@ jobs:
         timeout: 45m
         params:
           <<: *auth_e2e_ap-jp-1
+
         on_failure:
           put: slack-notification
           params:
@@ -2314,6 +2329,7 @@ jobs:
         timeout: 45m
         params:
           <<: *auth_e2e_ap-jp-2
+
         on_failure:
           put: slack-notification
           params:
@@ -2423,6 +2439,7 @@ jobs:
         timeout: 45m
         params:
           <<: *auth_e2e_ap-sa-1
+
         on_failure:
           put: slack-notification
           params:
@@ -2532,6 +2549,7 @@ jobs:
         timeout: 45m
         params:
           <<: *auth_e2e_ap-sa-2
+
         on_failure:
           put: slack-notification
           params:
@@ -2656,6 +2674,7 @@ jobs:
         timeout: 45m
         params:
           <<: *auth_e2e_eu-de-1
+
         on_failure:
           put: slack-notification
           params:
@@ -2765,6 +2784,7 @@ jobs:
         timeout: 45m
         params:
           <<: *auth_e2e_eu-de-2
+
         on_failure:
           put: slack-notification
           params:
@@ -2874,6 +2894,7 @@ jobs:
         timeout: 45m
         params:
           <<: *auth_e2e_eu-nl-1
+
         on_failure:
           put: slack-notification
           params:
@@ -2983,6 +3004,7 @@ jobs:
         timeout: 45m
         params:
           <<: *auth_e2e_eu-ru-1
+
         on_failure:
           put: slack-notification
           params:
@@ -3107,6 +3129,7 @@ jobs:
         timeout: 45m
         params:
           <<: *auth_e2e_la-br-1
+
         on_failure:
           put: slack-notification
           params:
@@ -3216,6 +3239,7 @@ jobs:
         timeout: 45m
         params:
           <<: *auth_e2e_na-ca-1
+
         on_failure:
           put: slack-notification
           params:
@@ -3325,6 +3349,7 @@ jobs:
         timeout: 45m
         params:
           <<: *auth_e2e_na-us-1
+
         on_failure:
           put: slack-notification
           params:
@@ -3434,6 +3459,7 @@ jobs:
         timeout: 45m
         params:
           <<: *auth_e2e_na-us-2
+
         on_failure:
           put: slack-notification
           params:
@@ -3543,6 +3569,7 @@ jobs:
         timeout: 45m
         params:
           <<: *auth_e2e_na-us-3
+
         on_failure:
           put: slack-notification
           params:
@@ -3667,6 +3694,9 @@ jobs:
         timeout: 45m
         params:
           <<: *auth_e2e_qa-de-1
+
+          KLUSTER_OS_IMAGES: flatcar-stable-amd64,flatcar-beta-amd64
+
         on_failure:
           put: slack-notification
           params:
