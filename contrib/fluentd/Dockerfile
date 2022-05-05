@@ -1,4 +1,4 @@
-FROM keppel.eu-de-1.cloud.sap/ccloud-dockerhub-mirror/library/fluentd:v1.14-1
+FROM keppel.eu-de-1.cloud.sap/ccloud-dockerhub-mirror/fluent/fluentd:v1.14.6-1.1
 
 LABEL source_repository=https://github.com/fluent/fluentd
 USER root

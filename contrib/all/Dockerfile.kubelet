@@ -12,6 +12,8 @@ RUN wget https://storage.googleapis.com/kubernetes-release/release/$KUBERNETES_V
     chmod +x kubelet && \
     wget https://storage.googleapis.com/kubernetes-release/release/$KUBERNETES_VERSION/bin/linux/amd64/kubectl && \
     chmod +x kubectl
+RUN mkdir -p cni-bin && \
+    wget -O- https://github.com/containernetworking/plugins/releases/download/${CNI_PLUGINS_RELEASE}/cni-plugins-linux-${ARCH}-${CNI_PLUGINS_RELEASE}.tgz | tar -xz -C cni-bin
 
 FROM $BASE_IMAGE
 
@@ -19,6 +21,7 @@ LABEL source_repository="https://github.com/sapcc/kubernikus"
 
 COPY --from=builder /tmp/kubelet /usr/local/bin/kubelet
 COPY --from=builder /tmp/kubectl /usr/local/bin/kubectl
+COPY --from=builder /tmp/cni-bin /opt/cni/bin
 
 RUN clean-install \
     bash
