@@ -6,11 +6,6 @@ metadata:
   labels:
     chart: "{{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}"
     release: {{ .Release.Name }}
-{{- if .Values.backup.enabled }}
-  annotations:
-    prometheus.io/scrape: "true"
-    prometheus.io/port:   "8080"
-{{- end }}
 spec:
   type: ClusterIP
   ports:

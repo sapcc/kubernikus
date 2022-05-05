@@ -84,6 +84,11 @@ spec:
         app: {{ include "fullname" . }}
         release: {{ .Release.Name }}
         component: etcd
+{{- if .Values.backup.enabled }}
+        pod_sd: {{ include "fullname" . }}
+      annotations:
+        prometheus.io/scrape: "true"
+{{- end }}
     spec:
       volumes:
         - name: data
@@ -207,7 +212,8 @@ spec:
           image: "{{ include "etcdBackup.image" . }}"
           ports:
             - containerPort: 8080
-              name: server
+              # the name is important here, so that we get metrics
+              name: metrics
               protocol: TCP
           env:
 {{- if eq .Values.backup.storageProvider "S3" }}
