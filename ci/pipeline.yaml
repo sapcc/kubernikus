@@ -1507,6 +1507,30 @@ jobs:
       - put: all-versions.trigger
 
 
+  - name: e2e-1.23.6
+    serial: true
+    plan:
+      - in_parallel:
+        - get: secrets.git
+        - get: kubernikus.builds
+          resource: kubernikus.git
+          passed: [master]
+          trigger: true
+        - get: all-versions.trigger
+          trigger: true
+          passed: [all-versions]
+      - task: e2e_tests
+        config:
+          <<: *task_e2e_tests
+        timeout: 2h
+        params:
+          KLUSTER_VERSION: "1.23.6"
+          KLUSTER_CIDR: "100.100.0.0/16"
+          ISOLATE_TEST: "true"
+          KLUSTER_OS_IMAGES: flatcar-stable-amd64,flatcar-beta-amd64
+          <<: *auth_e2e_master
+    <<: *slack
+
   - name: e2e-1.22.4
     serial: true
     plan:
@@ -1525,7 +1549,7 @@ jobs:
         timeout: 2h
         params:
           KLUSTER_VERSION: "1.22.4"
-          KLUSTER_CIDR: "100.100.0.0/16"
+          KLUSTER_CIDR: "100.101.0.0/16"
           ISOLATE_TEST: "true"
           KLUSTER_OS_IMAGES: flatcar-stable-amd64,flatcar-beta-amd64
           <<: *auth_e2e_master
@@ -1549,7 +1573,7 @@ jobs:
         timeout: 2h
         params:
           KLUSTER_VERSION: "1.21.5"
-          KLUSTER_CIDR: "100.101.0.0/16"
+          KLUSTER_CIDR: "100.102.0.0/16"
           ISOLATE_TEST: "true"
           KLUSTER_OS_IMAGES: flatcar-stable-amd64,flatcar-beta-amd64
           <<: *auth_e2e_master
@@ -1573,7 +1597,7 @@ jobs:
         timeout: 2h
         params:
           KLUSTER_VERSION: "1.20.8"
-          KLUSTER_CIDR: "100.102.0.0/16"
+          KLUSTER_CIDR: "100.103.0.0/16"
           ISOLATE_TEST: "true"
           KLUSTER_OS_IMAGES: flatcar-stable-amd64,flatcar-beta-amd64
           <<: *auth_e2e_master
@@ -1597,7 +1621,7 @@ jobs:
         timeout: 2h
         params:
           KLUSTER_VERSION: "1.19.11"
-          KLUSTER_CIDR: "100.103.0.0/16"
+          KLUSTER_CIDR: "100.104.0.0/16"
           ISOLATE_TEST: "true"
           KLUSTER_OS_IMAGES: flatcar-stable-amd64,flatcar-beta-amd64
           <<: *auth_e2e_master
@@ -1621,7 +1645,7 @@ jobs:
         timeout: 2h
         params:
           KLUSTER_VERSION: "1.18.10"
-          KLUSTER_CIDR: "100.104.0.0/16"
+          KLUSTER_CIDR: "100.105.0.0/16"
           ISOLATE_TEST: "true"
           KLUSTER_OS_IMAGES: flatcar-stable-amd64,flatcar-beta-amd64
           <<: *auth_e2e_master
@@ -1645,7 +1669,7 @@ jobs:
         timeout: 2h
         params:
           KLUSTER_VERSION: "1.17.13"
-          KLUSTER_CIDR: "100.105.0.0/16"
+          KLUSTER_CIDR: "100.106.0.0/16"
           ISOLATE_TEST: "true"
           KLUSTER_OS_IMAGES: flatcar-stable-amd64,flatcar-beta-amd64
           <<: *auth_e2e_master
@@ -1669,7 +1693,7 @@ jobs:
         timeout: 2h
         params:
           KLUSTER_VERSION: "1.16.14"
-          KLUSTER_CIDR: "100.106.0.0/16"
+          KLUSTER_CIDR: "100.107.0.0/16"
           ISOLATE_TEST: "true"
           KLUSTER_OS_IMAGES: flatcar-stable-amd64,flatcar-beta-amd64
           <<: *auth_e2e_master
@@ -1693,7 +1717,7 @@ jobs:
         timeout: 2h
         params:
           KLUSTER_VERSION: "1.15.9"
-          KLUSTER_CIDR: "100.107.0.0/16"
+          KLUSTER_CIDR: "100.108.0.0/16"
           ISOLATE_TEST: "true"
           KLUSTER_OS_IMAGES: flatcar-stable-amd64,flatcar-beta-amd64
           <<: *auth_e2e_master
@@ -1717,7 +1741,7 @@ jobs:
         timeout: 2h
         params:
           KLUSTER_VERSION: "1.14.5"
-          KLUSTER_CIDR: "100.108.0.0/16"
+          KLUSTER_CIDR: "100.109.0.0/16"
           ISOLATE_TEST: "true"
           KLUSTER_OS_IMAGES: flatcar-stable-amd64,flatcar-beta-amd64
           <<: *auth_e2e_master
@@ -1741,30 +1765,6 @@ jobs:
         timeout: 2h
         params:
           KLUSTER_VERSION: "1.13.9"
-          KLUSTER_CIDR: "100.109.0.0/16"
-          ISOLATE_TEST: "true"
-          KLUSTER_OS_IMAGES: flatcar-stable-amd64,flatcar-beta-amd64
-          <<: *auth_e2e_master
-    <<: *slack
-
-  - name: e2e-1.12.10
-    serial: true
-    plan:
-      - in_parallel:
-        - get: secrets.git
-        - get: kubernikus.builds
-          resource: kubernikus.git
-          passed: [master]
-          trigger: true
-        - get: all-versions.trigger
-          trigger: true
-          passed: [all-versions]
-      - task: e2e_tests
-        config:
-          <<: *task_e2e_tests
-        timeout: 2h
-        params:
-          KLUSTER_VERSION: "1.12.10"
           KLUSTER_CIDR: "100.110.0.0/16"
           ISOLATE_TEST: "true"
           KLUSTER_OS_IMAGES: flatcar-stable-amd64,flatcar-beta-amd64
@@ -1777,7 +1777,7 @@ jobs:
     plan:
       - get: kubernikus.builds
         resource: kubernikus.git
-        passed: [e2e-1.22.4]
+        passed: [e2e-1.23.6]
       - task: changes
         config:
           <<: *task_github_compare_url
@@ -3730,6 +3730,8 @@ groups:
       - tiller_master
       - all-versions
 
+      - e2e-1.23.6
+
       - e2e-1.22.4
 
       - e2e-1.21.5
@@ -3749,8 +3751,6 @@ groups:
       - e2e-1.14.5
 
       - e2e-1.13.9
-
-      - e2e-1.12.10
 
       - prod
 
@@ -3909,6 +3909,8 @@ groups:
       - tiller_master
       - all-versions
 
+      - e2e-1.23.6
+
       - e2e-1.22.4
 
       - e2e-1.21.5
@@ -3928,8 +3930,6 @@ groups:
       - e2e-1.14.5
 
       - e2e-1.13.9
-
-      - e2e-1.12.10
 
       - prod
 
