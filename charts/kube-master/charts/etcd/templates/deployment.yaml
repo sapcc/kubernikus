@@ -85,7 +85,6 @@ spec:
         release: {{ .Release.Name }}
         component: etcd
 {{- if .Values.backup.enabled }}
-        pod_sd: {{ include "fullname" . }}
       annotations:
         prometheus.io/scrape: "true"
 {{- end }}
