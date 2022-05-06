@@ -17,6 +17,7 @@ import (
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/servers"
 	securitygroups "github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/security/groups"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/security/rules"
+	"github.com/gophercloud/gophercloud/openstack/networking/v2/subnets"
 	"github.com/gophercloud/gophercloud/pagination"
 	flavorutil "github.com/gophercloud/utils/openstack/compute/v2/flavors"
 	imageutil "github.com/gophercloud/utils/openstack/imageservice/v2/images"
@@ -219,10 +220,16 @@ func (c *klusterClient) EnsureKubernikusRulesInSecurityGroup(kluster *v1.Kluster
 
 	wantedRules := []rules.SecGroupRule{
 		{
-			Direction:      string(rules.DirIngress),
-			EtherType:      string(rules.EtherType4),
-			RemoteIPPrefix: *kluster.Spec.ClusterCIDR,
-			Description:    fmt.Sprintf(`Kubernikus: accept traffic from pod CIDR of cluster "%s"`, kluster.Spec.Name),
+			Direction:     string(rules.DirIngress),
+			EtherType:     string(rules.EtherType4),
+			RemoteGroupID: groups[0].ID,
+			Description:   fmt.Sprintf(`Kubernikus: accept traffic from pods and nodes of cluster "%s"`, kluster.Spec.Name),
+		},
+		{
+			Direction:     string(rules.DirEgress),
+			EtherType:     string(rules.EtherType4),
+			RemoteGroupID: groups[0].ID,
+			Description:   fmt.Sprintf(`Kubernikus: allow traffic to pods and nodes of cluster "%s"`, kluster.Spec.Name),
 		},
 		{
 			Direction:    string(rules.DirEgress),
@@ -231,6 +238,14 @@ func (c *klusterClient) EnsureKubernikusRulesInSecurityGroup(kluster *v1.Kluster
 			PortRangeMin: 123,
 			PortRangeMax: 123,
 			Description:  "Kubernikus: allow ntp client traffic",
+		},
+		{
+			Direction:    string(rules.DirEgress),
+			EtherType:    string(rules.EtherType4),
+			Protocol:     string(rules.ProtocolUDP),
+			PortRangeMin: 53,
+			PortRangeMax: 53,
+			Description:  "Kubernikus: allow dns traffic",
 		},
 		{
 			Direction:      string(rules.DirEgress),
@@ -242,15 +257,32 @@ func (c *klusterClient) EnsureKubernikusRulesInSecurityGroup(kluster *v1.Kluster
 			Description:    fmt.Sprintf(`Kubernikus: allow access to apiserver of cluster "%s"`, kluster.Spec.Name),
 		},
 	}
+
+	if subnetsPage, err := subnets.List(c.NetworkClient, subnets.ListOpts{NetworkID: kluster.Spec.Openstack.NetworkID}).AllPages(); err == nil {
+		if nets, err := subnets.ExtractSubnets(subnetsPage); err == nil && len(nets) > 0 {
+			wantedRules = append(wantedRules, rules.SecGroupRule{
+				Direction:      string(rules.DirIngress),
+				EtherType:      string(rules.EtherType4),
+				Protocol:       string(rules.ProtocolTCP),
+				PortRangeMin:   30000,
+				PortRangeMax:   32767,
+				RemoteIPPrefix: nets[0].CIDR, //we only take the first subnet, tough luck
+				Description:    `Kubernikus: allow loadbalancers to reach cluster nodeports`,
+			})
+
+		}
+	}
+	var objectstoreIP net.IP
 	if osURL, err := c.ComputeClient.ProviderClient.EndpointLocator(gophercloud.EndpointOpts{Type: "object-store", Availability: gophercloud.AvailabilityPublic}); err == nil {
-		if ip, err := ipForUrl(osURL); err == nil {
+		if objectstoreIP, err = ipForUrl(osURL); err == nil {
+
 			wantedRules = append(wantedRules, rules.SecGroupRule{
 				Direction:      string(rules.DirEgress),
 				EtherType:      string(rules.EtherType4),
 				Protocol:       string(rules.ProtocolTCP),
 				PortRangeMin:   443,
 				PortRangeMax:   443,
-				RemoteIPPrefix: ip.String(),
+				RemoteIPPrefix: objectstoreIP.String(),
 				Description:    `Kubernikus: allow access to regional object-store/swift`,
 			})
 		} else {
@@ -259,6 +291,20 @@ func (c *klusterClient) EnsureKubernikusRulesInSecurityGroup(kluster *v1.Kluster
 	} else {
 		fmt.Println("no object-store", err, osURL)
 	}
+	//This should be removed and the ignition stuff should be pulled from regional swift eventually
+	if swiftEUDE1, err := ipForUrl("https://objectstore-3.eu-de-1.cloud.sap"); err == nil && !swiftEUDE1.Equal(objectstoreIP) {
+		wantedRules = append(wantedRules, rules.SecGroupRule{
+			Direction:      string(rules.DirEgress),
+			EtherType:      string(rules.EtherType4),
+			Protocol:       string(rules.ProtocolTCP),
+			PortRangeMin:   443,
+			PortRangeMax:   443,
+			RemoteIPPrefix: swiftEUDE1.String(),
+			Description:    `Kubernikus: allow access to https://objectstore-3.eu-de-1.cloud.sap`,
+		})
+	}
+
+	// keppel (ingress.$region.cloud.sap)
 	if keppelURL, err := c.ComputeClient.ProviderClient.EndpointLocator(gophercloud.EndpointOpts{Type: "keppel", Availability: gophercloud.AvailabilityPublic}); err == nil {
 		if ip, err := ipForUrl(keppelURL); err == nil {
 			wantedRules = append(wantedRules, rules.SecGroupRule{
@@ -268,10 +314,39 @@ func (c *klusterClient) EnsureKubernikusRulesInSecurityGroup(kluster *v1.Kluster
 				PortRangeMin:   443,
 				PortRangeMax:   443,
 				RemoteIPPrefix: ip.String(),
-				Description:    `Kubernikus: allow access to regional keppel`,
+				Description:    fmt.Sprintf(`Kubernikus: allow access to %s`, keppelURL),
 			})
 		}
+		//in qa we need to add keppel.eu-de-1 because thats from where we pull images
+		if strings.Contains(keppelURL, "qa-de-1") {
+			keppelURL := strings.Replace(keppelURL, "qa-de-1", "eu-de-1", 1)
+			if ip, err := ipForUrl(keppelURL); err == nil {
+				wantedRules = append(wantedRules, rules.SecGroupRule{
+					Direction:      string(rules.DirEgress),
+					EtherType:      string(rules.EtherType4),
+					Protocol:       string(rules.ProtocolTCP),
+					PortRangeMin:   443,
+					PortRangeMax:   443,
+					RemoteIPPrefix: ip.String(),
+					Description:    fmt.Sprintf(`Kubernikus: allow access to %s`, keppelURL),
+				})
+			}
+
+		}
 	}
+	//This should be removed and the ignition stuff should be pulled from regional swift eventually
+	if keppelGlobalIP, err := ipForUrl("https://keppel.global.cloud.sap"); err == nil {
+		wantedRules = append(wantedRules, rules.SecGroupRule{
+			Direction:      string(rules.DirEgress),
+			EtherType:      string(rules.EtherType4),
+			Protocol:       string(rules.ProtocolTCP),
+			PortRangeMin:   443,
+			PortRangeMax:   443,
+			RemoteIPPrefix: keppelGlobalIP.String(),
+			Description:    `Kubernikus: allow access to https://keppel.global.cloud.sap`,
+		})
+	}
+
 OUTER:
 	for n, wanted := range wantedRules {
 		for _, rule := range groups[0].Rules {
@@ -286,6 +361,7 @@ OUTER:
 			EtherType:      rules.RuleEtherType(wanted.EtherType),
 			Protocol:       rules.RuleProtocol(wanted.Protocol),
 			SecGroupID:     groups[0].ID,
+			RemoteGroupID:  wanted.RemoteGroupID,
 			RemoteIPPrefix: wanted.RemoteIPPrefix,
 			Description:    wanted.Description,
 			PortRangeMin:   wanted.PortRangeMin,
