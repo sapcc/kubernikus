@@ -8,7 +8,7 @@ RUN CGO_ENABLED=0 go build -o /api-liveness /api-liveness.go
 
 FROM keppel.eu-de-1.cloud.sap/ccloud-dockerhub-mirror/library/alpine AS socat
 RUN apk --update add build-base bash automake git curl linux-headers
-ARG SOCAT_VERSION=1.7.4.1
+ARG SOCAT_VERSION=1.7.4.2
 WORKDIR /build
 RUN curl -LO http://www.dest-unreach.org/socat/download/socat-${SOCAT_VERSION}.tar.gz \
     && tar xzvf socat-${SOCAT_VERSION}.tar.gz \

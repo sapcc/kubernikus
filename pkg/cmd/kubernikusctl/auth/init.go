@@ -23,6 +23,7 @@ type InitOptions struct {
 	url            *url.URL
 	name           string
 	kubeconfigPath string
+	authType       string
 
 	openstack  *common.OpenstackClient
 	kubernikus *common.KubernikusClient
@@ -58,6 +59,7 @@ func (o *InitOptions) BindFlags(flags *pflag.FlagSet) {
 	flags.StringVar(&o._url, "url", o._url, "URL for Kubernikus API")
 	flags.StringVar(&o.name, "name", o.name, "Cluster Name")
 	flags.StringVar(&o.kubeconfigPath, "kubeconfig", o.kubeconfigPath, "Overwrites kubeconfig auto-detection with explicit path")
+	flags.StringVar(&o.authType, "auth-type", o.authType, "Authentication type")
 }
 
 func (o *InitOptions) Validate(c *cobra.Command, args []string) (err error) {
@@ -108,10 +110,17 @@ func (o *InitOptions) Run(c *cobra.Command) (err error) {
 		}
 	}
 
-	fmt.Printf("Fetching credentials for %v from %v\n", o.name, o.url)
-	kubeconfig, err := o.kubernikus.GetCredentials(o.name)
-	if err != nil {
-		return errors.Wrap(err, "Couldn't fetch credentials from Kubernikus API")
+	var kubeconfig string
+	var errCredentials error
+	if o.authType == "oidc" {
+		fmt.Printf("Fetching OIDC credentials for %v from %v\n", o.name, o.url)
+		kubeconfig, errCredentials = o.kubernikus.GetCredentialsOIDC(o.name)
+	} else {
+		fmt.Printf("Fetching credentials for %v from %v\n", o.name, o.url)
+		kubeconfig, errCredentials = o.kubernikus.GetCredentials(o.name)
+	}
+	if errCredentials != nil {
+		return errors.Wrap(errCredentials, "Couldn't fetch credentials from Kubernikus API")
 	}
 
 	if storePasswordInKeyRing {

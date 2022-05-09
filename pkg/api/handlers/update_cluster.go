@@ -136,36 +136,33 @@ func (d *updateCluster) Handle(params operations.UpdateClusterParams, principal 
 			}
 		}
 
-		// If dex is disabled
-		if !swag.BoolValue(kluster.Spec.Dex) {
+		dexEnabled := swag.BoolValue(kluster.Spec.Dex)
+		dashboardEnabled := swag.BoolValue(kluster.Spec.Dashboard)
+		if params.Body.Spec.Dex != nil {
+			dexEnabled = swag.BoolValue(params.Body.Spec.Dex)
+		}
+		if params.Body.Spec.Dashboard != nil {
+			dashboardEnabled = swag.BoolValue(params.Body.Spec.Dashboard)
+		}
 
-			// Check for dashboard
-			if swag.BoolValue(params.Body.Spec.Dashboard) && !swag.BoolValue(params.Body.Spec.Dex) {
-				return apierrors.NewBadRequest(fmt.Sprintf("Dashboard cannot be enabled while Dex is disabled"))
+		if !dexEnabled && dashboardEnabled {
+			return apierrors.NewBadRequest(fmt.Sprintf("Dashboard cannot be enabled while Dex is disabled"))
+		}
+
+		//Dex value changed
+		if params.Body.Spec.Dex != nil && swag.BoolValue(params.Body.Spec.Dex) != swag.BoolValue(kluster.Spec.Dex) {
+			kluster.Spec.Dex = params.Body.Spec.Dex
+		}
+
+		//Dashboard value changed
+		if params.Body.Spec.Dashboard != nil && swag.BoolValue(params.Body.Spec.Dashboard) != swag.BoolValue(kluster.Spec.Dashboard) {
+
+			kluster.Spec.Dashboard = params.Body.Spec.Dashboard
+			if dashboardEnabled && kluster.Status.Apiserver != "" {
+				apiURL := kluster.Status.Apiserver
+				kluster.Status.Dashboard = strings.Replace(apiURL, kluster.GetName(), fmt.Sprintf("dashboard-%s.ingress", kluster.GetName()), -1)
 			}
 
-			// Enable dex
-			if swag.BoolValue(params.Body.Spec.Dex) {
-				kluster.Spec.Dex = params.Body.Spec.Dex
-			}
-
-			// Enable dashboard
-			if swag.BoolValue(params.Body.Spec.Dashboard) {
-				kluster.Spec.Dashboard = params.Body.Spec.Dashboard
-				if kluster.Status.Apiserver != "" {
-					apiURL := kluster.Status.Apiserver
-					kluster.Status.Dashboard = strings.Replace(apiURL, kluster.GetName(), fmt.Sprintf("dashboard-%s.ingress", kluster.GetName()), -1)
-				}
-			}
-		} else {
-			// Enable dashboard if dex is enabled
-			if swag.BoolValue(params.Body.Spec.Dashboard) {
-				kluster.Spec.Dashboard = params.Body.Spec.Dashboard
-				if kluster.Status.Apiserver != "" {
-					apiURL := kluster.Status.Apiserver
-					kluster.Status.Dashboard = strings.Replace(apiURL, kluster.GetName(), fmt.Sprintf("dashboard-%s.ingress", kluster.GetName()), -1)
-				}
-			}
 		}
 
 		return nil

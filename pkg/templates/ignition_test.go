@@ -103,7 +103,7 @@ func TestGenerateNode(t *testing.T) {
 
 			if version != "1.10" { //skip for 1.10 which exceeds the limit as its super depreacted
 				userData := base64.StdEncoding.EncodeToString(data)
-				assert.LessOrEqualf(t, len(userData), 65000, "userdata exceeds openstack limit for api version %s template", version)
+				assert.LessOrEqualf(t, len(userData), 65535, "userdata exceeds openstack limit for api version %s template", version)
 			}
 		}
 	}

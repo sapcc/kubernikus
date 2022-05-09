@@ -1,31 +1,42 @@
-VERSION?=v1.22.4
-VERSION_CCM?=v1.22.0
+VERSION?=v1.23.6
+VERSION_CCM?=v1.23.1
 REGISTRY?=k8s.gcr.io
 IMAGE?=keppel.eu-de-1.cloud.sap/ccloud
-ARCH=amd64
+ARCH?=amd64
 
-#CNI_PLUGINS_RELEASE=v0.8.5
+# see https://github.com/kubernetes/release/blob/master/images/build/debian-base/variants.yaml
+BASE_VERSION?=bullseye-v1.1.0
+BASE_IMAGE?=k8s.gcr.io/build-image/debian-base:${BASE_VERSION}
 
-CSI_ATTACHER_VERSION=v3.3.0
-CSI_PROVISIONER_VERSION=v3.0.0
-CSI_SNAPSHOTTER_VERSION=v4.2.1
-CSI_SNAPSHOT_CONTROLLER_VERSION=v4.2.1
-CSI_RESIZER_VERSION=v1.3.0
-CSI_LIVENESSPROBE_VERSION=v2.4.0
-CSI_NODE_DRIVER_VERSION=v2.3.0
-CSI_PLUGIN_VERSION?=v1.22.0
+CNI_PLUGINS_RELEASE=v1.0.1
 
-OPTS?=
+CSI_ATTACHER_VERSION=v3.4.0
+CSI_PROVISIONER_VERSION=v3.1.0
+CSI_SNAPSHOTTER_VERSION=v5.0.1
+CSI_SNAPSHOT_CONTROLLER_VERSION=v5.0.1
+CSI_RESIZER_VERSION=v1.4.0
+CSI_LIVENESSPROBE_VERSION=v2.6.0
+CSI_NODE_DRIVER_VERSION=v2.5.0
+CSI_PLUGIN_VERSION?=v1.23.0
 
-all: build build-csi push push-csi
+ETCD_VERSION=v3.4.13-bootstrap-3
+ETCDBRCTL_VERSION=v0.15.1
+FLANNEL_VERSION=v0.17.0
+COREDNS_VERSION=1.9.1
+
+OPTS?=--network=host
+
+all: build build-csi push push-csi pull
 
 build:
 	docker build ${OPTS} -t ${IMAGE}/kube-apiserver:${VERSION} --build-arg IMAGE=${REGISTRY}/kube-apiserver:${VERSION} -f Dockerfile.apiserver .
 	docker build ${OPTS} -t ${IMAGE}/kube-scheduler:${VERSION} --build-arg IMAGE=${REGISTRY}/kube-scheduler:${VERSION} .
 	docker build ${OPTS} -t ${IMAGE}/kube-controller-manager:${VERSION} --build-arg IMAGE=${REGISTRY}/kube-controller-manager:${VERSION} .
 	docker build ${OPTS} -t ${IMAGE}/kube-proxy:${VERSION} --build-arg IMAGE=${REGISTRY}/kube-proxy:${VERSION} .
-	docker build ${OPTS} -t ${IMAGE}/kubelet:${VERSION} --build-arg KUBERNETES_VERSION=${VERSION} --build-arg ARCH=${ARCH} --build-arg CNI_PLUGINS_RELEASE=${CNI_PLUGINS_RELEASE} - < Dockerfile.kubelet
+	docker build ${OPTS} -t ${IMAGE}/kubelet:${VERSION} --build-arg BASE_IMAGE=${BASE_IMAGE} --build-arg KUBERNETES_VERSION=${VERSION} --build-arg ARCH=${ARCH} --build-arg CNI_PLUGINS_RELEASE=${CNI_PLUGINS_RELEASE} - < Dockerfile.kubelet
 	docker build ${OPTS} -t ${IMAGE}/openstack-cloud-controller-manager:${VERSION_CCM} --build-arg IMAGE=k8scloudprovider/openstack-cloud-controller-manager:${VERSION_CCM} .
+	docker build ${OPTS} -t ${IMAGE}/etcd:${ETCD_VERSION} --build-arg IMAGE=eu.gcr.io/gardener-project/gardener/etcd:${ETCD_VERSION} .
+	docker build ${OPTS} -t ${IMAGE}/etcdbrctl:${ETCDBRCTL_VERSION} --build-arg IMAGE=eu.gcr.io/gardener-project/gardener/etcdbrctl:${ETCDBRCTL_VERSION} .
 
 build-csi:
 	docker build ${OPTS} -t ${IMAGE}/csi-attacher:${CSI_ATTACHER_VERSION} --build-arg IMAGE=${REGISTRY}/sig-storage/csi-attacher:${CSI_ATTACHER_VERSION} .
@@ -44,6 +55,8 @@ push:
 	docker push ${IMAGE}/kube-proxy:${VERSION}
 	docker push ${IMAGE}/kubelet:${VERSION}
 	docker push ${IMAGE}/openstack-cloud-controller-manager:${VERSION_CCM}
+	docker push ${IMAGE}/etcd:${ETCD_VERSION}
+	docker push ${IMAGE}/etcdbrctl:${ETCDBRCTL_VERSION}
 
 push-csi:
 	docker push ${IMAGE}/csi-attacher:${CSI_ATTACHER_VERSION}
@@ -55,4 +68,8 @@ push-csi:
 	docker push ${IMAGE}/csi-node-driver-registrar:${CSI_NODE_DRIVER_VERSION}
 	docker push ${IMAGE}/cinder-csi-plugin:${CSI_PLUGIN_VERSION}
 
-.PHONY: all build build-csi push push-csi
+pull:
+	docker pull keppel.eu-de-1.cloud.sap/ccloud-dockerhub-mirror/flannelcni/flannel:${FLANNEL_VERSION}
+	docker pull keppel.eu-de-1.cloud.sap/ccloud-dockerhub-mirror/coredns/coredns:${COREDNS_VERSION}
+
+.PHONY: all build build-csi push push-csi pull
