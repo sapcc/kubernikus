@@ -188,8 +188,13 @@ spec:
             {{- end }}
             - --data-dir=/var/lib/etcd/new.etcd
             - --storage-provider={{ .Values.backup.storageProvider | default "Swift" }}
+            {{- if (semverCompare ">= 1.23" .Values.version.kubernetes) }}
+            - --delta-snapshot-period={{ .Values.backup.deltaSnapshotPeriod }}s
+            - --garbage-collection-period={{ .Values.backup.garbageCollectionPeriod }}s
+            {{- else }}
             - --delta-snapshot-period-seconds={{ .Values.backup.deltaSnapshotPeriod }}
             - --garbage-collection-period-seconds={{ .Values.backup.garbageCollectionPeriod }}
+            {{- end }}
             - --garbage-collection-policy={{ .Values.backup.garbageCollectionPolicy }}
             {{- if .Values.secure.enabled }}
             - --cacert=/etc/kubernetes/certs/tls-etcd-ca.pem

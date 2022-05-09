@@ -51,6 +51,7 @@ type etcdValues struct {
 	Openstack        openstackValues        `yaml:"openstack,omitempty"`
 	Backup           etcdBackupValues       `yaml:"backup"`
 	Images           version.KlusterVersion `yaml:"images"`
+	Version          versionValues          `yaml:"version,omitempty"`
 }
 
 type etcdBackupValues struct {
@@ -193,6 +194,10 @@ func KlusterToHelmValues(kluster *v1.Kluster, secret *v1.Secret, kubernetesVersi
 				DomainName:        secret.Openstack.DomainName,
 				ProjectID:         secret.Openstack.ProjectID,
 				ProjectDomainName: secret.Openstack.ProjectDomainName,
+			},
+			Version: versionValues{
+				Kubernetes: kubernetesVersion,
+				Kubernikus: version.GitCommit,
 			},
 		},
 		Api: apiValues{

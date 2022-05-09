@@ -1,5 +1,6 @@
 <%
 VERSIONS = [
+  '1.23.6',
   '1.22.4',
   '1.21.5',
   '1.20.8',
@@ -9,8 +10,7 @@ VERSIONS = [
   '1.16.14',
   '1.15.9',
   '1.14.5',
-  '1.13.9',
-  '1.12.10'
+  '1.13.9'
 ]
 
 REGIONS = {
@@ -508,7 +508,7 @@ jobs:
         timeout: 45m
         params:
           <<: *auth_e2e_<%= region %>
-<% if region == "qa-de-1" %>
+<% if region == :'qa-de-1' %>
           KLUSTER_OS_IMAGES: flatcar-stable-amd64,flatcar-beta-amd64
 <% end %>
         on_failure:
