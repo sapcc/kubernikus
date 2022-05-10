@@ -2,6 +2,7 @@ package ground
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 
 	jsonpatch "github.com/evanphx/json-patch"
@@ -65,7 +66,7 @@ func (sr *SeedReconciler) EnrichHelmValuesForSeed(client project.ProjectClient, 
 		return err
 	}
 	// required to adapat old kube-dns deployments
-	_, err = k8sClient.ExtensionsV1beta1().Deployments("kube-system").Get("kube-dns", metav1.GetOptions{})
+	_, err = k8sClient.ExtensionsV1beta1().Deployments("kube-system").Get(context.TODO(), "kube-dns", metav1.GetOptions{})
 	var isKubeDns bool
 	if err == nil {
 		isKubeDns = true
@@ -216,7 +217,7 @@ func getManagedObjects(clients *config.Clients, mapper meta.RESTMapper, kluster 
 		} else if err != nil {
 			return nil, err
 		}
-		managedList, err := makeScopedClient(dynamicClient, mapping, "kube-system").List(metav1.ListOptions{LabelSelector: fmt.Sprintf("%s=%s", ManagedByLabelKey, ManagedByLabelValue)})
+		managedList, err := makeScopedClient(dynamicClient, mapping, "kube-system").List(context.TODO(), metav1.ListOptions{LabelSelector: fmt.Sprintf("%s=%s", ManagedByLabelKey, ManagedByLabelValue)})
 		if err != nil {
 			return nil, err
 		}
@@ -245,7 +246,7 @@ func getDiffObjects(client dynamic.Interface, mapper meta.RESTMapper, planned []
 		} else if err != nil {
 			return nil, err
 		}
-		oneDeployed, err := makeScopedClient(client, mapping, onePlanned.GetNamespace()).Get(onePlanned.GetName(), metav1.GetOptions{})
+		oneDeployed, err := makeScopedClient(client, mapping, onePlanned.GetNamespace()).Get(context.TODO(), onePlanned.GetName(), metav1.GetOptions{})
 		if errors.IsNotFound(err) {
 			oneDeployed = nil
 		} else if err != nil {
@@ -294,7 +295,7 @@ func (sr *SeedReconciler) deleteOrphanedObjects(client dynamic.Interface, mapper
 		if err != nil {
 			return err
 		}
-		err = makeScopedClient(client, mapping, oneOrphaned.GetNamespace()).Delete(oneOrphaned.GetName(), &metav1.DeleteOptions{})
+		err = makeScopedClient(client, mapping, oneOrphaned.GetNamespace()).Delete(context.TODO(), oneOrphaned.GetName(), metav1.DeleteOptions{})
 		if err != nil {
 			return err
 		}
@@ -336,7 +337,7 @@ func (sr *SeedReconciler) createPlanned(client dynamic.Interface, mapping *meta.
 		"namespace", obj.GetNamespace(),
 		"kind", fmt.Sprintf("%s", obj.GetKind()),
 		"v", 6)
-	_, err := makeScopedClient(client, mapping, obj.GetNamespace()).Create(obj, metav1.CreateOptions{})
+	_, err := makeScopedClient(client, mapping, obj.GetNamespace()).Create(context.TODO(), obj, metav1.CreateOptions{})
 	return err
 }
 
@@ -387,6 +388,6 @@ func (sr *SeedReconciler) patchDeployed(client dynamic.Interface, mapping *meta.
 		"kind", fmt.Sprintf("%s", deployed.GetKind()),
 		"patch", string(patch),
 		"v", 6)
-	_, err = makeScopedClient(client, mapping, deployed.GetNamespace()).Patch(deployed.GetName(), types.MergePatchType, patch, metav1.PatchOptions{})
+	_, err = makeScopedClient(client, mapping, deployed.GetNamespace()).Patch(context.TODO(), deployed.GetName(), types.MergePatchType, patch, metav1.PatchOptions{})
 	return err
 }

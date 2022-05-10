@@ -17,7 +17,7 @@ require (
 	github.com/databus23/guttle v0.0.0-20210623071842-89102dbdfc85
 	github.com/databus23/keystone v0.0.0-20180111110916-350fd0e663cd
 	github.com/databus23/requestutil v0.0.0-20160108082528-5ff8e981f38f
-	github.com/evanphx/json-patch v5.6.0+incompatible
+	github.com/evanphx/json-patch v4.12.0+incompatible
 	github.com/ghodss/yaml v1.0.0
 	github.com/go-kit/kit v0.10.0
 	github.com/go-openapi/errors v0.20.2
