@@ -173,7 +173,7 @@ func (k NodeTests) currentFlatcarVersion(channel string) (string, error) {
 		} `json:"current"`
 	}
 
-	feed_url := fmt.Sprintf("https://kinvolk.io/flatcar-container-linux/releases-json/releases-%s.json", channel)
+	feed_url := fmt.Sprintf("https://www.flatcar.org/releases-json/releases-%s.json", channel)
 
 	resp, err := http.Get(feed_url)
 	if err != nil {
