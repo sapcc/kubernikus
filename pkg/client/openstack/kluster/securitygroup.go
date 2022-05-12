@@ -15,14 +15,14 @@ func MatchRule(input rules.SecGroupRule, rule rules.SecGroupRule) bool {
 	if input.EtherType != rule.EtherType {
 		return false
 	}
-	if input.RemoteGroupID != rule.RemoteGroupID {
-		return false
-	}
-
 	if rule.Protocol != "" && input.Protocol != rule.Protocol {
 		return false
 	}
 	if (rule.PortRangeMin > 0 && rule.PortRangeMax > 0) && (input.PortRangeMin < rule.PortRangeMin || input.PortRangeMax > rule.PortRangeMax) {
+		return false
+	}
+
+	if input.RemoteGroupID != rule.RemoteGroupID && rule.RemoteIPPrefix != "0.0.0.0/0" {
 		return false
 	}
 

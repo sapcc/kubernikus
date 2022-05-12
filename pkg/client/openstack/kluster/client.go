@@ -223,13 +223,13 @@ func (c *klusterClient) EnsureKubernikusRulesInSecurityGroup(kluster *v1.Kluster
 			Direction:     string(rules.DirIngress),
 			EtherType:     string(rules.EtherType4),
 			RemoteGroupID: groups[0].ID,
-			Description:   fmt.Sprintf(`Kubernikus: accept traffic from pods and nodes of cluster "%s"`, kluster.Spec.Name),
+			Description:   ruleDescription("clusterin", kluster.Spec.Name, `Accept traffic from cluster pods and nodes`),
 		},
 		{
 			Direction:     string(rules.DirEgress),
 			EtherType:     string(rules.EtherType4),
 			RemoteGroupID: groups[0].ID,
-			Description:   fmt.Sprintf(`Kubernikus: allow traffic to pods and nodes of cluster "%s"`, kluster.Spec.Name),
+			Description:   ruleDescription("clusterout", kluster.Spec.Name, `Allow traffic to cluster pods and nodes`),
 		},
 		{
 			Direction:    string(rules.DirEgress),
@@ -237,7 +237,7 @@ func (c *klusterClient) EnsureKubernikusRulesInSecurityGroup(kluster *v1.Kluster
 			Protocol:     string(rules.ProtocolUDP),
 			PortRangeMin: 123,
 			PortRangeMax: 123,
-			Description:  "Kubernikus: allow ntp client traffic",
+			Description:  ruleDescription("ntp", "", "Allow ntp client traffic"),
 		},
 		{
 			Direction:    string(rules.DirEgress),
@@ -245,7 +245,7 @@ func (c *klusterClient) EnsureKubernikusRulesInSecurityGroup(kluster *v1.Kluster
 			Protocol:     string(rules.ProtocolUDP),
 			PortRangeMin: 53,
 			PortRangeMax: 53,
-			Description:  "Kubernikus: allow dns traffic",
+			Description:  ruleDescription("dns", "", "Allow dns requests"),
 		},
 		{
 			Direction:      string(rules.DirEgress),
@@ -254,7 +254,7 @@ func (c *klusterClient) EnsureKubernikusRulesInSecurityGroup(kluster *v1.Kluster
 			PortRangeMin:   443,
 			PortRangeMax:   443,
 			RemoteIPPrefix: apiIP.String(),
-			Description:    fmt.Sprintf(`Kubernikus: allow access to apiserver of cluster "%s"`, kluster.Spec.Name),
+			Description:    ruleDescription("api", kluster.Spec.Name, "Allow access to apiserver"),
 		},
 	}
 
@@ -267,9 +267,8 @@ func (c *klusterClient) EnsureKubernikusRulesInSecurityGroup(kluster *v1.Kluster
 				PortRangeMin:   30000,
 				PortRangeMax:   32767,
 				RemoteIPPrefix: nets[0].CIDR, //we only take the first subnet, tough luck
-				Description:    `Kubernikus: allow loadbalancers to reach cluster nodeports`,
+				Description:    ruleDescription("lb", kluster.Spec.Name, `Allow loadbalancers to reach nodeports`),
 			})
-
 		}
 	}
 	var objectstoreIP net.IP
@@ -283,7 +282,7 @@ func (c *klusterClient) EnsureKubernikusRulesInSecurityGroup(kluster *v1.Kluster
 				PortRangeMin:   443,
 				PortRangeMax:   443,
 				RemoteIPPrefix: objectstoreIP.String(),
-				Description:    `Kubernikus: allow access to regional object-store/swift`,
+				Description:    ruleDescription("objects", "", "Allow access to regional object store"),
 			})
 		} else {
 			fmt.Println("parse error object-store", osURL, err)
@@ -300,7 +299,7 @@ func (c *klusterClient) EnsureKubernikusRulesInSecurityGroup(kluster *v1.Kluster
 			PortRangeMin:   443,
 			PortRangeMax:   443,
 			RemoteIPPrefix: swiftEUDE1.String(),
-			Description:    `Kubernikus: allow access to https://objectstore-3.eu-de-1.cloud.sap`,
+			Description:    ruleDescription("objectseude1", "", "Allow access to https://objectstore-3.eu-de-1.cloud.sap"),
 		})
 	}
 
@@ -314,7 +313,7 @@ func (c *klusterClient) EnsureKubernikusRulesInSecurityGroup(kluster *v1.Kluster
 				PortRangeMin:   443,
 				PortRangeMax:   443,
 				RemoteIPPrefix: ip.String(),
-				Description:    fmt.Sprintf(`Kubernikus: allow access to %s`, keppelURL),
+				Description:    ruleDescription("keppel", "", "Allow access to "+keppelURL),
 			})
 		}
 		//in qa we need to add keppel.eu-de-1 because thats from where we pull images
@@ -328,7 +327,7 @@ func (c *klusterClient) EnsureKubernikusRulesInSecurityGroup(kluster *v1.Kluster
 					PortRangeMin:   443,
 					PortRangeMax:   443,
 					RemoteIPPrefix: ip.String(),
-					Description:    fmt.Sprintf(`Kubernikus: allow access to %s`, keppelURL),
+					Description:    ruleDescription("keppeleude1", "", "Allow access to "+keppelURL),
 				})
 			}
 
@@ -343,7 +342,7 @@ func (c *klusterClient) EnsureKubernikusRulesInSecurityGroup(kluster *v1.Kluster
 			PortRangeMin:   443,
 			PortRangeMax:   443,
 			RemoteIPPrefix: keppelGlobalIP.String(),
-			Description:    `Kubernikus: allow access to https://keppel.global.cloud.sap`,
+			Description:    ruleDescription("keppelglobal", "", "Allow access to keppel.global.cloud.sap"),
 		})
 	}
 
@@ -525,4 +524,8 @@ func ipForUrl(theurl string) (net.IP, error) {
 		return ip, nil
 	}
 	return nil, fmt.Errorf("Failed to parse resolved ip %s", ips[0])
+}
+
+func ruleDescription(id string, cluster string, message string) string {
+	return fmt.Sprintf("%s (auto-generated) [kubernikus/%s/%s]", message, id, cluster)
 }
