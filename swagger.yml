@@ -580,6 +580,12 @@ definitions:
         minimum: 64
         maximum: 1024
         description: Create servers with custom (cinder based) root disked. Size in GB
+      cgroupsV1:
+        type: boolean
+        description: Fallback to cgroups v1. Ignored for k8s versions < 1.19
+        x-nullable: true
+        x-omitempty: false
+
       taints:
         description: The specified taints will be added to members of this pool once during initial registration of the node
         type: array

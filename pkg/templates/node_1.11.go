@@ -17,18 +17,6 @@ passwd:
       system: true
 systemd:
   units:
-    - name: legacy-cgroup-reboot.service
-      enable: true
-      contents: |
-        [Unit]
-        Description=Reboot if legacy cgroups are not enabled yet
-        FailureAction=reboot
-        After=extend-filesystems.service
-        [Service]
-        Type=simple
-        ExecStart=/usr/bin/grep 'systemd.unified_cgroup_hierarchy=0' /proc/cmdline
-        [Install]
-        WantedBy=multi-user.target
     - name: iptables-restore.service
       enable: true
     - name: ccloud-metadata-hostname.service
@@ -293,6 +281,9 @@ storage:
       contents:
         inline: |
           set linux_append="$linux_append systemd.unified_cgroup_hierarchy=0 systemd.legacy_systemd_cgroup_controller"
+    - path: /etc/flatcar-cgroupv1
+      filesystem: root
+      mode: 0444
     - path: /etc/systemd/resolved.conf
       filesystem: root
       mode: 0644

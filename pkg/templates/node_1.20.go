@@ -43,6 +43,9 @@ systemd:
           contents: |
             [Service]
             Environment="DOCKER_OPTS=--log-opt max-size=5m --log-opt max-file=5 --ip-masq=false --iptables=false --bridge=none"
+            {{- if .CGroupsV1 }}
+            Environment="DOCKER_CGROUPS=--exec-opt native.cgroupdriver=cgroupfs"
+            {{- end }}
     - name: flanneld.service
       enable: true
       contents: |
@@ -274,7 +277,26 @@ systemd:
         WantedBy=multi-user.target
 
 storage:
+  filesystems:
+{{- if .CGroupsV1 }}
+    - name: "OEM"
+      mount:
+        device: "/dev/disk/by-label/OEM"
+        format: "btrfs"
+{{- end }}
   files:
+{{- if .CGroupsV1 }}
+    - filesystem: "OEM"
+      path: "/grub.cfg"
+      mode: 0644
+      append: true
+      contents:
+        inline: |
+          set linux_append="$linux_append systemd.unified_cgroup_hierarchy=0 systemd.legacy_systemd_cgroup_controller"
+    - path: /etc/flatcar-cgroupv1
+      filesystem: root
+      mode: 0444
+{{- end }}
     - path: /etc/systemd/resolved.conf
       filesystem: root
       mode: 0644
@@ -519,7 +541,9 @@ storage:
               enabled: true
           rotateCertificates: true
           nodeLeaseDurationSeconds: 20
+          {{- if not .CGroupsV1 }}
           cgroupDriver: systemd
+          {{- end }}
           featureGates:
 {{- if not .NoCloud }}
             CSIMigration: true

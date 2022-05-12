@@ -730,6 +730,12 @@ func init() {
           "type": "string",
           "x-nullable": false
         },
+        "cgroupsV1": {
+          "description": "Fallback to cgroups v1. Ignored for k8s versions \u003c 1.19",
+          "type": "boolean",
+          "x-nullable": true,
+          "x-omitempty": false
+        },
         "config": {
           "$ref": "#/definitions/NodePoolConfig"
         },
@@ -1777,6 +1783,12 @@ func init() {
         "availabilityZone": {
           "type": "string",
           "x-nullable": false
+        },
+        "cgroupsV1": {
+          "description": "Fallback to cgroups v1. Ignored for k8s versions \u003c 1.19",
+          "type": "boolean",
+          "x-nullable": true,
+          "x-omitempty": false
         },
         "config": {
           "$ref": "#/definitions/NodePoolConfig"

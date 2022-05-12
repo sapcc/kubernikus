@@ -23,6 +23,9 @@ type NodePool struct {
 	// Required: true
 	AvailabilityZone string `json:"availabilityZone"`
 
+	// Fallback to cgroups v1. Ignored for k8s versions < 1.19
+	CgroupsV1 *bool `json:"cgroupsV1"`
+
 	// config
 	Config *NodePoolConfig `json:"config,omitempty"`
 

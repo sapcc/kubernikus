@@ -93,9 +93,11 @@ func TestGenerateNode(t *testing.T) {
 
 	kluster.Spec.SSHPublicKey = strings.Repeat("a", 10000) //max out ssh key
 
+	pool := &models.NodePool{Name: "some-name"}
+
 	for version := range imageRegistry.Versions {
 		kluster.Spec.Version = version
-		data, err := Ignition.GenerateNode(kluster, nil, "test", &testKlusterSecret, false, imageRegistry, log.NewNopLogger())
+		data, err := Ignition.GenerateNode(kluster, pool, "test", &testKlusterSecret, false, imageRegistry, log.NewNopLogger())
 
 		if assert.NoError(t, err, "Failed to generate node for version %s", version) {
 			//Ensure we rendered the expected template

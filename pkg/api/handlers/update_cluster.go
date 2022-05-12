@@ -67,6 +67,10 @@ func (d *updateCluster) Handle(params operations.UpdateClusterParams, principal 
 
 				nodePools[i].AvailabilityZone = specPool.AvailabilityZone
 
+				if paramPool.CgroupsV1 == nil {
+					nodePools[i].CgroupsV1 = specPool.CgroupsV1
+				}
+
 				if paramPool.Config == nil {
 					nodePools[i].Config = specPool.Config
 				} else {

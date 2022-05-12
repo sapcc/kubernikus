@@ -162,6 +162,7 @@ func (i *ignition) GenerateNode(kluster *kubernikusv1.Kluster, pool *models.Node
 		NoCloud                            bool
 		FlannelImage                       string
 		FlannelImageTag                    string
+		CGroupsV1                          bool
 	}{
 		TLSCA:                              secret.TLSCACertificate,
 		KubeletClientsCA:                   secret.KubeletClientsCACertificate,
@@ -203,6 +204,7 @@ func (i *ignition) GenerateNode(kluster *kubernikusv1.Kluster, pool *models.Node
 		NoCloud:                            kluster.Spec.NoCloud,
 		FlannelImage:                       images.Flannel.Repository,
 		FlannelImageTag:                    images.Flannel.Tag,
+		CGroupsV1:                          pool.CgroupsV1 != nil && *pool.CgroupsV1,
 	}
 
 	var dataOut []byte
