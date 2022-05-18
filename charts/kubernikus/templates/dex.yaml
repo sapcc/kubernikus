@@ -80,7 +80,11 @@ spec:
   selector:
     app: kubernikus-api-dex
 ---
+{{- if .Capabilities.APIVersions.Has "networking.k8s.io/v1/Ingress" }}
+apiVersion: networking.k8s.io/v1
+{{- else }}
 apiVersion: networking.k8s.io/v1beta1
+{{- end }}
 kind: Ingress
 metadata:
   annotations:
@@ -94,9 +98,12 @@ spec:
     http:
       paths:
       - path: /
+        pathType: Prefix
         backend:
-          serviceName: kubernikus-api-dex
-          servicePort: 80
+          service:
+            name: kubernikus-api-dex
+            port:
+              number: 80
   tls:
   - hosts:
     - {{ include "oidc.issuer" . | quote }}
@@ -107,7 +114,7 @@ kind: ServiceAccount
 metadata:
   name: kubernikus-api-dex
 ---
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   name: kubernikus-api-dex
@@ -119,7 +126,7 @@ rules:
   resources: ["customresourcedefinitions"]
   verbs: ["create"] # To manage its own resources identity must be able to create customresourcedefinitions.
 ---
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   name: kubernikus-api-dex
