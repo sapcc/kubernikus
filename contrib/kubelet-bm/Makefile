@@ -1,4 +1,4 @@
-VERSION?=v1.21.5
+VERSION?=v1.23.6
 REGISTRY?=k8s.gcr.io
 REPOSITORY?=kubelet-bm
 IMAGE?=keppel.eu-de-1.cloud.sap/ccloud
@@ -17,5 +17,8 @@ build:
 
 push:
 	docker push ${IMAGE}/kubelet-bm:${VERSION}
+
+mac:
+	docker buildx build --platform linux/amd64 ${OPTS} -t ${IMAGE}/${REPOSITORY}:${VERSION} --build-arg KUBERNETES_VERSION=${VERSION} --build-arg ARCH=${ARCH} --build-arg CNI_PLUGINS_RELEASE=${CNI_PLUGINS_RELEASE} --build-arg CNI_DEDUP_BRIDGE_RELEASE=${CNI_DEDUP_BRIDGE_RELEASE} --build-arg MULTUS_RELEASE=${MULTUS_RELEASE} . --push	
 
 .PHONY: all build push
