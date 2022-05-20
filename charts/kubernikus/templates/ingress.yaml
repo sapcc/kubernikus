@@ -23,9 +23,16 @@ spec:
       http:
         paths:
         - path: /
+{{- if .Capabilities.APIVersions.Has "networking.k8s.io/v1/Ingress" }}
           pathType: Prefix
+{{- end }}
           backend:
+{{- if .Capabilities.APIVersions.Has "networking.k8s.io/v1/Ingress" }}
             service:
               name: kubernikus-api
               port:
                 number: {{ .Values.api.port }}
+{{- else }}
+            serviceName: kubernikus-api
+            servicePort: {{ .Values.api.port }}
+{{- end }}

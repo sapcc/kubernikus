@@ -98,12 +98,19 @@ spec:
     http:
       paths:
       - path: /
+{{- if .Capabilities.APIVersions.Has "networking.k8s.io/v1/Ingress" }}
         pathType: Prefix
+{{- end }}
         backend:
+{{- if .Capabilities.APIVersions.Has "networking.k8s.io/v1/Ingress" }}
           service:
             name: kubernikus-api-dex
             port:
               number: 80
+{{- else }}
+          serviceName: kubernikus-api-dex
+          servicePort: 80
+{{- end }}
   tls:
   - hosts:
     - {{ include "oidc.issuer" . | quote }}
