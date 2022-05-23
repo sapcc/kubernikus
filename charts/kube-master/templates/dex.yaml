@@ -175,10 +175,10 @@ spec:
   selector:
     app: {{ include "master.fullname" . }}-dex
 ---
-{{- if .Capabilities.APIVersions.Has "networking.k8s.io/v1beta1" }}
-apiVersion: networking.k8s.io/v1beta1
+{{- if .Capabilities.APIVersions.Has "networking.k8s.io/v1" }}
+apiVersion: networking.k8s.io/v1
 {{- else }}
-apiVersion: extensions/v1beta1
+apiVersion: networking.k8s.io/v1beta1
 {{- end }}
 kind: Ingress
 metadata:
@@ -192,10 +192,19 @@ spec:
   - host: {{ include "dex.url" . }} 
     http:
       paths:
-      - backend:
+      - path: /
+{{- if .Capabilities.APIVersions.Has "networking.k8s.io/v1" }}
+        pathType: Prefix
+        backend:
+          service:
+            name: {{ include "master.fullname" . }}-dex
+            port:
+              number: 80
+{{- else }}
+        backend:
           serviceName: {{ include "master.fullname" . }}-dex
           servicePort: 80
-        path: /
+{{- end }}
   tls:
   - hosts:
     -  {{ include "dex.url" . }}
