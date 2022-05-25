@@ -1,9 +1,9 @@
 {{/* vim: set filetype=gotexttmpl: */ -}}
 {{- if .Values.api.apiserverHost }}
-{{- if .Capabilities.APIVersions.Has "networking.k8s.io/v1beta1" }}
-apiVersion: networking.k8s.io/v1beta1
+{{- if .Capabilities.APIVersions.Has "networking.k8s.io/v1" }}
+apiVersion: networking.k8s.io/v1
 {{- else }}
-apiVersion: extensions/v1beta1
+apiVersion: networking.k8s.io/v1beta1
 {{- end }}
 kind: Ingress
 metadata:
@@ -22,14 +22,32 @@ spec:
       http:
         paths:
         - path: /
+{{- if .Capabilities.APIVersions.Has "networking.k8s.io/v1" }}
+          pathType: Prefix
+          backend:
+            service:
+              name:  {{ include "master.fullname" . }}
+              port:
+                number: {{ .Values.advertisePort }}
+{{- else }}
           backend:
             serviceName: {{ include "master.fullname" . }}
             servicePort: {{ .Values.advertisePort }}
+{{- end }}
     - host: {{ required "missing .api.wormholeHost" .Values.api.wormholeHost }}
       http:
         paths:
         - path: /
+{{- if .Capabilities.APIVersions.Has "networking.k8s.io/v1" }}
+          pathType: Prefix
+          backend:
+            service:
+              name:  {{ include "master.fullname" . }}
+              port:
+                number: 6553
+{{- else }}
           backend:
             serviceName: {{ include "master.fullname" . }}
             servicePort: 6553
+{{- end }}
 {{- end }}
