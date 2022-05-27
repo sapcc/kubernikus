@@ -43,6 +43,11 @@ func (o *CreateOptions) SetupKubernikusClient() error {
 			klog.V(2).Infof("Error detecting kubernikus host: %+v", err)
 			return errors.Errorf("You need to provide --url. Auto-Detection failed.")
 		}
+	} else {
+		if o.url, err = url.Parse(o._url); err != nil {
+			klog.V(2).Infof("Error parsing url: %v", o._url)
+			return errors.Wrap(err, "Error parsing url")
+		}
 	}
 	klog.V(2).Infof("Setting up kubernikus client at %v.", o.url)
 	o.Kubernikus = common.NewKubernikusClient(o.url, o.Openstack.Provider.TokenID)

@@ -43,8 +43,7 @@ func (o *GetOptions) SetupKubernikusClient() error {
 			return errors.Errorf("You need to provide --url. Auto-Detection failed.")
 		}
 	} else {
-		o.url, err = url.Parse(o._url)
-		if err != nil {
+		if o.url, err = url.Parse(o._url); err != nil {
 			klog.V(2).Infof("Error parsing url: %v", o._url)
 			return errors.Wrap(err, "Error parsing url")
 		}
