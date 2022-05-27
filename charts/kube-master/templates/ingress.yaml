@@ -1,6 +1,6 @@
 {{/* vim: set filetype=gotexttmpl: */ -}}
 {{- if .Values.api.apiserverHost }}
-{{- if .Capabilities.APIVersions.Has "networking.k8s.io/v1" }}
+{{- if semverCompare ">= 1.19" .Capabilities.KubeVersion.GitVersion }}
 apiVersion: networking.k8s.io/v1
 {{- else }}
 apiVersion: networking.k8s.io/v1beta1
@@ -22,7 +22,7 @@ spec:
       http:
         paths:
         - path: /
-{{- if .Capabilities.APIVersions.Has "networking.k8s.io/v1" }}
+{{- if semverCompare ">= 1.19" .Capabilities.KubeVersion.GitVersion }}
           pathType: Prefix
           backend:
             service:
@@ -38,7 +38,7 @@ spec:
       http:
         paths:
         - path: /
-{{- if .Capabilities.APIVersions.Has "networking.k8s.io/v1" }}
+{{- if semverCompare ">= 1.19" .Capabilities.KubeVersion.GitVersion }}
           pathType: Prefix
           backend:
             service:
