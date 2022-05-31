@@ -19,7 +19,7 @@ RUN	mkdir -p cni-bin/bin && \
     curl -sSL --retry 5 https://github.com/containernetworking/plugins/releases/download/$CNI_PLUGINS_RELEASE/cni-plugins-linux-$ARCH-$CNI_PLUGINS_RELEASE.tgz | tar -xz -C cni-bin/bin
 
 # todo fix multus release env var with undescore
-RUN curl -sSL --retry 5 https://github.com/intel/multus-cni/releases/download/v$MULTUS_RELEASE/multus-cni_3.2_linux_amd64.tar.gz | tar --strip 1 -xz -C cni-bin/bin
+RUN curl -sSL --retry 5 https://github.com/intel/multus-cni/releases/download/v$MULTUS_RELEASE/multus-cni_3.8_linux_amd64.tar.gz | tar --strip 1 -xz -C cni-bin/bin
 
 RUN curl -o cni-bin/bin/dedup-bridge -sSL --retry 5 https://github.com/sapcc/cni-dedup-bridge/releases/download/$CNI_DEDUP_BRIDGE_RELEASE/dedup-bridge && \
     chmod +x cni-bin/bin/dedup-bridge
