@@ -142,12 +142,14 @@ func EnsureCRD(clientset apiextensionsclient.Interface, logger kitlog.Logger) er
 	klusterCRDName := kubernikus_v1.KlusterResourcePlural + "." + kubernikus_v1.GroupName
 
 	resourceList, err := clientset.Discovery().ServerResourcesForGroupVersion("apiextensions.k8s.io/v1")
-	if err != nil {
+	if err != nil && !apierrors.IsNotFound(err) {
 		return err
 	}
-	for _, res := range resourceList.APIResources {
-		if res.Kind == "CustomResourceDefinition" {
-			supportsV1 = true
+	if err == nil {
+		for _, res := range resourceList.APIResources {
+			if res.Kind == "CustomResourceDefinition" {
+				supportsV1 = true
+			}
 		}
 	}
 
