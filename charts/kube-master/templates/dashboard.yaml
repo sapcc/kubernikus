@@ -10,17 +10,17 @@ metadata:
   labels:
     chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
     release: {{ .Release.Name }}
-  name: {{ include "master.fullname" . }}-dashboard 
+  name: {{ include "master.fullname" . }}-dashboard
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: {{ include "master.fullname" . }}-dashboard 
+      app: {{ include "master.fullname" . }}-dashboard
       release: {{ .Release.Name }}
   template:
     metadata:
       labels:
-        app: {{ include "master.fullname" . }}-dashboard 
+        app: {{ include "master.fullname" . }}-dashboard
         release: {{ .Release.Name }}
     spec:
       initContainers:
@@ -43,7 +43,7 @@ spec:
               name: config
               readOnly: true
       containers:
-        - image: {{ include "dashboardProxy.image" . | quote }} 
+        - image: {{ include "dashboardProxy.image" . | quote }}
           name: proxy
           args:
             - --discovery-url=https://{{ include "dex.url" . }} # ingress of dex
@@ -53,9 +53,9 @@ spec:
             - "--resources=uri=/*"
             - --scopes=groups
             - --client-id=kubernetes
-            - --upstream-url=http://localhost:9090 # kubernetes-dashboard in sidecar 
+            - --upstream-url=http://localhost:9090 # kubernetes-dashboard in sidecar
             - --redirection-url=https://{{ include "dashboard.url" . }} # ingress of dashboard
-            - --encryption-key={{ randAlphaNum 32 }} 
+            - --encryption-key={{ randAlphaNum 32 }}
           env:
           - name: PROXY_CLIENT_SECRET
             valueFrom:
@@ -77,7 +77,7 @@ spec:
             initialDelaySeconds: 15
             periodSeconds: 15
         - name: dashboard
-          image: {{ include "dashboard.image" . | quote }} 
+          image: {{ include "dashboard.image" . | quote }}
           ports:
             - containerPort: 9090
               protocol: TCP
@@ -97,7 +97,7 @@ spec:
           {{- if (semverCompare ">= 1.12.10" .Values.version.kubernetes) }}
             - --namespace=kube-system # creates dashboard resources in the namespace, introduced in v2.0.0-beta1
           {{- end }}
-            - --kubeconfig=/etc/kubernetes/config/kubeconfig 
+            - --kubeconfig=/etc/kubernetes/config/kubeconfig
           {{- if (semverCompare ">= 1.15.2" .Values.version.kubernetes) }}
             - --metrics-provider=none  #introduced in v2.0.0-beta3
           {{- else }}
@@ -138,7 +138,7 @@ kind: Service
 metadata:
   name: {{ include "master.fullname" . }}-dashboard
   labels:
-    app: {{ include "master.fullname" . }}-dashboard 
+    app: {{ include "master.fullname" . }}-dashboard
     chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
     release: {{ .Release.Name }}
 spec:
@@ -149,31 +149,41 @@ spec:
     targetPort: 3000
     name: proxy
   selector:
-    app: {{ include "master.fullname" . }}-dashboard 
+    app: {{ include "master.fullname" . }}-dashboard
 ---
-{{- if .Capabilities.APIVersions.Has "networking.k8s.io/v1beta1" }}
-apiVersion: networking.k8s.io/v1beta1
+{{- if semverCompare ">= 1.19" .Capabilities.KubeVersion.GitVersion }}
+apiVersion: networking.k8s.io/v1
 {{- else }}
-apiVersion: extensions/v1beta1
+apiVersion: networking.k8s.io/v1beta1
 {{- end }}
 kind: Ingress
 metadata:
   labels:
-    app: {{ include "master.fullname" . }}-dashboard 
+    app: {{ include "master.fullname" . }}-dashboard
     chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
     release: {{ .Release.Name }}
-  name: {{ include "master.fullname" . }}-dashboard  
+  name: {{ include "master.fullname" . }}-dashboard
 spec:
   rules:
-  - host: {{ include "dashboard.url" . }} 
+  - host: {{ include "dashboard.url" . }}
     http:
       paths:
+{{- if semverCompare ">= 1.19" .Capabilities.KubeVersion.GitVersion }}
       - backend:
-          serviceName: {{ include "master.fullname" . }}-dashboard  
+          service:
+            name: {{ include "master.fullname" . }}-dashboard
+            port:
+              number: 3000
+        path: /
+        pathType: Prefix
+{{- else}}
+      - backend:
+          serviceName: {{ include "master.fullname" . }}-dashboard
           servicePort: 3000
         path: /
+{{- end }}
   tls:
   - hosts:
-    -  {{ include "dashboard.url" . }} 
+    -  {{ include "dashboard.url" . }}
     secretName: {{ required "dashboard.ingressSecret undefined" .Values.dashboard.ingressSecret }}
 {{ end }}
