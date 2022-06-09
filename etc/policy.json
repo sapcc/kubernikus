@@ -6,7 +6,7 @@
   "GetOpenstackMetadata": "rule:kubernetes_admin",
   "ListClusters": "rule:kubernetes_user",
   "CreateCluster": "rule:kubernetes_admin",
-  "ShowCluster": "rule:kubernetes_user",
+  "ShowCluster": "rule:kubernetes_user or role:member",
   "TerminateCluster": "rule:kubernetes_admin",
   "UpdateCluster": "rule:kubernetes_admin",
   "GetClusterCredentials": "rule:kubernetes_user",
