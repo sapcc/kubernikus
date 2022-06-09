@@ -162,7 +162,22 @@ func EnsureCRD(clientset apiextensionsclient.Interface, logger kitlog.Logger) er
 				Group: kubernikus_v1.GroupName,
 				Versions: []apiextensionsv1.CustomResourceDefinitionVersion{
 					{
-						Name: kubernikus_v1.SchemeGroupVersion.Version,
+						Name:    kubernikus_v1.SchemeGroupVersion.Version,
+						Served:  true,
+						Storage: true,
+						Schema: &apiextensionsv1.CustomResourceValidation{
+							OpenAPIV3Schema: &apiextensionsv1.JSONSchemaProps{
+								Type: "object",
+								Properties: map[string]apiextensionsv1.JSONSchemaProps{
+									"spec": {
+										Type: "object",
+									},
+									"status": {
+										Type: "object",
+									},
+								},
+							},
+						},
 					},
 				},
 				Scope: apiextensionsv1.NamespaceScoped,
