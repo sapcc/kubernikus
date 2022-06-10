@@ -118,6 +118,12 @@ type annotations struct {
 	} `json:"metadata"`
 }
 
+type nodeLabels struct {
+	Metadata struct {
+		Labels map[string]interface{} `json:"labels"`
+	} `json:"metadata"`
+}
+
 func AddNodeAnnotation(nodeName, key, val string, client kubernetes.Interface) error {
 	var a annotations
 	a.Metadata.Annotations = map[string]interface{}{key: val}
@@ -133,6 +139,28 @@ func RemoveNodeAnnotation(nodeName, key string, client kubernetes.Interface) err
 	var a annotations
 	a.Metadata.Annotations = map[string]interface{}{key: nil}
 	data, err := json.Marshal(a)
+	if err != nil {
+		return fmt.Errorf("Failed to marshal annotation %v = %v: %s", key, nil, err)
+	}
+	_, err = client.CoreV1().Nodes().Patch(nodeName, types.MergePatchType, data)
+	return err
+}
+
+func AddNodeLabel(nodeName, key, val string, client kubernetes.Interface) error {
+	var l nodeLabels
+	l.Metadata.Labels = map[string]interface{}{key: val}
+	data, err := json.Marshal(l)
+	if err != nil {
+		return fmt.Errorf("Failed to marshal annotation %v = %v: %s", key, val, err)
+	}
+	_, err = client.CoreV1().Nodes().Patch(nodeName, types.MergePatchType, data)
+	return err
+}
+
+func RemoveNodeLabel(nodeName, key string, client kubernetes.Interface) error {
+	var l nodeLabels
+	l.Metadata.Labels = map[string]interface{}{key: nil}
+	data, err := json.Marshal(l)
 	if err != nil {
 		return fmt.Errorf("Failed to marshal annotation %v = %v: %s", key, nil, err)
 	}

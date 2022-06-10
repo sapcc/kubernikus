@@ -25,7 +25,8 @@ import (
 
 const (
 	// EvictionTimeout defines when to abort the draining of a node
-	EvictionTimeout = 5 * time.Minute
+	EvictionTimeout               = 5 * time.Minute
+	LabelExcludeFromLoadbalancers = "node.kubernetes.io/exclude-from-external-load-balancers"
 )
 
 type (
@@ -141,6 +142,9 @@ func (lc *NodeLifeCycler) Drain(node *core_v1.Node) error {
 	if err := lc.setUpdatingAnnotation(node); err != nil {
 		return errors.Wrap(err, "Failed to drain node")
 	}
+	if err := lc.setExcludeLoadbalancersLabel(node); err != nil {
+		return errors.Wrap(err, "Failed to add exclude loadbalancer label, drain aborted.")
+	}
 	logger := log.With(lc.Logger, "node", node.GetName())
 
 	drainer := &drain.Helper{
@@ -201,6 +205,9 @@ func (lc *NodeLifeCycler) Uncordon(node *core_v1.Node) error {
 	if err := lc.removeUpdatingAnnotation(node); err != nil {
 		return errors.Wrap(err, "failed to uncordon node")
 	}
+	if err := lc.removeExcludeLoadbalancersLabel(node); err != nil {
+		return errors.Wrap(err, "Failed to remove exclude loadbalancer label, uncordon aborted.")
+	}
 	logger := log.With(lc.Logger, "node", node.GetName())
 
 	drainer := &drain.Helper{
@@ -234,6 +241,20 @@ func (lc *NodeLifeCycler) setUpdatingAnnotation(node *core_v1.Node) error {
 
 func (lc *NodeLifeCycler) removeUpdatingAnnotation(node *core_v1.Node) error {
 	if err := util.RemoveNodeAnnotation(node.Name, AnnotationUpdateTimestamp, lc.Kubernetes); err != nil {
+		return errors.Wrap(err, "failed to remove updating annotation")
+	}
+	return nil
+}
+
+func (lc *NodeLifeCycler) setExcludeLoadbalancersLabel(node *core_v1.Node) error {
+	if err := util.AddNodeLabel(node.Name, LabelExcludeFromLoadbalancers, "true", lc.Kubernetes); err != nil {
+		return errors.Wrap(err, "failed to set updating annotation")
+	}
+	return nil
+}
+
+func (lc *NodeLifeCycler) removeExcludeLoadbalancersLabel(node *core_v1.Node) error {
+	if err := util.RemoveNodeAnnotation(node.Name, LabelExcludeFromLoadbalancers, lc.Kubernetes); err != nil {
 		return errors.Wrap(err, "failed to remove updating annotation")
 	}
 	return nil
