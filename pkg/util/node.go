@@ -151,7 +151,7 @@ func AddNodeLabel(nodeName, key, val string, client kubernetes.Interface) error 
 	l.Metadata.Labels = map[string]interface{}{key: val}
 	data, err := json.Marshal(l)
 	if err != nil {
-		return fmt.Errorf("Failed to marshal annotation %v = %v: %s", key, val, err)
+		return fmt.Errorf("Failed to marshal label %v = %v: %s", key, val, err)
 	}
 	_, err = client.CoreV1().Nodes().Patch(nodeName, types.MergePatchType, data)
 	return err
@@ -162,7 +162,7 @@ func RemoveNodeLabel(nodeName, key string, client kubernetes.Interface) error {
 	l.Metadata.Labels = map[string]interface{}{key: nil}
 	data, err := json.Marshal(l)
 	if err != nil {
-		return fmt.Errorf("Failed to marshal annotation %v = %v: %s", key, nil, err)
+		return fmt.Errorf("Failed to marshal label %v = %v: %s", key, nil, err)
 	}
 	_, err = client.CoreV1().Nodes().Patch(nodeName, types.MergePatchType, data)
 	return err
