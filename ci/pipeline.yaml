@@ -1316,32 +1316,32 @@ resources:
       url: ((slack-webhook-url/kubernikus-ci))
 
 
-  - name: ASIA.tag
+  - name: silver.tag
     type: time-version-resource
     check_every: 525600h # basically never (only when triggered by a job)
     source:
-      group: ASIA
+      group: silver
       pipeline: kubernikus # we do this so we don't get versions from other pipelines
 
-  - name: EMEA.tag
+  - name: bronze.tag
     type: time-version-resource
     check_every: 525600h # basically never (only when triggered by a job)
     source:
-      group: EMEA
+      group: bronze
       pipeline: kubernikus # we do this so we don't get versions from other pipelines
 
-  - name: AMERICAS.tag
+  - name: gold.tag
     type: time-version-resource
     check_every: 525600h # basically never (only when triggered by a job)
     source:
-      group: AMERICAS
+      group: gold
       pipeline: kubernikus # we do this so we don't get versions from other pipelines
 
-  - name: INFRA.tag
+  - name: infra.tag
     type: time-version-resource
     check_every: 525600h # basically never (only when triggered by a job)
     source:
-      group: INFRA
+      group: infra
       pipeline: kubernikus # we do this so we don't get versions from other pipelines
 
 
@@ -1784,7 +1784,7 @@ jobs:
 
 
 
-  - name: ASIA
+  - name: silver
     serial: true
     plan:
       - in_parallel:
@@ -1795,7 +1795,7 @@ jobs:
           resource: kubernikus.git
           passed: [prod]
           trigger: true
-        - put: ASIA.tag
+        - put: silver.tag
 
 
 
@@ -1804,13 +1804,13 @@ jobs:
     serial: true
     plan:
       - in_parallel:
-        - get: ASIA.tag
-          passed: [ASIA]
+        - get: silver.tag
+          passed: [silver]
           trigger: true
         - get: secrets.git
-          passed: [ASIA]
+          passed: [silver]
         - get: helm-charts.git
-          passed: [ASIA]
+          passed: [silver]
       - task: seed
         config:
           <<: *task_helm_seed
@@ -1825,7 +1825,7 @@ jobs:
   - name: tiller_ap-ae-1
     plan:
       - in_parallel:
-        - get: ASIA.tag
+        - get: silver.tag
           trigger: true
           passed: [seed_ap-ae-1]
         - get: tiller-version.git
@@ -1845,14 +1845,14 @@ jobs:
     serial: true
     plan:
       - in_parallel:
-        - get: ASIA.tag
+        - get: silver.tag
           trigger: true
           passed: [tiller_ap-ae-1]
         - get: secrets.git
           passed: [seed_ap-ae-1]
         - get: kubernikus.builds
           resource: kubernikus.git
-          passed: [ASIA]
+          passed: [silver]
       - in_parallel:
         - task: kubernikus_ap-ae-1
           config:
@@ -1875,7 +1875,7 @@ jobs:
     build_logs_to_retain: 168
     plan:
       - in_parallel:
-        - get: ASIA.tag
+        - get: silver.tag
           trigger: true
           passed: [deploy_ap-ae-1]
         - get: kubernikus.builds
@@ -1914,13 +1914,13 @@ jobs:
     serial: true
     plan:
       - in_parallel:
-        - get: ASIA.tag
-          passed: [ASIA]
+        - get: silver.tag
+          passed: [silver]
           trigger: true
         - get: secrets.git
-          passed: [ASIA]
+          passed: [silver]
         - get: helm-charts.git
-          passed: [ASIA]
+          passed: [silver]
       - task: seed
         config:
           <<: *task_helm_seed
@@ -1935,7 +1935,7 @@ jobs:
   - name: tiller_ap-au-1
     plan:
       - in_parallel:
-        - get: ASIA.tag
+        - get: silver.tag
           trigger: true
           passed: [seed_ap-au-1]
         - get: tiller-version.git
@@ -1955,14 +1955,14 @@ jobs:
     serial: true
     plan:
       - in_parallel:
-        - get: ASIA.tag
+        - get: silver.tag
           trigger: true
           passed: [tiller_ap-au-1]
         - get: secrets.git
           passed: [seed_ap-au-1]
         - get: kubernikus.builds
           resource: kubernikus.git
-          passed: [ASIA]
+          passed: [silver]
       - in_parallel:
         - task: kubernikus_ap-au-1
           config:
@@ -1985,7 +1985,7 @@ jobs:
     build_logs_to_retain: 168
     plan:
       - in_parallel:
-        - get: ASIA.tag
+        - get: silver.tag
           trigger: true
           passed: [deploy_ap-au-1]
         - get: kubernikus.builds
@@ -2024,13 +2024,13 @@ jobs:
     serial: true
     plan:
       - in_parallel:
-        - get: ASIA.tag
-          passed: [ASIA]
+        - get: silver.tag
+          passed: [silver]
           trigger: true
         - get: secrets.git
-          passed: [ASIA]
+          passed: [silver]
         - get: helm-charts.git
-          passed: [ASIA]
+          passed: [silver]
       - task: seed
         config:
           <<: *task_helm_seed
@@ -2045,7 +2045,7 @@ jobs:
   - name: tiller_ap-cn-1
     plan:
       - in_parallel:
-        - get: ASIA.tag
+        - get: silver.tag
           trigger: true
           passed: [seed_ap-cn-1]
         - get: tiller-version.git
@@ -2065,14 +2065,14 @@ jobs:
     serial: true
     plan:
       - in_parallel:
-        - get: ASIA.tag
+        - get: silver.tag
           trigger: true
           passed: [tiller_ap-cn-1]
         - get: secrets.git
           passed: [seed_ap-cn-1]
         - get: kubernikus.builds
           resource: kubernikus.git
-          passed: [ASIA]
+          passed: [silver]
       - in_parallel:
         - task: kubernikus_ap-cn-1
           config:
@@ -2095,7 +2095,7 @@ jobs:
     build_logs_to_retain: 168
     plan:
       - in_parallel:
-        - get: ASIA.tag
+        - get: silver.tag
           trigger: true
           passed: [deploy_ap-cn-1]
         - get: kubernikus.builds
@@ -2134,13 +2134,13 @@ jobs:
     serial: true
     plan:
       - in_parallel:
-        - get: ASIA.tag
-          passed: [ASIA]
+        - get: silver.tag
+          passed: [silver]
           trigger: true
         - get: secrets.git
-          passed: [ASIA]
+          passed: [silver]
         - get: helm-charts.git
-          passed: [ASIA]
+          passed: [silver]
       - task: seed
         config:
           <<: *task_helm_seed
@@ -2155,7 +2155,7 @@ jobs:
   - name: tiller_ap-jp-1
     plan:
       - in_parallel:
-        - get: ASIA.tag
+        - get: silver.tag
           trigger: true
           passed: [seed_ap-jp-1]
         - get: tiller-version.git
@@ -2175,14 +2175,14 @@ jobs:
     serial: true
     plan:
       - in_parallel:
-        - get: ASIA.tag
+        - get: silver.tag
           trigger: true
           passed: [tiller_ap-jp-1]
         - get: secrets.git
           passed: [seed_ap-jp-1]
         - get: kubernikus.builds
           resource: kubernikus.git
-          passed: [ASIA]
+          passed: [silver]
       - in_parallel:
         - task: kubernikus_ap-jp-1
           config:
@@ -2205,7 +2205,7 @@ jobs:
     build_logs_to_retain: 168
     plan:
       - in_parallel:
-        - get: ASIA.tag
+        - get: silver.tag
           trigger: true
           passed: [deploy_ap-jp-1]
         - get: kubernikus.builds
@@ -2240,127 +2240,17 @@ jobs:
 
 
 
-  - name: seed_ap-jp-2
-    serial: true
-    plan:
-      - in_parallel:
-        - get: ASIA.tag
-          passed: [ASIA]
-          trigger: true
-        - get: secrets.git
-          passed: [ASIA]
-        - get: helm-charts.git
-          passed: [ASIA]
-      - task: seed
-        config:
-          <<: *task_helm_seed
-        input_mapping:
-          charts.git: helm-charts.git
-        params:
-          REGION: ap-jp-2
-          CONTEXT: ap-jp-2
-          <<: *auth_ap-jp-2
-    <<: *slack
-
-  - name: tiller_ap-jp-2
-    plan:
-      - in_parallel:
-        - get: ASIA.tag
-          trigger: true
-          passed: [seed_ap-jp-2]
-        - get: tiller-version.git
-          trigger: true
-      - in_parallel:
-        - task: k-ap-jp-2
-          config:
-            <<: *task_tiller
-          timeout: 10m
-          params:
-            REGION: ap-jp-2
-            CONTEXT: k-ap-jp-2
-            <<: *auth_ap-jp-2
-    <<: *slack
-
-  - name: deploy_ap-jp-2
-    serial: true
-    plan:
-      - in_parallel:
-        - get: ASIA.tag
-          trigger: true
-          passed: [tiller_ap-jp-2]
-        - get: secrets.git
-          passed: [seed_ap-jp-2]
-        - get: kubernikus.builds
-          resource: kubernikus.git
-          passed: [ASIA]
-      - in_parallel:
-        - task: kubernikus_ap-jp-2
-          config:
-            <<: *task_helm_kubernikus
-          params:
-            REGION: ap-jp-2
-            CONTEXT: k-ap-jp-2
-            <<: *auth_ap-jp-2
-        - task: kubernikus-dex_ap-jp-2
-          config:
-            <<: *task_helm_kubernikus-dex
-          params:
-            REGION: ap-jp-2
-            CONTEXT: k-ap-jp-2
-            <<: *auth_ap-jp-2
-    <<: *slack
-
-  - name: soak_ap-jp-2
-    serial: true
-    build_logs_to_retain: 168
-    plan:
-      - in_parallel:
-        - get: ASIA.tag
-          trigger: true
-          passed: [deploy_ap-jp-2]
-        - get: kubernikus.builds
-          resource: kubernikus.git
-          passed: [deploy_ap-jp-2]
-        - get: hourly
-          trigger: true
-      - task: e2e_tests
-        config:
-          <<: *task_e2e_tests
-        timeout: 45m
-        params:
-          <<: *auth_e2e_ap-jp-2
-
-        on_failure:
-          put: slack-notification
-          params:
-            channel: '#kubernikus-ci'
-            text: Soak tests in ap-jp-2 failed
-            text_file: test-result/content
-            attachments:
-              - text: $TEXT_FILE_CONTENT
-                color: "#d00000"
-                footer: $ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME
-                footer_icon: https://ci.concourse-ci.org/public/images/favicon-failed.png
-
-    on_success: { put: slack-alert, inputs: [], params: {alert_type: fixed } }
-    on_abort:   { put: slack-alert, inputs: [], params: {alert_type: broke } }
-    on_error:   { put: slack-alert, inputs: [], params: {alert_type: broke } }
-
-
-
-
-
   - name: seed_ap-sa-1
     serial: true
     plan:
       - in_parallel:
-        - get: ASIA.tag
-          passed: [ASIA]
+        - get: silver.tag
+          passed: [silver]
           trigger: true
         - get: secrets.git
-          passed: [ASIA]
+          passed: [silver]
         - get: helm-charts.git
-          passed: [ASIA]
+          passed: [silver]
       - task: seed
         config:
           <<: *task_helm_seed
@@ -2375,7 +2265,7 @@ jobs:
   - name: tiller_ap-sa-1
     plan:
       - in_parallel:
-        - get: ASIA.tag
+        - get: silver.tag
           trigger: true
           passed: [seed_ap-sa-1]
         - get: tiller-version.git
@@ -2395,14 +2285,14 @@ jobs:
     serial: true
     plan:
       - in_parallel:
-        - get: ASIA.tag
+        - get: silver.tag
           trigger: true
           passed: [tiller_ap-sa-1]
         - get: secrets.git
           passed: [seed_ap-sa-1]
         - get: kubernikus.builds
           resource: kubernikus.git
-          passed: [ASIA]
+          passed: [silver]
       - in_parallel:
         - task: kubernikus_ap-sa-1
           config:
@@ -2425,7 +2315,7 @@ jobs:
     build_logs_to_retain: 168
     plan:
       - in_parallel:
-        - get: ASIA.tag
+        - get: silver.tag
           trigger: true
           passed: [deploy_ap-sa-1]
         - get: kubernikus.builds
@@ -2460,17 +2350,362 @@ jobs:
 
 
 
+  - name: seed_eu-ru-1
+    serial: true
+    plan:
+      - in_parallel:
+        - get: silver.tag
+          passed: [silver]
+          trigger: true
+        - get: secrets.git
+          passed: [silver]
+        - get: helm-charts.git
+          passed: [silver]
+      - task: seed
+        config:
+          <<: *task_helm_seed
+        input_mapping:
+          charts.git: helm-charts.git
+        params:
+          REGION: eu-ru-1
+          CONTEXT: eu-ru-1
+          <<: *auth_eu-ru-1
+    <<: *slack
+
+  - name: tiller_eu-ru-1
+    plan:
+      - in_parallel:
+        - get: silver.tag
+          trigger: true
+          passed: [seed_eu-ru-1]
+        - get: tiller-version.git
+          trigger: true
+      - in_parallel:
+        - task: k-eu-ru-1
+          config:
+            <<: *task_tiller
+          timeout: 10m
+          params:
+            REGION: eu-ru-1
+            CONTEXT: k-eu-ru-1
+            <<: *auth_eu-ru-1
+    <<: *slack
+
+  - name: deploy_eu-ru-1
+    serial: true
+    plan:
+      - in_parallel:
+        - get: silver.tag
+          trigger: true
+          passed: [tiller_eu-ru-1]
+        - get: secrets.git
+          passed: [seed_eu-ru-1]
+        - get: kubernikus.builds
+          resource: kubernikus.git
+          passed: [silver]
+      - in_parallel:
+        - task: kubernikus_eu-ru-1
+          config:
+            <<: *task_helm_kubernikus
+          params:
+            REGION: eu-ru-1
+            CONTEXT: k-eu-ru-1
+            <<: *auth_eu-ru-1
+        - task: kubernikus-dex_eu-ru-1
+          config:
+            <<: *task_helm_kubernikus-dex
+          params:
+            REGION: eu-ru-1
+            CONTEXT: k-eu-ru-1
+            <<: *auth_eu-ru-1
+    <<: *slack
+
+  - name: soak_eu-ru-1
+    serial: true
+    build_logs_to_retain: 168
+    plan:
+      - in_parallel:
+        - get: silver.tag
+          trigger: true
+          passed: [deploy_eu-ru-1]
+        - get: kubernikus.builds
+          resource: kubernikus.git
+          passed: [deploy_eu-ru-1]
+        - get: hourly
+          trigger: true
+      - task: e2e_tests
+        config:
+          <<: *task_e2e_tests
+        timeout: 45m
+        params:
+          <<: *auth_e2e_eu-ru-1
+
+        on_failure:
+          put: slack-notification
+          params:
+            channel: '#kubernikus-ci'
+            text: Soak tests in eu-ru-1 failed
+            text_file: test-result/content
+            attachments:
+              - text: $TEXT_FILE_CONTENT
+                color: "#d00000"
+                footer: $ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME
+                footer_icon: https://ci.concourse-ci.org/public/images/favicon-failed.png
+
+    on_success: { put: slack-alert, inputs: [], params: {alert_type: fixed } }
+    on_abort:   { put: slack-alert, inputs: [], params: {alert_type: broke } }
+    on_error:   { put: slack-alert, inputs: [], params: {alert_type: broke } }
+
+
+
+
+
+  - name: seed_la-br-1
+    serial: true
+    plan:
+      - in_parallel:
+        - get: silver.tag
+          passed: [silver]
+          trigger: true
+        - get: secrets.git
+          passed: [silver]
+        - get: helm-charts.git
+          passed: [silver]
+      - task: seed
+        config:
+          <<: *task_helm_seed
+        input_mapping:
+          charts.git: helm-charts.git
+        params:
+          REGION: la-br-1
+          CONTEXT: la-br-1
+          <<: *auth_la-br-1
+    <<: *slack
+
+  - name: tiller_la-br-1
+    plan:
+      - in_parallel:
+        - get: silver.tag
+          trigger: true
+          passed: [seed_la-br-1]
+        - get: tiller-version.git
+          trigger: true
+      - in_parallel:
+        - task: k-la-br-1
+          config:
+            <<: *task_tiller
+          timeout: 10m
+          params:
+            REGION: la-br-1
+            CONTEXT: k-la-br-1
+            <<: *auth_la-br-1
+    <<: *slack
+
+  - name: deploy_la-br-1
+    serial: true
+    plan:
+      - in_parallel:
+        - get: silver.tag
+          trigger: true
+          passed: [tiller_la-br-1]
+        - get: secrets.git
+          passed: [seed_la-br-1]
+        - get: kubernikus.builds
+          resource: kubernikus.git
+          passed: [silver]
+      - in_parallel:
+        - task: kubernikus_la-br-1
+          config:
+            <<: *task_helm_kubernikus
+          params:
+            REGION: la-br-1
+            CONTEXT: k-la-br-1
+            <<: *auth_la-br-1
+        - task: kubernikus-dex_la-br-1
+          config:
+            <<: *task_helm_kubernikus-dex
+          params:
+            REGION: la-br-1
+            CONTEXT: k-la-br-1
+            <<: *auth_la-br-1
+    <<: *slack
+
+  - name: soak_la-br-1
+    serial: true
+    build_logs_to_retain: 168
+    plan:
+      - in_parallel:
+        - get: silver.tag
+          trigger: true
+          passed: [deploy_la-br-1]
+        - get: kubernikus.builds
+          resource: kubernikus.git
+          passed: [deploy_la-br-1]
+        - get: hourly
+          trigger: true
+      - task: e2e_tests
+        config:
+          <<: *task_e2e_tests
+        timeout: 45m
+        params:
+          <<: *auth_e2e_la-br-1
+
+        on_failure:
+          put: slack-notification
+          params:
+            channel: '#kubernikus-ci'
+            text: Soak tests in la-br-1 failed
+            text_file: test-result/content
+            attachments:
+              - text: $TEXT_FILE_CONTENT
+                color: "#d00000"
+                footer: $ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME
+                footer_icon: https://ci.concourse-ci.org/public/images/favicon-failed.png
+
+    on_success: { put: slack-alert, inputs: [], params: {alert_type: fixed } }
+    on_abort:   { put: slack-alert, inputs: [], params: {alert_type: broke } }
+    on_error:   { put: slack-alert, inputs: [], params: {alert_type: broke } }
+
+
+
+
+  - name: bronze
+    serial: true
+    plan:
+      - in_parallel:
+        - get: helm-charts.git
+          trigger: true
+        - get: secrets.git
+        - get: kubernikus.builds
+          resource: kubernikus.git
+          passed: [prod]
+          trigger: true
+        - put: bronze.tag
+
+
+
+
+  - name: seed_ap-jp-2
+    serial: true
+    plan:
+      - in_parallel:
+        - get: bronze.tag
+          passed: [bronze]
+          trigger: true
+        - get: secrets.git
+          passed: [bronze]
+        - get: helm-charts.git
+          passed: [bronze]
+      - task: seed
+        config:
+          <<: *task_helm_seed
+        input_mapping:
+          charts.git: helm-charts.git
+        params:
+          REGION: ap-jp-2
+          CONTEXT: ap-jp-2
+          <<: *auth_ap-jp-2
+    <<: *slack
+
+  - name: tiller_ap-jp-2
+    plan:
+      - in_parallel:
+        - get: bronze.tag
+          trigger: true
+          passed: [seed_ap-jp-2]
+        - get: tiller-version.git
+          trigger: true
+      - in_parallel:
+        - task: k-ap-jp-2
+          config:
+            <<: *task_tiller
+          timeout: 10m
+          params:
+            REGION: ap-jp-2
+            CONTEXT: k-ap-jp-2
+            <<: *auth_ap-jp-2
+    <<: *slack
+
+  - name: deploy_ap-jp-2
+    serial: true
+    plan:
+      - in_parallel:
+        - get: bronze.tag
+          trigger: true
+          passed: [tiller_ap-jp-2]
+        - get: secrets.git
+          passed: [seed_ap-jp-2]
+        - get: kubernikus.builds
+          resource: kubernikus.git
+          passed: [bronze]
+      - in_parallel:
+        - task: kubernikus_ap-jp-2
+          config:
+            <<: *task_helm_kubernikus
+          params:
+            REGION: ap-jp-2
+            CONTEXT: k-ap-jp-2
+            <<: *auth_ap-jp-2
+        - task: kubernikus-dex_ap-jp-2
+          config:
+            <<: *task_helm_kubernikus-dex
+          params:
+            REGION: ap-jp-2
+            CONTEXT: k-ap-jp-2
+            <<: *auth_ap-jp-2
+    <<: *slack
+
+  - name: soak_ap-jp-2
+    serial: true
+    build_logs_to_retain: 168
+    plan:
+      - in_parallel:
+        - get: bronze.tag
+          trigger: true
+          passed: [deploy_ap-jp-2]
+        - get: kubernikus.builds
+          resource: kubernikus.git
+          passed: [deploy_ap-jp-2]
+        - get: hourly
+          trigger: true
+      - task: e2e_tests
+        config:
+          <<: *task_e2e_tests
+        timeout: 45m
+        params:
+          <<: *auth_e2e_ap-jp-2
+
+        on_failure:
+          put: slack-notification
+          params:
+            channel: '#kubernikus-ci'
+            text: Soak tests in ap-jp-2 failed
+            text_file: test-result/content
+            attachments:
+              - text: $TEXT_FILE_CONTENT
+                color: "#d00000"
+                footer: $ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME
+                footer_icon: https://ci.concourse-ci.org/public/images/favicon-failed.png
+
+    on_success: { put: slack-alert, inputs: [], params: {alert_type: fixed } }
+    on_abort:   { put: slack-alert, inputs: [], params: {alert_type: broke } }
+    on_error:   { put: slack-alert, inputs: [], params: {alert_type: broke } }
+
+
+
+
+
   - name: seed_ap-sa-2
     serial: true
     plan:
       - in_parallel:
-        - get: ASIA.tag
-          passed: [ASIA]
+        - get: bronze.tag
+          passed: [bronze]
           trigger: true
         - get: secrets.git
-          passed: [ASIA]
+          passed: [bronze]
         - get: helm-charts.git
-          passed: [ASIA]
+          passed: [bronze]
       - task: seed
         config:
           <<: *task_helm_seed
@@ -2485,7 +2720,7 @@ jobs:
   - name: tiller_ap-sa-2
     plan:
       - in_parallel:
-        - get: ASIA.tag
+        - get: bronze.tag
           trigger: true
           passed: [seed_ap-sa-2]
         - get: tiller-version.git
@@ -2505,14 +2740,14 @@ jobs:
     serial: true
     plan:
       - in_parallel:
-        - get: ASIA.tag
+        - get: bronze.tag
           trigger: true
           passed: [tiller_ap-sa-2]
         - get: secrets.git
           passed: [seed_ap-sa-2]
         - get: kubernikus.builds
           resource: kubernikus.git
-          passed: [ASIA]
+          passed: [bronze]
       - in_parallel:
         - task: kubernikus_ap-sa-2
           config:
@@ -2535,7 +2770,7 @@ jobs:
     build_logs_to_retain: 168
     plan:
       - in_parallel:
-        - get: ASIA.tag
+        - get: bronze.tag
           trigger: true
           passed: [deploy_ap-sa-2]
         - get: kubernikus.builds
@@ -2569,7 +2804,227 @@ jobs:
 
 
 
-  - name: EMEA
+
+  - name: seed_na-ca-1
+    serial: true
+    plan:
+      - in_parallel:
+        - get: bronze.tag
+          passed: [bronze]
+          trigger: true
+        - get: secrets.git
+          passed: [bronze]
+        - get: helm-charts.git
+          passed: [bronze]
+      - task: seed
+        config:
+          <<: *task_helm_seed
+        input_mapping:
+          charts.git: helm-charts.git
+        params:
+          REGION: na-ca-1
+          CONTEXT: na-ca-1
+          <<: *auth_na-ca-1
+    <<: *slack
+
+  - name: tiller_na-ca-1
+    plan:
+      - in_parallel:
+        - get: bronze.tag
+          trigger: true
+          passed: [seed_na-ca-1]
+        - get: tiller-version.git
+          trigger: true
+      - in_parallel:
+        - task: k-na-ca-1
+          config:
+            <<: *task_tiller
+          timeout: 10m
+          params:
+            REGION: na-ca-1
+            CONTEXT: k-na-ca-1
+            <<: *auth_na-ca-1
+    <<: *slack
+
+  - name: deploy_na-ca-1
+    serial: true
+    plan:
+      - in_parallel:
+        - get: bronze.tag
+          trigger: true
+          passed: [tiller_na-ca-1]
+        - get: secrets.git
+          passed: [seed_na-ca-1]
+        - get: kubernikus.builds
+          resource: kubernikus.git
+          passed: [bronze]
+      - in_parallel:
+        - task: kubernikus_na-ca-1
+          config:
+            <<: *task_helm_kubernikus
+          params:
+            REGION: na-ca-1
+            CONTEXT: k-na-ca-1
+            <<: *auth_na-ca-1
+        - task: kubernikus-dex_na-ca-1
+          config:
+            <<: *task_helm_kubernikus-dex
+          params:
+            REGION: na-ca-1
+            CONTEXT: k-na-ca-1
+            <<: *auth_na-ca-1
+    <<: *slack
+
+  - name: soak_na-ca-1
+    serial: true
+    build_logs_to_retain: 168
+    plan:
+      - in_parallel:
+        - get: bronze.tag
+          trigger: true
+          passed: [deploy_na-ca-1]
+        - get: kubernikus.builds
+          resource: kubernikus.git
+          passed: [deploy_na-ca-1]
+        - get: hourly
+          trigger: true
+      - task: e2e_tests
+        config:
+          <<: *task_e2e_tests
+        timeout: 45m
+        params:
+          <<: *auth_e2e_na-ca-1
+
+        on_failure:
+          put: slack-notification
+          params:
+            channel: '#kubernikus-ci'
+            text: Soak tests in na-ca-1 failed
+            text_file: test-result/content
+            attachments:
+              - text: $TEXT_FILE_CONTENT
+                color: "#d00000"
+                footer: $ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME
+                footer_icon: https://ci.concourse-ci.org/public/images/favicon-failed.png
+
+    on_success: { put: slack-alert, inputs: [], params: {alert_type: fixed } }
+    on_abort:   { put: slack-alert, inputs: [], params: {alert_type: broke } }
+    on_error:   { put: slack-alert, inputs: [], params: {alert_type: broke } }
+
+
+
+
+
+  - name: seed_na-us-3
+    serial: true
+    plan:
+      - in_parallel:
+        - get: bronze.tag
+          passed: [bronze]
+          trigger: true
+        - get: secrets.git
+          passed: [bronze]
+        - get: helm-charts.git
+          passed: [bronze]
+      - task: seed
+        config:
+          <<: *task_helm_seed
+        input_mapping:
+          charts.git: helm-charts.git
+        params:
+          REGION: na-us-3
+          CONTEXT: na-us-3
+          <<: *auth_na-us-3
+    <<: *slack
+
+  - name: tiller_na-us-3
+    plan:
+      - in_parallel:
+        - get: bronze.tag
+          trigger: true
+          passed: [seed_na-us-3]
+        - get: tiller-version.git
+          trigger: true
+      - in_parallel:
+        - task: k-na-us-3
+          config:
+            <<: *task_tiller
+          timeout: 10m
+          params:
+            REGION: na-us-3
+            CONTEXT: k-na-us-3
+            <<: *auth_na-us-3
+    <<: *slack
+
+  - name: deploy_na-us-3
+    serial: true
+    plan:
+      - in_parallel:
+        - get: bronze.tag
+          trigger: true
+          passed: [tiller_na-us-3]
+        - get: secrets.git
+          passed: [seed_na-us-3]
+        - get: kubernikus.builds
+          resource: kubernikus.git
+          passed: [bronze]
+      - in_parallel:
+        - task: kubernikus_na-us-3
+          config:
+            <<: *task_helm_kubernikus
+          params:
+            REGION: na-us-3
+            CONTEXT: k-na-us-3
+            <<: *auth_na-us-3
+        - task: kubernikus-dex_na-us-3
+          config:
+            <<: *task_helm_kubernikus-dex
+          params:
+            REGION: na-us-3
+            CONTEXT: k-na-us-3
+            <<: *auth_na-us-3
+    <<: *slack
+
+  - name: soak_na-us-3
+    serial: true
+    build_logs_to_retain: 168
+    plan:
+      - in_parallel:
+        - get: bronze.tag
+          trigger: true
+          passed: [deploy_na-us-3]
+        - get: kubernikus.builds
+          resource: kubernikus.git
+          passed: [deploy_na-us-3]
+        - get: hourly
+          trigger: true
+      - task: e2e_tests
+        config:
+          <<: *task_e2e_tests
+        timeout: 45m
+        params:
+          <<: *auth_e2e_na-us-3
+
+        on_failure:
+          put: slack-notification
+          params:
+            channel: '#kubernikus-ci'
+            text: Soak tests in na-us-3 failed
+            text_file: test-result/content
+            attachments:
+              - text: $TEXT_FILE_CONTENT
+                color: "#d00000"
+                footer: $ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME
+                footer_icon: https://ci.concourse-ci.org/public/images/favicon-failed.png
+
+    on_success: { put: slack-alert, inputs: [], params: {alert_type: fixed } }
+    on_abort:   { put: slack-alert, inputs: [], params: {alert_type: broke } }
+    on_error:   { put: slack-alert, inputs: [], params: {alert_type: broke } }
+
+
+
+
+  - name: gold
     serial: true
     plan:
       - in_parallel:
@@ -2580,7 +3035,7 @@ jobs:
           resource: kubernikus.git
           passed: [prod]
           trigger: true
-        - put: EMEA.tag
+        - put: gold.tag
 
 
 
@@ -2589,13 +3044,13 @@ jobs:
     serial: true
     plan:
       - in_parallel:
-        - get: EMEA.tag
-          passed: [EMEA]
+        - get: gold.tag
+          passed: [gold]
           trigger: true
         - get: secrets.git
-          passed: [EMEA]
+          passed: [gold]
         - get: helm-charts.git
-          passed: [EMEA]
+          passed: [gold]
       - task: seed
         config:
           <<: *task_helm_seed
@@ -2610,7 +3065,7 @@ jobs:
   - name: tiller_eu-de-1
     plan:
       - in_parallel:
-        - get: EMEA.tag
+        - get: gold.tag
           trigger: true
           passed: [seed_eu-de-1]
         - get: tiller-version.git
@@ -2630,14 +3085,14 @@ jobs:
     serial: true
     plan:
       - in_parallel:
-        - get: EMEA.tag
+        - get: gold.tag
           trigger: true
           passed: [tiller_eu-de-1]
         - get: secrets.git
           passed: [seed_eu-de-1]
         - get: kubernikus.builds
           resource: kubernikus.git
-          passed: [EMEA]
+          passed: [gold]
       - in_parallel:
         - task: kubernikus_eu-de-1
           config:
@@ -2660,7 +3115,7 @@ jobs:
     build_logs_to_retain: 168
     plan:
       - in_parallel:
-        - get: EMEA.tag
+        - get: gold.tag
           trigger: true
           passed: [deploy_eu-de-1]
         - get: kubernikus.builds
@@ -2699,13 +3154,13 @@ jobs:
     serial: true
     plan:
       - in_parallel:
-        - get: EMEA.tag
-          passed: [EMEA]
+        - get: gold.tag
+          passed: [gold]
           trigger: true
         - get: secrets.git
-          passed: [EMEA]
+          passed: [gold]
         - get: helm-charts.git
-          passed: [EMEA]
+          passed: [gold]
       - task: seed
         config:
           <<: *task_helm_seed
@@ -2720,7 +3175,7 @@ jobs:
   - name: tiller_eu-de-2
     plan:
       - in_parallel:
-        - get: EMEA.tag
+        - get: gold.tag
           trigger: true
           passed: [seed_eu-de-2]
         - get: tiller-version.git
@@ -2740,14 +3195,14 @@ jobs:
     serial: true
     plan:
       - in_parallel:
-        - get: EMEA.tag
+        - get: gold.tag
           trigger: true
           passed: [tiller_eu-de-2]
         - get: secrets.git
           passed: [seed_eu-de-2]
         - get: kubernikus.builds
           resource: kubernikus.git
-          passed: [EMEA]
+          passed: [gold]
       - in_parallel:
         - task: kubernikus_eu-de-2
           config:
@@ -2770,7 +3225,7 @@ jobs:
     build_logs_to_retain: 168
     plan:
       - in_parallel:
-        - get: EMEA.tag
+        - get: gold.tag
           trigger: true
           passed: [deploy_eu-de-2]
         - get: kubernikus.builds
@@ -2809,13 +3264,13 @@ jobs:
     serial: true
     plan:
       - in_parallel:
-        - get: EMEA.tag
-          passed: [EMEA]
+        - get: gold.tag
+          passed: [gold]
           trigger: true
         - get: secrets.git
-          passed: [EMEA]
+          passed: [gold]
         - get: helm-charts.git
-          passed: [EMEA]
+          passed: [gold]
       - task: seed
         config:
           <<: *task_helm_seed
@@ -2830,7 +3285,7 @@ jobs:
   - name: tiller_eu-nl-1
     plan:
       - in_parallel:
-        - get: EMEA.tag
+        - get: gold.tag
           trigger: true
           passed: [seed_eu-nl-1]
         - get: tiller-version.git
@@ -2850,14 +3305,14 @@ jobs:
     serial: true
     plan:
       - in_parallel:
-        - get: EMEA.tag
+        - get: gold.tag
           trigger: true
           passed: [tiller_eu-nl-1]
         - get: secrets.git
           passed: [seed_eu-nl-1]
         - get: kubernikus.builds
           resource: kubernikus.git
-          passed: [EMEA]
+          passed: [gold]
       - in_parallel:
         - task: kubernikus_eu-nl-1
           config:
@@ -2880,7 +3335,7 @@ jobs:
     build_logs_to_retain: 168
     plan:
       - in_parallel:
-        - get: EMEA.tag
+        - get: gold.tag
           trigger: true
           passed: [deploy_eu-nl-1]
         - get: kubernikus.builds
@@ -2915,362 +3370,17 @@ jobs:
 
 
 
-  - name: seed_eu-ru-1
-    serial: true
-    plan:
-      - in_parallel:
-        - get: EMEA.tag
-          passed: [EMEA]
-          trigger: true
-        - get: secrets.git
-          passed: [EMEA]
-        - get: helm-charts.git
-          passed: [EMEA]
-      - task: seed
-        config:
-          <<: *task_helm_seed
-        input_mapping:
-          charts.git: helm-charts.git
-        params:
-          REGION: eu-ru-1
-          CONTEXT: eu-ru-1
-          <<: *auth_eu-ru-1
-    <<: *slack
-
-  - name: tiller_eu-ru-1
-    plan:
-      - in_parallel:
-        - get: EMEA.tag
-          trigger: true
-          passed: [seed_eu-ru-1]
-        - get: tiller-version.git
-          trigger: true
-      - in_parallel:
-        - task: k-eu-ru-1
-          config:
-            <<: *task_tiller
-          timeout: 10m
-          params:
-            REGION: eu-ru-1
-            CONTEXT: k-eu-ru-1
-            <<: *auth_eu-ru-1
-    <<: *slack
-
-  - name: deploy_eu-ru-1
-    serial: true
-    plan:
-      - in_parallel:
-        - get: EMEA.tag
-          trigger: true
-          passed: [tiller_eu-ru-1]
-        - get: secrets.git
-          passed: [seed_eu-ru-1]
-        - get: kubernikus.builds
-          resource: kubernikus.git
-          passed: [EMEA]
-      - in_parallel:
-        - task: kubernikus_eu-ru-1
-          config:
-            <<: *task_helm_kubernikus
-          params:
-            REGION: eu-ru-1
-            CONTEXT: k-eu-ru-1
-            <<: *auth_eu-ru-1
-        - task: kubernikus-dex_eu-ru-1
-          config:
-            <<: *task_helm_kubernikus-dex
-          params:
-            REGION: eu-ru-1
-            CONTEXT: k-eu-ru-1
-            <<: *auth_eu-ru-1
-    <<: *slack
-
-  - name: soak_eu-ru-1
-    serial: true
-    build_logs_to_retain: 168
-    plan:
-      - in_parallel:
-        - get: EMEA.tag
-          trigger: true
-          passed: [deploy_eu-ru-1]
-        - get: kubernikus.builds
-          resource: kubernikus.git
-          passed: [deploy_eu-ru-1]
-        - get: hourly
-          trigger: true
-      - task: e2e_tests
-        config:
-          <<: *task_e2e_tests
-        timeout: 45m
-        params:
-          <<: *auth_e2e_eu-ru-1
-
-        on_failure:
-          put: slack-notification
-          params:
-            channel: '#kubernikus-ci'
-            text: Soak tests in eu-ru-1 failed
-            text_file: test-result/content
-            attachments:
-              - text: $TEXT_FILE_CONTENT
-                color: "#d00000"
-                footer: $ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME
-                footer_icon: https://ci.concourse-ci.org/public/images/favicon-failed.png
-
-    on_success: { put: slack-alert, inputs: [], params: {alert_type: fixed } }
-    on_abort:   { put: slack-alert, inputs: [], params: {alert_type: broke } }
-    on_error:   { put: slack-alert, inputs: [], params: {alert_type: broke } }
-
-
-
-
-  - name: AMERICAS
-    serial: true
-    plan:
-      - in_parallel:
-        - get: helm-charts.git
-          trigger: true
-        - get: secrets.git
-        - get: kubernikus.builds
-          resource: kubernikus.git
-          passed: [prod]
-          trigger: true
-        - put: AMERICAS.tag
-
-
-
-
-  - name: seed_la-br-1
-    serial: true
-    plan:
-      - in_parallel:
-        - get: AMERICAS.tag
-          passed: [AMERICAS]
-          trigger: true
-        - get: secrets.git
-          passed: [AMERICAS]
-        - get: helm-charts.git
-          passed: [AMERICAS]
-      - task: seed
-        config:
-          <<: *task_helm_seed
-        input_mapping:
-          charts.git: helm-charts.git
-        params:
-          REGION: la-br-1
-          CONTEXT: la-br-1
-          <<: *auth_la-br-1
-    <<: *slack
-
-  - name: tiller_la-br-1
-    plan:
-      - in_parallel:
-        - get: AMERICAS.tag
-          trigger: true
-          passed: [seed_la-br-1]
-        - get: tiller-version.git
-          trigger: true
-      - in_parallel:
-        - task: k-la-br-1
-          config:
-            <<: *task_tiller
-          timeout: 10m
-          params:
-            REGION: la-br-1
-            CONTEXT: k-la-br-1
-            <<: *auth_la-br-1
-    <<: *slack
-
-  - name: deploy_la-br-1
-    serial: true
-    plan:
-      - in_parallel:
-        - get: AMERICAS.tag
-          trigger: true
-          passed: [tiller_la-br-1]
-        - get: secrets.git
-          passed: [seed_la-br-1]
-        - get: kubernikus.builds
-          resource: kubernikus.git
-          passed: [AMERICAS]
-      - in_parallel:
-        - task: kubernikus_la-br-1
-          config:
-            <<: *task_helm_kubernikus
-          params:
-            REGION: la-br-1
-            CONTEXT: k-la-br-1
-            <<: *auth_la-br-1
-        - task: kubernikus-dex_la-br-1
-          config:
-            <<: *task_helm_kubernikus-dex
-          params:
-            REGION: la-br-1
-            CONTEXT: k-la-br-1
-            <<: *auth_la-br-1
-    <<: *slack
-
-  - name: soak_la-br-1
-    serial: true
-    build_logs_to_retain: 168
-    plan:
-      - in_parallel:
-        - get: AMERICAS.tag
-          trigger: true
-          passed: [deploy_la-br-1]
-        - get: kubernikus.builds
-          resource: kubernikus.git
-          passed: [deploy_la-br-1]
-        - get: hourly
-          trigger: true
-      - task: e2e_tests
-        config:
-          <<: *task_e2e_tests
-        timeout: 45m
-        params:
-          <<: *auth_e2e_la-br-1
-
-        on_failure:
-          put: slack-notification
-          params:
-            channel: '#kubernikus-ci'
-            text: Soak tests in la-br-1 failed
-            text_file: test-result/content
-            attachments:
-              - text: $TEXT_FILE_CONTENT
-                color: "#d00000"
-                footer: $ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME
-                footer_icon: https://ci.concourse-ci.org/public/images/favicon-failed.png
-
-    on_success: { put: slack-alert, inputs: [], params: {alert_type: fixed } }
-    on_abort:   { put: slack-alert, inputs: [], params: {alert_type: broke } }
-    on_error:   { put: slack-alert, inputs: [], params: {alert_type: broke } }
-
-
-
-
-
-  - name: seed_na-ca-1
-    serial: true
-    plan:
-      - in_parallel:
-        - get: AMERICAS.tag
-          passed: [AMERICAS]
-          trigger: true
-        - get: secrets.git
-          passed: [AMERICAS]
-        - get: helm-charts.git
-          passed: [AMERICAS]
-      - task: seed
-        config:
-          <<: *task_helm_seed
-        input_mapping:
-          charts.git: helm-charts.git
-        params:
-          REGION: na-ca-1
-          CONTEXT: na-ca-1
-          <<: *auth_na-ca-1
-    <<: *slack
-
-  - name: tiller_na-ca-1
-    plan:
-      - in_parallel:
-        - get: AMERICAS.tag
-          trigger: true
-          passed: [seed_na-ca-1]
-        - get: tiller-version.git
-          trigger: true
-      - in_parallel:
-        - task: k-na-ca-1
-          config:
-            <<: *task_tiller
-          timeout: 10m
-          params:
-            REGION: na-ca-1
-            CONTEXT: k-na-ca-1
-            <<: *auth_na-ca-1
-    <<: *slack
-
-  - name: deploy_na-ca-1
-    serial: true
-    plan:
-      - in_parallel:
-        - get: AMERICAS.tag
-          trigger: true
-          passed: [tiller_na-ca-1]
-        - get: secrets.git
-          passed: [seed_na-ca-1]
-        - get: kubernikus.builds
-          resource: kubernikus.git
-          passed: [AMERICAS]
-      - in_parallel:
-        - task: kubernikus_na-ca-1
-          config:
-            <<: *task_helm_kubernikus
-          params:
-            REGION: na-ca-1
-            CONTEXT: k-na-ca-1
-            <<: *auth_na-ca-1
-        - task: kubernikus-dex_na-ca-1
-          config:
-            <<: *task_helm_kubernikus-dex
-          params:
-            REGION: na-ca-1
-            CONTEXT: k-na-ca-1
-            <<: *auth_na-ca-1
-    <<: *slack
-
-  - name: soak_na-ca-1
-    serial: true
-    build_logs_to_retain: 168
-    plan:
-      - in_parallel:
-        - get: AMERICAS.tag
-          trigger: true
-          passed: [deploy_na-ca-1]
-        - get: kubernikus.builds
-          resource: kubernikus.git
-          passed: [deploy_na-ca-1]
-        - get: hourly
-          trigger: true
-      - task: e2e_tests
-        config:
-          <<: *task_e2e_tests
-        timeout: 45m
-        params:
-          <<: *auth_e2e_na-ca-1
-
-        on_failure:
-          put: slack-notification
-          params:
-            channel: '#kubernikus-ci'
-            text: Soak tests in na-ca-1 failed
-            text_file: test-result/content
-            attachments:
-              - text: $TEXT_FILE_CONTENT
-                color: "#d00000"
-                footer: $ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME
-                footer_icon: https://ci.concourse-ci.org/public/images/favicon-failed.png
-
-    on_success: { put: slack-alert, inputs: [], params: {alert_type: fixed } }
-    on_abort:   { put: slack-alert, inputs: [], params: {alert_type: broke } }
-    on_error:   { put: slack-alert, inputs: [], params: {alert_type: broke } }
-
-
-
-
-
   - name: seed_na-us-1
     serial: true
     plan:
       - in_parallel:
-        - get: AMERICAS.tag
-          passed: [AMERICAS]
+        - get: gold.tag
+          passed: [gold]
           trigger: true
         - get: secrets.git
-          passed: [AMERICAS]
+          passed: [gold]
         - get: helm-charts.git
-          passed: [AMERICAS]
+          passed: [gold]
       - task: seed
         config:
           <<: *task_helm_seed
@@ -3285,7 +3395,7 @@ jobs:
   - name: tiller_na-us-1
     plan:
       - in_parallel:
-        - get: AMERICAS.tag
+        - get: gold.tag
           trigger: true
           passed: [seed_na-us-1]
         - get: tiller-version.git
@@ -3305,14 +3415,14 @@ jobs:
     serial: true
     plan:
       - in_parallel:
-        - get: AMERICAS.tag
+        - get: gold.tag
           trigger: true
           passed: [tiller_na-us-1]
         - get: secrets.git
           passed: [seed_na-us-1]
         - get: kubernikus.builds
           resource: kubernikus.git
-          passed: [AMERICAS]
+          passed: [gold]
       - in_parallel:
         - task: kubernikus_na-us-1
           config:
@@ -3335,7 +3445,7 @@ jobs:
     build_logs_to_retain: 168
     plan:
       - in_parallel:
-        - get: AMERICAS.tag
+        - get: gold.tag
           trigger: true
           passed: [deploy_na-us-1]
         - get: kubernikus.builds
@@ -3374,13 +3484,13 @@ jobs:
     serial: true
     plan:
       - in_parallel:
-        - get: AMERICAS.tag
-          passed: [AMERICAS]
+        - get: gold.tag
+          passed: [gold]
           trigger: true
         - get: secrets.git
-          passed: [AMERICAS]
+          passed: [gold]
         - get: helm-charts.git
-          passed: [AMERICAS]
+          passed: [gold]
       - task: seed
         config:
           <<: *task_helm_seed
@@ -3395,7 +3505,7 @@ jobs:
   - name: tiller_na-us-2
     plan:
       - in_parallel:
-        - get: AMERICAS.tag
+        - get: gold.tag
           trigger: true
           passed: [seed_na-us-2]
         - get: tiller-version.git
@@ -3415,14 +3525,14 @@ jobs:
     serial: true
     plan:
       - in_parallel:
-        - get: AMERICAS.tag
+        - get: gold.tag
           trigger: true
           passed: [tiller_na-us-2]
         - get: secrets.git
           passed: [seed_na-us-2]
         - get: kubernikus.builds
           resource: kubernikus.git
-          passed: [AMERICAS]
+          passed: [gold]
       - in_parallel:
         - task: kubernikus_na-us-2
           config:
@@ -3445,7 +3555,7 @@ jobs:
     build_logs_to_retain: 168
     plan:
       - in_parallel:
-        - get: AMERICAS.tag
+        - get: gold.tag
           trigger: true
           passed: [deploy_na-us-2]
         - get: kubernikus.builds
@@ -3479,117 +3589,7 @@ jobs:
 
 
 
-
-  - name: seed_na-us-3
-    serial: true
-    plan:
-      - in_parallel:
-        - get: AMERICAS.tag
-          passed: [AMERICAS]
-          trigger: true
-        - get: secrets.git
-          passed: [AMERICAS]
-        - get: helm-charts.git
-          passed: [AMERICAS]
-      - task: seed
-        config:
-          <<: *task_helm_seed
-        input_mapping:
-          charts.git: helm-charts.git
-        params:
-          REGION: na-us-3
-          CONTEXT: na-us-3
-          <<: *auth_na-us-3
-    <<: *slack
-
-  - name: tiller_na-us-3
-    plan:
-      - in_parallel:
-        - get: AMERICAS.tag
-          trigger: true
-          passed: [seed_na-us-3]
-        - get: tiller-version.git
-          trigger: true
-      - in_parallel:
-        - task: k-na-us-3
-          config:
-            <<: *task_tiller
-          timeout: 10m
-          params:
-            REGION: na-us-3
-            CONTEXT: k-na-us-3
-            <<: *auth_na-us-3
-    <<: *slack
-
-  - name: deploy_na-us-3
-    serial: true
-    plan:
-      - in_parallel:
-        - get: AMERICAS.tag
-          trigger: true
-          passed: [tiller_na-us-3]
-        - get: secrets.git
-          passed: [seed_na-us-3]
-        - get: kubernikus.builds
-          resource: kubernikus.git
-          passed: [AMERICAS]
-      - in_parallel:
-        - task: kubernikus_na-us-3
-          config:
-            <<: *task_helm_kubernikus
-          params:
-            REGION: na-us-3
-            CONTEXT: k-na-us-3
-            <<: *auth_na-us-3
-        - task: kubernikus-dex_na-us-3
-          config:
-            <<: *task_helm_kubernikus-dex
-          params:
-            REGION: na-us-3
-            CONTEXT: k-na-us-3
-            <<: *auth_na-us-3
-    <<: *slack
-
-  - name: soak_na-us-3
-    serial: true
-    build_logs_to_retain: 168
-    plan:
-      - in_parallel:
-        - get: AMERICAS.tag
-          trigger: true
-          passed: [deploy_na-us-3]
-        - get: kubernikus.builds
-          resource: kubernikus.git
-          passed: [deploy_na-us-3]
-        - get: hourly
-          trigger: true
-      - task: e2e_tests
-        config:
-          <<: *task_e2e_tests
-        timeout: 45m
-        params:
-          <<: *auth_e2e_na-us-3
-
-        on_failure:
-          put: slack-notification
-          params:
-            channel: '#kubernikus-ci'
-            text: Soak tests in na-us-3 failed
-            text_file: test-result/content
-            attachments:
-              - text: $TEXT_FILE_CONTENT
-                color: "#d00000"
-                footer: $ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME
-                footer_icon: https://ci.concourse-ci.org/public/images/favicon-failed.png
-
-    on_success: { put: slack-alert, inputs: [], params: {alert_type: fixed } }
-    on_abort:   { put: slack-alert, inputs: [], params: {alert_type: broke } }
-    on_error:   { put: slack-alert, inputs: [], params: {alert_type: broke } }
-
-
-
-
-  - name: INFRA
+  - name: infra
     serial: true
     plan:
       - in_parallel:
@@ -3600,7 +3600,7 @@ jobs:
           resource: kubernikus.git
           passed: [prod]
           trigger: true
-        - put: INFRA.tag
+        - put: infra.tag
 
 
 
@@ -3609,13 +3609,13 @@ jobs:
     serial: true
     plan:
       - in_parallel:
-        - get: INFRA.tag
-          passed: [INFRA]
+        - get: infra.tag
+          passed: [infra]
           trigger: true
         - get: secrets.git
-          passed: [INFRA]
+          passed: [infra]
         - get: helm-charts.git
-          passed: [INFRA]
+          passed: [infra]
       - task: seed
         config:
           <<: *task_helm_seed
@@ -3630,7 +3630,7 @@ jobs:
   - name: tiller_qa-de-1
     plan:
       - in_parallel:
-        - get: INFRA.tag
+        - get: infra.tag
           trigger: true
           passed: [seed_qa-de-1]
         - get: tiller-version.git
@@ -3650,14 +3650,14 @@ jobs:
     serial: true
     plan:
       - in_parallel:
-        - get: INFRA.tag
+        - get: infra.tag
           trigger: true
           passed: [tiller_qa-de-1]
         - get: secrets.git
           passed: [seed_qa-de-1]
         - get: kubernikus.builds
           resource: kubernikus.git
-          passed: [INFRA]
+          passed: [infra]
       - in_parallel:
         - task: kubernikus_qa-de-1
           config:
@@ -3680,7 +3680,7 @@ jobs:
     build_logs_to_retain: 168
     plan:
       - in_parallel:
-        - get: INFRA.tag
+        - get: infra.tag
           trigger: true
           passed: [deploy_qa-de-1]
         - get: kubernikus.builds
@@ -3754,19 +3754,19 @@ groups:
 
       - prod
 
-      - ASIA
+      - silver
 
-      - EMEA
+      - bronze
 
-      - AMERICAS
+      - gold
 
-      - INFRA
+      - infra
 
 
 
   - name: ap-ae-1
     jobs:
-      - ASIA
+      - silver
       - seed_ap-ae-1
       - tiller_ap-ae-1
       - deploy_ap-ae-1
@@ -3774,7 +3774,7 @@ groups:
 
   - name: ap-au-1
     jobs:
-      - ASIA
+      - silver
       - seed_ap-au-1
       - tiller_ap-au-1
       - deploy_ap-au-1
@@ -3782,7 +3782,7 @@ groups:
 
   - name: ap-cn-1
     jobs:
-      - ASIA
+      - silver
       - seed_ap-cn-1
       - tiller_ap-cn-1
       - deploy_ap-cn-1
@@ -3790,7 +3790,7 @@ groups:
 
   - name: ap-jp-1
     jobs:
-      - ASIA
+      - silver
       - seed_ap-jp-1
       - tiller_ap-jp-1
       - deploy_ap-jp-1
@@ -3798,7 +3798,7 @@ groups:
 
   - name: ap-jp-2
     jobs:
-      - ASIA
+      - bronze
       - seed_ap-jp-2
       - tiller_ap-jp-2
       - deploy_ap-jp-2
@@ -3806,7 +3806,7 @@ groups:
 
   - name: ap-sa-1
     jobs:
-      - ASIA
+      - silver
       - seed_ap-sa-1
       - tiller_ap-sa-1
       - deploy_ap-sa-1
@@ -3814,7 +3814,7 @@ groups:
 
   - name: ap-sa-2
     jobs:
-      - ASIA
+      - bronze
       - seed_ap-sa-2
       - tiller_ap-sa-2
       - deploy_ap-sa-2
@@ -3822,7 +3822,7 @@ groups:
 
   - name: eu-de-1
     jobs:
-      - EMEA
+      - gold
       - seed_eu-de-1
       - tiller_eu-de-1
       - deploy_eu-de-1
@@ -3830,7 +3830,7 @@ groups:
 
   - name: eu-de-2
     jobs:
-      - EMEA
+      - gold
       - seed_eu-de-2
       - tiller_eu-de-2
       - deploy_eu-de-2
@@ -3838,7 +3838,7 @@ groups:
 
   - name: eu-nl-1
     jobs:
-      - EMEA
+      - gold
       - seed_eu-nl-1
       - tiller_eu-nl-1
       - deploy_eu-nl-1
@@ -3846,7 +3846,7 @@ groups:
 
   - name: eu-ru-1
     jobs:
-      - EMEA
+      - silver
       - seed_eu-ru-1
       - tiller_eu-ru-1
       - deploy_eu-ru-1
@@ -3854,7 +3854,7 @@ groups:
 
   - name: la-br-1
     jobs:
-      - AMERICAS
+      - silver
       - seed_la-br-1
       - tiller_la-br-1
       - deploy_la-br-1
@@ -3862,7 +3862,7 @@ groups:
 
   - name: na-ca-1
     jobs:
-      - AMERICAS
+      - bronze
       - seed_na-ca-1
       - tiller_na-ca-1
       - deploy_na-ca-1
@@ -3870,7 +3870,7 @@ groups:
 
   - name: na-us-1
     jobs:
-      - AMERICAS
+      - gold
       - seed_na-us-1
       - tiller_na-us-1
       - deploy_na-us-1
@@ -3878,7 +3878,7 @@ groups:
 
   - name: na-us-2
     jobs:
-      - AMERICAS
+      - gold
       - seed_na-us-2
       - tiller_na-us-2
       - deploy_na-us-2
@@ -3886,7 +3886,7 @@ groups:
 
   - name: na-us-3
     jobs:
-      - AMERICAS
+      - bronze
       - seed_na-us-3
       - tiller_na-us-3
       - deploy_na-us-3
@@ -3894,14 +3894,14 @@ groups:
 
   - name: qa-de-1
     jobs:
-      - INFRA
+      - infra
       - seed_qa-de-1
       - tiller_qa-de-1
       - deploy_qa-de-1
       - soak_qa-de-1
 
 
-  - name: WORLD
+  - name: world
     jobs:
       - master
       - cli
@@ -3933,13 +3933,13 @@ groups:
 
       - prod
 
-      - ASIA
+      - silver
 
-      - EMEA
+      - bronze
 
-      - AMERICAS
+      - gold
 
-      - INFRA
+      - infra
 
 
       - seed_ap-ae-1
