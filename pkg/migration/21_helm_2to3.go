@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"path"
+	"sort"
 	"strconv"
 	"strings"
 
@@ -54,30 +55,30 @@ func migrateHelmReleases(kluster *v1.Kluster, clients config.Clients) error {
 	if err != nil {
 		return err
 	}
+	sort.Ints(versions2)
 	client2 := clients.Helm
 	client3 := clients.Helm3
-	for _, version2 := range versions2 {
-		rsp, err := client2.ReleaseContent(kluster.Name, helm.ContentReleaseVersion(int32(version2)))
-		if err != nil {
-			return err
-		}
-		release3, err := helm_2to3.CreateRelease(rsp.Release)
-		if err != nil {
-			return err
-		}
-		err = client3.Releases.Create(release3)
-		if err != nil {
-			return err
-		}
-		values, err := helm_util.KlusterToHelmValues(kluster, klusterSecret, kluster.Spec.Version, imageRegistry, accessMode)
-		if err != nil {
-			return err
-		}
-		upgrade := action.NewUpgrade(client3)
-		_, err = upgrade.Run(release3.Name, release3.Chart, values)
-		if err != nil {
-			return err
-		}
+	latestVersion2 := versions2[len(versions2)-1]
+	rsp, err := client2.ReleaseContent(kluster.Name, helm.ContentReleaseVersion(int32(latestVersion2)))
+	if err != nil {
+		return err
+	}
+	release3, err := helm_2to3.CreateRelease(rsp.Release)
+	if err != nil {
+		return err
+	}
+	err = client3.Releases.Create(release3)
+	if err != nil {
+		return err
+	}
+	values, err := helm_util.KlusterToHelmValues(kluster, klusterSecret, kluster.Spec.Version, imageRegistry, accessMode)
+	if err != nil {
+		return err
+	}
+	upgrade := action.NewUpgrade(client3)
+	_, err = upgrade.Run(release3.Name, release3.Chart, values)
+	if err != nil {
+		return err
 	}
 	return nil
 }
