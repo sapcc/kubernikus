@@ -2,7 +2,9 @@ package migration
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"os"
 	"path"
 	"strconv"
 	"strings"
@@ -38,7 +40,11 @@ func migrateHelmReleases(kluster *v1.Kluster, clients config.Clients) error {
 	if strings.HasPrefix(pullRegion, "qa-de") {
 		pullRegion = "eu-de-1"
 	}
-	imageRegistry, err := version.NewImageRegistry(path.Join("charts", "images.yaml"), pullRegion)
+	chartsPath := path.Join("charts", "images.yaml")
+	if _, err := os.Stat(chartsPath); errors.Is(err, os.ErrNotExist) {
+		chartsPath = "/etc/kubernikus/charts/images.yaml"
+	}
+	imageRegistry, err := version.NewImageRegistry(chartsPath, pullRegion)
 	if err != nil {
 		return err
 	}
