@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -37,7 +38,7 @@ func qualifiedName(name string, accountId string) string {
 }
 
 func editCluster(client kubernikusv1.KlusterInterface, principal *models.Principal, name string, updateFunc func(k *v1.Kluster) error) (*v1.Kluster, error) {
-	kluster, err := client.Get(qualifiedName(name, principal.Account), metav1.GetOptions{})
+	kluster, err := client.Get(context.TODO(), qualifiedName(name, principal.Account), metav1.GetOptions{})
 	if err != nil {
 		return nil, err
 	}
@@ -47,7 +48,7 @@ func editCluster(client kubernikusv1.KlusterInterface, principal *models.Princip
 		return nil, err
 	}
 
-	updatedCluster, err := client.Update(kluster)
+	updatedCluster, err := client.Update(context.TODO(), kluster, metav1.UpdateOptions{})
 	if err != nil {
 		return nil, err
 	}

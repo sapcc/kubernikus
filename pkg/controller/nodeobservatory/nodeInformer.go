@@ -1,6 +1,7 @@
 package nodeobservatory
 
 import (
+	"context"
 	"time"
 
 	api_v1 "k8s.io/api/core/v1"
@@ -33,10 +34,10 @@ func newNodeInformerForKluster(clientFactory kubernetes.SharedClientFactory, klu
 	nodeInformer := cache.NewSharedIndexInformer(
 		&cache.ListWatch{
 			ListFunc: func(options meta_v1.ListOptions) (runtime.Object, error) {
-				return client.CoreV1().Nodes().List(meta_v1.ListOptions{})
+				return client.CoreV1().Nodes().List(context.TODO(), meta_v1.ListOptions{})
 			},
 			WatchFunc: func(options meta_v1.ListOptions) (watch.Interface, error) {
-				return client.CoreV1().Nodes().Watch(meta_v1.ListOptions{})
+				return client.CoreV1().Nodes().Watch(context.TODO(), meta_v1.ListOptions{})
 			},
 		},
 		&api_v1.Node{},

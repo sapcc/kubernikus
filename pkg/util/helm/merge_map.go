@@ -1,21 +1,21 @@
 package helm
 
 // This is taken from helm functionality of merging helm values
-func MergeMaps(a, b map[interface{}]interface{}) map[interface{}]interface{} {
-	out := make(map[interface{}]interface{}, len(a))
-	for aKey, aValue := range a {
-		out[aKey] = aValue
+func MergeMaps(a, b map[string]interface{}) map[string]interface{} {
+	out := make(map[string]interface{}, len(a))
+	for k, v := range a {
+		out[k] = v
 	}
-	for bKey, bValue := range b {
-		if bValue, ok := bValue.(map[interface{}]interface{}); ok {
-			if outValue, ok := out[bKey]; ok {
-				if outValue, ok := outValue.(map[interface{}]interface{}); ok {
-					out[bKey] = MergeMaps(outValue, bValue)
+	for k, v := range b {
+		if v, ok := v.(map[string]interface{}); ok {
+			if bv, ok := out[k]; ok {
+				if bv, ok := bv.(map[string]interface{}); ok {
+					out[k] = MergeMaps(bv, v)
 					continue
 				}
 			}
 		}
-		out[bKey] = bValue
+		out[k] = v
 	}
 	return out
 }

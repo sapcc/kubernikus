@@ -1,6 +1,7 @@
 package migration
 
 import (
+	"context"
 	"strings"
 
 	"github.com/pkg/errors"
@@ -16,13 +17,13 @@ func CleanupSuppositoryNamespaces(rawKluster []byte, current *v1.Kluster, client
 		return err
 	}
 
-	namespaces, err := client.CoreV1().Namespaces().List(meta.ListOptions{})
+	namespaces, err := client.CoreV1().Namespaces().List(context.TODO(), meta.ListOptions{})
 	if err != nil {
 		return errors.Wrap(err, "Failed to list namespaces")
 	}
 	for _, n := range namespaces.Items {
 		if strings.HasPrefix(n.Name, "kubernikus-suppository-") {
-			if err := client.CoreV1().Namespaces().Delete(n.Name, &meta.DeleteOptions{}); err != nil {
+			if err := client.CoreV1().Namespaces().Delete(context.TODO(), n.Name, meta.DeleteOptions{}); err != nil {
 				return errors.Wrap(err, "Failed to clean-up leftover suppository namespace")
 			}
 		}

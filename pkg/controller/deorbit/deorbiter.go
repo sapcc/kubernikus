@@ -1,6 +1,7 @@
 package deorbit
 
 import (
+	"context"
 	"fmt"
 	"time"
 
@@ -87,7 +88,7 @@ func NewDeorbiter(kluster *v1.Kluster, stopCh <-chan struct{}, clients config.Cl
 func (d *ConcreteDeorbiter) DeletePersistentVolumeClaims() (deleted []core_v1.PersistentVolumeClaim, err error) {
 	deleted = []core_v1.PersistentVolumeClaim{}
 
-	pvcs, err := d.Client.CoreV1().PersistentVolumeClaims(meta_v1.NamespaceAll).List(meta_v1.ListOptions{})
+	pvcs, err := d.Client.CoreV1().PersistentVolumeClaims(meta_v1.NamespaceAll).List(context.TODO(), meta_v1.ListOptions{})
 	if err != nil {
 		return deleted, err
 	}
@@ -97,7 +98,7 @@ func (d *ConcreteDeorbiter) DeletePersistentVolumeClaims() (deleted []core_v1.Pe
 			continue
 		}
 
-		pv, err := d.Client.CoreV1().PersistentVolumes().Get(pvc.Spec.VolumeName, meta_v1.GetOptions{})
+		pv, err := d.Client.CoreV1().PersistentVolumes().Get(context.TODO(), pvc.Spec.VolumeName, meta_v1.GetOptions{})
 		if err != nil {
 			return deleted, err
 		}
@@ -107,7 +108,7 @@ func (d *ConcreteDeorbiter) DeletePersistentVolumeClaims() (deleted []core_v1.Pe
 		}
 		deleted = append(deleted, pvc)
 
-		err = d.Client.CoreV1().PersistentVolumeClaims(pvc.Namespace).Delete(pvc.Name, &meta_v1.DeleteOptions{})
+		err = d.Client.CoreV1().PersistentVolumeClaims(pvc.Namespace).Delete(context.TODO(), pvc.Name, meta_v1.DeleteOptions{})
 		if err != nil {
 			return deleted, err
 		}
@@ -119,7 +120,7 @@ func (d *ConcreteDeorbiter) DeletePersistentVolumeClaims() (deleted []core_v1.Pe
 func (d *ConcreteDeorbiter) DeleteServices() (deleted []core_v1.Service, err error) {
 	deleted = []core_v1.Service{}
 
-	services, err := d.Client.CoreV1().Services(meta_v1.NamespaceAll).List(meta_v1.ListOptions{})
+	services, err := d.Client.CoreV1().Services(meta_v1.NamespaceAll).List(context.TODO(), meta_v1.ListOptions{})
 	if err != nil {
 		return deleted, err
 	}
@@ -130,7 +131,7 @@ func (d *ConcreteDeorbiter) DeleteServices() (deleted []core_v1.Service, err err
 		}
 		deleted = append(deleted, service)
 
-		err = d.Client.CoreV1().Services(service.Namespace).Delete(service.Name, &meta_v1.DeleteOptions{})
+		err = d.Client.CoreV1().Services(service.Namespace).Delete(context.TODO(), service.Name, meta_v1.DeleteOptions{})
 		if err != nil {
 			return deleted, err
 		}
@@ -179,7 +180,7 @@ func (d *ConcreteDeorbiter) IsDeorbitHangingTimeout() bool {
 }
 
 func (d *ConcreteDeorbiter) isPersistentVolumesCleanupFinished() (bool, error) {
-	pvs, err := d.Client.CoreV1().PersistentVolumes().List(meta_v1.ListOptions{})
+	pvs, err := d.Client.CoreV1().PersistentVolumes().List(context.TODO(), meta_v1.ListOptions{})
 	if err != nil {
 		return false, err
 	}

@@ -1,6 +1,7 @@
 package util
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -11,6 +12,7 @@ import (
 
 	"github.com/Masterminds/semver"
 	v1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes"
 
@@ -125,7 +127,7 @@ func AddNodeAnnotation(nodeName, key, val string, client kubernetes.Interface) e
 	if err != nil {
 		return fmt.Errorf("Failed to marshal annotation %v = %v: %s", key, val, err)
 	}
-	_, err = client.CoreV1().Nodes().Patch(nodeName, types.MergePatchType, data)
+	_, err = client.CoreV1().Nodes().Patch(context.TODO(), nodeName, types.MergePatchType, data, metav1.PatchOptions{})
 	return err
 }
 
@@ -136,7 +138,7 @@ func RemoveNodeAnnotation(nodeName, key string, client kubernetes.Interface) err
 	if err != nil {
 		return fmt.Errorf("Failed to marshal annotation %v = %v: %s", key, nil, err)
 	}
-	_, err = client.CoreV1().Nodes().Patch(nodeName, types.MergePatchType, data)
+	_, err = client.CoreV1().Nodes().Patch(context.TODO(), nodeName, types.MergePatchType, data, metav1.PatchOptions{})
 	return err
 }
 

@@ -1,6 +1,7 @@
 package migration
 
 import (
+	"context"
 	"errors"
 	"testing"
 
@@ -36,7 +37,7 @@ func TestInitialMigration(t *testing.T) {
 	})
 
 	if assert.NoError(t, registry.Migrate(kluster, clients, config.Factories{})) {
-		kluster, _ = clients.Kubernikus.KubernikusV1().Klusters(NAMESPACE).Get("test", metav1.GetOptions{})
+		kluster, _ = clients.Kubernikus.KubernikusV1().Klusters(NAMESPACE).Get(context.Background(), "test", metav1.GetOptions{})
 		assert.Equal(t, 1, int(kluster.Status.SpecVersion))
 		assert.Equal(t, "executed", kluster.Spec.Name)
 	}
@@ -76,7 +77,7 @@ func TestMigration(t *testing.T) {
 	})
 
 	if assert.NoError(t, registry.Migrate(kluster, clients, config.Factories{})) {
-		kluster, _ = clients.Kubernikus.KubernikusV1().Klusters(NAMESPACE).Get("test", metav1.GetOptions{})
+		kluster, _ = clients.Kubernikus.KubernikusV1().Klusters(NAMESPACE).Get(context.Background(), "test", metav1.GetOptions{})
 		assert.Equal(t, 3, int(kluster.Status.SpecVersion))
 		assert.Equal(t, "23", kluster.Spec.Name)
 	}
@@ -105,7 +106,7 @@ func TestMigrationError(t *testing.T) {
 	})
 
 	if assert.Error(t, registry.Migrate(kluster, clients, config.Factories{})) {
-		kluster, _ = clients.Kubernikus.KubernikusV1().Klusters(NAMESPACE).Get("test", metav1.GetOptions{})
+		kluster, _ = clients.Kubernikus.KubernikusV1().Klusters(NAMESPACE).Get(context.Background(), "test", metav1.GetOptions{})
 		assert.Equal(t, 0, int(kluster.Status.SpecVersion))
 		assert.Equal(t, "Before", kluster.Spec.Name)
 	}

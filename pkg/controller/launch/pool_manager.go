@@ -1,6 +1,7 @@
 package launch
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/go-kit/kit/log"
@@ -145,7 +146,7 @@ func (cpm *ConcretePoolManager) SetStatus(status *PoolStatus) error {
 		},
 	)
 
-	copy, err := cpm.Clients.Kubernikus.KubernikusV1().Klusters(cpm.Kluster.Namespace).Get(cpm.Kluster.Name, metav1.GetOptions{})
+	copy, err := cpm.Clients.Kubernikus.KubernikusV1().Klusters(cpm.Kluster.Namespace).Get(context.TODO(), cpm.Kluster.Name, metav1.GetOptions{})
 	if err != nil {
 		return err
 	}
@@ -196,7 +197,7 @@ func (cpm *ConcretePoolManager) CreateNode() (id string, err error) {
 
 	calicoNetworking := false
 	if client, err := cpm.Clients.Satellites.ClientFor(cpm.Kluster); err == nil {
-		if _, err := client.AppsV1().DaemonSets("kube-system").Get("calico-node", metav1.GetOptions{}); err == nil {
+		if _, err := client.AppsV1().DaemonSets("kube-system").Get(context.TODO(), "calico-node", metav1.GetOptions{}); err == nil {
 			calicoNetworking = true
 		}
 	}

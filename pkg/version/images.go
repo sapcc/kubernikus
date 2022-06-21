@@ -11,8 +11,8 @@ import (
 )
 
 type ImageVersion struct {
-	Repository string `yaml:"repository"`
-	Tag        string `yaml:"tag"`
+	Repository string `yaml:"repository" json:"repository"`
+	Tag        string `yaml:"tag" json:"tag"`
 }
 
 func (v ImageVersion) String() string {
@@ -23,38 +23,38 @@ func (v ImageVersion) String() string {
 }
 
 type KlusterVersion struct {
-	Default                bool         `yaml:"default"`
-	Supported              bool         `yaml:"supported"`
-	Hyperkube              ImageVersion `yaml:"hyperkube,omitempty"`
-	CloudControllerManager ImageVersion `yaml:"cloudControllerManager,omitempty"`
-	Dex                    ImageVersion `yaml:"dex,omitempty"`
-	Dashboard              ImageVersion `yaml:"dashboard,omitempty"`
-	DashboardProxy         ImageVersion `yaml:"dashboardProxy,omitempty"`
-	Apiserver              ImageVersion `yaml:"apiserver,omitempty"`
-	Scheduler              ImageVersion `yaml:"scheduler,omitempty"`
-	ControllerManager      ImageVersion `yaml:"controllerManager,omitempty"`
-	Kubelet                ImageVersion `yaml:"kubelet,omitempty"`
-	KubeProxy              ImageVersion `yaml:"kubeProxy,omitempty"`
-	CoreDNS                ImageVersion `yaml:"coreDNS,omitempty"`
-	Pause                  ImageVersion `yaml:"pause,omitempty"`
-	Wormhole               ImageVersion `yaml:"wormhole,omitempty"`
-	Etcd                   ImageVersion `yaml:"etcd,omitempty"`
-	EtcdBackup             ImageVersion `yaml:"etcdBackup,omitempty"`
-	CSIAttacher            ImageVersion `yaml:"csiAttacher,omitempty"`
-	CSIProvisioner         ImageVersion `yaml:"csiProvisioner,omitempty"`
-	CSISnapshotter         ImageVersion `yaml:"csiSnapshotter,omitempty"`
-	CSISnapshotController  ImageVersion `yaml:"csiSnapshotController,omitempty"`
-	CSIResizer             ImageVersion `yaml:"csiResizer,omitempty"`
-	CSILivenessProbe       ImageVersion `yaml:"csiLivenessProbe,omitempty"`
-	CSINodeDriver          ImageVersion `yaml:"csiNodeDriver,omitempty"`
-	CinderCSIPlugin        ImageVersion `yaml:"cinderCSIPlugin,omitempty"`
-	Flannel                ImageVersion `yaml:"flannel,omitempty"`
-	Fluentd                ImageVersion `yaml:"fluentd,omitempty"`
+	Default                bool         `yaml:"default" json:"default"`
+	Supported              bool         `yaml:"supported" json:"supported"`
+	Hyperkube              ImageVersion `yaml:"hyperkube,omitempty" json:"hyperkube,omitempty"`
+	CloudControllerManager ImageVersion `yaml:"cloudControllerManager,omitempty" json:"cloudControllerManager,omitempty"`
+	Dex                    ImageVersion `yaml:"dex,omitempty" json:"dex,omitempty"`
+	Dashboard              ImageVersion `yaml:"dashboard,omitempty" json:"dashboard,omitempty"`
+	DashboardProxy         ImageVersion `yaml:"dashboardProxy,omitempty" json:"dashboardProxy,omitempty"`
+	Apiserver              ImageVersion `yaml:"apiserver,omitempty" json:"apiserver,omitempty"`
+	Scheduler              ImageVersion `yaml:"scheduler,omitempty" json:"scheduler,omitempty"`
+	ControllerManager      ImageVersion `yaml:"controllerManager,omitempty" json:"controllerManager,omitempty"`
+	Kubelet                ImageVersion `yaml:"kubelet,omitempty" json:"kubelet,omitempty"`
+	KubeProxy              ImageVersion `yaml:"kubeProxy,omitempty" json:"kubeProxy,omitempty"`
+	CoreDNS                ImageVersion `yaml:"coreDNS,omitempty" json:"coreDNS,omitempty"`
+	Pause                  ImageVersion `yaml:"pause,omitempty" json:"pause,omitempty"`
+	Wormhole               ImageVersion `yaml:"wormhole,omitempty" json:"wormhole,omitempty"`
+	Etcd                   ImageVersion `yaml:"etcd,omitempty" json:"etcd,omitempty"`
+	EtcdBackup             ImageVersion `yaml:"etcdBackup,omitempty" json:"etcdBackup,omitempty"`
+	CSIAttacher            ImageVersion `yaml:"csiAttacher,omitempty" json:"csiAttacher,omitempty"`
+	CSIProvisioner         ImageVersion `yaml:"csiProvisioner,omitempty" json:"csiProvisioner,omitempty"`
+	CSISnapshotter         ImageVersion `yaml:"csiSnapshotter,omitempty" json:"csiSnapshotter,omitempty"`
+	CSISnapshotController  ImageVersion `yaml:"csiSnapshotController,omitempty" json:"csiSnapshotController,omitempty"`
+	CSIResizer             ImageVersion `yaml:"csiResizer,omitempty" json:"csiResizer,omitempty"`
+	CSILivenessProbe       ImageVersion `yaml:"csiLivenessProbe,omitempty" json:"csiLivenessProbe,omitempty"`
+	CSINodeDriver          ImageVersion `yaml:"csiNodeDriver,omitempty" json:"csiNodeDriver,omitempty"`
+	CinderCSIPlugin        ImageVersion `yaml:"cinderCSIPlugin,omitempty" json:"cinderCSIPlugin,omitempty"`
+	Flannel                ImageVersion `yaml:"flannel,omitempty" json:"flannel,omitempty"`
+	Fluentd                ImageVersion `yaml:"fluentd,omitempty" json:"fluentd,omitempty"`
 }
 
 type ImageRegistry struct {
-	Versions       map[string]KlusterVersion `yaml:"imagesForVersion,omitempty"`
-	DefaultVersion string                    `yaml:"-"`
+	Versions       map[string]KlusterVersion `yaml:"imagesForVersion,omitempty" json:"imagesForVersion,omitempty"`
+	DefaultVersion string                    `yaml:"-" json:"-"`
 }
 
 func NewImageRegistry(filepath string, region string) (*ImageRegistry, error) {
