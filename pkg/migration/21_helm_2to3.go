@@ -12,6 +12,7 @@ import (
 
 	helm_2to3 "github.com/helm/helm-2to3/pkg/v3"
 	"helm.sh/helm/v3/pkg/action"
+	"helm.sh/helm/v3/pkg/storage/driver"
 	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/helm/pkg/helm"
 
@@ -66,6 +67,18 @@ func migrateHelmReleases(kluster *v1.Kluster, clients config.Clients) error {
 	release3, err := helm_2to3.CreateRelease(rsp.Release)
 	if err != nil {
 		return err
+	}
+	_, err = client3.Releases.Last(release3.Name)
+	switch {
+	// Helm3 release not found => so migrate
+	case errors.Is(err, driver.ErrReleaseNotFound):
+		break
+	// Return any other error
+	case err != nil:
+		return err
+	// No error => Helm3 release exists => do nothing
+	case err == nil:
+		return nil
 	}
 	err = client3.Releases.Create(release3)
 	if err != nil {
