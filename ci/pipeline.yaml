@@ -738,7 +738,7 @@ task_checksum: &task_checksum
         export GOPATH=$PWD/gopath
         OUTPUT=$PWD/checksum
         cd gopath/src/github.com/sapcc/kubernikus
-        apk add --no-cache make
+        apk add --no-cache make bash
         make $TARGET VERSION=latest
         CHECKSUM=$(sha256sum $TARGET | cut -f1 -d ' ')
         echo checksum=$CHECKSUM > $OUTPUT/properties
@@ -770,7 +770,7 @@ task_cli: &task_cli
         export CGO_ENABLED=0
   
         cd gopath/src/github.com/sapcc/kubernikus
-        apk add --no-cache upx make git
+        apk add --no-cache upx bash make git
   
         make bin/darwin/kubernikusctl
         make bin/linux/kubernikusctl
@@ -817,7 +817,7 @@ task_e2e_tests: &task_e2e_tests
         export GOPATH=$PWD/gopath
         cd gopath/src/github.com/sapcc/kubernikus
   
-        apk add --no-progress --no-cache make git
+        apk add --no-progress --no-cache make bash git
         export RUN_PARALLEL=false
         export CGO_ENABLED=0
         make test-e2e | tee test.output

@@ -21,7 +21,7 @@ run:
       export CGO_ENABLED=0
 
       cd gopath/src/github.com/sapcc/kubernikus
-      apk add --no-cache upx make git
+      apk add --no-cache upx bash make git
 
       make bin/darwin/kubernikusctl
       make bin/linux/kubernikusctl

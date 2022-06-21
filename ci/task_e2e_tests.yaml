@@ -24,7 +24,7 @@ run:
       export GOPATH=$PWD/gopath
       cd gopath/src/github.com/sapcc/kubernikus
 
-      apk add --no-progress --no-cache make git
+      apk add --no-progress --no-cache make bash git
       export RUN_PARALLEL=false
       export CGO_ENABLED=0
       make test-e2e | tee test.output
