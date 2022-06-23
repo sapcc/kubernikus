@@ -196,7 +196,7 @@ func NewKubernikusOperator(options *KubernikusOperatorOptions, logger log.Logger
 		case "flight":
 			o.Config.Kubernikus.Controllers["flight"] = flight.NewController(10, o.Factories, o.Clients, recorder, logger)
 		case "migration":
-			o.Config.Kubernikus.Controllers["migration"] = migration.NewController(10, o.Factories, o.Clients, recorder, logger)
+			o.Config.Kubernikus.Controllers["migration"] = migration.NewController(3, o.Factories, o.Clients, recorder, logger)
 		case "hammertime":
 			o.Config.Kubernikus.Controllers["hammertime"] = hammertime.New(10*time.Second, 20*time.Second, o.Factories, o.Clients, recorder, logger)
 		case "servicing":
