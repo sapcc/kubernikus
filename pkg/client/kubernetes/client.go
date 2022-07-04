@@ -1,13 +1,13 @@
 package kubernetes
 
 import (
-	"context"
 	"fmt"
 	"net/http"
 	"reflect"
 	"time"
 
 	kitlog "github.com/go-kit/kit/log"
+	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	apiextensionsv1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	apiextensionsclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
@@ -137,56 +137,127 @@ func NewClientConfigV1OIDC(name, user, url, clientID, secret, issuer string, ca 
 }
 
 func EnsureCRD(clientset apiextensionsclient.Interface, logger kitlog.Logger) error {
+	supportsV1 := false
 	klusterCRDName := kubernikus_v1.KlusterResourcePlural + "." + kubernikus_v1.GroupName
-	crd := &apiextensionsv1beta1.CustomResourceDefinition{
-		ObjectMeta: metav1.ObjectMeta{
-			Name: klusterCRDName,
-		},
-		Spec: apiextensionsv1beta1.CustomResourceDefinitionSpec{
-			Group:   kubernikus_v1.GroupName,
-			Version: kubernikus_v1.SchemeGroupVersion.Version,
-			Scope:   apiextensionsv1beta1.NamespaceScoped,
-			Names: apiextensionsv1beta1.CustomResourceDefinitionNames{
-				Plural: kubernikus_v1.KlusterResourcePlural,
-				Kind:   reflect.TypeOf(kubernikus_v1.Kluster{}).Name(),
-			},
-		},
-	}
-	_, err := clientset.ApiextensionsV1beta1().CustomResourceDefinitions().Create(context.TODO(), crd, metav1.CreateOptions{})
-	//TODO: Should this error if it already exit?
-	if err != nil && !apierrors.IsAlreadyExists(err) {
+
+	resourceList, err := clientset.Discovery().ServerResourcesForGroupVersion("apiextensions.k8s.io/v1")
+	if err != nil {
 		return err
 	}
-	// wait for CRD being established
-	err = wait.Poll(500*time.Millisecond, 60*time.Second, func() (bool, error) {
-		crd, err = clientset.ApiextensionsV1beta1().CustomResourceDefinitions().Get(context.TODO(), klusterCRDName, metav1.GetOptions{})
-		if err != nil {
-			return false, err
+	for _, res := range resourceList.APIResources {
+		if res.Kind == "CustomResourceDefinition" {
+			supportsV1 = true
 		}
-		for _, cond := range crd.Status.Conditions {
-			switch cond.Type {
-			case apiextensionsv1beta1.Established:
-				if cond.Status == apiextensionsv1beta1.ConditionTrue {
-					return true, err
-				}
-			case apiextensionsv1beta1.NamesAccepted:
-				if cond.Status == apiextensionsv1beta1.ConditionFalse {
-					logger.Log(
-						"msg", "name conflict while ensuring CRD",
-						"reason", cond.Reason,
-					)
+	}
+
+	if supportsV1 {
+		crd := &apiextensionsv1.CustomResourceDefinition{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: klusterCRDName,
+			},
+			Spec: apiextensionsv1.CustomResourceDefinitionSpec{
+				Group: kubernikus_v1.GroupName,
+				Versions: []apiextensionsv1.CustomResourceDefinitionVersion{
+					{
+						Name: kubernikus_v1.SchemeGroupVersion.Version,
+					},
+				},
+				Scope: apiextensionsv1.NamespaceScoped,
+				Names: apiextensionsv1.CustomResourceDefinitionNames{
+					Plural: kubernikus_v1.KlusterResourcePlural,
+					Kind:   reflect.TypeOf(kubernikus_v1.Kluster{}).Name(),
+				},
+			},
+		}
+		_, err := clientset.ApiextensionsV1().CustomResourceDefinitions().Create(crd)
+		//TODO: Should this error if it already exit?
+		if err != nil && !apierrors.IsAlreadyExists(err) {
+			return err
+		}
+		// wait for CRD being established
+		err = wait.Poll(500*time.Millisecond, 60*time.Second, func() (bool, error) {
+			crd, err = clientset.ApiextensionsV1().CustomResourceDefinitions().Get(klusterCRDName, metav1.GetOptions{})
+			if err != nil {
+				return false, err
+			}
+			for _, cond := range crd.Status.Conditions {
+				switch cond.Type {
+				case apiextensionsv1.Established:
+					if cond.Status == apiextensionsv1.ConditionTrue {
+						return true, err
+					}
+				case apiextensionsv1.NamesAccepted:
+					if cond.Status == apiextensionsv1.ConditionFalse {
+						logger.Log(
+							"msg", "name conflict while ensuring CRD",
+							"reason", cond.Reason,
+						)
+					}
 				}
 			}
+			return false, err
+		})
+		if err != nil {
+			deleteErr := clientset.ApiextensionsV1().CustomResourceDefinitions().Delete(klusterCRDName, nil)
+			if deleteErr != nil {
+				return apiutilerrors.NewAggregate([]error{err, deleteErr})
+			}
+			return err
 		}
-		return false, err
-	})
-	if err != nil {
-		deleteErr := clientset.ApiextensionsV1beta1().CustomResourceDefinitions().Delete(context.TODO(), klusterCRDName, metav1.DeleteOptions{})
-		if deleteErr != nil {
-			return apiutilerrors.NewAggregate([]error{err, deleteErr})
+
+	} else {
+
+		crd := &apiextensionsv1beta1.CustomResourceDefinition{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: klusterCRDName,
+			},
+			Spec: apiextensionsv1beta1.CustomResourceDefinitionSpec{
+				Group:   kubernikus_v1.GroupName,
+				Version: kubernikus_v1.SchemeGroupVersion.Version,
+				Scope:   apiextensionsv1beta1.NamespaceScoped,
+				Names: apiextensionsv1beta1.CustomResourceDefinitionNames{
+					Plural: kubernikus_v1.KlusterResourcePlural,
+					Kind:   reflect.TypeOf(kubernikus_v1.Kluster{}).Name(),
+				},
+			},
 		}
-		return err
+		_, err := clientset.ApiextensionsV1beta1().CustomResourceDefinitions().Create(crd)
+		//TODO: Should this error if it already exit?
+		if err != nil && !apierrors.IsAlreadyExists(err) {
+			return err
+		}
+		// wait for CRD being established
+		err = wait.Poll(500*time.Millisecond, 60*time.Second, func() (bool, error) {
+			crd, err = clientset.ApiextensionsV1beta1().CustomResourceDefinitions().Get(klusterCRDName, metav1.GetOptions{})
+			if err != nil {
+				return false, err
+			}
+			for _, cond := range crd.Status.Conditions {
+				switch cond.Type {
+				case apiextensionsv1beta1.Established:
+					if cond.Status == apiextensionsv1beta1.ConditionTrue {
+						return true, err
+					}
+				case apiextensionsv1beta1.NamesAccepted:
+					if cond.Status == apiextensionsv1beta1.ConditionFalse {
+						logger.Log(
+							"msg", "name conflict while ensuring CRD",
+							"reason", cond.Reason,
+						)
+					}
+				}
+			}
+			return false, err
+		})
+		if err != nil {
+			deleteErr := clientset.ApiextensionsV1beta1().CustomResourceDefinitions().Delete(klusterCRDName, nil)
+			if deleteErr != nil {
+				return apiutilerrors.NewAggregate([]error{err, deleteErr})
+			}
+			return err
+		}
 	}
+
 	return nil
 }
 
@@ -195,7 +266,7 @@ func WaitForServer(client kubernetes.Interface, stopCh <-chan struct{}, logger k
 
 	err := wait.PollUntil(time.Second, func() (bool, error) {
 		healthStatus := 0
-		resp := client.Discovery().RESTClient().Get().AbsPath("/healthz").Do(context.TODO()).StatusCode(&healthStatus)
+		resp := client.Discovery().RESTClient().Get().AbsPath("/healthz").Do().StatusCode(&healthStatus)
 		if healthStatus != http.StatusOK {
 			logger.Log(
 				"msg", "server isn't health yet. Waiting a little while.",
