@@ -169,7 +169,7 @@ func (d *updateCluster) Handle(params operations.UpdateClusterParams, principal 
 	})
 
 	if err != nil {
-		d.Logger.Log("msg", "Failed to update cluster", "kluster", kluster.Name, "err", err)
+		d.Logger.Log("msg", "Failed to update cluster", "kluster", qualifiedName(params.Name, principal.Account), "err", err)
 
 		switch e := err.(type) {
 		case apierrors.APIStatus:
