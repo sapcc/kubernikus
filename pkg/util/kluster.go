@@ -60,6 +60,24 @@ func UpdateKlusterMigrationStatus(client clientset.KubernikusV1Interface, kluste
 	return err
 }
 
+func UpdateKlusterMigrationVersion(client clientset.KubernikusV1Interface, kluster *v1.Kluster, version int64) (*v1.Kluster, error) {
+
+	if kluster.Status.SpecVersion == version {
+		return kluster, nil // already up to date
+	}
+
+	//According to this comment https://github.com/kubernetes/kubernetes/issues/21479#issuecomment-186454413
+	//patches are retried on the server side so a single try should be sufficient
+
+	return client.Klusters(kluster.Namespace).Patch(
+		context.TODO(),
+		kluster.Name,
+		types.MergePatchType,
+		[]byte(fmt.Sprintf(`{"status":{"specVersion":%d}}`, version)),
+		meta_v1.PatchOptions{},
+	)
+}
+
 func UpdateKlusterPhase(client clientset.KubernikusV1Interface, kluster *v1.Kluster, phase models.KlusterPhase) error {
 
 	//Because we specify raw json for the patch I put this here to make sure field is still part of the struct

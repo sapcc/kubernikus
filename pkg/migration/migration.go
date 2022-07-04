@@ -4,11 +4,10 @@ import (
 	"context"
 	"fmt"
 
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
 	v1 "github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
 	"github.com/sapcc/kubernikus/pkg/controller/config"
 	kubernikusfake "github.com/sapcc/kubernikus/pkg/generated/clientset/fake"
+	"github.com/sapcc/kubernikus/pkg/util"
 )
 
 var defaultRegistry Registry
@@ -86,6 +85,5 @@ func migrateKluster(kluster *v1.Kluster, version int, migration Migration, clien
 	if err = migration(rawData, kluster, clients, factories); err != nil {
 		return nil, err
 	}
-	kluster.Status.SpecVersion = int64(version)
-	return clients.Kubernikus.KubernikusV1().Klusters(kluster.Namespace).Update(context.TODO(), kluster, metav1.UpdateOptions{})
+	return util.UpdateKlusterMigrationVersion(clients.Kubernikus.KubernikusV1(), kluster, int64(version))
 }
