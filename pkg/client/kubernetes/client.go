@@ -13,7 +13,6 @@ import (
 	apiextensionsclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	apiutilerrors "k8s.io/apimachinery/pkg/util/errors"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/kubernetes"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/oidc"
@@ -216,11 +215,7 @@ func EnsureCRD(clientset apiextensionsclient.Interface, logger kitlog.Logger) er
 			return false, err
 		})
 		if err != nil {
-			deleteErr := clientset.ApiextensionsV1().CustomResourceDefinitions().Delete(context.TODO(), klusterCRDName, metav1.DeleteOptions{})
-			if deleteErr != nil {
-				return apiutilerrors.NewAggregate([]error{err, deleteErr})
-			}
-			return err
+			return fmt.Errorf("Kluster CRD V1 couldn't be established: %v", err)
 		}
 
 	} else {
@@ -268,11 +263,7 @@ func EnsureCRD(clientset apiextensionsclient.Interface, logger kitlog.Logger) er
 			return false, err
 		})
 		if err != nil {
-			deleteErr := clientset.ApiextensionsV1beta1().CustomResourceDefinitions().Delete(context.TODO(), klusterCRDName, metav1.DeleteOptions{})
-			if deleteErr != nil {
-				return apiutilerrors.NewAggregate([]error{err, deleteErr})
-			}
-			return err
+			return fmt.Errorf("Kluster CRD V1beta1 couldn't be established: %v", err)
 		}
 	}
 
