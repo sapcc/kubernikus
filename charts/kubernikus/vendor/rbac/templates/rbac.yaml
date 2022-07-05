@@ -54,45 +54,11 @@ metadata:
   namespace: {{ default .Release.Namespace .Values.roleNamespace }}
 rules:
 - apiGroups:
-  - kubernikus.sap.cc
+  - '*'
   resources:
-  - klusters
+  - '*'
   verbs:
-  - create
-  - update
-  - patch
-  - delete
-  - list
-  - get
-  - watch
-- apiGroups:
-  - ""
-  resources:
-  - events
-  verbs:
-  - create
-  - patch
-  - update
-- apiGroups:
-  - ""
-  resources:
-  - pods
-  - persistentvolumeclaims
-  verbs:
-  - get
-  - list
-  - watch
-- apiGroups:
-  - ""
-  resources:
-  - secrets
-  verbs:
-  - create
-  - update
-  - delete
-  - list
-  - get
-  - watch
+  - '*'
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
