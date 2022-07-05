@@ -2,7 +2,7 @@ apiVersion: v2
 description: A Helm chart for Kubernetes
 name: kubernikus
 type: application
-version: 0.3.12
+version: 0.3.13
 dependencies:
   - name: k8sniff
     repository: file://../k8sniff
@@ -10,5 +10,5 @@ dependencies:
     condition: k8sniff.enabled
   - name: rbac
     repository: file://vendor/rbac
-    version: 0.1.5
+    version: 0.1.6
     condition: includeRBAC
