@@ -32,7 +32,7 @@ func migrateHelmReleases(kluster *v1.Kluster, clients config.Clients) error {
 	if err != nil {
 		return err
 	}
-	accessMode, err := util.PVAccessMode(clients.Kubernetes, nil)
+	accessMode, err := util.PVAccessMode(clients.Kubernetes, kluster)
 	if err != nil {
 		return err
 	}
