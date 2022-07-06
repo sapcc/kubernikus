@@ -1074,46 +1074,6 @@ task_oci_build: &task_oci_build
     BUILD_ARGS_FILE:
   
 
-task_tiller: &task_tiller
-  platform: 'linux'
-  
-  image_resource:
-    type: registry-image
-    source:
-      repository: keppel.eu-de-1.cloud.sap/ccloud-dockerhub-mirror/sapcc/unified-kubernetes-toolbox
-      tag: 'latest'
-  
-  inputs:
-    - name: tiller-version.git
-  
-  run:
-    path: /bin/sh
-    args:
-      - -c
-      - |
-        set -exo pipefail
-        tag=$(cat tiller-version.git/kubernikus/tiller.version)
-        if [ -f tiller-version.git/kubernikus/$KUBERNIKUS_NAME/tiller.version ]; then
-          tag=$(cat tiller-version.git/kubernikus/$KUBERNIKUS_NAME/tiller.version )
-        fi
-        if kubectl get deployment tiller-deploy --namespace=kube-system >/dev/null ; then
-          kubectl set image --namespace=kube-system deployment/tiller-deploy tiller=sapcc/tiller:$tag
-        else
-          kubectl create sa tiller --namespace kube-system
-          kubectl create clusterrolebinding tiller --clusterrole cluster-admin --serviceaccount=kube-system:tiller
-          helm init --service-account tiller --history-max 5 --tiller-image sapcc/tiller:$tag --upgrade --wait
-        fi
-  
-  params:
-    REGION:
-    CONTEXT:
-    KUBELOGON_USER:
-    KUBELOGON_PASSWORD:
-    KUBERNIKUS_NAME:
-    KUBERNIKUS_URL:
-    HELM_VERSION: 2.11.0
-  
-
 task_whitesource: &task_whitesource
   platform: 'linux'
   
@@ -1284,18 +1244,6 @@ resources:
       branch:      master
       depth: 1
 
-  - name: tiller-version.git
-    icon: key-variant
-    type: git-proxy
-    webhook_token: aldhjalkdhahdjkahdjkhjadhjadhkjadlkjhAAdd
-    check_every: 1h
-    source:
-      uri:         git@github.wdf.sap.corp:cc/secrets.git
-      private_key: ((github-private-key/cc-secrets))
-      branch:      master
-      depth: 1
-      paths: [ kubernikus/tiller.version, kubernikus/*/tiller.version ]
-
   - name: helm-charts.git
     type: git
     icon: github-circle
@@ -1424,21 +1372,6 @@ jobs:
         params:
           image: image/image.tar
           additional_tags: kubernikus.git/.git/ref
-
-  - name: tiller_master
-    plan:
-      - in_parallel:
-        - get: tiller-version.git
-          trigger: true
-      - in_parallel:
-        - task: master
-          config:
-            <<: *task_tiller
-          timeout: 10m
-          params:
-            REGION: "k-master"
-            <<: *auth_master
-    <<: *slack
 
   - name: master
     serial: true
@@ -1824,32 +1757,13 @@ jobs:
           <<: *auth_ap-ae-1
     <<: *slack
 
-  - name: tiller_ap-ae-1
-    plan:
-      - in_parallel:
-        - get: silver.tag
-          trigger: true
-          passed: [seed_ap-ae-1]
-        - get: tiller-version.git
-          trigger: true
-      - in_parallel:
-        - task: k-ap-ae-1
-          config:
-            <<: *task_tiller
-          timeout: 10m
-          params:
-            REGION: ap-ae-1
-            CONTEXT: k-ap-ae-1
-            <<: *auth_ap-ae-1
-    <<: *slack
-
   - name: deploy_ap-ae-1
     serial: true
     plan:
       - in_parallel:
         - get: silver.tag
           trigger: true
-          passed: [tiller_ap-ae-1]
+          passed: [seed_ap-ae-1]
         - get: secrets.git
           passed: [seed_ap-ae-1]
         - get: kubernikus.builds
@@ -1934,32 +1848,13 @@ jobs:
           <<: *auth_ap-au-1
     <<: *slack
 
-  - name: tiller_ap-au-1
-    plan:
-      - in_parallel:
-        - get: silver.tag
-          trigger: true
-          passed: [seed_ap-au-1]
-        - get: tiller-version.git
-          trigger: true
-      - in_parallel:
-        - task: k-ap-au-1
-          config:
-            <<: *task_tiller
-          timeout: 10m
-          params:
-            REGION: ap-au-1
-            CONTEXT: k-ap-au-1
-            <<: *auth_ap-au-1
-    <<: *slack
-
   - name: deploy_ap-au-1
     serial: true
     plan:
       - in_parallel:
         - get: silver.tag
           trigger: true
-          passed: [tiller_ap-au-1]
+          passed: [seed_ap-au-1]
         - get: secrets.git
           passed: [seed_ap-au-1]
         - get: kubernikus.builds
@@ -2044,32 +1939,13 @@ jobs:
           <<: *auth_ap-cn-1
     <<: *slack
 
-  - name: tiller_ap-cn-1
-    plan:
-      - in_parallel:
-        - get: silver.tag
-          trigger: true
-          passed: [seed_ap-cn-1]
-        - get: tiller-version.git
-          trigger: true
-      - in_parallel:
-        - task: k-ap-cn-1
-          config:
-            <<: *task_tiller
-          timeout: 10m
-          params:
-            REGION: ap-cn-1
-            CONTEXT: k-ap-cn-1
-            <<: *auth_ap-cn-1
-    <<: *slack
-
   - name: deploy_ap-cn-1
     serial: true
     plan:
       - in_parallel:
         - get: silver.tag
           trigger: true
-          passed: [tiller_ap-cn-1]
+          passed: [seed_ap-cn-1]
         - get: secrets.git
           passed: [seed_ap-cn-1]
         - get: kubernikus.builds
@@ -2154,32 +2030,13 @@ jobs:
           <<: *auth_ap-jp-1
     <<: *slack
 
-  - name: tiller_ap-jp-1
-    plan:
-      - in_parallel:
-        - get: silver.tag
-          trigger: true
-          passed: [seed_ap-jp-1]
-        - get: tiller-version.git
-          trigger: true
-      - in_parallel:
-        - task: k-ap-jp-1
-          config:
-            <<: *task_tiller
-          timeout: 10m
-          params:
-            REGION: ap-jp-1
-            CONTEXT: k-ap-jp-1
-            <<: *auth_ap-jp-1
-    <<: *slack
-
   - name: deploy_ap-jp-1
     serial: true
     plan:
       - in_parallel:
         - get: silver.tag
           trigger: true
-          passed: [tiller_ap-jp-1]
+          passed: [seed_ap-jp-1]
         - get: secrets.git
           passed: [seed_ap-jp-1]
         - get: kubernikus.builds
@@ -2264,32 +2121,13 @@ jobs:
           <<: *auth_ap-sa-1
     <<: *slack
 
-  - name: tiller_ap-sa-1
-    plan:
-      - in_parallel:
-        - get: silver.tag
-          trigger: true
-          passed: [seed_ap-sa-1]
-        - get: tiller-version.git
-          trigger: true
-      - in_parallel:
-        - task: k-ap-sa-1
-          config:
-            <<: *task_tiller
-          timeout: 10m
-          params:
-            REGION: ap-sa-1
-            CONTEXT: k-ap-sa-1
-            <<: *auth_ap-sa-1
-    <<: *slack
-
   - name: deploy_ap-sa-1
     serial: true
     plan:
       - in_parallel:
         - get: silver.tag
           trigger: true
-          passed: [tiller_ap-sa-1]
+          passed: [seed_ap-sa-1]
         - get: secrets.git
           passed: [seed_ap-sa-1]
         - get: kubernikus.builds
@@ -2374,32 +2212,13 @@ jobs:
           <<: *auth_eu-ru-1
     <<: *slack
 
-  - name: tiller_eu-ru-1
-    plan:
-      - in_parallel:
-        - get: silver.tag
-          trigger: true
-          passed: [seed_eu-ru-1]
-        - get: tiller-version.git
-          trigger: true
-      - in_parallel:
-        - task: k-eu-ru-1
-          config:
-            <<: *task_tiller
-          timeout: 10m
-          params:
-            REGION: eu-ru-1
-            CONTEXT: k-eu-ru-1
-            <<: *auth_eu-ru-1
-    <<: *slack
-
   - name: deploy_eu-ru-1
     serial: true
     plan:
       - in_parallel:
         - get: silver.tag
           trigger: true
-          passed: [tiller_eu-ru-1]
+          passed: [seed_eu-ru-1]
         - get: secrets.git
           passed: [seed_eu-ru-1]
         - get: kubernikus.builds
@@ -2484,32 +2303,13 @@ jobs:
           <<: *auth_la-br-1
     <<: *slack
 
-  - name: tiller_la-br-1
-    plan:
-      - in_parallel:
-        - get: silver.tag
-          trigger: true
-          passed: [seed_la-br-1]
-        - get: tiller-version.git
-          trigger: true
-      - in_parallel:
-        - task: k-la-br-1
-          config:
-            <<: *task_tiller
-          timeout: 10m
-          params:
-            REGION: la-br-1
-            CONTEXT: k-la-br-1
-            <<: *auth_la-br-1
-    <<: *slack
-
   - name: deploy_la-br-1
     serial: true
     plan:
       - in_parallel:
         - get: silver.tag
           trigger: true
-          passed: [tiller_la-br-1]
+          passed: [seed_la-br-1]
         - get: secrets.git
           passed: [seed_la-br-1]
         - get: kubernikus.builds
@@ -2609,32 +2409,13 @@ jobs:
           <<: *auth_ap-jp-2
     <<: *slack
 
-  - name: tiller_ap-jp-2
-    plan:
-      - in_parallel:
-        - get: bronze.tag
-          trigger: true
-          passed: [seed_ap-jp-2]
-        - get: tiller-version.git
-          trigger: true
-      - in_parallel:
-        - task: k-ap-jp-2
-          config:
-            <<: *task_tiller
-          timeout: 10m
-          params:
-            REGION: ap-jp-2
-            CONTEXT: k-ap-jp-2
-            <<: *auth_ap-jp-2
-    <<: *slack
-
   - name: deploy_ap-jp-2
     serial: true
     plan:
       - in_parallel:
         - get: bronze.tag
           trigger: true
-          passed: [tiller_ap-jp-2]
+          passed: [seed_ap-jp-2]
         - get: secrets.git
           passed: [seed_ap-jp-2]
         - get: kubernikus.builds
@@ -2719,32 +2500,13 @@ jobs:
           <<: *auth_ap-sa-2
     <<: *slack
 
-  - name: tiller_ap-sa-2
-    plan:
-      - in_parallel:
-        - get: bronze.tag
-          trigger: true
-          passed: [seed_ap-sa-2]
-        - get: tiller-version.git
-          trigger: true
-      - in_parallel:
-        - task: k-ap-sa-2
-          config:
-            <<: *task_tiller
-          timeout: 10m
-          params:
-            REGION: ap-sa-2
-            CONTEXT: k-ap-sa-2
-            <<: *auth_ap-sa-2
-    <<: *slack
-
   - name: deploy_ap-sa-2
     serial: true
     plan:
       - in_parallel:
         - get: bronze.tag
           trigger: true
-          passed: [tiller_ap-sa-2]
+          passed: [seed_ap-sa-2]
         - get: secrets.git
           passed: [seed_ap-sa-2]
         - get: kubernikus.builds
@@ -2829,32 +2591,13 @@ jobs:
           <<: *auth_na-ca-1
     <<: *slack
 
-  - name: tiller_na-ca-1
-    plan:
-      - in_parallel:
-        - get: bronze.tag
-          trigger: true
-          passed: [seed_na-ca-1]
-        - get: tiller-version.git
-          trigger: true
-      - in_parallel:
-        - task: k-na-ca-1
-          config:
-            <<: *task_tiller
-          timeout: 10m
-          params:
-            REGION: na-ca-1
-            CONTEXT: k-na-ca-1
-            <<: *auth_na-ca-1
-    <<: *slack
-
   - name: deploy_na-ca-1
     serial: true
     plan:
       - in_parallel:
         - get: bronze.tag
           trigger: true
-          passed: [tiller_na-ca-1]
+          passed: [seed_na-ca-1]
         - get: secrets.git
           passed: [seed_na-ca-1]
         - get: kubernikus.builds
@@ -2939,32 +2682,13 @@ jobs:
           <<: *auth_na-us-3
     <<: *slack
 
-  - name: tiller_na-us-3
-    plan:
-      - in_parallel:
-        - get: bronze.tag
-          trigger: true
-          passed: [seed_na-us-3]
-        - get: tiller-version.git
-          trigger: true
-      - in_parallel:
-        - task: k-na-us-3
-          config:
-            <<: *task_tiller
-          timeout: 10m
-          params:
-            REGION: na-us-3
-            CONTEXT: k-na-us-3
-            <<: *auth_na-us-3
-    <<: *slack
-
   - name: deploy_na-us-3
     serial: true
     plan:
       - in_parallel:
         - get: bronze.tag
           trigger: true
-          passed: [tiller_na-us-3]
+          passed: [seed_na-us-3]
         - get: secrets.git
           passed: [seed_na-us-3]
         - get: kubernikus.builds
@@ -3064,32 +2788,13 @@ jobs:
           <<: *auth_eu-de-1
     <<: *slack
 
-  - name: tiller_eu-de-1
-    plan:
-      - in_parallel:
-        - get: gold.tag
-          trigger: true
-          passed: [seed_eu-de-1]
-        - get: tiller-version.git
-          trigger: true
-      - in_parallel:
-        - task: k-eu-de-1
-          config:
-            <<: *task_tiller
-          timeout: 10m
-          params:
-            REGION: eu-de-1
-            CONTEXT: k-eu-de-1
-            <<: *auth_eu-de-1
-    <<: *slack
-
   - name: deploy_eu-de-1
     serial: true
     plan:
       - in_parallel:
         - get: gold.tag
           trigger: true
-          passed: [tiller_eu-de-1]
+          passed: [seed_eu-de-1]
         - get: secrets.git
           passed: [seed_eu-de-1]
         - get: kubernikus.builds
@@ -3174,32 +2879,13 @@ jobs:
           <<: *auth_eu-de-2
     <<: *slack
 
-  - name: tiller_eu-de-2
-    plan:
-      - in_parallel:
-        - get: gold.tag
-          trigger: true
-          passed: [seed_eu-de-2]
-        - get: tiller-version.git
-          trigger: true
-      - in_parallel:
-        - task: k-eu-de-2
-          config:
-            <<: *task_tiller
-          timeout: 10m
-          params:
-            REGION: eu-de-2
-            CONTEXT: k-eu-de-2
-            <<: *auth_eu-de-2
-    <<: *slack
-
   - name: deploy_eu-de-2
     serial: true
     plan:
       - in_parallel:
         - get: gold.tag
           trigger: true
-          passed: [tiller_eu-de-2]
+          passed: [seed_eu-de-2]
         - get: secrets.git
           passed: [seed_eu-de-2]
         - get: kubernikus.builds
@@ -3284,32 +2970,13 @@ jobs:
           <<: *auth_eu-nl-1
     <<: *slack
 
-  - name: tiller_eu-nl-1
-    plan:
-      - in_parallel:
-        - get: gold.tag
-          trigger: true
-          passed: [seed_eu-nl-1]
-        - get: tiller-version.git
-          trigger: true
-      - in_parallel:
-        - task: k-eu-nl-1
-          config:
-            <<: *task_tiller
-          timeout: 10m
-          params:
-            REGION: eu-nl-1
-            CONTEXT: k-eu-nl-1
-            <<: *auth_eu-nl-1
-    <<: *slack
-
   - name: deploy_eu-nl-1
     serial: true
     plan:
       - in_parallel:
         - get: gold.tag
           trigger: true
-          passed: [tiller_eu-nl-1]
+          passed: [seed_eu-nl-1]
         - get: secrets.git
           passed: [seed_eu-nl-1]
         - get: kubernikus.builds
@@ -3394,32 +3061,13 @@ jobs:
           <<: *auth_na-us-1
     <<: *slack
 
-  - name: tiller_na-us-1
-    plan:
-      - in_parallel:
-        - get: gold.tag
-          trigger: true
-          passed: [seed_na-us-1]
-        - get: tiller-version.git
-          trigger: true
-      - in_parallel:
-        - task: k-na-us-1
-          config:
-            <<: *task_tiller
-          timeout: 10m
-          params:
-            REGION: na-us-1
-            CONTEXT: k-na-us-1
-            <<: *auth_na-us-1
-    <<: *slack
-
   - name: deploy_na-us-1
     serial: true
     plan:
       - in_parallel:
         - get: gold.tag
           trigger: true
-          passed: [tiller_na-us-1]
+          passed: [seed_na-us-1]
         - get: secrets.git
           passed: [seed_na-us-1]
         - get: kubernikus.builds
@@ -3504,32 +3152,13 @@ jobs:
           <<: *auth_na-us-2
     <<: *slack
 
-  - name: tiller_na-us-2
-    plan:
-      - in_parallel:
-        - get: gold.tag
-          trigger: true
-          passed: [seed_na-us-2]
-        - get: tiller-version.git
-          trigger: true
-      - in_parallel:
-        - task: k-na-us-2
-          config:
-            <<: *task_tiller
-          timeout: 10m
-          params:
-            REGION: na-us-2
-            CONTEXT: k-na-us-2
-            <<: *auth_na-us-2
-    <<: *slack
-
   - name: deploy_na-us-2
     serial: true
     plan:
       - in_parallel:
         - get: gold.tag
           trigger: true
-          passed: [tiller_na-us-2]
+          passed: [seed_na-us-2]
         - get: secrets.git
           passed: [seed_na-us-2]
         - get: kubernikus.builds
@@ -3629,32 +3258,13 @@ jobs:
           <<: *auth_qa-de-1
     <<: *slack
 
-  - name: tiller_qa-de-1
-    plan:
-      - in_parallel:
-        - get: infra.tag
-          trigger: true
-          passed: [seed_qa-de-1]
-        - get: tiller-version.git
-          trigger: true
-      - in_parallel:
-        - task: k-qa-de-1
-          config:
-            <<: *task_tiller
-          timeout: 10m
-          params:
-            REGION: qa-de-1
-            CONTEXT: k-qa-de-1
-            <<: *auth_qa-de-1
-    <<: *slack
-
   - name: deploy_qa-de-1
     serial: true
     plan:
       - in_parallel:
         - get: infra.tag
           trigger: true
-          passed: [tiller_qa-de-1]
+          passed: [seed_qa-de-1]
         - get: secrets.git
           passed: [seed_qa-de-1]
         - get: kubernikus.builds
@@ -3729,7 +3339,6 @@ groups:
       - master
       - cli
       - whitesource
-      - tiller_master
       - all-versions
 
       - e2e-1.23.6
@@ -3770,7 +3379,6 @@ groups:
     jobs:
       - silver
       - seed_ap-ae-1
-      - tiller_ap-ae-1
       - deploy_ap-ae-1
       - soak_ap-ae-1
 
@@ -3778,7 +3386,6 @@ groups:
     jobs:
       - silver
       - seed_ap-au-1
-      - tiller_ap-au-1
       - deploy_ap-au-1
       - soak_ap-au-1
 
@@ -3786,7 +3393,6 @@ groups:
     jobs:
       - silver
       - seed_ap-cn-1
-      - tiller_ap-cn-1
       - deploy_ap-cn-1
       - soak_ap-cn-1
 
@@ -3794,7 +3400,6 @@ groups:
     jobs:
       - silver
       - seed_ap-jp-1
-      - tiller_ap-jp-1
       - deploy_ap-jp-1
       - soak_ap-jp-1
 
@@ -3802,7 +3407,6 @@ groups:
     jobs:
       - bronze
       - seed_ap-jp-2
-      - tiller_ap-jp-2
       - deploy_ap-jp-2
       - soak_ap-jp-2
 
@@ -3810,7 +3414,6 @@ groups:
     jobs:
       - silver
       - seed_ap-sa-1
-      - tiller_ap-sa-1
       - deploy_ap-sa-1
       - soak_ap-sa-1
 
@@ -3818,7 +3421,6 @@ groups:
     jobs:
       - bronze
       - seed_ap-sa-2
-      - tiller_ap-sa-2
       - deploy_ap-sa-2
       - soak_ap-sa-2
 
@@ -3826,7 +3428,6 @@ groups:
     jobs:
       - gold
       - seed_eu-de-1
-      - tiller_eu-de-1
       - deploy_eu-de-1
       - soak_eu-de-1
 
@@ -3834,7 +3435,6 @@ groups:
     jobs:
       - gold
       - seed_eu-de-2
-      - tiller_eu-de-2
       - deploy_eu-de-2
       - soak_eu-de-2
 
@@ -3842,7 +3442,6 @@ groups:
     jobs:
       - gold
       - seed_eu-nl-1
-      - tiller_eu-nl-1
       - deploy_eu-nl-1
       - soak_eu-nl-1
 
@@ -3850,7 +3449,6 @@ groups:
     jobs:
       - silver
       - seed_eu-ru-1
-      - tiller_eu-ru-1
       - deploy_eu-ru-1
       - soak_eu-ru-1
 
@@ -3858,7 +3456,6 @@ groups:
     jobs:
       - silver
       - seed_la-br-1
-      - tiller_la-br-1
       - deploy_la-br-1
       - soak_la-br-1
 
@@ -3866,7 +3463,6 @@ groups:
     jobs:
       - bronze
       - seed_na-ca-1
-      - tiller_na-ca-1
       - deploy_na-ca-1
       - soak_na-ca-1
 
@@ -3874,7 +3470,6 @@ groups:
     jobs:
       - gold
       - seed_na-us-1
-      - tiller_na-us-1
       - deploy_na-us-1
       - soak_na-us-1
 
@@ -3882,7 +3477,6 @@ groups:
     jobs:
       - gold
       - seed_na-us-2
-      - tiller_na-us-2
       - deploy_na-us-2
       - soak_na-us-2
 
@@ -3890,7 +3484,6 @@ groups:
     jobs:
       - bronze
       - seed_na-us-3
-      - tiller_na-us-3
       - deploy_na-us-3
       - soak_na-us-3
 
@@ -3898,7 +3491,6 @@ groups:
     jobs:
       - infra
       - seed_qa-de-1
-      - tiller_qa-de-1
       - deploy_qa-de-1
       - soak_qa-de-1
 
@@ -3908,7 +3500,6 @@ groups:
       - master
       - cli
       - whitesource
-      - tiller_master
       - all-versions
 
       - e2e-1.23.6
@@ -3945,87 +3536,70 @@ groups:
 
 
       - seed_ap-ae-1
-      - tiller_ap-ae-1
       - deploy_ap-ae-1
       - soak_ap-ae-1
 
       - seed_ap-au-1
-      - tiller_ap-au-1
       - deploy_ap-au-1
       - soak_ap-au-1
 
       - seed_ap-cn-1
-      - tiller_ap-cn-1
       - deploy_ap-cn-1
       - soak_ap-cn-1
 
       - seed_ap-jp-1
-      - tiller_ap-jp-1
       - deploy_ap-jp-1
       - soak_ap-jp-1
 
       - seed_ap-jp-2
-      - tiller_ap-jp-2
       - deploy_ap-jp-2
       - soak_ap-jp-2
 
       - seed_ap-sa-1
-      - tiller_ap-sa-1
       - deploy_ap-sa-1
       - soak_ap-sa-1
 
       - seed_ap-sa-2
-      - tiller_ap-sa-2
       - deploy_ap-sa-2
       - soak_ap-sa-2
 
       - seed_eu-de-1
-      - tiller_eu-de-1
       - deploy_eu-de-1
       - soak_eu-de-1
 
       - seed_eu-de-2
-      - tiller_eu-de-2
       - deploy_eu-de-2
       - soak_eu-de-2
 
       - seed_eu-nl-1
-      - tiller_eu-nl-1
       - deploy_eu-nl-1
       - soak_eu-nl-1
 
       - seed_eu-ru-1
-      - tiller_eu-ru-1
       - deploy_eu-ru-1
       - soak_eu-ru-1
 
       - seed_la-br-1
-      - tiller_la-br-1
       - deploy_la-br-1
       - soak_la-br-1
 
       - seed_na-ca-1
-      - tiller_na-ca-1
       - deploy_na-ca-1
       - soak_na-ca-1
 
       - seed_na-us-1
-      - tiller_na-us-1
       - deploy_na-us-1
       - soak_na-us-1
 
       - seed_na-us-2
-      - tiller_na-us-2
       - deploy_na-us-2
       - soak_na-us-2
 
       - seed_na-us-3
-      - tiller_na-us-3
       - deploy_na-us-3
       - soak_na-us-3
 
       - seed_qa-de-1
-      - tiller_qa-de-1
       - deploy_qa-de-1
       - soak_qa-de-1
 
