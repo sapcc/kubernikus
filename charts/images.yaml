@@ -23,8 +23,8 @@ imagesForVersion:
       repository: 'keppel.$REGION.cloud.sap/ccloud/kube-proxy'
       tag: 'v1.23.6'
     cloudControllerManager:
-      repository: 'keppel.$REGION.cloud.sap/ccloud/openstack-cloud-controller-manager'
-      tag: 'v1.23.1'
+      repository: 'keppel.$REGION.cloud.sap/ccloud/openstack-cloud-controller-manager-amd64'
+      tag: '1.23.2-sap.1'
     dex:
       repository: 'keppel.$REGION.cloud.sap/ccloud/dex'
       tag: '38f4f8ea8d487470a1dd5b83d66b428d8b502f81'
