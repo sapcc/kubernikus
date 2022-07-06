@@ -28,17 +28,17 @@ type OpenstackOptions struct {
 }
 
 type openstackValues struct {
-	AuthURL             string `yaml:"authURL" json:"authURL"`
-	Username            string `yaml:"username" json:"username"`
-	Password            string `yaml:"password" json:"password"`
-	DomainName          string `yaml:"domainName" json:"domainName"`
-	ProjectID           string `yaml:"projectID" json:"projectID"`
-	ProjectDomainName   string `yaml:"projectDomainName" json:"projectDomainName"`
+	AuthURL             string `yaml:"authURL,omitempty" json:"authURL,omitempty"`
+	Username            string `yaml:"username,omitempty" json:"username,omitempty"`
+	Password            string `yaml:"password,omitempty" json:"password,omitempty"`
+	DomainName          string `yaml:"domainName,omitempty" json:"domainName,omitempty"`
+	ProjectID           string `yaml:"projectID,omitempty" json:"projectID,omitempty"`
+	ProjectDomainName   string `yaml:"projectDomainName,omitempty" json:"projectDomainName,omitempty"`
 	Region              string `yaml:"region,omitempty" json:"region,omitempty"`
 	LbSubnetID          string `yaml:"lbSubnetID,omitempty" json:"lbSubnetID,omitempty"`
 	LbFloatingNetworkID string `yaml:"lbFloatingNetworkID,omitempty" json:"lbFloatingNetworkID,omitempty"`
 	RouterID            string `yaml:"routerID,omitempty" json:"routerID,omitempty"`
-	UseOctavia          bool   `yaml:"useOctavia" json:"useOctavia"`
+	UseOctavia          bool   `yaml:"useOctavia,omitempty" json:"useOctavia,omitempty"`
 }
 
 type persistenceValues struct {
