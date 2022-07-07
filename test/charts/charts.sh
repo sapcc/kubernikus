@@ -1,7 +1,5 @@
 #!/bin/ash
 
-helm init --client-only --stable-repo-url https://charts.helm.sh/stable
-
 pwd=$(pwd)
 for chart in $pwd/charts/*; do
   if [ -d "$chart" ]; then

@@ -2,13 +2,17 @@ package migration
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"os"
 	"path"
+	"sort"
 	"strconv"
 	"strings"
 
 	helm_2to3 "github.com/helm/helm-2to3/pkg/v3"
 	"helm.sh/helm/v3/pkg/action"
+	"helm.sh/helm/v3/pkg/storage/driver"
 	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/helm/pkg/helm"
 
@@ -28,7 +32,7 @@ func migrateHelmReleases(kluster *v1.Kluster, clients config.Clients) error {
 	if err != nil {
 		return err
 	}
-	accessMode, err := util.PVAccessMode(clients.Kubernetes, nil)
+	accessMode, err := util.PVAccessMode(clients.Kubernetes, kluster)
 	if err != nil {
 		return err
 	}
@@ -38,7 +42,11 @@ func migrateHelmReleases(kluster *v1.Kluster, clients config.Clients) error {
 	if strings.HasPrefix(pullRegion, "qa-de") {
 		pullRegion = "eu-de-1"
 	}
-	imageRegistry, err := version.NewImageRegistry(path.Join("charts", "images.yaml"), pullRegion)
+	chartsPath := path.Join("charts", "images.yaml")
+	if _, err := os.Stat(chartsPath); errors.Is(err, os.ErrNotExist) {
+		chartsPath = "/etc/kubernikus/charts/images.yaml"
+	}
+	imageRegistry, err := version.NewImageRegistry(chartsPath, pullRegion)
 	if err != nil {
 		return err
 	}
@@ -48,30 +56,42 @@ func migrateHelmReleases(kluster *v1.Kluster, clients config.Clients) error {
 	if err != nil {
 		return err
 	}
+	sort.Ints(versions2)
 	client2 := clients.Helm
 	client3 := clients.Helm3
-	for _, version2 := range versions2 {
-		rsp, err := client2.ReleaseContent(kluster.Name, helm.ContentReleaseVersion(int32(version2)))
-		if err != nil {
-			return err
-		}
-		release3, err := helm_2to3.CreateRelease(rsp.Release)
-		if err != nil {
-			return err
-		}
-		err = client3.Releases.Create(release3)
-		if err != nil {
-			return err
-		}
-		values, err := helm_util.KlusterToHelmValues(kluster, klusterSecret, kluster.Spec.Version, imageRegistry, accessMode)
-		if err != nil {
-			return err
-		}
-		upgrade := action.NewUpgrade(client3)
-		_, err = upgrade.Run(release3.Name, release3.Chart, values)
-		if err != nil {
-			return err
-		}
+	latestVersion2 := versions2[len(versions2)-1]
+	rsp, err := client2.ReleaseContent(kluster.Name, helm.ContentReleaseVersion(int32(latestVersion2)))
+	if err != nil {
+		return err
+	}
+	release3, err := helm_2to3.CreateRelease(rsp.Release)
+	if err != nil {
+		return err
+	}
+	_, err = client3.Releases.Last(release3.Name)
+	switch {
+	// Helm3 release not found => so migrate
+	case errors.Is(err, driver.ErrReleaseNotFound):
+		break
+	// Return any other error
+	case err != nil:
+		return err
+	// No error => Helm3 release exists => do nothing
+	case err == nil:
+		return nil
+	}
+	err = client3.Releases.Create(release3)
+	if err != nil {
+		return err
+	}
+	values, err := helm_util.KlusterToHelmValues(kluster, klusterSecret, kluster.Spec.Version, imageRegistry, accessMode)
+	if err != nil {
+		return err
+	}
+	upgrade := action.NewUpgrade(client3)
+	_, err = upgrade.Run(release3.Name, release3.Chart, values)
+	if err != nil {
+		return err
 	}
 	return nil
 }

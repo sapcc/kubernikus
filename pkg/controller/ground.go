@@ -629,6 +629,7 @@ func (op *GroundControl) createKluster(kluster *v1.Kluster) error {
 	}
 	install := action.NewInstall(op.Helm3)
 	install.ReleaseName = kluster.GetName()
+	install.Namespace = kluster.GetNamespace()
 	_, err = install.Run(chart, helmValues)
 	return err
 }

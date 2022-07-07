@@ -162,18 +162,6 @@ resources:
       branch:      master
       depth: 1
 
-  - name: tiller-version.git
-    icon: key-variant
-    type: git-proxy
-    webhook_token: aldhjalkdhahdjkahdjkhjadhjadhkjadlkjhAAdd
-    check_every: 1h
-    source:
-      uri:         git@github.wdf.sap.corp:cc/secrets.git
-      private_key: ((github-private-key/cc-secrets))
-      branch:      master
-      depth: 1
-      paths: [ kubernikus/tiller.version, kubernikus/*/tiller.version ]
-
   - name: helm-charts.git
     type: git
     icon: github-circle
@@ -281,21 +269,6 @@ jobs:
         params:
           image: image/image.tar
           additional_tags: kubernikus.git/.git/ref
-
-  - name: tiller_master
-    plan:
-      - in_parallel:
-        - get: tiller-version.git
-          trigger: true
-      - in_parallel:
-        - task: master
-          config:
-            <<: *task_tiller
-          timeout: 10m
-          params:
-            REGION: "k-master"
-            <<: *auth_master
-    <<: *slack
 
   - name: master
     serial: true
@@ -441,32 +414,13 @@ jobs:
           <<: *auth_<%= region %>
     <<: *slack
 
-  - name: tiller_<%= region %>
-    plan:
-      - in_parallel:
-        - get: <%= group %>.tag
-          trigger: true
-          passed: [seed_<%= region %>]
-        - get: tiller-version.git
-          trigger: true
-      - in_parallel:
-        - task: k-<%= region %>
-          config:
-            <<: *task_tiller
-          timeout: 10m
-          params:
-            REGION: <%= region %>
-            CONTEXT: k-<%= region %>
-            <<: *auth_<%= region %>
-    <<: *slack
-
   - name: deploy_<%= region %>
     serial: true
     plan:
       - in_parallel:
         - get: <%= group %>.tag
           trigger: true
-          passed: [tiller_<%= region %>]
+          passed: [seed_<%= region %>]
         - get: secrets.git
           passed: [seed_<%= region %>]
         - get: kubernikus.builds
@@ -539,7 +493,6 @@ groups:
       - master
       - cli
       - whitesource
-      - tiller_master
       - all-versions
 <% VERSIONS.each do |version| %>
       - e2e-<%= version %>
@@ -554,7 +507,6 @@ groups:
     jobs:
       - <%= meta.fetch(:continent) %>
       - seed_<%= region %>
-      - tiller_<%= region %>
       - deploy_<%= region %>
       - soak_<%= region %>
 <% end %>
@@ -564,7 +516,6 @@ groups:
       - master
       - cli
       - whitesource
-      - tiller_master
       - all-versions
 <% VERSIONS.each do |version| %>
       - e2e-<%= version %>
@@ -575,7 +526,6 @@ groups:
 <% end %>
 <% DEPLOYABLE_REGIONS.each do |region, meta| %>
       - seed_<%= region %>
-      - tiller_<%= region %>
       - deploy_<%= region %>
       - soak_<%= region %>
 <% end %>

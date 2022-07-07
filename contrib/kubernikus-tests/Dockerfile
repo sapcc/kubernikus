@@ -5,7 +5,7 @@ WORKDIR /go/src/github.com/sapcc/kubernikus/
 
 RUN apk add --no-cache make git curl bash
 
-RUN curl -Lf https://get.helm.sh/helm-v2.17.0-linux-amd64.tar.gz \
+RUN curl -Lf https://get.helm.sh/helm-v3.8.2-linux-amd64.tar.gz\
 		| tar --strip-components=1 -C /usr/local/bin -zxv \
 		&& helm version -c
 
