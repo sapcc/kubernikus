@@ -118,10 +118,6 @@ func NewKubernikusOperator(options *KubernikusOperatorOptions, logger log.Logger
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create kubernetes config: %s", err)
 	}
-	o.Clients.Helm, err = helmutil.NewClient(o.Clients.Kubernetes, config, logger)
-	if err != nil {
-		return nil, fmt.Errorf("Failed to create helm 2 client: %s", err)
-	}
 	o.Clients.Helm3, err = helmutil.NewClient3(options.Namespace, options.KubeConfig, options.Context, logger)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create helm 3 client: %s", err)

@@ -33,7 +33,6 @@ require (
 	github.com/gophercloud/gophercloud v0.19.0
 	github.com/gophercloud/utils v0.0.0-20210720165645-8a3ad2ad9e70
 	github.com/hashicorp/yamux v0.0.0-20180826203732-cc6d2ea263b2 // indirect
-	github.com/helm/helm-2to3 v0.7.0
 	github.com/howeyc/gopass v0.0.0-20170109162249-bf9dde6d0d2c
 	github.com/huandu/xstrings v1.3.2 // indirect
 	github.com/imdario/mergo v0.3.11
@@ -64,7 +63,6 @@ require (
 	k8s.io/apimachinery v0.21.14
 	k8s.io/client-go v0.21.14
 	k8s.io/cluster-bootstrap v0.0.0-20190802024125-9150a5ba960c
-	k8s.io/helm v2.16.10+incompatible
 	k8s.io/klog v1.0.0
 	k8s.io/utils v0.0.0-20211116205334-6203023598ed
 	rsc.io/letsencrypt v0.0.3 // indirect
