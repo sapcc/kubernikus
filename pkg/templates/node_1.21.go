@@ -587,7 +587,7 @@ storage:
       mode: 0755
       contents:
         remote:
-          url: https://objectstore-3.eu-de-1.cloud.sap/v1/AUTH_caa6209d2c38450f8266311fd0f05446/kubernikus/rkt-v1.30.0/rkt.gz
+          url: https://repo.{{.OpenstackRegion}}.cloud.sap/controlplane/flatcar-rkt/rkt-v1.30.0.gz
           compression: gzip
           verification:
             hash:
@@ -598,7 +598,7 @@ storage:
       mode: 0644
       contents:
         remote:
-          url: https://objectstore-3.eu-de-1.cloud.sap/v1/AUTH_caa6209d2c38450f8266311fd0f05446/kubernikus/rkt-v1.30.0/stage1-fly.aci
+          url: https://repo.{{.OpenstackRegion}}.cloud.sap/controlplane/flatcar-rkt/stage1-fly-rkt-v1.30.0.aci
           verification:
             hash:
               function: sha512
@@ -608,7 +608,7 @@ storage:
       mode: 0644
       contents:
         remote:
-          url: https://objectstore-3.eu-de-1.cloud.sap/v1/AUTH_caa6209d2c38450f8266311fd0f05446/kubernikus/rkt-v1.30.0/stage1-coreos.aci
+          url: https://repo.{{.OpenstackRegion}}.cloud.sap/controlplane/flatcar-rkt/stage1-coreos-rkt-v1.30.0.aci
           verification:
             hash:
               function: sha512
