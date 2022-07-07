@@ -8,6 +8,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
+	"sigs.k8s.io/yaml"
 
 	"github.com/sapcc/kubernikus/pkg/api/models"
 	"github.com/sapcc/kubernikus/pkg/apis/kubernikus"
@@ -125,11 +126,15 @@ func (o *HelmOptions) Run(c *cobra.Command) error {
 	secret.Openstack.ProjectID = o.ProjectID
 	secret.BootstrapToken = util.GenerateBootstrapToken()
 
-	result, err := helm.KlusterToHelmValues(kluster, &secret, kluster.Spec.Version, registry, "")
+	values, err := helm.KlusterToHelmValues(kluster, &secret, kluster.Spec.Version, registry, "")
 	if err != nil {
 		return err
 	}
 
+	result, err := yaml.Marshal(&values)
+	if err != nil {
+		return err
+	}
 	fmt.Println(string(result))
 
 	return nil

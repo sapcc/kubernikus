@@ -1,6 +1,7 @@
 package migration
 
 import (
+	"context"
 	"strings"
 	"time"
 
@@ -34,24 +35,24 @@ func ApplySuppository(script string, client kubernetes.Interface) error {
 	}
 
 	// cleanup
-	namespaces, err := client.CoreV1().Namespaces().List(meta.ListOptions{})
+	namespaces, err := client.CoreV1().Namespaces().List(context.TODO(), meta.ListOptions{})
 	if err != nil {
 		return errors.Wrap(err, "Failed to list namespaces")
 	}
 	for _, n := range namespaces.Items {
 		if strings.HasPrefix(n.Name, "kubernikus-suppository-") {
-			if err := client.CoreV1().Namespaces().Delete(n.Name, &meta.DeleteOptions{}); err != nil {
+			if err := client.CoreV1().Namespaces().Delete(context.TODO(), n.Name, meta.DeleteOptions{}); err != nil {
 				return errors.Wrap(err, "Failed to clean-up leftover suppository namespace")
 			}
 		}
 	}
 
-	namespace, err := client.CoreV1().Namespaces().Create(namespaceSpec)
+	namespace, err := client.CoreV1().Namespaces().Create(context.TODO(), namespaceSpec, meta.CreateOptions{})
 	if err != nil {
 		return errors.Wrap(err, "Failed to create namespace")
 	}
 	defer func() {
-		client.CoreV1().Namespaces().Delete(namespace.Name, &meta.DeleteOptions{})
+		client.CoreV1().Namespaces().Delete(context.TODO(), namespace.Name, meta.DeleteOptions{})
 	}()
 
 	clusterRoleBinding := &rbac.ClusterRoleBinding{
@@ -72,17 +73,17 @@ func ApplySuppository(script string, client kubernetes.Interface) error {
 		},
 	}
 
-	if _, err := client.RbacV1beta1().ClusterRoleBindings().Create(clusterRoleBinding); err != nil {
+	if _, err := client.RbacV1beta1().ClusterRoleBindings().Create(context.TODO(), clusterRoleBinding, meta.CreateOptions{}); err != nil {
 		if !apierrors.IsAlreadyExists(err) {
 			return errors.Wrap(err, "unable to create RBAC clusterrolebinding")
 		}
 
-		if _, err := client.RbacV1beta1().ClusterRoleBindings().Update(clusterRoleBinding); err != nil {
+		if _, err := client.RbacV1beta1().ClusterRoleBindings().Update(context.TODO(), clusterRoleBinding, meta.UpdateOptions{}); err != nil {
 			return errors.Wrap(err, "unable to update RBAC clusterrolebinding")
 		}
 	}
 	defer func() {
-		client.RbacV1beta1().ClusterRoleBindings().Delete("kubernikus:suppository", &meta.DeleteOptions{})
+		client.RbacV1beta1().ClusterRoleBindings().Delete(context.TODO(), "kubernikus:suppository", meta.DeleteOptions{})
 	}()
 
 	configMap := &core.ConfigMap{
@@ -94,7 +95,7 @@ func ApplySuppository(script string, client kubernetes.Interface) error {
 		},
 	}
 
-	if _, err := client.CoreV1().ConfigMaps(namespace.Name).Create(configMap); err != nil {
+	if _, err := client.CoreV1().ConfigMaps(namespace.Name).Create(context.TODO(), configMap, meta.CreateOptions{}); err != nil {
 		return errors.Wrap(err, "Failed to create ConfigMap")
 	}
 
@@ -168,13 +169,13 @@ func ApplySuppository(script string, client kubernetes.Interface) error {
 		},
 	}
 
-	created, err := client.AppsV1().DaemonSets(namespace.Name).Create(daemonset)
+	created, err := client.AppsV1().DaemonSets(namespace.Name).Create(context.TODO(), daemonset, meta.CreateOptions{})
 	if err != nil {
 		return errors.Wrap(err, "Failed to create Daemonset")
 	}
 
 	wait.PollImmediate(5*time.Second, 5*time.Minute, func() (done bool, err error) {
-		observed, err := client.AppsV1().DaemonSets(namespace.Name).Get("kubernikus-suppository", meta.GetOptions{})
+		observed, err := client.AppsV1().DaemonSets(namespace.Name).Get(context.TODO(), "kubernikus-suppository", meta.GetOptions{})
 		if err != nil {
 			return false, err
 		}

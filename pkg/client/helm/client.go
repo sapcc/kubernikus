@@ -6,6 +6,8 @@ import (
 	"runtime"
 
 	"github.com/go-kit/kit/log"
+	"helm.sh/helm/v3/pkg/action"
+	"helm.sh/helm/v3/pkg/kube"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/helm/pkg/helm"
@@ -47,4 +49,15 @@ func NewClient(kubeClient kubernetes.Interface, kubeConfig *rest.Config, logger 
 		return client, nil
 	}
 	return helm.NewClient(helm.Host(tillerHost)), nil
+}
+
+func NewClient3(releaseNamespace, kubeConfig, kubeContext string, logger log.Logger) (*action.Configuration, error) {
+	client3 := &action.Configuration{}
+	err := client3.Init(kube.GetConfig(kubeConfig, kubeContext, releaseNamespace), releaseNamespace, "secrets", func(format string, v ...interface{}) {
+		logger.Log("component", "helm3", "msg", fmt.Sprintf(format, v), "v", 2)
+	})
+	if err != nil {
+		return nil, err
+	}
+	return client3, nil
 }

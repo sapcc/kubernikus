@@ -14,24 +14,24 @@ VERSIONS = [
 ]
 
 REGIONS = {
-  "ap-ae-1": { continent: 'ASIA',     install: 'terraform', e2e: 'terraform', nodepool_avz: 'ap-ae-1a', oidc: '9a2d0e1181194fb1bca52e7951666bc3'},
-  "ap-au-1": { continent: 'ASIA',     install: 'manual'   , e2e: 'manual', nodepool_avz: 'ap-au-1a', oidc: 'f34304c03d2147cc964470c31d00ce97' },
-  "ap-cn-1": { continent: 'ASIA',     install: 'terraform', e2e: 'terraform', nodepool_avz: 'ap-cn-1b', oidc: 'e83ddace725b4c5da605e3f66d266f2c' },
-  "ap-jp-1": { continent: 'ASIA',     install: 'terraform', e2e: 'terraform', nodepool_avz: 'ap-jp-1a', oidc: 'b505497ca03e4942a2d0aa50dfbdc7a0' },
-  "ap-jp-2": { continent: 'ASIA',     install: 'terraform', e2e: 'terraform', nodepool_avz: 'ap-jp-2a', oidc: 'f34b8aa879334a7fb20e1b96cb1c576e' },
-  "ap-sa-1": { continent: 'ASIA',     install: 'terraform', e2e: 'terraform', nodepool_avz: 'ap-sa-1a', oidc: '436297dc67b9428f97da11227dc070ec' },
-  "ap-sa-2": { continent: 'ASIA',     install: 'terraform', e2e: 'terraform', nodepool_avz: 'ap-sa-2a', oidc: '37c3822fe4194ab586d9625d81b9d532' },
-  "eu-de-1": { continent: 'EMEA',     install: 'manual'   , e2e: 'manual', nodepool_avz: 'eu-de-1d', oidc: 'd7df5ce6c37643e49b3c93528c29818b' },
-  "eu-de-2": { continent: 'EMEA',     install: 'manual'   , e2e: 'manual', nodepool_avz: 'eu-de-2b', oidc: '57da32d8d50d49a9a9fbbe6b890e9e13' },
-  "eu-nl-1": { continent: 'EMEA',     install: 'manual'   , e2e: 'terraform', nodepool_avz: 'eu-nl-1a', oidc: 'd9b056a6762649f684a8a02b30f38324' },
-  "eu-ru-1": { continent: 'EMEA',     install: 'terraform', e2e: 'terraform', nodepool_avz: 'eu-ru-1a', oidc: 'eb31733cfb9d4ab283bb19e00863b780' },
-  "la-br-1": { continent: 'AMERICAS', install: 'terraform', e2e: 'terraform', nodepool_avz: 'la-br-1b', oidc: 'b33ac00cb0004d50bb34eb4e4cbbeb54' },
-  "na-ca-1": { continent: 'AMERICAS', install: 'terraform', e2e: 'terraform', nodepool_avz: 'na-ca-1b', oidc: 'b7269ea1dde54a6383453ab69f25cce4' },
-  "na-us-1": { continent: 'AMERICAS', install: 'manual'   , e2e: 'manual', nodepool_avz: 'na-us-1b', oidc: '040ed45cb5d8403790cf341a26c50601' },
-  "na-us-2": { continent: 'AMERICAS', install: 'terraform', e2e: 'terraform', nodepool_avz: 'na-us-2b', oidc: 'fc0f2b8450e1444197609800c8b5c4cb' },
-  "na-us-3": { continent: 'AMERICAS', install: 'terraform', e2e: 'terraform', nodepool_avz: 'na-us-3a', oidc: 'aa579369ca944a41bccb76f49f20924f' },
-  "qa-de-1": { continent: 'INFRA',    install: 'terraform', e2e: 'terraform', nodepool_avz: 'qa-de-1a', oidc: 'ce5462b173184391a9b47b486fabe580'},
-  "master":  { continent: "INFRA",    install: 'virtual'  , e2e: 'virtual', nodepool_avz: 'eu-nl-1a', oidc: 'a8b6853024494e1eb56136025b04866b' }
+  "ap-ae-1": { continent: 'silver', install: 'terraform', e2e: 'terraform', nodepool_avz: 'ap-ae-1a', oidc: '9a2d0e1181194fb1bca52e7951666bc3'},
+  "ap-au-1": { continent: 'silver', install: 'manual'   , e2e: 'manual', nodepool_avz: 'ap-au-1a', oidc: 'f34304c03d2147cc964470c31d00ce97' },
+  "ap-cn-1": { continent: 'silver', install: 'terraform', e2e: 'terraform', nodepool_avz: 'ap-cn-1b', oidc: 'e83ddace725b4c5da605e3f66d266f2c' },
+  "ap-jp-1": { continent: 'silver', install: 'terraform', e2e: 'terraform', nodepool_avz: 'ap-jp-1a', oidc: 'b505497ca03e4942a2d0aa50dfbdc7a0' },
+  "ap-jp-2": { continent: 'bronze', install: 'terraform', e2e: 'terraform', nodepool_avz: 'ap-jp-2a', oidc: 'f34b8aa879334a7fb20e1b96cb1c576e' },
+  "ap-sa-1": { continent: 'silver', install: 'terraform', e2e: 'terraform', nodepool_avz: 'ap-sa-1a', oidc: '436297dc67b9428f97da11227dc070ec' },
+  "ap-sa-2": { continent: 'bronze', install: 'terraform', e2e: 'terraform', nodepool_avz: 'ap-sa-2a', oidc: '37c3822fe4194ab586d9625d81b9d532' },
+  "eu-de-1": { continent: 'gold',   install: 'manual'   , e2e: 'manual', nodepool_avz: 'eu-de-1d', oidc: 'd7df5ce6c37643e49b3c93528c29818b' },
+  "eu-de-2": { continent: 'gold',   install: 'manual'   , e2e: 'manual', nodepool_avz: 'eu-de-2b', oidc: '57da32d8d50d49a9a9fbbe6b890e9e13' },
+  "eu-nl-1": { continent: 'gold',   install: 'manual'   , e2e: 'terraform', nodepool_avz: 'eu-nl-1a', oidc: 'd9b056a6762649f684a8a02b30f38324' },
+  "eu-ru-1": { continent: 'silver', install: 'terraform', e2e: 'terraform', nodepool_avz: 'eu-ru-1a', oidc: 'eb31733cfb9d4ab283bb19e00863b780' },
+  "la-br-1": { continent: 'silver', install: 'terraform', e2e: 'terraform', nodepool_avz: 'la-br-1b', oidc: 'b33ac00cb0004d50bb34eb4e4cbbeb54' },
+  "na-ca-1": { continent: 'bronze', install: 'terraform', e2e: 'terraform', nodepool_avz: 'na-ca-1b', oidc: 'b7269ea1dde54a6383453ab69f25cce4' },
+  "na-us-1": { continent: 'gold',   install: 'manual'   , e2e: 'manual', nodepool_avz: 'na-us-1b', oidc: '040ed45cb5d8403790cf341a26c50601' },
+  "na-us-2": { continent: 'gold',   install: 'terraform', e2e: 'terraform', nodepool_avz: 'na-us-2b', oidc: 'fc0f2b8450e1444197609800c8b5c4cb' },
+  "na-us-3": { continent: 'bronze', install: 'terraform', e2e: 'terraform', nodepool_avz: 'na-us-3a', oidc: 'aa579369ca944a41bccb76f49f20924f' },
+  "qa-de-1": { continent: 'infra',  install: 'terraform', e2e: 'terraform', nodepool_avz: 'qa-de-1a', oidc: 'ce5462b173184391a9b47b486fabe580'},
+  "master":  { continent: "infra",  install: 'virtual'  , e2e: 'virtual', nodepool_avz: 'eu-nl-1a', oidc: 'a8b6853024494e1eb56136025b04866b' }
 }
 
 GROUPS             = REGIONS.values.map{ |v| v[:continent]}.uniq
@@ -162,18 +162,6 @@ resources:
       branch:      master
       depth: 1
 
-  - name: tiller-version.git
-    icon: key-variant
-    type: git-proxy
-    webhook_token: aldhjalkdhahdjkahdjkhjadhjadhkjadlkjhAAdd
-    check_every: 1h
-    source:
-      uri:         git@github.wdf.sap.corp:cc/secrets.git
-      private_key: ((github-private-key/cc-secrets))
-      branch:      master
-      depth: 1
-      paths: [ kubernikus/tiller.version, kubernikus/*/tiller.version ]
-
   - name: helm-charts.git
     type: git
     icon: github-circle
@@ -281,21 +269,6 @@ jobs:
         params:
           image: image/image.tar
           additional_tags: kubernikus.git/.git/ref
-
-  - name: tiller_master
-    plan:
-      - in_parallel:
-        - get: tiller-version.git
-          trigger: true
-      - in_parallel:
-        - task: master
-          config:
-            <<: *task_tiller
-          timeout: 10m
-          params:
-            REGION: "k-master"
-            <<: *auth_master
-    <<: *slack
 
   - name: master
     serial: true
@@ -441,32 +414,13 @@ jobs:
           <<: *auth_<%= region %>
     <<: *slack
 
-  - name: tiller_<%= region %>
-    plan:
-      - in_parallel:
-        - get: <%= group %>.tag
-          trigger: true
-          passed: [seed_<%= region %>]
-        - get: tiller-version.git
-          trigger: true
-      - in_parallel:
-        - task: k-<%= region %>
-          config:
-            <<: *task_tiller
-          timeout: 10m
-          params:
-            REGION: <%= region %>
-            CONTEXT: k-<%= region %>
-            <<: *auth_<%= region %>
-    <<: *slack
-
   - name: deploy_<%= region %>
     serial: true
     plan:
       - in_parallel:
         - get: <%= group %>.tag
           trigger: true
-          passed: [tiller_<%= region %>]
+          passed: [seed_<%= region %>]
         - get: secrets.git
           passed: [seed_<%= region %>]
         - get: kubernikus.builds
@@ -539,7 +493,6 @@ groups:
       - master
       - cli
       - whitesource
-      - tiller_master
       - all-versions
 <% VERSIONS.each do |version| %>
       - e2e-<%= version %>
@@ -554,17 +507,15 @@ groups:
     jobs:
       - <%= meta.fetch(:continent) %>
       - seed_<%= region %>
-      - tiller_<%= region %>
       - deploy_<%= region %>
       - soak_<%= region %>
 <% end %>
 
-  - name: WORLD
+  - name: world
     jobs:
       - master
       - cli
       - whitesource
-      - tiller_master
       - all-versions
 <% VERSIONS.each do |version| %>
       - e2e-<%= version %>
@@ -575,7 +526,6 @@ groups:
 <% end %>
 <% DEPLOYABLE_REGIONS.each do |region, meta| %>
       - seed_<%= region %>
-      - tiller_<%= region %>
       - deploy_<%= region %>
       - soak_<%= region %>
 <% end %>

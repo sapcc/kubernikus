@@ -1,8 +1,10 @@
 package util
 
 import (
+	"context"
 	"errors"
 
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/util/retry"
 
 	v1 "github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
@@ -32,7 +34,7 @@ func UpdateKlusterWithRetries(klusterClient client.KlusterInterface, klusterList
 			}
 			return applyErr
 		}
-		kluster, err = klusterClient.Update(kluster)
+		kluster, err = klusterClient.Update(context.TODO(), kluster, metav1.UpdateOptions{})
 		return err
 	})
 

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"testing"
 	"time"
@@ -57,7 +58,7 @@ func (e *EtcdBackupTests) WaitForBackupRestore(t *testing.T) {
 	newRv := string(rv)
 	wait.PollImmediate(EtcdFailPollInterval, EtcdFailTimeout,
 		func() (bool, error) {
-			pod, _ := e.KubernetesControlPlane.ClientSet.CoreV1().Pods(e.Namespace).Get(etcdPod.Name, meta_v1.GetOptions{})
+			pod, _ := e.KubernetesControlPlane.ClientSet.CoreV1().Pods(e.Namespace).Get(context.Background(), etcdPod.Name, meta_v1.GetOptions{})
 			newRv = pod.GetResourceVersion()
 			return (newRv != rv), nil
 		})
@@ -74,7 +75,7 @@ func (e *EtcdBackupTests) WaitForBackupRestore(t *testing.T) {
 
 	err = wait.PollImmediate(EtcdRestorePollInterval, EtcdRestoreTimeout,
 		func() (bool, error) {
-			p, _ := e.KubernetesControlPlane.ClientSet.CoreV1().Pods(e.Namespace).Get(apiPod.Name, meta_v1.GetOptions{})
+			p, _ := e.KubernetesControlPlane.ClientSet.CoreV1().Pods(e.Namespace).Get(context.Background(), apiPod.Name, meta_v1.GetOptions{})
 
 			return p.Status.ContainerStatuses[0].RestartCount > apiPod.Status.ContainerStatuses[0].RestartCount && podutil.IsPodReady(p), nil
 		})
@@ -82,7 +83,7 @@ func (e *EtcdBackupTests) WaitForBackupRestore(t *testing.T) {
 }
 
 func (e *EtcdBackupTests) getServiceAccountUID(namespace, serviceAccountName string) (string, error) {
-	serviceAccount, err := e.Kubernetes.ClientSet.CoreV1().ServiceAccounts(namespace).Get(serviceAccountName, meta_v1.GetOptions{})
+	serviceAccount, err := e.Kubernetes.ClientSet.CoreV1().ServiceAccounts(namespace).Get(context.Background(), serviceAccountName, meta_v1.GetOptions{})
 	if err != nil {
 		return "", err
 	}
@@ -95,7 +96,7 @@ func (e *EtcdBackupTests) GetPod(labelSelector string) (*v1.Pod, error) {
 		LabelSelector: labelSelector,
 	}
 
-	pods, err := e.KubernetesControlPlane.ClientSet.CoreV1().Pods(e.Namespace).List(opts)
+	pods, err := e.KubernetesControlPlane.ClientSet.CoreV1().Pods(e.Namespace).List(context.Background(), opts)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to list pods: %w", err)
 	}

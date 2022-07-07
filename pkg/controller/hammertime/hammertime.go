@@ -1,6 +1,7 @@
 package hammertime
 
 import (
+	"context"
 	"fmt"
 	"time"
 
@@ -151,12 +152,12 @@ func (hc *hammertimeController) scaleDeployment(kluster *v1.Kluster, disable boo
 	return err
 }
 func (hc *hammertimeController) scale(deploymentName, ns string, replicas int32) error {
-	_, err := hc.client.AppsV1().Deployments(ns).UpdateScale(deploymentName, &autoscalingv1.Scale{ObjectMeta: metav1.ObjectMeta{Name: deploymentName, Namespace: ns}, Spec: autoscalingv1.ScaleSpec{Replicas: replicas}})
+	_, err := hc.client.AppsV1().Deployments(ns).UpdateScale(context.TODO(), deploymentName, &autoscalingv1.Scale{ObjectMeta: metav1.ObjectMeta{Name: deploymentName, Namespace: ns}, Spec: autoscalingv1.ScaleSpec{Replicas: replicas}}, metav1.UpdateOptions{})
 	return err
 }
 
 func (hc *hammertimeController) getScale(deploymentName, ns string) (int32, error) {
-	scale, err := hc.client.AppsV1().Deployments(ns).GetScale(deploymentName, metav1.GetOptions{})
+	scale, err := hc.client.AppsV1().Deployments(ns).GetScale(context.TODO(), deploymentName, metav1.GetOptions{})
 	if err != nil {
 		return -1, err
 	}
@@ -174,5 +175,5 @@ func nodeReadyCondition(node *core_v1.Node) *core_v1.NodeCondition {
 
 func getNodeLease(node *core_v1.Node, clientset kubernetes.Interface) (*coord_v1.Lease, error) {
 	leaseClient := clientset.CoordinationV1().Leases(core_v1.NamespaceNodeLease)
-	return leaseClient.Get(node.Name, metav1.GetOptions{})
+	return leaseClient.Get(context.TODO(), node.Name, metav1.GetOptions{})
 }

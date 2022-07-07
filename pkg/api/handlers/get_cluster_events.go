@@ -1,6 +1,8 @@
 package handlers
 
 import (
+	"context"
+
 	"github.com/go-openapi/runtime/middleware"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
@@ -22,7 +24,7 @@ func (d *getClusterEvents) Handle(params operations.GetClusterEventsParams, prin
 	klusterName := qualifiedName(params.Name, principal.Account)
 	kind := "Kluster"
 	selector := eventsInterface.GetFieldSelector(&klusterName, &d.Namespace, &kind, nil)
-	kEvents, err := eventsInterface.List(metav1.ListOptions{FieldSelector: selector.String()})
+	kEvents, err := eventsInterface.List(context.TODO(), metav1.ListOptions{FieldSelector: selector.String()})
 	if err != nil {
 		return NewErrorResponse(&operations.GetClusterEventsDefault{}, 500, err.Error())
 	}

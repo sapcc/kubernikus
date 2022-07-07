@@ -1,6 +1,7 @@
 package migration
 
 import (
+	"context"
 	"errors"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -11,7 +12,7 @@ import (
 )
 
 func CreateEtcdBackupStorageContainer(rawKluster []byte, current *v1.Kluster, clients config.Clients, factories config.Factories) (err error) {
-	secret, err := clients.Kubernetes.CoreV1().Secrets(current.GetNamespace()).Get(current.GetName(), metav1.GetOptions{})
+	secret, err := clients.Kubernetes.CoreV1().Secrets(current.GetNamespace()).Get(context.TODO(), current.GetName(), metav1.GetOptions{})
 	if err != nil {
 		return err
 	}

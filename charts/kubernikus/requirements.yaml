@@ -1,9 +1,0 @@
-dependencies:
-  - name: k8sniff
-    repository: file://../k8sniff
-    version: 0.1.6
-    condition: k8sniff.enabled
-  - name: rbac
-    repository: file://vendor/rbac
-    version: 0.1.4
-    condition: includeRBAC

@@ -127,7 +127,7 @@ func (d *Helper) makeDeleteOptions() *metav1.DeleteOptions {
 
 // DeletePod will delete the given pod, or return an error if it couldn't
 func (d *Helper) DeletePod(pod corev1.Pod) error {
-	return d.Client.CoreV1().Pods(pod.Namespace).Delete(pod.Name, d.makeDeleteOptions())
+	return d.Client.CoreV1().Pods(pod.Namespace).Delete(context.TODO(), pod.Name, *d.makeDeleteOptions())
 }
 
 // EvictPod will evict the give pod, or return an error if it couldn't
@@ -146,7 +146,7 @@ func (d *Helper) EvictPod(pod corev1.Pod, policyGroupVersion string) error {
 	}
 
 	// Remember to change change the URL manipulation func when Eviction's version change
-	return d.Client.PolicyV1beta1().Evictions(eviction.Namespace).Evict(eviction)
+	return d.Client.PolicyV1beta1().Evictions(eviction.Namespace).Evict(context.TODO(), eviction)
 }
 
 // GetPodsForDeletion receives resource info for a node, and returns those pods as PodDeleteList,
@@ -159,7 +159,7 @@ func (d *Helper) GetPodsForDeletion(nodeName string) (*podDeleteList, []error) {
 		return nil, []error{err}
 	}
 
-	podList, err := d.Client.CoreV1().Pods(metav1.NamespaceAll).List(metav1.ListOptions{
+	podList, err := d.Client.CoreV1().Pods(metav1.NamespaceAll).List(context.TODO(), metav1.ListOptions{
 		LabelSelector: labelSelector.String(),
 		FieldSelector: fields.SelectorFromSet(fields.Set{"spec.nodeName": nodeName}).String()})
 	if err != nil {
@@ -205,7 +205,7 @@ func (d *Helper) DeleteOrEvictPods(pods []corev1.Pod) error {
 
 	// TODO(justinsb): unnecessary?
 	getPodFn := func(namespace, name string) (*corev1.Pod, error) {
-		return d.Client.CoreV1().Pods(namespace).Get(name, metav1.GetOptions{})
+		return d.Client.CoreV1().Pods(namespace).Get(context.TODO(), name, metav1.GetOptions{})
 	}
 
 	if !d.DisableEviction {
@@ -371,5 +371,5 @@ func (d *Helper) getContext() context.Context {
 	if d.Ctx != nil {
 		return d.Ctx
 	}
-	return context.Background()
+	return context.TODO()
 }

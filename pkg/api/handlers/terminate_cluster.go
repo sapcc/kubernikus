@@ -1,6 +1,8 @@
 package handlers
 
 import (
+	"context"
+
 	"github.com/go-openapi/runtime/middleware"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -22,7 +24,7 @@ type terminateCluster struct {
 func (d *terminateCluster) Handle(params operations.TerminateClusterParams, principal *models.Principal) middleware.Responder {
 
 	klusterInterface := d.Kubernikus.KubernikusV1().Klusters(d.Namespace)
-	kluster, err := klusterInterface.Get(qualifiedName(params.Name, principal.Account), metav1.GetOptions{})
+	kluster, err := klusterInterface.Get(context.TODO(), qualifiedName(params.Name, principal.Account), metav1.GetOptions{})
 	if err != nil {
 		if apierrors.IsNotFound(err) {
 			return NewErrorResponse(&operations.TerminateClusterDefault{}, 404, "Not found")
@@ -51,7 +53,7 @@ func (d *terminateCluster) Handle(params operations.TerminateClusterParams, prin
 	// Kubernikus Controllers are required to add/remove Finalizers if clean-up is
 	// required once a Kluster is deleted.
 	propagationPolicy := metav1.DeletePropagationBackground
-	if err := klusterInterface.Delete(qualifiedName(params.Name, principal.Account), &metav1.DeleteOptions{PropagationPolicy: &propagationPolicy}); err != nil {
+	if err := klusterInterface.Delete(context.TODO(), qualifiedName(params.Name, principal.Account), metav1.DeleteOptions{PropagationPolicy: &propagationPolicy}); err != nil {
 		return NewErrorResponse(&operations.TerminateClusterDefault{}, 500, err.Error())
 	}
 

@@ -21,8 +21,7 @@ func BindLogFlags(flags *pflag.FlagSet) {
 func SetupLogger() {
 	logger := kitLog.NewLogfmtLogger(kitLog.NewSyncWriter(os.Stderr))
 	logger = log.NewTrailingNilFilter(logger)
-	//logger = log.NewLevelFilter(logLevel, logger)
 	logger = kitLog.With(logger, "ts", kitLog.DefaultTimestampUTC, "caller", log.Caller(4))
+	klog.ClampLevel(klog.Level(logLevel))
 	klog.SetLogger(logger)
-
 }

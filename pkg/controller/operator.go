@@ -120,7 +120,11 @@ func NewKubernikusOperator(options *KubernikusOperatorOptions, logger log.Logger
 	}
 	o.Clients.Helm, err = helmutil.NewClient(o.Clients.Kubernetes, config, logger)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to create helm client: %s", err)
+		return nil, fmt.Errorf("Failed to create helm 2 client: %s", err)
+	}
+	o.Clients.Helm3, err = helmutil.NewClient3(options.Namespace, options.KubeConfig, options.Context, logger)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to create helm 3 client: %s", err)
 	}
 
 	apiextensionsclientset, err := apiextensionsclient.NewForConfig(config)
@@ -192,7 +196,7 @@ func NewKubernikusOperator(options *KubernikusOperatorOptions, logger log.Logger
 		case "flight":
 			o.Config.Kubernikus.Controllers["flight"] = flight.NewController(10, o.Factories, o.Clients, recorder, logger)
 		case "migration":
-			o.Config.Kubernikus.Controllers["migration"] = migration.NewController(10, o.Factories, o.Clients, recorder, logger)
+			o.Config.Kubernikus.Controllers["migration"] = migration.NewController(3, o.Factories, o.Clients, recorder, logger)
 		case "hammertime":
 			o.Config.Kubernikus.Controllers["hammertime"] = hammertime.New(10*time.Second, 20*time.Second, o.Factories, o.Clients, recorder, logger)
 		case "servicing":

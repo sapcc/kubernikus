@@ -1,6 +1,7 @@
 package ground
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/pkg/errors"
@@ -169,12 +170,12 @@ func createStorageClass(client clientset.Interface, name, avz string, isDefault 
 		}
 	}
 
-	if _, err := client.StorageV1().StorageClasses().Create(&storageClass); err != nil {
+	if _, err := client.StorageV1().StorageClasses().Create(context.TODO(), &storageClass, metav1.CreateOptions{}); err != nil {
 		if !apierrors.IsAlreadyExists(err) {
 			return fmt.Errorf("unable to create storage class: %v", err)
 		}
 
-		if _, err := client.StorageV1().StorageClasses().Update(&storageClass); err != nil {
+		if _, err := client.StorageV1().StorageClasses().Update(context.TODO(), &storageClass, metav1.UpdateOptions{}); err != nil {
 			return fmt.Errorf("unable to update storage class: %v", err)
 		}
 	}
@@ -183,7 +184,7 @@ func createStorageClass(client clientset.Interface, name, avz string, isDefault 
 }
 
 func DeleteCinderStorageClasses(client clientset.Interface, openstack openstack_project.ProjectClient) error {
-	if err := client.StorageV1().StorageClasses().Delete("cinder-default", &metav1.DeleteOptions{}); err != nil {
+	if err := client.StorageV1().StorageClasses().Delete(context.TODO(), "cinder-default", metav1.DeleteOptions{}); err != nil {
 		if !apierrors.IsNotFound(err) {
 			return err
 		}
@@ -197,7 +198,7 @@ func DeleteCinderStorageClasses(client clientset.Interface, openstack openstack_
 	for _, avz := range metadata.AvailabilityZones {
 		name := fmt.Sprintf("cinder-zone-%s", avz.Name[len(avz.Name)-1:])
 
-		if err := client.StorageV1().StorageClasses().Delete(name, &metav1.DeleteOptions{}); err != nil {
+		if err := client.StorageV1().StorageClasses().Delete(context.TODO(), name, metav1.DeleteOptions{}); err != nil {
 			if !apierrors.IsNotFound(err) {
 				return err
 			}

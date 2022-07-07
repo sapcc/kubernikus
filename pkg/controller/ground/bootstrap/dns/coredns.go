@@ -244,7 +244,6 @@ func createCoreDNSService(client clientset.Interface, clusterIP string) error {
 				"kubernetes.io/name":              "CoreDNS",
 			},
 			Annotations: map[string]string{
-				"prometheus.io/port":   "9153",
 				"prometheus.io/scrape": "true",
 			},
 			ResourceVersion: "0",

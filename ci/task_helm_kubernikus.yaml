@@ -28,6 +28,7 @@ run:
       vault-injector interpolate secrets.git/global/values/kubernikus.yaml secrets.git/kubernikus/$KUBERNIKUS_NAME/values/kubernikus.yaml
 
       helm diff upgrade kubernikus kubernikus.builds/charts/kubernikus/ \
+        --namespace=kubernikus-system \
         --suppress-secrets --allow-unreleased --context 5 \
         --values secrets.git/global/values/kubernikus.yaml \
         --values secrets.git/kubernikus/$KUBERNIKUS_NAME/values/kubernikus.yaml \
@@ -52,7 +53,7 @@ params:
   KUBELOGON_PASSWORD:
   KUBERNIKUS_NAME:
   KUBERNIKUS_URL:
-  HELM_VERSION: 2.11.0
+  HELM_VERSION: 3.2.4
   VAULT_ADDR:      https://vault.global.cloud.sap # DO NOT CHANGE
   VAULT_KV_ENGINE: secrets                        # DO NOT CHANGE
   VAULT_ROLE_ID:   # (required) set this to ((auth.role_id)) to receive credentials automatically from Concourse
