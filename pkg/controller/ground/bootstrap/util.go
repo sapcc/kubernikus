@@ -129,19 +129,6 @@ func CreateOrUpdateClusterRoleBindingV1(client clientset.Interface, clusterRoleB
 	return nil
 }
 
-func CreateOrUpdateRoleBinding(client clientset.Interface, roleBinding *rbac.RoleBinding) error {
-	if _, err := client.RbacV1beta1().RoleBindings(roleBinding.Namespace).Create(context.TODO(), roleBinding, metav1.CreateOptions{}); err != nil {
-		if !apierrors.IsAlreadyExists(err) {
-			return errors.Wrap(err, "unable to create RBAC rolebinding")
-		}
-
-		if _, err := client.RbacV1beta1().RoleBindings(roleBinding.Namespace).Update(context.TODO(), roleBinding, metav1.UpdateOptions{}); err != nil {
-			return errors.Wrap(err, "unable to update RBAC rolebinding")
-		}
-	}
-	return nil
-}
-
 func CreateOrUpdateRoleBindingV1(client clientset.Interface, roleBinding *rbac_v1.RoleBinding) error {
 	if _, err := client.RbacV1().RoleBindings(roleBinding.Namespace).Create(context.TODO(), roleBinding, metav1.CreateOptions{}); err != nil {
 		if !apierrors.IsAlreadyExists(err) {
@@ -163,19 +150,6 @@ func CreateOrUpdateRole(client clientset.Interface, role *rbac_v1.Role) error {
 
 		if _, err := client.RbacV1().Roles(role.Namespace).Update(context.TODO(), role, metav1.UpdateOptions{}); err != nil {
 			return errors.Wrap(err, "unable to update RBAC role")
-		}
-	}
-	return nil
-}
-
-func CreateOrUpdateClusterRole(client clientset.Interface, clusterRole *rbac.ClusterRole) error {
-	if _, err := client.RbacV1beta1().ClusterRoles().Create(context.TODO(), clusterRole, metav1.CreateOptions{}); err != nil {
-		if !apierrors.IsAlreadyExists(err) {
-			return errors.Wrap(err, "unable to create RBAC clusterrole")
-		}
-
-		if _, err := client.RbacV1beta1().ClusterRoles().Update(context.TODO(), clusterRole, metav1.UpdateOptions{}); err != nil {
-			return errors.Wrap(err, "unable to update RBAC clusterrole")
 		}
 	}
 	return nil

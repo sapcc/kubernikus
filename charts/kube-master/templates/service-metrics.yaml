@@ -5,8 +5,9 @@ metadata:
   labels:
     component: controller-manager-metrics
     release: {{ .Release.Name }}
-  name: {{ .Release.Name }}-cm-met
+  name: {{ .Release.Name }}-cm
 spec:
+  clusterIP: None
   ports:
   - name: metrics
     port: 10257
@@ -20,10 +21,29 @@ apiVersion: v1
 kind: Service
 metadata:
   labels:
+    component: cloud-controller-manager-metrics
+    release: {{ .Release.Name }}
+  name: {{ .Release.Name }}-ccm
+spec:
+  clusterIP: None
+  ports:
+  - name: metrics
+    port: 10258
+    protocol: TCP
+    targetPort: 10258
+  selector:
+    component: cloud-controller-manager
+    release: {{ .Release.Name }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
     component: scheduler-metrics
     release: {{ .Release.Name }}
-  name: {{ .Release.Name }}-sched-met
+  name: {{ .Release.Name }}-sched
 spec:
+  clusterIP: None
   ports:
   - name: metrics
     port: 10259

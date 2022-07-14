@@ -165,8 +165,8 @@ spec:
       containers:
         - name: apiserver
           ports:
-          - containerPort: 443
-            name: server
+          - containerPort: {{ required "missing advertisePort" .Values.advertisePort }}
+            name: api
             protocol: TCP
 {{- if (semverCompare ">= 1.19" .Values.version.kubernetes) }}
           image: {{ include "apiserver.image" . | quote }}

@@ -28,6 +28,7 @@ func init() {
 		FixFlannelOnFlatcar,
 		KlusterSecretOpenStackIds,
 		Helm2to3,
+		SeedKubernikusServiceAccount,
 		// <-- Insert new migrations at the end only!
 	}
 }

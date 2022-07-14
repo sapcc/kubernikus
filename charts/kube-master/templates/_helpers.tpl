@@ -119,10 +119,14 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
     {{- required "tag for fluentd missing" .Values.images.fluentd.tag }}
 {{- end -}}
 
+{{- define "ingress.base" -}}
+  {{- .Values.api.apiserverHost | replace (include "master.fullname" .) (printf "%s.ingress" (include "master.fullname" .) )  -}}
+{{- end -}}
+
 {{- define "dashboard.url" -}}
-  {{- printf "dashboard-%s" ( .Values.api.apiserverHost | replace (include "master.fullname" .) (printf "%s.ingress" (include "master.fullname" .) ) ) -}}
+  dashboard-{{ include "ingress.base" . -}}
 {{- end -}}
 
 {{- define "dex.url" -}}
-  {{- printf "auth-%s" ( .Values.api.apiserverHost | replace (include "master.fullname" .) (printf "%s.ingress" (include "master.fullname" .) ) ) -}}
+  auth-{{ include "ingress.base" . -}}
 {{- end -}}

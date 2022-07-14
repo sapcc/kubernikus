@@ -50,4 +50,54 @@ spec:
             serviceName: {{ include "master.fullname" . }}
             servicePort: 6553
 {{- end }}
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "master.fullname" . }}-metrics
+  labels:
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}"
+    release: {{ .Release.Name }}
+  annotations:
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+    ingress.kubernetes.io/backend-protocol: "HTTPS"
+
+spec:
+  rules:
+    - host: cm-{{include "ingress.base" . }}
+      http:
+        paths:
+        - path: /
+          pathType: Prefix
+          backend:
+            service:
+              name:  {{ include "master.fullname" . }}-cm
+              port:
+                number: 10257
+    - host: ccm-{{include "ingress.base" . }}
+      http:
+        paths:
+        - path: /
+          pathType: Prefix
+          backend:
+            service:
+              name:  {{ include "master.fullname" . }}-ccm
+              port:
+                number: 10258
+    - host: scheduler-{{include "ingress.base" . }}
+      http:
+        paths:
+        - path: /
+          pathType: Prefix
+          backend:
+            service:
+              name:  {{ include "master.fullname" . }}-sched
+              port:
+                number: 10259
+  tls:
+  - hosts:
+    - cm-{{include "ingress.base" . }}
+    - ccm-{{include "ingress.base" . }}
+    - scheduler-{{include "ingress.base" . }}
+    secretName:  {{ required "dex.ingressSecret undefined" .Values.dex.ingressSecret }}
 {{- end }}
