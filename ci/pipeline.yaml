@@ -381,44 +381,6 @@ auth_e2e_eu-nl-1: &auth_e2e_eu-nl-1
 
 
 
-auth_eu-ru-1: &auth_eu-ru-1
-  KUBELOGON_USER:     ((unified-kubernetes-auth/default.username))
-  KUBELOGON_PASSWORD: ((unified-kubernetes-auth/default.password))
-  KUBERNIKUS_NAME: k-eu-ru-1
-  KUBERNIKUS_URL: https://kubernikus.admin.eu-ru-1.cloud.sap
-  VAULT_ROLE_ID: ((auth.role_id))
-  VAULT_SECRET_ID: ((auth.secret_id))
-
-auth_e2e_eu-ru-1: &auth_e2e_eu-ru-1
-  CP_KLUSTER: k-eu-ru-1
-  CP_KUBERNIKUS_URL: https://kubernikus.admin.eu-ru-1.cloud.sap
-  CP_OS_PROJECT_DOMAIN_NAME: ccadmin
-  VAULT_ROLE_ID: ((auth.role_id))
-  VAULT_SECRET_ID: ((auth.secret_id))
-
-  CP_OIDC_AUTH_URL: https://kubernikus.admin.eu-ru-1.cloud.sap/auth/login
-  CP_OIDC_CONNECTOR_ID: eb31733cfb9d4ab283bb19e00863b780
-  CP_OIDC_USERNAME: ((unified-kubernetes-auth/default.username))
-  CP_OIDC_PASSWORD: ((unified-kubernetes-auth/default.password))
-
-  KUBERNIKUS_NAME: e2e
-  OS_PROJECT_DOMAIN_NAME: ccadmin
-
-  NODEPOOL_AVZ: eu-ru-1a
-
-
-  OS_AUTH_URL: https://identity-3.eu-ru-1.cloud.sap/v3
-  OS_USERNAME: kubernikus-pipeline
-  OS_PASSWORD: ((keystone-user-password/kubernikus-pipeline))
-  OS_USER_DOMAIN_NAME: Default
-  OS_PROJECT_NAME: kubernikus_e2e
-  OS_REGION_NAME: eu-ru-1
-  KUBERNIKUS_URL: https://kubernikus.eu-ru-1.cloud.sap
-  CP_OS_PROJECT_NAME: kubernikus
-
-
-
-
 auth_la-br-1: &auth_la-br-1
   KUBELOGON_USER:     ((unified-kubernetes-auth/default.username))
   KUBELOGON_PASSWORD: ((unified-kubernetes-auth/default.password))
@@ -2190,97 +2152,6 @@ jobs:
 
 
 
-  - name: seed_eu-ru-1
-    serial: true
-    plan:
-      - in_parallel:
-        - get: silver.tag
-          passed: [silver]
-          trigger: true
-        - get: secrets.git
-          passed: [silver]
-        - get: helm-charts.git
-          passed: [silver]
-      - task: seed
-        config:
-          <<: *task_helm_seed
-        input_mapping:
-          charts.git: helm-charts.git
-        params:
-          REGION: eu-ru-1
-          CONTEXT: eu-ru-1
-          <<: *auth_eu-ru-1
-    <<: *slack
-
-  - name: deploy_eu-ru-1
-    serial: true
-    plan:
-      - in_parallel:
-        - get: silver.tag
-          trigger: true
-          passed: [seed_eu-ru-1]
-        - get: secrets.git
-          passed: [seed_eu-ru-1]
-        - get: kubernikus.builds
-          resource: kubernikus.git
-          passed: [silver]
-      - in_parallel:
-        - task: kubernikus_eu-ru-1
-          config:
-            <<: *task_helm_kubernikus
-          params:
-            REGION: eu-ru-1
-            CONTEXT: k-eu-ru-1
-            <<: *auth_eu-ru-1
-        - task: kubernikus-dex_eu-ru-1
-          config:
-            <<: *task_helm_kubernikus-dex
-          params:
-            REGION: eu-ru-1
-            CONTEXT: k-eu-ru-1
-            <<: *auth_eu-ru-1
-    <<: *slack
-
-  - name: soak_eu-ru-1
-    serial: true
-    build_logs_to_retain: 168
-    plan:
-      - in_parallel:
-        - get: silver.tag
-          trigger: true
-          passed: [deploy_eu-ru-1]
-        - get: kubernikus.builds
-          resource: kubernikus.git
-          passed: [deploy_eu-ru-1]
-        - get: hourly
-          trigger: true
-      - task: e2e_tests
-        config:
-          <<: *task_e2e_tests
-        timeout: 45m
-        params:
-          <<: *auth_e2e_eu-ru-1
-
-        on_failure:
-          put: slack-notification
-          params:
-            channel: '#kubernikus-ci'
-            text: Soak tests in eu-ru-1 failed
-            text_file: test-result/content
-            attachments:
-              - text: $TEXT_FILE_CONTENT
-                color: "#d00000"
-                footer: $ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME
-                footer_icon: https://ci.concourse-ci.org/public/images/favicon-failed.png
-
-    on_success: { put: slack-alert, inputs: [], params: {alert_type: fixed } }
-    on_abort:   { put: slack-alert, inputs: [], params: {alert_type: broke } }
-    on_error:   { put: slack-alert, inputs: [], params: {alert_type: broke } }
-
-
-
-
-
   - name: seed_la-br-1
     serial: true
     plan:
@@ -3445,13 +3316,6 @@ groups:
       - deploy_eu-nl-1
       - soak_eu-nl-1
 
-  - name: eu-ru-1
-    jobs:
-      - silver
-      - seed_eu-ru-1
-      - deploy_eu-ru-1
-      - soak_eu-ru-1
-
   - name: la-br-1
     jobs:
       - silver
@@ -3574,10 +3438,6 @@ groups:
       - seed_eu-nl-1
       - deploy_eu-nl-1
       - soak_eu-nl-1
-
-      - seed_eu-ru-1
-      - deploy_eu-ru-1
-      - soak_eu-ru-1
 
       - seed_la-br-1
       - deploy_la-br-1
