@@ -10,6 +10,9 @@ inputs:
   - name: kubernikus.builds
   - name: secrets.git
 
+outputs:
+  - name: metadata
+
 run:
   path: /bin/sh
   args:
@@ -35,6 +38,20 @@ run:
         --set image=$IMAGE \
         --set imageTag=$VERSION
 
+      metadataDir="${PWD}/metadata"
+      metadataFile="${metadataDir}/metadata.properties"
+      mkdir -p "${metadataDir}"
+
+      # if the target cluster is not specified, use the region's baremetal cluster by default
+      export CONTEXT="${CONTEXT:-$REGION}"
+
+      echo "CHART_PATH=https://github.com/sapcc/kubernikus/tree/master/charts" >> "${metadataFile}"
+      echo "RELEASE=kubernikus" >> "${metadataFile}"
+      echo "NAMESPACE=kubernikus-system" >> "${metadataFile}"
+      echo "CONTEXT=${CONTEXT}" >> "${metadataFile}"
+      echo "VERSION=${VERSION}" >> "${metadataFile}"
+      echo "DEPLOYMENT_STARTED=$(date -Iseconds)" >>"${metadataFile}"
+
       helm upgrade kubernikus kubernikus.builds/charts/kubernikus/ \
         --namespace=kubernikus-system \
         --values secrets.git/global/values/kubernikus.yaml \
@@ -45,6 +62,8 @@ run:
       kubectl rollout status deployment/kubernikus-api --namespace=kubernikus-system
       kubectl rollout status deployment/kubernikus-operator --namespace=kubernikus-system
       kubectl rollout status deployment/k8sniff-ingress-lb --namespace=kubernikus-system
+
+      echo "DEPLOYMENT_FINISHED=$(date -Iseconds)" >> "${metadataFile}"
 
 params:
   REGION:

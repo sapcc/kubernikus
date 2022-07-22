@@ -189,6 +189,16 @@ resources:
     source:
       group: <%= group %>
       pipeline: kubernikus # we do this so we don't get versions from other pipelines
+
+<% REGIONS.select{ |k, v| v[:continent] == group }.each do |region, meta| %>
+<% if ["terraform", "manual"].include? meta[:install] %>
+  - name: <%= region %>.release
+    type: release
+    check_every: never
+    source: { region: <%= region %>, tenso_password: ((keystone-user-password/tenso-prod)) }
+    expose_build_created_by: true
+<% end %>
+<% end %>
 <% end %>
 
   - name: hourly
@@ -228,6 +238,13 @@ resource_types:
     source:
       repository: keppel.eu-de-2.cloud.sap/ccloud-dockerhub-mirror/sapcc/concourse-git-resource-proxy
       tag: 0.5.0
+
+  - name: release
+    type: docker-image
+    check_every: 24h
+    source:
+      repository: keppel.eu-de-1.cloud.sap/ccloud/concourse-release-resource
+      tag: v2.latest
 
 jobs:
   - name: docs
@@ -433,6 +450,8 @@ jobs:
             REGION: <%= region %>
             CONTEXT: k-<%= region %>
             <<: *auth_<%= region %>
+          ensure:
+            put: <%= region %>.release
         - task: kubernikus-dex_<%= region %>
           config:
             <<: *task_helm_kubernikus-dex
@@ -440,6 +459,8 @@ jobs:
             REGION: <%= region %>
             CONTEXT: k-<%= region %>
             <<: *auth_<%= region %>
+          ensure:
+            put: <%= region %>.release
     <<: *slack
 
   - name: soak_<%= region %>
