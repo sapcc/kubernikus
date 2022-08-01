@@ -459,8 +459,6 @@ jobs:
             REGION: <%= region %>
             CONTEXT: k-<%= region %>
             <<: *auth_<%= region %>
-          ensure:
-            put: <%= region %>.release
     <<: *slack
 
   - name: soak_<%= region %>

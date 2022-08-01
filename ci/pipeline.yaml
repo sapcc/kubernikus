@@ -917,7 +917,7 @@ task_helm_kubernikus: &task_helm_kubernikus
   
   outputs:
     - name: metadata
-
+  
   run:
     path: /bin/sh
     args:
@@ -946,17 +946,17 @@ task_helm_kubernikus: &task_helm_kubernikus
         metadataDir="${PWD}/metadata"
         metadataFile="${metadataDir}/metadata.properties"
         mkdir -p "${metadataDir}"
-
+  
         # if the target cluster is not specified, use the region's baremetal cluster by default
         export CONTEXT="${CONTEXT:-$REGION}"
-
+  
         echo "CHART_PATH=https://github.com/sapcc/kubernikus/tree/master/charts" >> "${metadataFile}"
         echo "RELEASE=kubernikus" >> "${metadataFile}"
         echo "NAMESPACE=kubernikus-system" >> "${metadataFile}"
         echo "CONTEXT=${CONTEXT}" >> "${metadataFile}"
         echo "VERSION=${VERSION}" >> "${metadataFile}"
         echo "DEPLOYMENT_STARTED=$(date -Iseconds)" >>"${metadataFile}"
-
+  
         helm upgrade kubernikus kubernikus.builds/charts/kubernikus/ \
           --namespace=kubernikus-system \
           --values secrets.git/global/values/kubernikus.yaml \
@@ -969,7 +969,7 @@ task_helm_kubernikus: &task_helm_kubernikus
         kubectl rollout status deployment/k8sniff-ingress-lb --namespace=kubernikus-system
   
         echo "DEPLOYMENT_FINISHED=$(date -Iseconds)" >> "${metadataFile}"
-
+  
   params:
     REGION:
     CONTEXT:
@@ -1912,8 +1912,6 @@ jobs:
             REGION: ap-ae-1
             CONTEXT: k-ap-ae-1
             <<: *auth_ap-ae-1
-          ensure:
-            put: ap-ae-1.release
     <<: *slack
 
   - name: soak_ap-ae-1
@@ -2007,8 +2005,6 @@ jobs:
             REGION: ap-au-1
             CONTEXT: k-ap-au-1
             <<: *auth_ap-au-1
-          ensure:
-            put: ap-au-1.release
     <<: *slack
 
   - name: soak_ap-au-1
@@ -2102,8 +2098,6 @@ jobs:
             REGION: ap-cn-1
             CONTEXT: k-ap-cn-1
             <<: *auth_ap-cn-1
-          ensure:
-            put: ap-cn-1.release
     <<: *slack
 
   - name: soak_ap-cn-1
@@ -2197,8 +2191,6 @@ jobs:
             REGION: ap-jp-1
             CONTEXT: k-ap-jp-1
             <<: *auth_ap-jp-1
-          ensure:
-            put: ap-jp-1.release
     <<: *slack
 
   - name: soak_ap-jp-1
@@ -2292,8 +2284,6 @@ jobs:
             REGION: ap-sa-1
             CONTEXT: k-ap-sa-1
             <<: *auth_ap-sa-1
-          ensure:
-            put: ap-sa-1.release
     <<: *slack
 
   - name: soak_ap-sa-1
@@ -2387,8 +2377,6 @@ jobs:
             REGION: la-br-1
             CONTEXT: k-la-br-1
             <<: *auth_la-br-1
-          ensure:
-            put: la-br-1.release
     <<: *slack
 
   - name: soak_la-br-1
@@ -2497,8 +2485,6 @@ jobs:
             REGION: ap-jp-2
             CONTEXT: k-ap-jp-2
             <<: *auth_ap-jp-2
-          ensure:
-            put: ap-jp-2.release
     <<: *slack
 
   - name: soak_ap-jp-2
@@ -2592,8 +2578,6 @@ jobs:
             REGION: ap-sa-2
             CONTEXT: k-ap-sa-2
             <<: *auth_ap-sa-2
-          ensure:
-            put: ap-sa-2.release
     <<: *slack
 
   - name: soak_ap-sa-2
@@ -2687,8 +2671,6 @@ jobs:
             REGION: na-ca-1
             CONTEXT: k-na-ca-1
             <<: *auth_na-ca-1
-          ensure:
-            put: na-ca-1.release
     <<: *slack
 
   - name: soak_na-ca-1
@@ -2782,8 +2764,6 @@ jobs:
             REGION: na-us-3
             CONTEXT: k-na-us-3
             <<: *auth_na-us-3
-          ensure:
-            put: na-us-3.release
     <<: *slack
 
   - name: soak_na-us-3
@@ -2892,8 +2872,6 @@ jobs:
             REGION: eu-de-1
             CONTEXT: k-eu-de-1
             <<: *auth_eu-de-1
-          ensure:
-            put: eu-de-1.release
     <<: *slack
 
   - name: soak_eu-de-1
@@ -2987,8 +2965,6 @@ jobs:
             REGION: eu-de-2
             CONTEXT: k-eu-de-2
             <<: *auth_eu-de-2
-          ensure:
-            put: eu-de-2.release
     <<: *slack
 
   - name: soak_eu-de-2
@@ -3082,8 +3058,6 @@ jobs:
             REGION: eu-nl-1
             CONTEXT: k-eu-nl-1
             <<: *auth_eu-nl-1
-          ensure:
-            put: eu-nl-1.release
     <<: *slack
 
   - name: soak_eu-nl-1
@@ -3177,8 +3151,6 @@ jobs:
             REGION: na-us-1
             CONTEXT: k-na-us-1
             <<: *auth_na-us-1
-          ensure:
-            put: na-us-1.release
     <<: *slack
 
   - name: soak_na-us-1
@@ -3272,8 +3244,6 @@ jobs:
             REGION: na-us-2
             CONTEXT: k-na-us-2
             <<: *auth_na-us-2
-          ensure:
-            put: na-us-2.release
     <<: *slack
 
   - name: soak_na-us-2
@@ -3382,8 +3352,6 @@ jobs:
             REGION: qa-de-1
             CONTEXT: k-qa-de-1
             <<: *auth_qa-de-1
-          ensure:
-            put: qa-de-1.release
     <<: *slack
 
   - name: soak_qa-de-1
