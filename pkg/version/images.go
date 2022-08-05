@@ -49,6 +49,8 @@ type KlusterVersion struct {
 	CSINodeDriver          ImageVersion `yaml:"csiNodeDriver,omitempty" json:"csiNodeDriver,omitempty"`
 	CinderCSIPlugin        ImageVersion `yaml:"cinderCSIPlugin,omitempty" json:"cinderCSIPlugin,omitempty"`
 	Flannel                ImageVersion `yaml:"flannel,omitempty" json:"flannel,omitempty"`
+	FlannelCNIPlugin       ImageVersion `yaml:"flannelCNIPlugin,omitempty" json:"flannelCNIPlugin,omitempty"`
+	CNIPlugins             ImageVersion `yaml:"cniPlugins,omitempty" json:"cniPlugins,omitempty"`
 	Fluentd                ImageVersion `yaml:"fluentd,omitempty" json:"fluentd,omitempty"`
 }
 

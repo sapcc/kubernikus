@@ -70,6 +70,7 @@ func init() {
 
 	imageRegistry = version.ImageRegistry{
 		Versions: map[string]version.KlusterVersion{
+			"1.24": {Kubelet: version.ImageVersion{Repository: "nase", Tag: "v1.24"}},
 			"1.21": {Kubelet: version.ImageVersion{Repository: "nase", Tag: "v1.21"}},
 			"1.20": {Kubelet: version.ImageVersion{Repository: "nase", Tag: "v1.20"}},
 			"1.19": {Kubelet: version.ImageVersion{Repository: "nase", Tag: "v1.19"}},
