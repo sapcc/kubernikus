@@ -75,7 +75,6 @@ func (sr *SeedReconciler) EnrichHelmValuesForSeed(client project.ProjectClient, 
 	} else {
 		return err
 	}
-	fmt.Printf("######################### isKubedns: %v\n", isKubeDns)
 	values["dns"] = map[string]interface{}{
 		"address": sr.Kluster.Spec.DNSAddress,
 		"domain":  sr.Kluster.Spec.DNSDomain,
