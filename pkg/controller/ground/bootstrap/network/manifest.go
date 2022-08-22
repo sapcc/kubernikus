@@ -52,12 +52,31 @@ subjects:
 kind: ConfigMap
 apiVersion: v1
 metadata:
-  name: flannel-cfg
+  name: flannel
   namespace: kube-system
   labels:
     tier: node
     app: flannel
 data:
+  kubeconfig: |-
+    apiVersion: v1
+    kind: Config
+    clusters:
+    - cluster:
+        certificate-authority: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+        server: {{ .APIServerURL }}
+      name: default
+    contexts:
+    - context:
+        cluster: default
+        namespace: default
+        user: default
+      name: default
+    current-context: default
+    users:
+    - name: default
+      user:
+        tokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
   cni-conf.json: |
     {
       "name": "cbr0",
@@ -174,6 +193,7 @@ spec:
         args:
         - --ip-masq
         - --kube-subnet-mgr
+        - --kubeconfig-file=/etc/kube-flannel/kubeconfig
         resources:
           requests:
             cpu: "100m"
@@ -212,7 +232,7 @@ spec:
           path: /etc/cni/net.d
       - name: flannel-cfg
         configMap:
-          name: flannel-cfg
+          name: flannel
       - name: xtables-lock
         hostPath:
           path: /run/xtables.lock

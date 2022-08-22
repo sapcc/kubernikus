@@ -14,13 +14,13 @@ import (
 	"github.com/sapcc/kubernikus/pkg/version"
 )
 
-type images struct {
+type cni struct {
 	CNIPlugins       string
 	Flannel          string
 	FlannelCNIPlugin string
 }
 
-func SeedCNIConfig(client clientset.Interface, clusterCIDR string, versions version.KlusterVersion) error {
+func SeedCNIConfig(client clientset.Interface, versions version.KlusterVersion, clusterCIDR, apiserverURL string) error {
 
 	if err := createServiceAccount(client, CNIServiceAccount); err != nil {
 		return fmt.Errorf("Failed to bootstrap cni service account: %w", err)
@@ -31,18 +31,23 @@ func SeedCNIConfig(client clientset.Interface, clusterCIDR string, versions vers
 	if err := createClusterRoleBinding(client, CNIClusterRoleBinding); err != nil {
 		return fmt.Errorf("Failed to bootstrap cni cluster role binding: %w", err)
 	}
-	img := images{
+
+	cmData := struct {
+		ClusterCIDR  string
+		APIServerURL string
+	}{clusterCIDR, apiserverURL}
+	if err := createConfigMap(client, CNIConfigMap, cmData); err != nil {
+		return fmt.Errorf("Failed to bootstrap cni config map: %w", err)
+	}
+
+	dsVals := cni{
 		CNIPlugins:       versions.CNIPlugins.Repository + ":" + versions.CNIPlugins.Tag,
 		Flannel:          versions.Flannel.Repository + ":" + versions.Flannel.Tag,
 		FlannelCNIPlugin: versions.FlannelCNIPlugin.Repository + ":" + versions.FlannelCNIPlugin.Tag,
 	}
 
-	if err := createCNIConfigMap(client, CNIConfigMap, clusterCIDR); err != nil {
-		return fmt.Errorf("Failed to bootstrap cni cluster role binding: %w", err)
-	}
-
-	if err := createDaemonSet(client, CNIDaemonSet, img); err != nil {
-		return fmt.Errorf("Failed to bootstrap cni cluster role binding: %w", err)
+	if err := createDaemonSet(client, CNIDaemonSet, dsVals); err != nil {
+		return fmt.Errorf("Failed to bootstrap cni daemon set: %w", err)
 	}
 
 	return nil
@@ -104,9 +109,7 @@ func createClusterRoleBinding(client clientset.Interface, manifest string) error
 	return nil
 }
 
-func createCNIConfigMap(client clientset.Interface, manifest string, clusterCIDR string) error {
-
-	data := struct{ ClusterCIDR string }{clusterCIDR}
+func createConfigMap(client clientset.Interface, manifest string, data interface{}) error {
 
 	template, err := bootstrap.RenderManifest(manifest, data)
 	if err != nil {
@@ -120,7 +123,7 @@ func createCNIConfigMap(client clientset.Interface, manifest string, clusterCIDR
 	return bootstrap.CreateOrUpdateConfigMap(client, configMap.(*v1.ConfigMap))
 }
 
-func createDaemonSet(client clientset.Interface, manifest string, data images) error {
+func createDaemonSet(client clientset.Interface, manifest string, data interface{}) error {
 	template, err := bootstrap.RenderManifest(manifest, data)
 	if err != nil {
 		return err
