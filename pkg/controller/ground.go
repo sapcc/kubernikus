@@ -696,7 +696,7 @@ func (op *GroundControl) upgradeKluster(kluster *v1.Kluster, toVersion string) e
 			return errors.Wrap(err, "client")
 		}
 
-		if err := network.SeedCNIConfig(kubernetes, op.Images.Versions[kluster.Spec.Version], *kluster.Spec.ClusterCIDR, kluster.Status.Apiserver); err != nil {
+		if err := network.SeedNetwork(kubernetes, op.Images.Versions[kluster.Spec.Version], *kluster.Spec.ClusterCIDR, kluster.Status.Apiserver, kluster.Spec.AdvertiseAddress, kluster.Spec.AdvertisePort); err != nil {
 			return errors.Wrap(err, "seed CNI config on upgrade")
 		}
 	}

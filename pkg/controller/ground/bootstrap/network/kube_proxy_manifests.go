@@ -1,0 +1,180 @@
+package network
+
+const (
+	KubeProxyServiceAccount = `
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: kube-proxy
+  namespace: kube-system
+`
+
+	KubeProxyClusterRoleBinding = `
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: kube-proxy
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: system:node-proxier
+subjects:
+- kind: ServiceAccount
+  name: kube-proxy
+  namespace: kube-system
+`
+	KubeProxyConfigMap = `
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: kube-proxy
+  namespace: kube-system
+  labels:
+    tier: node
+    app: kube-proxy
+data:
+  kubeconfig: |-
+    apiVersion: v1
+    kind: Config
+    clusters:
+    - cluster:
+        certificate-authority: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+        server: {{ .APIServerURL }}
+      name: default
+    contexts:
+    - context:
+        cluster: default
+        namespace: default
+        user: default
+      name: default
+    current-context: default
+    users:
+    - name: default
+      user:
+        tokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
+  config: |
+    apiVersion: kubeproxy.config.k8s.io/v1alpha1
+    kind: KubeProxyConfiguration
+    bindAddress: 0.0.0.0
+    healthzBindAddress: 0.0.0.0:10256
+    metricsBindAddress: 0.0.0.0:10249
+    clientConnection:
+      acceptContentTypes: ""
+      contentType: application/vnd.kubernetes.protobuf
+      kubeconfig: /var/lib/kube-proxy/kubeconfig
+      qps: 5
+      burst: 10
+    clusterCIDR: {{ .ClusterCIDR  }}
+    configSyncPeriod: 15m0s
+    conntrack:
+      maxPerCore: 32768
+      min: 131072
+      tcpCloseWaitTimeout: 1h0m0s
+      tcpEstablishedTimeout: 24h0m0s
+    enableProfiling: false
+    featureGates: {}
+    iptables:
+      masqueradeAll: false
+      masqueradeBit: 14
+      minSyncPeriod: 0s
+      syncPeriod: 30s
+    mode: "iptables"
+    oomScoreAdj: -999
+    portRange: ""
+`
+	KubeProxyDaemonSet = `
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  annotations:
+  labels:
+    k8s-app: kube-proxy
+  name: kube-proxy
+  namespace: kube-system
+spec:
+  selector:
+    matchLabels:
+      name: kube-proxy
+  updateStrategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        name: kube-proxy
+        k8s-app: kube-proxy
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: kubernetes.io/os
+                operator: In
+                values:
+                - linux
+              - key: kubernikus.cloud.sap/cni
+                operator: In
+                values:
+                - "true"
+      hostNetwork: true
+      priorityClassName: system-node-critical
+      tolerations:
+      - operator: Exists
+        effect: NoSchedule
+      containers:
+      - name: proxy
+        image: "{{ .KubeProxy }}"
+        imagePullPolicy: IfNotPresent
+        lifecycle:
+          postStart:
+            exec:
+              command:
+              - /bin/sh
+              - -c
+              - sleep 5
+        command:
+          - kube-proxy
+        args:
+          - --config=/var/lib/kube-proxy/config
+          - --hostname-override=$(NODE_NAME)
+        env:
+          - name: NODE_NAME
+            valueFrom:
+              fieldRef:
+                fieldPath: spec.nodeName
+        livenessProbe:
+          httpGet:
+            host: 127.0.0.1
+            path: /healthz
+            port: 10256
+          initialDelaySeconds: 15
+          timeoutSeconds: 1
+        securityContext:
+           privileged: true
+        volumeMounts:
+          - mountPath: /var/lib/kube-proxy
+            name: kube-proxy
+          - mountPath: /run/xtables.lock
+            name: xtables-lock
+            readOnly: false
+          - mountPath: /lib/modules
+            name: lib-modules
+            readOnly: true
+        ports:
+          - name: proxy-metrics
+            containerPort: 10249
+      serviceAccountName: kube-proxy
+      terminationGracePeriodSeconds: 5
+      volumes:
+        - name: kube-proxy
+          configMap:
+            name: kube-proxy
+        - name: lib-modules
+          hostPath:
+            path: /lib/modules
+        - name: xtables-lock
+          hostPath:
+            path: /run/xtables.lock
+            type: FileOrCreate
+`
+)

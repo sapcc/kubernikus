@@ -20,6 +20,65 @@ type cni struct {
 	FlannelCNIPlugin string
 }
 
+type wormhole struct {
+	Wormhole string
+	Listen   string
+}
+
+type kubeProxy struct {
+	KubeProxy string
+}
+
+func SeedNetwork(client clientset.Interface, versions version.KlusterVersion, clusterCIDR, apiserverURL, apiserverIP string, apiserverPort int64) error {
+
+	if err := SeedCNIConfig(client, versions, clusterCIDR, apiserverURL); err != nil {
+		return fmt.Errorf("cni config: %w", err)
+	}
+
+	if err := SeedKubeProxy(client, versions, clusterCIDR, apiserverURL); err != nil {
+		return fmt.Errorf("kube-proxy: %w", err)
+	}
+	if err := SeedWormhole(client, versions, apiserverIP, apiserverPort); err != nil {
+		return fmt.Errorf("wormhole: %w", err)
+	}
+	return nil
+
+}
+
+func SeedKubeProxy(client clientset.Interface, versions version.KlusterVersion, clusterCIDR, apiServerURL string) error {
+	if err := createServiceAccount(client, KubeProxyServiceAccount); err != nil {
+		return fmt.Errorf("Failed to bootstrap kube-proxy service account: %w", err)
+	}
+	if err := createClusterRoleBinding(client, KubeProxyClusterRoleBinding); err != nil {
+		return fmt.Errorf("Failed to bootstrap kube-proxy cluster role binding: %w", err)
+	}
+	cmData := struct {
+		ClusterCIDR  string
+		APIServerURL string
+	}{clusterCIDR, apiServerURL}
+	if err := createConfigMap(client, KubeProxyConfigMap, cmData); err != nil {
+		return fmt.Errorf("Failed to bootstrap kube-proxy config map: %w", err)
+	}
+	data := kubeProxy{
+		KubeProxy: versions.KubeProxy.Repository + ":" + versions.KubeProxy.Tag,
+	}
+	if err := createDaemonSet(client, KubeProxyDaemonSet, data); err != nil {
+		return fmt.Errorf("Failed to bootstrap kube-proxy daemon set: %w", err)
+	}
+	return nil
+}
+
+func SeedWormhole(client clientset.Interface, versions version.KlusterVersion, apiServerIP string, apiServerPort int64) error {
+	data := wormhole{
+		Wormhole: versions.Wormhole.Repository + ":" + version.GitCommit,
+		Listen:   fmt.Sprintf("%s:%d", apiServerIP, apiServerPort),
+	}
+	if err := createDaemonSet(client, WormholeDaemonSet, data); err != nil {
+		return fmt.Errorf("Failed to bootstrap wormhole daemon set: %w", err)
+	}
+	return nil
+}
+
 func SeedCNIConfig(client clientset.Interface, versions version.KlusterVersion, clusterCIDR, apiserverURL string) error {
 
 	if err := createServiceAccount(client, CNIServiceAccount); err != nil {
