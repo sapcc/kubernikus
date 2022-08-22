@@ -38,6 +38,7 @@ require (
 	github.com/imdario/mergo v0.3.11
 	github.com/joeshaw/envdecode v0.0.0-20170502020559-6326cbed175e
 	github.com/justinas/alice v0.0.0-20171023064455-03f45bd4b7da
+	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/oklog/run v1.0.1-0.20180308005104-6934b124db28
 	github.com/pkg/errors v0.9.1
 	github.com/pmylund/go-cache v2.1.0+incompatible // indirect
