@@ -28,8 +28,8 @@ import (
 	v1 "github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
 	"github.com/sapcc/kubernikus/pkg/controller/config"
 	"github.com/sapcc/kubernikus/pkg/controller/ground"
-	"github.com/sapcc/kubernikus/pkg/controller/ground/bootstrap/cni"
 	"github.com/sapcc/kubernikus/pkg/controller/ground/bootstrap/csi"
+	"github.com/sapcc/kubernikus/pkg/controller/ground/bootstrap/network"
 	"github.com/sapcc/kubernikus/pkg/controller/metrics"
 	informers_kubernikus "github.com/sapcc/kubernikus/pkg/generated/informers/externalversions/kubernikus/v1"
 	"github.com/sapcc/kubernikus/pkg/util"
@@ -696,7 +696,7 @@ func (op *GroundControl) upgradeKluster(kluster *v1.Kluster, toVersion string) e
 			return errors.Wrap(err, "client")
 		}
 
-		if err := cni.SeedCNIConfig(kubernetes, *kluster.Spec.ClusterCIDR, op.Images.Versions[kluster.Spec.Version]); err != nil {
+		if err := network.SeedCNIConfig(kubernetes, *kluster.Spec.ClusterCIDR, op.Images.Versions[kluster.Spec.Version]); err != nil {
 			return errors.Wrap(err, "seed CNI config on upgrade")
 		}
 	}

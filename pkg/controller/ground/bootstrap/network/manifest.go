@@ -1,4 +1,4 @@
-package cni
+package network
 
 const (
 	CNIServiceAccount = `
@@ -98,6 +98,10 @@ metadata:
     tier: node
     app: flannel
 spec:
+  updateStrategy:
+    rollingUpdate:
+      maxUnavailable: 1
+    type: RollingUpdate
   selector:
     matchLabels:
       app: flannel
