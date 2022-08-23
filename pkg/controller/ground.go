@@ -1028,6 +1028,9 @@ func (op *GroundControl) podAdd(obj interface{}) {
 }
 
 func (op *GroundControl) podDelete(obj interface{}) {
+	if deleted, ok := obj.(cache.DeletedFinalStateUnknown); ok {
+		obj = deleted.Obj
+	}
 	pod := obj.(*api_v1.Pod)
 	if klusterName, found := pod.GetLabels()["release"]; found && len(klusterName) > 0 {
 		klusterKey := pod.GetNamespace() + "/" + klusterName
