@@ -13,7 +13,6 @@ import (
 	"github.com/go-kit/kit/log"
 	"github.com/go-openapi/swag"
 	"github.com/pkg/errors"
-	"google.golang.org/grpc"
 	"helm.sh/helm/v3/pkg/action"
 	"helm.sh/helm/v3/pkg/chart/loader"
 	api_v1 "k8s.io/api/core/v1"
@@ -742,11 +741,8 @@ func (op *GroundControl) terminateKluster(kluster *v1.Kluster) error {
 
 	uninstall := action.NewUninstall(op.Helm3)
 	_, err := uninstall.Run(kluster.GetName())
-	if err != nil {
-		return err
-	}
 
-	if err != nil && !strings.Contains(grpc.ErrorDesc(err), fmt.Sprintf(`%s: release: not found`, kluster.GetName())) { //nolint:staticcheck
+	if err != nil && !strings.Contains(err.Error(), fmt.Sprintf(`%s: release: not found`, kluster.GetName())) { //nolint:staticcheck
 		return err
 	}
 
@@ -1032,6 +1028,9 @@ func (op *GroundControl) podAdd(obj interface{}) {
 }
 
 func (op *GroundControl) podDelete(obj interface{}) {
+	if deleted, ok := obj.(cache.DeletedFinalStateUnknown); ok {
+		obj = deleted.Obj
+	}
 	pod := obj.(*api_v1.Pod)
 	if klusterName, found := pod.GetLabels()["release"]; found && len(klusterName) > 0 {
 		klusterKey := pod.GetNamespace() + "/" + klusterName

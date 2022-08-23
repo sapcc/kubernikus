@@ -6,7 +6,6 @@ import (
 	"helm.sh/helm/v3/pkg/action"
 	kubernetes_informers "k8s.io/client-go/informers"
 	kubernetes_clientset "k8s.io/client-go/kubernetes"
-	"k8s.io/helm/pkg/helm"
 
 	"github.com/sapcc/kubernikus/pkg/client/kubernetes"
 	"github.com/sapcc/kubernikus/pkg/client/openstack"
@@ -53,8 +52,6 @@ type Clients struct {
 	Kubernetes kubernetes_clientset.Interface
 	Satellites kubernetes.SharedClientFactory
 	Helm3      *action.Configuration
-
-	Helm *helm.Client
 }
 
 type Factories struct {

@@ -10,8 +10,10 @@ import (
 )
 
 // KlusterLister helps list Klusters.
+// All objects returned here must be treated as read-only.
 type KlusterLister interface {
 	// List lists all Klusters in the indexer.
+	// Objects returned here must be treated as read-only.
 	List(selector labels.Selector) (ret []*v1.Kluster, err error)
 	// Klusters returns an object that can list and get Klusters.
 	Klusters(namespace string) KlusterNamespaceLister
@@ -42,10 +44,13 @@ func (s *klusterLister) Klusters(namespace string) KlusterNamespaceLister {
 }
 
 // KlusterNamespaceLister helps list and get Klusters.
+// All objects returned here must be treated as read-only.
 type KlusterNamespaceLister interface {
 	// List lists all Klusters in the indexer for a given namespace.
+	// Objects returned here must be treated as read-only.
 	List(selector labels.Selector) (ret []*v1.Kluster, err error)
 	// Get retrieves the Kluster from the indexer for a given namespace and name.
+	// Objects returned here must be treated as read-only.
 	Get(name string) (*v1.Kluster, error)
 	KlusterNamespaceListerExpansion
 }
