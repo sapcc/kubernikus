@@ -15,7 +15,7 @@ imagesForVersion:
       tag: 'v3.4.13-bootstrap-3'
     etcdBackup:
       repository: 'keppel.$REGION.cloud.sap/ccloud/etcdbrctl'
-      tag: 'v0.15.4'
+      tag: 'v0.19.0'
     kubelet:
       repository: 'keppel.$REGION.cloud.sap/ccloud/kubelet'
       tag: 'v1.23.6'
