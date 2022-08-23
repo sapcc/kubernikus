@@ -2,7 +2,7 @@ apiVersion: v2
 description: A Helm chart for Kubernetes
 name: kubernikus
 type: application
-version: 0.3.14
+version: 0.3.15
 dependencies:
   - name: k8sniff
     repository: file://../k8sniff

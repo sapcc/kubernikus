@@ -54,7 +54,7 @@ type KubernikusOperatorOptions struct {
 	KubernikusNetworkID string
 	Namespace           string
 	Controllers         []string
-	MetricPort          int
+	MetricsAddress      string
 	LogLevel            int
 
 	NodeUpdateHoldoff time.Duration

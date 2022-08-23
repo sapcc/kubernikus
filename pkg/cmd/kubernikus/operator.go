@@ -50,7 +50,7 @@ func NewOperatorOptions() *Options {
 	options.AuthDomain = "Default"
 	options.KubernikusDomain = "kluster.staging.cloud.sap"
 	options.Namespace = "kubernikus"
-	options.MetricPort = 9091
+	options.MetricsAddress = ":9091"
 	options.Controllers = []string{"groundctl", "launchctl", "deorbiter", "routegc", "flight", "migration", "hammertime", "servicing", "certs"}
 	options.Region = "eu-de-1"
 	options.NodeUpdateHoldoff = 7 * 24 * time.Hour
@@ -73,7 +73,9 @@ func (o *Options) BindFlags(flags *pflag.FlagSet) {
 	flags.StringVar(&o.KubernikusProjectID, "kubernikus-projectid", o.KubernikusProjectID, "ID of the project the k*s control plane.")
 	flags.StringVar(&o.KubernikusNetworkID, "kubernikus-networkid", o.KubernikusNetworkID, "ID of the network the k*s control plane.")
 	flags.StringVar(&o.Namespace, "namespace", o.Namespace, "Restrict operator to resources in the given namespace")
-	flags.IntVar(&o.MetricPort, "metric-port", o.MetricPort, "Port on which metrics are exposed")
+	flags.Int("metric-port", 9091, "Port on which metrics are exposed")
+	flags.MarkDeprecated("metric-port", "use --metrics-address instead")
+	flags.StringVar(&o.MetricsAddress, "metrics-address", o.MetricsAddress, "Expose metrics on this address")
 	flags.StringSliceVar(&o.Controllers, "controllers", o.Controllers, fmt.Sprintf("A list of controllers to enable.  Default is to enable all. controllers: %s", strings.Join(o.Controllers, ", ")))
 	flags.IntVar(&o.LogLevel, "v", 0, "log level")
 
@@ -108,7 +110,7 @@ func (o *Options) Run(c *cobra.Command) error {
 	}
 
 	go operator.Run(stop, wg)
-	go metrics.ExposeMetrics("0.0.0.0", o.MetricPort, stop, wg, logger)
+	go metrics.ExposeMetrics(o.MetricsAddress, stop, wg, logger)
 	go func() {
 		host := "127.0.0.1:7353"
 		ln, err := net.Listen("tcp", "127.0.0.1:7353")
