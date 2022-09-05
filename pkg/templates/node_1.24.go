@@ -232,6 +232,9 @@ storage:
           # enable SELinux labeling
           enable_selinux = true
           sandbox_image = "{{ .PauseImage }}:{{ .PauseImageTag }}"
+          # compat with previous docker based runtime
+          enable_unprivileged_ports = true
+          enable_unprivileged_icmp = true
           [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc]
           # setting runc.options unsets parent settings
           runtime_type = "io.containerd.runc.v2"
