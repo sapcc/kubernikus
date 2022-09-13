@@ -11,16 +11,11 @@ import (
 	"github.com/sapcc/kubernikus/pkg/api/models"
 )
 
-func ServiceAccountHasSecrets(event watch.Event) (bool, error) {
-	switch event.Type {
-	case watch.Deleted:
-		return false, errors.NewNotFound(schema.GroupResource{Resource: "serviceaccounts"}, "")
+func Created(event watch.Event) (bool, error) {
+	if event.Type == watch.Deleted {
+		return false, errors.New("resource deleted")
 	}
-	switch t := event.Object.(type) {
-	case *v1.ServiceAccount:
-		return len(t.Secrets) > 0, nil
-	}
-	return false, nil
+	return true, nil
 }
 
 func PodRunningReady(p *v1.Pod) (bool, error) {
