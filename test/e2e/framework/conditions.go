@@ -1,6 +1,7 @@
 package framework
 
 import (
+	stdliberrors "errors"
 	"fmt"
 
 	v1 "k8s.io/api/core/v1"
@@ -13,7 +14,7 @@ import (
 
 func Created(event watch.Event) (bool, error) {
 	if event.Type == watch.Deleted {
-		return false, errors.New("resource deleted")
+		return false, stdliberrors.New("resource deleted")
 	}
 	return true, nil
 }
