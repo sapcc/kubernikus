@@ -18,6 +18,7 @@ import (
 	"github.com/sapcc/kubernikus/pkg/controller/ground/bootstrap/csi"
 	"github.com/sapcc/kubernikus/pkg/controller/ground/bootstrap/dns"
 	"github.com/sapcc/kubernikus/pkg/controller/ground/bootstrap/gpu"
+	"github.com/sapcc/kubernikus/pkg/controller/ground/bootstrap/network"
 	"github.com/sapcc/kubernikus/pkg/util"
 	"github.com/sapcc/kubernikus/pkg/version"
 )
@@ -103,6 +104,13 @@ func SeedKluster(clients config.Clients, factories config.Factories, images vers
 		} else {
 			if err := csi.SeedCinderCSIPlugin(kubernetes, dynamicKubernetes, klusterSecret, images.Versions[kluster.Spec.Version]); err != nil {
 				return errors.Wrap(err, "seed cinder CSI plugin")
+			}
+		}
+	}
+	if !kluster.Spec.NoCloud {
+		if ok, _ := util.KlusterVersionConstraint(kluster, ">= 1.24"); ok {
+			if err := network.SeedNetwork(kubernetes, images.Versions[kluster.Spec.Version], *kluster.Spec.ClusterCIDR, kluster.Status.Apiserver, kluster.Spec.AdvertiseAddress, kluster.Spec.AdvertisePort); err != nil {
+				return errors.Wrap(err, "seed cni config")
 			}
 		}
 	}
