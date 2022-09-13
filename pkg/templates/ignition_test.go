@@ -100,7 +100,7 @@ func TestGenerateNode(t *testing.T) {
 
 		if assert.NoError(t, err, "Failed to generate node for version %s", version) {
 			//Ensure we rendered the expected template
-			assert.Contains(t, string(data), fmt.Sprintf("KUBELET_IMAGE_TAG=v%s", version))
+			assert.Contains(t, string(data), fmt.Sprintf("v%s", version))
 
 			if version != "1.10" { //skip for 1.10 which exceeds the limit as its super depreacted
 				userData := base64.StdEncoding.EncodeToString(data)
