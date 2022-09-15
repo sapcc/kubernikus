@@ -833,8 +833,8 @@ imagesForVersion:
       repository: keppel.$REGION.cloud.sap/ccloud/cinder-csi-plugin
       tag: v1.23.0
     cloudControllerManager:
-      repository: keppel.$REGION.cloud.sap/ccloud/openstack-cloud-controller-manager-amd64
-      tag: 1.23.2-sap.1
+      repository: keppel.$REGION.cloud.sap/ccloud/openstack-cloud-controller-manager
+      tag: v1.23.4
     controllerManager:
       repository: keppel.$REGION.cloud.sap/ccloud/kube-controller-manager
       tag: v1.23.6
