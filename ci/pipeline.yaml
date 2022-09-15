@@ -1654,7 +1654,7 @@ jobs:
           <<: *auth_e2e_master
     <<: *slack
 
-  - name: e2e-1.22.4
+  - name: e2e-1.22.14
     serial: true
     plan:
       - in_parallel:
@@ -1671,7 +1671,7 @@ jobs:
           <<: *task_e2e_tests
         timeout: 2h
         params:
-          KLUSTER_VERSION: "1.22.4"
+          KLUSTER_VERSION: "1.22.14"
           KLUSTER_CIDR: "100.102.0.0/16"
           ISOLATE_TEST: "true"
           KLUSTER_OS_IMAGES: flatcar-stable-amd64,flatcar-beta-amd64
@@ -3474,7 +3474,7 @@ groups:
 
       - e2e-1.23.11
 
-      - e2e-1.22.4
+      - e2e-1.22.14
 
       - e2e-1.21.5
 
@@ -3630,7 +3630,7 @@ groups:
 
       - e2e-1.23.11
 
-      - e2e-1.22.4
+      - e2e-1.22.14
 
       - e2e-1.21.5
 
