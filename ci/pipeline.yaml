@@ -1606,7 +1606,7 @@ jobs:
       - put: all-versions.trigger
 
 
-  - name: e2e-1.24.4
+  - name: e2e-1.24.5
     serial: true
     plan:
       - in_parallel:
@@ -1623,14 +1623,14 @@ jobs:
           <<: *task_e2e_tests
         timeout: 2h
         params:
-          KLUSTER_VERSION: "1.24.4"
+          KLUSTER_VERSION: "1.24.5"
           KLUSTER_CIDR: "100.100.0.0/16"
           ISOLATE_TEST: "true"
           KLUSTER_OS_IMAGES: flatcar-stable-amd64,flatcar-beta-amd64
           <<: *auth_e2e_master
     <<: *slack
 
-  - name: e2e-1.23.6
+  - name: e2e-1.23.11
     serial: true
     plan:
       - in_parallel:
@@ -1647,14 +1647,14 @@ jobs:
           <<: *task_e2e_tests
         timeout: 2h
         params:
-          KLUSTER_VERSION: "1.23.6"
+          KLUSTER_VERSION: "1.23.11"
           KLUSTER_CIDR: "100.101.0.0/16"
           ISOLATE_TEST: "true"
           KLUSTER_OS_IMAGES: flatcar-stable-amd64,flatcar-beta-amd64
           <<: *auth_e2e_master
     <<: *slack
 
-  - name: e2e-1.22.4
+  - name: e2e-1.22.14
     serial: true
     plan:
       - in_parallel:
@@ -1671,7 +1671,7 @@ jobs:
           <<: *task_e2e_tests
         timeout: 2h
         params:
-          KLUSTER_VERSION: "1.22.4"
+          KLUSTER_VERSION: "1.22.14"
           KLUSTER_CIDR: "100.102.0.0/16"
           ISOLATE_TEST: "true"
           KLUSTER_OS_IMAGES: flatcar-stable-amd64,flatcar-beta-amd64
@@ -1900,7 +1900,7 @@ jobs:
     plan:
       - get: kubernikus.builds
         resource: kubernikus.git
-        passed: [e2e-1.24.4]
+        passed: [e2e-1.24.5]
       - task: changes
         config:
           <<: *task_github_compare_url
@@ -3470,11 +3470,11 @@ groups:
       - whitesource
       - all-versions
 
-      - e2e-1.24.4
+      - e2e-1.24.5
 
-      - e2e-1.23.6
+      - e2e-1.23.11
 
-      - e2e-1.22.4
+      - e2e-1.22.14
 
       - e2e-1.21.5
 
@@ -3626,11 +3626,11 @@ groups:
       - whitesource
       - all-versions
 
-      - e2e-1.24.4
+      - e2e-1.24.5
 
-      - e2e-1.23.6
+      - e2e-1.23.11
 
-      - e2e-1.22.4
+      - e2e-1.22.14
 
       - e2e-1.21.5
 
