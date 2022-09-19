@@ -40,7 +40,7 @@ func (s *SetupTests) Run(t *testing.T) {
 }
 
 func (s *SetupTests) CreateCluster(t *testing.T) {
-	version := "1.23.6"
+	version := "1.23.11"
 	if v := os.Getenv("KLUSTER_VERSION"); v != "" {
 		version = v
 	}
