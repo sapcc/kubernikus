@@ -10,13 +10,14 @@ import (
 
 	"github.com/go-openapi/runtime"
 
-	models "github.com/sapcc/kubernikus/pkg/api/models"
+	"github.com/sapcc/kubernikus/pkg/api/models"
 )
 
 // GetClusterCredentialsOKCode is the HTTP code returned for type GetClusterCredentialsOK
 const GetClusterCredentialsOKCode int = 200
 
-/*GetClusterCredentialsOK OK
+/*
+GetClusterCredentialsOK OK
 
 swagger:response getClusterCredentialsOK
 */
@@ -57,7 +58,8 @@ func (o *GetClusterCredentialsOK) WriteResponse(rw http.ResponseWriter, producer
 	}
 }
 
-/*GetClusterCredentialsDefault Error
+/*
+GetClusterCredentialsDefault Error
 
 swagger:response getClusterCredentialsDefault
 */

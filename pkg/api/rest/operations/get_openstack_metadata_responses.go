@@ -10,13 +10,14 @@ import (
 
 	"github.com/go-openapi/runtime"
 
-	models "github.com/sapcc/kubernikus/pkg/api/models"
+	"github.com/sapcc/kubernikus/pkg/api/models"
 )
 
 // GetOpenstackMetadataOKCode is the HTTP code returned for type GetOpenstackMetadataOK
 const GetOpenstackMetadataOKCode int = 200
 
-/*GetOpenstackMetadataOK OK
+/*
+GetOpenstackMetadataOK OK
 
 swagger:response getOpenstackMetadataOK
 */
@@ -57,7 +58,8 @@ func (o *GetOpenstackMetadataOK) WriteResponse(rw http.ResponseWriter, producer 
 	}
 }
 
-/*GetOpenstackMetadataDefault Error
+/*
+GetOpenstackMetadataDefault Error
 
 swagger:response getOpenstackMetadataDefault
 */

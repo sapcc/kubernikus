@@ -9,8 +9,7 @@ import (
 	"fmt"
 
 	"github.com/go-openapi/runtime"
-
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 )
 
 // GetAuthLoginReader is a Reader for the GetAuthLogin structure.
@@ -21,16 +20,14 @@ type GetAuthLoginReader struct {
 // ReadResponse reads a server response into the received o.
 func (o *GetAuthLoginReader) ReadResponse(response runtime.ClientResponse, consumer runtime.Consumer) (interface{}, error) {
 	switch response.Code() {
-
 	case 302:
 		result := NewGetAuthLoginFound()
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
 			return nil, err
 		}
 		return nil, result
-
 	default:
-		return nil, runtime.NewAPIError("unknown error", response, response.Code())
+		return nil, runtime.NewAPIError("response status code does not match any response statuses defined for this endpoint in the swagger spec", response, response.Code())
 	}
 }
 
@@ -39,14 +36,44 @@ func NewGetAuthLoginFound() *GetAuthLoginFound {
 	return &GetAuthLoginFound{}
 }
 
-/*GetAuthLoginFound handles this case with default header values.
+/*
+GetAuthLoginFound describes a response with status code 302, with default header values.
 
 Redirect
 */
 type GetAuthLoginFound struct {
 }
 
+// IsSuccess returns true when this get auth login found response has a 2xx status code
+func (o *GetAuthLoginFound) IsSuccess() bool {
+	return false
+}
+
+// IsRedirect returns true when this get auth login found response has a 3xx status code
+func (o *GetAuthLoginFound) IsRedirect() bool {
+	return true
+}
+
+// IsClientError returns true when this get auth login found response has a 4xx status code
+func (o *GetAuthLoginFound) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this get auth login found response has a 5xx status code
+func (o *GetAuthLoginFound) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this get auth login found response a status code equal to that given
+func (o *GetAuthLoginFound) IsCode(code int) bool {
+	return code == 302
+}
+
 func (o *GetAuthLoginFound) Error() string {
+	return fmt.Sprintf("[GET /auth/login][%d] getAuthLoginFound ", 302)
+}
+
+func (o *GetAuthLoginFound) String() string {
 	return fmt.Sprintf("[GET /auth/login][%d] getAuthLoginFound ", 302)
 }
 

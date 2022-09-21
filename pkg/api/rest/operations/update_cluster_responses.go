@@ -10,13 +10,14 @@ import (
 
 	"github.com/go-openapi/runtime"
 
-	models "github.com/sapcc/kubernikus/pkg/api/models"
+	"github.com/sapcc/kubernikus/pkg/api/models"
 )
 
 // UpdateClusterOKCode is the HTTP code returned for type UpdateClusterOK
 const UpdateClusterOKCode int = 200
 
-/*UpdateClusterOK OK
+/*
+UpdateClusterOK OK
 
 swagger:response updateClusterOK
 */
@@ -57,7 +58,8 @@ func (o *UpdateClusterOK) WriteResponse(rw http.ResponseWriter, producer runtime
 	}
 }
 
-/*UpdateClusterDefault Error
+/*
+UpdateClusterDefault Error
 
 swagger:response updateClusterDefault
 */

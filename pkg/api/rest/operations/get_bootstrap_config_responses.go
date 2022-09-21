@@ -10,13 +10,14 @@ import (
 
 	"github.com/go-openapi/runtime"
 
-	models "github.com/sapcc/kubernikus/pkg/api/models"
+	"github.com/sapcc/kubernikus/pkg/api/models"
 )
 
 // GetBootstrapConfigOKCode is the HTTP code returned for type GetBootstrapConfigOK
 const GetBootstrapConfigOKCode int = 200
 
-/*GetBootstrapConfigOK OK
+/*
+GetBootstrapConfigOK OK
 
 swagger:response getBootstrapConfigOK
 */
@@ -57,7 +58,8 @@ func (o *GetBootstrapConfigOK) WriteResponse(rw http.ResponseWriter, producer ru
 	}
 }
 
-/*GetBootstrapConfigDefault Error
+/*
+GetBootstrapConfigDefault Error
 
 swagger:response getBootstrapConfigDefault
 */

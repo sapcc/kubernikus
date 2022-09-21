@@ -10,13 +10,14 @@ import (
 
 	"github.com/go-openapi/runtime"
 
-	models "github.com/sapcc/kubernikus/pkg/api/models"
+	"github.com/sapcc/kubernikus/pkg/api/models"
 )
 
 // CreateClusterCreatedCode is the HTTP code returned for type CreateClusterCreated
 const CreateClusterCreatedCode int = 201
 
-/*CreateClusterCreated OK
+/*
+CreateClusterCreated OK
 
 swagger:response createClusterCreated
 */
@@ -57,7 +58,8 @@ func (o *CreateClusterCreated) WriteResponse(rw http.ResponseWriter, producer ru
 	}
 }
 
-/*CreateClusterDefault Error
+/*
+CreateClusterDefault Error
 
 swagger:response createClusterDefault
 */

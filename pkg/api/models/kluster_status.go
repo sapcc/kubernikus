@@ -6,15 +6,16 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"context"
 	"strconv"
 
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 )
 
 // KlusterStatus kluster status
+//
 // swagger:model KlusterStatus
 type KlusterStatus struct {
 
@@ -71,7 +72,6 @@ func (m *KlusterStatus) Validate(formats strfmt.Registry) error {
 }
 
 func (m *KlusterStatus) validateNodePools(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.NodePools) { // not required
 		return nil
 	}
@@ -81,6 +81,8 @@ func (m *KlusterStatus) validateNodePools(formats strfmt.Registry) error {
 		if err := m.NodePools[i].Validate(formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("nodePools" + "." + strconv.Itoa(i))
+			} else if ce, ok := err.(*errors.CompositeError); ok {
+				return ce.ValidateName("nodePools" + "." + strconv.Itoa(i))
 			}
 			return err
 		}
@@ -91,7 +93,6 @@ func (m *KlusterStatus) validateNodePools(formats strfmt.Registry) error {
 }
 
 func (m *KlusterStatus) validatePhase(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.Phase) { // not required
 		return nil
 	}
@@ -99,6 +100,58 @@ func (m *KlusterStatus) validatePhase(formats strfmt.Registry) error {
 	if err := m.Phase.Validate(formats); err != nil {
 		if ve, ok := err.(*errors.Validation); ok {
 			return ve.ValidateName("phase")
+		} else if ce, ok := err.(*errors.CompositeError); ok {
+			return ce.ValidateName("phase")
+		}
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this kluster status based on the context it is used
+func (m *KlusterStatus) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateNodePools(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidatePhase(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *KlusterStatus) contextValidateNodePools(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.NodePools); i++ {
+
+		if err := m.NodePools[i].ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("nodePools" + "." + strconv.Itoa(i))
+			} else if ce, ok := err.(*errors.CompositeError); ok {
+				return ce.ValidateName("nodePools" + "." + strconv.Itoa(i))
+			}
+			return err
+		}
+
+	}
+
+	return nil
+}
+
+func (m *KlusterStatus) contextValidatePhase(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := m.Phase.ContextValidate(ctx, formats); err != nil {
+		if ve, ok := err.(*errors.Validation); ok {
+			return ve.ValidateName("phase")
+		} else if ce, ok := err.(*errors.CompositeError); ok {
+			return ce.ValidateName("phase")
 		}
 		return err
 	}

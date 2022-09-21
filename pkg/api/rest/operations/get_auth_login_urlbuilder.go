@@ -46,12 +46,12 @@ func (o *GetAuthLoginURL) Build() (*url.URL, error) {
 
 	qs := make(url.Values)
 
-	var connectorID string
+	var connectorIDQ string
 	if o.ConnectorID != nil {
-		connectorID = *o.ConnectorID
+		connectorIDQ = *o.ConnectorID
 	}
-	if connectorID != "" {
-		qs.Set("connector_id", connectorID)
+	if connectorIDQ != "" {
+		qs.Set("connector_id", connectorIDQ)
 	}
 
 	_result.RawQuery = qs.Encode()

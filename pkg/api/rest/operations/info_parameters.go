@@ -13,7 +13,8 @@ import (
 )
 
 // NewInfoParams creates a new InfoParams object
-// no default values defined in spec.
+//
+// There are no default values defined in the spec.
 func NewInfoParams() InfoParams {
 
 	return InfoParams{}

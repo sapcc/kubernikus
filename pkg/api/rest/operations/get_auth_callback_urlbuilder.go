@@ -47,14 +47,14 @@ func (o *GetAuthCallbackURL) Build() (*url.URL, error) {
 
 	qs := make(url.Values)
 
-	code := o.Code
-	if code != "" {
-		qs.Set("code", code)
+	codeQ := o.Code
+	if codeQ != "" {
+		qs.Set("code", codeQ)
 	}
 
-	state := o.State
-	if state != "" {
-		qs.Set("state", state)
+	stateQ := o.State
+	if stateQ != "" {
+		qs.Set("state", stateQ)
 	}
 
 	_result.RawQuery = qs.Encode()

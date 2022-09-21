@@ -10,13 +10,14 @@ import (
 
 	"github.com/go-openapi/runtime"
 
-	models "github.com/sapcc/kubernikus/pkg/api/models"
+	"github.com/sapcc/kubernikus/pkg/api/models"
 )
 
 // ShowClusterOKCode is the HTTP code returned for type ShowClusterOK
 const ShowClusterOKCode int = 200
 
-/*ShowClusterOK OK
+/*
+ShowClusterOK OK
 
 swagger:response showClusterOK
 */
@@ -57,7 +58,8 @@ func (o *ShowClusterOK) WriteResponse(rw http.ResponseWriter, producer runtime.P
 	}
 }
 
-/*ShowClusterDefault Error
+/*
+ShowClusterDefault Error
 
 swagger:response showClusterDefault
 */

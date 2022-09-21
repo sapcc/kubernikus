@@ -13,60 +13,75 @@ import (
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
 	cr "github.com/go-openapi/runtime/client"
-
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 )
 
-// NewGetClusterCredentialsParams creates a new GetClusterCredentialsParams object
-// with the default values initialized.
+// NewGetClusterCredentialsParams creates a new GetClusterCredentialsParams object,
+// with the default timeout for this client.
+//
+// Default values are not hydrated, since defaults are normally applied by the API server side.
+//
+// To enforce default values in parameter, use SetDefaults or WithDefaults.
 func NewGetClusterCredentialsParams() *GetClusterCredentialsParams {
-	var ()
 	return &GetClusterCredentialsParams{
-
 		timeout: cr.DefaultTimeout,
 	}
 }
 
 // NewGetClusterCredentialsParamsWithTimeout creates a new GetClusterCredentialsParams object
-// with the default values initialized, and the ability to set a timeout on a request
+// with the ability to set a timeout on a request.
 func NewGetClusterCredentialsParamsWithTimeout(timeout time.Duration) *GetClusterCredentialsParams {
-	var ()
 	return &GetClusterCredentialsParams{
-
 		timeout: timeout,
 	}
 }
 
 // NewGetClusterCredentialsParamsWithContext creates a new GetClusterCredentialsParams object
-// with the default values initialized, and the ability to set a context for a request
+// with the ability to set a context for a request.
 func NewGetClusterCredentialsParamsWithContext(ctx context.Context) *GetClusterCredentialsParams {
-	var ()
 	return &GetClusterCredentialsParams{
-
 		Context: ctx,
 	}
 }
 
 // NewGetClusterCredentialsParamsWithHTTPClient creates a new GetClusterCredentialsParams object
-// with the default values initialized, and the ability to set a custom HTTPClient for a request
+// with the ability to set a custom HTTPClient for a request.
 func NewGetClusterCredentialsParamsWithHTTPClient(client *http.Client) *GetClusterCredentialsParams {
-	var ()
 	return &GetClusterCredentialsParams{
 		HTTPClient: client,
 	}
 }
 
-/*GetClusterCredentialsParams contains all the parameters to send to the API endpoint
-for the get cluster credentials operation typically these are written to a http.Request
+/*
+GetClusterCredentialsParams contains all the parameters to send to the API endpoint
+
+	for the get cluster credentials operation.
+
+	Typically these are written to a http.Request.
 */
 type GetClusterCredentialsParams struct {
 
-	/*Name*/
+	// Name.
 	Name string
 
 	timeout    time.Duration
 	Context    context.Context
 	HTTPClient *http.Client
+}
+
+// WithDefaults hydrates default values in the get cluster credentials params (not the query body).
+//
+// All values with no default are reset to their zero value.
+func (o *GetClusterCredentialsParams) WithDefaults() *GetClusterCredentialsParams {
+	o.SetDefaults()
+	return o
+}
+
+// SetDefaults hydrates default values in the get cluster credentials params (not the query body).
+//
+// All values with no default are reset to their zero value.
+func (o *GetClusterCredentialsParams) SetDefaults() {
+	// no default values defined for this parameter
 }
 
 // WithTimeout adds the timeout to the get cluster credentials params

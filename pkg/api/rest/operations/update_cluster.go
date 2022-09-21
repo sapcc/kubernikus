@@ -8,9 +8,9 @@ package operations
 import (
 	"net/http"
 
-	middleware "github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/runtime/middleware"
 
-	models "github.com/sapcc/kubernikus/pkg/api/models"
+	"github.com/sapcc/kubernikus/pkg/api/models"
 )
 
 // UpdateClusterHandlerFunc turns a function with the right signature into a update cluster handler
@@ -31,10 +31,10 @@ func NewUpdateCluster(ctx *middleware.Context, handler UpdateClusterHandler) *Up
 	return &UpdateCluster{Context: ctx, Handler: handler}
 }
 
-/*UpdateCluster swagger:route PUT /api/v1/clusters/{name} updateCluster
+/*
+	UpdateCluster swagger:route PUT /api/v1/clusters/{name} updateCluster
 
 Update the specified cluser
-
 */
 type UpdateCluster struct {
 	Context *middleware.Context
@@ -44,17 +44,16 @@ type UpdateCluster struct {
 func (o *UpdateCluster) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	route, rCtx, _ := o.Context.RouteInfo(r)
 	if rCtx != nil {
-		r = rCtx
+		*r = *rCtx
 	}
 	var Params = NewUpdateClusterParams()
-
 	uprinc, aCtx, err := o.Context.Authorize(r, route)
 	if err != nil {
 		o.Context.Respond(rw, r, route.Produces, route, err)
 		return
 	}
 	if aCtx != nil {
-		r = aCtx
+		*r = *aCtx
 	}
 	var principal *models.Principal
 	if uprinc != nil {
@@ -67,7 +66,6 @@ func (o *UpdateCluster) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	}
 
 	res := o.Handler.Handle(Params, principal) // actually handle the request
-
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
 }

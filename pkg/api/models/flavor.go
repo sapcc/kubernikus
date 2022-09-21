@@ -6,12 +6,14 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-	strfmt "github.com/go-openapi/strfmt"
+	"context"
 
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 )
 
 // Flavor flavor
+//
 // swagger:model Flavor
 type Flavor struct {
 
@@ -30,6 +32,11 @@ type Flavor struct {
 
 // Validate validates this flavor
 func (m *Flavor) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this flavor based on context it is used
+func (m *Flavor) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 

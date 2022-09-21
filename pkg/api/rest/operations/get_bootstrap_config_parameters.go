@@ -10,12 +10,12 @@ import (
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime/middleware"
-
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 )
 
 // NewGetBootstrapConfigParams creates a new GetBootstrapConfigParams object
-// no default values defined in spec.
+//
+// There are no default values defined in the spec.
 func NewGetBootstrapConfigParams() GetBootstrapConfigParams {
 
 	return GetBootstrapConfigParams{}
@@ -32,7 +32,6 @@ type GetBootstrapConfigParams struct {
 
 	/*
 	  Required: true
-	  Unique: true
 	  In: path
 	*/
 	Name string
@@ -51,7 +50,6 @@ func (o *GetBootstrapConfigParams) BindRequest(r *http.Request, route *middlewar
 	if err := o.bindName(rName, rhkName, route.Formats); err != nil {
 		res = append(res, err)
 	}
-
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -67,18 +65,7 @@ func (o *GetBootstrapConfigParams) bindName(rawData []string, hasKey bool, forma
 
 	// Required: true
 	// Parameter is provided by construction from the route
-
 	o.Name = raw
-
-	if err := o.validateName(formats); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// validateName carries on validations for parameter Name
-func (o *GetBootstrapConfigParams) validateName(formats strfmt.Registry) error {
 
 	return nil
 }

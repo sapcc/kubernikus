@@ -47,14 +47,14 @@ func (o *GetClusterValuesURL) Build() (*url.URL, error) {
 	if account != "" {
 		_path = strings.Replace(_path, "{account}", account, -1)
 	} else {
-		return nil, errors.New("Account is required on GetClusterValuesURL")
+		return nil, errors.New("account is required on GetClusterValuesURL")
 	}
 
 	name := o.Name
 	if name != "" {
 		_path = strings.Replace(_path, "{name}", name, -1)
 	} else {
-		return nil, errors.New("Name is required on GetClusterValuesURL")
+		return nil, errors.New("name is required on GetClusterValuesURL")
 	}
 
 	_basePath := o._basePath

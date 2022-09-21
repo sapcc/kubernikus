@@ -1056,7 +1056,7 @@ func init() {
   },
   "security": [
     {
-      "keystone": null
+      "keystone": []
     },
     {
       "dex": [

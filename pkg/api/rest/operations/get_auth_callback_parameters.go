@@ -11,13 +11,13 @@ import (
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/validate"
-
-	strfmt "github.com/go-openapi/strfmt"
 )
 
 // NewGetAuthCallbackParams creates a new GetAuthCallbackParams object
-// no default values defined in spec.
+//
+// There are no default values defined in the spec.
 func NewGetAuthCallbackParams() GetAuthCallbackParams {
 
 	return GetAuthCallbackParams{}
@@ -64,7 +64,6 @@ func (o *GetAuthCallbackParams) BindRequest(r *http.Request, route *middleware.M
 	if err := o.bindState(qState, qhkState, route.Formats); err != nil {
 		res = append(res, err)
 	}
-
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -74,7 +73,7 @@ func (o *GetAuthCallbackParams) BindRequest(r *http.Request, route *middleware.M
 // bindCode binds and validates parameter Code from query.
 func (o *GetAuthCallbackParams) bindCode(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	if !hasKey {
-		return errors.Required("code", "query")
+		return errors.Required("code", "query", rawData)
 	}
 	var raw string
 	if len(rawData) > 0 {
@@ -83,10 +82,10 @@ func (o *GetAuthCallbackParams) bindCode(rawData []string, hasKey bool, formats 
 
 	// Required: true
 	// AllowEmptyValue: false
+
 	if err := validate.RequiredString("code", "query", raw); err != nil {
 		return err
 	}
-
 	o.Code = raw
 
 	return nil
@@ -95,7 +94,7 @@ func (o *GetAuthCallbackParams) bindCode(rawData []string, hasKey bool, formats 
 // bindState binds and validates parameter State from query.
 func (o *GetAuthCallbackParams) bindState(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	if !hasKey {
-		return errors.Required("state", "query")
+		return errors.Required("state", "query", rawData)
 	}
 	var raw string
 	if len(rawData) > 0 {
@@ -104,10 +103,10 @@ func (o *GetAuthCallbackParams) bindState(rawData []string, hasKey bool, formats
 
 	// Required: true
 	// AllowEmptyValue: false
+
 	if err := validate.RequiredString("state", "query", raw); err != nil {
 		return err
 	}
-
 	o.State = raw
 
 	return nil

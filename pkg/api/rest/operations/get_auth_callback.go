@@ -8,7 +8,7 @@ package operations
 import (
 	"net/http"
 
-	middleware "github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/runtime/middleware"
 )
 
 // GetAuthCallbackHandlerFunc turns a function with the right signature into a get auth callback handler
@@ -29,10 +29,10 @@ func NewGetAuthCallback(ctx *middleware.Context, handler GetAuthCallbackHandler)
 	return &GetAuthCallback{Context: ctx, Handler: handler}
 }
 
-/*GetAuthCallback swagger:route GET /auth/callback getAuthCallback
+/*
+	GetAuthCallback swagger:route GET /auth/callback getAuthCallback
 
 callback for oauth result
-
 */
 type GetAuthCallback struct {
 	Context *middleware.Context
@@ -42,17 +42,15 @@ type GetAuthCallback struct {
 func (o *GetAuthCallback) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	route, rCtx, _ := o.Context.RouteInfo(r)
 	if rCtx != nil {
-		r = rCtx
+		*r = *rCtx
 	}
 	var Params = NewGetAuthCallbackParams()
-
 	if err := o.Context.BindValidRequest(r, route, &Params); err != nil { // bind params
 		o.Context.Respond(rw, r, route.Produces, route, err)
 		return
 	}
 
 	res := o.Handler.Handle(Params) // actually handle the request
-
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
 }

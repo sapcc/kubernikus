@@ -8,9 +8,9 @@ package operations
 import (
 	"net/http"
 
-	middleware "github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/runtime/middleware"
 
-	models "github.com/sapcc/kubernikus/pkg/api/models"
+	"github.com/sapcc/kubernikus/pkg/api/models"
 )
 
 // GetBootstrapConfigHandlerFunc turns a function with the right signature into a get bootstrap config handler
@@ -31,10 +31,10 @@ func NewGetBootstrapConfig(ctx *middleware.Context, handler GetBootstrapConfigHa
 	return &GetBootstrapConfig{Context: ctx, Handler: handler}
 }
 
-/*GetBootstrapConfig swagger:route GET /api/v1/clusters/{name}/bootstrap getBootstrapConfig
+/*
+	GetBootstrapConfig swagger:route GET /api/v1/clusters/{name}/bootstrap getBootstrapConfig
 
 Get bootstrap config to onboard a node
-
 */
 type GetBootstrapConfig struct {
 	Context *middleware.Context
@@ -44,17 +44,16 @@ type GetBootstrapConfig struct {
 func (o *GetBootstrapConfig) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	route, rCtx, _ := o.Context.RouteInfo(r)
 	if rCtx != nil {
-		r = rCtx
+		*r = *rCtx
 	}
 	var Params = NewGetBootstrapConfigParams()
-
 	uprinc, aCtx, err := o.Context.Authorize(r, route)
 	if err != nil {
 		o.Context.Respond(rw, r, route.Produces, route, err)
 		return
 	}
 	if aCtx != nil {
-		r = aCtx
+		*r = *aCtx
 	}
 	var principal *models.Principal
 	if uprinc != nil {
@@ -67,7 +66,6 @@ func (o *GetBootstrapConfig) ServeHTTP(rw http.ResponseWriter, r *http.Request) 
 	}
 
 	res := o.Handler.Handle(Params, principal) // actually handle the request
-
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
 }

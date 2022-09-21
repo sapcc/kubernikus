@@ -6,12 +6,14 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-	strfmt "github.com/go-openapi/strfmt"
+	"context"
 
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 )
 
 // GetAuthCallbackOKBody get auth callback o k body
+//
 // swagger:model getAuthCallbackOKBody
 type GetAuthCallbackOKBody struct {
 
@@ -24,6 +26,11 @@ type GetAuthCallbackOKBody struct {
 
 // Validate validates this get auth callback o k body
 func (m *GetAuthCallbackOKBody) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this get auth callback o k body based on context it is used
+func (m *GetAuthCallbackOKBody) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 

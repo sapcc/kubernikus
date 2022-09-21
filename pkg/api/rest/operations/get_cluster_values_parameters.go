@@ -10,12 +10,12 @@ import (
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime/middleware"
-
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 )
 
 // NewGetClusterValuesParams creates a new GetClusterValuesParams object
-// no default values defined in spec.
+//
+// There are no default values defined in the spec.
 func NewGetClusterValuesParams() GetClusterValuesParams {
 
 	return GetClusterValuesParams{}
@@ -32,13 +32,11 @@ type GetClusterValuesParams struct {
 
 	/*
 	  Required: true
-	  Unique: true
 	  In: path
 	*/
 	Account string
 	/*
 	  Required: true
-	  Unique: true
 	  In: path
 	*/
 	Name string
@@ -62,7 +60,6 @@ func (o *GetClusterValuesParams) BindRequest(r *http.Request, route *middleware.
 	if err := o.bindName(rName, rhkName, route.Formats); err != nil {
 		res = append(res, err)
 	}
-
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -78,18 +75,7 @@ func (o *GetClusterValuesParams) bindAccount(rawData []string, hasKey bool, form
 
 	// Required: true
 	// Parameter is provided by construction from the route
-
 	o.Account = raw
-
-	if err := o.validateAccount(formats); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// validateAccount carries on validations for parameter Account
-func (o *GetClusterValuesParams) validateAccount(formats strfmt.Registry) error {
 
 	return nil
 }
@@ -103,18 +89,7 @@ func (o *GetClusterValuesParams) bindName(rawData []string, hasKey bool, formats
 
 	// Required: true
 	// Parameter is provided by construction from the route
-
 	o.Name = raw
-
-	if err := o.validateName(formats); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// validateName carries on validations for parameter Name
-func (o *GetClusterValuesParams) validateName(formats strfmt.Registry) error {
 
 	return nil
 }
