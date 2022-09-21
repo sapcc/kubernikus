@@ -308,7 +308,6 @@ func TestClusterUpdate(t *testing.T) {
 			ClusterCIDR:      swag.String("8.8.8.8/24"),
 			DNSAddress:       "9.9.9.9",
 			DNSDomain:        "changed",
-			Name:             "mund",
 			ServiceCIDR:      "9.9.9.9/24",
 			Openstack: models.OpenstackSpec{
 				LBSubnetID: "changed",
@@ -350,6 +349,7 @@ func TestClusterUpdate(t *testing.T) {
 	req := createRequest("PUT", "/api/v1/clusters/nase", string(jsonPayload))
 	code, _, body := result(handler, req)
 	if !assert.Equal(t, 200, code) {
+		fmt.Printf("%s", string(body))
 		return
 	}
 	var apiResponse models.Kluster
