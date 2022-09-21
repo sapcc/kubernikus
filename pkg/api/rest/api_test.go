@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -104,7 +103,7 @@ func result(handler http.Handler, req *http.Request) (int, http.Header, []byte) 
 	rec := httptest.NewRecorder()
 	handler.ServeHTTP(rec, req)
 	response := rec.Result()
-	body, _ := ioutil.ReadAll(response.Body)
+	body, _ := io.ReadAll(response.Body)
 	return response.StatusCode, response.Header, body
 }
 

@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"strconv"
 	"strings"
@@ -31,7 +30,7 @@ const (
 	NODE_NAMING_PATTERN_PREFIX     = "kks-%v-%v-"
 )
 
-//Taken from https://github.com/kubernetes/kubernetes/blob/886e04f1fffbb04faf8a9f9ee141143b2684ae68/pkg/api/v1/node/util.go
+// Taken from https://github.com/kubernetes/kubernetes/blob/886e04f1fffbb04faf8a9f9ee141143b2684ae68/pkg/api/v1/node/util.go
 // IsNodeReady returns true if a node is ready; false otherwise.
 func IsNodeReady(node *v1.Node) bool {
 	for _, c := range node.Status.Conditions {
@@ -107,7 +106,7 @@ var machineIDPath = "/etc/machine-id"
 // http://www.freedesktop.org/software/systemd/man/sd_id128_get_machine.html
 
 func GetMachineID() (string, error) {
-	machineID, err := ioutil.ReadFile(machineIDPath)
+	machineID, err := os.ReadFile(machineIDPath)
 	if err != nil {
 		return "", fmt.Errorf("failed to read %s: %v", machineIDPath, err)
 	}

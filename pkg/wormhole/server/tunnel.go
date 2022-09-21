@@ -4,8 +4,8 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"fmt"
-	"io/ioutil"
 	"net"
+	"os"
 	"strconv"
 	"sync"
 
@@ -76,7 +76,7 @@ func (t *Tunnel) Run(stopCh <-chan struct{}, wg *sync.WaitGroup) {
 
 func loadCAFile(cafile string) (*x509.CertPool, error) {
 	pool := x509.NewCertPool()
-	cas, err := ioutil.ReadFile(cafile)
+	cas, err := os.ReadFile(cafile)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to read file %s: %s", cafile, err)
 	}

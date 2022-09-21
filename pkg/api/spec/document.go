@@ -8,7 +8,7 @@ import (
 
 var doc *loads.Document = nil
 
-//Spec returns the analyzed swagger document
+// Spec returns the analyzed swagger document
 func Spec() (*loads.Document, error) {
 	var err error
 	if doc == nil {

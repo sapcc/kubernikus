@@ -187,7 +187,7 @@ func (d *createCluster) overlapWithSiblingCluster(cidr string, routerID string, 
 	return false, nil
 }
 
-//approximate the control plane service CIDR by getting one service IP and assuming a /17 prefix
+// approximate the control plane service CIDR by getting one service IP and assuming a /17 prefix
 func (d *createCluster) controlPlaneServiceCIDR() *net.IPNet {
 	if d.cpServiceCIDR != nil {
 		return d.cpServiceCIDR
@@ -204,7 +204,7 @@ func (d *createCluster) controlPlaneServiceCIDR() *net.IPNet {
 	return d.cpServiceCIDR
 }
 
-//we infer the clusterCIDR by taking a Pod IP and assuming /16
+// we infer the clusterCIDR by taking a Pod IP and assuming /16
 func (d *createCluster) controlPlaneClusterCIDR() *net.IPNet {
 	if d.cpClusterCIDR != nil {
 		return d.cpClusterCIDR

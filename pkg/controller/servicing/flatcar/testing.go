@@ -3,7 +3,7 @@ package flatcar
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"testing"
 
@@ -39,7 +39,7 @@ func NewTestClient(t *testing.T, baseURL, body string, count *int) *http.Client 
 		}
 		return &http.Response{
 			StatusCode: 200,
-			Body:       ioutil.NopCloser(bytes.NewBufferString(body)),
+			Body:       io.NopCloser(bytes.NewBufferString(body)),
 			Header:     make(http.Header),
 		}
 	}
