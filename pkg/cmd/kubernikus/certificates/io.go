@@ -2,7 +2,6 @@ package certificates
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path"
 	"path/filepath"
@@ -36,7 +35,7 @@ func write(certPath string, data []byte) error {
 	if err := os.MkdirAll(filepath.Dir(certPath), os.FileMode(0755)); err != nil {
 		return err
 	}
-	if err := ioutil.WriteFile(certPath, data, os.FileMode(0644)); err != nil {
+	if err := os.WriteFile(certPath, data, os.FileMode(0644)); err != nil {
 		return err
 	}
 	return nil

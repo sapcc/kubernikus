@@ -6,7 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"strings"
 	"testing"
@@ -183,7 +183,7 @@ func (k NodeTests) currentFlatcarVersion(channel string) (string, error) {
 	if resp.StatusCode != 200 {
 		return "", fmt.Errorf("Invalid %d response code fetching %s", resp.StatusCode, feed_url)
 	}
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return "", fmt.Errorf("Failed reading %s feed response: %w", channel, err)
 	}

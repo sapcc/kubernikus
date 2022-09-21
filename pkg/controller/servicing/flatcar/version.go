@@ -2,7 +2,7 @@ package flatcar
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"regexp"
 	"sync"
@@ -125,7 +125,7 @@ func (d *Version) fetch(c channel) (*version.Version, error) {
 
 	defer r.Body.Close()
 
-	body, err := ioutil.ReadAll(r.Body)
+	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		return nil, fmt.Errorf("Couldn't read flatcar version: %s", err)
 	}

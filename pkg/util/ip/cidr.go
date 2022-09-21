@@ -4,9 +4,8 @@ import (
 	"net"
 )
 
-//adapted from  k8s.io/pkg/controller/route
+// adapted from  k8s.io/pkg/controller/route
 func CIDROverlap(cidr1, cidr2 *net.IPNet) bool {
-
 	lastIP1 := make([]byte, len(cidr1.IP))
 	for i := range lastIP1 {
 		lastIP1[i] = cidr1.IP[i] | ^cidr1.Mask[i]

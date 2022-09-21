@@ -3,7 +3,7 @@ package coreos
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"time"
 
@@ -63,7 +63,7 @@ func (r *Release) fetch(c channel) (*releaseDate, error) {
 
 	defer result.Body.Close()
 
-	body, err := ioutil.ReadAll(result.Body)
+	body, err := io.ReadAll(result.Body)
 	if err != nil {
 		return nil, errors.Wrap(err, "Couldn't read body")
 	}

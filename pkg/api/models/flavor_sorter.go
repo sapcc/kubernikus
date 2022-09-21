@@ -12,7 +12,7 @@ func SortFlavors(flavors []Flavor) {
 	sort.Sort(&flavorSorter{flavors: flavors})
 }
 
-//Part of sort.Interface
+// Part of sort.Interface
 func (fs *flavorSorter) Len() int {
 	return len(fs.flavors)
 }

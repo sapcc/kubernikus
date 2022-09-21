@@ -5,7 +5,6 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -43,7 +42,7 @@ func main() {
 	}
 
 	if _, err := os.Stat(LastFile); err == nil {
-		data, err := ioutil.ReadFile(LastFile)
+		data, err := os.ReadFile(LastFile)
 		if err != nil {
 			log.Fatalf("Could not read file: %s", err)
 		}
@@ -55,7 +54,7 @@ func main() {
 			log.Fatal("Etcd restore detected")
 		}
 	} else {
-		if err := ioutil.WriteFile(LastFile, []byte(strconv.Itoa(current)), 0644); err != nil {
+		if err := os.WriteFile(LastFile, []byte(strconv.Itoa(current)), 0644); err != nil {
 			log.Fatalf("Failed to write file: %s", err)
 		}
 	}

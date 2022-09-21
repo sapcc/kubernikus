@@ -2,7 +2,7 @@ package create
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
 	"os"
 
 	"github.com/pkg/errors"
@@ -35,13 +35,13 @@ func (o *CreateOptions) clusterRun(c *cobra.Command, args []string) {
 	var err error
 	klog.V(2).Infof("ReadFile: %v", o.ReadFile)
 	if o.ReadFile != "" {
-		raw, err = ioutil.ReadFile(o.ReadFile)
+		raw, err = os.ReadFile(o.ReadFile)
 		if err != nil {
 			klog.V(2).Infof("error reading spec file: %v", err)
 			cmd.CheckError(errors.Wrap(err, "Error reading from spec file"))
 		}
 	} else {
-		raw, err = ioutil.ReadAll(os.Stdin)
+		raw, err = io.ReadAll(os.Stdin)
 		if err != nil {
 			klog.V(2).Infof("error reading from stdin: %v", err)
 			cmd.CheckError(errors.Wrap(err, "Error reading from Stdin"))
