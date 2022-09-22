@@ -121,7 +121,6 @@ imagesForVersion:
     pause:
       repository: keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/pause-amd64
       tag: '3.1'
-    supported: true
     wormhole:
       repository: keppel.$REGION.cloud.sap/ccloud/kubernikus
       tag: changeme
@@ -159,7 +158,6 @@ imagesForVersion:
     pause:
       repository: keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/pause-amd64
       tag: '3.1'
-    supported: true
     wormhole:
       repository: keppel.$REGION.cloud.sap/ccloud/kubernikus
       tag: changeme
@@ -197,7 +195,6 @@ imagesForVersion:
     pause:
       repository: keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/pause-amd64
       tag: '3.1'
-    supported: true
     wormhole:
       repository: keppel.$REGION.cloud.sap/ccloud/kubernikus
       tag: changeme
@@ -235,7 +232,6 @@ imagesForVersion:
     pause:
       repository: keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/pause-amd64
       tag: '3.1'
-    supported: false
     wormhole:
       repository: keppel.$REGION.cloud.sap/ccloud/kubernikus
       tag: changeme
@@ -273,7 +269,6 @@ imagesForVersion:
     pause:
       repository: keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/pause-amd64
       tag: '3.1'
-    supported: true
     wormhole:
       repository: keppel.$REGION.cloud.sap/ccloud/kubernikus
       tag: changeme
@@ -311,7 +306,6 @@ imagesForVersion:
     pause:
       repository: keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/pause-amd64
       tag: '3.1'
-    supported: true
     wormhole:
       repository: keppel.$REGION.cloud.sap/ccloud/kubernikus
       tag: changeme
@@ -386,7 +380,6 @@ imagesForVersion:
     pause:
       repository: keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/pause-amd64
       tag: '3.1'
-    supported: true
     wormhole:
       repository: keppel.$REGION.cloud.sap/ccloud/kubernikus
       tag: changeme
@@ -424,7 +417,6 @@ imagesForVersion:
     pause:
       repository: keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/pause-amd64
       tag: '3.1'
-    supported: true
     wormhole:
       repository: keppel.$REGION.cloud.sap/ccloud/kubernikus
       tag: changeme
@@ -474,7 +466,6 @@ imagesForVersion:
     scheduler:
       repository: keppel.$REGION.cloud.sap/ccloud/kube-scheduler
       tag: v1.19.11
-    supported: true
     wormhole:
       repository: keppel.$REGION.cloud.sap/ccloud/kubernikus
       tag: changeme
@@ -524,7 +515,6 @@ imagesForVersion:
     scheduler:
       repository: keppel.$REGION.cloud.sap/ccloud/kube-scheduler
       tag: v1.19.4
-    supported: false
     wormhole:
       repository: keppel.$REGION.cloud.sap/ccloud/kubernikus
       tag: changeme
@@ -598,7 +588,6 @@ imagesForVersion:
     scheduler:
       repository: keppel.$REGION.cloud.sap/ccloud/kube-scheduler
       tag: v1.20.6
-    supported: false
     wormhole:
       repository: keppel.$REGION.cloud.sap/ccloud/kubernikus
       tag: changeme
@@ -645,7 +634,6 @@ imagesForVersion:
     dashboardProxy:
       repository: keppel.$REGION.cloud.sap/ccloud/keycloak-gatekeeper
       tag: 6.0.1
-    default: true
     dex:
       repository: keppel.$REGION.cloud.sap/ccloud/dex
       tag: 38f4f8ea8d487470a1dd5b83d66b428d8b502f81
@@ -673,7 +661,6 @@ imagesForVersion:
     scheduler:
       repository: keppel.$REGION.cloud.sap/ccloud/kube-scheduler
       tag: v1.20.8
-    supported: true
     wormhole:
       repository: keppel.$REGION.cloud.sap/ccloud/kubernikus
       tag: changeme
@@ -747,7 +734,6 @@ imagesForVersion:
     scheduler:
       repository: keppel.$REGION.cloud.sap/ccloud/kube-scheduler
       tag: v1.21.5
-    supported: true
     wormhole:
       repository: keppel.$REGION.cloud.sap/ccloud/kubernikus
       tag: changeme
@@ -821,7 +807,6 @@ imagesForVersion:
     scheduler:
       repository: keppel.$REGION.cloud.sap/ccloud/kube-scheduler
       tag: v1.22.14
-    supported: false
     wormhole:
       repository: keppel.$REGION.cloud.sap/ccloud/kubernikus
       tag: changeme
@@ -969,7 +954,6 @@ imagesForVersion:
     scheduler:
       repository: keppel.$REGION.cloud.sap/ccloud/kube-scheduler
       tag: v1.22.4
-    supported: false
     wormhole:
       repository: keppel.$REGION.cloud.sap/ccloud/kubernikus
       tag: changeme
@@ -1043,7 +1027,6 @@ imagesForVersion:
     scheduler:
       repository: keppel.$REGION.cloud.sap/ccloud/kube-scheduler
       tag: v1.23.11
-    supported: false
     wormhole:
       repository: keppel.$REGION.cloud.sap/ccloud/kubernikus
       tag: changeme
@@ -1090,6 +1073,7 @@ imagesForVersion:
     dashboardProxy:
       repository: keppel.$REGION.cloud.sap/ccloud/keycloak-gatekeeper
       tag: 6.0.1
+    default: true
     dex:
       repository: keppel.$REGION.cloud.sap/ccloud/dex
       tag: 38f4f8ea8d487470a1dd5b83d66b428d8b502f81
@@ -1191,7 +1175,6 @@ imagesForVersion:
     scheduler:
       repository: keppel.$REGION.cloud.sap/ccloud/kube-scheduler
       tag: v1.23.6
-    supported: false
     wormhole:
       repository: keppel.$REGION.cloud.sap/ccloud/kubernikus
       tag: changeme
@@ -1271,7 +1254,6 @@ imagesForVersion:
     scheduler:
       repository: keppel.$REGION.cloud.sap/ccloud/kube-scheduler
       tag: v1.24.4
-    supported: false
     wormhole:
       repository: keppel.$REGION.cloud.sap/ccloud/kubernikus
       tag: changeme
@@ -1351,7 +1333,6 @@ imagesForVersion:
     scheduler:
       repository: keppel.$REGION.cloud.sap/ccloud/kube-scheduler
       tag: v1.24.5
-    supported: false
     wormhole:
       repository: keppel.$REGION.cloud.sap/ccloud/kubernikus
       tag: changeme
