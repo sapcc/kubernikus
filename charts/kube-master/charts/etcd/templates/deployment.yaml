@@ -167,6 +167,7 @@ spec:
                 {{- end }}
             initialDelaySeconds: 300
             periodSeconds: 30
+            timeoutSeconds: 3
           readinessProbe:
             exec:
               command:
@@ -179,6 +180,7 @@ spec:
                 {{- end }}
             initialDelaySeconds: 5
             periodSeconds: 5
+            timeoutSeconds: 3
           resources:
 {{ toYaml .Values.resources | indent 12 }}
 {{- if .Values.backup.enabled }}

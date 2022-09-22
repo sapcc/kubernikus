@@ -4,7 +4,7 @@ image_resource:
   type: registry-image
   source:
     repository: keppel.eu-de-1.cloud.sap/ccloud-dockerhub-mirror/library/golang
-    tag: 1.16-alpine3.13
+    tag: 1.17-alpine
 inputs:
   - name: kubernikus.builds
     path: gopath/src/github.com/sapcc/kubernikus

@@ -7,6 +7,7 @@ import (
 	apps "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
 	rbac "k8s.io/api/rbac/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -239,9 +240,10 @@ func createDynamicResource(dynamicClient dynamic.Interface, manifest string, gvr
 		return errors.Wrap(err, "Decode")
 	}
 
-	_, err = dynamicClient.Resource(gvr).Create(context.TODO(), resource, metav1.CreateOptions{})
-	if err != nil {
-		return errors.Wrap(err, "Create")
+	if _, err = dynamicClient.Resource(gvr).Create(context.TODO(), resource, metav1.CreateOptions{}); err != nil {
+		if !apierrors.IsAlreadyExists(err) {
+			return errors.Wrap(err, "Create")
+		}
 	}
 
 	return nil

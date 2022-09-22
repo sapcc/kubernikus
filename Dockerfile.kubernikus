@@ -2,7 +2,7 @@ ARG DOCS_IMAGE=keppel.eu-de-1.cloud.sap/ccloud/kubernikus-docs-builder:latest
 FROM keppel.eu-de-1.cloud.sap/ccloud-dockerhub-mirror/library/golang:1.16-alpine3.13 as builder
 WORKDIR /app
 RUN apk add --no-cache make bash git curl gcc musl-dev
-RUN curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.42.1
+RUN curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.47.3
 COPY . .
 ENV GOARCH=amd64
 ARG VERSION

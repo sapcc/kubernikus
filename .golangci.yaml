@@ -13,6 +13,7 @@ issues:
   fix: false
 linters-settings:
   gci:
-    # put imports beginning with prefix after 3rd-party packages;
-    # it's a comma-separated list of prefixes
-    local-prefixes: github.com/sapcc/kubernikus
+    sections:
+      - standard
+      - default
+      - prefix(github.com/sapcc/kubernikus)

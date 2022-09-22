@@ -29,6 +29,7 @@ import (
 	"github.com/sapcc/kubernikus/pkg/controller/config"
 	"github.com/sapcc/kubernikus/pkg/controller/ground"
 	"github.com/sapcc/kubernikus/pkg/controller/ground/bootstrap/csi"
+	"github.com/sapcc/kubernikus/pkg/controller/ground/bootstrap/network"
 	"github.com/sapcc/kubernikus/pkg/controller/metrics"
 	informers_kubernikus "github.com/sapcc/kubernikus/pkg/generated/informers/externalversions/kubernikus/v1"
 	"github.com/sapcc/kubernikus/pkg/util"
@@ -687,6 +688,16 @@ func (op *GroundControl) upgradeKluster(kluster *v1.Kluster, toVersion string) e
 
 		if err := csi.SeedCinderCSIRoles123(kubernetes); err != nil {
 			return errors.Wrap(err, "seed cinder CSI roles on upgrade")
+		}
+	}
+	if !kluster.Spec.NoCloud && strings.HasPrefix(toVersion, "1.24") && strings.HasPrefix(kluster.Status.ApiserverVersion, "1.23") {
+		kubernetes, err := op.Clients.Satellites.ClientFor(kluster)
+		if err != nil {
+			return errors.Wrap(err, "client")
+		}
+
+		if err := network.SeedNetwork(kubernetes, op.Images.Versions[kluster.Spec.Version], *kluster.Spec.ClusterCIDR, kluster.Status.Apiserver, kluster.Spec.AdvertiseAddress, kluster.Spec.AdvertisePort); err != nil {
+			return errors.Wrap(err, "seed CNI config on upgrade")
 		}
 	}
 

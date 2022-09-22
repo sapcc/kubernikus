@@ -66,7 +66,7 @@ func (f *Kubernetes) WaitForDefaultServiceAccountInNamespace(namespace string) e
 	ctx, cancel := context.WithTimeout(context.Background(), ServiceAccountProvisionTimeout)
 	defer cancel()
 
-	_, err = watch.UntilWithoutRetry(ctx, w, ServiceAccountHasSecrets)
+	_, err = watch.UntilWithoutRetry(ctx, w, Created)
 	return err
 }
 
