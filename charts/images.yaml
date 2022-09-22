@@ -969,6 +969,80 @@ imagesForVersion:
     scheduler:
       repository: keppel.$REGION.cloud.sap/ccloud/kube-scheduler
       tag: v1.23.11
+    supported: false
+    wormhole:
+      repository: keppel.$REGION.cloud.sap/ccloud/kubernikus
+      tag: changeme
+  1.23.12:
+    apiserver:
+      repository: keppel.$REGION.cloud.sap/ccloud/kube-apiserver
+      tag: v1.23.12
+    cinderCSIPlugin:
+      repository: keppel.$REGION.cloud.sap/ccloud/cinder-csi-plugin
+      tag: v1.23.0
+    cloudControllerManager:
+      repository: keppel.$REGION.cloud.sap/ccloud/openstack-cloud-controller-manager
+      tag: v1.23.4
+    controllerManager:
+      repository: keppel.$REGION.cloud.sap/ccloud/kube-controller-manager
+      tag: v1.23.12
+    coreDNS:
+      repository: keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/coredns/coredns
+      tag: 1.9.1
+    csiAttacher:
+      repository: keppel.$REGION.cloud.sap/ccloud/csi-attacher
+      tag: v3.4.0
+    csiLivenessProbe:
+      repository: keppel.$REGION.cloud.sap/ccloud/csi-livenessprobe
+      tag: v2.6.0
+    csiNodeDriver:
+      repository: keppel.$REGION.cloud.sap/ccloud/csi-node-driver-registrar
+      tag: v2.5.0
+    csiProvisioner:
+      repository: keppel.$REGION.cloud.sap/ccloud/csi-provisioner
+      tag: v3.1.0
+    csiResizer:
+      repository: keppel.$REGION.cloud.sap/ccloud/csi-resizer
+      tag: v1.4.0
+    csiSnapshotController:
+      repository: keppel.$REGION.cloud.sap/ccloud/csi-snapshot-controller
+      tag: v5.0.1
+    csiSnapshotter:
+      repository: keppel.$REGION.cloud.sap/ccloud/csi-snapshotter
+      tag: v5.0.1
+    dashboard:
+      repository: keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/kubernetesui/dashboard
+      tag: v2.0.4
+    dashboardProxy:
+      repository: keppel.$REGION.cloud.sap/ccloud/keycloak-gatekeeper
+      tag: 6.0.1
+    dex:
+      repository: keppel.$REGION.cloud.sap/ccloud/dex
+      tag: 38f4f8ea8d487470a1dd5b83d66b428d8b502f81
+    etcd:
+      repository: keppel.$REGION.cloud.sap/ccloud/etcd
+      tag: v3.4.13-bootstrap-3
+    etcdBackup:
+      repository: keppel.$REGION.cloud.sap/ccloud/etcdbrctl
+      tag: v0.15.4
+    flannel:
+      repository: keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/flannelcni/flannel
+      tag: v0.17.0
+    fluentd:
+      repository: keppel.$REGION.cloud.sap/ccloud/kubernikus-fluentd
+      tag: v1.14.6-1.1
+    kubeProxy:
+      repository: keppel.$REGION.cloud.sap/ccloud/kube-proxy
+      tag: v1.23.12
+    kubelet:
+      repository: keppel.$REGION.cloud.sap/ccloud/kubelet
+      tag: v1.23.12
+    pause:
+      repository: keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/pause-amd64
+      tag: '3.1'
+    scheduler:
+      repository: keppel.$REGION.cloud.sap/ccloud/kube-scheduler
+      tag: v1.23.12
     supported: true
     wormhole:
       repository: keppel.$REGION.cloud.sap/ccloud/kubernikus
