@@ -752,44 +752,6 @@ task_cli: &task_cli
   params:
   
 
-task_cli2: &task_cli2
-  platform: 'linux'
-  
-  image_resource:
-    type: registry-image
-    source:
-      repository: keppel.eu-de-1.cloud.sap/ccloud-dockerhub-mirror/library/golang
-      tag: 1.17-alpine
-  inputs:
-    - name: kubernikus.builds
-      path: build
-  outputs:
-    - name: binaries
-  
-  run:
-    path: /bin/sh
-    args:
-      - -exc
-      - |
-        apk add --no-cache upx git curl gpg gpg-agent
-        echo "$SIGNING_KEY" > gpg.key
-        gpg --import gpg.key
-  
-        curl -fLO https://github.com/goreleaser/goreleaser/releases/download/v1.10.3/goreleaser_1.10.3_x86_64.apk
-        apk add --allow-untrusted goreleaser_1.10.3_x86_64.apk
-  
-        cd build
-        git config --global --add safe.directory $PWD #not sure this is ony neede for fly execute but YOLO
-        git status
-        git clean -f
-        git tag v1.0.0+$(git rev-parse HEAD)
-        goreleaser release
-  
-  params:
-    SIGNING_KEY:
-    GITHUB_TOKEN:
-  
-
 task_e2e_tests: &task_e2e_tests
   platform: 'linux'
   
@@ -1606,7 +1568,7 @@ jobs:
       - put: all-versions.trigger
 
 
-  - name: e2e-1.24.5
+  - name: e2e-1.24.6
     serial: true
     plan:
       - in_parallel:
@@ -1623,14 +1585,14 @@ jobs:
           <<: *task_e2e_tests
         timeout: 2h
         params:
-          KLUSTER_VERSION: "1.24.5"
+          KLUSTER_VERSION: "1.24.6"
           KLUSTER_CIDR: "100.100.0.0/16"
           ISOLATE_TEST: "true"
           KLUSTER_OS_IMAGES: flatcar-stable-amd64,flatcar-beta-amd64
           <<: *auth_e2e_master
     <<: *slack
 
-  - name: e2e-1.23.11
+  - name: e2e-1.23.12
     serial: true
     plan:
       - in_parallel:
@@ -1647,14 +1609,14 @@ jobs:
           <<: *task_e2e_tests
         timeout: 2h
         params:
-          KLUSTER_VERSION: "1.23.11"
+          KLUSTER_VERSION: "1.23.12"
           KLUSTER_CIDR: "100.101.0.0/16"
           ISOLATE_TEST: "true"
           KLUSTER_OS_IMAGES: flatcar-stable-amd64,flatcar-beta-amd64
           <<: *auth_e2e_master
     <<: *slack
 
-  - name: e2e-1.22.14
+  - name: e2e-1.22.15
     serial: true
     plan:
       - in_parallel:
@@ -1671,7 +1633,7 @@ jobs:
           <<: *task_e2e_tests
         timeout: 2h
         params:
-          KLUSTER_VERSION: "1.22.14"
+          KLUSTER_VERSION: "1.22.15"
           KLUSTER_CIDR: "100.102.0.0/16"
           ISOLATE_TEST: "true"
           KLUSTER_OS_IMAGES: flatcar-stable-amd64,flatcar-beta-amd64
@@ -1900,7 +1862,7 @@ jobs:
     plan:
       - get: kubernikus.builds
         resource: kubernikus.git
-        passed: [e2e-1.24.5]
+        passed: [e2e-1.24.6]
       - task: changes
         config:
           <<: *task_github_compare_url
@@ -3470,11 +3432,11 @@ groups:
       - whitesource
       - all-versions
 
-      - e2e-1.24.5
+      - e2e-1.24.6
 
-      - e2e-1.23.11
+      - e2e-1.23.12
 
-      - e2e-1.22.14
+      - e2e-1.22.15
 
       - e2e-1.21.5
 
@@ -3626,11 +3588,11 @@ groups:
       - whitesource
       - all-versions
 
-      - e2e-1.24.5
+      - e2e-1.24.6
 
-      - e2e-1.23.11
+      - e2e-1.23.12
 
-      - e2e-1.22.14
+      - e2e-1.22.15
 
       - e2e-1.21.5
 
