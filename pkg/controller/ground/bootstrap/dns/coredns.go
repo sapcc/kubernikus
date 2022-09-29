@@ -309,8 +309,6 @@ spec:
       tolerations:
         - key: "CriticalAddonsOnly"
           operator: "Exists"
-      nodeSelector:
-        beta.kubernetes.io/os: linux
       containers:
       - name: coredns
         image: {{ .Image }}
@@ -434,8 +432,6 @@ spec:
       tolerations:
         - key: "CriticalAddonsOnly"
           operator: "Exists"
-      nodeSelector:
-        beta.kubernetes.io/os: linux
       containers:
       - name: coredns
         image: {{ .Image }}

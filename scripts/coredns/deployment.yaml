@@ -94,8 +94,6 @@ spec:
           name: config-volume
           readOnly: true
       dnsPolicy: Default
-      nodeSelector:
-        beta.kubernetes.io/os: linux
       priorityClassName: system-cluster-critical
       restartPolicy: Always
       schedulerName: default-scheduler
