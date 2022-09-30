@@ -35,13 +35,6 @@ const (
 	// load balancers or floating IPs.
 	DeorbitHangingTimeout = 24 * time.Hour
 
-	// As of this writing services are not yet migrated to make use of
-	// finalizers. In effect there's no feedback loop and a deleted service
-	// disappears immediately - even though the cloud provider isn't finished yet
-	// with the decomissioning of existing load balancers. We guess that it takes
-	// around this duration until the clean-up was successful.
-	ServiceDeletionGracePeriod = 2 * time.Minute
-
 	// While waiting for deletion use this interval for rechecks
 	PollInterval = 15 * time.Second
 )
@@ -218,5 +211,16 @@ func (d *ConcreteDeorbiter) isPersistentVolumesCleanupFinished() (bool, error) {
 }
 
 func (d *ConcreteDeorbiter) isServiceCleanupFinished() (bool, error) {
-	return d.Kluster.ObjectMeta.DeletionTimestamp.Add(ServiceDeletionGracePeriod).Before(time.Now()), nil
+	services, err := d.Client.CoreV1().Services(meta_v1.NamespaceAll).List(context.TODO(), meta_v1.ListOptions{})
+	if err != nil {
+		return false, err
+	}
+
+	for _, service := range services.Items {
+		if service.Spec.Type != "LoadBalancer" {
+			continue
+		}
+		return false, nil
+	}
+	return true, nil
 }
