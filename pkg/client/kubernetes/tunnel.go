@@ -20,9 +20,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"net"
 	"net/http"
-	"strconv"
 
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/portforward"
@@ -78,13 +76,7 @@ func (t *Tunnel) ForwardPort() error {
 
 	dialer := spdy.NewDialer(upgrader, &http.Client{Transport: transport}, "POST", u)
 
-	local, err := getAvailablePort()
-	if err != nil {
-		return fmt.Errorf("could not find an available port: %s", err)
-	}
-	t.Local = local
-
-	ports := []string{fmt.Sprintf("%d:%d", t.Local, t.Remote)}
+	ports := []string{fmt.Sprintf("0:%d", t.Remote)}
 
 	pf, err := portforward.New(dialer, ports, t.stopChan, t.readyChan, t.Out, t.Out)
 	if err != nil {
@@ -100,24 +92,11 @@ func (t *Tunnel) ForwardPort() error {
 	case err = <-errChan:
 		return fmt.Errorf("forwarding ports: %v", err)
 	case <-pf.Ready:
+		ports, err := pf.GetPorts()
+		if err != nil {
+			return fmt.Errorf("Failed to get forwarded ports: %w", err)
+		}
+		t.Local = int(ports[0].Local)
 		return nil
 	}
-}
-
-func getAvailablePort() (int, error) {
-	l, err := net.Listen("tcp", ":0")
-	if err != nil {
-		return 0, err
-	}
-	defer l.Close()
-
-	_, p, err := net.SplitHostPort(l.Addr().String())
-	if err != nil {
-		return 0, err
-	}
-	port, err := strconv.Atoi(p)
-	if err != nil {
-		return 0, err
-	}
-	return port, err
 }

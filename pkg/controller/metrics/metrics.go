@@ -1,7 +1,6 @@
 package metrics
 
 import (
-	"fmt"
 	"net"
 	"net/http"
 	"sync"
@@ -142,14 +141,13 @@ func init() {
 	)
 }
 
-func ExposeMetrics(host string, metricPort int, stopCh <-chan struct{}, wg *sync.WaitGroup, logger log.Logger) {
+func ExposeMetrics(address string, stopCh <-chan struct{}, wg *sync.WaitGroup, logger log.Logger) {
 	wg.Add(1)
 	defer wg.Done()
-	ln, err := net.Listen("tcp", fmt.Sprintf("%v:%v", host, metricPort))
+	ln, err := net.Listen("tcp", address)
 	logger.Log(
 		"msg", "Exposing metrics",
-		"host", host,
-		"port", metricPort,
+		"listen", address,
 		"err", err)
 	if err != nil {
 		return
