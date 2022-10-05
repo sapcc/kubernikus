@@ -10,8 +10,7 @@ import (
 	"io"
 
 	"github.com/go-openapi/runtime"
-
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 
 	"github.com/sapcc/kubernikus/pkg/api/models"
 )
@@ -24,14 +23,12 @@ type GetClusterCredentialsOIDCReader struct {
 // ReadResponse reads a server response into the received o.
 func (o *GetClusterCredentialsOIDCReader) ReadResponse(response runtime.ClientResponse, consumer runtime.Consumer) (interface{}, error) {
 	switch response.Code() {
-
 	case 200:
 		result := NewGetClusterCredentialsOIDCOK()
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
 			return nil, err
 		}
 		return result, nil
-
 	default:
 		result := NewGetClusterCredentialsOIDCDefault(response.Code())
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
@@ -49,7 +46,8 @@ func NewGetClusterCredentialsOIDCOK() *GetClusterCredentialsOIDCOK {
 	return &GetClusterCredentialsOIDCOK{}
 }
 
-/*GetClusterCredentialsOIDCOK handles this case with default header values.
+/*
+GetClusterCredentialsOIDCOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -57,8 +55,41 @@ type GetClusterCredentialsOIDCOK struct {
 	Payload *models.Credentials
 }
 
+// IsSuccess returns true when this get cluster credentials o Id c o k response has a 2xx status code
+func (o *GetClusterCredentialsOIDCOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this get cluster credentials o Id c o k response has a 3xx status code
+func (o *GetClusterCredentialsOIDCOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this get cluster credentials o Id c o k response has a 4xx status code
+func (o *GetClusterCredentialsOIDCOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this get cluster credentials o Id c o k response has a 5xx status code
+func (o *GetClusterCredentialsOIDCOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this get cluster credentials o Id c o k response a status code equal to that given
+func (o *GetClusterCredentialsOIDCOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *GetClusterCredentialsOIDCOK) Error() string {
 	return fmt.Sprintf("[GET /api/v1/clusters/{name}/credentials/oidc][%d] getClusterCredentialsOIdCOK  %+v", 200, o.Payload)
+}
+
+func (o *GetClusterCredentialsOIDCOK) String() string {
+	return fmt.Sprintf("[GET /api/v1/clusters/{name}/credentials/oidc][%d] getClusterCredentialsOIdCOK  %+v", 200, o.Payload)
+}
+
+func (o *GetClusterCredentialsOIDCOK) GetPayload() *models.Credentials {
+	return o.Payload
 }
 
 func (o *GetClusterCredentialsOIDCOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -80,7 +111,8 @@ func NewGetClusterCredentialsOIDCDefault(code int) *GetClusterCredentialsOIDCDef
 	}
 }
 
-/*GetClusterCredentialsOIDCDefault handles this case with default header values.
+/*
+GetClusterCredentialsOIDCDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,8 +127,41 @@ func (o *GetClusterCredentialsOIDCDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this get cluster credentials o ID c default response has a 2xx status code
+func (o *GetClusterCredentialsOIDCDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this get cluster credentials o ID c default response has a 3xx status code
+func (o *GetClusterCredentialsOIDCDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this get cluster credentials o ID c default response has a 4xx status code
+func (o *GetClusterCredentialsOIDCDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this get cluster credentials o ID c default response has a 5xx status code
+func (o *GetClusterCredentialsOIDCDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this get cluster credentials o ID c default response a status code equal to that given
+func (o *GetClusterCredentialsOIDCDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *GetClusterCredentialsOIDCDefault) Error() string {
 	return fmt.Sprintf("[GET /api/v1/clusters/{name}/credentials/oidc][%d] GetClusterCredentialsOIDC default  %+v", o._statusCode, o.Payload)
+}
+
+func (o *GetClusterCredentialsOIDCDefault) String() string {
+	return fmt.Sprintf("[GET /api/v1/clusters/{name}/credentials/oidc][%d] GetClusterCredentialsOIDC default  %+v", o._statusCode, o.Payload)
+}
+
+func (o *GetClusterCredentialsOIDCDefault) GetPayload() *models.Error {
+	return o.Payload
 }
 
 func (o *GetClusterCredentialsOIDCDefault) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {

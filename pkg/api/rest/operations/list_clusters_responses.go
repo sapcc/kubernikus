@@ -10,13 +10,14 @@ import (
 
 	"github.com/go-openapi/runtime"
 
-	models "github.com/sapcc/kubernikus/pkg/api/models"
+	"github.com/sapcc/kubernikus/pkg/api/models"
 )
 
 // ListClustersOKCode is the HTTP code returned for type ListClustersOK
 const ListClustersOKCode int = 200
 
-/*ListClustersOK OK
+/*
+ListClustersOK OK
 
 swagger:response listClustersOK
 */
@@ -51,16 +52,17 @@ func (o *ListClustersOK) WriteResponse(rw http.ResponseWriter, producer runtime.
 	rw.WriteHeader(200)
 	payload := o.Payload
 	if payload == nil {
+		// return empty array
 		payload = make([]*models.Kluster, 0, 50)
 	}
 
 	if err := producer.Produce(rw, payload); err != nil {
 		panic(err) // let the recovery middleware deal with this
 	}
-
 }
 
-/*ListClustersDefault Error
+/*
+ListClustersDefault Error
 
 swagger:response listClustersDefault
 */

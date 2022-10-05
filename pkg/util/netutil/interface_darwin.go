@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-//DefaultInterfaceName returns the name of the interface used by the default route
+// DefaultInterfaceName returns the name of the interface used by the default route
 func DefaultInterfaceName() (string, error) {
 	routeCmd := exec.Command("/sbin/route", "-n", "get", "0.0.0.0")
 	output, err := routeCmd.CombinedOutput()

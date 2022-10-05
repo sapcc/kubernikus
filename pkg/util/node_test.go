@@ -1,7 +1,6 @@
 package util
 
 import (
-	"io/ioutil"
 	"os"
 	"testing"
 
@@ -15,7 +14,7 @@ import (
 func TestThisNode(t *testing.T) {
 	machineIDPath = "machine-id"
 
-	require.NoError(t, ioutil.WriteFile("machine-id", []byte("my-id"), 0644))
+	require.NoError(t, os.WriteFile("machine-id", []byte("my-id"), 0644))
 	defer func() {
 		os.Remove("machine-id")
 	}()

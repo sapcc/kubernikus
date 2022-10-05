@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-//DefaultInterfaceName returns the name of the interface used by the default route
+// DefaultInterfaceName returns the name of the interface used by the default route
 func DefaultInterfaceName() (string, error) {
 	ip, err := discoverDefaultInterfaceUsingRoute()
 	if err != nil {

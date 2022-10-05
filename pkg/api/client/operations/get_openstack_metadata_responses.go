@@ -10,8 +10,7 @@ import (
 	"io"
 
 	"github.com/go-openapi/runtime"
-
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 
 	"github.com/sapcc/kubernikus/pkg/api/models"
 )
@@ -24,14 +23,12 @@ type GetOpenstackMetadataReader struct {
 // ReadResponse reads a server response into the received o.
 func (o *GetOpenstackMetadataReader) ReadResponse(response runtime.ClientResponse, consumer runtime.Consumer) (interface{}, error) {
 	switch response.Code() {
-
 	case 200:
 		result := NewGetOpenstackMetadataOK()
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
 			return nil, err
 		}
 		return result, nil
-
 	default:
 		result := NewGetOpenstackMetadataDefault(response.Code())
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
@@ -49,7 +46,8 @@ func NewGetOpenstackMetadataOK() *GetOpenstackMetadataOK {
 	return &GetOpenstackMetadataOK{}
 }
 
-/*GetOpenstackMetadataOK handles this case with default header values.
+/*
+GetOpenstackMetadataOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -57,8 +55,41 @@ type GetOpenstackMetadataOK struct {
 	Payload *models.OpenstackMetadata
 }
 
+// IsSuccess returns true when this get openstack metadata o k response has a 2xx status code
+func (o *GetOpenstackMetadataOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this get openstack metadata o k response has a 3xx status code
+func (o *GetOpenstackMetadataOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this get openstack metadata o k response has a 4xx status code
+func (o *GetOpenstackMetadataOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this get openstack metadata o k response has a 5xx status code
+func (o *GetOpenstackMetadataOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this get openstack metadata o k response a status code equal to that given
+func (o *GetOpenstackMetadataOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *GetOpenstackMetadataOK) Error() string {
 	return fmt.Sprintf("[GET /api/v1/openstack/metadata][%d] getOpenstackMetadataOK  %+v", 200, o.Payload)
+}
+
+func (o *GetOpenstackMetadataOK) String() string {
+	return fmt.Sprintf("[GET /api/v1/openstack/metadata][%d] getOpenstackMetadataOK  %+v", 200, o.Payload)
+}
+
+func (o *GetOpenstackMetadataOK) GetPayload() *models.OpenstackMetadata {
+	return o.Payload
 }
 
 func (o *GetOpenstackMetadataOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -80,7 +111,8 @@ func NewGetOpenstackMetadataDefault(code int) *GetOpenstackMetadataDefault {
 	}
 }
 
-/*GetOpenstackMetadataDefault handles this case with default header values.
+/*
+GetOpenstackMetadataDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,8 +127,41 @@ func (o *GetOpenstackMetadataDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this get openstack metadata default response has a 2xx status code
+func (o *GetOpenstackMetadataDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this get openstack metadata default response has a 3xx status code
+func (o *GetOpenstackMetadataDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this get openstack metadata default response has a 4xx status code
+func (o *GetOpenstackMetadataDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this get openstack metadata default response has a 5xx status code
+func (o *GetOpenstackMetadataDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this get openstack metadata default response a status code equal to that given
+func (o *GetOpenstackMetadataDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *GetOpenstackMetadataDefault) Error() string {
 	return fmt.Sprintf("[GET /api/v1/openstack/metadata][%d] GetOpenstackMetadata default  %+v", o._statusCode, o.Payload)
+}
+
+func (o *GetOpenstackMetadataDefault) String() string {
+	return fmt.Sprintf("[GET /api/v1/openstack/metadata][%d] GetOpenstackMetadata default  %+v", o._statusCode, o.Payload)
+}
+
+func (o *GetOpenstackMetadataDefault) GetPayload() *models.Error {
+	return o.Payload
 }
 
 func (o *GetOpenstackMetadataDefault) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {

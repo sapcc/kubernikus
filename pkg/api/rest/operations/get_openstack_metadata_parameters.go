@@ -13,7 +13,8 @@ import (
 )
 
 // NewGetOpenstackMetadataParams creates a new GetOpenstackMetadataParams object
-// no default values defined in spec.
+//
+// There are no default values defined in the spec.
 func NewGetOpenstackMetadataParams() GetOpenstackMetadataParams {
 
 	return GetOpenstackMetadataParams{}

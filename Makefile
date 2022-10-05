@@ -22,7 +22,7 @@ ifneq ($(http_proxy),)
 BUILD_ARGS+= --build-arg http_proxy=$(http_proxy) --build-arg https_proxy=$(https_proxy) --build-arg no_proxy=$(no_proxy)
 endif
 
-GO_SWAGGER_VERSION := v0.18.0
+GO_SWAGGER_VERSION := v0.30.2
 SWAGGER_BIN        ?= bin/$(GOOS)/swagger-$(GO_SWAGGER_VERSION)
 
 .PHONY: all test clean code-gen vendor

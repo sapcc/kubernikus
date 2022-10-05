@@ -10,13 +10,14 @@ import (
 
 	"github.com/go-openapi/runtime"
 
-	models "github.com/sapcc/kubernikus/pkg/api/models"
+	"github.com/sapcc/kubernikus/pkg/api/models"
 )
 
 // GetClusterValuesOKCode is the HTTP code returned for type GetClusterValuesOK
 const GetClusterValuesOKCode int = 200
 
-/*GetClusterValuesOK OK
+/*
+GetClusterValuesOK OK
 
 swagger:response getClusterValuesOK
 */
@@ -57,7 +58,8 @@ func (o *GetClusterValuesOK) WriteResponse(rw http.ResponseWriter, producer runt
 	}
 }
 
-/*GetClusterValuesDefault Error
+/*
+GetClusterValuesDefault Error
 
 swagger:response getClusterValuesDefault
 */

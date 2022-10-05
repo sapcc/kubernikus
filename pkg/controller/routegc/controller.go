@@ -135,7 +135,7 @@ func (w *routeGarbageCollector) Reconcile(kluster *v1.Kluster) (err error) {
 
 }
 
-//adapted from  k8s.io/pkg/controller/route
+// adapted from  k8s.io/pkg/controller/route
 func isResponsibleForRoute(clusterCIDR *net.IPNet, route routers.Route) bool {
 	_, cidr, err := net.ParseCIDR(route.DestinationCIDR)
 	if err != nil {
@@ -152,7 +152,7 @@ func isResponsibleForRoute(clusterCIDR *net.IPNet, route routers.Route) bool {
 	return true
 }
 
-//taken from k8s.io/pkg/cloudprovider/openstack/
+// taken from k8s.io/pkg/cloudprovider/openstack/
 func foreachServer(client *gophercloud.ServiceClient, opts servers.ListOptsBuilder, handler func(*servers.Server) (bool, error)) error {
 	pager := servers.List(client, opts)
 

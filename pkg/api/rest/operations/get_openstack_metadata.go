@@ -8,9 +8,9 @@ package operations
 import (
 	"net/http"
 
-	middleware "github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/runtime/middleware"
 
-	models "github.com/sapcc/kubernikus/pkg/api/models"
+	"github.com/sapcc/kubernikus/pkg/api/models"
 )
 
 // GetOpenstackMetadataHandlerFunc turns a function with the right signature into a get openstack metadata handler
@@ -31,10 +31,10 @@ func NewGetOpenstackMetadata(ctx *middleware.Context, handler GetOpenstackMetada
 	return &GetOpenstackMetadata{Context: ctx, Handler: handler}
 }
 
-/*GetOpenstackMetadata swagger:route GET /api/v1/openstack/metadata getOpenstackMetadata
+/*
+	GetOpenstackMetadata swagger:route GET /api/v1/openstack/metadata getOpenstackMetadata
 
 Grab bag of openstack metadata
-
 */
 type GetOpenstackMetadata struct {
 	Context *middleware.Context
@@ -44,17 +44,16 @@ type GetOpenstackMetadata struct {
 func (o *GetOpenstackMetadata) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	route, rCtx, _ := o.Context.RouteInfo(r)
 	if rCtx != nil {
-		r = rCtx
+		*r = *rCtx
 	}
 	var Params = NewGetOpenstackMetadataParams()
-
 	uprinc, aCtx, err := o.Context.Authorize(r, route)
 	if err != nil {
 		o.Context.Respond(rw, r, route.Produces, route, err)
 		return
 	}
 	if aCtx != nil {
-		r = aCtx
+		*r = *aCtx
 	}
 	var principal *models.Principal
 	if uprinc != nil {
@@ -67,7 +66,6 @@ func (o *GetOpenstackMetadata) ServeHTTP(rw http.ResponseWriter, r *http.Request
 	}
 
 	res := o.Handler.Handle(Params, principal) // actually handle the request
-
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
 }

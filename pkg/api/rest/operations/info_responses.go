@@ -10,13 +10,14 @@ import (
 
 	"github.com/go-openapi/runtime"
 
-	models "github.com/sapcc/kubernikus/pkg/api/models"
+	"github.com/sapcc/kubernikus/pkg/api/models"
 )
 
 // InfoOKCode is the HTTP code returned for type InfoOK
 const InfoOKCode int = 200
 
-/*InfoOK OK
+/*
+InfoOK OK
 
 swagger:response infoOK
 */

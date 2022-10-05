@@ -40,8 +40,7 @@ var (
 // For rollout and testing purposed the node upgrades are disabled by default.
 // They can manually be enabled by setting the node annotaion:
 //
-//    kubernikus.cloud.sap/servicing=true
-//
+//	kubernikus.cloud.sap/servicing=true
 type Controller struct {
 	Logger     log.Logger
 	Reconciler ReconcilerFactory

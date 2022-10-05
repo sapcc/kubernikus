@@ -10,13 +10,14 @@ import (
 
 	"github.com/go-openapi/runtime"
 
-	models "github.com/sapcc/kubernikus/pkg/api/models"
+	"github.com/sapcc/kubernikus/pkg/api/models"
 )
 
 // GetAuthCallbackOKCode is the HTTP code returned for type GetAuthCallbackOK
 const GetAuthCallbackOKCode int = 200
 
-/*GetAuthCallbackOK OK
+/*
+GetAuthCallbackOK OK
 
 swagger:response getAuthCallbackOK
 */
@@ -57,7 +58,8 @@ func (o *GetAuthCallbackOK) WriteResponse(rw http.ResponseWriter, producer runti
 	}
 }
 
-/*GetAuthCallbackDefault Error
+/*
+GetAuthCallbackDefault Error
 
 swagger:response getAuthCallbackDefault
 */

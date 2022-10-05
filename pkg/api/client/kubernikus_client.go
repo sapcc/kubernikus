@@ -8,9 +8,7 @@ package client
 import (
 	"github.com/go-openapi/runtime"
 	httptransport "github.com/go-openapi/runtime/client"
-
-	strfmt "github.com/go-openapi/strfmt"
-
+	"github.com/go-openapi/strfmt"
 	"github.com/sapcc/kubernikus/pkg/api/client/operations"
 )
 
@@ -56,9 +54,7 @@ func New(transport runtime.ClientTransport, formats strfmt.Registry) *Kubernikus
 
 	cli := new(Kubernikus)
 	cli.Transport = transport
-
 	cli.Operations = operations.New(transport, formats)
-
 	return cli
 }
 
@@ -103,7 +99,7 @@ func (cfg *TransportConfig) WithSchemes(schemes []string) *TransportConfig {
 
 // Kubernikus is a client for kubernikus
 type Kubernikus struct {
-	Operations *operations.Client
+	Operations operations.ClientService
 
 	Transport runtime.ClientTransport
 }
@@ -111,7 +107,5 @@ type Kubernikus struct {
 // SetTransport changes the transport on the client and all its subresources
 func (c *Kubernikus) SetTransport(transport runtime.ClientTransport) {
 	c.Transport = transport
-
 	c.Operations.SetTransport(transport)
-
 }

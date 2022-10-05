@@ -13,62 +13,78 @@ import (
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
 	cr "github.com/go-openapi/runtime/client"
-
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 )
 
-// NewGetAuthCallbackParams creates a new GetAuthCallbackParams object
-// with the default values initialized.
+// NewGetAuthCallbackParams creates a new GetAuthCallbackParams object,
+// with the default timeout for this client.
+//
+// Default values are not hydrated, since defaults are normally applied by the API server side.
+//
+// To enforce default values in parameter, use SetDefaults or WithDefaults.
 func NewGetAuthCallbackParams() *GetAuthCallbackParams {
-	var ()
 	return &GetAuthCallbackParams{
-
 		timeout: cr.DefaultTimeout,
 	}
 }
 
 // NewGetAuthCallbackParamsWithTimeout creates a new GetAuthCallbackParams object
-// with the default values initialized, and the ability to set a timeout on a request
+// with the ability to set a timeout on a request.
 func NewGetAuthCallbackParamsWithTimeout(timeout time.Duration) *GetAuthCallbackParams {
-	var ()
 	return &GetAuthCallbackParams{
-
 		timeout: timeout,
 	}
 }
 
 // NewGetAuthCallbackParamsWithContext creates a new GetAuthCallbackParams object
-// with the default values initialized, and the ability to set a context for a request
+// with the ability to set a context for a request.
 func NewGetAuthCallbackParamsWithContext(ctx context.Context) *GetAuthCallbackParams {
-	var ()
 	return &GetAuthCallbackParams{
-
 		Context: ctx,
 	}
 }
 
 // NewGetAuthCallbackParamsWithHTTPClient creates a new GetAuthCallbackParams object
-// with the default values initialized, and the ability to set a custom HTTPClient for a request
+// with the ability to set a custom HTTPClient for a request.
 func NewGetAuthCallbackParamsWithHTTPClient(client *http.Client) *GetAuthCallbackParams {
-	var ()
 	return &GetAuthCallbackParams{
 		HTTPClient: client,
 	}
 }
 
-/*GetAuthCallbackParams contains all the parameters to send to the API endpoint
-for the get auth callback operation typically these are written to a http.Request
+/*
+GetAuthCallbackParams contains all the parameters to send to the API endpoint
+
+	for the get auth callback operation.
+
+	Typically these are written to a http.Request.
 */
 type GetAuthCallbackParams struct {
 
-	/*Code*/
+	// Code.
 	Code string
-	/*State*/
+
+	// State.
 	State string
 
 	timeout    time.Duration
 	Context    context.Context
 	HTTPClient *http.Client
+}
+
+// WithDefaults hydrates default values in the get auth callback params (not the query body).
+//
+// All values with no default are reset to their zero value.
+func (o *GetAuthCallbackParams) WithDefaults() *GetAuthCallbackParams {
+	o.SetDefaults()
+	return o
+}
+
+// SetDefaults hydrates default values in the get auth callback params (not the query body).
+//
+// All values with no default are reset to their zero value.
+func (o *GetAuthCallbackParams) SetDefaults() {
+	// no default values defined for this parameter
 }
 
 // WithTimeout adds the timeout to the get auth callback params
@@ -138,6 +154,7 @@ func (o *GetAuthCallbackParams) WriteToRequest(r runtime.ClientRequest, reg strf
 	qrCode := o.Code
 	qCode := qrCode
 	if qCode != "" {
+
 		if err := r.SetQueryParam("code", qCode); err != nil {
 			return err
 		}
@@ -147,6 +164,7 @@ func (o *GetAuthCallbackParams) WriteToRequest(r runtime.ClientRequest, reg strf
 	qrState := o.State
 	qState := qrState
 	if qState != "" {
+
 		if err := r.SetQueryParam("state", qState); err != nil {
 			return err
 		}

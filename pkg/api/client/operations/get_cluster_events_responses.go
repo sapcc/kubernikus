@@ -10,8 +10,7 @@ import (
 	"io"
 
 	"github.com/go-openapi/runtime"
-
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 
 	"github.com/sapcc/kubernikus/pkg/api/models"
 )
@@ -24,14 +23,12 @@ type GetClusterEventsReader struct {
 // ReadResponse reads a server response into the received o.
 func (o *GetClusterEventsReader) ReadResponse(response runtime.ClientResponse, consumer runtime.Consumer) (interface{}, error) {
 	switch response.Code() {
-
 	case 200:
 		result := NewGetClusterEventsOK()
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
 			return nil, err
 		}
 		return result, nil
-
 	default:
 		result := NewGetClusterEventsDefault(response.Code())
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
@@ -49,7 +46,8 @@ func NewGetClusterEventsOK() *GetClusterEventsOK {
 	return &GetClusterEventsOK{}
 }
 
-/*GetClusterEventsOK handles this case with default header values.
+/*
+GetClusterEventsOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -57,8 +55,41 @@ type GetClusterEventsOK struct {
 	Payload []*models.Event
 }
 
+// IsSuccess returns true when this get cluster events o k response has a 2xx status code
+func (o *GetClusterEventsOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this get cluster events o k response has a 3xx status code
+func (o *GetClusterEventsOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this get cluster events o k response has a 4xx status code
+func (o *GetClusterEventsOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this get cluster events o k response has a 5xx status code
+func (o *GetClusterEventsOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this get cluster events o k response a status code equal to that given
+func (o *GetClusterEventsOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *GetClusterEventsOK) Error() string {
 	return fmt.Sprintf("[GET /api/v1/clusters/{name}/events][%d] getClusterEventsOK  %+v", 200, o.Payload)
+}
+
+func (o *GetClusterEventsOK) String() string {
+	return fmt.Sprintf("[GET /api/v1/clusters/{name}/events][%d] getClusterEventsOK  %+v", 200, o.Payload)
+}
+
+func (o *GetClusterEventsOK) GetPayload() []*models.Event {
+	return o.Payload
 }
 
 func (o *GetClusterEventsOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -78,7 +109,8 @@ func NewGetClusterEventsDefault(code int) *GetClusterEventsDefault {
 	}
 }
 
-/*GetClusterEventsDefault handles this case with default header values.
+/*
+GetClusterEventsDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -93,8 +125,41 @@ func (o *GetClusterEventsDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this get cluster events default response has a 2xx status code
+func (o *GetClusterEventsDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this get cluster events default response has a 3xx status code
+func (o *GetClusterEventsDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this get cluster events default response has a 4xx status code
+func (o *GetClusterEventsDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this get cluster events default response has a 5xx status code
+func (o *GetClusterEventsDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this get cluster events default response a status code equal to that given
+func (o *GetClusterEventsDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *GetClusterEventsDefault) Error() string {
 	return fmt.Sprintf("[GET /api/v1/clusters/{name}/events][%d] GetClusterEvents default  %+v", o._statusCode, o.Payload)
+}
+
+func (o *GetClusterEventsDefault) String() string {
+	return fmt.Sprintf("[GET /api/v1/clusters/{name}/events][%d] GetClusterEvents default  %+v", o._statusCode, o.Payload)
+}
+
+func (o *GetClusterEventsDefault) GetPayload() *models.Error {
+	return o.Payload
 }
 
 func (o *GetClusterEventsDefault) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {

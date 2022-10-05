@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -104,7 +103,7 @@ func result(handler http.Handler, req *http.Request) (int, http.Header, []byte) 
 	rec := httptest.NewRecorder()
 	handler.ServeHTTP(rec, req)
 	response := rec.Result()
-	body, _ := ioutil.ReadAll(response.Body)
+	body, _ := io.ReadAll(response.Body)
 	return response.StatusCode, response.Header, body
 }
 
@@ -309,7 +308,6 @@ func TestClusterUpdate(t *testing.T) {
 			ClusterCIDR:      swag.String("8.8.8.8/24"),
 			DNSAddress:       "9.9.9.9",
 			DNSDomain:        "changed",
-			Name:             "mund",
 			ServiceCIDR:      "9.9.9.9/24",
 			Openstack: models.OpenstackSpec{
 				LBSubnetID: "changed",
@@ -351,6 +349,7 @@ func TestClusterUpdate(t *testing.T) {
 	req := createRequest("PUT", "/api/v1/clusters/nase", string(jsonPayload))
 	code, _, body := result(handler, req)
 	if !assert.Equal(t, 200, code) {
+		fmt.Printf("%s", string(body))
 		return
 	}
 	var apiResponse models.Kluster

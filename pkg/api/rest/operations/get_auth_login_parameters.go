@@ -11,12 +11,12 @@ import (
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
-
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 )
 
 // NewGetAuthLoginParams creates a new GetAuthLoginParams object
-// no default values defined in spec.
+//
+// There are no default values defined in the spec.
 func NewGetAuthLoginParams() GetAuthLoginParams {
 
 	return GetAuthLoginParams{}
@@ -52,7 +52,6 @@ func (o *GetAuthLoginParams) BindRequest(r *http.Request, route *middleware.Matc
 	if err := o.bindConnectorID(qConnectorID, qhkConnectorID, route.Formats); err != nil {
 		res = append(res, err)
 	}
-
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -68,10 +67,10 @@ func (o *GetAuthLoginParams) bindConnectorID(rawData []string, hasKey bool, form
 
 	// Required: false
 	// AllowEmptyValue: false
+
 	if raw == "" { // empty values pass all other validations
 		return nil
 	}
-
 	o.ConnectorID = &raw
 
 	return nil

@@ -8,9 +8,9 @@ package operations
 import (
 	"net/http"
 
-	middleware "github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/runtime/middleware"
 
-	models "github.com/sapcc/kubernikus/pkg/api/models"
+	"github.com/sapcc/kubernikus/pkg/api/models"
 )
 
 // GetClusterCredentialsHandlerFunc turns a function with the right signature into a get cluster credentials handler
@@ -31,10 +31,10 @@ func NewGetClusterCredentials(ctx *middleware.Context, handler GetClusterCredent
 	return &GetClusterCredentials{Context: ctx, Handler: handler}
 }
 
-/*GetClusterCredentials swagger:route GET /api/v1/clusters/{name}/credentials getClusterCredentials
+/*
+	GetClusterCredentials swagger:route GET /api/v1/clusters/{name}/credentials getClusterCredentials
 
 Get user specific credentials to access the cluster
-
 */
 type GetClusterCredentials struct {
 	Context *middleware.Context
@@ -44,17 +44,16 @@ type GetClusterCredentials struct {
 func (o *GetClusterCredentials) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	route, rCtx, _ := o.Context.RouteInfo(r)
 	if rCtx != nil {
-		r = rCtx
+		*r = *rCtx
 	}
 	var Params = NewGetClusterCredentialsParams()
-
 	uprinc, aCtx, err := o.Context.Authorize(r, route)
 	if err != nil {
 		o.Context.Respond(rw, r, route.Produces, route, err)
 		return
 	}
 	if aCtx != nil {
-		r = aCtx
+		*r = *aCtx
 	}
 	var principal *models.Principal
 	if uprinc != nil {
@@ -67,7 +66,6 @@ func (o *GetClusterCredentials) ServeHTTP(rw http.ResponseWriter, r *http.Reques
 	}
 
 	res := o.Handler.Handle(Params, principal) // actually handle the request
-
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
 }

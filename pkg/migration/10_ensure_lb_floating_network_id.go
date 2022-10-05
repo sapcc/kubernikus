@@ -7,10 +7,10 @@ import (
 	"github.com/sapcc/kubernikus/pkg/controller/config"
 )
 
-//This migration is intended to run before we enable upgrades.
-//It serves to purposes:
-//1. Add Spec.Version for 1.7 Klusters.
-//2. Update Spec.Version to match status for klusters we upgraded manually
+// This migration is intended to run before we enable upgrades.
+// It serves to purposes:
+// 1. Add Spec.Version for 1.7 Klusters.
+// 2. Update Spec.Version to match status for klusters we upgraded manually
 func EnsureLBFloatingNetworkID(rawKluster []byte, current *v1.Kluster, clients config.Clients, factories config.Factories) (err error) {
 
 	if current.Spec.Openstack.LBFloatingNetworkID == "" {

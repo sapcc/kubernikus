@@ -14,7 +14,8 @@ import (
 // GetAuthLoginFoundCode is the HTTP code returned for type GetAuthLoginFound
 const GetAuthLoginFoundCode int = 302
 
-/*GetAuthLoginFound Redirect
+/*
+GetAuthLoginFound Redirect
 
 swagger:response getAuthLoginFound
 */

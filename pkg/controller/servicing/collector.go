@@ -71,8 +71,8 @@ func RegisterServicingNodesCollector(logger log.Logger, factories config.Factori
 	prometheus.MustRegister(collector)
 }
 
-//Each and every collector must implement the Describe function.
-//It essentially writes all descriptors to the prometheus desc channel.
+// Each and every collector must implement the Describe function.
+// It essentially writes all descriptors to the prometheus desc channel.
 func (c *servicingNodesCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- c.updating
 	ch <- c.waiting
@@ -81,7 +81,7 @@ func (c *servicingNodesCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- c.osimage
 }
 
-//Collect implements required collect function for all promehteus collectors
+// Collect implements required collect function for all promehteus collectors
 func (c *servicingNodesCollector) Collect(ch chan<- prometheus.Metric) {
 	klusters, err := c.klusters.List(labels.Everything())
 	if err != nil {

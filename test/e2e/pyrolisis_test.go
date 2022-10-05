@@ -73,7 +73,7 @@ func (p *PyrolisisTests) SettingKlustersOnFire(t *testing.T) {
 	}
 }
 
-func listKlusters(client *operations.Client, authinfo runtime.ClientAuthInfoWriter) ([]*models.Kluster, error) {
+func listKlusters(client operations.ClientService, authinfo runtime.ClientAuthInfoWriter) ([]*models.Kluster, error) {
 	res, err := client.ListClusters(
 		operations.NewListClustersParams(),
 		authinfo,

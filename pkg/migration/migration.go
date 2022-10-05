@@ -20,27 +20,27 @@ var defaultRegistry Registry
 // The kubernetes client can be used to modify other things (e.g. kluster secret)
 type Migration func(klusterRaw []byte, kluster *v1.Kluster, clients config.Clients, factories config.Factories) (err error)
 
-//Latest returns to latest spec version available
+// Latest returns to latest spec version available
 func Latest() int {
 	return defaultRegistry.Latest()
 }
 
-//MigrationsPending returns true if a kluster needs to be migrated
+// MigrationsPending returns true if a kluster needs to be migrated
 func MigrationsPending(kluster *v1.Kluster) bool {
 	return defaultRegistry.MigrationsPending(kluster)
 }
 
-//Migrate a kluster to the most recent spec version
+// Migrate a kluster to the most recent spec version
 func Migrate(k *v1.Kluster, clients config.Clients, factories config.Factories) error {
 	return defaultRegistry.Migrate(k, clients, factories)
 }
 
-//Registry manages an ordered list of migration steps
+// Registry manages an ordered list of migration steps
 type Registry struct {
 	migrations []Migration
 }
 
-//AddMigration appends a migration to the list
+// AddMigration appends a migration to the list
 func (r *Registry) AddMigration(m Migration) {
 	r.migrations = append(r.migrations, m)
 }

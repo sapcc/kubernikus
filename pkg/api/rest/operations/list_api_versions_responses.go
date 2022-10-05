@@ -10,13 +10,14 @@ import (
 
 	"github.com/go-openapi/runtime"
 
-	models "github.com/sapcc/kubernikus/pkg/api/models"
+	"github.com/sapcc/kubernikus/pkg/api/models"
 )
 
 // ListAPIVersionsOKCode is the HTTP code returned for type ListAPIVersionsOK
 const ListAPIVersionsOKCode int = 200
 
-/*ListAPIVersionsOK OK
+/*
+ListAPIVersionsOK OK
 
 swagger:response listApiVersionsOK
 */

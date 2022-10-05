@@ -11,10 +11,10 @@ import (
 	v1 "github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
 )
 
-//PVAccessMode is a helper that tries to determine which access mode
-//to use for pvc.
-//It default to ReadWriteOnce and only returns ReadWriteMany when
-//there are no storage classes and at least one ReadWriteMany PV
+// PVAccessMode is a helper that tries to determine which access mode
+// to use for pvc.
+// It default to ReadWriteOnce and only returns ReadWriteMany when
+// there are no storage classes and at least one ReadWriteMany PV
 func PVAccessMode(client kubernetes.Interface, kluster *v1.Kluster) (string, error) {
 
 	if kluster != nil {

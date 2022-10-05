@@ -6,14 +6,16 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-	strfmt "github.com/go-openapi/strfmt"
+	"context"
 
 	"github.com/go-openapi/errors"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
 
 // Kluster kluster
+//
 // swagger:model Kluster
 type Kluster struct {
 
@@ -54,15 +56,15 @@ func (m *Kluster) Validate(formats strfmt.Registry) error {
 
 func (m *Kluster) validateName(formats strfmt.Registry) error {
 
-	if err := validate.RequiredString("name", "body", string(m.Name)); err != nil {
+	if err := validate.RequiredString("name", "body", m.Name); err != nil {
 		return err
 	}
 
-	if err := validate.MaxLength("name", "body", string(m.Name), 20); err != nil {
+	if err := validate.MaxLength("name", "body", m.Name, 20); err != nil {
 		return err
 	}
 
-	if err := validate.Pattern("name", "body", string(m.Name), `^[a-z]([-a-z0-9]*[a-z0-9])?$`); err != nil {
+	if err := validate.Pattern("name", "body", m.Name, `^[a-z]([-a-z0-9]*[a-z0-9])?$`); err != nil {
 		return err
 	}
 
@@ -70,7 +72,6 @@ func (m *Kluster) validateName(formats strfmt.Registry) error {
 }
 
 func (m *Kluster) validateSpec(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.Spec) { // not required
 		return nil
 	}
@@ -78,6 +79,8 @@ func (m *Kluster) validateSpec(formats strfmt.Registry) error {
 	if err := m.Spec.Validate(formats); err != nil {
 		if ve, ok := err.(*errors.Validation); ok {
 			return ve.ValidateName("spec")
+		} else if ce, ok := err.(*errors.CompositeError); ok {
+			return ce.ValidateName("spec")
 		}
 		return err
 	}
@@ -86,7 +89,6 @@ func (m *Kluster) validateSpec(formats strfmt.Registry) error {
 }
 
 func (m *Kluster) validateStatus(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.Status) { // not required
 		return nil
 	}
@@ -94,6 +96,54 @@ func (m *Kluster) validateStatus(formats strfmt.Registry) error {
 	if err := m.Status.Validate(formats); err != nil {
 		if ve, ok := err.(*errors.Validation); ok {
 			return ve.ValidateName("status")
+		} else if ce, ok := err.(*errors.CompositeError); ok {
+			return ce.ValidateName("status")
+		}
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this kluster based on the context it is used
+func (m *Kluster) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateSpec(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateStatus(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *Kluster) contextValidateSpec(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := m.Spec.ContextValidate(ctx, formats); err != nil {
+		if ve, ok := err.(*errors.Validation); ok {
+			return ve.ValidateName("spec")
+		} else if ce, ok := err.(*errors.CompositeError); ok {
+			return ce.ValidateName("spec")
+		}
+		return err
+	}
+
+	return nil
+}
+
+func (m *Kluster) contextValidateStatus(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := m.Status.ContextValidate(ctx, formats); err != nil {
+		if ve, ok := err.(*errors.Validation); ok {
+			return ve.ValidateName("status")
+		} else if ce, ok := err.(*errors.CompositeError); ok {
+			return ce.ValidateName("status")
 		}
 		return err
 	}

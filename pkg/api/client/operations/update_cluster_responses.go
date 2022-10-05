@@ -10,8 +10,7 @@ import (
 	"io"
 
 	"github.com/go-openapi/runtime"
-
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 
 	"github.com/sapcc/kubernikus/pkg/api/models"
 )
@@ -24,14 +23,12 @@ type UpdateClusterReader struct {
 // ReadResponse reads a server response into the received o.
 func (o *UpdateClusterReader) ReadResponse(response runtime.ClientResponse, consumer runtime.Consumer) (interface{}, error) {
 	switch response.Code() {
-
 	case 200:
 		result := NewUpdateClusterOK()
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
 			return nil, err
 		}
 		return result, nil
-
 	default:
 		result := NewUpdateClusterDefault(response.Code())
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
@@ -49,7 +46,8 @@ func NewUpdateClusterOK() *UpdateClusterOK {
 	return &UpdateClusterOK{}
 }
 
-/*UpdateClusterOK handles this case with default header values.
+/*
+UpdateClusterOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -57,8 +55,41 @@ type UpdateClusterOK struct {
 	Payload *models.Kluster
 }
 
+// IsSuccess returns true when this update cluster o k response has a 2xx status code
+func (o *UpdateClusterOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this update cluster o k response has a 3xx status code
+func (o *UpdateClusterOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this update cluster o k response has a 4xx status code
+func (o *UpdateClusterOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this update cluster o k response has a 5xx status code
+func (o *UpdateClusterOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this update cluster o k response a status code equal to that given
+func (o *UpdateClusterOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *UpdateClusterOK) Error() string {
 	return fmt.Sprintf("[PUT /api/v1/clusters/{name}][%d] updateClusterOK  %+v", 200, o.Payload)
+}
+
+func (o *UpdateClusterOK) String() string {
+	return fmt.Sprintf("[PUT /api/v1/clusters/{name}][%d] updateClusterOK  %+v", 200, o.Payload)
+}
+
+func (o *UpdateClusterOK) GetPayload() *models.Kluster {
+	return o.Payload
 }
 
 func (o *UpdateClusterOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -80,7 +111,8 @@ func NewUpdateClusterDefault(code int) *UpdateClusterDefault {
 	}
 }
 
-/*UpdateClusterDefault handles this case with default header values.
+/*
+UpdateClusterDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,8 +127,41 @@ func (o *UpdateClusterDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this update cluster default response has a 2xx status code
+func (o *UpdateClusterDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this update cluster default response has a 3xx status code
+func (o *UpdateClusterDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this update cluster default response has a 4xx status code
+func (o *UpdateClusterDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this update cluster default response has a 5xx status code
+func (o *UpdateClusterDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this update cluster default response a status code equal to that given
+func (o *UpdateClusterDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *UpdateClusterDefault) Error() string {
 	return fmt.Sprintf("[PUT /api/v1/clusters/{name}][%d] UpdateCluster default  %+v", o._statusCode, o.Payload)
+}
+
+func (o *UpdateClusterDefault) String() string {
+	return fmt.Sprintf("[PUT /api/v1/clusters/{name}][%d] UpdateCluster default  %+v", o._statusCode, o.Payload)
+}
+
+func (o *UpdateClusterDefault) GetPayload() *models.Error {
+	return o.Payload
 }
 
 func (o *UpdateClusterDefault) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {

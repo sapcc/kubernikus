@@ -3,7 +3,7 @@ package framework
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/url"
 	"os"
@@ -102,7 +102,7 @@ func oidcLogin(username, password, connector_id, authUrl string) (string, error)
 		return "", fmt.Errorf("Login failed, probably because of an incorrect username/password")
 	}
 
-	p, err := ioutil.ReadAll(resp2.Body)
+	p, err := io.ReadAll(resp2.Body)
 	if err != nil {
 		return "", fmt.Errorf("Failed to read auth response: %w", err)
 	}

@@ -12,14 +12,15 @@ import (
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/strfmt"
+	"github.com/go-openapi/validate"
 
-	strfmt "github.com/go-openapi/strfmt"
-
-	models "github.com/sapcc/kubernikus/pkg/api/models"
+	"github.com/sapcc/kubernikus/pkg/api/models"
 )
 
 // NewUpdateClusterParams creates a new UpdateClusterParams object
-// no default values defined in spec.
+//
+// There are no default values defined in the spec.
 func NewUpdateClusterParams() UpdateClusterParams {
 
 	return UpdateClusterParams{}
@@ -41,7 +42,6 @@ type UpdateClusterParams struct {
 	Body *models.Kluster
 	/*
 	  Required: true
-	  Unique: true
 	  In: path
 	*/
 	Name string
@@ -61,7 +61,7 @@ func (o *UpdateClusterParams) BindRequest(r *http.Request, route *middleware.Mat
 		var body models.Kluster
 		if err := route.Consumer.Consume(r.Body, &body); err != nil {
 			if err == io.EOF {
-				res = append(res, errors.Required("body", "body"))
+				res = append(res, errors.Required("body", "body", ""))
 			} else {
 				res = append(res, errors.NewParseError("body", "body", "", err))
 			}
@@ -71,18 +71,23 @@ func (o *UpdateClusterParams) BindRequest(r *http.Request, route *middleware.Mat
 				res = append(res, err)
 			}
 
+			ctx := validate.WithOperationRequest(r.Context())
+			if err := body.ContextValidate(ctx, route.Formats); err != nil {
+				res = append(res, err)
+			}
+
 			if len(res) == 0 {
 				o.Body = &body
 			}
 		}
 	} else {
-		res = append(res, errors.Required("body", "body"))
+		res = append(res, errors.Required("body", "body", ""))
 	}
+
 	rName, rhkName, _ := route.Params.GetOK("name")
 	if err := o.bindName(rName, rhkName, route.Formats); err != nil {
 		res = append(res, err)
 	}
-
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -98,18 +103,7 @@ func (o *UpdateClusterParams) bindName(rawData []string, hasKey bool, formats st
 
 	// Required: true
 	// Parameter is provided by construction from the route
-
 	o.Name = raw
-
-	if err := o.validateName(formats); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// validateName carries on validations for parameter Name
-func (o *UpdateClusterParams) validateName(formats strfmt.Registry) error {
 
 	return nil
 }
