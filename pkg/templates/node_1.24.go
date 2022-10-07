@@ -35,6 +35,13 @@ systemd:
             [Service]
             ExecStart=
             ExecStart=/usr/bin/env PATH=${TORCX_BINDIR}:${PATH} ${TORCX_BINDIR}/containerd
+    - name: docker.service
+      enable: true
+      dropins:
+        - name: 20-docker-opts.conf
+          contents: |
+            [Service]
+            Environment="DOCKER_OPTS=--iptables=false --bridge=none"
     - name: kubelet.service
       enable: true
       contents: |
