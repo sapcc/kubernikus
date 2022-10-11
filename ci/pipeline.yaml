@@ -404,7 +404,7 @@ auth_e2e_la-br-1: &auth_e2e_la-br-1
   KUBERNIKUS_NAME: e2e
   OS_PROJECT_DOMAIN_NAME: ccadmin
 
-  NODEPOOL_AVZ: la-br-1b
+  NODEPOOL_AVZ: la-br-1a
 
 
   OS_AUTH_URL: https://identity-3.la-br-1.cloud.sap/v3
@@ -655,7 +655,7 @@ task_build_args: &task_build_args
     type: registry-image
     source:
       repository: keppel.eu-de-1.cloud.sap/ccloud-dockerhub-mirror/library/alpine
-      tag: 3.13
+      tag: latest
   inputs:
     - name: docs-builder.image
     - name: kubernikus.git
@@ -679,7 +679,7 @@ task_checksum: &task_checksum
     type: registry-image
     source:
       repository: keppel.eu-de-1.cloud.sap/ccloud-dockerhub-mirror/library/golang
-      tag: 1.16-alpine3.13
+      tag: 1.18-alpine
   
   inputs:
     - name: kubernikus.builds
@@ -715,7 +715,7 @@ task_cli: &task_cli
     type: registry-image
     source:
       repository: keppel.eu-de-1.cloud.sap/ccloud-dockerhub-mirror/library/golang
-      tag: 1.17-alpine
+      tag: 1.18-alpine
   inputs:
     - name: kubernikus.builds
       path: gopath/src/github.com/sapcc/kubernikus
@@ -759,7 +759,7 @@ task_e2e_tests: &task_e2e_tests
     type: registry-image
     source:
       repository: keppel.eu-de-1.cloud.sap/ccloud-dockerhub-mirror/library/golang
-      tag: 1.16-alpine3.13
+      tag: 1.18-alpine
   
   inputs:
     - name: kubernikus.builds
@@ -822,7 +822,7 @@ task_github_compare_url: &task_github_compare_url
     type: registry-image
     source:
       repository: keppel.eu-de-1.cloud.sap/ccloud-dockerhub-mirror/library/alpine
-      tag: 3.13
+      tag: latest
   inputs:
     - name: kubernikus.builds
   outputs:
