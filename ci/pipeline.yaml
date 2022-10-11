@@ -404,7 +404,7 @@ auth_e2e_la-br-1: &auth_e2e_la-br-1
   KUBERNIKUS_NAME: e2e
   OS_PROJECT_DOMAIN_NAME: ccadmin
 
-  NODEPOOL_AVZ: la-br-1b
+  NODEPOOL_AVZ: la-br-1a
 
 
   OS_AUTH_URL: https://identity-3.la-br-1.cloud.sap/v3
