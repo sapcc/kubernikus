@@ -1422,10 +1422,10 @@ imagesForVersion:
       tag: v1.25.2
     cinderCSIPlugin:
       repository: keppel.$REGION.cloud.sap/ccloud/cinder-csi-plugin
-      tag: v1.25.0
+      tag: v1.25.2
     cloudControllerManager:
       repository: keppel.$REGION.cloud.sap/ccloud/openstack-cloud-controller-manager
-      tag: v1.25.0
+      tag: v1.25.2
     cniPlugins:
       repository: keppel.$REGION.cloud.sap/ccloud/cni-plugins
       tag: v1.1.1
