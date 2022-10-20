@@ -2,9 +2,12 @@ package migration
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 
+	jsonpatch "github.com/evanphx/json-patch"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
 
 	v1 "github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
 	"github.com/sapcc/kubernikus/pkg/controller/config"
@@ -75,6 +78,8 @@ func migrateKluster(kluster *v1.Kluster, version int, migration Migration, clien
 	var rawData []byte
 	var err error
 
+	original := kluster.DeepCopy()
+
 	//TODO: Don't import fake pkg outside of test code
 	if _, ok := clients.Kubernikus.(*kubernikusfake.Clientset); !ok {
 		request := clients.Kubernikus.KubernikusV1().RESTClient().Get().Namespace(kluster.Namespace).Resource("klusters").Name(kluster.Name)
@@ -87,5 +92,19 @@ func migrateKluster(kluster *v1.Kluster, version int, migration Migration, clien
 		return nil, err
 	}
 	kluster.Status.SpecVersion = int64(version)
-	return clients.Kubernikus.KubernikusV1().Klusters(kluster.Namespace).Update(context.TODO(), kluster, metav1.UpdateOptions{})
+
+	originalJSON, err := json.Marshal(original)
+	if err != nil {
+		return nil, err
+	}
+	klusterJSON, err := json.Marshal(kluster)
+	if err != nil {
+		return nil, err
+	}
+	patchJSON, err := jsonpatch.CreateMergePatch(originalJSON, klusterJSON)
+	if err != nil {
+		return nil, err
+	}
+
+	return clients.Kubernikus.KubernikusV1().Klusters(kluster.Namespace).Patch(context.TODO(), kluster.Name, types.MergePatchType, patchJSON, metav1.PatchOptions{})
 }
