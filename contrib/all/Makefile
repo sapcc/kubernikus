@@ -1,12 +1,12 @@
-VERSION?=v1.24.4
-VERSION_CCM?=v1.24.2
-REGISTRY?=k8s.gcr.io
+VERSION?=v1.25.3
+VERSION_CCM?=v1.25.3
+REGISTRY?=registry.k8s.io
 IMAGE?=keppel.eu-de-1.cloud.sap/ccloud
 ARCH?=amd64
 
 # see https://github.com/kubernetes/release/blob/master/images/build/debian-base/variants.yaml
 BASE_VERSION?=bullseye-v1.4.1
-BASE_IMAGE?=k8s.gcr.io/build-image/debian-base:${BASE_VERSION}
+BASE_IMAGE?=registry.k8s.io/build-image/debian-base:${BASE_VERSION}
 
 CNI_PLUGINS_RELEASE=v1.0.1
 
@@ -17,7 +17,7 @@ CSI_SNAPSHOT_CONTROLLER_VERSION=v5.0.1
 CSI_RESIZER_VERSION=v1.5.0
 CSI_LIVENESSPROBE_VERSION=v2.7.0
 CSI_NODE_DRIVER_VERSION=v2.5.1
-CSI_PLUGIN_VERSION?=v1.24.2
+CSI_PLUGIN_VERSION?=v1.25.3
 
 ETCD_VERSION=v3.4.13-bootstrap-3
 ETCDBRCTL_VERSION=v0.15.4
