@@ -1430,6 +1430,7 @@ resource_types:
     check_every: 24h
     source:
       repository: keppel.eu-de-2.cloud.sap/ccloud-dockerhub-mirror/arbourd/concourse-slack-alert-resource
+      tag: v0.16.0
 
   - name: slack-notification
     type: docker-image
