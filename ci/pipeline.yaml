@@ -1569,7 +1569,7 @@ jobs:
       - put: all-versions.trigger
 
 
-  - name: e2e-1.24.6
+  - name: e2e-1.24.7
     serial: true
     plan:
       - in_parallel:
@@ -1586,7 +1586,7 @@ jobs:
           <<: *task_e2e_tests
         timeout: 2h
         params:
-          KLUSTER_VERSION: "1.24.6"
+          KLUSTER_VERSION: "1.24.7"
           KLUSTER_CIDR: "100.100.0.0/16"
           ISOLATE_TEST: "true"
           KLUSTER_OS_IMAGES: flatcar-stable-amd64,flatcar-beta-amd64
@@ -1647,7 +1647,7 @@ jobs:
     plan:
       - get: kubernikus.builds
         resource: kubernikus.git
-        passed: [e2e-1.24.6]
+        passed: [e2e-1.24.7]
       - task: changes
         config:
           <<: *task_github_compare_url
@@ -3217,7 +3217,7 @@ groups:
       - whitesource
       - all-versions
 
-      - e2e-1.24.6
+      - e2e-1.24.7
 
       - e2e-1.23.12
 
@@ -3355,7 +3355,7 @@ groups:
       - whitesource
       - all-versions
 
-      - e2e-1.24.6
+      - e2e-1.24.7
 
       - e2e-1.23.12
 
