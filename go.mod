@@ -41,6 +41,7 @@ require (
 	github.com/pmylund/go-cache v2.1.0+incompatible // indirect
 	github.com/prometheus/client_golang v1.12.1
 	github.com/rs/cors v0.0.0-20170801073201-eabcc6af4bbe
+	github.com/sapcc/kube-detective v0.0.0-20221021132136-98c73299f174
 	github.com/satori/go.uuid v1.2.0
 	github.com/spf13/cobra v1.4.0
 	github.com/spf13/pflag v1.0.5

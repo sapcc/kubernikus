@@ -7,6 +7,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/security/groups"
+	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/security/rules"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
@@ -29,7 +31,11 @@ type SetupTests struct {
 
 func (s *SetupTests) Run(t *testing.T) {
 	if s.Reuse == false {
-		created := t.Run("Cluster/Create", s.CreateCluster)
+
+		created := t.Run("Cluster/CreateSecurityGroup", s.CreateSecurityGroup)
+		require.True(t, created, "The security group must have been created")
+
+		created = t.Run("Cluster/Create", s.CreateCluster)
 		require.True(t, created, "The Kluster must have been created")
 
 		t.Run("Cluster/BecomesCreating", s.KlusterPhaseBecomesCreating)
@@ -37,6 +43,26 @@ func (s *SetupTests) Run(t *testing.T) {
 
 	running := t.Run("Cluster/BecomesRunning", s.KlusterPhaseBecomesRunning)
 	require.True(t, running, "The Kluster must be Running")
+}
+
+func (s *SetupTests) CreateSecurityGroup(t *testing.T) {
+
+	secGroup, err := groups.Create(s.OpenStack.Network, groups.CreateOpts{
+		Name:        s.KlusterName,
+		Description: "An empty security group for e2e tests",
+	}).Extract()
+	require.NoError(t, err, "Failed to create securitygroup %v", s.KlusterName)
+	//delete default rules
+
+	page, err := rules.List(s.OpenStack.Network, rules.ListOpts{SecGroupID: secGroup.ID}).AllPages()
+	require.NoError(t, err, "Failed to list rules for security group %v", s.KlusterName)
+	secRules, err := rules.ExtractRules(page)
+	require.NoError(t, err, "Failed to extract rules for security group %v", s.KlusterName)
+	for _, rule := range secRules {
+		err := rules.Delete(s.OpenStack.Network, rule.ID).ExtractErr()
+		require.NoError(t, err, "Failed to delete rule %s for security group %v", rule.ID, s.KlusterName)
+	}
+
 }
 
 func (s *SetupTests) CreateCluster(t *testing.T) {
@@ -76,7 +102,10 @@ func (s *SetupTests) CreateCluster(t *testing.T) {
 			Version:      version,
 			SSHPublicKey: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQCXIxVEUgtUVkvk2VM1hmIb8MxvxsmvYoiq9OBy3J8akTGNybqKsA2uhcwxSJX5Cn3si8kfMfka9EWiJT+e1ybvtsGILO5XRZPxyhYzexwb3TcALwc3LuzpF3Z/Dg2jYTRELTGhYmyca3mxzTlCjNXvYayLNedjJ8fIBzoCuSXNqDRToHru7h0Glz+wtuE74mNkOiXSvhtuJtJs7VCNVjobFQNfC1aeDsri2bPRHJJZJ0QF4LLYSayMEz3lVwIDyAviQR2Aa97WfuXiofiAemfGqiH47Kq6b8X7j3bOYGBvJKMUV7XeWhGsskAmTsvvnFxkc5PAD3Ct+liULjiQWlzDrmpTE8aMqLK4l0YQw7/8iRVz6gli42iEc2ZG56ob1ErpTLAKFWyCNOebZuGoygdEQaGTIIunAncXg5Rz07TdPl0Tf5ZZLpiAgR5ck0H1SETnjDTZ/S83CiVZWJgmCpu8YOKWyYRD4orWwdnA77L4+ixeojLIhEoNL8KlBgsP9Twx+fFMWLfxMmiuX+yksM6Hu+Lsm+Ao7Q284VPp36EB1rxP1JM7HCiEOEm50Jb6hNKjgN4aoLhG5yg+GnDhwCZqUwcRJo1bWtm3QvRA+rzrGZkId4EY3cyOK5QnYV5+24x93Ex0UspHMn7HGsHUESsVeV0fLqlfXyd2RbHTmDMP6w== Kubernikus Master Key",
 			ClusterCIDR:  &clusterCidr,
-			NodePools:    pools,
+			Openstack: models.OpenstackSpec{
+				SecurityGroupName: s.KlusterName,
+			},
+			NodePools: pools,
 		},
 	}
 

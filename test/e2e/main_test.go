@@ -11,6 +11,7 @@ import (
 	"github.com/gophercloud/gophercloud/openstack/identity/v3/tokens"
 	"github.com/stretchr/testify/require"
 	client "k8s.io/client-go/kubernetes"
+	"k8s.io/klog/v2"
 
 	clientutil "github.com/sapcc/kubernikus/pkg/client/kubernetes"
 	"github.com/sapcc/kubernikus/pkg/util/generator"
@@ -54,6 +55,8 @@ func validate() error {
 }
 
 func TestMain(m *testing.M) {
+
+	klog.InitFlags(nil)
 	flag.Parse()
 
 	if err := validate(); err != nil {

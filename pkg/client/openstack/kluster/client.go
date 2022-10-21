@@ -290,18 +290,6 @@ func (c *klusterClient) EnsureKubernikusRulesInSecurityGroup(kluster *v1.Kluster
 	} else {
 		fmt.Println("no object-store", err, osURL)
 	}
-	//This should be removed and the ignition stuff should be pulled from regional swift eventually
-	if swiftEUDE1, err := ipForUrl("https://objectstore-3.eu-de-1.cloud.sap"); err == nil && !swiftEUDE1.Equal(objectstoreIP) {
-		wantedRules = append(wantedRules, rules.SecGroupRule{
-			Direction:      string(rules.DirEgress),
-			EtherType:      string(rules.EtherType4),
-			Protocol:       string(rules.ProtocolTCP),
-			PortRangeMin:   443,
-			PortRangeMax:   443,
-			RemoteIPPrefix: swiftEUDE1.String(),
-			Description:    ruleDescription("objectseude1", "", "Allow access to https://objectstore-3.eu-de-1.cloud.sap"),
-		})
-	}
 
 	// keppel (ingress.$region.cloud.sap)
 	if keppelURL, err := c.ComputeClient.ProviderClient.EndpointLocator(gophercloud.EndpointOpts{Type: "keppel", Availability: gophercloud.AvailabilityPublic}); err == nil {
@@ -328,6 +316,17 @@ func (c *klusterClient) EnsureKubernikusRulesInSecurityGroup(kluster *v1.Kluster
 					PortRangeMax:   443,
 					RemoteIPPrefix: ip.String(),
 					Description:    ruleDescription("keppeleude1", "", "Allow access to "+keppelURL),
+				})
+			}
+			if swiftEUDE1, err := ipForUrl("https://objectstore-3.eu-de-1.cloud.sap"); err == nil {
+				wantedRules = append(wantedRules, rules.SecGroupRule{
+					Direction:      string(rules.DirEgress),
+					EtherType:      string(rules.EtherType4),
+					Protocol:       string(rules.ProtocolTCP),
+					PortRangeMin:   443,
+					PortRangeMax:   443,
+					RemoteIPPrefix: swiftEUDE1.String(),
+					Description:    ruleDescription("objectseude1", "", "Allow access to https://objectstore-3.eu-de-1.cloud.sap"),
 				})
 			}
 
@@ -368,7 +367,7 @@ OUTER:
 		}
 		_, err := rules.Create(c.NetworkClient, opts).Extract()
 		if err != nil {
-			return false, fmt.Errorf("Failed to create security group %v: %w", wanted, err)
+			return false, fmt.Errorf("Failed to create rule %v: %w", wanted, err)
 		}
 		created = true
 		//super extra special hack, when we create the first rule we clean out the old rules we created previously

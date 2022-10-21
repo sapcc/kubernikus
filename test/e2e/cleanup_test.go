@@ -13,6 +13,7 @@ import (
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/servergroups"
 	"github.com/gophercloud/gophercloud/openstack/identity/v3/tokens"
 	"github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/loadbalancers"
+	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/security/groups"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"k8s.io/apimachinery/pkg/util/wait"
@@ -39,6 +40,7 @@ func (s *CleanupTests) Run(t *testing.T) {
 	if t.Run("Cluster/Terminate", s.TerminateCluster) {
 		t.Run("Cluster/BecomesTerminating", s.KlusterPhaseBecomesTerminating)
 		t.Run("Cluster/IsDeleted", s.WaitForKlusterToBeDeleted)
+		t.Run("Cluster/DeleteSecurityGroup", s.DeleteSecurityGroup)
 
 		if s.Reuse == false && s.Isolate == false {
 			t.Run("QuotaPostFlightCheck", s.QuotaPostFlightCheck)
@@ -54,6 +56,19 @@ func (s *CleanupTests) TerminateCluster(t *testing.T) {
 		s.Kubernikus.AuthInfo,
 	)
 	assert.NoError(t, err, "There should be no error")
+}
+
+func (s *CleanupTests) DeleteSecurityGroup(t *testing.T) {
+	page, err := groups.List(s.OpenStack.Network, groups.ListOpts{Name: s.KlusterName}).AllPages()
+	if assert.NoError(t, err, "Failed to list security groups") {
+		sgroups, err := groups.ExtractGroups(page)
+		if assert.NoError(t, err, "Failed to extract groups") {
+			if len(sgroups) > 0 {
+				err := groups.Delete(s.OpenStack.Network, sgroups[0].ID).ExtractErr()
+				assert.NoError(t, err, "Failed to delte security group %s", sgroups[0].Name)
+			}
+		}
+	}
 }
 
 func (s *CleanupTests) WaitForKlusterToBeDeleted(t *testing.T) {
