@@ -24,6 +24,11 @@ type updateCluster struct {
 }
 
 func (d *updateCluster) Handle(params operations.UpdateClusterParams, principal *models.Principal) middleware.Responder {
+	// validate spec.name has some value that makes sense
+	// as it is read-only on a semantic level.
+	if !(params.Body.Spec.Name == "" || params.Body.Spec.Name == params.Name) {
+		return NewErrorResponse(&operations.UpdateClusterDefault{}, 500, "spec.name needs to be removed, an empty string or the clusters name")
+	}
 
 	kluster, err := editCluster(d.Kubernikus.KubernikusV1().Klusters(d.Namespace), principal, params.Name, func(kluster *v1.Kluster) error {
 		// ensure audit value reaches the spec so it
