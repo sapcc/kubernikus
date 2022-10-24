@@ -53,7 +53,6 @@ type KlusterSpec struct {
 	DNSDomain string `json:"dnsDomain,omitempty"`
 
 	// name
-	// Read Only: true
 	Name string `json:"name,omitempty"`
 
 	// no cloud
@@ -319,10 +318,6 @@ func (m *KlusterSpec) validateVersion(formats strfmt.Registry) error {
 func (m *KlusterSpec) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.contextValidateName(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
 	if err := m.contextValidateNodePools(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -334,15 +329,6 @@ func (m *KlusterSpec) ContextValidate(ctx context.Context, formats strfmt.Regist
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
-	return nil
-}
-
-func (m *KlusterSpec) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
-
-	if err := validate.ReadOnly(ctx, "name", "body", string(m.Name)); err != nil {
-		return err
-	}
-
 	return nil
 }
 

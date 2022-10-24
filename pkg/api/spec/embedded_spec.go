@@ -640,8 +640,7 @@ func init() {
           "x-nullable": false
         },
         "name": {
-          "type": "string",
-          "readOnly": true
+          "type": "string"
         },
         "noCloud": {
           "type": "boolean"
@@ -1688,8 +1687,7 @@ func init() {
           "x-nullable": false
         },
         "name": {
-          "type": "string",
-          "readOnly": true
+          "type": "string"
         },
         "noCloud": {
           "type": "boolean"
