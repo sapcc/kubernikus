@@ -75,7 +75,7 @@ func (prometheusMetricsProvider) NewLatencyMetric(name string) workqueue.Histogr
 		Name:        QueueLatencyKey,
 		Help:        "How long in seconds an item stays in workqueue before being requested.",
 		ConstLabels: prometheus.Labels{"name": name},
-		Buckets:     prometheus.ExponentialBuckets(10e-9, 10, 10),
+		Buckets:     prometheus.ExponentialBuckets(0.01, 300, 15),
 	})
 	if err := prometheus.Register(latency); err != nil {
 		klog.Errorf("failed to register latency metric %v: %v", name, err)
@@ -89,7 +89,7 @@ func (prometheusMetricsProvider) NewWorkDurationMetric(name string) workqueue.Hi
 		Name:        WorkDurationKey,
 		Help:        "How long in seconds processing an item from workqueue takes.",
 		ConstLabels: prometheus.Labels{"name": name},
-		Buckets:     prometheus.ExponentialBuckets(10e-9, 10, 10),
+		Buckets:     prometheus.ExponentialBuckets(0.01, 300, 15),
 	})
 	if err := prometheus.Register(workDuration); err != nil {
 		klog.Errorf("failed to register workDuration metric %v: %v", name, err)
