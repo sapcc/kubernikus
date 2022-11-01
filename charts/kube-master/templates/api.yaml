@@ -335,16 +335,18 @@ spec:
 {{ toYaml .Values.api.resources | indent 12 }}
         - name: wormhole
           image: {{ include "wormhole.image" . | quote }}
-          args:
-            - wormhole
-            - server
-            - --kubeconfig=/etc/kubernetes/config/kubeconfig
-            - --ca=/etc/kubernetes/certs/apiserver-nodes-ca.pem
-            - --cert=/etc/kubernetes/certs/tls-wormhole.pem
-            - --key=/etc/kubernetes/certs/tls-wormhole-key.pem
-            - --service-cidr={{ .Values.serviceCIDR }}
-            - --api-port={{ .Values.advertisePort }}
-            - --v=5
+          command:
+            - sh
+            - -ec
+            - |
+              cp /etc/kubernetes/certs/tls-wormhole.pem /tmp/tls-wormhole.livenessprobe
+              exec wormhole server --kubeconfig=/etc/kubernetes/config/kubeconfig \
+              --ca=/etc/kubernetes/certs/apiserver-nodes-ca.pem \
+              --cert=/etc/kubernetes/certs/tls-wormhole.pem \
+              --key=/etc/kubernetes/certs/tls-wormhole-key.pem \
+              --service-cidr={{ .Values.serviceCIDR }} \
+              --api-port={{ .Values.advertisePort }} \
+              --v=5
           securityContext:
             capabilities:
               add:
@@ -356,6 +358,16 @@ spec:
             - mountPath: /etc/kubernetes/config
               name: wormhole-config
               readOnly: true
+          livenessProbe:
+            exec:
+              command:
+              - cmp
+              - -s
+              - /etc/kubernetes/certs/tls-wormhole.pem
+              - /tmp/tls-wormhole.livenessprobe
+            initialDelaySeconds: 60
+            periodSeconds: 60
+            timeoutSeconds: 3
         {{- if .Values.audit }}
         - name: fluentd
           image: {{ include "fluentd.image" . | quote }}
