@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/url"
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/go-openapi/runtime"
@@ -19,11 +20,12 @@ import (
 )
 
 var (
-	kubernikusURL = flag.String("kubernikus", "", "Kubernikus URL")
-	kluster       = flag.String("kluster", "", "Use existing Kluster")
-	reuse         = flag.Bool("reuse", false, "Reuse exisiting Kluster")
-	cleanup       = flag.Bool("cleanup", true, "Cleanup after tests have been run")
-	isolate       = flag.Bool("isolate", false, "Do not destroy or depend on resources of other tests running in the same project")
+	kubernikusURL      = flag.String("kubernikus", "", "Kubernikus URL")
+	kluster            = flag.String("kluster", "", "Use existing Kluster")
+	reuse              = flag.Bool("reuse", false, "Reuse exisiting Kluster")
+	cleanup            = flag.Bool("cleanup", true, "Cleanup after tests have been run")
+	isolate            = flag.Bool("isolate", false, "Do not destroy or depend on resources of other tests running in the same project")
+	ServeHostnameImage = "keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/serve-hostname-amd64:1.2-alpine"
 )
 
 const (
@@ -56,8 +58,15 @@ func validate() error {
 
 func TestMain(m *testing.M) {
 
+	flag.StringVar(&ServeHostnameImage, "test-image", ServeHostnameImage, "image for network tests")
 	klog.InitFlags(nil)
 	flag.Parse()
+
+	keppelRegion := os.Getenv("OS_REGION_NAME")
+	if keppelRegion == "qa-de-1" {
+		keppelRegion = "eu-de-1"
+	}
+	ServeHostnameImage = strings.Replace(ServeHostnameImage, "$REGION", keppelRegion, -1)
 
 	if err := validate(); err != nil {
 		fmt.Println(err)

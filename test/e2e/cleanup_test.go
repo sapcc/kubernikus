@@ -64,7 +64,14 @@ func (s *CleanupTests) DeleteSecurityGroup(t *testing.T) {
 		sgroups, err := groups.ExtractGroups(page)
 		if assert.NoError(t, err, "Failed to extract groups") {
 			if len(sgroups) > 0 {
-				err := groups.Delete(s.OpenStack.Network, sgroups[0].ID).ExtractErr()
+
+				err = wait.PollImmediate(2*time.Second, 1*time.Minute, func() (bool, error) {
+					err := groups.Delete(s.OpenStack.Network, sgroups[0].ID).ExtractErr()
+					if _, ok := err.(gophercloud.ErrDefault409); ok {
+						return false, nil
+					}
+					return err == nil, err
+				})
 				assert.NoError(t, err, "Failed to delte security group %s", sgroups[0].Name)
 			}
 		}

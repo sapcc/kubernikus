@@ -254,7 +254,8 @@ func TestEnsureKubernikusRulesInSecurityGroup(t *testing.T) {
 		log.NewNopLogger(),
 	}
 
-	ensured := reconciler.EnsureKubernikusRulesInSecurityGroup()
+	updated, err := reconciler.EnsureKubernikusRulesInSecurityGroup()
+	assert.NoError(t, err)
 	client.AssertCalled(t, "EnsureKubernikusRulesInSecurityGroup", kluster)
-	assert.True(t, ensured)
+	assert.True(t, updated)
 }

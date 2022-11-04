@@ -6,7 +6,7 @@ import (
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/security/rules"
 )
 
-//MatchRule checks if input is matched by rule
+// MatchRule checks if input is matched by rule
 func MatchRule(input rules.SecGroupRule, rule rules.SecGroupRule) bool {
 
 	if input.Direction != rule.Direction {

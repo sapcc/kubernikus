@@ -30,12 +30,11 @@ const (
 	TestPodTimeout                 = 1 * time.Minute
 	TestServicesTimeout            = 1 * time.Minute
 	TestServicesWithDNSTimeout     = 2 * time.Minute
-	TestServiceLoadbalancerTimeout = 10 * time.Minute
+	TestServiceLoadbalancerTimeout = 5 * time.Minute
 
 	PollInterval = 6 * time.Second // DNS Timeout is 5s
 
-	ServeHostnameImage = "keppel.eu-de-1.cloud.sap/ccloud-dockerhub-mirror/sapcc/serve-hostname-amd64:1.2-alpine"
-	ServeHostnamePort  = 9376
+	ServeHostnamePort = 9376
 )
 
 type NetworkTests struct {
@@ -58,18 +57,15 @@ func (n *NetworkTests) Run(t *testing.T) {
 	t.Run("CreateNamespace", n.CreateNamespace)
 	t.Run("WaitNamespace", n.WaitForNamespace)
 	n.CreatePods(t)
-	n.CreateServices(t)
+	//n.CreateServices(t)
 	t.Run("CreateLoadbalancer", n.CreateLoadbalancer)
 	t.Run("Wait", func(t *testing.T) {
 		t.Run("Pods", n.WaitForPodsRunning)
-		t.Run("ServiceEndpoints", n.WaitForServiceEndpoints)
+		//t.Run("ServiceEndpoints", n.WaitForServiceEndpoints)
 		t.Run("KubeDNS", n.WaitForKubeDNSRunning)
 	})
 	t.Run("Connectivity", func(t *testing.T) {
-		//t.Run("Pods", n.TestPods)
-		//t.Run("Services", n.TestServices)
 		t.Run("KubeDetective", n.TestKubeDetective)
-		t.Run("ServicesWithDNS", n.TestServicesWithDNS)
 		t.Run("Loadbalancer", n.TestLoadbalancer)
 	})
 }
@@ -328,19 +324,22 @@ func (n *NetworkTests) TestLoadbalancer(t *testing.T) {
 
 			if len(lb.Status.LoadBalancer.Ingress) > 0 && net.ParseIP(lb.Status.LoadBalancer.Ingress[0].IP) != nil {
 				lbURL = fmt.Sprintf("http://%s:%d", lb.Status.LoadBalancer.Ingress[0].IP, lb.Spec.Ports[0].Port)
+				client := http.Client{
+					Timeout: 5 * time.Second,
+				}
+				resp, err := client.Get(lbURL)
+				if err != nil {
+					return false, nil
+				}
+				if resp.StatusCode >= 400 {
+					return false, fmt.Errorf("Unexpected status code: %d", resp.StatusCode)
+				}
 				return true, nil
 			}
 
 			return false, nil
 		})
-	if assert.NoError(t, err, "Loadbalancers should get an external IP: %s", err) {
-		client := http.Client{
-			Timeout: 5 * time.Second,
-		}
-		resp, err := client.Get(lbURL)
-		assert.NoError(t, err, "Request to load balancer url %s failed", lbURL)
-		assert.Less(t, resp.StatusCode, 400, "Request to load balancer URL %s yieled unexpetec response", lbURL)
-	}
+	assert.NoError(t, err, "Request to load balancer %v failed: %s", lbURL, err)
 
 	err = n.Kubernetes.ClientSet.CoreV1().Services(n.Namespace).Delete(context.Background(), "e2e-lb", meta_v1.DeleteOptions{})
 	assert.NoError(t, err, "There should be no error deleting loadbalancer service: %s", err)
@@ -350,7 +349,7 @@ func (n *NetworkTests) TestKubeDetective(t *testing.T) {
 	runParallel(t)
 
 	opts := detective.Options{
-		TestImage:    "keppel.eu-de-1.cloud.sap/ccloud-dockerhub-mirror/sapcc/serve-hostname-amd64:1.2-alpine",
+		TestImage:    ServeHostnameImage,
 		TestPods:     true,
 		TestServices: true,
 		RestConfig:   n.Kubernetes.RestConfig,
