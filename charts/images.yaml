@@ -1184,10 +1184,10 @@ imagesForVersion:
       tag: v1.24.4
     cinderCSIPlugin:
       repository: keppel.$REGION.cloud.sap/ccloud/cinder-csi-plugin
-      tag: v1.24.2
+      tag: v1.24.5
     cloudControllerManager:
       repository: keppel.$REGION.cloud.sap/ccloud/openstack-cloud-controller-manager
-      tag: v1.24.2
+      tag: v1.24.5
     cniPlugins:
       repository: keppel.$REGION.cloud.sap/ccloud/cni-plugins
       tag: v1.1.1
@@ -1264,10 +1264,10 @@ imagesForVersion:
       tag: v1.24.5
     cinderCSIPlugin:
       repository: keppel.$REGION.cloud.sap/ccloud/cinder-csi-plugin
-      tag: v1.24.2
+      tag: v1.24.5
     cloudControllerManager:
       repository: keppel.$REGION.cloud.sap/ccloud/openstack-cloud-controller-manager
-      tag: v1.24.2
+      tag: v1.24.5
     cniPlugins:
       repository: keppel.$REGION.cloud.sap/ccloud/cni-plugins
       tag: v1.1.1
@@ -1344,10 +1344,10 @@ imagesForVersion:
       tag: v1.24.6
     cinderCSIPlugin:
       repository: keppel.$REGION.cloud.sap/ccloud/cinder-csi-plugin
-      tag: v1.24.2
+      tag: v1.24.5
     cloudControllerManager:
       repository: keppel.$REGION.cloud.sap/ccloud/openstack-cloud-controller-manager
-      tag: v1.24.2
+      tag: v1.24.5
     cniPlugins:
       repository: keppel.$REGION.cloud.sap/ccloud/cni-plugins
       tag: v1.1.1
@@ -1424,10 +1424,10 @@ imagesForVersion:
       tag: v1.24.7
     cinderCSIPlugin:
       repository: keppel.$REGION.cloud.sap/ccloud/cinder-csi-plugin
-      tag: v1.24.2
+      tag: v1.24.5
     cloudControllerManager:
       repository: keppel.$REGION.cloud.sap/ccloud/openstack-cloud-controller-manager
-      tag: v1.24.2
+      tag: v1.24.5
     cniPlugins:
       repository: keppel.$REGION.cloud.sap/ccloud/cni-plugins
       tag: v1.1.1
