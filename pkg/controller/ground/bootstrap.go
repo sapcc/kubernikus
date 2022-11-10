@@ -15,6 +15,7 @@ import (
 	openstack_project "github.com/sapcc/kubernikus/pkg/client/openstack/project"
 	"github.com/sapcc/kubernikus/pkg/controller/config"
 	"github.com/sapcc/kubernikus/pkg/controller/ground/bootstrap"
+	"github.com/sapcc/kubernikus/pkg/controller/ground/bootstrap/ccm"
 	"github.com/sapcc/kubernikus/pkg/controller/ground/bootstrap/csi"
 	"github.com/sapcc/kubernikus/pkg/controller/ground/bootstrap/dns"
 	"github.com/sapcc/kubernikus/pkg/controller/ground/bootstrap/gpu"
@@ -107,6 +108,13 @@ func SeedKluster(clients config.Clients, factories config.Factories, images vers
 			}
 		}
 	}
+
+	if ok, _ := util.KlusterVersionConstraint(kluster, ">= 1.25"); ok {
+		if err := ccm.SeedCloudControllerManagerRoles(kubernetes); err != nil {
+			return errors.Wrap(err, "seed CCM roles")
+		}
+	}
+
 	if !kluster.Spec.NoCloud {
 		if ok, _ := util.KlusterVersionConstraint(kluster, ">= 1.24"); ok {
 			if err := network.SeedNetwork(kubernetes, images.Versions[kluster.Spec.Version], *kluster.Spec.ClusterCIDR, kluster.Status.Apiserver, kluster.Spec.AdvertiseAddress, kluster.Spec.AdvertisePort); err != nil {
