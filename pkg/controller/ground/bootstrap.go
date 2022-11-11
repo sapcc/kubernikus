@@ -3,12 +3,15 @@ package ground
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/pkg/errors"
+	core_v1 "k8s.io/api/core/v1"
 	rbac "k8s.io/api/rbac/v1"
 	storage "k8s.io/api/storage/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/wait"
 	clientset "k8s.io/client-go/kubernetes"
 
 	v1 "github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
@@ -85,6 +88,13 @@ func SeedKluster(clients config.Clients, factories config.Factories, images vers
 		if err := gpu.SeedGPUSupport(kubernetes); err != nil {
 			return errors.Wrap(err, "seed GPU support")
 		}
+	}
+
+	if err := SeedKubernikusServiceAccount(kubernetes); err != nil {
+		return fmt.Errorf("Failed to seed kubernikus service account: %w", err)
+	}
+	if err := UpdateServiceAccountTokenInSecret(kluster, clients.Kubernetes, kubernetes); err != nil {
+		return fmt.Errorf("Failed to update sa token in cluster secret: %w", err)
 	}
 
 	if ok, _ := util.KlusterVersionConstraint(kluster, ">= 1.20"); ok {
@@ -425,4 +435,71 @@ func SeedOpenStackClusterRoleBindings(client clientset.Interface) error {
 	}
 
 	return nil
+}
+
+func SeedKubernikusServiceAccount(client clientset.Interface) error {
+	err := bootstrap.CreateOrUpdateServiceAccount(client, &core_v1.ServiceAccount{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "kubernikus",
+			Namespace: "kube-system",
+		},
+	})
+	if err != nil {
+		return fmt.Errorf("Failed to ensure kubernikus serviceaccount: %w", err)
+	}
+
+	return bootstrap.CreateOrUpdateClusterRoleBindingV1(client, &rbac.ClusterRoleBinding{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "kubernikus:monitor",
+		},
+		RoleRef: rbac.RoleRef{
+			APIGroup: rbac.GroupName,
+			Kind:     "ClusterRole",
+			Name:     "system:monitoring",
+		},
+		Subjects: []rbac.Subject{
+			{
+				Kind:      "ServiceAccount",
+				Name:      "kubernikus",
+				Namespace: "kube-system",
+			},
+		},
+	})
+}
+
+func UpdateServiceAccountTokenInSecret(kluster *v1.Kluster, cpClient clientset.Interface, klusterClient clientset.Interface) error {
+
+	secretName := ""
+	err := wait.Poll(50*time.Millisecond, 2*time.Second, func() (bool, error) {
+		sa, err := klusterClient.CoreV1().ServiceAccounts("kube-system").Get(context.TODO(), "kubernikus", metav1.GetOptions{})
+		if err != nil {
+			return false, err
+		}
+		if len(sa.Secrets) == 0 {
+			return false, nil
+		}
+		secretName = sa.Secrets[0].Name
+		return true, nil
+	})
+	if err != nil {
+		return fmt.Errorf("Failed to get secret name from sa: %w", err)
+	}
+	klusterSecret, err := util.KlusterSecret(cpClient, kluster)
+	if err != nil {
+		return fmt.Errorf("Failed to get kluster secret: %w", err)
+	}
+	secret, err := klusterClient.CoreV1().Secrets("kube-system").Get(context.TODO(), secretName, metav1.GetOptions{})
+	if err != nil {
+		return fmt.Errorf("Failed to fetch sa secret: %w", err)
+	}
+	token, ok := secret.Data["token"]
+	if !ok {
+		return errors.New("Secret is missing token field")
+	}
+	if klusterSecret.ServiceAccount == string(token) {
+		return nil
+	}
+	klusterSecret.ServiceAccount = string(token)
+	return util.UpdateKlusterSecret(cpClient, kluster, klusterSecret)
+
 }

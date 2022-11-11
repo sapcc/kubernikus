@@ -18,7 +18,8 @@ type Secret struct {
 
 	Certificates
 
-	ExtraValues string `json:"extra-values,omitempty"`
+	ExtraValues    string `json:"extra-values,omitempty"`
+	ServiceAccount string `json:"serviceAccount,omitempty"`
 }
 
 func NewSecret(secret *corev1.Secret) (*Secret, error) {

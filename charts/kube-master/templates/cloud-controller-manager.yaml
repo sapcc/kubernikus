@@ -27,6 +27,7 @@ spec:
   template:
     metadata:
       labels:
+        component: cloud-controller-manager
         app: cloud-controller-manager
         kluster: {{ .Values.name }}
         account: {{ .Values.account }}
@@ -99,6 +100,9 @@ spec:
 {{- end }}
             - --use-service-account-credentials=true
             - --concurrent-service-syncs=10
+          ports:
+            - name: metrics
+              containerPort: 10258
           livenessProbe:
             httpGet:
               path: /healthz

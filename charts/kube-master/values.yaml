@@ -173,3 +173,6 @@ csi:
         memory: 100Mi
 
 audit: ""
+
+metrics:
+  prometheusName: kubernikus-collector

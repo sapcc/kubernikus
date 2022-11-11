@@ -1,0 +1,42 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  labels:
+    prometheus: {{ .Values.metrics.prometheus }}
+  name: {{ include "master.fullname" . }}
+spec:
+  jobLabel: {{ include "master.fullname" . }}
+  namespaceSelector:
+    matchNames:
+    - {{ .Release.Namespace }}
+  podMetricsEndpoints:
+  - interval: 60s
+    port: api
+    relabelings:
+    - action: labelmap
+      regex: __meta_kubernetes_pod_label_(.+)
+    scheme: https
+    bearerTokenSecret:
+      name: {{ include "master.fullname" . }}-secret
+      key: serviceAccount
+    tlsConfig:
+      insecureSkipVerify: true
+    scrapeTimeout: 10s
+  - interval: 60s
+    port: metrics
+    relabelings:
+    - action: drop
+      regex: ^etcd$
+      sourceLabels: [__meta_kubernetes_pod_label_component]
+    - action: labelmap
+      regex: __meta_kubernetes_pod_label_(.+)
+    scheme: https
+    bearerTokenSecret:
+      name: {{ include "master.fullname" . }}-secret
+      key: serviceAccount
+    tlsConfig:
+      insecureSkipVerify: true
+    scrapeTimeout: 10s
+  selector:
+    matchLabels:
+      release: {{ include "master.fullname" . }}
