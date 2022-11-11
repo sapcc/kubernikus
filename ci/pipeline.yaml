@@ -1641,30 +1641,6 @@ jobs:
           <<: *auth_e2e_master
     <<: *slack
 
-  - name: e2e-1.22.15
-    serial: true
-    plan:
-      - in_parallel:
-        - get: secrets.git
-        - get: kubernikus.builds
-          resource: kubernikus.git
-          passed: [master]
-          trigger: true
-        - get: all-versions.trigger
-          trigger: true
-          passed: [all-versions]
-      - task: e2e_tests
-        config:
-          <<: *task_e2e_tests
-        timeout: 2h
-        params:
-          KLUSTER_VERSION: "1.22.15"
-          KLUSTER_CIDR: "100.103.0.0/16"
-          ISOLATE_TEST: "true"
-          KLUSTER_OS_IMAGES: flatcar-stable-amd64,flatcar-beta-amd64
-          <<: *auth_e2e_master
-    <<: *slack
-
 
   - name: prod
     serial: true
@@ -3247,8 +3223,6 @@ groups:
 
       - e2e-1.23.12
 
-      - e2e-1.22.15
-
       - prod
 
       - silver
@@ -3386,8 +3360,6 @@ groups:
       - e2e-1.24.7
 
       - e2e-1.23.12
-
-      - e2e-1.22.15
 
       - prod
 
