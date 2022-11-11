@@ -88,6 +88,13 @@ func (ca Bundle) Sign(config Config) (*Bundle, error) {
 	key, _ := NewPrivateKey()
 	serial, _ := cryptorand.Int(cryptorand.Reader, new(big.Int).SetInt64(math.MaxInt64))
 
+	//backdate not before to compensate clock skew
+	notBefore := time.Now().Add(-1 * time.Hour)
+	//Don't create certs that are valid before the issuing CA
+	if ca.Certificate.NotBefore.After(notBefore) {
+		notBefore = ca.Certificate.NotBefore
+	}
+
 	certTmpl := x509.Certificate{
 		Subject: pkix.Name{
 			CommonName:         config.Sign,
@@ -99,7 +106,7 @@ func (ca Bundle) Sign(config Config) (*Bundle, error) {
 		DNSNames:     config.AltNames.DNSNames,
 		IPAddresses:  config.AltNames.IPs,
 		SerialNumber: serial,
-		NotBefore:    ca.Certificate.NotBefore,
+		NotBefore:    notBefore,
 		NotAfter:     time.Now().Add(config.ValidFor).UTC(),
 		KeyUsage:     x509.KeyUsageKeyEncipherment | x509.KeyUsageDigitalSignature,
 		ExtKeyUsage:  config.Usages,
