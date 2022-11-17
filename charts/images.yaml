@@ -880,7 +880,6 @@ imagesForVersion:
     scheduler:
       repository: keppel.$REGION.cloud.sap/ccloud/kube-scheduler
       tag: v1.22.15
-    supported: true
     wormhole:
       repository: keppel.$REGION.cloud.sap/ccloud/kubernikus
       tag: changeme
