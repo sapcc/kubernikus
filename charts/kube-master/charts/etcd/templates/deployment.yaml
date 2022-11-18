@@ -264,6 +264,10 @@ spec:
                   name: {{ include "fullname" . }}
                   key: openstack-project-id
 {{- end }}
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
           volumeMounts:
             - mountPath: /var/lib/etcd
               name: data
