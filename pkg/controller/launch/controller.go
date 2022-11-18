@@ -11,6 +11,7 @@ import (
 	v1 "github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
 	"github.com/sapcc/kubernikus/pkg/controller/base"
 	"github.com/sapcc/kubernikus/pkg/controller/config"
+	"github.com/sapcc/kubernikus/pkg/controller/deorbit"
 	"github.com/sapcc/kubernikus/pkg/controller/metrics"
 	"github.com/sapcc/kubernikus/pkg/controller/nodeobservatory"
 	informers_kubernikus "github.com/sapcc/kubernikus/pkg/generated/informers/externalversions/kubernikus/v1"
@@ -90,6 +91,9 @@ func (lr *LaunchReconciler) Reconcile(kluster *v1.Kluster) (requeue bool, err er
 	case models.KlusterPhaseTerminating:
 		if kluster.TerminationProtection() {
 			return false, nil
+		}
+		if kluster.HasFinalizer(deorbit.DeorbiterFinalizer) {
+			return false, nil //Wait for dorbiter so that volumes are detached before deleting nodes
 		}
 
 		return lr.terminatePools(kluster)

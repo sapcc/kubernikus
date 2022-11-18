@@ -82,6 +82,9 @@ func (d *DeorbitReconciler) Reconcile(kluster *v1.Kluster) (bool, error) {
 		if kluster.TerminationProtection() {
 			return false, nil
 		}
+		if kluster.ObjectMeta.DeletionTimestamp == nil {
+			return false, nil //wait until the kluster is marked for deletion
+		}
 		if kluster.HasFinalizer(DeorbiterFinalizer) {
 			if err := d.deorbit(kluster); err != nil {
 				return false, err
