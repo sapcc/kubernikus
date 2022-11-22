@@ -106,11 +106,25 @@ func (d *ConcreteDeorbiter) DeletePersistentVolumeClaims() (deleted []core_v1.Pe
 		if pv.Spec.Cinder == nil && pv.Spec.CSI == nil {
 			continue
 		}
-		deleted = append(deleted, pvc)
 
 		err = d.Client.CoreV1().PersistentVolumeClaims(pvc.Namespace).Delete(context.TODO(), pvc.Name, meta_v1.DeleteOptions{})
 		if err != nil {
 			return deleted, err
+		}
+		deleted = append(deleted, pvc)
+		//delete pods holding a reference to the pvc
+		pods, err := d.Client.CoreV1().Pods(pvc.Namespace).List(context.TODO(), meta_v1.ListOptions{})
+		if err != nil {
+			return deleted, err
+		}
+		for _, pod := range pods.Items {
+			for _, volume := range pod.Spec.Volumes {
+				if volume.PersistentVolumeClaim != nil && volume.PersistentVolumeClaim.ClaimName == pvc.Name {
+					if err := d.Client.CoreV1().Pods(pvc.Namespace).Delete(context.TODO(), pod.Name, meta_v1.DeleteOptions{}); err != nil {
+						return deleted, fmt.Errorf("Failed to delete pod %s/%s: %w", pod.Namespace, pod.Name, err)
+					}
+				}
+			}
 		}
 	}
 
