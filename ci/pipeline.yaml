@@ -1569,7 +1569,7 @@ jobs:
       - put: all-versions.trigger
 
 
-  - name: e2e-1.25.3
+  - name: e2e-1.25.4
     serial: true
     plan:
       - in_parallel:
@@ -1586,14 +1586,14 @@ jobs:
           <<: *task_e2e_tests
         timeout: 2h
         params:
-          KLUSTER_VERSION: "1.25.3"
+          KLUSTER_VERSION: "1.25.4"
           KLUSTER_CIDR: "100.100.0.0/16"
           ISOLATE_TEST: "true"
           KLUSTER_OS_IMAGES: flatcar-stable-amd64,flatcar-beta-amd64
           <<: *auth_e2e_master
     <<: *slack
 
-  - name: e2e-1.24.7
+  - name: e2e-1.24.8
     serial: true
     plan:
       - in_parallel:
@@ -1610,14 +1610,14 @@ jobs:
           <<: *task_e2e_tests
         timeout: 2h
         params:
-          KLUSTER_VERSION: "1.24.7"
+          KLUSTER_VERSION: "1.24.8"
           KLUSTER_CIDR: "100.101.0.0/16"
           ISOLATE_TEST: "true"
           KLUSTER_OS_IMAGES: flatcar-stable-amd64,flatcar-beta-amd64
           <<: *auth_e2e_master
     <<: *slack
 
-  - name: e2e-1.23.12
+  - name: e2e-1.23.14
     serial: true
     plan:
       - in_parallel:
@@ -1634,7 +1634,7 @@ jobs:
           <<: *task_e2e_tests
         timeout: 2h
         params:
-          KLUSTER_VERSION: "1.23.12"
+          KLUSTER_VERSION: "1.23.14"
           KLUSTER_CIDR: "100.102.0.0/16"
           ISOLATE_TEST: "true"
           KLUSTER_OS_IMAGES: flatcar-stable-amd64,flatcar-beta-amd64
@@ -1647,7 +1647,7 @@ jobs:
     plan:
       - get: kubernikus.builds
         resource: kubernikus.git
-        passed: [e2e-1.25.3]
+        passed: [e2e-1.25.4]
       - task: changes
         config:
           <<: *task_github_compare_url
@@ -3217,11 +3217,11 @@ groups:
       - whitesource
       - all-versions
 
-      - e2e-1.25.3
+      - e2e-1.25.4
 
-      - e2e-1.24.7
+      - e2e-1.24.8
 
-      - e2e-1.23.12
+      - e2e-1.23.14
 
       - prod
 
@@ -3355,11 +3355,11 @@ groups:
       - whitesource
       - all-versions
 
-      - e2e-1.25.3
+      - e2e-1.25.4
 
-      - e2e-1.24.7
+      - e2e-1.24.8
 
-      - e2e-1.23.12
+      - e2e-1.23.14
 
       - prod
 
