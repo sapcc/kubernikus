@@ -17,6 +17,7 @@ import (
 	v1 "github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
 	"github.com/sapcc/kubernikus/pkg/controller/config"
 	"github.com/sapcc/kubernikus/pkg/controller/metrics"
+	"github.com/sapcc/kubernikus/pkg/util"
 )
 
 type SelfDestructReason string
@@ -34,6 +35,10 @@ const (
 	// potentially leave debris in the customer's project in the form of volumes,
 	// load balancers or floating IPs.
 	DeorbitHangingTimeout = 24 * time.Hour
+
+	// < 1.17 clusters don't user finalizers on service objects for loadbalancer cleanup
+	// We wait 5 minutes staically instead
+	ServiceDeletionGracePeriod = 5 * time.Minute
 
 	// While waiting for deletion use this interval for rechecks
 	PollInterval = 15 * time.Second
@@ -211,6 +216,9 @@ func (d *ConcreteDeorbiter) isPersistentVolumesCleanupFinished() (bool, error) {
 }
 
 func (d *ConcreteDeorbiter) isServiceCleanupFinished() (bool, error) {
+	if ok, _ := util.KlusterVersionConstraint(d.Kluster, "< 1.17"); ok {
+		return d.Kluster.ObjectMeta.DeletionTimestamp.Add(ServiceDeletionGracePeriod).Before(time.Now()), nil
+	}
 	services, err := d.Client.CoreV1().Services(meta_v1.NamespaceAll).List(context.TODO(), meta_v1.ListOptions{})
 	if err != nil {
 		return false, err
