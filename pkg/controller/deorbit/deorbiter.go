@@ -10,6 +10,7 @@ import (
 	"github.com/gophercloud/gophercloud/openstack/blockstorage/v3/volumes"
 	core_v1 "k8s.io/api/core/v1"
 	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/record"
@@ -87,6 +88,18 @@ func NewDeorbiter(kluster *v1.Kluster, stopCh <-chan struct{}, clients config.Cl
 
 func (d *ConcreteDeorbiter) DeletePersistentVolumeClaims() (deleted []core_v1.PersistentVolumeClaim, err error) {
 	deleted = []core_v1.PersistentVolumeClaim{}
+
+	// Cordon all nodes to avoid scheduling new pods that bind volumes
+	nodes, err := d.Client.CoreV1().Nodes().List(context.TODO(), meta_v1.ListOptions{})
+	if err != nil {
+		return deleted, fmt.Errorf("Failed to list nodes: %w", err)
+	}
+	for _, node := range nodes.Items {
+		_, err := d.Client.CoreV1().Nodes().Patch(context.TODO(), node.Name, types.JSONPatchType, []byte(`[{"op": "replace", "path": "/spec/unschedulable", "value": true}]`), meta_v1.PatchOptions{})
+		if err != nil {
+			return deleted, fmt.Errorf("Failed to cordon node %s: %w", node.Name, err)
+		}
+	}
 
 	pvcs, err := d.Client.CoreV1().PersistentVolumeClaims(meta_v1.NamespaceAll).List(context.TODO(), meta_v1.ListOptions{})
 	if err != nil {
