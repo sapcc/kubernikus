@@ -24,6 +24,7 @@ run:
       apk add --no-cache upx bash make git
 
       make bin/darwin/kubernikusctl
+      make bin/darwin/kubernikusctl.arm64 GOOARCH=arm64
       make bin/linux/kubernikusctl
       make bin/windows/kubernikusctl.exe
       upx bin/linux/*
@@ -35,6 +36,7 @@ run:
       echo "1.0.0+$SHA" > $BINARIES/tag
 
       cp bin/darwin/kubernikusctl $BINARIES/kubernikusctl_darwin_amd64
+      cp bin/darwin/kubernikusctl.arm64 $BINARIES/kubernikusctl_darwin_arm64
       cp bin/linux/kubernikusctl $BINARIES/kubernikusctl_linux_amd64
       cp bin/windows/kubernikusctl.exe $BINARIES/kubernikusctl_windows_amd64.exe
 
