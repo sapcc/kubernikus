@@ -66,6 +66,10 @@ spec:
                 path: aggregation-aggregator.pem
               - key: aggregation-aggregator-key.pem
                 path: aggregation-aggregator-key.pem
+              - key: apiserver-clients-kubernikus-wormhole.pem
+                path: apiserver-clients-kubernikus-wormhole.pem
+              - key: apiserver-clients-kubernikus-wormhole-key.pem
+                path: apiserver-clients-kubernikus-wormhole-key.pem
 {{- if .Values.api.sniCertSecret }}
         - name: sni-certs
           secret:
@@ -131,6 +135,15 @@ spec:
         - name: logs
           emptyDir: {}
         {{- end }}
+        - name: konnectivity-egress
+          configMap:
+            name: {{ include "master.fullname" . }}
+            defaultMode: 0700
+            items:
+              - key: egress-selector-configuration.yaml
+                path: egress-selector-configuration.yaml
+        - name: konnectivity-uds
+          emptyDir: {}
       initContainers:
         - name: etcd-wait
           image: "{{ include "etcd.image" . }}"
@@ -272,6 +285,7 @@ spec:
             - --audit-log-maxage=1
             - --audit-log-maxbackup=1
             {{- end }}
+            - --egress-selector-config-file=/etc/kubernetes/egress/egress-selector-configuration.yaml
           volumeMounts:
             - mountPath: /etc/kubernetes/certs
               name: certs
@@ -300,6 +314,12 @@ spec:
             - mountPath: /var/log
               name: logs
             {{- end}}
+            - mountPath: /etc/kubernetes/egress
+              name: konnectivity-egress
+              readOnly: true
+            - mountPath: /etc/kubernetes/konnectivity-server
+              name: konnectivity-uds
+              readOnly: false
           livenessProbe:
 {{- if .Values.etcd.backup.enabled }}
             exec:
@@ -333,41 +353,60 @@ spec:
               value: "8080"
           resources:
 {{ toYaml .Values.api.resources | indent 12 }}
-        - name: wormhole
-          image: {{ include "wormhole.image" . | quote }}
+        - name: konnectivity-server
+          image: registry.k8s.io/kas-network-proxy/proxy-server:v0.0.33
           command:
-            - sh
-            - -ec
-            - |
-              cp /etc/kubernetes/certs/tls-wormhole.pem /tmp/tls-wormhole.livenessprobe
-              exec wormhole server --kubeconfig=/etc/kubernetes/config/kubeconfig \
-              --ca=/etc/kubernetes/certs/apiserver-nodes-ca.pem \
-              --cert=/etc/kubernetes/certs/tls-wormhole.pem \
-              --key=/etc/kubernetes/certs/tls-wormhole-key.pem \
-              --service-cidr={{ .Values.serviceCIDR }} \
-              --api-port={{ .Values.advertisePort }} \
-              --v=5
-          securityContext:
-            capabilities:
-              add:
-                - NET_ADMIN
+            - /proxy-server
+          args:
+            - --uds-name=/etc/kubernetes/konnectivity-server/konnectivity-server.socket
+            - --logtostderr=true
+            - --cluster-cert=/etc/kubernetes/certs/tls-wormhole.pem
+            - --cluster-key=/etc/kubernetes/certs/tls-wormhole-key.pem
+            #- --server-ca-cert=/etc/kubernetes/certs/tls-ca.pem
+            #- --server-cert=/etc/kubernetes/certs/tls-wormhole.pem
+            #- --server-key=/etc/kubernetes/certs/tls-wormhole-key.pem
+            - --agent-namespace=kube-system
+            - --agent-service-account=konnectivity-agent
+            - --kubeconfig=/etc/kubernetes/config/kubeconfig
+            - --authentication-audience=system:konnectivity-server
+            - --keepalive-time=1h
+            - --log-file-max-size=0
+            - --delete-existing-uds-file=true
+            - --mode=http-connect
+            - --server-port=0
+            #- --server-port=8090
+            - --agent-port=8091
+            - --admin-port=8095
+            - --health-port=8092
+            - --v=2
+            - --server-count=1
+          #livenessProbe:
+          #  httpGet:
+          #    scheme: HTTP
+          #    host: 127.0.0.1
+          #    port: 8092
+          #    path: /healthz
+          #  initialDelaySeconds: 30
+          #  timeoutSeconds: 60
+          ports:
+          - name: serverport
+            containerPort: 8090
+          - name: agentport
+            containerPort: 8091
+          - name: adminport
+            containerPort: 8095
+          - name: healthport
+            containerPort: 8092
           volumeMounts:
-            - mountPath: /etc/kubernetes/certs/
-              name: wormhole-certs
-              readOnly: true
-            - mountPath: /etc/kubernetes/config
-              name: wormhole-config
-              readOnly: true
-          livenessProbe:
-            exec:
-              command:
-              - cmp
-              - -s
-              - /etc/kubernetes/certs/tls-wormhole.pem
-              - /tmp/tls-wormhole.livenessprobe
-            initialDelaySeconds: 60
-            periodSeconds: 60
-            timeoutSeconds: 3
+          - mountPath: /etc/kubernetes/certs
+            name: wormhole-certs
+            readOnly: true
+          - mountPath: /etc/kubernetes/config
+            name: wormhole-config
+            readOnly: true
+          - mountPath: /etc/kubernetes/konnectivity-server
+            name: konnectivity-uds
+            readOnly: false
         {{- if .Values.audit }}
         - name: fluentd
           image: {{ include "fluentd.image" . | quote }}

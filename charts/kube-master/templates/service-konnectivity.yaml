@@ -1,0 +1,15 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: {{ include "master.fullname" . }}-konnectivity
+  labels:
+    release: {{ .Release.Name }}
+spec:
+  selector:
+    app: {{ include "master.fullname" . }}-apiserver
+  ports:
+  - name: agentport
+    protocol: TCP
+    port: 8091
+    targetPort: 8091
+  type: LoadBalancer

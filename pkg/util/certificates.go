@@ -307,7 +307,7 @@ func (cf *CertificateFactory) Ensure() ([]CertUpdates, error) {
 	}
 	if err := ensureServerCertificate(tlsCA, "wormhole",
 		wormholeDNSNames,
-		nil,
+		[]net.IP{net.IPv4(147, 204, 33, 50)}, // hack for konnectivity lb
 		&cf.store.TLSWormholeCertificate,
 		&cf.store.TLSWormholePrivateKey,
 		&certUpdates); err != nil {
