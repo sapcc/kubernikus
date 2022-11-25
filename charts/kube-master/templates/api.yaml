@@ -66,10 +66,6 @@ spec:
                 path: aggregation-aggregator.pem
               - key: aggregation-aggregator-key.pem
                 path: aggregation-aggregator-key.pem
-              - key: apiserver-clients-kubernikus-wormhole.pem
-                path: apiserver-clients-kubernikus-wormhole.pem
-              - key: apiserver-clients-kubernikus-wormhole-key.pem
-                path: apiserver-clients-kubernikus-wormhole-key.pem
 {{- if .Values.api.sniCertSecret }}
         - name: sni-certs
           secret:
