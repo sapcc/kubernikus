@@ -14,6 +14,7 @@ type OpenStack struct {
 	Compute      *gophercloud.ServiceClient
 	Identity     *gophercloud.ServiceClient
 	BlockStorage *gophercloud.ServiceClient
+	Network      *gophercloud.ServiceClient
 }
 
 func NewOpenStackFramework() (*OpenStack, error) {
@@ -57,10 +58,16 @@ func NewOpenStackFramework() (*OpenStack, error) {
 		return nil, fmt.Errorf("could not initialize blockStorage client: %v", err)
 	}
 
+	network, err := openstack.NewNetworkV2(provider, gophercloud.EndpointOpts{})
+	if err != nil {
+		return nil, fmt.Errorf("could not initialize network client: %v", err)
+	}
+
 	return &OpenStack{
 		Provider:     provider,
 		Compute:      compute,
 		Identity:     identity,
 		BlockStorage: blockStorage,
+		Network:      network,
 	}, nil
 }

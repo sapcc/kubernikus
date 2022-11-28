@@ -48,15 +48,15 @@ func (f *LoggingFlightReconciler) DeleteErroredInstances() []string {
 	return ids
 }
 
-func (f *LoggingFlightReconciler) EnsureKubernikusRuleInSecurityGroup() bool {
-	ensured := f.Reconciler.EnsureKubernikusRuleInSecurityGroup()
-	if ensured {
+func (f *LoggingFlightReconciler) EnsureKubernikusRulesInSecurityGroup() (bool, error) {
+	updated, err := f.Reconciler.EnsureKubernikusRulesInSecurityGroup()
+	if updated {
 		f.Logger.Log(
 			"msg", "added missing kubernikus security group",
 			"v", 2,
 		)
 	}
-	return ensured
+	return updated, err
 }
 
 func (f *LoggingFlightReconciler) EnsureServiceUserRoles() []string {

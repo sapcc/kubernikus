@@ -88,7 +88,7 @@ func (c LoggingClient) SetSecurityGroup(sgName, nodeID string) (err error) {
 	return c.Client.SetSecurityGroup(sgName, nodeID)
 }
 
-func (c LoggingClient) EnsureKubernikusRuleInSecurityGroup(k *v1.Kluster) (created bool, err error) {
+func (c LoggingClient) EnsureKubernikusRulesInSecurityGroup(k *v1.Kluster) (created bool, err error) {
 	defer func(begin time.Time) {
 		c.Logger.Log(
 			"msg", "ensured securitygroup",
@@ -100,7 +100,7 @@ func (c LoggingClient) EnsureKubernikusRuleInSecurityGroup(k *v1.Kluster) (creat
 		)
 	}(time.Now())
 
-	return c.Client.EnsureKubernikusRuleInSecurityGroup(k)
+	return c.Client.EnsureKubernikusRulesInSecurityGroup(k)
 }
 
 func (c LoggingClient) DeleteServerGroup(name string) (err error) {

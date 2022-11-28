@@ -3,6 +3,8 @@ package kluster
 import (
 	"errors"
 	"fmt"
+	"net"
+	"net/url"
 	"os"
 	"strings"
 
@@ -15,6 +17,7 @@ import (
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/servers"
 	securitygroups "github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/security/groups"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/security/rules"
+	"github.com/gophercloud/gophercloud/openstack/networking/v2/subnets"
 	"github.com/gophercloud/gophercloud/pagination"
 	flavorutil "github.com/gophercloud/utils/openstack/compute/v2/flavors"
 	imageutil "github.com/gophercloud/utils/openstack/imageservice/v2/images"
@@ -33,7 +36,7 @@ type KlusterClient interface {
 	RebootNode(string) error
 	ListNodes(*v1.Kluster, *models.NodePool) ([]Node, error)
 	SetSecurityGroup(sgName, nodeID string) error
-	EnsureKubernikusRuleInSecurityGroup(*v1.Kluster) (bool, error)
+	EnsureKubernikusRulesInSecurityGroup(*v1.Kluster) (bool, error)
 	EnsureServerGroup(name string) (string, error)
 	DeleteServerGroup(name string) error
 	EnsureNodeTags(node Node, klusterName, poolName string) ([]string, error)
@@ -190,7 +193,7 @@ func (c *klusterClient) SetSecurityGroup(sgName, nodeID string) (err error) {
 	return secgroups.AddServer(c.ComputeClient, nodeID, sgName).ExtractErr()
 }
 
-func (c *klusterClient) EnsureKubernikusRuleInSecurityGroup(kluster *v1.Kluster) (created bool, err error) {
+func (c *klusterClient) EnsureKubernikusRulesInSecurityGroup(kluster *v1.Kluster) (created bool, err error) {
 	sgName := kluster.Spec.Openstack.SecurityGroupName
 	page, err := securitygroups.List(c.NetworkClient, securitygroups.ListOpts{Name: sgName}).AllPages()
 	if err != nil {
@@ -210,74 +213,191 @@ func (c *klusterClient) EnsureKubernikusRuleInSecurityGroup(kluster *v1.Kluster)
 		return false, fmt.Errorf("More than one SecurityGroup with name %v found", sgName)
 	}
 
-	udp := false
-	tcp := false
-	icmp := false
-	for _, rule := range groups[0].Rules {
-		if rule.Direction != string(rules.DirIngress) {
-			continue
-		}
-
-		if rule.EtherType != string(rules.EtherType4) {
-			continue
-		}
-
-		if rule.RemoteIPPrefix != *kluster.Spec.ClusterCIDR {
-			continue
-		}
-
-		if rule.Protocol == string(rules.ProtocolICMP) {
-			icmp = true
-			continue
-		}
-
-		if rule.Protocol == string(rules.ProtocolUDP) {
-			udp = true
-			continue
-		}
-
-		if rule.Protocol == string(rules.ProtocolTCP) {
-			tcp = true
-			continue
-		}
-
-		if icmp && udp && tcp {
-			break
-		}
+	apiIP, err := ipForUrl(kluster.Status.Apiserver)
+	if err != nil {
+		return false, fmt.Errorf("Failed to lookup apiserver ip: %w", err)
 	}
 
-	opts := rules.CreateOpts{
-		Direction:      rules.DirIngress,
-		EtherType:      rules.EtherType4,
-		SecGroupID:     groups[0].ID,
-		RemoteIPPrefix: *kluster.Spec.ClusterCIDR,
+	wantedRules := []rules.SecGroupRule{
+		{
+			Direction:     string(rules.DirIngress),
+			EtherType:     string(rules.EtherType4),
+			RemoteGroupID: groups[0].ID,
+			Description:   ruleDescription("clusterin", kluster.Spec.Name, `Accept traffic from cluster pods and nodes`),
+		},
+		{
+			Direction:     string(rules.DirEgress),
+			EtherType:     string(rules.EtherType4),
+			RemoteGroupID: groups[0].ID,
+			Description:   ruleDescription("clusterout", kluster.Spec.Name, `Allow traffic to cluster pods and nodes`),
+		},
+		{
+			Direction:    string(rules.DirEgress),
+			EtherType:    string(rules.EtherType4),
+			Protocol:     string(rules.ProtocolUDP),
+			PortRangeMin: 123,
+			PortRangeMax: 123,
+			Description:  ruleDescription("ntp", "", "Allow ntp client traffic"),
+		},
+		{
+			Direction:    string(rules.DirEgress),
+			EtherType:    string(rules.EtherType4),
+			Protocol:     string(rules.ProtocolUDP),
+			PortRangeMin: 53,
+			PortRangeMax: 53,
+			Description:  ruleDescription("dns", "", "Allow dns requests"),
+		},
+		{
+			Direction:      string(rules.DirEgress),
+			EtherType:      string(rules.EtherType4),
+			Protocol:       string(rules.ProtocolTCP),
+			PortRangeMin:   443,
+			PortRangeMax:   443,
+			RemoteIPPrefix: apiIP.String(),
+			Description:    ruleDescription("api", kluster.Spec.Name, "Allow access to apiserver"),
+		},
 	}
 
-	if !udp {
-		opts.Protocol = rules.ProtocolUDP
+	if subnetsPage, err := subnets.List(c.NetworkClient, subnets.ListOpts{NetworkID: kluster.Spec.Openstack.NetworkID}).AllPages(); err == nil {
+		if nets, err := subnets.ExtractSubnets(subnetsPage); err == nil && len(nets) > 0 {
+			wantedRules = append(wantedRules, rules.SecGroupRule{
+				Direction:      string(rules.DirIngress),
+				EtherType:      string(rules.EtherType4),
+				Protocol:       string(rules.ProtocolTCP),
+				PortRangeMin:   30000,
+				PortRangeMax:   32767,
+				RemoteIPPrefix: nets[0].CIDR, //we only take the first subnet, tough luck
+				Description:    ruleDescription("lb", kluster.Spec.Name, `Allow loadbalancers to reach nodeports`),
+			})
+		}
+	}
+	var objectstoreIP net.IP
+	if osURL, err := c.ComputeClient.ProviderClient.EndpointLocator(gophercloud.EndpointOpts{Type: "object-store", Availability: gophercloud.AvailabilityPublic}); err == nil {
+		if objectstoreIP, err = ipForUrl(osURL); err == nil {
+
+			wantedRules = append(wantedRules, rules.SecGroupRule{
+				Direction:      string(rules.DirEgress),
+				EtherType:      string(rules.EtherType4),
+				Protocol:       string(rules.ProtocolTCP),
+				PortRangeMin:   443,
+				PortRangeMax:   443,
+				RemoteIPPrefix: objectstoreIP.String(),
+				Description:    ruleDescription("objects", "", "Allow access to regional object store"),
+			})
+		} else {
+			fmt.Println("parse error object-store", osURL, err)
+		}
+	} else {
+		fmt.Println("no object-store", err, osURL)
+	}
+
+	// keppel (ingress.$region.cloud.sap)
+	if keppelURL, err := c.ComputeClient.ProviderClient.EndpointLocator(gophercloud.EndpointOpts{Type: "keppel", Availability: gophercloud.AvailabilityPublic}); err == nil {
+		if ip, err := ipForUrl(keppelURL); err == nil {
+			wantedRules = append(wantedRules, rules.SecGroupRule{
+				Direction:      string(rules.DirEgress),
+				EtherType:      string(rules.EtherType4),
+				Protocol:       string(rules.ProtocolTCP),
+				PortRangeMin:   443,
+				PortRangeMax:   443,
+				RemoteIPPrefix: ip.String(),
+				Description:    ruleDescription("keppel", "", "Allow access to "+keppelURL),
+			})
+		}
+		//in qa we need to add keppel.eu-de-1 because thats from where we pull images
+		if strings.Contains(keppelURL, "qa-de-1") {
+			keppelURL := strings.Replace(keppelURL, "qa-de-1", "eu-de-1", 1)
+			if ip, err := ipForUrl(keppelURL); err == nil {
+				wantedRules = append(wantedRules, rules.SecGroupRule{
+					Direction:      string(rules.DirEgress),
+					EtherType:      string(rules.EtherType4),
+					Protocol:       string(rules.ProtocolTCP),
+					PortRangeMin:   443,
+					PortRangeMax:   443,
+					RemoteIPPrefix: ip.String(),
+					Description:    ruleDescription("keppeleude1", "", "Allow access to "+keppelURL),
+				})
+			}
+			if swiftEUDE1, err := ipForUrl("https://objectstore-3.eu-de-1.cloud.sap"); err == nil {
+				wantedRules = append(wantedRules, rules.SecGroupRule{
+					Direction:      string(rules.DirEgress),
+					EtherType:      string(rules.EtherType4),
+					Protocol:       string(rules.ProtocolTCP),
+					PortRangeMin:   443,
+					PortRangeMax:   443,
+					RemoteIPPrefix: swiftEUDE1.String(),
+					Description:    ruleDescription("objectseude1", "", "Allow access to https://objectstore-3.eu-de-1.cloud.sap"),
+				})
+			}
+
+		}
+	}
+	//This should be removed and the ignition stuff should be pulled from regional swift eventually
+	if keppelGlobalIP, err := ipForUrl("https://keppel.global.cloud.sap"); err == nil {
+		wantedRules = append(wantedRules, rules.SecGroupRule{
+			Direction:      string(rules.DirEgress),
+			EtherType:      string(rules.EtherType4),
+			Protocol:       string(rules.ProtocolTCP),
+			PortRangeMin:   443,
+			PortRangeMax:   443,
+			RemoteIPPrefix: keppelGlobalIP.String(),
+			Description:    ruleDescription("keppelglobal", "", "Allow access to keppel.global.cloud.sap"),
+		})
+	}
+
+OUTER:
+	for n, wanted := range wantedRules {
+		for _, rule := range groups[0].Rules {
+			if MatchRule(wanted, rule) {
+				continue OUTER //wanted rule is already coverd by exiting rules in group
+			}
+		}
+		//we need to create the
+
+		opts := rules.CreateOpts{
+			Direction:      rules.RuleDirection(wanted.Direction),
+			EtherType:      rules.RuleEtherType(wanted.EtherType),
+			Protocol:       rules.RuleProtocol(wanted.Protocol),
+			SecGroupID:     groups[0].ID,
+			RemoteGroupID:  wanted.RemoteGroupID,
+			RemoteIPPrefix: wanted.RemoteIPPrefix,
+			Description:    wanted.Description,
+			PortRangeMin:   wanted.PortRangeMin,
+			PortRangeMax:   wanted.PortRangeMax,
+		}
 		_, err := rules.Create(c.NetworkClient, opts).Extract()
 		if err != nil {
-			return false, err
+			return false, fmt.Errorf("Failed to create rule %v: %w", wanted, err)
+		}
+		created = true
+		//super extra special hack, when we create the first rule we clean out the old rules we created previously
+		// can be removed after it has been rolled out to all regions
+		if n == 0 {
+			for _, rule := range groups[0].Rules {
+				if rule.Direction != string(rules.DirIngress) {
+					continue
+				}
+
+				if rule.EtherType != string(rules.EtherType4) {
+					continue
+				}
+
+				if rule.RemoteIPPrefix != *kluster.Spec.ClusterCIDR {
+					continue
+				}
+				// rules regarding the clusterCIDR with a non-empty protocol are deprecated
+				if rule.Protocol != "" {
+					if err := rules.Delete(c.NetworkClient, rule.ID).ExtractErr(); err != nil {
+						return created, err
+					}
+				}
+			}
+
 		}
 	}
 
-	if !tcp {
-		opts.Protocol = rules.ProtocolTCP
-		_, err := rules.Create(c.NetworkClient, opts).Extract()
-		if err != nil {
-			return false, err
-		}
-	}
+	return created, nil
 
-	if !icmp {
-		opts.Protocol = rules.ProtocolICMP
-		_, err := rules.Create(c.NetworkClient, opts).Extract()
-		if err != nil {
-			return false, err
-		}
-	}
-
-	return !udp || !tcp || !icmp, nil
 }
 
 func (c *klusterClient) EnsureServerGroup(name string) (id string, err error) {
@@ -384,4 +504,27 @@ func nodeMetadata(kluster, pool string) map[string]string {
 		"kubernikus:nodepool": pool,
 		"kubernikus:kluster":  kluster,
 	}
+}
+
+func ipForUrl(theurl string) (net.IP, error) {
+	u, err := url.Parse(theurl)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to parse url %s: %w", theurl, err)
+	}
+	//if host is an IP we are done
+	if ip := net.ParseIP(u.Hostname()); ip != nil {
+		return ip, nil
+	}
+	ips, err := net.LookupHost(u.Hostname())
+	if err != nil || len(ips) == 0 {
+		return nil, fmt.Errorf("Failed to resolve host: %w", err)
+	}
+	if ip := net.ParseIP(ips[0]); ip != nil {
+		return ip, nil
+	}
+	return nil, fmt.Errorf("Failed to parse resolved ip %s", ips[0])
+}
+
+func ruleDescription(id string, cluster string, message string) string {
+	return fmt.Sprintf("%s (auto-generated) [kubernikus/%s/%s]", message, id, cluster)
 }

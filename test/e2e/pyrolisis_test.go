@@ -13,8 +13,10 @@ import (
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/servers"
 	"github.com/gophercloud/gophercloud/openstack/identity/v3/tokens"
 	"github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/loadbalancers"
+	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/security/groups"
 	"github.com/gophercloud/gophercloud/openstack/objectstorage/v1/containers"
 	"github.com/gophercloud/gophercloud/openstack/objectstorage/v1/objects"
+	"github.com/gophercloud/gophercloud/pagination"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"k8s.io/apimachinery/pkg/util/wait"
@@ -48,6 +50,7 @@ func (p *PyrolisisTests) Run(t *testing.T) {
 
 		t.Run("CleanupVolumes", p.CleanupVolumes)
 		t.Run("CleanupInstances", p.CleanupInstances)
+		t.Run("CleanupSecurityGroups", p.CleanupSecurityGroups)
 	}
 
 	cleanupStorageContainer := t.Run("CleanupBackupStorageContainers", p.CleanupBackupStorageContainers)
@@ -129,23 +132,23 @@ func (p *PyrolisisTests) CleanupBackupStorageContainers(t *testing.T) {
 
 	for _, container := range containersToDelete {
 		if strings.HasPrefix(container, etcd_util.BackupStorageContainerBase) {
-			allPages, err := objects.List(storageClient, container, objectsListOpts).AllPages()
+			err := objects.List(storageClient, container, objectsListOpts).EachPage(func(page pagination.Page) (bool, error) {
+				objs, err := objects.ExtractNames(page)
+				if err != nil {
+					return false, fmt.Errorf("There should be no error while extracting objetcs names for container %s: %w", container, err)
+				}
+
+				if _, err := objects.BulkDelete(storageClient, container, objs).Extract(); err != nil {
+					return false, fmt.Errorf("Bulk deletion of %d objects in container %s failed: %w", len(objs), container, err)
+				}
+
+				return true, nil
+
+			})
 			if _, ok := err.(gophercloud.ErrDefault404); ok {
 				continue
 			}
-			require.NoError(t, err, "There should be no error while lising objetcs in container %s:", container)
-
-			allObjects, err := objects.ExtractNames(allPages)
-			require.NoError(t, err, "There should be no error while extracting objetcs names for container %s", container)
-
-			for _, object := range allObjects {
-				_, err := objects.Delete(storageClient, container, object, objects.DeleteOpts{}).Extract()
-				//Ignore 404 from swift, this can happen for a successful delete becase of the eventual consistency
-				if _, ok := err.(gophercloud.ErrDefault404); ok {
-					continue
-				}
-				require.NoError(t, err, "There should be no error while deleting object %s/%s", container, object)
-			}
+			require.NoError(t, err, "There should be no error while deleting objetcs in container %s:", container)
 
 			err = wait.PollImmediate(CleanupBackupContainerDeleteInterval, CleanupBackupContainerDeleteTimeout,
 				func() (bool, error) {
@@ -262,4 +265,20 @@ func (p *PyrolisisTests) CleanupLoadbalancers(t *testing.T) {
 			require.NoError(t, err, "There should be no error while deleting loadbalancer %s", lb.Name)
 		}
 	}
+}
+
+func (p *PyrolisisTests) CleanupSecurityGroups(t *testing.T) {
+	allPages, err := groups.List(p.OpenStack.Network, groups.ListOpts{}).AllPages()
+	require.NoError(t, err, "There should be no error while listing security groups")
+
+	sgroups, err := groups.ExtractGroups(allPages)
+	require.NoError(t, err, "There should be no error while extracting security groups")
+
+	for _, group := range sgroups {
+		if strings.HasPrefix(group.Name, "e2e-") {
+			err := groups.Delete(p.OpenStack.Network, group.ID).ExtractErr()
+			assert.NoError(t, err, "Failed to delete security group %s", group.Name)
+		}
+	}
+
 }

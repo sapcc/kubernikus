@@ -1,13 +1,18 @@
 package flight
 
 import (
+	"errors"
+
 	"github.com/go-kit/kit/log"
+	"github.com/gophercloud/gophercloud"
+	api_v1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/tools/record"
 
 	"github.com/sapcc/kubernikus/pkg/api/models"
 	v1 "github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
 	"github.com/sapcc/kubernikus/pkg/controller/base"
 	"github.com/sapcc/kubernikus/pkg/controller/config"
+	"github.com/sapcc/kubernikus/pkg/controller/metrics"
 )
 
 // =================================================================================
@@ -60,8 +65,9 @@ import (
 // added to the node.
 
 type FlightController struct {
-	Factory FlightReconcilerFactory
-	Logger  log.Logger
+	Factory  FlightReconcilerFactory
+	Logger   log.Logger
+	Recorder record.EventRecorder
 }
 
 func NewController(threadiness int, factories config.Factories, clients config.Clients, recorder record.EventRecorder, logger log.Logger) base.Controller {
@@ -70,7 +76,7 @@ func NewController(threadiness int, factories config.Factories, clients config.C
 	factory := NewFlightReconcilerFactory(factories.Openstack, clients.Kubernetes, factories.NodesObservatory.NodeInformer(), recorder, logger)
 
 	var controller base.Reconciler
-	controller = &FlightController{factory, logger}
+	controller = &FlightController{factory, logger, recorder}
 
 	return base.NewController(threadiness, factories, controller, logger, nil, "flight")
 }
@@ -90,7 +96,15 @@ func (d *FlightController) Reconcile(kluster *v1.Kluster) (bool, error) {
 		return false, err
 	}
 
-	reconciler.EnsureKubernikusRuleInSecurityGroup()
+	if _, err := reconciler.EnsureKubernikusRulesInSecurityGroup(); err != nil {
+		metrics.FlightFailedSecurityGroupOperationsTotal.WithLabelValues(kluster.GetName()).Inc()
+
+		if _, ok := errors.Unwrap(err).(gophercloud.ErrDefault409); ok {
+			d.Recorder.Event(kluster, api_v1.EventTypeWarning, "FlightError", "Security group can't be reconciled due to quota limits. Please extend your security group rules quota to ensure your cluster is working correctly.")
+		} else {
+			d.Recorder.Eventf(kluster, api_v1.EventTypeWarning, "FlightError", "Failed to update security group for kluster: %s", err)
+		}
+	}
 	reconciler.EnsureInstanceSecurityGroupAssignment()
 	reconciler.DeleteIncompletelySpawnedInstances()
 	reconciler.DeleteErroredInstances()
