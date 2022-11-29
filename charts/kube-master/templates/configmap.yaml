@@ -236,3 +236,19 @@ data:
     </match>
     {{- end}}
 {{- end }}
+  egress-selector-configuration.yaml: |-
+    apiVersion: apiserver.k8s.io/v1beta1
+    kind: EgressSelectorConfiguration
+    egressSelections:
+    - name: cluster
+      connection:
+        proxyProtocol: HTTPConnect
+        transport:
+          #tcp:
+            #url: https://127.0.0.1:8090
+            #tlsConfig:
+            #  caBundle: /etc/kubernetes/certs/tls-ca.pem
+            #  clientCert: /etc/kubernetes/certs/apiserver-clients-kubernikus-wormhole.pem
+            #  clientKey: /etc/kubernetes/certs/apiserver-clients-kubernikus-wormhole-key.pem
+          uds:
+            udsName: /etc/kubernetes/konnectivity-server/konnectivity-server.socket

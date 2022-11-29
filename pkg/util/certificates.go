@@ -297,7 +297,7 @@ func (cf *CertificateFactory) Ensure() ([]CertUpdates, error) {
 		return nil, err
 	}
 
-	wormholeDNSNames := []string{fmt.Sprintf("%v-wormhole.%v", cf.kluster.Name, cf.domain)}
+	wormholeDNSNames := []string{fmt.Sprintf("%v-wormhole.%v", cf.kluster.Name, cf.domain), "apiserver-proxy-pod-webhook.kube-system.svc"} // hack for apiserver-proxy-pod-webhook
 	if ann := cf.kluster.Annotations[AdditionalWormholeSANsAnnotation]; ann != "" {
 		dnsNames, _, err := addtionalSANsFromAnnotation(ann)
 		if err != nil {
@@ -307,7 +307,7 @@ func (cf *CertificateFactory) Ensure() ([]CertUpdates, error) {
 	}
 	if err := ensureServerCertificate(tlsCA, "wormhole",
 		wormholeDNSNames,
-		nil,
+		[]net.IP{net.IPv4(147, 204, 33, 50)}, // hack for konnectivity lb
 		&cf.store.TLSWormholeCertificate,
 		&cf.store.TLSWormholePrivateKey,
 		&certUpdates); err != nil {
