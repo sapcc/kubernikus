@@ -55,6 +55,9 @@ images:
   fluentd:
     repository: abc
     tag: xyz
+  recycler:
+    repository: abc
+    tag: xyz
 
 dashboard:
   enabled: false

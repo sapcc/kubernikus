@@ -145,6 +145,8 @@ spec:
             - --service-account-private-key-file=/etc/kubernetes/certs/apiserver-clients-ca-key.pem
             - --service-cluster-ip-range={{ .Values.serviceCIDR }}
             - --use-service-account-credentials
+            - --pv-recycler-pod-template-filepath-hostpath=/etc/kubernetes/config/pv-recycler-template
+            - --pv-recycler-pod-template-filepath-nfs=/etc/kubernetes/config/pv-recycler-template
           livenessProbe:
             httpGet:
               path: /healthz
