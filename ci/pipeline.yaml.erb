@@ -98,7 +98,6 @@ slack: &slack
   on_abort:   { put: slack-alert, inputs: [], params: {alert_type: broke } }
   on_error:   { put: slack-alert, inputs: [], params: {alert_type: broke } }
 
-
 resources:
   - name: docs.git
     type: git
@@ -279,6 +278,28 @@ jobs:
           image: image/image.tar
           additional_tags: kubernikus.git/.git/ref
 
+  - name: replicate-images
+    plan:
+    - get: kubernikus.git
+      trigger: true
+      passed: [build]
+    - task: replicate
+      config:
+        platform: linux
+        image_resource:
+          type: docker-image
+          source:
+            repository: keppel.eu-de-1.cloud.sap/ccloud-dockerhub-mirror/sapcc/unified-kubernetes-toolbox
+            tag: "20220714153155"
+        inputs:
+        - name: kubernikus.git
+        run:
+          path: /bin/sh
+          args: 
+          - -cx
+          - |
+            yq e '.imagesForVersion.*.*|.repository + ":" + .tag' kubernikus.git/charts/images.yaml | grep -v changeme | sed -E 's/\$REGION|global/eu-de-1/g' | xargs -n1 -P8 keppel validate
+
   - name: master
     serial: true
     plan:
@@ -286,7 +307,7 @@ jobs:
         - get: secrets.git
         - get: kubernikus.builds
           resource: kubernikus.git
-          passed: [build]
+          passed: [replicate-images]
           trigger: true
       - in_parallel:
         - task: kubernikus
@@ -505,6 +526,7 @@ groups:
       - cli
       - whitesource
       - all-versions
+      - replicate-images
 <% VERSIONS.each do |version| %>
       - e2e-<%= version %>
 <% end %>
