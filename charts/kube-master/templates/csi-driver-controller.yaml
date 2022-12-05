@@ -30,6 +30,7 @@ spec:
 {{- end }}
       labels:
         app: {{ include "master.fullname" . }}-csi
+        component: csi
         role: controller
         release: {{ .Release.Name }}
     spec:
