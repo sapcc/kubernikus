@@ -236,3 +236,28 @@ data:
     </match>
     {{- end}}
 {{- end }}
+  pv-recycler-template: |-
+    apiVersion: v1
+    kind: Pod
+    metadata:
+      name: recycler-for-pv-
+      namespace: default
+    spec:
+      containers:
+      - args:
+        - -c
+        - test -e /scrub && rm -rf /scrub/..?* /scrub/.[!.]* /scrub/*  && test -z "$(ls -A /scrub)" || exit 1
+        command:
+        - /bin/sh
+        image: {{ include "recycler.image" . | quote }}
+        imagePullPolicy: IfNotPresent
+        name: pv-recycler
+        volumeMounts:
+        - mountPath: /scrub
+          name: vol
+      volumes:
+      - name: vol
+      dnsPolicy: ClusterFirst
+      restartPolicy: Never
+      serviceAccountName: default
+      terminationGracePeriodSeconds: 30
