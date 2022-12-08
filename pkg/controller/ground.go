@@ -311,8 +311,12 @@ func (op *GroundControl) handler(key string) error {
 			if updated {
 				return nil //wait for update to settle
 			}
+			upgradedNeeded, err := util.KlusterNeedsUpgrade(kluster)
+			if err != nil {
+				return fmt.Errorf("Failed to check if kluster needs upgrading: %w", err)
+			}
 
-			if !util.DisabledValue(kluster.Annotations[UpgradeEnableAnnotation]) && kluster.Status.ApiserverVersion != kluster.Spec.Version {
+			if upgradedNeeded {
 				if _, found := op.Images.Versions[kluster.Spec.Version]; !found {
 					err := fmt.Errorf("Unsupported kubernetes version specified: %s", kluster.Spec.Version)
 					op.Logger.Log(
