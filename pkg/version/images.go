@@ -52,6 +52,7 @@ type KlusterVersion struct {
 	FlannelCNIPlugin       ImageVersion `yaml:"flannelCNIPlugin,omitempty" json:"flannelCNIPlugin,omitempty"`
 	CNIPlugins             ImageVersion `yaml:"cniPlugins,omitempty" json:"cniPlugins,omitempty"`
 	Fluentd                ImageVersion `yaml:"fluentd,omitempty" json:"fluentd,omitempty"`
+	Recycler               ImageVersion `yaml:"recycler,omitempty" json:"recycler,omitempty"`
 }
 
 type ImageRegistry struct {
