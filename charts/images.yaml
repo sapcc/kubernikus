@@ -18,12 +18,12 @@ imagesForVersion:
     hyperkube:
       repository: keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/hyperkube
       tag: v1.10.1
-    wormhole:
-      repository: keppel.$REGION.cloud.sap/ccloud/kubernikus
-      tag: changeme
     recycler:
       repository: keppel.global.cloud.sap/ccloud-k8sgcr-mirror/debian-base
       tag: v2.0.0
+    wormhole:
+      repository: keppel.$REGION.cloud.sap/ccloud/kubernikus
+      tag: changeme
   1.10.11:
     dex:
       repository: keppel.$REGION.cloud.sap/ccloud/dex
@@ -43,12 +43,12 @@ imagesForVersion:
     hyperkube:
       repository: keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/hyperkube
       tag: v1.10.11
-    wormhole:
-      repository: keppel.$REGION.cloud.sap/ccloud/kubernikus
-      tag: changeme
     recycler:
       repository: keppel.global.cloud.sap/ccloud-k8sgcr-mirror/debian-base
       tag: v2.0.0
+    wormhole:
+      repository: keppel.$REGION.cloud.sap/ccloud/kubernikus
+      tag: changeme
   1.10.7:
     dex:
       repository: keppel.$REGION.cloud.sap/ccloud/dex
@@ -68,12 +68,12 @@ imagesForVersion:
     hyperkube:
       repository: keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/hyperkube
       tag: v1.10.7
-    wormhole:
-      repository: keppel.$REGION.cloud.sap/ccloud/kubernikus
-      tag: changeme
     recycler:
       repository: keppel.global.cloud.sap/ccloud-k8sgcr-mirror/debian-base
       tag: v2.0.0
+    wormhole:
+      repository: keppel.$REGION.cloud.sap/ccloud/kubernikus
+      tag: changeme
   1.11.9:
     dashboard:
       repository: sapcc/kubernetes-dashboard-amd64
@@ -99,12 +99,12 @@ imagesForVersion:
     hyperkube:
       repository: keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/hyperkube
       tag: v1.11.9
-    wormhole:
-      repository: keppel.$REGION.cloud.sap/ccloud/kubernikus
-      tag: changeme
     recycler:
       repository: keppel.global.cloud.sap/ccloud-k8sgcr-mirror/debian-base
       tag: v2.0.0
+    wormhole:
+      repository: keppel.$REGION.cloud.sap/ccloud/kubernikus
+      tag: changeme
   1.12.10:
     dashboard:
       repository: keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/kubernetesui/dashboard
@@ -133,12 +133,12 @@ imagesForVersion:
     pause:
       repository: keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/pause-amd64
       tag: '3.1'
-    wormhole:
-      repository: keppel.$REGION.cloud.sap/ccloud/kubernikus
-      tag: changeme
     recycler:
       repository: keppel.global.cloud.sap/ccloud-k8sgcr-mirror/debian-base
       tag: v2.0.0
+    wormhole:
+      repository: keppel.$REGION.cloud.sap/ccloud/kubernikus
+      tag: changeme
   1.13.9:
     cloudControllerManager:
       repository: keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/openstack-cloud-controller-manager
@@ -173,12 +173,12 @@ imagesForVersion:
     pause:
       repository: keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/pause-amd64
       tag: '3.1'
-    wormhole:
-      repository: keppel.$REGION.cloud.sap/ccloud/kubernikus
-      tag: changeme
     recycler:
       repository: keppel.global.cloud.sap/ccloud-k8sgcr-mirror/debian-base
       tag: v2.0.0
+    wormhole:
+      repository: keppel.$REGION.cloud.sap/ccloud/kubernikus
+      tag: changeme
   1.14.5:
     cloudControllerManager:
       repository: keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/openstack-cloud-controller-manager
@@ -213,12 +213,12 @@ imagesForVersion:
     pause:
       repository: keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/pause-amd64
       tag: '3.1'
-    wormhole:
-      repository: keppel.$REGION.cloud.sap/ccloud/kubernikus
-      tag: changeme
     recycler:
       repository: keppel.global.cloud.sap/ccloud-k8sgcr-mirror/debian-base
       tag: v2.0.0
+    wormhole:
+      repository: keppel.$REGION.cloud.sap/ccloud/kubernikus
+      tag: changeme
   1.15.2:
     cloudControllerManager:
       repository: keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/openstack-cloud-controller-manager
@@ -253,12 +253,12 @@ imagesForVersion:
     pause:
       repository: keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/pause-amd64
       tag: '3.1'
-    wormhole:
-      repository: keppel.$REGION.cloud.sap/ccloud/kubernikus
-      tag: changeme
     recycler:
       repository: keppel.global.cloud.sap/ccloud-k8sgcr-mirror/debian-base
       tag: v2.0.0
+    wormhole:
+      repository: keppel.$REGION.cloud.sap/ccloud/kubernikus
+      tag: changeme
   1.15.9:
     cloudControllerManager:
       repository: keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/openstack-cloud-controller-manager
@@ -293,12 +293,12 @@ imagesForVersion:
     pause:
       repository: keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/pause-amd64
       tag: '3.1'
-    wormhole:
-      repository: keppel.$REGION.cloud.sap/ccloud/kubernikus
-      tag: changeme
     recycler:
       repository: keppel.global.cloud.sap/ccloud-k8sgcr-mirror/debian-base
       tag: v2.0.0
+    wormhole:
+      repository: keppel.$REGION.cloud.sap/ccloud/kubernikus
+      tag: changeme
   1.16.14:
     cloudControllerManager:
       repository: keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/openstack-cloud-controller-manager
@@ -333,12 +333,12 @@ imagesForVersion:
     pause:
       repository: keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/pause-amd64
       tag: '3.1'
-    wormhole:
-      repository: keppel.$REGION.cloud.sap/ccloud/kubernikus
-      tag: changeme
     recycler:
       repository: keppel.global.cloud.sap/ccloud-k8sgcr-mirror/debian-base
       tag: v2.0.0
+    wormhole:
+      repository: keppel.$REGION.cloud.sap/ccloud/kubernikus
+      tag: changeme
   1.16.9:
     cloudControllerManager:
       repository: keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/openstack-cloud-controller-manager
@@ -373,12 +373,12 @@ imagesForVersion:
     pause:
       repository: keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/pause-amd64
       tag: '3.1'
-    wormhole:
-      repository: keppel.$REGION.cloud.sap/ccloud/kubernikus
-      tag: changeme
     recycler:
       repository: keppel.global.cloud.sap/ccloud-k8sgcr-mirror/debian-base
       tag: v2.0.0
+    wormhole:
+      repository: keppel.$REGION.cloud.sap/ccloud/kubernikus
+      tag: changeme
   1.17.13:
     cloudControllerManager:
       repository: keppel.$REGION.cloud.sap/ccloud/openstack-cloud-controller-manager
@@ -413,12 +413,12 @@ imagesForVersion:
     pause:
       repository: keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/pause-amd64
       tag: '3.1'
-    wormhole:
-      repository: keppel.$REGION.cloud.sap/ccloud/kubernikus
-      tag: changeme
     recycler:
       repository: keppel.global.cloud.sap/ccloud-k8sgcr-mirror/debian-base
       tag: v2.0.0
+    wormhole:
+      repository: keppel.$REGION.cloud.sap/ccloud/kubernikus
+      tag: changeme
   1.18.10:
     cloudControllerManager:
       repository: keppel.$REGION.cloud.sap/ccloud/openstack-cloud-controller-manager
@@ -453,12 +453,12 @@ imagesForVersion:
     pause:
       repository: keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/pause-amd64
       tag: '3.1'
-    wormhole:
-      repository: keppel.$REGION.cloud.sap/ccloud/kubernikus
-      tag: changeme
     recycler:
       repository: keppel.global.cloud.sap/ccloud-k8sgcr-mirror/debian-base
       tag: v2.0.0
+    wormhole:
+      repository: keppel.$REGION.cloud.sap/ccloud/kubernikus
+      tag: changeme
   1.19.11:
     apiserver:
       repository: keppel.$REGION.cloud.sap/ccloud/kube-apiserver
@@ -502,15 +502,15 @@ imagesForVersion:
     pause:
       repository: keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/pause-amd64
       tag: '3.1'
+    recycler:
+      repository: keppel.global.cloud.sap/ccloud-k8sgcr-mirror/debian-base
+      tag: v2.0.0
     scheduler:
       repository: keppel.$REGION.cloud.sap/ccloud/kube-scheduler
       tag: v1.19.11
     wormhole:
       repository: keppel.$REGION.cloud.sap/ccloud/kubernikus
       tag: changeme
-    recycler:
-      repository: keppel.global.cloud.sap/ccloud-k8sgcr-mirror/debian-base
-      tag: v2.0.0
   1.19.4:
     apiserver:
       repository: keppel.$REGION.cloud.sap/ccloud/kube-apiserver
@@ -554,15 +554,15 @@ imagesForVersion:
     pause:
       repository: keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/pause-amd64
       tag: '3.1'
+    recycler:
+      repository: keppel.global.cloud.sap/ccloud-k8sgcr-mirror/debian-base
+      tag: v2.0.0
     scheduler:
       repository: keppel.$REGION.cloud.sap/ccloud/kube-scheduler
       tag: v1.19.4
     wormhole:
       repository: keppel.$REGION.cloud.sap/ccloud/kubernikus
       tag: changeme
-    recycler:
-      repository: keppel.global.cloud.sap/ccloud-k8sgcr-mirror/debian-base
-      tag: v2.0.0
   1.20.6:
     apiserver:
       repository: keppel.$REGION.cloud.sap/ccloud/kube-apiserver
@@ -630,15 +630,15 @@ imagesForVersion:
     pause:
       repository: keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/pause-amd64
       tag: '3.1'
+    recycler:
+      repository: keppel.global.cloud.sap/ccloud-k8sgcr-mirror/debian-base
+      tag: v2.0.0
     scheduler:
       repository: keppel.$REGION.cloud.sap/ccloud/kube-scheduler
       tag: v1.20.6
     wormhole:
       repository: keppel.$REGION.cloud.sap/ccloud/kubernikus
       tag: changeme
-    recycler:
-      repository: keppel.global.cloud.sap/ccloud-k8sgcr-mirror/debian-base
-      tag: v2.0.0
   1.20.8:
     apiserver:
       repository: keppel.$REGION.cloud.sap/ccloud/kube-apiserver
@@ -706,15 +706,15 @@ imagesForVersion:
     pause:
       repository: keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/pause-amd64
       tag: '3.1'
+    recycler:
+      repository: keppel.global.cloud.sap/ccloud-k8sgcr-mirror/debian-base
+      tag: v2.0.0
     scheduler:
       repository: keppel.$REGION.cloud.sap/ccloud/kube-scheduler
       tag: v1.20.8
     wormhole:
       repository: keppel.$REGION.cloud.sap/ccloud/kubernikus
       tag: changeme
-    recycler:
-      repository: keppel.global.cloud.sap/ccloud-k8sgcr-mirror/debian-base
-      tag: v2.0.0
   1.21.5:
     apiserver:
       repository: keppel.$REGION.cloud.sap/ccloud/kube-apiserver
@@ -782,15 +782,15 @@ imagesForVersion:
     pause:
       repository: keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/pause-amd64
       tag: '3.1'
+    recycler:
+      repository: keppel.global.cloud.sap/ccloud-k8sgcr-mirror/debian-base
+      tag: v2.0.0
     scheduler:
       repository: keppel.$REGION.cloud.sap/ccloud/kube-scheduler
       tag: v1.21.5
     wormhole:
       repository: keppel.$REGION.cloud.sap/ccloud/kubernikus
       tag: changeme
-    recycler:
-      repository: keppel.global.cloud.sap/ccloud-k8sgcr-mirror/debian-base
-      tag: v2.0.0
   1.22.14:
     apiserver:
       repository: keppel.$REGION.cloud.sap/ccloud/kube-apiserver
@@ -858,15 +858,15 @@ imagesForVersion:
     pause:
       repository: keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/pause-amd64
       tag: '3.1'
+    recycler:
+      repository: keppel.global.cloud.sap/ccloud-k8sgcr-mirror/debian-base
+      tag: v2.0.0
     scheduler:
       repository: keppel.$REGION.cloud.sap/ccloud/kube-scheduler
       tag: v1.22.14
     wormhole:
       repository: keppel.$REGION.cloud.sap/ccloud/kubernikus
       tag: changeme
-    recycler:
-      repository: keppel.global.cloud.sap/ccloud-k8sgcr-mirror/debian-base
-      tag: v2.0.0
   1.22.15:
     apiserver:
       repository: keppel.$REGION.cloud.sap/ccloud/kube-apiserver
@@ -934,15 +934,15 @@ imagesForVersion:
     pause:
       repository: keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/pause-amd64
       tag: '3.1'
+    recycler:
+      repository: keppel.global.cloud.sap/ccloud-k8sgcr-mirror/debian-base
+      tag: v2.0.0
     scheduler:
       repository: keppel.$REGION.cloud.sap/ccloud/kube-scheduler
       tag: v1.22.15
     wormhole:
       repository: keppel.$REGION.cloud.sap/ccloud/kubernikus
       tag: changeme
-    recycler:
-      repository: keppel.global.cloud.sap/ccloud-k8sgcr-mirror/debian-base
-      tag: v2.0.0
   1.22.4:
     apiserver:
       repository: keppel.$REGION.cloud.sap/ccloud/kube-apiserver
@@ -1010,15 +1010,15 @@ imagesForVersion:
     pause:
       repository: keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/pause-amd64
       tag: '3.1'
+    recycler:
+      repository: keppel.global.cloud.sap/ccloud-k8sgcr-mirror/debian-base
+      tag: v2.0.0
     scheduler:
       repository: keppel.$REGION.cloud.sap/ccloud/kube-scheduler
       tag: v1.22.4
     wormhole:
       repository: keppel.$REGION.cloud.sap/ccloud/kubernikus
       tag: changeme
-    recycler:
-      repository: keppel.global.cloud.sap/ccloud-k8sgcr-mirror/debian-base
-      tag: v2.0.0
   1.23.11:
     apiserver:
       repository: keppel.$REGION.cloud.sap/ccloud/kube-apiserver
@@ -1086,6 +1086,9 @@ imagesForVersion:
     pause:
       repository: keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/pause-amd64
       tag: '3.1'
+    recycler:
+      repository: keppel.global.cloud.sap/ccloud-k8sgcr-mirror/debian-base
+      tag: v2.0.0
     scheduler:
       repository: keppel.$REGION.cloud.sap/ccloud/kube-scheduler
       tag: v1.23.11
@@ -1093,9 +1096,6 @@ imagesForVersion:
     wormhole:
       repository: keppel.$REGION.cloud.sap/ccloud/kubernikus
       tag: changeme
-    recycler:
-      repository: keppel.global.cloud.sap/ccloud-k8sgcr-mirror/debian-base
-      tag: v2.0.0
   1.23.12:
     apiserver:
       repository: keppel.$REGION.cloud.sap/ccloud/kube-apiserver
@@ -1163,6 +1163,9 @@ imagesForVersion:
     pause:
       repository: keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/pause-amd64
       tag: '3.1'
+    recycler:
+      repository: keppel.global.cloud.sap/ccloud-k8sgcr-mirror/debian-base
+      tag: v2.0.0
     scheduler:
       repository: keppel.$REGION.cloud.sap/ccloud/kube-scheduler
       tag: v1.23.12
@@ -1170,9 +1173,6 @@ imagesForVersion:
     wormhole:
       repository: keppel.$REGION.cloud.sap/ccloud/kubernikus
       tag: changeme
-    recycler:
-      repository: keppel.global.cloud.sap/ccloud-k8sgcr-mirror/debian-base
-      tag: v2.0.0
   1.23.14:
     apiserver:
       repository: keppel.$REGION.cloud.sap/ccloud/kube-apiserver
@@ -1241,16 +1241,94 @@ imagesForVersion:
     pause:
       repository: keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/pause-amd64
       tag: '3.1'
+    recycler:
+      repository: keppel.global.cloud.sap/ccloud-k8sgcr-mirror/debian-base
+      tag: v2.0.0
     scheduler:
       repository: keppel.$REGION.cloud.sap/ccloud/kube-scheduler
       tag: v1.23.14
+    supported: false
+    wormhole:
+      repository: keppel.$REGION.cloud.sap/ccloud/kubernikus
+      tag: changeme
+  1.23.15:
+    apiserver:
+      repository: keppel.$REGION.cloud.sap/ccloud/kube-apiserver
+      tag: v1.23.15
+    cinderCSIPlugin:
+      repository: keppel.$REGION.cloud.sap/ccloud/cinder-csi-plugin
+      tag: v1.23.0
+    cloudControllerManager:
+      repository: keppel.$REGION.cloud.sap/ccloud/openstack-cloud-controller-manager
+      tag: v1.23.4
+    controllerManager:
+      repository: keppel.$REGION.cloud.sap/ccloud/kube-controller-manager
+      tag: v1.23.15
+    coreDNS:
+      repository: keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/coredns/coredns
+      tag: 1.9.1
+    csiAttacher:
+      repository: keppel.$REGION.cloud.sap/ccloud/csi-attacher
+      tag: v3.4.0
+    csiLivenessProbe:
+      repository: keppel.$REGION.cloud.sap/ccloud/csi-livenessprobe
+      tag: v2.6.0
+    csiNodeDriver:
+      repository: keppel.$REGION.cloud.sap/ccloud/csi-node-driver-registrar
+      tag: v2.5.0
+    csiProvisioner:
+      repository: keppel.$REGION.cloud.sap/ccloud/csi-provisioner
+      tag: v3.1.0
+    csiResizer:
+      repository: keppel.$REGION.cloud.sap/ccloud/csi-resizer
+      tag: v1.4.0
+    csiSnapshotController:
+      repository: keppel.$REGION.cloud.sap/ccloud/csi-snapshot-controller
+      tag: v5.0.1
+    csiSnapshotter:
+      repository: keppel.$REGION.cloud.sap/ccloud/csi-snapshotter
+      tag: v5.0.1
+    dashboard:
+      repository: keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/kubernetesui/dashboard
+      tag: v2.0.4
+    dashboardProxy:
+      repository: keppel.$REGION.cloud.sap/ccloud/keycloak-gatekeeper
+      tag: 6.0.1
+    default: true
+    dex:
+      repository: keppel.$REGION.cloud.sap/ccloud/dex
+      tag: 38f4f8ea8d487470a1dd5b83d66b428d8b502f81
+    etcd:
+      repository: keppel.$REGION.cloud.sap/ccloud/etcd
+      tag: v3.4.13-bootstrap-3
+    etcdBackup:
+      repository: keppel.$REGION.cloud.sap/ccloud/etcdbrctl
+      tag: v0.15.4
+    flannel:
+      repository: keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/flannelcni/flannel
+      tag: v0.17.0
+    fluentd:
+      repository: keppel.$REGION.cloud.sap/ccloud/kubernikus-fluentd
+      tag: v1.14.6-1.1
+    kubeProxy:
+      repository: keppel.$REGION.cloud.sap/ccloud/kube-proxy
+      tag: v1.23.15
+    kubelet:
+      repository: keppel.$REGION.cloud.sap/ccloud/kubelet
+      tag: v1.23.15
+    pause:
+      repository: keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/pause-amd64
+      tag: '3.1'
+    recycler:
+      repository: keppel.global.cloud.sap/ccloud-k8sgcr-mirror/debian-base
+      tag: v2.0.0
+    scheduler:
+      repository: keppel.$REGION.cloud.sap/ccloud/kube-scheduler
+      tag: v1.23.15
     supported: true
     wormhole:
       repository: keppel.$REGION.cloud.sap/ccloud/kubernikus
       tag: changeme
-    recycler:
-      repository: keppel.global.cloud.sap/ccloud-k8sgcr-mirror/debian-base
-      tag: v2.0.0
   1.23.6:
     apiserver:
       repository: keppel.$REGION.cloud.sap/ccloud/kube-apiserver
@@ -1318,6 +1396,9 @@ imagesForVersion:
     pause:
       repository: keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/pause-amd64
       tag: '3.1'
+    recycler:
+      repository: keppel.global.cloud.sap/ccloud-k8sgcr-mirror/debian-base
+      tag: v2.0.0
     scheduler:
       repository: keppel.$REGION.cloud.sap/ccloud/kube-scheduler
       tag: v1.23.6
@@ -1325,9 +1406,6 @@ imagesForVersion:
     wormhole:
       repository: keppel.$REGION.cloud.sap/ccloud/kubernikus
       tag: changeme
-    recycler:
-      repository: keppel.global.cloud.sap/ccloud-k8sgcr-mirror/debian-base
-      tag: v2.0.0
   1.24.4:
     apiserver:
       repository: keppel.$REGION.cloud.sap/ccloud/kube-apiserver
@@ -1401,6 +1479,9 @@ imagesForVersion:
     pause:
       repository: keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/pause-amd64
       tag: '3.1'
+    recycler:
+      repository: keppel.global.cloud.sap/ccloud-k8sgcr-mirror/debian-base
+      tag: v2.0.0
     scheduler:
       repository: keppel.$REGION.cloud.sap/ccloud/kube-scheduler
       tag: v1.24.4
@@ -1408,9 +1489,6 @@ imagesForVersion:
     wormhole:
       repository: keppel.$REGION.cloud.sap/ccloud/kubernikus
       tag: changeme
-    recycler:
-      repository: keppel.global.cloud.sap/ccloud-k8sgcr-mirror/debian-base
-      tag: v2.0.0
   1.24.5:
     apiserver:
       repository: keppel.$REGION.cloud.sap/ccloud/kube-apiserver
@@ -1484,6 +1562,9 @@ imagesForVersion:
     pause:
       repository: keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/pause-amd64
       tag: '3.1'
+    recycler:
+      repository: keppel.global.cloud.sap/ccloud-k8sgcr-mirror/debian-base
+      tag: v2.0.0
     scheduler:
       repository: keppel.$REGION.cloud.sap/ccloud/kube-scheduler
       tag: v1.24.5
@@ -1491,9 +1572,6 @@ imagesForVersion:
     wormhole:
       repository: keppel.$REGION.cloud.sap/ccloud/kubernikus
       tag: changeme
-    recycler:
-      repository: keppel.global.cloud.sap/ccloud-k8sgcr-mirror/debian-base
-      tag: v2.0.0
   1.24.6:
     apiserver:
       repository: keppel.$REGION.cloud.sap/ccloud/kube-apiserver
@@ -1567,6 +1645,9 @@ imagesForVersion:
     pause:
       repository: keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/pause-amd64
       tag: '3.1'
+    recycler:
+      repository: keppel.global.cloud.sap/ccloud-k8sgcr-mirror/debian-base
+      tag: v2.0.0
     scheduler:
       repository: keppel.$REGION.cloud.sap/ccloud/kube-scheduler
       tag: v1.24.6
@@ -1574,9 +1655,6 @@ imagesForVersion:
     wormhole:
       repository: keppel.$REGION.cloud.sap/ccloud/kubernikus
       tag: changeme
-    recycler:
-      repository: keppel.global.cloud.sap/ccloud-k8sgcr-mirror/debian-base
-      tag: v2.0.0
   1.24.7:
     apiserver:
       repository: keppel.$REGION.cloud.sap/ccloud/kube-apiserver
@@ -1650,6 +1728,9 @@ imagesForVersion:
     pause:
       repository: keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/pause-amd64
       tag: '3.1'
+    recycler:
+      repository: keppel.global.cloud.sap/ccloud-k8sgcr-mirror/debian-base
+      tag: v2.0.0
     scheduler:
       repository: keppel.$REGION.cloud.sap/ccloud/kube-scheduler
       tag: v1.24.7
@@ -1657,9 +1738,6 @@ imagesForVersion:
     wormhole:
       repository: keppel.$REGION.cloud.sap/ccloud/kubernikus
       tag: changeme
-    recycler:
-      repository: keppel.global.cloud.sap/ccloud-k8sgcr-mirror/debian-base
-      tag: v2.0.0
   1.24.8:
     apiserver:
       repository: keppel.$REGION.cloud.sap/ccloud/kube-apiserver
@@ -1733,6 +1811,9 @@ imagesForVersion:
     pause:
       repository: keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/pause-amd64
       tag: '3.1'
+    recycler:
+      repository: keppel.global.cloud.sap/ccloud-k8sgcr-mirror/debian-base
+      tag: v2.0.0
     scheduler:
       repository: keppel.$REGION.cloud.sap/ccloud/kube-scheduler
       tag: v1.24.8
@@ -1740,9 +1821,6 @@ imagesForVersion:
     wormhole:
       repository: keppel.$REGION.cloud.sap/ccloud/kubernikus
       tag: changeme
-    recycler:
-      repository: keppel.global.cloud.sap/ccloud-k8sgcr-mirror/debian-base
-      tag: v2.0.0
   1.25.3:
     apiserver:
       repository: keppel.$REGION.cloud.sap/ccloud/kube-apiserver
@@ -1816,6 +1894,9 @@ imagesForVersion:
     pause:
       repository: keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/pause-amd64
       tag: '3.1'
+    recycler:
+      repository: keppel.global.cloud.sap/ccloud-k8sgcr-mirror/debian-base
+      tag: v2.0.0
     scheduler:
       repository: keppel.$REGION.cloud.sap/ccloud/kube-scheduler
       tag: v1.25.3
@@ -1823,9 +1904,6 @@ imagesForVersion:
     wormhole:
       repository: keppel.$REGION.cloud.sap/ccloud/kubernikus
       tag: changeme
-    recycler:
-      repository: keppel.global.cloud.sap/ccloud-k8sgcr-mirror/debian-base
-      tag: v2.0.0
   1.25.4:
     apiserver:
       repository: keppel.$REGION.cloud.sap/ccloud/kube-apiserver
@@ -1899,6 +1977,9 @@ imagesForVersion:
     pause:
       repository: keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/pause-amd64
       tag: '3.1'
+    recycler:
+      repository: keppel.global.cloud.sap/ccloud-k8sgcr-mirror/debian-base
+      tag: v2.0.0
     scheduler:
       repository: keppel.$REGION.cloud.sap/ccloud/kube-scheduler
       tag: v1.25.4
@@ -1906,6 +1987,3 @@ imagesForVersion:
     wormhole:
       repository: keppel.$REGION.cloud.sap/ccloud/kubernikus
       tag: changeme
-    recycler:
-      repository: keppel.global.cloud.sap/ccloud-k8sgcr-mirror/debian-base
-      tag: v2.0.0
