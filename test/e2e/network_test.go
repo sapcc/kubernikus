@@ -22,7 +22,7 @@ import (
 
 const (
 	TestWaitForPodsRunningTimeout      = 5 * time.Minute
-	TestWaitForKubeDNSRunningTimeout   = 2 * time.Minute
+	TestWaitForKubeDNSRunningTimeout   = 5 * time.Minute
 	TestWaitForServiceEndpointsTimeout = 5 * time.Minute
 
 	TestPodTimeout                 = 1 * time.Minute
