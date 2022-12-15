@@ -50,6 +50,8 @@ func (o *RefreshOptions) BindFlags(flags *pflag.FlagSet) {
 	common.BindLogFlags(flags)
 	flags.StringVar(&o.openstack.Password, "password", "", "User password [OS_PASSWORD]")
 	flags.StringVar(&o.openstack.TokenID, "token", "", "Token to authenticate with [OS_TOKEN]")
+	flags.StringVar(&o.openstack.CertFile, "client-cert", "", "tls client certificate [OS_CERT]")
+	flags.StringVar(&o.openstack.KeyFile, "client-key", "", "tls client key [OS_KEY]")
 	flags.StringVar(&o.kubeconfigPath, "kubeconfig", o.kubeconfigPath, "Overwrites kubeconfig auto-detection with explicit path")
 	flags.StringVar(&o.context, "context", o.context, "Overwrites current-context in kubeconfig")
 	flags.BoolVar(&o.force, "force", o.force, "Force refresh")
