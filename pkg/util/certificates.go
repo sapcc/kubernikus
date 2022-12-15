@@ -278,7 +278,7 @@ func (cf *CertificateFactory) Ensure() ([]CertUpdates, error) {
 		return nil, err
 	}
 
-	apiServerDNSNames := []string{"kubernetes", "kubernetes.default", "kubernetes.default.svc", "apiserver", cf.kluster.Name, fmt.Sprintf("%s.%s", cf.kluster.Name, cf.kluster.Namespace), fmt.Sprintf("%v.%v", cf.kluster.Name, cf.domain)}
+	apiServerDNSNames := []string{"kubernetes", "kubernetes.default", "kubernetes.default.svc", "kubernetes.default.svc.cluster.local", "apiserver", cf.kluster.Name, fmt.Sprintf("%s.%s", cf.kluster.Name, cf.kluster.Namespace), fmt.Sprintf("%v.%v", cf.kluster.Name, cf.domain)}
 	apiServerIPs := []net.IP{net.IPv4(127, 0, 0, 1), apiServiceIP, apiIP}
 	if ann := cf.kluster.Annotations[AdditionalApiserverSANsAnnotation]; ann != "" {
 		dnsNames, ips, err := addtionalSANsFromAnnotation(ann)
