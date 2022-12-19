@@ -4,19 +4,19 @@ imagesForVersion:
       repository: keppel.global.cloud.sap/ccloud/dex
       tag: 38f4f8ea8d487470a1dd5b83d66b428d8b502f81
     etcd:
-      repository: keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/etcd
+      repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/sapcc/etcd
       tag: v3.3.14
     etcdBackup:
-      repository: keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/etcdbrctl
+      repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/sapcc/etcdbrctl
       tag: 0.5.2
     flannel:
-      repository: keppel.$REGION.cloud.sap/ccloud-quay-mirror/coreos/flannel
+      repository: keppel.global.cloud.sap/ccloud-quay-mirror/coreos/flannel
       tag: v0.12.0
     fluentd:
       repository: keppel.global.cloud.sap/ccloud/kubernikus-fluentd
       tag: v1.14-1
     hyperkube:
-      repository: keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/hyperkube
+      repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/sapcc/hyperkube
       tag: v1.10.1
     recycler:
       repository: keppel.global.cloud.sap/ccloud-k8sgcr-mirror/debian-base
@@ -29,19 +29,19 @@ imagesForVersion:
       repository: keppel.global.cloud.sap/ccloud/dex
       tag: 38f4f8ea8d487470a1dd5b83d66b428d8b502f81
     etcd:
-      repository: keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/etcd
+      repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/sapcc/etcd
       tag: v3.3.14
     etcdBackup:
-      repository: keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/etcdbrctl
+      repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/sapcc/etcdbrctl
       tag: 0.5.2
     flannel:
-      repository: keppel.$REGION.cloud.sap/ccloud-quay-mirror/coreos/flannel
+      repository: keppel.global.cloud.sap/ccloud-quay-mirror/coreos/flannel
       tag: v0.12.0
     fluentd:
       repository: keppel.global.cloud.sap/ccloud/kubernikus-fluentd
       tag: v1.14-1
     hyperkube:
-      repository: keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/hyperkube
+      repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/sapcc/hyperkube
       tag: v1.10.11
     recycler:
       repository: keppel.global.cloud.sap/ccloud-k8sgcr-mirror/debian-base
@@ -54,19 +54,19 @@ imagesForVersion:
       repository: keppel.global.cloud.sap/ccloud/dex
       tag: 38f4f8ea8d487470a1dd5b83d66b428d8b502f81
     etcd:
-      repository: keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/etcd
+      repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/sapcc/etcd
       tag: v3.3.14
     etcdBackup:
-      repository: keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/etcdbrctl
+      repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/sapcc/etcdbrctl
       tag: 0.5.2
     flannel:
-      repository: keppel.$REGION.cloud.sap/ccloud-quay-mirror/coreos/flannel
+      repository: keppel.global.cloud.sap/ccloud-quay-mirror/coreos/flannel
       tag: v0.12.0
     fluentd:
       repository: keppel.global.cloud.sap/ccloud/kubernikus-fluentd
       tag: v1.14-1
     hyperkube:
-      repository: keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/hyperkube
+      repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/sapcc/hyperkube
       tag: v1.10.7
     recycler:
       repository: keppel.global.cloud.sap/ccloud-k8sgcr-mirror/debian-base
@@ -85,19 +85,19 @@ imagesForVersion:
       repository: keppel.global.cloud.sap/ccloud/dex
       tag: 38f4f8ea8d487470a1dd5b83d66b428d8b502f81
     etcd:
-      repository: keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/etcd
+      repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/sapcc/etcd
       tag: v3.3.14
     etcdBackup:
-      repository: keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/etcdbrctl
+      repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/sapcc/etcdbrctl
       tag: 0.5.2
     flannel:
-      repository: keppel.$REGION.cloud.sap/ccloud-quay-mirror/coreos/flannel
+      repository: keppel.global.cloud.sap/ccloud-quay-mirror/coreos/flannel
       tag: v0.12.0
     fluentd:
       repository: keppel.global.cloud.sap/ccloud/kubernikus-fluentd
       tag: v1.14-1
     hyperkube:
-      repository: keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/hyperkube
+      repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/sapcc/hyperkube
       tag: v1.11.9
     recycler:
       repository: keppel.global.cloud.sap/ccloud-k8sgcr-mirror/debian-base
@@ -116,19 +116,19 @@ imagesForVersion:
       repository: keppel.global.cloud.sap/ccloud/dex
       tag: 38f4f8ea8d487470a1dd5b83d66b428d8b502f81
     etcd:
-      repository: keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/etcd
+      repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/sapcc/etcd
       tag: v3.3.14
     etcdBackup:
-      repository: keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/etcdbrctl
+      repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/sapcc/etcdbrctl
       tag: 0.5.2
     flannel:
-      repository: keppel.$REGION.cloud.sap/ccloud-quay-mirror/coreos/flannel
+      repository: keppel.global.cloud.sap/ccloud-quay-mirror/coreos/flannel
       tag: v0.12.0
     fluentd:
       repository: keppel.global.cloud.sap/ccloud/kubernikus-fluentd
       tag: v1.14-1
     hyperkube:
-      repository: keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/hyperkube
+      repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/sapcc/hyperkube
       tag: v1.12.10
     pause:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/sapcc/pause-amd64
@@ -141,7 +141,7 @@ imagesForVersion:
       tag: changeme
   1.13.9:
     cloudControllerManager:
-      repository: keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/openstack-cloud-controller-manager
+      repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/sapcc/openstack-cloud-controller-manager
       tag: v1.13.1
     coreDNS:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/coredns/coredns
@@ -156,19 +156,19 @@ imagesForVersion:
       repository: keppel.global.cloud.sap/ccloud/dex
       tag: 38f4f8ea8d487470a1dd5b83d66b428d8b502f81
     etcd:
-      repository: keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/etcd
+      repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/sapcc/etcd
       tag: v3.3.14
     etcdBackup:
-      repository: keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/etcdbrctl
+      repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/sapcc/etcdbrctl
       tag: 0.5.2
     flannel:
-      repository: keppel.$REGION.cloud.sap/ccloud-quay-mirror/coreos/flannel
+      repository: keppel.global.cloud.sap/ccloud-quay-mirror/coreos/flannel
       tag: v0.12.0
     fluentd:
       repository: keppel.global.cloud.sap/ccloud/kubernikus-fluentd
       tag: v1.14-1
     hyperkube:
-      repository: keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/hyperkube
+      repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/sapcc/hyperkube
       tag: v1.13.9
     pause:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/sapcc/pause-amd64
@@ -181,7 +181,7 @@ imagesForVersion:
       tag: changeme
   1.14.5:
     cloudControllerManager:
-      repository: keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/openstack-cloud-controller-manager
+      repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/sapcc/openstack-cloud-controller-manager
       tag: v1.14.0-sap.0
     coreDNS:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/coredns/coredns
@@ -196,19 +196,19 @@ imagesForVersion:
       repository: keppel.global.cloud.sap/ccloud/dex
       tag: 38f4f8ea8d487470a1dd5b83d66b428d8b502f81
     etcd:
-      repository: keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/etcd
+      repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/sapcc/etcd
       tag: v3.3.14
     etcdBackup:
-      repository: keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/etcdbrctl
+      repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/sapcc/etcdbrctl
       tag: 0.5.2
     flannel:
-      repository: keppel.$REGION.cloud.sap/ccloud-quay-mirror/coreos/flannel
+      repository: keppel.global.cloud.sap/ccloud-quay-mirror/coreos/flannel
       tag: v0.12.0
     fluentd:
       repository: keppel.global.cloud.sap/ccloud/kubernikus-fluentd
       tag: v1.14-1
     hyperkube:
-      repository: keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/hyperkube
+      repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/sapcc/hyperkube
       tag: v1.14.5
     pause:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/sapcc/pause-amd64
@@ -221,7 +221,7 @@ imagesForVersion:
       tag: changeme
   1.15.2:
     cloudControllerManager:
-      repository: keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/openstack-cloud-controller-manager
+      repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/sapcc/openstack-cloud-controller-manager
       tag: v1.15.0-sap.2
     coreDNS:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/coredns/coredns
@@ -236,19 +236,19 @@ imagesForVersion:
       repository: keppel.global.cloud.sap/ccloud/dex
       tag: 38f4f8ea8d487470a1dd5b83d66b428d8b502f81
     etcd:
-      repository: keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/etcd
+      repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/sapcc/etcd
       tag: v3.3.14
     etcdBackup:
-      repository: keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/etcdbrctl
+      repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/sapcc/etcdbrctl
       tag: 0.5.2
     flannel:
-      repository: keppel.$REGION.cloud.sap/ccloud-quay-mirror/coreos/flannel
+      repository: keppel.global.cloud.sap/ccloud-quay-mirror/coreos/flannel
       tag: v0.12.0
     fluentd:
       repository: keppel.global.cloud.sap/ccloud/kubernikus-fluentd
       tag: v1.14-1
     hyperkube:
-      repository: keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/hyperkube
+      repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/sapcc/hyperkube
       tag: v1.15.2
     pause:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/sapcc/pause-amd64
@@ -261,7 +261,7 @@ imagesForVersion:
       tag: changeme
   1.15.9:
     cloudControllerManager:
-      repository: keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/openstack-cloud-controller-manager
+      repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/sapcc/openstack-cloud-controller-manager
       tag: v1.15.0-sap.2
     coreDNS:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/coredns/coredns
@@ -276,19 +276,19 @@ imagesForVersion:
       repository: keppel.global.cloud.sap/ccloud/dex
       tag: 38f4f8ea8d487470a1dd5b83d66b428d8b502f81
     etcd:
-      repository: keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/etcd
+      repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/sapcc/etcd
       tag: v3.3.14
     etcdBackup:
-      repository: keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/etcdbrctl
+      repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/sapcc/etcdbrctl
       tag: 0.5.2
     flannel:
-      repository: keppel.$REGION.cloud.sap/ccloud-quay-mirror/coreos/flannel
+      repository: keppel.global.cloud.sap/ccloud-quay-mirror/coreos/flannel
       tag: v0.12.0
     fluentd:
       repository: keppel.global.cloud.sap/ccloud/kubernikus-fluentd
       tag: v1.14-1
     hyperkube:
-      repository: keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/hyperkube
+      repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/sapcc/hyperkube
       tag: v1.15.9
     pause:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/sapcc/pause-amd64
@@ -301,7 +301,7 @@ imagesForVersion:
       tag: changeme
   1.16.14:
     cloudControllerManager:
-      repository: keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/openstack-cloud-controller-manager
+      repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/sapcc/openstack-cloud-controller-manager
       tag: v1.16.0
     coreDNS:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/coredns/coredns
@@ -316,19 +316,19 @@ imagesForVersion:
       repository: keppel.global.cloud.sap/ccloud/dex
       tag: 38f4f8ea8d487470a1dd5b83d66b428d8b502f81
     etcd:
-      repository: keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/etcd
+      repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/sapcc/etcd
       tag: v3.3.14
     etcdBackup:
-      repository: keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/etcdbrctl
+      repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/sapcc/etcdbrctl
       tag: 0.5.2
     flannel:
-      repository: keppel.$REGION.cloud.sap/ccloud-quay-mirror/coreos/flannel
+      repository: keppel.global.cloud.sap/ccloud-quay-mirror/coreos/flannel
       tag: v0.12.0
     fluentd:
       repository: keppel.global.cloud.sap/ccloud/kubernikus-fluentd
       tag: v1.14-1
     hyperkube:
-      repository: keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/hyperkube
+      repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/sapcc/hyperkube
       tag: v1.16.14
     pause:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/sapcc/pause-amd64
@@ -341,7 +341,7 @@ imagesForVersion:
       tag: changeme
   1.16.9:
     cloudControllerManager:
-      repository: keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/openstack-cloud-controller-manager
+      repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/sapcc/openstack-cloud-controller-manager
       tag: v1.16.0
     coreDNS:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/coredns/coredns
@@ -356,19 +356,19 @@ imagesForVersion:
       repository: keppel.global.cloud.sap/ccloud/dex
       tag: 38f4f8ea8d487470a1dd5b83d66b428d8b502f81
     etcd:
-      repository: keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/etcd
+      repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/sapcc/etcd
       tag: v3.3.14
     etcdBackup:
-      repository: keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/etcdbrctl
+      repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/sapcc/etcdbrctl
       tag: 0.5.2
     flannel:
-      repository: keppel.$REGION.cloud.sap/ccloud-quay-mirror/coreos/flannel
+      repository: keppel.global.cloud.sap/ccloud-quay-mirror/coreos/flannel
       tag: v0.12.0
     fluentd:
       repository: keppel.global.cloud.sap/ccloud/kubernikus-fluentd
       tag: v1.14-1
     hyperkube:
-      repository: keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/hyperkube
+      repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/sapcc/hyperkube
       tag: v1.16.9
     pause:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/sapcc/pause-amd64
@@ -396,19 +396,19 @@ imagesForVersion:
       repository: keppel.global.cloud.sap/ccloud/dex
       tag: 38f4f8ea8d487470a1dd5b83d66b428d8b502f81
     etcd:
-      repository: keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/etcd
+      repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/sapcc/etcd
       tag: v3.3.14
     etcdBackup:
-      repository: keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/etcdbrctl
+      repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/sapcc/etcdbrctl
       tag: 0.5.2
     flannel:
-      repository: keppel.$REGION.cloud.sap/ccloud-quay-mirror/coreos/flannel
+      repository: keppel.global.cloud.sap/ccloud-quay-mirror/coreos/flannel
       tag: v0.12.0
     fluentd:
       repository: keppel.global.cloud.sap/ccloud/kubernikus-fluentd
       tag: v1.14-1
     hyperkube:
-      repository: keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/hyperkube
+      repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/sapcc/hyperkube
       tag: v1.17.13
     pause:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/sapcc/pause-amd64
@@ -436,19 +436,19 @@ imagesForVersion:
       repository: keppel.global.cloud.sap/ccloud/dex
       tag: 38f4f8ea8d487470a1dd5b83d66b428d8b502f81
     etcd:
-      repository: keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/etcd
+      repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/sapcc/etcd
       tag: v3.3.14
     etcdBackup:
-      repository: keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/etcdbrctl
+      repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/sapcc/etcdbrctl
       tag: 0.5.2
     flannel:
-      repository: keppel.$REGION.cloud.sap/ccloud-quay-mirror/coreos/flannel
+      repository: keppel.global.cloud.sap/ccloud-quay-mirror/coreos/flannel
       tag: v0.12.0
     fluentd:
       repository: keppel.global.cloud.sap/ccloud/kubernikus-fluentd
       tag: v1.14-1
     hyperkube:
-      repository: keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/hyperkube
+      repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/sapcc/hyperkube
       tag: v1.18.10
     pause:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/sapcc/pause-amd64
@@ -482,13 +482,13 @@ imagesForVersion:
       repository: keppel.global.cloud.sap/ccloud/dex
       tag: 38f4f8ea8d487470a1dd5b83d66b428d8b502f81
     etcd:
-      repository: keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/etcd
+      repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/sapcc/etcd
       tag: v3.3.14
     etcdBackup:
-      repository: keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/etcdbrctl
+      repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/sapcc/etcdbrctl
       tag: 0.5.2
     flannel:
-      repository: keppel.$REGION.cloud.sap/ccloud-quay-mirror/coreos/flannel
+      repository: keppel.global.cloud.sap/ccloud-quay-mirror/coreos/flannel
       tag: v0.12.0
     fluentd:
       repository: keppel.global.cloud.sap/ccloud/kubernikus-fluentd
@@ -534,13 +534,13 @@ imagesForVersion:
       repository: keppel.global.cloud.sap/ccloud/dex
       tag: 38f4f8ea8d487470a1dd5b83d66b428d8b502f81
     etcd:
-      repository: keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/etcd
+      repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/sapcc/etcd
       tag: v3.3.14
     etcdBackup:
-      repository: keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/etcdbrctl
+      repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/sapcc/etcdbrctl
       tag: 0.5.2
     flannel:
-      repository: keppel.$REGION.cloud.sap/ccloud-quay-mirror/coreos/flannel
+      repository: keppel.global.cloud.sap/ccloud-quay-mirror/coreos/flannel
       tag: v0.12.0
     fluentd:
       repository: keppel.global.cloud.sap/ccloud/kubernikus-fluentd
@@ -610,13 +610,13 @@ imagesForVersion:
       repository: keppel.global.cloud.sap/ccloud/dex
       tag: 38f4f8ea8d487470a1dd5b83d66b428d8b502f81
     etcd:
-      repository: keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/etcd
+      repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/sapcc/etcd
       tag: v3.3.14
     etcdBackup:
-      repository: keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/etcdbrctl
+      repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/sapcc/etcdbrctl
       tag: 0.5.2
     flannel:
-      repository: keppel.$REGION.cloud.sap/ccloud-quay-mirror/coreos/flannel
+      repository: keppel.global.cloud.sap/ccloud-quay-mirror/coreos/flannel
       tag: v0.12.0
     fluentd:
       repository: keppel.global.cloud.sap/ccloud/kubernikus-fluentd
@@ -686,13 +686,13 @@ imagesForVersion:
       repository: keppel.global.cloud.sap/ccloud/dex
       tag: 38f4f8ea8d487470a1dd5b83d66b428d8b502f81
     etcd:
-      repository: keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/etcd
+      repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/sapcc/etcd
       tag: v3.3.14
     etcdBackup:
-      repository: keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/etcdbrctl
+      repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/sapcc/etcdbrctl
       tag: 0.5.2
     flannel:
-      repository: keppel.$REGION.cloud.sap/ccloud-quay-mirror/coreos/flannel
+      repository: keppel.global.cloud.sap/ccloud-quay-mirror/coreos/flannel
       tag: v0.12.0
     fluentd:
       repository: keppel.global.cloud.sap/ccloud/kubernikus-fluentd
@@ -762,13 +762,13 @@ imagesForVersion:
       repository: keppel.global.cloud.sap/ccloud/dex
       tag: 38f4f8ea8d487470a1dd5b83d66b428d8b502f81
     etcd:
-      repository: keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/etcd
+      repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/sapcc/etcd
       tag: v3.3.14
     etcdBackup:
-      repository: keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/etcdbrctl
+      repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/sapcc/etcdbrctl
       tag: 0.5.2
     flannel:
-      repository: keppel.$REGION.cloud.sap/ccloud-quay-mirror/coreos/flannel
+      repository: keppel.global.cloud.sap/ccloud-quay-mirror/coreos/flannel
       tag: v0.12.0
     fluentd:
       repository: keppel.global.cloud.sap/ccloud/kubernikus-fluentd
@@ -838,13 +838,13 @@ imagesForVersion:
       repository: keppel.global.cloud.sap/ccloud/dex
       tag: 38f4f8ea8d487470a1dd5b83d66b428d8b502f81
     etcd:
-      repository: keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/etcd
+      repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/sapcc/etcd
       tag: v3.3.14
     etcdBackup:
-      repository: keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/etcdbrctl
+      repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/sapcc/etcdbrctl
       tag: 0.5.2
     flannel:
-      repository: keppel.$REGION.cloud.sap/ccloud-quay-mirror/coreos/flannel
+      repository: keppel.global.cloud.sap/ccloud-quay-mirror/coreos/flannel
       tag: v0.12.0
     fluentd:
       repository: keppel.global.cloud.sap/ccloud/kubernikus-fluentd
@@ -914,13 +914,13 @@ imagesForVersion:
       repository: keppel.global.cloud.sap/ccloud/dex
       tag: 38f4f8ea8d487470a1dd5b83d66b428d8b502f81
     etcd:
-      repository: keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/etcd
+      repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/sapcc/etcd
       tag: v3.3.14
     etcdBackup:
-      repository: keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/etcdbrctl
+      repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/sapcc/etcdbrctl
       tag: 0.5.2
     flannel:
-      repository: keppel.$REGION.cloud.sap/ccloud-quay-mirror/coreos/flannel
+      repository: keppel.global.cloud.sap/ccloud-quay-mirror/coreos/flannel
       tag: v0.12.0
     fluentd:
       repository: keppel.global.cloud.sap/ccloud/kubernikus-fluentd
@@ -990,13 +990,13 @@ imagesForVersion:
       repository: keppel.global.cloud.sap/ccloud/dex
       tag: 38f4f8ea8d487470a1dd5b83d66b428d8b502f81
     etcd:
-      repository: keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/etcd
+      repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/sapcc/etcd
       tag: v3.3.14
     etcdBackup:
-      repository: keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/etcdbrctl
+      repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/sapcc/etcdbrctl
       tag: 0.5.2
     flannel:
-      repository: keppel.$REGION.cloud.sap/ccloud-quay-mirror/coreos/flannel
+      repository: keppel.global.cloud.sap/ccloud-quay-mirror/coreos/flannel
       tag: v0.12.0
     fluentd:
       repository: keppel.global.cloud.sap/ccloud/kubernikus-fluentd
@@ -1248,81 +1248,81 @@ imagesForVersion:
       tag: v1.23.14
     supported: false
     wormhole:
-      repository: keppel.$REGION.cloud.sap/ccloud/kubernikus
+      repository: keppel.global.cloud.sap/ccloud/kubernikus
       tag: changeme
   1.23.15:
     apiserver:
-      repository: keppel.$REGION.cloud.sap/ccloud/kube-apiserver
+      repository: keppel.global.cloud.sap/ccloud/kube-apiserver
       tag: v1.23.15
     cinderCSIPlugin:
-      repository: keppel.$REGION.cloud.sap/ccloud/cinder-csi-plugin
+      repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/k8scloudprovider/cinder-csi-plugin
       tag: v1.23.0
     cloudControllerManager:
-      repository: keppel.$REGION.cloud.sap/ccloud/openstack-cloud-controller-manager
+      repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/k8scloudprovider/openstack-cloud-controller-manager
       tag: v1.23.4
     controllerManager:
-      repository: keppel.$REGION.cloud.sap/ccloud/kube-controller-manager
+      repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/kube-controller-manager
       tag: v1.23.15
     coreDNS:
-      repository: keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/coredns/coredns
+      repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/coredns/coredns
       tag: 1.9.1
     csiAttacher:
-      repository: keppel.$REGION.cloud.sap/ccloud/csi-attacher
+      repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/sig-storage/csi-attacher
       tag: v3.4.0
     csiLivenessProbe:
-      repository: keppel.$REGION.cloud.sap/ccloud/csi-livenessprobe
+      repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/sig-storage/livenessprobe
       tag: v2.6.0
     csiNodeDriver:
-      repository: keppel.$REGION.cloud.sap/ccloud/csi-node-driver-registrar
+      repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/sig-storage/csi-node-driver-registrar
       tag: v2.5.0
     csiProvisioner:
-      repository: keppel.$REGION.cloud.sap/ccloud/csi-provisioner
+      repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/sig-storage/csi-provisioner
       tag: v3.1.0
     csiResizer:
-      repository: keppel.$REGION.cloud.sap/ccloud/csi-resizer
+      repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/sig-storage/csi-resizer
       tag: v1.4.0
     csiSnapshotController:
-      repository: keppel.$REGION.cloud.sap/ccloud/csi-snapshot-controller
+      repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/sig-storage/snapshot-controller
       tag: v5.0.1
     csiSnapshotter:
-      repository: keppel.$REGION.cloud.sap/ccloud/csi-snapshotter
+      repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/sig-storage/csi-snapshotter
       tag: v5.0.1
     dashboard:
-      repository: keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/kubernetesui/dashboard
+      repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/kubernetesui/dashboard
       tag: v2.0.4
     dashboardProxy:
-      repository: keppel.$REGION.cloud.sap/ccloud/keycloak-gatekeeper
+      repository: keppel.global.cloud.sap/ccloud/keycloak-gatekeeper
       tag: 6.0.1
     default: true
     dex:
-      repository: keppel.$REGION.cloud.sap/ccloud/dex
+      repository: keppel.global.cloud.sap/ccloud/dex
       tag: 38f4f8ea8d487470a1dd5b83d66b428d8b502f81
     etcd:
-      repository: keppel.$REGION.cloud.sap/ccloud/etcd
+      repository: keppel.global.cloud.sap/ccloud/etcd
       tag: v3.4.13-bootstrap-3
     etcdBackup:
-      repository: keppel.$REGION.cloud.sap/ccloud/etcdbrctl
+      repository: keppel.global.cloud.sap/ccloud/etcdbrctl
       tag: v0.15.4
     flannel:
-      repository: keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/flannelcni/flannel
+      repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/flannelcni/flannel
       tag: v0.17.0
     fluentd:
-      repository: keppel.$REGION.cloud.sap/ccloud/kubernikus-fluentd
+      repository: keppel.global.cloud.sap/ccloud/kubernikus-fluentd
       tag: v1.14.6-1.1
     kubeProxy:
-      repository: keppel.$REGION.cloud.sap/ccloud/kube-proxy
+      repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/kube-proxy
       tag: v1.23.15
     kubelet:
-      repository: keppel.$REGION.cloud.sap/ccloud/kubelet
+      repository: keppel.global.cloud.sap/ccloud/kubelet
       tag: v1.23.15
     pause:
-      repository: keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/pause-amd64
+      repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/sapcc/pause-amd64
       tag: '3.1'
     recycler:
       repository: keppel.global.cloud.sap/ccloud-k8sgcr-mirror/debian-base
       tag: v2.0.0
     scheduler:
-      repository: keppel.$REGION.cloud.sap/ccloud/kube-scheduler
+      repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/kube-scheduler
       tag: v1.23.15
     supported: true
     wormhole:
@@ -1818,86 +1818,86 @@ imagesForVersion:
       tag: v1.24.8
     supported: false
     wormhole:
-      repository: keppel.$REGION.cloud.sap/ccloud/kubernikus
+      repository: keppel.global.cloud.sap/ccloud/kubernikus
       tag: changeme
   1.24.9:
     apiserver:
-      repository: keppel.$REGION.cloud.sap/ccloud/kube-apiserver
+      repository: keppel.global.cloud.sap/ccloud/kube-apiserver
       tag: v1.24.9
     cinderCSIPlugin:
-      repository: keppel.$REGION.cloud.sap/ccloud/cinder-csi-plugin
+      repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/k8scloudprovider/cinder-csi-plugin
       tag: v1.24.5
     cloudControllerManager:
-      repository: keppel.$REGION.cloud.sap/ccloud/openstack-cloud-controller-manager
+      repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/k8scloudprovider/openstack-cloud-controller-manager
       tag: v1.24.5
     cniPlugins:
-      repository: keppel.$REGION.cloud.sap/ccloud/cni-plugins
+      repository: keppel.global.cloud.sap/ccloud/cni-plugins
       tag: v1.1.1
     controllerManager:
-      repository: keppel.$REGION.cloud.sap/ccloud/kube-controller-manager
+      repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/kube-controller-manager
       tag: v1.24.9
     coreDNS:
-      repository: keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/coredns/coredns
+      repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/coredns/coredns
       tag: 1.9.1
     csiAttacher:
-      repository: keppel.$REGION.cloud.sap/ccloud/csi-attacher
+      repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/sig-storage/csi-attacher
       tag: v3.5.0
     csiLivenessProbe:
-      repository: keppel.$REGION.cloud.sap/ccloud/csi-livenessprobe
+      repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/sig-storage/livenessprobe
       tag: v2.7.0
     csiNodeDriver:
-      repository: keppel.$REGION.cloud.sap/ccloud/csi-node-driver-registrar
+      repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/sig-storage/csi-node-driver-registrar
       tag: v2.5.1
     csiProvisioner:
-      repository: keppel.$REGION.cloud.sap/ccloud/csi-provisioner
+      repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/sig-storage/csi-provisioner
       tag: v3.2.1
     csiResizer:
-      repository: keppel.$REGION.cloud.sap/ccloud/csi-resizer
+      repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/sig-storage/csi-resizer
       tag: v1.5.0
     csiSnapshotController:
-      repository: keppel.$REGION.cloud.sap/ccloud/csi-snapshot-controller
+      repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/sig-storage/snapshot-controller
       tag: v5.0.1
     csiSnapshotter:
-      repository: keppel.$REGION.cloud.sap/ccloud/csi-snapshotter
+      repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/sig-storage/csi-snapshotter
       tag: v5.0.1
     dashboard:
-      repository: keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/kubernetesui/dashboard
+      repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/kubernetesui/dashboard
       tag: v2.0.4
     dashboardProxy:
-      repository: keppel.$REGION.cloud.sap/ccloud/keycloak-gatekeeper
+      repository: keppel.global.cloud.sap/ccloud/keycloak-gatekeeper
       tag: 6.0.1
     dex:
-      repository: keppel.$REGION.cloud.sap/ccloud/dex
+      repository: keppel.global.cloud.sap/ccloud/dex
       tag: 38f4f8ea8d487470a1dd5b83d66b428d8b502f81
     etcd:
-      repository: keppel.$REGION.cloud.sap/ccloud/etcd
+      repository: keppel.global.cloud.sap/ccloud/etcd
       tag: v3.4.13-bootstrap-3
     etcdBackup:
-      repository: keppel.$REGION.cloud.sap/ccloud/etcdbrctl
+      repository: keppel.global.cloud.sap/ccloud/etcdbrctl
       tag: v0.15.4
     flannel:
-      repository: keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/flannelcni/flannel
+      repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/flannelcni/flannel
       tag: v0.19.1
     flannelCNIPlugin:
-      repository: keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/flannelcni/flannel-cni-plugin
+      repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/flannelcni/flannel-cni-plugin
       tag: v1.1.0
     fluentd:
-      repository: keppel.$REGION.cloud.sap/ccloud/kubernikus-fluentd
+      repository: keppel.global.cloud.sap/ccloud/kubernikus-fluentd
       tag: v1.14.6-1.1
     kubeProxy:
-      repository: keppel.$REGION.cloud.sap/ccloud/kube-proxy
+      repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/kube-proxy
       tag: v1.24.9
     kubelet:
-      repository: keppel.$REGION.cloud.sap/ccloud/kubelet
+      repository: keppel.global.cloud.sap/ccloud/kubelet
       tag: v1.24.9
     pause:
-      repository: keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/pause-amd64
+      repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/sapcc/pause-amd64
       tag: '3.1'
     recycler:
       repository: keppel.global.cloud.sap/ccloud-k8sgcr-mirror/debian-base
       tag: v2.0.0
     scheduler:
-      repository: keppel.$REGION.cloud.sap/ccloud/kube-scheduler
+      repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/kube-scheduler
       tag: v1.24.9
     supported: true
     wormhole:
@@ -2003,7 +2003,7 @@ imagesForVersion:
       repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/kube-controller-manager
       tag: v1.25.4
     coreDNS:
-      repository: keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/coredns/coredns
+      repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/coredns/coredns
       tag: 1.9.1
     csiAttacher:
       repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/sig-storage/csi-attacher
@@ -2067,86 +2067,86 @@ imagesForVersion:
       tag: v1.25.4
     supported: false
     wormhole:
-      repository: keppel.$REGION.cloud.sap/ccloud/kubernikus
+      repository: keppel.global.cloud.sap/ccloud/kubernikus
       tag: changeme
   1.25.5:
     apiserver:
-      repository: keppel.$REGION.cloud.sap/ccloud/kube-apiserver
+      repository: keppel.global.cloud.sap/ccloud/kube-apiserver
       tag: v1.25.5
     cinderCSIPlugin:
-      repository: keppel.$REGION.cloud.sap/ccloud/cinder-csi-plugin
+      repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/k8scloudprovider/cinder-csi-plugin
       tag: v1.25.3
     cloudControllerManager:
-      repository: keppel.$REGION.cloud.sap/ccloud/openstack-cloud-controller-manager
+      repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/k8scloudprovider/openstack-cloud-controller-manager
       tag: v1.25.3
     cniPlugins:
-      repository: keppel.$REGION.cloud.sap/ccloud/cni-plugins
+      repository: keppel.global.cloud.sap/ccloud/cni-plugins
       tag: v1.1.1
     controllerManager:
-      repository: keppel.$REGION.cloud.sap/ccloud/kube-controller-manager
+      repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/kube-controller-manager
       tag: v1.25.5
     coreDNS:
-      repository: keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/coredns/coredns
+      repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/coredns/coredns
       tag: 1.9.1
     csiAttacher:
-      repository: keppel.$REGION.cloud.sap/ccloud/csi-attacher
+      repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/sig-storage/csi-attacher
       tag: v3.5.0
     csiLivenessProbe:
-      repository: keppel.$REGION.cloud.sap/ccloud/csi-livenessprobe
+      repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/sig-storage/livenessprobe
       tag: v2.7.0
     csiNodeDriver:
-      repository: keppel.$REGION.cloud.sap/ccloud/csi-node-driver-registrar
+      repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/sig-storage/csi-node-driver-registrar
       tag: v2.5.1
     csiProvisioner:
-      repository: keppel.$REGION.cloud.sap/ccloud/csi-provisioner
+      repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/sig-storage/csi-provisioner
       tag: v3.2.1
     csiResizer:
-      repository: keppel.$REGION.cloud.sap/ccloud/csi-resizer
+      repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/sig-storage/csi-resizer
       tag: v1.5.0
     csiSnapshotController:
-      repository: keppel.$REGION.cloud.sap/ccloud/csi-snapshot-controller
+      repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/sig-storage/snapshot-controller
       tag: v5.0.1
     csiSnapshotter:
-      repository: keppel.$REGION.cloud.sap/ccloud/csi-snapshotter
+      repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/sig-storage/csi-snapshotter
       tag: v5.0.1
     dashboard:
-      repository: keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/kubernetesui/dashboard
+      repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/kubernetesui/dashboard
       tag: v2.0.4
     dashboardProxy:
-      repository: keppel.$REGION.cloud.sap/ccloud/keycloak-gatekeeper
+      repository: keppel.global.cloud.sap/ccloud/keycloak-gatekeeper
       tag: 6.0.1
     dex:
-      repository: keppel.$REGION.cloud.sap/ccloud/dex
+      repository: keppel.global.cloud.sap/ccloud/dex
       tag: 38f4f8ea8d487470a1dd5b83d66b428d8b502f81
     etcd:
-      repository: keppel.$REGION.cloud.sap/ccloud/etcd
+      repository: keppel.global.cloud.sap/ccloud/etcd
       tag: v3.4.13-bootstrap-3
     etcdBackup:
-      repository: keppel.$REGION.cloud.sap/ccloud/etcdbrctl
+      repository: keppel.global.cloud.sap/ccloud/etcdbrctl
       tag: v0.15.4
     flannel:
-      repository: keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/flannelcni/flannel
+      repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/flannelcni/flannel
       tag: v0.19.1
     flannelCNIPlugin:
-      repository: keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/flannelcni/flannel-cni-plugin
+      repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/flannelcni/flannel-cni-plugin
       tag: v1.1.0
     fluentd:
-      repository: keppel.$REGION.cloud.sap/ccloud/kubernikus-fluentd
+      repository: keppel.global.cloud.sap/ccloud/kubernikus-fluentd
       tag: v1.14.6-1.1
     kubeProxy:
-      repository: keppel.$REGION.cloud.sap/ccloud/kube-proxy
+      repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/kube-proxy
       tag: v1.25.5
     kubelet:
-      repository: keppel.$REGION.cloud.sap/ccloud/kubelet
+      repository: keppel.global.cloud.sap/ccloud/kubelet
       tag: v1.25.5
     pause:
-      repository: keppel.$REGION.cloud.sap/ccloud-dockerhub-mirror/sapcc/pause-amd64
+      repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/sapcc/pause-amd64
       tag: '3.1'
     recycler:
       repository: keppel.global.cloud.sap/ccloud-k8sgcr-mirror/debian-base
       tag: v2.0.0
     scheduler:
-      repository: keppel.$REGION.cloud.sap/ccloud/kube-scheduler
+      repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/kube-scheduler
       tag: v1.25.5
     supported: true
     wormhole:
