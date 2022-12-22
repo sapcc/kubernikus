@@ -143,11 +143,11 @@ func (p *VolumeTests) WaitForPVCBound(t *testing.T) {
 
 func (p *VolumeTests) WaitForPVCResize(t *testing.T) {
 	pvc, getErr := p.Kubernetes.ClientSet.CoreV1().PersistentVolumeClaims(p.Namespace).Get(context.Background(), testName, meta_v1.GetOptions{})
-	require.NoError(t, getErr, "There must be no error getting the formerly created PVC: %s", getErr)
+	require.NoError(t, getErr, "There must be no error getting the formerly created PVC")
 
 	pvc.Spec.Resources.Requests["storage"] = resource.MustParse("2Gi")
 	_, updateErr := p.Kubernetes.ClientSet.CoreV1().PersistentVolumeClaims(p.Namespace).Update(context.Background(), pvc, meta_v1.UpdateOptions{})
-	require.NoError(t, updateErr, "There must be no error updating the PVC: %s", updateErr)
+	require.NoError(t, updateErr, "There must be no error updating the PVC")
 
 	waitForResizeErr := wait.PollImmediate(PollInterval, TestWaitForPVCResizeInPlaceTimeOut,
 		func() (bool, error) {
@@ -159,7 +159,7 @@ func (p *VolumeTests) WaitForPVCResize(t *testing.T) {
 			storageResized := *pvc.Status.Capacity.Storage() == resource.MustParse("2Gi") && pvc.Status.Phase == v1.PersistentVolumeClaimPhase("Bound")
 			return storageResized, nil
 		})
-	require.NoError(t, waitForResizeErr, "There must be no error waiting for the PVC to be resized: %s", waitForResizeErr)
+	require.NoError(t, waitForResizeErr, "There must be no error waiting for the PVC to be resized")
 }
 
 func (p *VolumeTests) WaitForSnapshot(t *testing.T) {
