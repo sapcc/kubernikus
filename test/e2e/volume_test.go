@@ -10,15 +10,22 @@ import (
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/apimachinery/pkg/util/wait"
+	"k8s.io/client-go/dynamic"
 
 	"github.com/sapcc/kubernikus/pkg/util/generator"
 	"github.com/sapcc/kubernikus/test/e2e/framework"
 )
 
 const (
-	TestWaitForPVCBoundTimeout = 5 * time.Minute
-	TestWaitForPVCPodsRunning  = 15 * time.Minute
+	testName                           = "pvc-hostname"
+	TestWaitForPVCBoundTimeout         = 5 * time.Minute
+	TestWaitForPVCPodsRunning          = 15 * time.Minute
+	TestWaitForPVCResizeInPlaceTimeOut = 5 * time.Minute
+	TestWaitForSnapshotInPlaceTimeOut  = 5 * time.Minute
 )
 
 type VolumeTests struct {
@@ -42,8 +49,13 @@ func (v *VolumeTests) Run(t *testing.T) {
 	t.Run("WaitNamespace", v.WaitForNamespace)
 	t.Run("CreatePVC", v.CreatePVC)
 	t.Run("CreatePod", v.CreatePod)
-	t.Run("WaitPVCBound", v.WaitForPVCBound)
-	t.Run("WaitPodRunning", v.WaitForPVCPodsRunning)
+	t.Run("PVCTests", func(t *testing.T) {
+		t.Run("WaitPVCBound", v.WaitForPVCBound)
+		t.Run("WaitPodRunning", v.WaitForPVCPodsRunning)
+		t.Run("WaitPVCResize", v.WaitForPVCResize)
+		t.Run("WaitSnapshot", v.WaitForSnapshot)
+	})
+
 }
 
 func (p *VolumeTests) CreateNamespace(t *testing.T) {
@@ -64,20 +76,20 @@ func (p *VolumeTests) DeleteNamespace(t *testing.T) {
 func (p *VolumeTests) CreatePod(t *testing.T) {
 	_, err := p.Kubernetes.ClientSet.CoreV1().Pods(p.Namespace).Create(context.Background(), &v1.Pod{
 		ObjectMeta: meta_v1.ObjectMeta{
-			Name:      "pvc-hostname",
+			Name:      testName,
 			Namespace: p.Namespace,
 			Labels: map[string]string{
-				"app": "pvc-hostname",
+				"app": testName,
 			},
 		},
 		Spec: v1.PodSpec{
 			Containers: []v1.Container{
 				{
 					Image: ServeHostnameImage,
-					Name:  "pvc-hostname",
+					Name:  testName,
 					VolumeMounts: []v1.VolumeMount{
 						{
-							Name:      "pvc-hostname",
+							Name:      testName,
 							MountPath: "/mymount",
 						},
 					},
@@ -85,10 +97,10 @@ func (p *VolumeTests) CreatePod(t *testing.T) {
 			},
 			Volumes: []v1.Volume{
 				{
-					Name: "pvc-hostname",
+					Name: testName,
 					VolumeSource: v1.VolumeSource{
 						PersistentVolumeClaim: &v1.PersistentVolumeClaimVolumeSource{
-							ClaimName: "pvc-hostname",
+							ClaimName: testName,
 						},
 					},
 				},
@@ -99,7 +111,7 @@ func (p *VolumeTests) CreatePod(t *testing.T) {
 }
 
 func (p *VolumeTests) WaitForPVCPodsRunning(t *testing.T) {
-	label := labels.SelectorFromSet(labels.Set(map[string]string{"app": "pvc-hostname"}))
+	label := labels.SelectorFromSet(labels.Set(map[string]string{"app": testName}))
 	_, err := p.Kubernetes.WaitForPodsWithLabelRunningReady(p.Namespace, label, 1, TestWaitForPVCPodsRunning)
 	require.NoError(t, err, "There must be no error while waiting for the pod with mounted volume to become ready")
 }
@@ -108,7 +120,7 @@ func (p *VolumeTests) CreatePVC(t *testing.T) {
 	_, err := p.Kubernetes.ClientSet.CoreV1().PersistentVolumeClaims(p.Namespace).Create(context.Background(), &v1.PersistentVolumeClaim{
 		ObjectMeta: meta_v1.ObjectMeta{
 			Namespace: p.Namespace,
-			Name:      "pvc-hostname",
+			Name:      testName,
 		},
 		Spec: v1.PersistentVolumeClaimSpec{
 			AccessModes: []v1.PersistentVolumeAccessMode{
@@ -125,6 +137,74 @@ func (p *VolumeTests) CreatePVC(t *testing.T) {
 }
 
 func (p *VolumeTests) WaitForPVCBound(t *testing.T) {
-	err := p.Kubernetes.WaitForPVCBound(p.Namespace, "pvc-hostname", TestWaitForPVCBoundTimeout)
+	err := p.Kubernetes.WaitForPVCBound(p.Namespace, testName, TestWaitForPVCBoundTimeout)
 	require.NoError(t, err, "There must be no error while waiting for the PVC to be bound")
+}
+
+func (p *VolumeTests) WaitForPVCResize(t *testing.T) {
+	pvc, getErr := p.Kubernetes.ClientSet.CoreV1().PersistentVolumeClaims(p.Namespace).Get(context.Background(), testName, meta_v1.GetOptions{})
+	require.NoError(t, getErr, "There must be no error getting the formerly created PVC: %s", getErr)
+
+	pvc.Spec.Resources.Requests["storage"] = resource.MustParse("2Gi")
+	_, updateErr := p.Kubernetes.ClientSet.CoreV1().PersistentVolumeClaims(p.Namespace).Update(context.Background(), pvc, meta_v1.UpdateOptions{})
+	require.NoError(t, updateErr, "There must be no error updating the PVC: %s", updateErr)
+
+	waitForResizeErr := wait.PollImmediate(PollInterval, TestWaitForPVCResizeInPlaceTimeOut,
+		func() (bool, error) {
+			pvc, getErr := p.Kubernetes.ClientSet.CoreV1().PersistentVolumeClaims(p.Namespace).Get(context.Background(), testName, meta_v1.GetOptions{})
+			if getErr != nil {
+				return false, getErr
+			}
+
+			storageResized := *pvc.Status.Capacity.Storage() == resource.MustParse("2Gi") && pvc.Status.Phase == v1.PersistentVolumeClaimPhase("Bound")
+			return storageResized, nil
+		})
+	require.NoError(t, waitForResizeErr, "There must be no error waiting for the PVC to be resized: %s", waitForResizeErr)
+}
+
+func (p *VolumeTests) WaitForSnapshot(t *testing.T) {
+	dynamicClient, clientErr := dynamic.NewForConfig(p.Kubernetes.RestConfig)
+	require.NoError(t, clientErr, "There must be no error creating the dynamic client")
+
+	volumeSnapshotGvr := schema.GroupVersionResource{Group: "snapshot.storage.k8s.io", Version: "v1", Resource: "volumesnapshots"}
+
+	snapShot := &unstructured.Unstructured{}
+	snapShot.SetUnstructuredContent(map[string]interface{}{
+		"apiVersion": "snapshot.storage.k8s.io/v1",
+		"kind":       "VolumeSnapshot",
+		"metadata": map[string]interface{}{
+			"name": "volume-snapshot",
+		},
+		"spec": map[string]interface{}{
+			"volumeSnapshotClassName": "csi-cinder-snapclass",
+			"source": map[string]interface{}{
+				"persistentVolumeClaimName": testName,
+			},
+		},
+	})
+
+	_, createSnapshotErr := dynamicClient.Resource(volumeSnapshotGvr).Namespace(p.Namespace).Create(context.TODO(), snapShot, meta_v1.CreateOptions{})
+	require.NoError(t, createSnapshotErr, "There must be no error creating the snapshot")
+
+	deletePodErr := p.Kubernetes.ClientSet.CoreV1().Pods(p.Namespace).Delete(context.Background(), testName, meta_v1.DeleteOptions{})
+	require.NoError(t, deletePodErr, "There must be no error deleting the pod")
+
+	waitForSnapshotErr := wait.PollImmediate(PollInterval, TestWaitForSnapshotInPlaceTimeOut,
+		func() (bool, error) {
+			snapshot, getSnapshotErr := dynamicClient.Resource(volumeSnapshotGvr).Namespace(p.Namespace).Get(context.Background(), "volume-snapshot", meta_v1.GetOptions{})
+			if getSnapshotErr != nil {
+				return false, getSnapshotErr
+			}
+			status, ok := snapshot.Object["status"].(map[string]interface{})
+			if !ok {
+				return false, nil
+			}
+			readyToUse, ok := status["readyToUse"].(bool)
+			if !ok {
+				return false, nil
+			}
+
+			return readyToUse, nil
+		})
+	require.NoError(t, waitForSnapshotErr, "The snapshot must be ready to use")
 }
