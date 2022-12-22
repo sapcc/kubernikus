@@ -36,8 +36,10 @@ import (
 	"github.com/sapcc/kubernikus/pkg/util"
 	etcd_util "github.com/sapcc/kubernikus/pkg/util/etcd"
 	helm_util "github.com/sapcc/kubernikus/pkg/util/helm"
+	"github.com/sapcc/kubernikus/pkg/util/k8s"
 	"github.com/sapcc/kubernikus/pkg/util/version"
 	waitutil "github.com/sapcc/kubernikus/pkg/util/wait"
+	appVersion "github.com/sapcc/kubernikus/pkg/version"
 )
 
 const (
@@ -673,6 +675,19 @@ func (op *GroundControl) upgradeKluster(kluster *v1.Kluster, toVersion string) e
 			return errors.Wrap(err, "seed CSI storage classes on upgrade")
 		}
 	}
+	if ok, _ := util.KlusterVersionConstraint(kluster, ">= 1.21"); ok && !kluster.Spec.NoCloud {
+		kubernetes, err := op.Clients.Satellites.ClientFor(kluster)
+		if err != nil {
+			return errors.Wrap(err, "client")
+		}
+		if err := k8s.UpdateDaemonsetImages(kubernetes, "csi-cinder-nodeplugin", "kube-system",
+			"node-driver-registrar", op.Images.Versions[kluster.Spec.Version].CSINodeDriver.String(),
+			"liveness-probe", op.Images.Versions[kluster.Spec.Version].CSILivenessProbe.String(),
+			"cinder-csi-plugin", op.Images.Versions[kluster.Spec.Version].CinderCSIPlugin.String(),
+		); err != nil {
+			return errors.Wrap(err, "Failed to update csi-cinder-nodeplugin daemonset image")
+		}
+	}
 
 	if !kluster.Spec.NoCloud && strings.HasPrefix(toVersion, "1.21") && strings.HasPrefix(kluster.Status.ApiserverVersion, "1.20") {
 		kubernetes, err := op.Clients.Satellites.ClientFor(kluster)
@@ -704,6 +719,21 @@ func (op *GroundControl) upgradeKluster(kluster *v1.Kluster, toVersion string) e
 
 		if err := network.SeedNetwork(kubernetes, op.Images.Versions[kluster.Spec.Version], *kluster.Spec.ClusterCIDR, kluster.Status.Apiserver, kluster.Spec.AdvertiseAddress, kluster.Spec.AdvertisePort); err != nil {
 			return errors.Wrap(err, "seed CNI config on upgrade")
+		}
+	}
+
+	if ok, _ := util.KlusterVersionConstraint(kluster, ">= 1.24"); ok && !kluster.Spec.NoCloud {
+		kubernetes, err := op.Clients.Satellites.ClientFor(kluster)
+		if err != nil {
+			return errors.Wrap(err, "client")
+		}
+		// Make sure we upgrade the kube-proxy image in case we upgrade from 1.24
+		if err := k8s.UpdateDaemonsetImages(kubernetes, "kube-proxy", "kube-system", "proxy", op.Images.Versions[kluster.Spec.Version].KubeProxy.String()); err != nil {
+			return errors.Wrap(err, "Failed to update kube-proxy daemonset image")
+		}
+		wormholeImage := op.Images.Versions[kluster.Spec.Version].Wormhole.Repository + ":" + appVersion.GitCommit
+		if err := k8s.UpdateDaemonsetImages(kubernetes, "wormhole", "kube-system", "wormhole", wormholeImage); err != nil {
+			return errors.Wrap(err, "Failed to update wormhole daemonset image")
 		}
 	}
 
