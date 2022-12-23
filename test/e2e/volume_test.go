@@ -163,17 +163,19 @@ func (p *VolumeTests) WaitForPVCResize(t *testing.T) {
 }
 
 func (p *VolumeTests) WaitForSnapshot(t *testing.T) {
+	const snapshotName = "volume-snapshot"
+
 	dynamicClient, clientErr := dynamic.NewForConfig(p.Kubernetes.RestConfig)
 	require.NoError(t, clientErr, "There must be no error creating the dynamic client")
 
-	volumeSnapshotGvr := schema.GroupVersionResource{Group: "snapshot.storage.k8s.io", Version: "v1", Resource: "volumesnapshots"}
+	snapshotGvr := schema.GroupVersionResource{Group: "snapshot.storage.k8s.io", Version: "v1", Resource: "volumesnapshots"}
 
 	snapShot := &unstructured.Unstructured{}
 	snapShot.SetUnstructuredContent(map[string]interface{}{
 		"apiVersion": "snapshot.storage.k8s.io/v1",
 		"kind":       "VolumeSnapshot",
 		"metadata": map[string]interface{}{
-			"name": "volume-snapshot",
+			"name": snapshotName,
 		},
 		"spec": map[string]interface{}{
 			"volumeSnapshotClassName": "csi-cinder-snapclass",
@@ -183,7 +185,7 @@ func (p *VolumeTests) WaitForSnapshot(t *testing.T) {
 		},
 	})
 
-	_, createSnapshotErr := dynamicClient.Resource(volumeSnapshotGvr).Namespace(p.Namespace).Create(context.TODO(), snapShot, meta_v1.CreateOptions{})
+	_, createSnapshotErr := dynamicClient.Resource(snapshotGvr).Namespace(p.Namespace).Create(context.TODO(), snapShot, meta_v1.CreateOptions{})
 	require.NoError(t, createSnapshotErr, "There must be no error creating the snapshot")
 
 	deletePodErr := p.Kubernetes.ClientSet.CoreV1().Pods(p.Namespace).Delete(context.Background(), testName, meta_v1.DeleteOptions{})
@@ -191,7 +193,7 @@ func (p *VolumeTests) WaitForSnapshot(t *testing.T) {
 
 	waitForSnapshotErr := wait.PollImmediate(PollInterval, TestWaitForSnapshotInPlaceTimeOut,
 		func() (bool, error) {
-			snapshot, getSnapshotErr := dynamicClient.Resource(volumeSnapshotGvr).Namespace(p.Namespace).Get(context.Background(), "volume-snapshot", meta_v1.GetOptions{})
+			snapshot, getSnapshotErr := dynamicClient.Resource(snapshotGvr).Namespace(p.Namespace).Get(context.Background(), snapshotName, meta_v1.GetOptions{})
 			if getSnapshotErr != nil {
 				return false, getSnapshotErr
 			}
@@ -207,4 +209,7 @@ func (p *VolumeTests) WaitForSnapshot(t *testing.T) {
 			return readyToUse, nil
 		})
 	require.NoError(t, waitForSnapshotErr, "The snapshot must be ready to use")
+
+	deleteSnapShotErr := dynamicClient.Resource(snapshotGvr).Namespace(p.Namespace).Delete(context.Background(), snapshotName, meta_v1.DeleteOptions{})
+	require.NoError(t, deleteSnapShotErr, "There must be no error deleting the snapshot")
 }
