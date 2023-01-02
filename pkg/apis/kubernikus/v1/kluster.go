@@ -64,10 +64,6 @@ func (k *Kluster) NeedsFinalizer(finalizer string) bool {
 }
 
 func (k *Kluster) HasFinalizer(finalizer string) bool {
-	if k.ObjectMeta.DeletionTimestamp == nil {
-		// not deleted. do not remove finalizers at this time
-		return false
-	}
 
 	for _, f := range k.ObjectMeta.Finalizers {
 		if f == finalizer {
