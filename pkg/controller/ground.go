@@ -52,6 +52,7 @@ const (
 	GroundctlFinalizer = "groundctl"
 
 	UpgradeEnableAnnotation = "kubernikus.cloud.sap/upgrade"
+	SeedReconcileLabelKey   = "kubernikus.cloud.sap/seed-reconcile"
 )
 
 type GroundControl struct {
@@ -346,14 +347,18 @@ func (op *GroundControl) handler(key string) error {
 			if err != nil {
 				return err
 			}
-			seedReconciler := ground.NewSeedReconciler(&op.Clients, kluster, op.Logger)
-			err = seedReconciler.EnrichHelmValuesForSeed(projectClient, helmValues)
-			if err != nil {
-				return err
-			}
-			if err := seedReconciler.ReconcileSeeding(helmValues); err != nil {
-				metrics.SeedReconciliationFailuresTotal.With(prometheus.Labels{"kluster_name": kluster.Spec.Name}).Inc()
-				return fmt.Errorf("Seeding reconciliation failed: %w", err)
+
+			if kluster.Labels[SeedReconcileLabelKey] == "true" {
+				seedReconciler := ground.NewSeedReconciler(&op.Clients, kluster, op.Logger)
+				err = seedReconciler.EnrichHelmValuesForSeed(projectClient, helmValues)
+				if err != nil {
+					metrics.SeedReconciliationFailuresTotal.With(prometheus.Labels{"kluster_name": kluster.Spec.Name}).Inc()
+					return err
+				}
+				if err := seedReconciler.ReconcileSeeding(helmValues); err != nil {
+					metrics.SeedReconciliationFailuresTotal.With(prometheus.Labels{"kluster_name": kluster.Spec.Name}).Inc()
+					return fmt.Errorf("Seeding reconciliation failed: %w", err)
+				}
 			}
 
 			updated, err := op.updateVersionStatus(kluster)
