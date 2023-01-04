@@ -15,6 +15,7 @@ run:
     - |
       set -e
       export TZ=UTC
+      set -uo pipefail
 
       cat >/wss-unified-agent.config <<EOF
       ####################################################################
@@ -55,13 +56,9 @@ run:
       # ignoreSourceFiles parameter is important and need to be true
       go.ignoreSourceFiles=true
       go.collectDependenciesAtRuntime=false
-      # dependencyManager: Determines the Go dependency manager to use when scanning a Go project.
-      # Valid values are 'dep', 'godep', 'vndr', 'gogradle', 'glide', 'govendor', and 'gopm'.
-      # If empty, then the Unified Agent will try to resolve the dependencies using each one
-      # of the package managers above.
-      go.dependencyManager=glide
-      go.glide.ignoreTestPackages=false
-      #go.gogradle.enableTaskAlias=true
+      # https://docs.mend.io/bundle/unified_agent/page/go_integration.html
+      go.modules.resolveDependencies=true
+
       ##################################
       # Organization tokens:
       ##################################
