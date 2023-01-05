@@ -87,7 +87,7 @@ func NewSeedReconciler(clients *config.Clients, kluster *v1.Kluster, logger log.
 	return SeedReconciler{Clients: clients, Kluster: kluster, Logger: logger}
 }
 
-func (sr *SeedReconciler) ReconcileSeeding(values map[string]interface{}) error {
+func (sr *SeedReconciler) ReconcileSeeding(chartPath string, values map[string]interface{}) error {
 	config, err := sr.Clients.Satellites.ConfigFor(sr.Kluster)
 	if err != nil {
 		return err
@@ -105,7 +105,7 @@ func (sr *SeedReconciler) ReconcileSeeding(values map[string]interface{}) error 
 	if err != nil {
 		return err
 	}
-	planned, err := getPlannedObjects(&config, version, apiVersions, values)
+	planned, err := getPlannedObjects(&config, version, apiVersions, chartPath, values)
 	if err != nil {
 		return err
 	}
@@ -148,9 +148,9 @@ func (sr *SeedReconciler) ReconcileSeeding(values map[string]interface{}) error 
 }
 
 // Gets all resources as rendered by the seed chart
-func getPlannedObjects(config *rest.Config, kubeVersion *version.Info, apiVersions chartutil.VersionSet, values map[string]interface{}) ([]unstructured.Unstructured, error) {
+func getPlannedObjects(config *rest.Config, kubeVersion *version.Info, apiVersions chartutil.VersionSet, chartPath string, values map[string]interface{}) ([]unstructured.Unstructured, error) {
 	planned := make([]unstructured.Unstructured, 0)
-	seedChart, err := loader.Load(SeedChartPath)
+	seedChart, err := loader.Load(chartPath)
 	if err != nil {
 		return planned, err
 	}

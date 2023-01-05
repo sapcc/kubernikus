@@ -304,7 +304,7 @@ func (op *GroundControl) handler(key string) error {
 				if err != nil {
 					return err
 				}
-				if err := seedReconciler.ReconcileSeeding(helmValues); err != nil {
+				if err := seedReconciler.ReconcileSeeding(path.Join(op.Config.Helm.ChartDirectory, "seed"), helmValues); err != nil {
 					metrics.SeedReconciliationFailuresTotal.With(prometheus.Labels{"kluster_name": kluster.Spec.Name}).Inc()
 					return fmt.Errorf("Seeding reconciliation failed: %w", err)
 				}
@@ -355,7 +355,7 @@ func (op *GroundControl) handler(key string) error {
 					metrics.SeedReconciliationFailuresTotal.With(prometheus.Labels{"kluster_name": kluster.Spec.Name}).Inc()
 					return err
 				}
-				if err := seedReconciler.ReconcileSeeding(helmValues); err != nil {
+				if err := seedReconciler.ReconcileSeeding(path.Join(op.Config.Helm.ChartDirectory, "seed"), helmValues); err != nil {
 					metrics.SeedReconciliationFailuresTotal.With(prometheus.Labels{"kluster_name": kluster.Spec.Name}).Inc()
 					return fmt.Errorf("Seeding reconciliation failed: %w", err)
 				}
