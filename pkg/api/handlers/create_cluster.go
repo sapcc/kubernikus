@@ -83,6 +83,8 @@ func (d *createCluster) Handle(params operations.CreateClusterParams, principal 
 		return NewErrorResponse(&operations.CreateClusterDefault{}, 400, err.Error())
 	}
 
+	kluster.Labels["kubernikus.cloud.sap/seed-reconcile"] = "true"
+
 	if kluster.ClusterCIDR() == "" && !kluster.Spec.NoCloud {
 		return NewErrorResponse(&operations.CreateClusterDefault{}, 400, "Specifying an empty ClusterCIDR is only allowed with noCloud: true")
 	}
