@@ -1,4 +1,6 @@
 <%
+require 'yaml'
+
 VERSIONS = [
   '1.25.5',
   '1.24.9',
@@ -497,6 +499,7 @@ jobs:
 <% if region == :'qa-de-1' %>
           KLUSTER_OS_IMAGES: flatcar-stable-amd64,flatcar-beta-amd64
 <% end %>
+          KLUSTER_VERSION: <%= YAML::load(File.read(File.expand_path('../../charts/images.yaml', __FILE__)))["imagesForVersion"].keys.sort_by { |v| Gem::Version.new(v) }.max %>
         on_failure:
           put: slack-notification
           params:
