@@ -83,6 +83,9 @@ func (d *createCluster) Handle(params operations.CreateClusterParams, principal 
 		return NewErrorResponse(&operations.CreateClusterDefault{}, 400, err.Error())
 	}
 
+	if kluster.Labels == nil {
+		kluster.Labels = make(map[string]string)
+	}
 	kluster.Labels["kubernikus.cloud.sap/seed-reconcile"] = "true"
 
 	if kluster.ClusterCIDR() == "" && !kluster.Spec.NoCloud {
