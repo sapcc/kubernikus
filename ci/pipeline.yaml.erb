@@ -286,6 +286,7 @@ jobs:
       trigger: true
       passed: [build]
     - task: replicate
+      timeout: 15m
       config:
         platform: linux
         image_resource:
