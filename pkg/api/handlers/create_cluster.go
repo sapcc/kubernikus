@@ -83,11 +83,6 @@ func (d *createCluster) Handle(params operations.CreateClusterParams, principal 
 		return NewErrorResponse(&operations.CreateClusterDefault{}, 400, err.Error())
 	}
 
-	if kluster.Labels == nil {
-		kluster.Labels = make(map[string]string)
-	}
-	kluster.Labels["kubernikus.cloud.sap/seed-reconcile"] = "true"
-
 	if kluster.ClusterCIDR() == "" && !kluster.Spec.NoCloud {
 		return NewErrorResponse(&operations.CreateClusterDefault{}, 400, "Specifying an empty ClusterCIDR is only allowed with noCloud: true")
 	}
@@ -117,8 +112,11 @@ func (d *createCluster) Handle(params operations.CreateClusterParams, principal 
 	}
 
 	kluster.ObjectMeta = metav1.ObjectMeta{
-		Name:        qualifiedName(name, principal.Account),
-		Labels:      map[string]string{"account": principal.Account},
+		Name: qualifiedName(name, principal.Account),
+		Labels: map[string]string{
+			"account":                             principal.Account,
+			"kubernikus.cloud.sap/seed-reconcile": "true",
+		},
 		Annotations: map[string]string{"creator": fmt.Sprintf("%s/%s", principal.Name, principal.Domain)},
 	}
 
