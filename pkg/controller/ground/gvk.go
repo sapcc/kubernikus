@@ -32,7 +32,7 @@ var managedGVKs = []schema.GroupVersionKind{
 		Kind:    "StorageClass",
 	},
 	{
-		Group:   "storage.k8s.io/v1",
+		Group:   "snapshot.storage.k8s.io/v1",
 		Version: "v1",
 		Kind:    "VolumeSnapshotClass",
 	},

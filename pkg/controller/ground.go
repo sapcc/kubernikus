@@ -27,6 +27,7 @@ import (
 
 	"github.com/sapcc/kubernikus/pkg/api/models"
 	v1 "github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
+	"github.com/sapcc/kubernikus/pkg/client/openstack/project"
 	"github.com/sapcc/kubernikus/pkg/controller/config"
 	"github.com/sapcc/kubernikus/pkg/controller/ground"
 	"github.com/sapcc/kubernikus/pkg/controller/ground/bootstrap/ccm"
@@ -299,16 +300,17 @@ func (op *GroundControl) handler(key string) error {
 				if err != nil {
 					return err
 				}
-				seedReconciler := ground.NewSeedReconciler(&op.Clients, kluster, op.Logger)
-				err = seedReconciler.EnrichHelmValuesForSeed(projectClient, helmValues)
-				if err != nil {
-					return err
+				// we need to reconcile twice.
+				// on the first run CRD will be added but these are not in the discovery client cache at that point in time, so creating CRD instances will silently fail.
+				// we fail silently so reconciliation continues even when CRD's are not established.
+				// we await CRD creation in the first run.
+				// on the second run a new discovery client is created, so we know about all CRD's and respective instance can be created.
+				for i := 0; i < 2; i++ {
+					err = op.reconcileSeed(kluster, projectClient, helmValues)
+					if err != nil {
+						return err
+					}
 				}
-				if err := seedReconciler.ReconcileSeeding(path.Join(op.Config.Helm.ChartDirectory, "seed"), helmValues); err != nil {
-					metrics.SeedReconciliationFailuresTotal.With(prometheus.Labels{"kluster_name": kluster.Spec.Name}).Inc()
-					return fmt.Errorf("Seeding reconciliation failed: %w", err)
-				}
-				op.Logger.Log("msg", "reconciled seeding successfully", "kluster", kluster.GetName(), "v", 2)
 				if err := op.updatePhase(kluster, models.KlusterPhaseRunning); err != nil {
 					op.Logger.Log(
 						"msg", "failed to update status of kluster",
@@ -339,25 +341,22 @@ func (op *GroundControl) handler(key string) error {
 			if err != nil {
 				return err
 			}
-			helmValues, err := helm_util.KlusterToHelmValues(kluster, klusterSecret, kluster.Spec.Version, &op.Config.Images, accessMode)
-			if err != nil {
-				return err
-			}
-			projectClient, err := op.Factories.Openstack.ProjectAdminClientFor(kluster.Account())
-			if err != nil {
-				return err
-			}
 
 			if kluster.Labels[SeedReconcileLabelKey] == "true" {
-				seedReconciler := ground.NewSeedReconciler(&op.Clients, kluster, op.Logger)
-				err = seedReconciler.EnrichHelmValuesForSeed(projectClient, helmValues)
+				helmValues, err := helm_util.KlusterToHelmValues(kluster, klusterSecret, kluster.Spec.Version, &op.Config.Images, accessMode)
 				if err != nil {
-					metrics.SeedReconciliationFailuresTotal.With(prometheus.Labels{"kluster_name": kluster.Spec.Name}).Inc()
 					return err
 				}
-				if err := seedReconciler.ReconcileSeeding(path.Join(op.Config.Helm.ChartDirectory, "seed"), helmValues); err != nil {
-					metrics.SeedReconciliationFailuresTotal.With(prometheus.Labels{"kluster_name": kluster.Spec.Name}).Inc()
-					return fmt.Errorf("Seeding reconciliation failed: %w", err)
+				projectClient, err := op.Factories.Openstack.ProjectAdminClientFor(kluster.Account())
+				if err != nil {
+					return err
+				}
+				if err := op.reconcileSeed(kluster, projectClient, helmValues); err != nil {
+					op.Logger.Log(
+						"msg", "Failed seed reconciliation",
+						"kluster", kluster.GetName(),
+						"project", kluster.Account(),
+						"err", err)
 				}
 			}
 
@@ -479,6 +478,20 @@ func (op *GroundControl) handler(key string) error {
 			}
 		}
 	}
+	return nil
+}
+
+func (op *GroundControl) reconcileSeed(kluster *v1.Kluster, projectClient project.ProjectClient, helmValues map[string]interface{}) error {
+	seedReconciler := ground.NewSeedReconciler(&op.Clients, kluster, op.Logger)
+	if err := seedReconciler.EnrichHelmValuesForSeed(projectClient, helmValues); err != nil {
+		metrics.SeedReconciliationFailuresTotal.With(prometheus.Labels{"kluster_name": kluster.Spec.Name}).Inc()
+		return fmt.Errorf("Enrichting seed values failed: %w", err)
+	}
+	if err := seedReconciler.ReconcileSeeding(path.Join(op.Config.Helm.ChartDirectory, "seed"), helmValues); err != nil {
+		metrics.SeedReconciliationFailuresTotal.With(prometheus.Labels{"kluster_name": kluster.Spec.Name}).Inc()
+		return fmt.Errorf("Seeding reconciliation failed: %w", err)
+	}
+	op.Logger.Log("msg", "reconciled seeding successfully", "kluster", kluster.GetName(), "v", 2)
 	return nil
 }
 

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"time"
 
 	jsonpatch "github.com/evanphx/json-patch"
 	"github.com/go-kit/kit/log"
@@ -12,11 +13,13 @@ import (
 	"helm.sh/helm/v3/pkg/chartutil"
 	"helm.sh/helm/v3/pkg/engine"
 	"helm.sh/helm/v3/pkg/releaseutil"
+	extensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/apimachinery/pkg/util/yaml"
 	"k8s.io/apimachinery/pkg/version"
 	"k8s.io/client-go/discovery"
@@ -337,7 +340,35 @@ func (sr *SeedReconciler) createPlanned(client dynamic.Interface, mapping *meta.
 		"kind", fmt.Sprintf("%s", obj.GetKind()),
 		"v", 6)
 	_, err := makeScopedClient(client, mapping, obj.GetNamespace()).Create(context.TODO(), obj, metav1.CreateOptions{})
-	return err
+	if err != nil {
+		return err
+	}
+	if obj.GroupVersionKind().Kind == "CustomResourceDefinition" {
+		sr.Logger.Log(
+			"msg", "Seed reconciliation: awaiting crd established",
+			"name", obj.GetName(),
+			"namespace", obj.GetNamespace(),
+			"kind", fmt.Sprintf("%s", obj.GetKind()),
+			"v", 6)
+		return wait.Poll(500*time.Millisecond, 20*time.Second, func() (done bool, err error) {
+			crd, err := makeScopedClient(client, mapping, obj.GetNamespace()).Get(context.TODO(), obj.GetName(), metav1.GetOptions{})
+			if err != nil {
+				return false, err
+			}
+			status := crd.Object["status"].(map[string]interface{})
+			conditions := status["conditions"].([]interface{})
+			for _, condition := range conditions {
+				c := condition.(map[string]interface{})
+				ty := c["type"].(string)
+				statusStr := c["status"].(string)
+				if ty == string(extensionsv1.Established) && statusStr == string(metav1.ConditionTrue) {
+					return true, nil
+				}
+			}
+			return false, nil
+		})
+	}
+	return nil
 }
 
 func (sr *SeedReconciler) patchDeployed(client dynamic.Interface, mapping *meta.RESTMapping, planned, deployed *unstructured.Unstructured) error {
