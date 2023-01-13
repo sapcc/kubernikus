@@ -1,6 +1,7 @@
 package project
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/go-kit/kit/log"
@@ -28,4 +29,18 @@ func (c LoggingClient) GetMetadata() (metadata *models.OpenstackMetadata, err er
 	}(time.Now())
 
 	return c.Client.GetMetadata()
+}
+
+func (c LoggingClient) GetProjectTags() (tags []string, err error) {
+	defer func(begin time.Time) {
+		c.Logger.Log(
+			"msg", "fetched project tags",
+			"tags", fmt.Sprintf("%v", tags),
+			"took", time.Since(begin),
+			"v", 2,
+			"err", err,
+		)
+	}(time.Now())
+
+	return c.Client.GetProjectTags()
 }
