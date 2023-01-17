@@ -282,9 +282,12 @@ jobs:
 
   - name: replicate-images
     plan:
-    - get: kubernikus.git
-      trigger: true
-      passed: [build]
+    - in_parallel:
+      - get: kubernikus.git
+      - get: docs-builder.image
+        passed: [docs]
+        trigger: true
+        passed: [docs]
     - task: replicate
       timeout: 15m
       config:
@@ -301,7 +304,7 @@ jobs:
           args: 
           - -cx
           - |
-            yq e '.imagesForVersion.*.*|.repository + ":" + .tag' kubernikus.git/charts/images.yaml | grep -v -E 'changeme|/ccloud/' | sed -E 's/\$REGION|global/eu-de-1/g' | sort -u | xargs -n1 -P3 keppel validate
+            yq e '.imagesForVersion.*.*|.repository + ":" + .tag' kubernikus.git/charts/images.yaml | grep -v -E 'changeme|/ccloud/' | sed -E 's/\$REGION|global/eu-de-1/g' | sort -u | xargs -n1 keppel validate
 
   - name: master
     serial: true
@@ -310,7 +313,7 @@ jobs:
         - get: secrets.git
         - get: kubernikus.builds
           resource: kubernikus.git
-          passed: [replicate-images]
+          passed: [replicate-images, build]
           trigger: true
       - in_parallel:
         - task: kubernikus
