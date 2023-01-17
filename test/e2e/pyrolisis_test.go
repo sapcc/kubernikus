@@ -9,6 +9,7 @@ import (
 	"github.com/go-openapi/runtime"
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack"
+	"github.com/gophercloud/gophercloud/openstack/blockstorage/v2/snapshots"
 	"github.com/gophercloud/gophercloud/openstack/blockstorage/v3/volumes"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/servers"
 	"github.com/gophercloud/gophercloud/openstack/identity/v3/tokens"
@@ -26,8 +27,9 @@ import (
 )
 
 const (
-	CleanupBackupContainerDeleteInterval = 1 * time.Second
-	CleanupBackupContainerDeleteTimeout  = 1 * time.Minute
+	CleanupBackupContainerDeleteInterval  = 1 * time.Second
+	CleanupBackupContainerDeleteTimeout   = 1 * time.Minute
+	WaitForVolumeDeletionTimeoutInSeconds = 300
 )
 
 type PyrolisisTests struct {
@@ -42,11 +44,13 @@ func (p *PyrolisisTests) Run(t *testing.T) {
 		quota := t.Run("SettingKlustersOnFire", p.SettingKlustersOnFire)
 		require.True(t, quota, "Klusters must burn")
 
+		t.Run("CleanupSnapshots", p.CleanupSnapshots)
+		t.Run("CleanupVolumes", p.CleanupVolumes)
+
 		t.Run("Wait", func(t *testing.T) {
 			t.Run("Klusters", p.WaitForE2EKlustersTerminated)
 		})
 
-		t.Run("CleanupVolumes", p.CleanupVolumes)
 		t.Run("CleanupInstances", p.CleanupInstances)
 	}
 
@@ -162,6 +166,48 @@ func (p *PyrolisisTests) CleanupBackupStorageContainers(t *testing.T) {
 			require.NoError(t, err, "There should be no error while deleting storage container: %s", container)
 		}
 	}
+}
+
+func (p *PyrolisisTests) CleanupSnapshots(t *testing.T) {
+	storageClient, err := openstack.NewBlockStorageV3(p.OpenStack.Provider, gophercloud.EndpointOpts{})
+	require.NoError(t, err, "There should be no error while creating storage client")
+
+	project, err := tokens.Get(p.OpenStack.Identity, p.OpenStack.Provider.Token()).ExtractProject()
+	require.NoError(t, err, "There should be no error while extracting the project")
+
+	listOpts := snapshots.ListOpts{
+		TenantID: project.ID,
+	}
+
+	allPages, err := snapshots.List(storageClient, listOpts).AllPages()
+	require.NoError(t, err, "There should be no error retieving all snapshot pages")
+
+	allSnapshots, err := snapshots.ExtractSnapshots(allPages)
+	require.NoError(t, err, "There should be no error extracting all snapshots")
+
+	var volumesInDeletionIds = make([]string, 1)
+	for _, snapshot := range allSnapshots {
+		err := snapshots.Delete(storageClient, snapshot.ID).ExtractErr()
+		require.NoError(t, err, "There should be no error deleting the snapshot")
+		volumesInDeletionIds = append(volumesInDeletionIds, snapshot.VolumeID)
+	}
+
+	// The storage client automatically deletes volumes alongside snapshots.
+	// So we have to wait for their complete deletion for consistent behaviour.
+	volumeErr := gophercloud.WaitFor(WaitForVolumeDeletionTimeoutInSeconds,
+		func() (bool, error) {
+			for _, volumeInDeletionId := range volumesInDeletionIds {
+				volume := volumes.Get(storageClient, volumeInDeletionId)
+				_, err := volume.Extract()
+				if err == nil {
+					return false, nil
+				}
+			}
+			return true, nil
+		},
+	)
+	require.NoError(t, volumeErr, "All volumes connected to snapshots should be deleted")
+
 }
 
 func (p *PyrolisisTests) CleanupVolumes(t *testing.T) {
