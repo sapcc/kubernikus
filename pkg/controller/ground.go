@@ -232,14 +232,14 @@ func (op *GroundControl) handler(key string) error {
 					return nil
 				}
 
-				if disabled, err := op.isShardingDisabledInProject(kluster); err != nil || !disabled {
+				if enabled, err := op.isShardingEnabledInProject(kluster); err != nil || enabled {
 					if err != nil {
 						op.Recorder.Eventf(kluster, api_v1.EventTypeWarning, FailedCreate, "Cluster creation failed. Could not examine project tags: %s", err)
 						return err
 					}
 					msg := "Cluster creation failed. VCenter sharding must be disabled for project."
 					op.Recorder.Eventf(kluster, api_v1.EventTypeWarning, FailedCreate, msg)
-					return fmt.Errorf("Cluster creation failed. VCenter sharding must be disabled for project.")
+					return fmt.Errorf(msg)
 				}
 
 				op.Logger.Log(
@@ -910,25 +910,25 @@ func (op *GroundControl) requiresKubernikusInfo(kluster *v1.Kluster) bool {
 	return kluster.Status.Apiserver == "" || kluster.Status.Wormhole == "" || kluster.Spec.Version == "" || (swag.BoolValue(kluster.Spec.Dashboard) && kluster.Status.Dashboard == "")
 }
 
-func (op *GroundControl) isShardingDisabledInProject(kluster *v1.Kluster) (bool, error) {
+func (op *GroundControl) isShardingEnabledInProject(kluster *v1.Kluster) (bool, error) {
 	client, err := op.Factories.Openstack.ProjectAdminClientFor(kluster.Account())
 	if err != nil {
-		return false, err
+		return true, err
 	}
 
 	tags, err := client.GetProjectTags()
 	if err != nil {
-		return false, err
+		return true, err
 	}
 
 	for _, tag := range tags {
 		if tag == ShardingEnabledProjectTag {
-			return false, nil
+			return true, nil
 		}
 
 	}
 
-	return true, nil
+	return false, nil
 }
 
 func (op *GroundControl) discoverKubernikusInfo(kluster *v1.Kluster) error {
