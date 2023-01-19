@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	core_v1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/client-go/tools/record"
 
 	v1 "github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
@@ -14,6 +15,20 @@ type EventingDeorbiter struct {
 	Deorbiter Deorbiter
 	Kluster   *v1.Kluster
 	Recorder  record.EventRecorder
+}
+
+func (d *EventingDeorbiter) DeleteSnapshots() (deleted []*unstructured.Unstructured, err error) {
+	deleted, err = d.Deorbiter.DeleteSnapshots()
+
+	for i, snapshot := range deleted {
+		if err == nil || i < (len(deleted)-1) {
+			d.Recorder.Eventf(d.Kluster, core_v1.EventTypeNormal, events.SuccessfulDeorbitSnapshot, "Successfully deleted snapshots: %v", fmt.Sprintf("%v/%v", snapshot.GetNamespace(), snapshot.GetName()))
+		} else {
+			d.Recorder.Eventf(d.Kluster, core_v1.EventTypeWarning, events.FailedDeorbitSnapshot, "Failed to delete snapshots(%v): %v", snapshot.GetName(), err)
+		}
+	}
+
+	return
 }
 
 func (d *EventingDeorbiter) DeletePersistentVolumeClaims() (deletedPVCs []core_v1.PersistentVolumeClaim, err error) {
@@ -39,6 +54,20 @@ func (d *EventingDeorbiter) DeleteServices() (deletedServices []core_v1.Service,
 		} else {
 			d.Recorder.Eventf(d.Kluster, core_v1.EventTypeWarning, events.FailedDeorbitService, "Failed to delete service of type LoadBalancer (%v): %v", err)
 		}
+	}
+
+	return
+}
+
+func (d *EventingDeorbiter) WaitForSnapshotCleanUp() (err error) {
+	d.Recorder.Eventf(d.Kluster, core_v1.EventTypeNormal, events.WaitingForDeorbitSnapshots, "Waiting for cleanup of Snapshots")
+
+	err = d.Deorbiter.WaitForSnapshotCleanUp()
+
+	if err == nil {
+		d.Recorder.Eventf(d.Kluster, core_v1.EventTypeNormal, events.SuccessfulDeorbitSnapshots, "Successfully cleaned up Snapshots")
+	} else {
+		d.Recorder.Eventf(d.Kluster, core_v1.EventTypeNormal, events.FailedDeorbitSnapshots, "Failed to clean up Snapshots: %v", err)
 	}
 
 	return
