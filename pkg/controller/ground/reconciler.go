@@ -39,6 +39,11 @@ const ManagedByLabelValue string = "kubernikus"
 const SkipPatchKey string = "kubernikus.cloud.sap/skip-manage"
 const SkipPatchValue string = "true"
 
+var recreateKinds map[string]struct{} = map[string]struct{}{
+	"RoleBinding":        {},
+	"ClusterRoleBinding": {},
+}
+
 type objectDiff struct {
 	planned  unstructured.Unstructured
 	deployed *unstructured.Unstructured
@@ -223,9 +228,7 @@ func getManagedObjects(clients *config.Clients, mapper meta.RESTMapper, kluster 
 		if err != nil {
 			return nil, err
 		}
-		for _, oneManaged := range managedList.Items {
-			managed = append(managed, oneManaged)
-		}
+		managed = append(managed, managedList.Items...)
 	}
 	return managed, nil
 }
@@ -291,7 +294,7 @@ func (sr *SeedReconciler) deleteOrphanedObjects(client dynamic.Interface, mapper
 			"msg", "Seed reconciliation: deleting orphaned",
 			"name", oneOrphaned.GetName(),
 			"namespace", oneOrphaned.GetNamespace(),
-			"kind", fmt.Sprintf("%s", oneOrphaned.GetKind()),
+			"kind", oneOrphaned.GetKind(),
 			"v", 6)
 		mapping, err := mapper.RESTMapping(oneOrphaned.GroupVersionKind().GroupKind(), oneOrphaned.GroupVersionKind().Version)
 		if err != nil {
@@ -337,7 +340,7 @@ func (sr *SeedReconciler) createPlanned(client dynamic.Interface, mapping *meta.
 		"msg", "Seed reconciliation: creating planned",
 		"name", obj.GetName(),
 		"namespace", obj.GetNamespace(),
-		"kind", fmt.Sprintf("%s", obj.GetKind()),
+		"kind", obj.GetKind(),
 		"v", 6)
 	_, err := makeScopedClient(client, mapping, obj.GetNamespace()).Create(context.TODO(), obj, metav1.CreateOptions{})
 	if err != nil {
@@ -376,6 +379,8 @@ func (sr *SeedReconciler) patchDeployed(client dynamic.Interface, mapping *meta.
 	if val, ok := deployed.GetLabels()[SkipPatchKey]; ok && val == SkipPatchValue {
 		return nil
 	}
+	// make an unmodified deep copy of the planned object, which we could need re-creation
+	plannedCopy := planned.DeepCopy()
 	// copy over certain values to keep patches small
 	deployedMetadata := deployed.Object["metadata"].(map[string]interface{})
 	plannedMetadata := planned.Object["metadata"].(map[string]interface{})
@@ -392,7 +397,7 @@ func (sr *SeedReconciler) patchDeployed(client dynamic.Interface, mapping *meta.
 	// Depending on the concrete resource there still patches that are not strictly
 	// required fallthrough here. A prime example is the Container Spec of Deployments,
 	// DaemonSets and so on, which has a bunch of optional fields, which aren't part
-	// of the planned maifest but of the deployed resources. That in turn creates some
+	// of the planned manifest but of the deployed resources. That in turn creates some
 	// larger patches.
 
 	original, err := deployed.MarshalJSON()
@@ -411,13 +416,54 @@ func (sr *SeedReconciler) patchDeployed(client dynamic.Interface, mapping *meta.
 		return nil
 	}
 
+	// try to apply patch first
+	err = sr.patchResource(client, mapping, deployed, patch)
+	if err == nil {
+		return nil
+	} else if errors.IsInvalid(err) {
+		// if the patch is invalid we can try to recreate certain resources
+		if recreateAllowed(deployed.GetKind()) {
+			return sr.recreateResource(client, mapping, plannedCopy)
+		}
+	}
+	return err
+}
+
+func recreateAllowed(kind string) bool {
+	_, ok := recreateKinds[kind]
+	return ok
+}
+
+func (sr *SeedReconciler) patchResource(client dynamic.Interface, mapping *meta.RESTMapping, deployed *unstructured.Unstructured, patch []byte) error {
 	sr.Logger.Log(
 		"msg", "Seed reconciliation: patching deployed",
 		"name", deployed.GetName(),
 		"namespace", deployed.GetNamespace(),
-		"kind", fmt.Sprintf("%s", deployed.GetKind()),
+		"kind", deployed.GetKind(),
 		"patch", string(patch),
 		"v", 6)
-	_, err = makeScopedClient(client, mapping, deployed.GetNamespace()).Patch(context.TODO(), deployed.GetName(), types.MergePatchType, patch, metav1.PatchOptions{})
+	_, err := makeScopedClient(client, mapping, deployed.GetNamespace()).Patch(context.TODO(), deployed.GetName(), types.MergePatchType, patch, metav1.PatchOptions{})
+	return err
+}
+
+func (sr *SeedReconciler) recreateResource(client dynamic.Interface, mapping *meta.RESTMapping, planned *unstructured.Unstructured) error {
+	sr.Logger.Log(
+		"msg", "Seed reconciliation: recreating deployed",
+		"name", planned.GetName(),
+		"namespace", planned.GetNamespace(),
+		"kind", planned.GetKind(),
+		"v", 6)
+	// refuse to delete any resource called kubernikus:admin.
+	// this could delete the clusterrolebinding we need to get
+	// into the cluster and lock ourselves out
+	if planned.GetName() == "kubernikus:admin" {
+		return fmt.Errorf("refusing to recreate a resource with name kubernikus:admin")
+	}
+	scoped := makeScopedClient(client, mapping, planned.GetNamespace())
+	err := scoped.Delete(context.TODO(), planned.GetName(), metav1.DeleteOptions{})
+	if err != nil {
+		return nil
+	}
+	_, err = scoped.Create(context.TODO(), planned, metav1.CreateOptions{})
 	return err
 }
