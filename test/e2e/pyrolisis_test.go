@@ -19,6 +19,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"k8s.io/apimachinery/pkg/util/wait"
+	"k8s.io/utils/strings/slices"
 
 	"github.com/sapcc/kubernikus/pkg/api/client/operations"
 	"github.com/sapcc/kubernikus/pkg/api/models"
@@ -27,10 +28,13 @@ import (
 )
 
 const (
-	CleanupBackupContainerDeleteInterval  = 1 * time.Second
-	CleanupBackupContainerDeleteTimeout   = 1 * time.Minute
-	WaitForVolumeDeletionTimeoutInSeconds = 300
+	CleanupBackupContainerDeleteInterval       = 1 * time.Second
+	CleanupBackupContainerDeleteTimeout        = 1 * time.Minute
+	WaitForSnapshotDeletionTimeoutInSeconds    = 300
+	WaitForVolumeStabilisationTimeoutInSeconds = 300
 )
+
+var StableVolumeStatesForDeletion = [4]string{"available", "error", "error_restoring", "error_managing"}
 
 type PyrolisisTests struct {
 	Kubernikus *framework.Kubernikus
@@ -185,28 +189,29 @@ func (p *PyrolisisTests) CleanupSnapshots(t *testing.T) {
 	allSnapshots, err := snapshots.ExtractSnapshots(allPages)
 	require.NoError(t, err, "There should be no error extracting all snapshots")
 
-	var volumesInDeletionIds = make([]string, 1)
 	for _, snapshot := range allSnapshots {
+
+		volume, volumeErr := volumes.Get(storageClient, snapshot.VolumeID).Extract()
+		require.NoError(t, volumeErr, "There should be no error getting volume of snapshot")
+
+		// only delete snapshot if attached volume was created by our tests
+		if volume.Metadata["csi.storage.k8s.io/pvc/name"] != PVCTestName {
+			continue
+		}
+
 		err := snapshots.Delete(storageClient, snapshot.ID).ExtractErr()
 		require.NoError(t, err, "There should be no error deleting the snapshot")
-		volumesInDeletionIds = append(volumesInDeletionIds, snapshot.VolumeID)
-	}
 
-	// The storage client automatically deletes volumes alongside snapshots.
-	// So we have to wait for their complete deletion for consistent behaviour.
-	volumeErr := gophercloud.WaitFor(WaitForVolumeDeletionTimeoutInSeconds,
-		func() (bool, error) {
-			for _, volumeInDeletionId := range volumesInDeletionIds {
-				volume := volumes.Get(storageClient, volumeInDeletionId)
-				_, err := volume.Extract()
+		deleteError := gophercloud.WaitFor(WaitForSnapshotDeletionTimeoutInSeconds,
+			func() (bool, error) {
+				_, err := snapshots.Get(storageClient, snapshot.ID).Extract()
 				if err == nil {
 					return false, nil
 				}
-			}
-			return true, nil
-		},
-	)
-	require.NoError(t, volumeErr, "All volumes connected to snapshots should be deleted")
+				return true, nil
+			})
+		require.NoError(t, deleteError, "There should be no error waiting for the snapshot deletion to finish")
+	}
 
 }
 
@@ -228,6 +233,28 @@ func (p *PyrolisisTests) CleanupVolumes(t *testing.T) {
 	require.NoError(t, err, "There should be no error while extracting volumes")
 
 	for _, vol := range allVolumes {
+
+		// Make sure volume is in stable state for deletion
+		volumeStableErr := gophercloud.WaitFor(WaitForVolumeStabilisationTimeoutInSeconds,
+			func() (bool, error) {
+				transientVolume, err := volumes.Get(storageClient, vol.ID).Extract()
+				if err != nil {
+					return false, err
+				}
+				if slices.Contains(StableVolumeStatesForDeletion[:], transientVolume.Status) {
+					return true, nil
+				}
+				return false, nil
+			},
+		)
+
+		// Volume has been deleted while waiting for stable state
+		if volumeStableErr.Error() == "Resource not found" {
+			continue
+		}
+
+		require.NoError(t, volumeStableErr, "All volumes with snapshots attached must be in a stable state for deletion")
+
 		// in-tree
 		if strings.HasPrefix(vol.Name, "kubernetes-dynamic-pvc-") &&
 			strings.HasPrefix(vol.Metadata["kubernetes.io/created-for/pvc/namespace"], "e2e-volumes-") {
