@@ -74,7 +74,7 @@ func (sr *SeedReconciler) EnrichHelmValuesForSeed(client project.ProjectClient, 
 		return err
 	}
 	// required to adapat old kube-dns deployments
-	_, err = k8sClient.ExtensionsV1beta1().Deployments("kube-system").Get(context.TODO(), "kube-dns", metav1.GetOptions{})
+	_, err = k8sClient.AppsV1().Deployments("kube-system").Get(context.TODO(), "kube-dns", metav1.GetOptions{})
 	var isKubeDns bool
 	if err == nil {
 		isKubeDns = true
@@ -120,6 +120,8 @@ func (sr *SeedReconciler) ReconcileSeeding(chartPath string, values map[string]i
 	sr.Logger.Log(
 		"msg", "Seed reconciliation: planned objects",
 		"count", len(planned),
+		"kluster", sr.Kluster.GetName(),
+		"project", sr.Kluster.Account(),
 		"v", 6)
 
 	groupRessources, err := restmapper.GetAPIGroupResources(discover)
@@ -150,7 +152,8 @@ func (sr *SeedReconciler) ReconcileSeeding(chartPath string, values map[string]i
 	}
 	sr.Logger.Log(
 		"msg", "Seed reconciliation: successful",
-		"kluster", sr.Kluster.Name,
+		"kluster", sr.Kluster.GetName(),
+		"project", sr.Kluster.Account(),
 		"v", 5)
 	return nil
 }
@@ -295,6 +298,8 @@ func (sr *SeedReconciler) deleteOrphanedObjects(client dynamic.Interface, mapper
 			"name", oneOrphaned.GetName(),
 			"namespace", oneOrphaned.GetNamespace(),
 			"kind", oneOrphaned.GetKind(),
+			"kluster", sr.Kluster.GetName(),
+			"project", sr.Kluster.Account(),
 			"v", 6)
 		mapping, err := mapper.RESTMapping(oneOrphaned.GroupVersionKind().GroupKind(), oneOrphaned.GroupVersionKind().Version)
 		if err != nil {
@@ -341,6 +346,8 @@ func (sr *SeedReconciler) createPlanned(client dynamic.Interface, mapping *meta.
 		"name", obj.GetName(),
 		"namespace", obj.GetNamespace(),
 		"kind", obj.GetKind(),
+		"kluster", sr.Kluster.GetName(),
+		"project", sr.Kluster.Account(),
 		"v", 6)
 	_, err := makeScopedClient(client, mapping, obj.GetNamespace()).Create(context.TODO(), obj, metav1.CreateOptions{})
 	if err != nil {
@@ -352,6 +359,8 @@ func (sr *SeedReconciler) createPlanned(client dynamic.Interface, mapping *meta.
 			"name", obj.GetName(),
 			"namespace", obj.GetNamespace(),
 			"kind", fmt.Sprintf("%s", obj.GetKind()),
+			"kluster", sr.Kluster.GetName(),
+			"project", sr.Kluster.Account(),
 			"v", 6)
 		return wait.Poll(500*time.Millisecond, 20*time.Second, func() (done bool, err error) {
 			crd, err := makeScopedClient(client, mapping, obj.GetNamespace()).Get(context.TODO(), obj.GetName(), metav1.GetOptions{})
@@ -441,6 +450,8 @@ func (sr *SeedReconciler) patchResource(client dynamic.Interface, mapping *meta.
 		"namespace", deployed.GetNamespace(),
 		"kind", deployed.GetKind(),
 		"patch", string(patch),
+		"kluster", sr.Kluster.GetName(),
+		"project", sr.Kluster.Account(),
 		"v", 6)
 	_, err := makeScopedClient(client, mapping, deployed.GetNamespace()).Patch(context.TODO(), deployed.GetName(), types.MergePatchType, patch, metav1.PatchOptions{})
 	return err
@@ -452,6 +463,8 @@ func (sr *SeedReconciler) recreateResource(client dynamic.Interface, mapping *me
 		"name", planned.GetName(),
 		"namespace", planned.GetNamespace(),
 		"kind", planned.GetKind(),
+		"kluster", sr.Kluster.GetName(),
+		"project", sr.Kluster.Account(),
 		"v", 6)
 	// refuse to delete any resource called kubernikus:admin.
 	// this could delete the clusterrolebinding we need to get
