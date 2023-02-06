@@ -300,16 +300,9 @@ func (op *GroundControl) handler(key string) error {
 				if err != nil {
 					return err
 				}
-				// we need to reconcile twice.
-				// on the first run CRD will be added but these are not in the discovery client cache at that point in time, so creating CRD instances will silently fail.
-				// we fail silently so reconciliation continues even when CRD's are not established.
-				// we await CRD creation in the first run.
-				// on the second run a new discovery client is created, so we know about all CRD's and respective instance can be created.
-				for i := 0; i < 2; i++ {
-					err = op.reconcileSeed(kluster, projectClient, helmValues)
-					if err != nil {
-						return err
-					}
+				err = op.reconcileSeed(kluster, projectClient, helmValues)
+				if err != nil {
+					return err
 				}
 				if err := op.updatePhase(kluster, models.KlusterPhaseRunning); err != nil {
 					op.Logger.Log(
