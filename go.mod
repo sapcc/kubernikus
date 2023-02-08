@@ -3,7 +3,7 @@ module github.com/sapcc/kubernikus
 go 1.16
 
 require (
-	github.com/BurntSushi/toml v1.0.0
+	github.com/BurntSushi/toml v1.2.1
 	github.com/Masterminds/goutils v1.1.1
 	github.com/Masterminds/semver v1.5.0
 	github.com/Masterminds/sprig v2.22.0+incompatible
@@ -17,7 +17,8 @@ require (
 	github.com/databus23/guttle v0.0.0-20210623071842-89102dbdfc85
 	github.com/databus23/keystone v0.0.0-20180111110916-350fd0e663cd
 	github.com/databus23/requestutil v0.0.0-20160108082528-5ff8e981f38f
-	github.com/evanphx/json-patch v4.12.0+incompatible
+	github.com/evanphx/json-patch v5.6.0+incompatible
+	github.com/fatih/color v1.13.0 // indirect
 	github.com/ghodss/yaml v1.0.0
 	github.com/go-kit/kit v0.10.0
 	github.com/go-openapi/errors v0.20.2
@@ -36,31 +37,33 @@ require (
 	github.com/imdario/mergo v0.3.12
 	github.com/joeshaw/envdecode v0.0.0-20170502020559-6326cbed175e
 	github.com/justinas/alice v0.0.0-20171023064455-03f45bd4b7da
+	github.com/mattn/go-colorable v0.1.12 // indirect
 	github.com/oklog/run v1.0.1-0.20180308005104-6934b124db28
 	github.com/pkg/errors v0.9.1
 	github.com/pmylund/go-cache v2.1.0+incompatible // indirect
-	github.com/prometheus/client_golang v1.12.1
+	github.com/prometheus/client_golang v1.14.0
 	github.com/rs/cors v0.0.0-20170801073201-eabcc6af4bbe
 	github.com/satori/go.uuid v1.2.0
-	github.com/spf13/cobra v1.4.0
+	github.com/spf13/cast v1.4.1 // indirect
+	github.com/spf13/cobra v1.6.1
 	github.com/spf13/pflag v1.0.5
-	github.com/stretchr/testify v1.7.2
+	github.com/stretchr/testify v1.8.1
 	github.com/tredoe/osutil v0.0.0-20161130133508-7d3ee1afa71c
 	github.com/vincent-petithory/dataurl v0.0.0-20160330182126-9a301d65acbb // indirect
 	github.com/zalando/go-keyring v0.0.0-20180221093347-6d81c293b3fb
-	golang.org/x/crypto v0.0.0-20220525230936-793ad666bf5e
-	golang.org/x/net v0.0.0-20220225172249-27dd8689420f
-	golang.org/x/oauth2 v0.0.0-20211104180415-d3ed0bb246c8
-	golang.org/x/sys v0.0.0-20220412211240-33da011f77ad
+	golang.org/x/crypto v0.5.0
+	golang.org/x/net v0.5.0
+	golang.org/x/oauth2 v0.0.0-20220223155221-ee480838109b
+	golang.org/x/sys v0.4.0
 	gopkg.in/yaml.v2 v2.4.0
-	helm.sh/helm/v3 v3.9.4
-	k8s.io/api v0.24.2
-	k8s.io/apiextensions-apiserver v0.24.2
-	k8s.io/apimachinery v0.24.2
-	k8s.io/client-go v0.24.2
+	helm.sh/helm/v3 v3.11.1
+	k8s.io/api v0.26.0
+	k8s.io/apiextensions-apiserver v0.26.0
+	k8s.io/apimachinery v0.26.0
+	k8s.io/client-go v0.26.0
 	k8s.io/cluster-bootstrap v0.0.0-20190802024125-9150a5ba960c
 	k8s.io/klog v1.0.0
-	k8s.io/utils v0.0.0-20220210201930-3a6ce19ff2f9
+	k8s.io/utils v0.0.0-20221107191617-1a15be271d1d
 	sigs.k8s.io/yaml v1.3.0
 )
 
