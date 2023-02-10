@@ -29,7 +29,6 @@ import (
 	"github.com/sapcc/kubernikus/pkg/controller/migration"
 	"github.com/sapcc/kubernikus/pkg/controller/nodeobservatory"
 	"github.com/sapcc/kubernikus/pkg/controller/routegc"
-	"github.com/sapcc/kubernikus/pkg/controller/servicing"
 	kubernikus_informers "github.com/sapcc/kubernikus/pkg/generated/informers/externalversions"
 	_ "github.com/sapcc/kubernikus/pkg/util/workqueue/prometheus"
 	"github.com/sapcc/kubernikus/pkg/version"
@@ -195,8 +194,8 @@ func NewKubernikusOperator(options *KubernikusOperatorOptions, logger log.Logger
 			o.Config.Kubernikus.Controllers["migration"] = migration.NewController(3, o.Factories, o.Clients, recorder, logger)
 		case "hammertime":
 			o.Config.Kubernikus.Controllers["hammertime"] = hammertime.New(10*time.Second, 20*time.Second, o.Factories, o.Clients, recorder, logger)
-		case "servicing":
-			o.Config.Kubernikus.Controllers["servicing"] = servicing.NewController(10, o.Factories, o.Clients, recorder, options.NodeUpdateHoldoff, logger)
+		//case "servicing":
+		//o.Config.Kubernikus.Controllers["servicing"] = servicing.NewController(10, o.Factories, o.Clients, recorder, options.NodeUpdateHoldoff, logger)
 		case "certs":
 			o.Config.Kubernikus.Controllers["certs"] = certs.New(12*time.Hour, o.Factories, o.Config, o.Clients, logger)
 		}
