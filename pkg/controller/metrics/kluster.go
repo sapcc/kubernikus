@@ -29,7 +29,7 @@ func NewKlusterCollector(lister kubernikus_lister.KlusterLister) *klusterCollect
 		infoMetric: prometheus.NewDesc(
 			"kubernikus_kluster_info",
 			"Detailed information on a kluster",
-			[]string{"kluster_namespace", "kluster_name", "phase", "api_version", "chart_version", "chart_name", "creator", "project_id"},
+			[]string{"kluster_namespace", "kluster_name", "phase", "api_version", "chart_version", "chart_name", "creator", "project_id", "backup", "audit"},
 			nil,
 		),
 		lister: lister,
@@ -65,6 +65,8 @@ func (collector *klusterCollector) Collect(ch chan<- prometheus.Metric) {
 			kluster.Status.ChartName,
 			getCreatorFromAnnotations(kluster.Annotations),
 			getAccountFromLabels(kluster.Labels),
+			kluster.Spec.Backup,
+			*kluster.Spec.Audit,
 		)
 	}
 
