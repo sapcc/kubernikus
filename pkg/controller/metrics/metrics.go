@@ -135,7 +135,7 @@ func getAccountFromLabels(labels map[string]string) string {
 
 func getAuditFromSpec(spec models.KlusterSpec) string {
 	if spec.Audit == nil {
-		return "NA"
+		return ""
 	}
 	return *spec.Audit
 }
