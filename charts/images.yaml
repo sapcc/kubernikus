@@ -1027,8 +1027,8 @@ imagesForVersion:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/k8scloudprovider/cinder-csi-plugin
       tag: v1.23.0
     cloudControllerManager:
-      repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/k8scloudprovider/openstack-cloud-controller-manager
-      tag: v1.23.4
+      repository: keppel.global.cloud.sap/ccloud/openstack-cloud-controller-manager-amd64
+      tag: v1.23.4-sap.1
     controllerManager:
       repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/kube-controller-manager
       tag: v1.23.11
@@ -1104,8 +1104,8 @@ imagesForVersion:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/k8scloudprovider/cinder-csi-plugin
       tag: v1.23.0
     cloudControllerManager:
-      repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/k8scloudprovider/openstack-cloud-controller-manager
-      tag: v1.23.4
+      repository: keppel.global.cloud.sap/ccloud/openstack-cloud-controller-manager-amd64
+      tag: v1.23.4-sap.1
     controllerManager:
       repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/kube-controller-manager
       tag: v1.23.12
@@ -1181,8 +1181,8 @@ imagesForVersion:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/k8scloudprovider/cinder-csi-plugin
       tag: v1.23.0
     cloudControllerManager:
-      repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/k8scloudprovider/openstack-cloud-controller-manager
-      tag: v1.23.4
+      repository: keppel.global.cloud.sap/ccloud/openstack-cloud-controller-manager-amd64
+      tag: v1.23.4-sap.1
     controllerManager:
       repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/kube-controller-manager
       tag: v1.23.14
@@ -1258,8 +1258,8 @@ imagesForVersion:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/k8scloudprovider/cinder-csi-plugin
       tag: v1.23.0
     cloudControllerManager:
-      repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/k8scloudprovider/openstack-cloud-controller-manager
-      tag: v1.23.4
+      repository: keppel.global.cloud.sap/ccloud/openstack-cloud-controller-manager-amd64
+      tag: v1.23.4-sap.1
     controllerManager:
       repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/kube-controller-manager
       tag: v1.23.15
@@ -1336,8 +1336,8 @@ imagesForVersion:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/k8scloudprovider/cinder-csi-plugin
       tag: v1.23.0
     cloudControllerManager:
-      repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/k8scloudprovider/openstack-cloud-controller-manager
-      tag: v1.23.4
+      repository: keppel.global.cloud.sap/ccloud/openstack-cloud-controller-manager-amd64
+      tag: v1.23.4-sap.1
     controllerManager:
       repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/kube-controller-manager
       tag: v1.23.6
