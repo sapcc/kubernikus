@@ -3,6 +3,7 @@ package controller
 import (
 	"context"
 	"fmt"
+	"net"
 	"path"
 	"reflect"
 	"strings"
@@ -482,13 +483,29 @@ func (op *GroundControl) handler(key string) error {
 }
 
 func (op *GroundControl) reconcileSeed(kluster *v1.Kluster, projectClient project.ProjectClient, helmValues map[string]interface{}) error {
+	isNetErr := func(err error) bool {
+		current := err
+		for current != nil {
+			_, ok := current.(net.Error)
+			if ok {
+				return true
+			}
+			current = errors.Unwrap(current)
+		}
+		return false
+	}
+
 	seedReconciler := ground.NewSeedReconciler(&op.Clients, kluster, op.Logger)
 	if err := seedReconciler.EnrichHelmValuesForSeed(projectClient, helmValues); err != nil {
-		metrics.SeedReconciliationFailuresTotal.With(prometheus.Labels{"kluster_name": kluster.Spec.Name}).Inc()
+		if !isNetErr(err) {
+			metrics.SeedReconciliationFailuresTotal.With(prometheus.Labels{"kluster_name": kluster.Spec.Name}).Inc()
+		}
 		return fmt.Errorf("Enrichting seed values failed: %w", err)
 	}
 	if err := seedReconciler.ReconcileSeeding(path.Join(op.Config.Helm.ChartDirectory, "seed"), helmValues); err != nil {
-		metrics.SeedReconciliationFailuresTotal.With(prometheus.Labels{"kluster_name": kluster.Spec.Name}).Inc()
+		if !isNetErr(err) {
+			metrics.SeedReconciliationFailuresTotal.With(prometheus.Labels{"kluster_name": kluster.Spec.Name}).Inc()
+		}
 		return fmt.Errorf("Seeding reconciliation failed: %w", err)
 	}
 	op.Logger.Log("msg", "reconciled seeding successfully", "kluster", kluster.GetName(), "v", 2)
