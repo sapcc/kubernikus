@@ -47,7 +47,7 @@ func (k *NodeTests) Run(t *testing.T) {
 	_ = t.Run("Created", k.StateRunning) &&
 		t.Run("Tagged", k.Tagged) &&
 		t.Run("Registered", k.Registered) &&
-		//t.Run("LatestContainerLinux", k.LatestContainerLinux) &&
+		t.Run("LatestContainerLinux", k.LatestContainerLinux) &&
 		t.Run("Schedulable", k.StateSchedulable) &&
 		t.Run("NetworkUnavailable", k.ConditionNetworkUnavailable) &&
 		t.Run("Healthy", k.StateHealthy) &&
