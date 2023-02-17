@@ -1,7 +1,9 @@
 package templates
 
 import (
+	"encoding/base64"
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/go-kit/kit/log"
@@ -12,6 +14,7 @@ import (
 
 	"github.com/sapcc/kubernikus/pkg/api/models"
 	kubernikusv1 "github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
+	"github.com/sapcc/kubernikus/pkg/util"
 	"github.com/sapcc/kubernikus/pkg/version"
 )
 
@@ -35,6 +38,7 @@ func init() {
 			SSHPublicKey:     "ssh-rsa nasenbaer bla@fasel",
 			AdvertiseAddress: "1.1.1.1",
 			ClusterCIDR:      swag.String("3.3.3.3/24"),
+			ServiceCIDR:      "4.4.4.4/24",
 			DNSAddress:       "2.2.2.2",
 			DNSDomain:        "cluster.local",
 			Openstack: models.OpenstackSpec{
@@ -51,12 +55,6 @@ func init() {
 	testKlusterSecret = kubernikusv1.Secret{
 		NodePassword:   "password",
 		BootstrapToken: "BootstrapToken",
-		Certificates: kubernikusv1.Certificates{
-			TLSCACertificate:                     "TLSCACertificate",
-			KubeletClientsCACertificate:          "KubeletClientsCACertificate",
-			ApiserverClientsKubeProxyCertificate: "ApiserverClientsKubeProxyCertificate",
-			ApiserverClientsKubeProxyPrivateKey:  "ApiserverClientsKubeProxyPrivateKey",
-		},
 		Openstack: kubernikusv1.Openstack{
 			AuthURL:    "AuthURL",
 			Username:   "Username",
@@ -65,9 +63,16 @@ func init() {
 			Region:     "Region",
 		},
 	}
+	_, err := util.NewCertificateFactory(&testKluster, &testKlusterSecret.Certificates, "kubernikus.test").Ensure()
+	if err != nil {
+		panic(err)
+	}
 
 	imageRegistry = version.ImageRegistry{
 		Versions: map[string]version.KlusterVersion{
+			"1.24": {Kubelet: version.ImageVersion{Repository: "nase", Tag: "v1.24"}},
+			"1.21": {Kubelet: version.ImageVersion{Repository: "nase", Tag: "v1.21"}},
+			"1.20": {Kubelet: version.ImageVersion{Repository: "nase", Tag: "v1.20"}},
 			"1.19": {Kubelet: version.ImageVersion{Repository: "nase", Tag: "v1.19"}},
 			"1.18": {Hyperkube: version.ImageVersion{Repository: "nase", Tag: "v1.18"}},
 			"1.17": {Hyperkube: version.ImageVersion{Repository: "nase", Tag: "v1.17"}},
@@ -87,19 +92,27 @@ func TestGenerateNode(t *testing.T) {
 
 	kluster := testKluster.DeepCopy()
 
+	kluster.Spec.SSHPublicKey = strings.Repeat("a", 10000) //max out ssh key
+
 	for version := range imageRegistry.Versions {
 		kluster.Spec.Version = version
 		data, err := Ignition.GenerateNode(kluster, nil, "test", &testKlusterSecret, false, imageRegistry, log.NewNopLogger())
+
 		if assert.NoError(t, err, "Failed to generate node for version %s", version) {
 			//Ensure we rendered the expected template
-			assert.Contains(t, string(data), fmt.Sprintf("KUBELET_IMAGE_TAG=v%s", version))
+			assert.Contains(t, string(data), fmt.Sprintf("v%s", version))
+
+			if version != "1.10" { //skip for 1.10 which exceeds the limit as its super depreacted
+				userData := base64.StdEncoding.EncodeToString(data)
+				assert.LessOrEqualf(t, len(userData), 65535, "userdata exceeds openstack limit for api version %s template", version)
+			}
 		}
 	}
 }
 
 func TestNodeLabels(t *testing.T) {
 	kluster := testKluster.DeepCopy()
-	kluster.Spec.Version = "1.10"
+	kluster.Spec.Version = "1.21"
 
 	pool := &models.NodePool{Name: "some-name"}
 

@@ -8,6 +8,7 @@ import (
 
 	"github.com/imdario/mergo"
 	"github.com/pkg/errors"
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/client-go/tools/clientcmd"
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
 
@@ -43,12 +44,9 @@ func (ktx *KubernikusContext) IsKubernikusContext() (bool, error) {
 		return false, err
 	}
 
-	if len(caCert.Subject.OrganizationalUnit) < 2 {
-		return false, nil
-	}
+	//With go 1.16, the order of multivalued fields in parsed certs became unreliable: https://github.com/golang/go/issues/45882
+	return sets.NewString(caCert.Subject.OrganizationalUnit...).HasAll(util.CA_ISSUER_KUBERNIKUS_IDENTIFIER_0, util.CA_ISSUER_KUBERNIKUS_IDENTIFIER_1), nil
 
-	return caCert.Subject.OrganizationalUnit[0] == util.CA_ISSUER_KUBERNIKUS_IDENTIFIER_0 &&
-		caCert.Subject.OrganizationalUnit[1] == util.CA_ISSUER_KUBERNIKUS_IDENTIFIER_1, nil
 }
 
 func (ktx *KubernikusContext) UserCertificateValid() (bool, error) {
@@ -103,10 +101,14 @@ func (ktx *KubernikusContext) AuthURL() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	if len(cert.Subject.Province) < 2 {
-		return "", errors.Errorf("Client certificate didn't contain OpenStack metadata")
+
+	//With go 1.16, the order of multivalued fields in parsed certs became unreliable: https://github.com/golang/go/issues/45882
+	for _, p := range cert.Subject.Province {
+		if strings.HasPrefix(p, "http") {
+			return p, nil
+		}
 	}
-	return cert.Subject.Province[0], nil
+	return "", errors.Errorf("Client certificate didn't contain OpenStack metadata")
 }
 
 func (ktx *KubernikusContext) ProjectID() (string, error) {
@@ -115,9 +117,15 @@ func (ktx *KubernikusContext) ProjectID() (string, error) {
 		return "", err
 	}
 	if len(cert.Subject.Province) < 2 {
-		return "", errors.Errorf("Client certificate didn't contain OpenStack metadata")
+		return "", errors.New("Client certificate is missing kubernikus metadata")
 	}
-	return cert.Subject.Province[1], nil
+	//With go 1.16, the order of multivalued fields in parsed certs became unreliable: https://github.com/golang/go/issues/45882
+	for _, p := range cert.Subject.Province {
+		if !strings.HasPrefix(p, "http") {
+			return p, nil
+		}
+	}
+	return "", errors.New("Client certificate didn't contain OpenStack metadata")
 }
 
 func (ktx *KubernikusContext) MergeAndPersist(rawConfig string) error {

@@ -22,6 +22,7 @@ type fakeInstance struct {
 	Created            time.Time
 	SecurityGroupNames []string
 	Errored            bool
+	Pool               string
 }
 
 func (f *fakeInstance) GetID() string {
@@ -42,6 +43,12 @@ func (f *fakeInstance) GetCreated() time.Time {
 
 func (f *fakeInstance) Erroring() bool {
 	return f.Errored
+}
+func (f *fakeInstance) GetPoolName() string {
+	return f.Pool
+}
+func (f *fakeInstance) Running() bool {
+	return true
 }
 
 type MockKlusterClient struct {
@@ -86,6 +93,16 @@ func (m *MockKlusterClient) EnsureServerGroup(name string) (id string, err error
 func (m *MockKlusterClient) DeleteServerGroup(name string) (err error) {
 	args := m.Called(name)
 	return args.Error(0)
+}
+
+func (m *MockKlusterClient) EnsureNodeTags(node openstack_kluster.Node, kluster, pool string) ([]string, error) {
+	args := m.Called(node, kluster, pool)
+	return args.Get(0).([]string), args.Error(0)
+}
+
+func (m *MockKlusterClient) EnsureMetadata(node openstack_kluster.Node, kluster, pool string) (map[string]string, error) {
+	args := m.Called(node, kluster, pool)
+	return args.Get(0).(map[string]string), args.Error(0)
 }
 
 func TestEnsureInstanceSecurityGroupAssignment(t *testing.T) {

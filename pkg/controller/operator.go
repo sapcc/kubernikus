@@ -56,6 +56,8 @@ type KubernikusOperatorOptions struct {
 	Controllers         []string
 	MetricPort          int
 	LogLevel            int
+
+	NodeUpdateHoldoff time.Duration
 }
 
 type KubernikusOperator struct {
@@ -116,9 +118,9 @@ func NewKubernikusOperator(options *KubernikusOperatorOptions, logger log.Logger
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create kubernetes config: %s", err)
 	}
-	o.Clients.Helm, err = helmutil.NewClient(o.Clients.Kubernetes, config, logger)
+	o.Clients.Helm3, err = helmutil.NewClient3(options.Namespace, options.KubeConfig, options.Context, logger)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to create helm client: %s", err)
+		return nil, fmt.Errorf("Failed to create helm 3 client: %s", err)
 	}
 
 	apiextensionsclientset, err := apiextensionsclient.NewForConfig(config)
@@ -147,13 +149,13 @@ func NewKubernikusOperator(options *KubernikusOperatorOptions, logger log.Logger
 
 	klusters := o.Factories.Kubernikus.Kubernikus().V1().Klusters().Informer()
 
-	o.Factories.Openstack = openstack.NewSharedOpenstackClientFactory(o.Clients.Kubernetes, klusters, adminAuthOptions, logger)
+	if options.AuthURL != "" {
+		o.Factories.Openstack = openstack.NewSharedOpenstackClientFactory(o.Clients.Kubernetes, klusters, adminAuthOptions, logger)
+	} else {
+		o.Factories.Openstack = openstack.NotAvailableFactory{}
+	}
 
 	o.Clients.Satellites = kube.NewSharedClientFactory(o.Clients.Kubernetes, klusters, logger)
-	o.Clients.OpenstackAdmin, err = o.Factories.Openstack.AdminClient()
-	if err != nil {
-		return nil, fmt.Errorf("Couldn't create Openstack client: %v", err)
-	}
 
 	o.Factories.NodesObservatory = nodeobservatory.NewInformerFactory(o.Factories.Kubernikus.Kubernikus().V1().Klusters(), o.Clients.Satellites, logger)
 
@@ -190,11 +192,11 @@ func NewKubernikusOperator(options *KubernikusOperatorOptions, logger log.Logger
 		case "flight":
 			o.Config.Kubernikus.Controllers["flight"] = flight.NewController(10, o.Factories, o.Clients, recorder, logger)
 		case "migration":
-			o.Config.Kubernikus.Controllers["migration"] = migration.NewController(10, o.Factories, o.Clients, recorder, logger)
+			o.Config.Kubernikus.Controllers["migration"] = migration.NewController(3, o.Factories, o.Clients, recorder, logger)
 		case "hammertime":
 			o.Config.Kubernikus.Controllers["hammertime"] = hammertime.New(10*time.Second, 20*time.Second, o.Factories, o.Clients, recorder, logger)
 		case "servicing":
-			o.Config.Kubernikus.Controllers["servicing"] = servicing.NewController(10, o.Factories, o.Clients, recorder, logger)
+			o.Config.Kubernikus.Controllers["servicing"] = servicing.NewController(10, o.Factories, o.Clients, recorder, options.NodeUpdateHoldoff, logger)
 		case "certs":
 			o.Config.Kubernikus.Controllers["certs"] = certs.New(12*time.Hour, o.Factories, o.Config, o.Clients, logger)
 		}

@@ -1,9 +1,13 @@
 package deorbit
 
 import (
+	"context"
+	"fmt"
 	"time"
 
 	"github.com/go-kit/kit/log"
+	"github.com/gophercloud/gophercloud"
+	"github.com/gophercloud/gophercloud/openstack/blockstorage/v3/volumes"
 	core_v1 "k8s.io/api/core/v1"
 	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
@@ -13,6 +17,7 @@ import (
 	v1 "github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
 	"github.com/sapcc/kubernikus/pkg/controller/config"
 	"github.com/sapcc/kubernikus/pkg/controller/metrics"
+	"github.com/sapcc/kubernikus/pkg/util"
 )
 
 type SelfDestructReason string
@@ -31,12 +36,9 @@ const (
 	// load balancers or floating IPs.
 	DeorbitHangingTimeout = 24 * time.Hour
 
-	// As of this writing services are not yet migrated to make use of
-	// finalizers. In effect there's no feedback loop and a deleted service
-	// disappears immediately - even though the cloud provider isn't finished yet
-	// with the decomissioning of existing load balancers. We guess that it takes
-	// around this duration until the clean-up was successful.
-	ServiceDeletionGracePeriod = 2 * time.Minute
+	// < 1.17 clusters don't user finalizers on service objects for loadbalancer cleanup
+	// We wait 5 minutes staically instead
+	ServiceDeletionGracePeriod = 5 * time.Minute
 
 	// While waiting for deletion use this interval for rechecks
 	PollInterval = 15 * time.Second
@@ -53,20 +55,21 @@ type Deorbiter interface {
 }
 
 type ConcreteDeorbiter struct {
-	Kluster *v1.Kluster
-	Stop    <-chan struct{}
-	Client  kubernetes.Interface
-	Logger  log.Logger
+	Kluster       *v1.Kluster
+	Stop          <-chan struct{}
+	Client        kubernetes.Interface
+	Logger        log.Logger
+	ServiceClient *gophercloud.ServiceClient
 }
 
-func NewDeorbiter(kluster *v1.Kluster, stopCh <-chan struct{}, clients config.Clients, recorder record.EventRecorder, logger log.Logger) (Deorbiter, error) {
+func NewDeorbiter(kluster *v1.Kluster, stopCh <-chan struct{}, clients config.Clients, recorder record.EventRecorder, logger log.Logger, serviceClient *gophercloud.ServiceClient) (Deorbiter, error) {
 	client, err := clients.Satellites.ClientFor(kluster)
 	if err != nil {
 		return nil, err
 	}
 
 	var deorbiter Deorbiter
-	deorbiter = &ConcreteDeorbiter{kluster, stopCh, client, logger}
+	deorbiter = &ConcreteDeorbiter{kluster, stopCh, client, logger, serviceClient}
 	deorbiter = &LoggingDeorbiter{deorbiter, logger}
 	deorbiter = &EventingDeorbiter{deorbiter, kluster, recorder}
 	deorbiter = &InstrumentingDeorbiter{
@@ -83,7 +86,7 @@ func NewDeorbiter(kluster *v1.Kluster, stopCh <-chan struct{}, clients config.Cl
 func (d *ConcreteDeorbiter) DeletePersistentVolumeClaims() (deleted []core_v1.PersistentVolumeClaim, err error) {
 	deleted = []core_v1.PersistentVolumeClaim{}
 
-	pvcs, err := d.Client.Core().PersistentVolumeClaims(meta_v1.NamespaceAll).List(meta_v1.ListOptions{})
+	pvcs, err := d.Client.CoreV1().PersistentVolumeClaims(meta_v1.NamespaceAll).List(context.TODO(), meta_v1.ListOptions{})
 	if err != nil {
 		return deleted, err
 	}
@@ -93,7 +96,7 @@ func (d *ConcreteDeorbiter) DeletePersistentVolumeClaims() (deleted []core_v1.Pe
 			continue
 		}
 
-		pv, err := d.Client.Core().PersistentVolumes().Get(pvc.Spec.VolumeName, meta_v1.GetOptions{})
+		pv, err := d.Client.CoreV1().PersistentVolumes().Get(context.TODO(), pvc.Spec.VolumeName, meta_v1.GetOptions{})
 		if err != nil {
 			return deleted, err
 		}
@@ -103,7 +106,7 @@ func (d *ConcreteDeorbiter) DeletePersistentVolumeClaims() (deleted []core_v1.Pe
 		}
 		deleted = append(deleted, pvc)
 
-		err = d.Client.Core().PersistentVolumeClaims(pvc.Namespace).Delete(pvc.Name, &meta_v1.DeleteOptions{})
+		err = d.Client.CoreV1().PersistentVolumeClaims(pvc.Namespace).Delete(context.TODO(), pvc.Name, meta_v1.DeleteOptions{})
 		if err != nil {
 			return deleted, err
 		}
@@ -115,7 +118,7 @@ func (d *ConcreteDeorbiter) DeletePersistentVolumeClaims() (deleted []core_v1.Pe
 func (d *ConcreteDeorbiter) DeleteServices() (deleted []core_v1.Service, err error) {
 	deleted = []core_v1.Service{}
 
-	services, err := d.Client.Core().Services(meta_v1.NamespaceAll).List(meta_v1.ListOptions{})
+	services, err := d.Client.CoreV1().Services(meta_v1.NamespaceAll).List(context.TODO(), meta_v1.ListOptions{})
 	if err != nil {
 		return deleted, err
 	}
@@ -126,7 +129,7 @@ func (d *ConcreteDeorbiter) DeleteServices() (deleted []core_v1.Service, err err
 		}
 		deleted = append(deleted, service)
 
-		err = d.Client.Core().Services(service.Namespace).Delete(service.Name, &meta_v1.DeleteOptions{})
+		err = d.Client.CoreV1().Services(service.Namespace).Delete(context.TODO(), service.Name, meta_v1.DeleteOptions{})
 		if err != nil {
 			return deleted, err
 		}
@@ -175,18 +178,37 @@ func (d *ConcreteDeorbiter) IsDeorbitHangingTimeout() bool {
 }
 
 func (d *ConcreteDeorbiter) isPersistentVolumesCleanupFinished() (bool, error) {
-	pvs, err := d.Client.Core().PersistentVolumes().List(meta_v1.ListOptions{})
+	pvs, err := d.Client.CoreV1().PersistentVolumes().List(context.TODO(), meta_v1.ListOptions{})
 	if err != nil {
 		return false, err
 	}
 
+	volumeListOpts := volumes.ListOpts{
+		TenantID: d.Kluster.Account(),
+	}
+
+	allPages, err := volumes.List(d.ServiceClient, volumeListOpts).AllPages()
+	if err != nil {
+		return false, fmt.Errorf("There should be no error while retrieving volume pages: %v", err)
+	}
+
+	allVolumes, err := volumes.ExtractVolumes(allPages)
+	if err != nil {
+		return false, fmt.Errorf("There should be no error while extracting volumes: %v", err)
+	}
+
 	for _, pv := range pvs.Items {
-		//ignore failed PVs
+		// ignore failed PVs
 		if pv.Status.Phase == core_v1.VolumeFailed {
 			continue
 		}
-		if pv.Spec.PersistentVolumeSource.Cinder != nil || (pv.Spec.PersistentVolumeSource.CSI != nil && pv.Spec.PersistentVolumeSource.CSI.Driver == "cinder.csi.openstack.org") {
-			return false, nil
+
+		// ignore volumes already deleted in openstack
+		for _, volume := range allVolumes {
+			if (pv.Spec.PersistentVolumeSource.Cinder != nil && pv.Spec.PersistentVolumeSource.Cinder.VolumeID == volume.ID) ||
+				(pv.Spec.PersistentVolumeSource.CSI != nil && pv.Spec.PersistentVolumeSource.CSI.VolumeHandle == volume.ID) {
+				return false, nil
+			}
 		}
 	}
 
@@ -194,5 +216,19 @@ func (d *ConcreteDeorbiter) isPersistentVolumesCleanupFinished() (bool, error) {
 }
 
 func (d *ConcreteDeorbiter) isServiceCleanupFinished() (bool, error) {
-	return d.Kluster.ObjectMeta.DeletionTimestamp.Add(ServiceDeletionGracePeriod).Before(time.Now()), nil
+	if ok, _ := util.KlusterVersionConstraint(d.Kluster, "< 1.17"); ok {
+		return d.Kluster.ObjectMeta.DeletionTimestamp.Add(ServiceDeletionGracePeriod).Before(time.Now()), nil
+	}
+	services, err := d.Client.CoreV1().Services(meta_v1.NamespaceAll).List(context.TODO(), meta_v1.ListOptions{})
+	if err != nil {
+		return false, err
+	}
+
+	for _, service := range services.Items {
+		if service.Spec.Type != "LoadBalancer" {
+			continue
+		}
+		return false, nil
+	}
+	return true, nil
 }

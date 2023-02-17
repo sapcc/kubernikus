@@ -2,7 +2,8 @@ platform: linux
 image_resource:
   type: registry-image
   source:
-    repository: keppel.eu-de-2.cloud.sap/ccloud-dockerhub-mirror/library/alpine
+    repository: keppel.eu-de-1.cloud.sap/ccloud-dockerhub-mirror/library/alpine
+    tag: latest
 inputs:
   - name: docs-builder.image
   - name: kubernikus.git

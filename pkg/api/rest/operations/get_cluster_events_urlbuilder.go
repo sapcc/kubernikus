@@ -46,7 +46,7 @@ func (o *GetClusterEventsURL) Build() (*url.URL, error) {
 	if name != "" {
 		_path = strings.Replace(_path, "{name}", name, -1)
 	} else {
-		return nil, errors.New("Name is required on GetClusterEventsURL")
+		return nil, errors.New("name is required on GetClusterEventsURL")
 	}
 
 	_basePath := o._basePath

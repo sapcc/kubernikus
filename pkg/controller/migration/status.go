@@ -19,7 +19,7 @@ func UpdateMigrationStatus(client clientset.Interface, lister listers_kubernikus
 	for _, kluster := range klusters {
 		if migration.MigrationsPending(kluster) {
 			//Update migration status
-			err := util.UpdateKlusterMigrationStatus(client.Kubernikus(), kluster, true)
+			err := util.UpdateKlusterMigrationStatus(client.KubernikusV1(), kluster, true)
 			if err != nil {
 				return err
 			}

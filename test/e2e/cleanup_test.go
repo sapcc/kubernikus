@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"strings"
 	"testing"
 	"time"
@@ -14,6 +15,7 @@ import (
 	"github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/loadbalancers"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"k8s.io/apimachinery/pkg/util/wait"
 
 	"github.com/sapcc/kubernikus/pkg/api/client/operations"
 	"github.com/sapcc/kubernikus/pkg/api/models"
@@ -30,6 +32,7 @@ type CleanupTests struct {
 	OpenStack   *framework.OpenStack
 	KlusterName string
 	Reuse       bool
+	Isolate     bool
 }
 
 func (s *CleanupTests) Run(t *testing.T) {
@@ -37,7 +40,7 @@ func (s *CleanupTests) Run(t *testing.T) {
 		t.Run("Cluster/BecomesTerminating", s.KlusterPhaseBecomesTerminating)
 		t.Run("Cluster/IsDeleted", s.WaitForKlusterToBeDeleted)
 
-		if s.Reuse == false {
+		if s.Reuse == false && s.Isolate == false {
 			t.Run("QuotaPostFlightCheck", s.QuotaPostFlightCheck)
 			t.Run("ServerGroupsGotDeleted", s.ServerGroupsGotDeleted)
 			t.Run("LoadbalancerGotDeleted", s.LoadbalancerGotDeleted)
@@ -71,24 +74,33 @@ func (s *CleanupTests) QuotaPostFlightCheck(t *testing.T) {
 	require.NoError(t, err, "There should be no error while getting project from token")
 	require.NotNil(t, project, "project returned from Token %s was nil. WTF?", s.OpenStack.Provider.Token())
 
-	quota, err := compute_quota.GetDetail(s.OpenStack.Compute, project.ID).Extract()
-	require.NoError(t, err, "There should be no error while getting compute quota details")
+	var computeQ compute_quota.QuotaDetailSet
+	var storageQ blockstorage_quota.QuotaUsageSet
+	err = wait.PollImmediate(5*time.Second, 1*time.Minute, func() (bool, error) {
+		var err error
+		if computeQ, err = compute_quota.GetDetail(s.OpenStack.Compute, project.ID).Extract(); err != nil {
+			return false, fmt.Errorf("Failed to fetch compute usage: %w", err)
+		}
+		if storageQ, err = blockstorage_quota.GetUsage(s.OpenStack.BlockStorage, project.ID).Extract(); err != nil {
+			return false, fmt.Errorf("Failed to fetch block storage usage: %w", err)
+		}
+		return computeQ.Cores.InUse == 0 && computeQ.Instances.InUse == 0 && computeQ.RAM.InUse == 0 && storageQ.Volumes.InUse == 0 && storageQ.Gigabytes.InUse == 0, nil
+	})
 
-	storage, err := blockstorage_quota.GetUsage(s.OpenStack.BlockStorage, project.ID).Extract()
-	require.NoError(t, err, "There should be no error while getting storage quota details")
+	require.NoError(t, err, "There should be no error while getting quota/usage details")
 
-	assert.Zero(t, quota.Cores.InUse, "There should be no cores left in use")
-	assert.Zero(t, quota.Instances.InUse, "There should be no instances left in use")
-	assert.Zero(t, quota.RAM.InUse, "There should be no RAM left in use")
-	assert.Zero(t, storage.Volumes.InUse, "There should be no Volume left in use")
-	assert.Zero(t, storage.Gigabytes.InUse, "There should be no Storage left in use")
+	assert.Zero(t, computeQ.Cores.InUse, "There should be no cores left in use")
+	assert.Zero(t, computeQ.Instances.InUse, "There should be no instances left in use")
+	assert.Zero(t, computeQ.RAM.InUse, "There should be no RAM left in use")
+	assert.Zero(t, storageQ.Volumes.InUse, "There should be no Volume left in use")
+	assert.Zero(t, storageQ.Gigabytes.InUse, "There should be no Storage left in use")
 }
 
 func (s *CleanupTests) ServerGroupsGotDeleted(t *testing.T) {
 	computeClient, err := openstack.NewComputeV2(s.OpenStack.Provider, gophercloud.EndpointOpts{})
 	require.NoError(t, err, "There should be no error creating compute client")
 
-	allPages, err := servergroups.List(computeClient).AllPages()
+	allPages, err := servergroups.List(computeClient, servergroups.ListOpts{}).AllPages()
 	require.NoError(t, err, "There should be no error listing server groups")
 
 	allGroups, err := servergroups.ExtractServerGroups(allPages)

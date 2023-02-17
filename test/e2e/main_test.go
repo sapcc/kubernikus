@@ -7,9 +7,12 @@ import (
 	"os"
 	"testing"
 
+	"github.com/go-openapi/runtime"
 	"github.com/gophercloud/gophercloud/openstack/identity/v3/tokens"
 	"github.com/stretchr/testify/require"
+	client "k8s.io/client-go/kubernetes"
 
+	clientutil "github.com/sapcc/kubernikus/pkg/client/kubernetes"
 	"github.com/sapcc/kubernikus/pkg/util/generator"
 	"github.com/sapcc/kubernikus/test/e2e/framework"
 )
@@ -19,6 +22,9 @@ var (
 	kluster       = flag.String("kluster", "", "Use existing Kluster")
 	reuse         = flag.Bool("reuse", false, "Reuse exisiting Kluster")
 	cleanup       = flag.Bool("cleanup", true, "Cleanup after tests have been run")
+	isolate       = flag.Bool("isolate", false, "Do not destroy or depend on resources of other tests running in the same project")
+	dex           = flag.Bool("dex", true, "Spin up dex pod on cluster creation")
+	dashboard     = flag.Bool("dashboard", true, "Spin up dashboard pod on cluster creation")
 )
 
 const (
@@ -31,12 +37,8 @@ func validate() error {
 	}
 
 	k, err := url.Parse(*kubernikusURL)
-	if err != nil {
+	if err != nil || k.Host == "" {
 		return fmt.Errorf("You need to provide an URL for --kubernikus: %v", err)
-	}
-
-	if k.Host == "" {
-		return fmt.Errorf("You need to provide an URL for --kubernikus")
 	}
 
 	if reuse != nil && *reuse && (kluster == nil || *kluster == "") {
@@ -75,6 +77,10 @@ func TestRunner(t *testing.T) {
 	require.NoError(t, err, "Must be able to parse Kubernikus URL")
 	require.NotEmpty(t, kurl.Host, "There must be a host in the Kubernikus URL")
 
+	if os.Getenv("ISOLATE_TEST") == "true" {
+		*isolate = true
+	}
+
 	fmt.Printf("========================================================================\n")
 	fmt.Printf("Authentication\n")
 	fmt.Printf("========================================================================\n")
@@ -86,21 +92,39 @@ func TestRunner(t *testing.T) {
 	fmt.Printf("\n")
 	if os.Getenv("CP_KUBERNIKUS_URL") != "" {
 		fmt.Printf("CP_KUBERNIKUS_URL:         %v\n", os.Getenv("CP_KUBERNIKUS_URL"))
-		fmt.Printf("CP_OS_PROJECT_NAME:        %v\n", os.Getenv("CP_OS_PROJECT_NAME"))
-		fmt.Printf("CP_OS_PROJECT_DOMAIN_NAME: %v\n", os.Getenv("CP_OS_PROJECT_DOMAIN_NAME"))
+		if os.Getenv("CP_OIDC_AUTH_URL") != "" {
+			fmt.Printf("CP_OIDC_AUTH_URL:          %v\n", os.Getenv("CP_OIDC_AUTH_URL"))
+			fmt.Printf("CP_OIDC_CONNECTOR_ID:      %v\n", os.Getenv("CP_OIDC_CONNECTOR_ID"))
+			fmt.Printf("CP_OIDC_USERNAME:          %v\n", os.Getenv("CP_OIDC_USERNAME"))
+		} else {
+			fmt.Printf("CP_OS_PROJECT_NAME:        %v\n", os.Getenv("CP_OS_PROJECT_NAME"))
+			fmt.Printf("CP_OS_PROJECT_DOMAIN_NAME: %v\n", os.Getenv("CP_OS_PROJECT_DOMAIN_NAME"))
+		}
 	}
 	fmt.Printf("\n")
 	fmt.Printf("========================================================================\n")
 	fmt.Printf("Test Parameters\n")
 	fmt.Printf("========================================================================\n")
-	fmt.Printf("Kubernikus:                %v\n", kurl.Host)
+	fmt.Printf("Kubernikus:                %v\n", kurl)
 	fmt.Printf("Kluster Name:              %v\n", klusterName)
 	fmt.Printf("Reuse:                     %v\n", *reuse)
 	fmt.Printf("Cleanup:                   %v\n", *cleanup)
+	fmt.Printf("Isolate:                   %v\n", *isolate)
+	fmt.Printf("Spin up dex:               %v\n", *dex)
+	fmt.Printf("Spin up k8s dashboard:     %v\n", *dashboard)
 	fmt.Println("")
 	fmt.Printf("Dashboard:                 https://dashboard.%s.cloud.sap/%s/%s/kubernetes\n", os.Getenv("OS_REGION_NAME"), os.Getenv("OS_PROJECT_DOMAIN_NAME"), os.Getenv("OS_PROJECT_NAME"))
-	if os.Getenv("CP_KUBERNIKUS_URL") != "" {
+	if os.Getenv("CP_KLUSTER") != "" {
 		fmt.Printf("CP Kluster Name:           %v\n", os.Getenv("CP_KLUSTER"))
+	}
+	if os.Getenv("KLUSTER_VERSION") != "" {
+		fmt.Printf("Kubernetes Version:        %v\n", os.Getenv("KLUSTER_VERSION"))
+	}
+	if os.Getenv("KLUSTER_CIDR") != "" {
+		fmt.Printf("Cluster CIDR:              %v\n", os.Getenv("KLUSTER_CIDR"))
+	}
+	if os.Getenv("KLUSTER_OS_IMAGES") != "" {
+		fmt.Printf("OS Image(s):               %v\n", os.Getenv("KLUSTER_OS_IMAGES"))
 	}
 	fmt.Printf("\n\n")
 
@@ -115,37 +139,49 @@ func TestRunner(t *testing.T) {
 			DomainName:  os.Getenv("OS_PROJECT_DOMAIN_NAME"),
 		},
 	}
-	kubernikus, err := framework.NewKubernikusFramework(kurl, authOptions)
+	authInfo, err := framework.NewOpensStackAuth(authOptions)
+	if err != nil {
+		require.NoError(t, err, "Failed to create auth for kubernikus api")
+	}
+	kubernikus := framework.NewKubernikusFramework(kurl, authInfo)
 	require.NoError(t, err, "Must be able to connect to Kubernikus")
 
 	var kubernikusControlPlane *framework.Kubernikus
 	if os.Getenv("CP_KUBERNIKUS_URL") != "" {
 		kcpurl, err := url.Parse(os.Getenv("CP_KUBERNIKUS_URL"))
 		require.NoError(t, err, "Must be able to parse Kubernikus control plane URL")
-		authOptionsControlPlane := &tokens.AuthOptions{
-			IdentityEndpoint: os.Getenv("OS_AUTH_URL"),
-			Username:         os.Getenv("OS_USERNAME"),
-			Password:         os.Getenv("OS_PASSWORD"),
-			DomainName:       os.Getenv("OS_USER_DOMAIN_NAME"),
-			AllowReauth:      true,
-			Scope: tokens.Scope{
-				ProjectName: os.Getenv("CP_OS_PROJECT_NAME"),
-				DomainName:  os.Getenv("CP_OS_PROJECT_DOMAIN_NAME"),
-			},
+
+		var auth_info runtime.ClientAuthInfoWriter
+		if os.Getenv("CP_OIDC_AUTH_URL") != "" {
+			auth_info, err = framework.NewOIDCAuth(os.Getenv("CP_OIDC_USERNAME"), os.Getenv("CP_OIDC_PASSWORD"), os.Getenv("CP_OIDC_CONNECTOR_ID"), os.Getenv("CP_OIDC_AUTH_URL"))
+			require.NoError(t, err, "Failed to use oidc auth for controlplane kubernikus")
+		} else {
+			authOptionsControlPlane := &tokens.AuthOptions{
+				IdentityEndpoint: os.Getenv("OS_AUTH_URL"),
+				Username:         os.Getenv("OS_USERNAME"),
+				Password:         os.Getenv("OS_PASSWORD"),
+				DomainName:       os.Getenv("OS_USER_DOMAIN_NAME"),
+				AllowReauth:      true,
+				Scope: tokens.Scope{
+					ProjectName: os.Getenv("CP_OS_PROJECT_NAME"),
+					DomainName:  os.Getenv("CP_OS_PROJECT_DOMAIN_NAME"),
+				},
+			}
+			auth_info, err = framework.NewOpensStackAuth(authOptionsControlPlane)
+			require.NoError(t, err, "Failed to use openstack auth for controlplane kubernikus")
 		}
-		kubernikusControlPlane, err = framework.NewKubernikusFramework(kcpurl, authOptionsControlPlane)
-		require.NoError(t, err, "Must be able to connect to Kubernikus Control Plane")
+		kubernikusControlPlane = framework.NewKubernikusFramework(kcpurl, auth_info)
 	}
 
 	openstack, err := framework.NewOpenStackFramework()
 	require.NoError(t, err, "Must be able to connect to OpenStack")
 
-	project, err := tokens.Get(openstack.Identity, openstack.Provider.Token()).ExtractProject()
+	project, err := openstack.Provider.GetAuthResult().(tokens.CreateResult).ExtractProject()
 	require.NoError(t, err, "Cannot extract project from token")
 	fullKlusterName := fmt.Sprintf("%s-%s", klusterName, project.ID)
 
 	// Pyrolize garbage left from previous e2e runs
-	pyrolisisTests := &PyrolisisTests{kubernikus, openstack, *reuse}
+	pyrolisisTests := &PyrolisisTests{kubernikus, openstack, *reuse, *isolate}
 	if !t.Run("Pyrolisis", pyrolisisTests.Run) {
 		return
 	}
@@ -156,11 +192,11 @@ func TestRunner(t *testing.T) {
 	}
 
 	if cleanup != nil && *cleanup == true {
-		cleanupTests := &CleanupTests{kubernikus, openstack, klusterName, *reuse}
+		cleanupTests := &CleanupTests{kubernikus, openstack, klusterName, *reuse, *isolate}
 		defer t.Run("Cleanup", cleanupTests.Run)
 	}
 
-	setupTests := &SetupTests{kubernikus, openstack, klusterName, *reuse}
+	setupTests := &SetupTests{kubernikus, openstack, klusterName, *reuse, *dex, *dashboard}
 	if !t.Run("Setup", setupTests.Run) {
 		return
 	}
@@ -183,10 +219,21 @@ func TestRunner(t *testing.T) {
 		networkTests := &NetworkTests{Kubernetes: kubernetes}
 		t.Run("Network", networkTests.Run)
 
+		var kubernetesControlPlane *framework.Kubernetes
 		if os.Getenv("CP_KUBERNIKUS_URL") != "" {
-			kubernetesControlPlane, err := framework.NewKubernetesFramework(kubernikusControlPlane, os.Getenv("CP_KLUSTER"))
+			kubernetesControlPlane, err = framework.NewKubernetesFramework(kubernikusControlPlane, os.Getenv("CP_KLUSTER"))
 			require.NoError(t, err, "Must be able to create a control plane kubernetes client")
+		} else {
+			if context := os.Getenv("CP_KLUSTER"); context != "" {
+				c, err := clientutil.NewConfig("", context)
+				require.NoErrorf(t, err, "Failed to get rest config for context %s", context)
+				cs, err := client.NewForConfig(c)
+				require.NoError(t, err, "Failed to get clientset for config")
+				kubernetesControlPlane = &framework.Kubernetes{ClientSet: cs, RestConfig: c}
+			}
+		}
 
+		if kubernetesControlPlane != nil {
 			namespace := "kubernikus"
 			if os.Getenv("CP_NAMESPACE") != "" {
 				namespace = os.Getenv("CP_NAMESPACE")

@@ -10,16 +10,16 @@ import (
 	"net/http"
 	"strings"
 
-	errors "github.com/go-openapi/errors"
-	loads "github.com/go-openapi/loads"
-	runtime "github.com/go-openapi/runtime"
-	middleware "github.com/go-openapi/runtime/middleware"
-	security "github.com/go-openapi/runtime/security"
-	spec "github.com/go-openapi/spec"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/errors"
+	"github.com/go-openapi/loads"
+	"github.com/go-openapi/runtime"
+	"github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/runtime/security"
+	"github.com/go-openapi/spec"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 
-	models "github.com/sapcc/kubernikus/pkg/api/models"
+	"github.com/sapcc/kubernikus/pkg/api/models"
 )
 
 // NewKubernikusAPI creates a new Kubernikus instance
@@ -31,16 +31,27 @@ func NewKubernikusAPI(spec *loads.Document) *KubernikusAPI {
 		defaultProduces:     "application/json",
 		customConsumers:     make(map[string]runtime.Consumer),
 		customProducers:     make(map[string]runtime.Producer),
+		PreServerShutdown:   func() {},
 		ServerShutdown:      func() {},
 		spec:                spec,
+		useSwaggerUI:        false,
 		ServeError:          errors.ServeError,
 		BasicAuthenticator:  security.BasicAuth,
 		APIKeyAuthenticator: security.APIKeyAuth,
 		BearerAuthenticator: security.BearerAuth,
-		JSONConsumer:        runtime.JSONConsumer(),
-		JSONProducer:        runtime.JSONProducer(),
+
+		JSONConsumer: runtime.JSONConsumer(),
+
+		JSONProducer: runtime.JSONProducer(),
+
 		CreateClusterHandler: CreateClusterHandlerFunc(func(params CreateClusterParams, principal *models.Principal) middleware.Responder {
 			return middleware.NotImplemented("operation CreateCluster has not yet been implemented")
+		}),
+		GetAuthCallbackHandler: GetAuthCallbackHandlerFunc(func(params GetAuthCallbackParams) middleware.Responder {
+			return middleware.NotImplemented("operation GetAuthCallback has not yet been implemented")
+		}),
+		GetAuthLoginHandler: GetAuthLoginHandlerFunc(func(params GetAuthLoginParams) middleware.Responder {
+			return middleware.NotImplemented("operation GetAuthLogin has not yet been implemented")
 		}),
 		GetBootstrapConfigHandler: GetBootstrapConfigHandlerFunc(func(params GetBootstrapConfigParams, principal *models.Principal) middleware.Responder {
 			return middleware.NotImplemented("operation GetBootstrapConfig has not yet been implemented")
@@ -82,11 +93,13 @@ func NewKubernikusAPI(spec *loads.Document) *KubernikusAPI {
 			return middleware.NotImplemented("operation UpdateCluster has not yet been implemented")
 		}),
 
+		DexAuth: func(token string, scopes []string) (*models.Principal, error) {
+			return nil, errors.NotImplemented("oauth2 bearer auth (dex) has not yet been implemented")
+		},
 		// Applies when the "x-auth-token" header is set
 		KeystoneAuth: func(token string) (*models.Principal, error) {
 			return nil, errors.NotImplemented("api key auth (keystone) x-auth-token from header param [x-auth-token] has not yet been implemented")
 		},
-
 		// default authorizer is authorized meaning no requests are blocked
 		APIAuthorizer: security.Authorized(),
 	}
@@ -103,22 +116,31 @@ type KubernikusAPI struct {
 	defaultConsumes string
 	defaultProduces string
 	Middleware      func(middleware.Builder) http.Handler
+	useSwaggerUI    bool
 
 	// BasicAuthenticator generates a runtime.Authenticator from the supplied basic auth function.
-	// It has a default implemention in the security package, however you can replace it for your particular usage.
+	// It has a default implementation in the security package, however you can replace it for your particular usage.
 	BasicAuthenticator func(security.UserPassAuthentication) runtime.Authenticator
+
 	// APIKeyAuthenticator generates a runtime.Authenticator from the supplied token auth function.
-	// It has a default implemention in the security package, however you can replace it for your particular usage.
+	// It has a default implementation in the security package, however you can replace it for your particular usage.
 	APIKeyAuthenticator func(string, string, security.TokenAuthentication) runtime.Authenticator
+
 	// BearerAuthenticator generates a runtime.Authenticator from the supplied bearer token auth function.
-	// It has a default implemention in the security package, however you can replace it for your particular usage.
+	// It has a default implementation in the security package, however you can replace it for your particular usage.
 	BearerAuthenticator func(string, security.ScopedTokenAuthentication) runtime.Authenticator
 
-	// JSONConsumer registers a consumer for a "application/json" mime type
+	// JSONConsumer registers a consumer for the following mime types:
+	//   - application/json
 	JSONConsumer runtime.Consumer
 
-	// JSONProducer registers a producer for a "application/json" mime type
+	// JSONProducer registers a producer for the following mime types:
+	//   - application/json
 	JSONProducer runtime.Producer
+
+	// DexAuth registers a function that takes an access token and a collection of required scopes and returns a principal
+	// it performs authentication based on an oauth2 bearer token provided in the request
+	DexAuth func(string, []string) (*models.Principal, error)
 
 	// KeystoneAuth registers a function that takes a token and returns a principal
 	// it performs authentication based on an api key x-auth-token provided in the header
@@ -129,6 +151,10 @@ type KubernikusAPI struct {
 
 	// CreateClusterHandler sets the operation handler for the create cluster operation
 	CreateClusterHandler CreateClusterHandler
+	// GetAuthCallbackHandler sets the operation handler for the get auth callback operation
+	GetAuthCallbackHandler GetAuthCallbackHandler
+	// GetAuthLoginHandler sets the operation handler for the get auth login operation
+	GetAuthLoginHandler GetAuthLoginHandler
 	// GetBootstrapConfigHandler sets the operation handler for the get bootstrap config operation
 	GetBootstrapConfigHandler GetBootstrapConfigHandler
 	// GetClusterCredentialsHandler sets the operation handler for the get cluster credentials operation
@@ -160,6 +186,10 @@ type KubernikusAPI struct {
 	// but you can set your own with this
 	ServeError func(http.ResponseWriter, *http.Request, error)
 
+	// PreServerShutdown is called before the HTTP(S) server is shutdown
+	// This allows for custom functions to get executed before the HTTP(S) server stops accepting traffic
+	PreServerShutdown func()
+
 	// ServerShutdown is called when the HTTP(S) server is shut down and done
 	// handling all active connections and does not accept connections any more
 	ServerShutdown func()
@@ -169,6 +199,16 @@ type KubernikusAPI struct {
 
 	// User defined logger function.
 	Logger func(string, ...interface{})
+}
+
+// UseRedoc for documentation at /docs
+func (o *KubernikusAPI) UseRedoc() {
+	o.useSwaggerUI = false
+}
+
+// UseSwaggerUI for documentation at /docs
+func (o *KubernikusAPI) UseSwaggerUI() {
+	o.useSwaggerUI = true
 }
 
 // SetDefaultProduces sets the default produces media type
@@ -218,6 +258,9 @@ func (o *KubernikusAPI) Validate() error {
 		unregistered = append(unregistered, "JSONProducer")
 	}
 
+	if o.DexAuth == nil {
+		unregistered = append(unregistered, "DexAuth")
+	}
 	if o.KeystoneAuth == nil {
 		unregistered = append(unregistered, "XAuthTokenAuth")
 	}
@@ -225,55 +268,48 @@ func (o *KubernikusAPI) Validate() error {
 	if o.CreateClusterHandler == nil {
 		unregistered = append(unregistered, "CreateClusterHandler")
 	}
-
+	if o.GetAuthCallbackHandler == nil {
+		unregistered = append(unregistered, "GetAuthCallbackHandler")
+	}
+	if o.GetAuthLoginHandler == nil {
+		unregistered = append(unregistered, "GetAuthLoginHandler")
+	}
 	if o.GetBootstrapConfigHandler == nil {
 		unregistered = append(unregistered, "GetBootstrapConfigHandler")
 	}
-
 	if o.GetClusterCredentialsHandler == nil {
 		unregistered = append(unregistered, "GetClusterCredentialsHandler")
 	}
-
 	if o.GetClusterCredentialsOIDCHandler == nil {
 		unregistered = append(unregistered, "GetClusterCredentialsOIDCHandler")
 	}
-
 	if o.GetClusterEventsHandler == nil {
 		unregistered = append(unregistered, "GetClusterEventsHandler")
 	}
-
 	if o.GetClusterInfoHandler == nil {
 		unregistered = append(unregistered, "GetClusterInfoHandler")
 	}
-
 	if o.GetClusterValuesHandler == nil {
 		unregistered = append(unregistered, "GetClusterValuesHandler")
 	}
-
 	if o.GetOpenstackMetadataHandler == nil {
 		unregistered = append(unregistered, "GetOpenstackMetadataHandler")
 	}
-
 	if o.InfoHandler == nil {
 		unregistered = append(unregistered, "InfoHandler")
 	}
-
 	if o.ListAPIVersionsHandler == nil {
 		unregistered = append(unregistered, "ListAPIVersionsHandler")
 	}
-
 	if o.ListClustersHandler == nil {
 		unregistered = append(unregistered, "ListClustersHandler")
 	}
-
 	if o.ShowClusterHandler == nil {
 		unregistered = append(unregistered, "ShowClusterHandler")
 	}
-
 	if o.TerminateClusterHandler == nil {
 		unregistered = append(unregistered, "TerminateClusterHandler")
 	}
-
 	if o.UpdateClusterHandler == nil {
 		unregistered = append(unregistered, "UpdateClusterHandler")
 	}
@@ -292,13 +328,16 @@ func (o *KubernikusAPI) ServeErrorFor(operationID string) func(http.ResponseWrit
 
 // AuthenticatorsFor gets the authenticators for the specified security schemes
 func (o *KubernikusAPI) AuthenticatorsFor(schemes map[string]spec.SecurityScheme) map[string]runtime.Authenticator {
-
 	result := make(map[string]runtime.Authenticator)
-	for name, scheme := range schemes {
+	for name := range schemes {
 		switch name {
+		case "dex":
+			result[name] = o.BearerAuthenticator(name, func(token string, scopes []string) (interface{}, error) {
+				return o.DexAuth(token, scopes)
+			})
 
 		case "keystone":
-
+			scheme := schemes[name]
 			result[name] = o.APIKeyAuthenticator(scheme.Name, scheme.In, func(token string) (interface{}, error) {
 				return o.KeystoneAuth(token)
 			})
@@ -306,26 +345,21 @@ func (o *KubernikusAPI) AuthenticatorsFor(schemes map[string]spec.SecurityScheme
 		}
 	}
 	return result
-
 }
 
 // Authorizer returns the registered authorizer
 func (o *KubernikusAPI) Authorizer() runtime.Authorizer {
-
 	return o.APIAuthorizer
-
 }
 
-// ConsumersFor gets the consumers for the specified media types
+// ConsumersFor gets the consumers for the specified media types.
+// MIME type parameters are ignored here.
 func (o *KubernikusAPI) ConsumersFor(mediaTypes []string) map[string]runtime.Consumer {
-
-	result := make(map[string]runtime.Consumer)
+	result := make(map[string]runtime.Consumer, len(mediaTypes))
 	for _, mt := range mediaTypes {
 		switch mt {
-
 		case "application/json":
 			result["application/json"] = o.JSONConsumer
-
 		}
 
 		if c, ok := o.customConsumers[mt]; ok {
@@ -333,19 +367,16 @@ func (o *KubernikusAPI) ConsumersFor(mediaTypes []string) map[string]runtime.Con
 		}
 	}
 	return result
-
 }
 
-// ProducersFor gets the producers for the specified media types
+// ProducersFor gets the producers for the specified media types.
+// MIME type parameters are ignored here.
 func (o *KubernikusAPI) ProducersFor(mediaTypes []string) map[string]runtime.Producer {
-
-	result := make(map[string]runtime.Producer)
+	result := make(map[string]runtime.Producer, len(mediaTypes))
 	for _, mt := range mediaTypes {
 		switch mt {
-
 		case "application/json":
 			result["application/json"] = o.JSONProducer
-
 		}
 
 		if p, ok := o.customProducers[mt]; ok {
@@ -353,7 +384,6 @@ func (o *KubernikusAPI) ProducersFor(mediaTypes []string) map[string]runtime.Pro
 		}
 	}
 	return result
-
 }
 
 // HandlerFor gets a http.Handler for the provided operation method and path
@@ -383,7 +413,6 @@ func (o *KubernikusAPI) Context() *middleware.Context {
 
 func (o *KubernikusAPI) initHandlerCache() {
 	o.Context() // don't care about the result, just that the initialization happened
-
 	if o.handlers == nil {
 		o.handlers = make(map[string]map[string]http.Handler)
 	}
@@ -392,72 +421,66 @@ func (o *KubernikusAPI) initHandlerCache() {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
 	o.handlers["POST"]["/api/v1/clusters"] = NewCreateCluster(o.context, o.CreateClusterHandler)
-
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/auth/callback"] = NewGetAuthCallback(o.context, o.GetAuthCallbackHandler)
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/auth/login"] = NewGetAuthLogin(o.context, o.GetAuthLoginHandler)
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/api/v1/clusters/{name}/bootstrap"] = NewGetBootstrapConfig(o.context, o.GetBootstrapConfigHandler)
-
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/api/v1/clusters/{name}/credentials"] = NewGetClusterCredentials(o.context, o.GetClusterCredentialsHandler)
-
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/api/v1/clusters/{name}/credentials/oidc"] = NewGetClusterCredentialsOIDC(o.context, o.GetClusterCredentialsOIDCHandler)
-
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/api/v1/clusters/{name}/events"] = NewGetClusterEvents(o.context, o.GetClusterEventsHandler)
-
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/api/v1/clusters/{name}/info"] = NewGetClusterInfo(o.context, o.GetClusterInfoHandler)
-
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/api/v1/{account}/clusters/{name}/values"] = NewGetClusterValues(o.context, o.GetClusterValuesHandler)
-
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/api/v1/openstack/metadata"] = NewGetOpenstackMetadata(o.context, o.GetOpenstackMetadataHandler)
-
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/info"] = NewInfo(o.context, o.InfoHandler)
-
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/api"] = NewListAPIVersions(o.context, o.ListAPIVersionsHandler)
-
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/api/v1/clusters"] = NewListClusters(o.context, o.ListClustersHandler)
-
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/api/v1/clusters/{name}"] = NewShowCluster(o.context, o.ShowClusterHandler)
-
 	if o.handlers["DELETE"] == nil {
 		o.handlers["DELETE"] = make(map[string]http.Handler)
 	}
 	o.handlers["DELETE"]["/api/v1/clusters/{name}"] = NewTerminateCluster(o.context, o.TerminateClusterHandler)
-
 	if o.handlers["PUT"] == nil {
 		o.handlers["PUT"] = make(map[string]http.Handler)
 	}
 	o.handlers["PUT"]["/api/v1/clusters/{name}"] = NewUpdateCluster(o.context, o.UpdateClusterHandler)
-
 }
 
 // Serve creates a http handler to serve the API over HTTP
@@ -467,6 +490,9 @@ func (o *KubernikusAPI) Serve(builder middleware.Builder) http.Handler {
 
 	if o.Middleware != nil {
 		return o.Middleware(builder)
+	}
+	if o.useSwaggerUI {
+		return o.context.APIHandlerSwaggerUI(builder)
 	}
 	return o.context.APIHandler(builder)
 }
@@ -486,4 +512,16 @@ func (o *KubernikusAPI) RegisterConsumer(mediaType string, consumer runtime.Cons
 // RegisterProducer allows you to add (or override) a producer for a media type.
 func (o *KubernikusAPI) RegisterProducer(mediaType string, producer runtime.Producer) {
 	o.customProducers[mediaType] = producer
+}
+
+// AddMiddlewareFor adds a http middleware to existing handler
+func (o *KubernikusAPI) AddMiddlewareFor(method, path string, builder middleware.Builder) {
+	um := strings.ToUpper(method)
+	if path == "/" {
+		path = ""
+	}
+	o.Init()
+	if h, ok := o.handlers[um][path]; ok {
+		o.handlers[method][path] = builder(h)
+	}
 }

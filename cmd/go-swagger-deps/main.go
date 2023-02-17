@@ -59,7 +59,7 @@ func main() {
 
 	var deps Deps
 
-	_, err = toml.DecodeReader(resp.Body, &deps)
+	_, err = toml.NewDecoder(resp.Body).Decode(&deps)
 	if err != nil {
 		log.Fatal(err)
 	}

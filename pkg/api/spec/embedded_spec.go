@@ -342,6 +342,65 @@ func init() {
         }
       ]
     },
+    "/auth/callback": {
+      "get": {
+        "security": [],
+        "summary": "callback for oauth result",
+        "parameters": [
+          {
+            "type": "string",
+            "name": "code",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "name": "state",
+            "in": "query",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "idToken": {
+                  "description": "idToken",
+                  "type": "string"
+                },
+                "type": {
+                  "description": "Token type",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/responses/errorResponse"
+          }
+        }
+      }
+    },
+    "/auth/login": {
+      "get": {
+        "security": [],
+        "summary": "login through oauth2 server",
+        "parameters": [
+          {
+            "type": "string",
+            "name": "connector_id",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "302": {
+            "description": "Redirect"
+          }
+        }
+      }
+    },
     "/info": {
       "get": {
         "security": [],
@@ -535,6 +594,16 @@ func init() {
           "default": 6443,
           "x-nullable": false
         },
+        "audit": {
+          "type": "string",
+          "enum": [
+            "elasticsearch",
+            "swift",
+            "http",
+            "stdout"
+          ],
+          "x-nullable": true
+        },
         "backup": {
           "type": "string",
           "default": "on",
@@ -571,8 +640,7 @@ func init() {
           "x-nullable": false
         },
         "name": {
-          "type": "string",
-          "readOnly": true
+          "type": "string"
         },
         "noCloud": {
           "type": "boolean"
@@ -595,7 +663,8 @@ func init() {
         },
         "sshPublicKey": {
           "description": "SSH public key that is injected into spawned nodes.",
-          "type": "string"
+          "type": "string",
+          "maxLength": 10000
         },
         "version": {
           "description": "Kubernetes version",
@@ -652,7 +721,8 @@ func init() {
       "type": "object",
       "required": [
         "name",
-        "flavor"
+        "flavor",
+        "availabilityZone"
       ],
       "properties": {
         "availabilityZone": {
@@ -661,6 +731,12 @@ func init() {
         },
         "config": {
           "$ref": "#/definitions/NodePoolConfig"
+        },
+        "customRootDiskSize": {
+          "description": "Create servers with custom (cinder based) root disked. Size in GB",
+          "type": "integer",
+          "maximum": 1024,
+          "minimum": 64
         },
         "flavor": {
           "type": "string",
@@ -897,13 +973,16 @@ func init() {
           "description": "account name",
           "type": "string"
         },
-        "authUrl": {
-          "description": "Identity Endpoint",
-          "type": "string"
-        },
         "domain": {
           "description": "user's domain name",
           "type": "string"
+        },
+        "groups": {
+          "description": "list of groups the user belongs to",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         },
         "id": {
           "description": "userid",
@@ -957,6 +1036,16 @@ func init() {
     }
   },
   "securityDefinitions": {
+    "dex": {
+      "type": "oauth2",
+      "flow": "accessCode",
+      "authorizationUrl": "https://example.com/auth",
+      "tokenUrl": "https://example.com/token",
+      "scopes": {
+        "admin": "Admin scope",
+        "user": "User scope"
+      }
+    },
     "keystone": {
       "description": "OpenStack Keystone Authentication",
       "type": "apiKey",
@@ -966,7 +1055,12 @@ func init() {
   },
   "security": [
     {
-      "keystone": null
+      "keystone": []
+    },
+    {
+      "dex": [
+        "user"
+      ]
     }
   ]
 }`))
@@ -1325,6 +1419,58 @@ func init() {
         }
       ]
     },
+    "/auth/callback": {
+      "get": {
+        "security": [],
+        "summary": "callback for oauth result",
+        "parameters": [
+          {
+            "type": "string",
+            "name": "code",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "name": "state",
+            "in": "query",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/getAuthCallbackOKBody"
+            }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      }
+    },
+    "/auth/login": {
+      "get": {
+        "security": [],
+        "summary": "login through oauth2 server",
+        "parameters": [
+          {
+            "type": "string",
+            "name": "connector_id",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "302": {
+            "description": "Redirect"
+          }
+        }
+      }
+    },
     "/info": {
       "get": {
         "security": [],
@@ -1495,6 +1641,16 @@ func init() {
           "default": 6443,
           "x-nullable": false
         },
+        "audit": {
+          "type": "string",
+          "enum": [
+            "elasticsearch",
+            "swift",
+            "http",
+            "stdout"
+          ],
+          "x-nullable": true
+        },
         "backup": {
           "type": "string",
           "default": "on",
@@ -1531,8 +1687,7 @@ func init() {
           "x-nullable": false
         },
         "name": {
-          "type": "string",
-          "readOnly": true
+          "type": "string"
         },
         "noCloud": {
           "type": "boolean"
@@ -1555,7 +1710,8 @@ func init() {
         },
         "sshPublicKey": {
           "description": "SSH public key that is injected into spawned nodes.",
-          "type": "string"
+          "type": "string",
+          "maxLength": 10000
         },
         "version": {
           "description": "Kubernetes version",
@@ -1612,7 +1768,8 @@ func init() {
       "type": "object",
       "required": [
         "name",
-        "flavor"
+        "flavor",
+        "availabilityZone"
       ],
       "properties": {
         "availabilityZone": {
@@ -1621,6 +1778,12 @@ func init() {
         },
         "config": {
           "$ref": "#/definitions/NodePoolConfig"
+        },
+        "customRootDiskSize": {
+          "description": "Create servers with custom (cinder based) root disked. Size in GB",
+          "type": "integer",
+          "maximum": 1024,
+          "minimum": 64
         },
         "flavor": {
           "type": "string",
@@ -1771,13 +1934,16 @@ func init() {
           "description": "account name",
           "type": "string"
         },
-        "authUrl": {
-          "description": "Identity Endpoint",
-          "type": "string"
-        },
         "domain": {
           "description": "user's domain name",
           "type": "string"
+        },
+        "groups": {
+          "description": "list of groups the user belongs to",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         },
         "id": {
           "description": "userid",
@@ -1820,6 +1986,20 @@ func init() {
           "x-nullable": false
         }
       }
+    },
+    "getAuthCallbackOKBody": {
+      "type": "object",
+      "properties": {
+        "idToken": {
+          "description": "idToken",
+          "type": "string"
+        },
+        "type": {
+          "description": "Token type",
+          "type": "string"
+        }
+      },
+      "x-go-gen-location": "operations"
     },
     "getClusterValuesOKBody": {
       "type": "object",
@@ -1987,6 +2167,16 @@ func init() {
     }
   },
   "securityDefinitions": {
+    "dex": {
+      "type": "oauth2",
+      "flow": "accessCode",
+      "authorizationUrl": "https://example.com/auth",
+      "tokenUrl": "https://example.com/token",
+      "scopes": {
+        "admin": "Admin scope",
+        "user": "User scope"
+      }
+    },
     "keystone": {
       "description": "OpenStack Keystone Authentication",
       "type": "apiKey",
@@ -1997,6 +2187,11 @@ func init() {
   "security": [
     {
       "keystone": []
+    },
+    {
+      "dex": [
+        "user"
+      ]
     }
   ]
 }`))

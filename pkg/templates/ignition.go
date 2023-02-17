@@ -27,8 +27,20 @@ var Ignition = &ignition{}
 
 var passwordHashRounds = 1000000
 
+const TEMPLATE_VERSION = "6"
+
 func (i *ignition) getIgnitionTemplate(kluster *kubernikusv1.Kluster) (string, error) {
 	switch {
+	case strings.HasPrefix(kluster.Spec.Version, "1.25"):
+		return Node_1_24, nil // No changes to 1.24
+	case strings.HasPrefix(kluster.Spec.Version, "1.24"):
+		return Node_1_24, nil
+	case strings.HasPrefix(kluster.Spec.Version, "1.23"):
+		return Node_1_21, nil // No changes to 1.21
+	case strings.HasPrefix(kluster.Spec.Version, "1.22"):
+		return Node_1_21, nil // No changes to 1.21
+	case strings.HasPrefix(kluster.Spec.Version, "1.21"):
+		return Node_1_21, nil
 	case strings.HasPrefix(kluster.Spec.Version, "1.20"):
 		return Node_1_20, nil
 	case strings.HasPrefix(kluster.Spec.Version, "1.19"):
@@ -104,6 +116,7 @@ func (i *ignition) GenerateNode(kluster *kubernikusv1.Kluster, pool *models.Node
 		for _, userLabel := range pool.Labels {
 			nodeLabels = append(nodeLabels, userLabel)
 		}
+		nodeLabels = append(nodeLabels, "kubernikus.cloud.sap/template-version="+TEMPLATE_VERSION)
 		isFlatcar = !strings.Contains(strings.ToLower(pool.Image), "coreos")
 	}
 
@@ -150,6 +163,9 @@ func (i *ignition) GenerateNode(kluster *kubernikusv1.Kluster, pool *models.Node
 		CalicoNetworking                   bool
 		Flatcar                            bool
 		CoreOS                             bool
+		NoCloud                            bool
+		FlannelImage                       string
+		FlannelImageTag                    string
 	}{
 		TLSCA:                              secret.TLSCACertificate,
 		KubeletClientsCA:                   secret.KubeletClientsCACertificate,
@@ -188,6 +204,9 @@ func (i *ignition) GenerateNode(kluster *kubernikusv1.Kluster, pool *models.Node
 		CalicoNetworking:                   calicoNetworking,
 		Flatcar:                            isFlatcar,
 		CoreOS:                             !isFlatcar,
+		NoCloud:                            kluster.Spec.NoCloud,
+		FlannelImage:                       images.Flannel.Repository,
+		FlannelImageTag:                    images.Flannel.Tag,
 	}
 
 	var dataOut []byte
@@ -224,8 +243,7 @@ func (i *ignition) GenerateNode(kluster *kubernikusv1.Kluster, pool *models.Node
 		}
 	}
 
-	dataOut, err = json.MarshalIndent(&ignitionConfig2_0, "", "  ")
-	dataOut = append(dataOut, '\n')
+	dataOut, err = json.Marshal(&ignitionConfig2_0)
 
 	if err != nil {
 		return nil, err

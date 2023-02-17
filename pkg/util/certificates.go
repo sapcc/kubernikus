@@ -1,11 +1,12 @@
 package util
 
 import (
-	"crypto/rand"
+	cryptorand "crypto/rand"
 	"crypto/rsa"
 	"crypto/x509"
 	"crypto/x509/pkix"
 	"encoding/json"
+	"encoding/pem"
 	"errors"
 	"fmt"
 	"math"
@@ -16,7 +17,9 @@ import (
 	"time"
 
 	certutil "k8s.io/client-go/util/cert"
+	"k8s.io/client-go/util/keyutil"
 
+	"github.com/sapcc/kubernikus/pkg/api/auth"
 	"github.com/sapcc/kubernikus/pkg/api/models"
 	v1 "github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
 )
@@ -45,7 +48,7 @@ func NewBundle(key, cert []byte) (*Bundle, error) {
 	if len(certificates) < 1 {
 		return nil, errors.New("No certificates found")
 	}
-	k, err := certutil.ParsePrivateKeyPEM(key)
+	k, err := keyutil.ParsePrivateKeyPEM(key)
 	if err != nil {
 		return nil, err
 	}
@@ -82,8 +85,15 @@ func (ca Bundle) Sign(config Config) (*Bundle, error) {
 		config.ValidFor = defaultCertValidity
 	}
 
-	key, _ := certutil.NewPrivateKey()
-	serial, _ := rand.Int(rand.Reader, new(big.Int).SetInt64(math.MaxInt64))
+	key, _ := NewPrivateKey()
+	serial, _ := cryptorand.Int(cryptorand.Reader, new(big.Int).SetInt64(math.MaxInt64))
+
+	//backdate not before to compensate clock skew
+	notBefore := time.Now().Add(-1 * time.Hour)
+	//Don't create certs that are valid before the issuing CA
+	if ca.Certificate.NotBefore.After(notBefore) {
+		notBefore = ca.Certificate.NotBefore
+	}
 
 	certTmpl := x509.Certificate{
 		Subject: pkix.Name{
@@ -96,13 +106,13 @@ func (ca Bundle) Sign(config Config) (*Bundle, error) {
 		DNSNames:     config.AltNames.DNSNames,
 		IPAddresses:  config.AltNames.IPs,
 		SerialNumber: serial,
-		NotBefore:    ca.Certificate.NotBefore,
+		NotBefore:    notBefore,
 		NotAfter:     time.Now().Add(config.ValidFor).UTC(),
 		KeyUsage:     x509.KeyUsageKeyEncipherment | x509.KeyUsageDigitalSignature,
 		ExtKeyUsage:  config.Usages,
 	}
 
-	certDERBytes, _ := x509.CreateCertificate(rand.Reader, &certTmpl, ca.Certificate, key.Public(), ca.PrivateKey)
+	certDERBytes, _ := x509.CreateCertificate(cryptorand.Reader, &certTmpl, ca.Certificate, key.Public(), ca.PrivateKey)
 
 	cert, _ := x509.ParseCertificate(certDERBytes)
 
@@ -268,7 +278,7 @@ func (cf *CertificateFactory) Ensure() ([]CertUpdates, error) {
 		return nil, err
 	}
 
-	apiServerDNSNames := []string{"kubernetes", "kubernetes.default", "kubernetes.default.svc", "apiserver", cf.kluster.Name, fmt.Sprintf("%s.%s", cf.kluster.Name, cf.kluster.Namespace), fmt.Sprintf("%v.%v", cf.kluster.Name, cf.domain)}
+	apiServerDNSNames := []string{"kubernetes", "kubernetes.default", "kubernetes.default.svc", "kubernetes.default.svc.cluster.local", "apiserver", cf.kluster.Name, fmt.Sprintf("%s.%s", cf.kluster.Name, cf.kluster.Namespace), fmt.Sprintf("%v.%v", cf.kluster.Name, cf.domain)}
 	apiServerIPs := []net.IP{net.IPv4(127, 0, 0, 1), apiServiceIP, apiIP}
 	if ann := cf.kluster.Annotations[AdditionalApiserverSANsAnnotation]; ann != "" {
 		dnsNames, ips, err := addtionalSANsFromAnnotation(ann)
@@ -323,15 +333,27 @@ func (cf *CertificateFactory) UserCert(principal *models.Principal, apiURL strin
 	}
 
 	var organizations []string
+	for _, group := range principal.Groups {
+		organizations = append(organizations, group)
+	}
 	for _, role := range principal.Roles {
 		organizations = append(organizations, "os:"+role)
 	}
 	projectid := cf.kluster.Account()
+	cn := principal.Name
+	if principal.Domain != "" {
+		cn = fmt.Sprintf("%s@%s", principal.Name, principal.Domain)
+	}
+
+	province := []string{projectid}
+	if a := auth.OpenStackAuthURL(); a != "" {
+		province = append([]string{a}, province...)
+	}
 
 	return caBundle.Sign(Config{
-		Sign:         fmt.Sprintf("%s@%s", principal.Name, principal.Domain),
+		Sign:         cn,
 		Organization: organizations,
-		Province:     []string{principal.AuthURL, projectid},
+		Province:     province,
 		Locality:     []string{apiURL},
 		Usages:       []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth},
 		ValidFor:     24 * time.Hour,
@@ -355,8 +377,8 @@ func loadOrCreateCA(kluster *v1.Kluster, name string, cert, key *string, certUpd
 	}
 	*certUpdates = append(*certUpdates, update)
 
-	*cert = string(certutil.EncodeCertPEM(caBundle.Certificate))
-	*key = string(certutil.EncodePrivateKeyPEM(caBundle.PrivateKey))
+	*cert = string(EncodeCertPEM(caBundle.Certificate))
+	*key = string(EncodePrivateKeyPEM(caBundle.PrivateKey))
 	return caBundle, nil
 }
 
@@ -397,8 +419,8 @@ func ensureClientCertificate(ca *Bundle, cn string, groups []string, cert, key *
 	}
 	*certUpdates = append(*certUpdates, update)
 
-	*cert = string(certutil.EncodeCertPEM(certificate.Certificate))
-	*key = string(certutil.EncodePrivateKeyPEM(certificate.PrivateKey))
+	*cert = string(EncodeCertPEM(certificate.Certificate))
+	*key = string(EncodePrivateKeyPEM(certificate.PrivateKey))
 	return nil
 
 }
@@ -443,13 +465,13 @@ func ensureServerCertificate(ca *Bundle, cn string, dnsNames []string, ips []net
 	}
 	*certUpdates = append(*certUpdates, update)
 
-	*cert = string(certutil.EncodeCertPEM(certificate.Certificate))
-	*key = string(certutil.EncodePrivateKeyPEM(certificate.PrivateKey))
+	*cert = string(EncodeCertPEM(certificate.Certificate))
+	*key = string(EncodePrivateKeyPEM(certificate.PrivateKey))
 	return nil
 }
 
 func createCA(klusterName, name string) (*Bundle, error) {
-	privateKey, err := certutil.NewPrivateKey()
+	privateKey, err := NewPrivateKey()
 	if err != nil {
 		return nil, fmt.Errorf("Failed to generate private key for %s ca: %s", name, err)
 	}
@@ -468,7 +490,7 @@ func createCA(klusterName, name string) (*Bundle, error) {
 		IsCA:                  true,
 	}
 
-	certDERBytes, err := x509.CreateCertificate(rand.Reader, &tmpl, &tmpl, privateKey.Public(), privateKey)
+	certDERBytes, err := x509.CreateCertificate(cryptorand.Reader, &tmpl, &tmpl, privateKey.Public(), privateKey)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create certificate for %s CA: %s", name, err)
 	}
@@ -565,4 +587,38 @@ func addtionalSANsFromAnnotation(ann string) (dnsNames []string, ips []net.IP, e
 		}
 	}
 	return
+}
+
+const (
+	// PrivateKeyBlockType is a possible value for pem.Block.Type.
+	PrivateKeyBlockType = "PRIVATE KEY"
+	// PublicKeyBlockType is a possible value for pem.Block.Type.
+	PublicKeyBlockType = "PUBLIC KEY"
+	// CertificateBlockType is a possible value for pem.Block.Type.
+	CertificateBlockType = "CERTIFICATE"
+	// RSAPrivateKeyBlockType is a possible value for pem.Block.Type.
+	RSAPrivateKeyBlockType = "RSA PRIVATE KEY"
+	rsaKeySize             = 2048
+)
+
+func EncodeCertPEM(cert *x509.Certificate) []byte {
+	block := pem.Block{
+		Type:  CertificateBlockType,
+		Bytes: cert.Raw,
+	}
+	return pem.EncodeToMemory(&block)
+}
+
+// EncodePrivateKeyPEM returns PEM-encoded private key data
+func EncodePrivateKeyPEM(key *rsa.PrivateKey) []byte {
+	block := pem.Block{
+		Type:  RSAPrivateKeyBlockType,
+		Bytes: x509.MarshalPKCS1PrivateKey(key),
+	}
+	return pem.EncodeToMemory(&block)
+}
+
+// NewPrivateKey creates an RSA private key
+func NewPrivateKey() (*rsa.PrivateKey, error) {
+	return rsa.GenerateKey(cryptorand.Reader, rsaKeySize)
 }

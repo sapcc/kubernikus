@@ -6,13 +6,13 @@ import (
 	"os"
 	"strings"
 
-	"github.com/golang/glog"
 	"github.com/gophercloud/gophercloud"
 	"github.com/howeyc/gopass"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	keyring "github.com/zalando/go-keyring"
+	"k8s.io/klog"
 
 	"github.com/sapcc/kubernikus/pkg/cmd/kubernikusctl/common"
 )
@@ -23,6 +23,7 @@ type InitOptions struct {
 	url            *url.URL
 	name           string
 	kubeconfigPath string
+	authType       string
 
 	openstack  *common.OpenstackClient
 	kubernikus *common.KubernikusClient
@@ -58,6 +59,7 @@ func (o *InitOptions) BindFlags(flags *pflag.FlagSet) {
 	flags.StringVar(&o._url, "url", o._url, "URL for Kubernikus API")
 	flags.StringVar(&o.name, "name", o.name, "Cluster Name")
 	flags.StringVar(&o.kubeconfigPath, "kubeconfig", o.kubeconfigPath, "Overwrites kubeconfig auto-detection with explicit path")
+	flags.StringVar(&o.authType, "auth-type", o.authType, "Authentication type")
 }
 
 func (o *InitOptions) Validate(c *cobra.Command, args []string) (err error) {
@@ -104,14 +106,21 @@ func (o *InitOptions) Run(c *cobra.Command) (err error) {
 			return errors.Wrapf(err, "You need to provide --name. Cluster Auto-Detection failed")
 		} else {
 			o.name = cluster.Name
-			glog.V(2).Infof("Detected cluster name: %v", o.name)
+			klog.V(2).Infof("Detected cluster name: %v", o.name)
 		}
 	}
 
-	fmt.Printf("Fetching credentials for %v from %v\n", o.name, o.url)
-	kubeconfig, err := o.kubernikus.GetCredentials(o.name)
-	if err != nil {
-		return errors.Wrap(err, "Couldn't fetch credentials from Kubernikus API")
+	var kubeconfig string
+	var errCredentials error
+	if o.authType == "oidc" {
+		fmt.Printf("Fetching OIDC credentials for %v from %v\n", o.name, o.url)
+		kubeconfig, errCredentials = o.kubernikus.GetCredentialsOIDC(o.name)
+	} else {
+		fmt.Printf("Fetching credentials for %v from %v\n", o.name, o.url)
+		kubeconfig, errCredentials = o.kubernikus.GetCredentials(o.name)
+	}
+	if errCredentials != nil {
+		return errors.Wrap(errCredentials, "Couldn't fetch credentials from Kubernikus API")
 	}
 
 	if storePasswordInKeyRing {
@@ -134,7 +143,7 @@ func (o *InitOptions) Run(c *cobra.Command) (err error) {
 }
 
 func (o *InitOptions) setup() error {
-	glog.V(2).Infof(o.openstack.PrintDebugAuthInfo())
+	klog.V(2).Infof(o.openstack.PrintDebugAuthInfo())
 	fmt.Println(o.openstack.PrintAuthInfo())
 
 	if err := o.openstack.Authenticate(); err != nil {
@@ -146,7 +155,7 @@ func (o *InitOptions) setup() error {
 			return errors.Wrapf(err, "You need to provide --url. Auto-Detection failed")
 		} else {
 			o.url = url
-			glog.V(2).Infof("Detected Kubernikus URL: %v", url)
+			klog.V(2).Infof("Detected Kubernikus URL: %v", url)
 		}
 	}
 

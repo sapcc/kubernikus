@@ -10,8 +10,7 @@ import (
 	"io"
 
 	"github.com/go-openapi/runtime"
-
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 
 	"github.com/sapcc/kubernikus/pkg/api/models"
 )
@@ -24,14 +23,12 @@ type TerminateClusterReader struct {
 // ReadResponse reads a server response into the received o.
 func (o *TerminateClusterReader) ReadResponse(response runtime.ClientResponse, consumer runtime.Consumer) (interface{}, error) {
 	switch response.Code() {
-
 	case 202:
 		result := NewTerminateClusterAccepted()
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
 			return nil, err
 		}
 		return result, nil
-
 	default:
 		result := NewTerminateClusterDefault(response.Code())
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
@@ -49,14 +46,44 @@ func NewTerminateClusterAccepted() *TerminateClusterAccepted {
 	return &TerminateClusterAccepted{}
 }
 
-/*TerminateClusterAccepted handles this case with default header values.
+/*
+TerminateClusterAccepted describes a response with status code 202, with default header values.
 
 OK
 */
 type TerminateClusterAccepted struct {
 }
 
+// IsSuccess returns true when this terminate cluster accepted response has a 2xx status code
+func (o *TerminateClusterAccepted) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this terminate cluster accepted response has a 3xx status code
+func (o *TerminateClusterAccepted) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this terminate cluster accepted response has a 4xx status code
+func (o *TerminateClusterAccepted) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this terminate cluster accepted response has a 5xx status code
+func (o *TerminateClusterAccepted) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this terminate cluster accepted response a status code equal to that given
+func (o *TerminateClusterAccepted) IsCode(code int) bool {
+	return code == 202
+}
+
 func (o *TerminateClusterAccepted) Error() string {
+	return fmt.Sprintf("[DELETE /api/v1/clusters/{name}][%d] terminateClusterAccepted ", 202)
+}
+
+func (o *TerminateClusterAccepted) String() string {
 	return fmt.Sprintf("[DELETE /api/v1/clusters/{name}][%d] terminateClusterAccepted ", 202)
 }
 
@@ -72,7 +99,8 @@ func NewTerminateClusterDefault(code int) *TerminateClusterDefault {
 	}
 }
 
-/*TerminateClusterDefault handles this case with default header values.
+/*
+TerminateClusterDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -87,8 +115,41 @@ func (o *TerminateClusterDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this terminate cluster default response has a 2xx status code
+func (o *TerminateClusterDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this terminate cluster default response has a 3xx status code
+func (o *TerminateClusterDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this terminate cluster default response has a 4xx status code
+func (o *TerminateClusterDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this terminate cluster default response has a 5xx status code
+func (o *TerminateClusterDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this terminate cluster default response a status code equal to that given
+func (o *TerminateClusterDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *TerminateClusterDefault) Error() string {
 	return fmt.Sprintf("[DELETE /api/v1/clusters/{name}][%d] TerminateCluster default  %+v", o._statusCode, o.Payload)
+}
+
+func (o *TerminateClusterDefault) String() string {
+	return fmt.Sprintf("[DELETE /api/v1/clusters/{name}][%d] TerminateCluster default  %+v", o._statusCode, o.Payload)
+}
+
+func (o *TerminateClusterDefault) GetPayload() *models.Error {
+	return o.Payload
 }
 
 func (o *TerminateClusterDefault) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {

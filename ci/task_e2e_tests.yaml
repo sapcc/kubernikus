@@ -3,8 +3,8 @@ platform: 'linux'
 image_resource:
   type: registry-image
   source:
-    repository: keppel.eu-de-2.cloud.sap/ccloud-dockerhub-mirror/library/golang
-    tag: 1.14-alpine
+    repository: keppel.eu-de-1.cloud.sap/ccloud-dockerhub-mirror/library/golang
+    tag: 1.18-alpine
 
 inputs:
   - name: kubernikus.builds
@@ -18,15 +18,16 @@ run:
   args:
     - -c
     - |
+      wget -q -O- http://169.254.169.254/latest/meta-data/hostname && echo
       set -o pipefail
       OUTPUT_DIR=$PWD/test-result
       export GOPATH=$PWD/gopath
       cd gopath/src/github.com/sapcc/kubernikus
 
-      apk add --no-progress --no-cache make git curl
+      apk add --no-progress --no-cache coreutils make bash git
       export RUN_PARALLEL=false
       export CGO_ENABLED=0
-      make test-e2e | tee test.output
+      stdbuf --output=L make test-e2e | tee test.output
       rc=$?
       #Get the longest uniq (!) whitespace prefix of --- FAIL: lines
       if [ $rc -ne 0 ] ; then
@@ -46,6 +47,14 @@ params:
   OS_REGION_NAME:
   CP_OS_PROJECT_NAME:
   CP_OS_PROJECT_DOMAIN_NAME:
+  CP_OIDC_AUTH_URL:
+  CP_OIDC_CONNECTOR_ID:
+  CP_OIDC_USERNAME:
+  CP_OIDC_PASSWORD:
   CP_KUBERNIKUS_URL:
   CP_KLUSTER:
   NODEPOOL_AVZ:
+  KLUSTER_VERSION:
+  KLUSTER_CIDR:
+  KLUSTER_OS_IMAGES:
+  ISOLATE_TEST:

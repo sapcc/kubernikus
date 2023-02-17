@@ -3,13 +3,12 @@ package config
 import (
 	"sync"
 
+	"helm.sh/helm/v3/pkg/action"
 	kubernetes_informers "k8s.io/client-go/informers"
 	kubernetes_clientset "k8s.io/client-go/kubernetes"
-	"k8s.io/helm/pkg/helm"
 
-	kube "github.com/sapcc/kubernikus/pkg/client/kubernetes"
+	"github.com/sapcc/kubernikus/pkg/client/kubernetes"
 	"github.com/sapcc/kubernikus/pkg/client/openstack"
-	"github.com/sapcc/kubernikus/pkg/client/openstack/admin"
 	"github.com/sapcc/kubernikus/pkg/controller/nodeobservatory"
 	kubernikus_clientset "github.com/sapcc/kubernikus/pkg/generated/clientset"
 	kubernikus_informers "github.com/sapcc/kubernikus/pkg/generated/informers/externalversions"
@@ -49,12 +48,10 @@ type Config struct {
 }
 
 type Clients struct {
-	Kubernikus     kubernikus_clientset.Interface
-	Kubernetes     kubernetes_clientset.Interface
-	Satellites     kube.SharedClientFactory
-	OpenstackAdmin admin.AdminClient
-
-	Helm *helm.Client
+	Kubernikus kubernikus_clientset.Interface
+	Kubernetes kubernetes_clientset.Interface
+	Satellites kubernetes.SharedClientFactory
+	Helm3      *action.Configuration
 }
 
 type Factories struct {

@@ -1,10 +1,10 @@
 package rest
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -15,7 +15,7 @@ import (
 	"github.com/go-openapi/swag"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"gopkg.in/yaml.v2"
+	yaml "gopkg.in/yaml.v2"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -24,7 +24,6 @@ import (
 
 	apipkg "github.com/sapcc/kubernikus/pkg/api"
 	"github.com/sapcc/kubernikus/pkg/api/auth"
-	"github.com/sapcc/kubernikus/pkg/api/handlers"
 	"github.com/sapcc/kubernikus/pkg/api/models"
 	"github.com/sapcc/kubernikus/pkg/api/rest/operations"
 	"github.com/sapcc/kubernikus/pkg/api/spec"
@@ -50,7 +49,6 @@ func mockAuth(token string) (*models.Principal, error) {
 		return nil, errors.New(401, "auth failed")
 	}
 	return &models.Principal{
-		AuthURL: "http://identity.test/v3",
 		ID:      "test",
 		Name:    "Test Mc Dougle",
 		Domain:  "TestDomain",
@@ -105,7 +103,7 @@ func result(handler http.Handler, req *http.Request) (int, http.Header, []byte) 
 	rec := httptest.NewRecorder()
 	handler.ServeHTTP(rec, req)
 	response := rec.Result()
-	body, _ := ioutil.ReadAll(response.Body)
+	body, _ := io.ReadAll(response.Body)
 	return response.StatusCode, response.Header, body
 }
 
@@ -119,7 +117,7 @@ func TestCreateCluster(t *testing.T) {
 	}
 
 	//Test create
-	crd, err := rt.Kubernikus.KubernikusV1().Klusters(rt.Namespace).Get(fmt.Sprintf("%s-%s", "nase", ACCOUNT), metav1.GetOptions{})
+	crd, err := rt.Kubernikus.KubernikusV1().Klusters(rt.Namespace).Get(context.Background(), fmt.Sprintf("%s-%s", "nase", ACCOUNT), metav1.GetOptions{})
 	assert.NoError(t, err, "resource not persisted")
 	assert.Equal(t, crd.Labels["account"], ACCOUNT)
 
@@ -176,7 +174,7 @@ func TestCreateCluster(t *testing.T) {
 
 	code, _, body = result(handler, req)
 	assert.Equal(t, 201, code, "Creating a cluster with empty clusterCIDR should not fail. response: %s", string(body))
-	k, err := rt.Kubernikus.KubernikusV1().Klusters(NAMESPACE).Get("nocidr-"+ACCOUNT, metav1.GetOptions{})
+	k, err := rt.Kubernikus.KubernikusV1().Klusters(NAMESPACE).Get(context.Background(), "nocidr-"+ACCOUNT, metav1.GetOptions{})
 	assert.NoError(t, err)
 	assert.Empty(t, k.Spec.ClusterCIDR)
 
@@ -261,15 +259,6 @@ func TestClusterList(t *testing.T) {
 
 func TestClusterUpdate(t *testing.T) {
 
-	handlers.FetchOpenstackMetadataFunc = func(request *http.Request, principal *models.Principal) (*models.OpenstackMetadata, error) {
-		return &models.OpenstackMetadata{
-			AvailabilityZones: []models.AvailabilityZone{
-				{Name: "us-west-1a"},
-				{Name: "us-east-1a"},
-			},
-		}, nil
-	}
-
 	on := true
 	off := false
 
@@ -293,10 +282,11 @@ func TestClusterUpdate(t *testing.T) {
 			},
 			NodePools: []models.NodePool{
 				{
-					Flavor: "flavour",
-					Image:  "image",
-					Name:   "poolname",
-					Size:   2,
+					AvailabilityZone: "us-west-1a",
+					Flavor:           "flavour",
+					Image:            "image",
+					Name:             "poolname",
+					Size:             2,
 					Config: &models.NodePoolConfig{
 						AllowReboot:  &off,
 						AllowReplace: &off,
@@ -318,7 +308,6 @@ func TestClusterUpdate(t *testing.T) {
 			ClusterCIDR:      swag.String("8.8.8.8/24"),
 			DNSAddress:       "9.9.9.9",
 			DNSDomain:        "changed",
-			Name:             "mund",
 			ServiceCIDR:      "9.9.9.9/24",
 			Openstack: models.OpenstackSpec{
 				LBSubnetID: "changed",
@@ -360,6 +349,7 @@ func TestClusterUpdate(t *testing.T) {
 	req := createRequest("PUT", "/api/v1/clusters/nase", string(jsonPayload))
 	code, _, body := result(handler, req)
 	if !assert.Equal(t, 200, code) {
+		fmt.Printf("%s", string(body))
 		return
 	}
 	var apiResponse models.Kluster

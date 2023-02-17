@@ -1,0 +1,77 @@
+{{ if .Values.dex.enabled -}}
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  labels:
+    app: kubernikus-api-dex
+    chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+    release: {{ .Release.Name }}
+  name: kubernikus-api-dex
+data:
+  config.yaml: |
+    issuer: https://{{ include "oidc.issuer" . }}
+    storage:
+      type: kubernetes
+      config:
+        inCluster: true
+    web:
+      http: 0.0.0.0:8082
+    frontend:
+      theme: ccloud
+      issuer: "Converged Cloud Kubernetes"
+    expiry:
+      signingKeys: "48h"
+      idTokens: "24h"
+    logger:
+      level: debug
+
+    connectors:
+{{- range $key, $conn := .Values.dex.connectors }}
+      - type: ldap
+        id: {{ required "id missing for dex connector" $conn.id }}
+        name: {{ required "name missing for connector" $conn.name }}
+        config:
+          host: {{ required "dex.ldap.config.host undefined" $.Values.dex.ldap.config.host }}
+          bindDN: {{ required "dex.ldap.config.bindDN undefined" $.Values.dex.ldap.config.bindDN }}
+          bindPW: $LDAP_CONFIG_BIND_PW
+          insecureSkipVerify: true
+
+          userSearch:
+            baseDN: {{ required "dex.ldap.config.userSearch.baseDN undefined" $.Values.dex.ldap.config.userSearch.baseDN }} 
+            filter: {{ required "dex.ldap.config.userSearch.filter undefined" $.Values.dex.ldap.config.userSearch.filter }}
+            username: cn
+            idAttr: distinguishedName
+            emailAttr: mail
+            nameAttr: cn
+            # workaround for technical users without email address in LDAP:
+            emailSuffix: {{ required "id missing for dex connector" $conn.id }}
+
+          # Group search queries for groups given a user entry.
+          groupSearch:
+            baseDN: {{ required "dex.ldap.config.groupSearch.baseDN undefined" $.Values.dex.ldap.config.groupSearch.baseDN }} 
+            filter: {{ required "dex.ldap.config.groupSearch.filter undefined" $.Values.dex.ldap.config.groupSearch.filter }}
+            userAttr: distinguishedName
+            groupAttr: member
+            nameAttr: cn
+{{- end }}
+    oauth2:
+      skipApprovalScreen: true
+      responseTypes: ["code", "token", "id_token"]
+      passwordConnector: {{ (index .Values.dex.connectors 0).id  | quote }}
+    staticClients:
+    - id: {{ .Values.dex.clientID | quote }}
+      redirectURIs:
+      - https://{{ .Values.domain }}/auth/callback # for dashboard access
+      - http://localhost:33768/auth/callback
+      name: kubernikus
+      secret: {{ required "missing dex.clientSecret" .Values.dex.clientSecret | quote }}
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name:  kubernikus-api-dex
+  namespace: {{ default .Release.Namespace .Values.namespaceOverride }}
+type: Opaque
+data:
+  bindPW: {{ required ".Values.dex.ldap.config.bindPW undefined" .Values.dex.ldap.config.bindPW | b64enc | quote}}
+{{ end }}

@@ -8,61 +8,29 @@ on:
 name: Tests
 jobs:
   test:
-    env:
-      GOPATH: ${{ github.workspace }}
-      GO111MODULE: off
-      GOMETALINTER_BIN: /home/runner/bin/gometalinter
-    defaults:
-      run:
-        working-directory: ${{ env.GOPATH }}/src/github.com/sapcc/kubernikus
     strategy:
       matrix:
-        go-version: [1.13.x, 1.14.x, 1.15.x]
+        go-version: [1.18.x, 1.19.x]
         os: [ubuntu-latest]
     runs-on: ${{ matrix.os }}
     steps:
     - name: Install Go
-      uses: actions/setup-go@v2
+      uses: actions/setup-go@v3
       with:
         go-version: ${{ matrix.go-version }}
     - name: Checkout code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
+    - name: golangci-lint
+      uses: golangci/golangci-lint-action@v3
       with:
-        path: ${{ env.GOPATH }}/src/github.com/sapcc/kubernikus
-    - name: Setup
-      run: |
-        mkdir -p ~/bin
-        echo "$HOME/bin" >> $GITHUB_PATH
-        env
-    - name: Cache
-      uses: actions/cache@v2
-      with:
-        path: |
-          ${{ env.GOPATH }}/pkg/mod # Module download cache
-          ~/.cache/go-build         # Build cache (Linux)
-          ~/bin
-        key: ${{ runner.os }}-go-${{ matrix.go-version }}-${{ hashFiles('**/glide.lock') }}
-        restore-keys: |
-          ${{ runner.os }}-go-${{ matrix.go-version }}-
-    - name: Install tooling
-      run: |
-        if [ ! -f "$GOMETALINTER_BIN" ]; then
-          curl -Lf https://github.com/alecthomas/gometalinter/releases/download/v2.0.11/gometalinter-2.0.11-linux-amd64.tar.gz | tar --strip-components=1 -C ~/bin -zxv
-        fi
-    - name: Build
-      run: make all
-    - name: gofmt
-      run: make gofmt
-    - name: Linters
-      run: make linters
+        # Optional: version of golangci-lint to use in form of v1.2 or v1.2.3 or `latest` to use the latest version
+        version: v1.49.0
     - name: Tests
       run: /bin/bash -c make gotest
     - name: Build e2e
       run: make build-e2e
     - name: Charts
       run: make test-charts
-    - name: Loopref
-      run: make test-loopref
 #    - name: Slack
 #      uses: 8398a7/action-slack@v3
 #      with:

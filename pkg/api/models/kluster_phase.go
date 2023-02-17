@@ -6,17 +6,27 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"context"
 	"encoding/json"
 
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/validate"
 )
 
 // KlusterPhase kluster phase
+//
 // swagger:model KlusterPhase
 type KlusterPhase string
+
+func NewKlusterPhase(value KlusterPhase) *KlusterPhase {
+	return &value
+}
+
+// Pointer returns a pointer to a freshly-allocated KlusterPhase.
+func (m KlusterPhase) Pointer() *KlusterPhase {
+	return &m
+}
 
 const (
 
@@ -50,7 +60,7 @@ func init() {
 }
 
 func (m KlusterPhase) validateKlusterPhaseEnum(path, location string, value KlusterPhase) error {
-	if err := validate.Enum(path, location, value, klusterPhaseEnum); err != nil {
+	if err := validate.EnumCase(path, location, value, klusterPhaseEnum, true); err != nil {
 		return err
 	}
 	return nil
@@ -68,5 +78,10 @@ func (m KlusterPhase) Validate(formats strfmt.Registry) error {
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+// ContextValidate validates this kluster phase based on context it is used
+func (m KlusterPhase) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }

@@ -4,7 +4,7 @@ metadata:
   name: {{ include "fullname" . }}
 spec:
   targetRef:
-    {{- if semverCompare ">=1.16-0" .Capabilities.KubeVersion.GitVersion }}
+    {{- if .Capabilities.APIVersions.Has "apps/v1" }}
     apiVersion: "apps/v1"
     {{- else }}
     apiVersion: "extensions/v1beta1"
@@ -17,13 +17,17 @@ spec:
         controlledResources: ["cpu", "memory"]
         minAllowed:
           {{- toYaml .Values.resources.requests | nindent 12 }}
+{{- if .Values.resources.limits }}
         maxAllowed:
           {{- toYaml .Values.resources.limits | nindent 12 }}
+{{- end }}
 {{- if and .Values.backup.enabled .Values.resources}}
       - containerName: backup
         controlledResources: ["cpu", "memory"]
         minAllowed:
           {{- toYaml .Values.backup.resources.requests | nindent 12 }}
+{{- if .Values.resources.limits }}
         maxAllowed:
           {{- toYaml .Values.resources.limits| nindent 12 }}
+{{- end }}
 {{- end }}

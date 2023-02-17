@@ -30,6 +30,7 @@ spec:
 {{- end }}
       labels:
         app: {{ include "master.fullname" . }}-csi
+        component: csi
         role: controller
         release: {{ .Release.Name }}
     spec:
@@ -93,6 +94,7 @@ spec:
         - --feature-gates=Topology=true
         - --volume-name-prefix=pv-{{ include "master.fullname" . }}
         - --default-fstype=ext4
+        - --extra-create-metadata
         - --leader-election={{ .Values.csi.leaderElection }}
         {{- if .Values.csi.leaderElectionNamespace }}
         - --leader-election-namespace={{ .Values.csi.leaderElectionNamespace }}
@@ -184,7 +186,11 @@ spec:
         {{- if .Values.csi.leaderElectionNamespace }}
         - --leader-election-namespace={{ .Values.csi.leaderElectionNamespace }}
         {{- end }}
+        {{- if (semverCompare ">= 1.21" .Values.version.kubernetes) }}
+        - --timeout={{ .Values.csi.timeout }}
+        {{- else }}
         - --csiTimeout={{ .Values.csi.timeout }}
+        {{- end }}
         - --v=5
         env:
         - name: ADDRESS

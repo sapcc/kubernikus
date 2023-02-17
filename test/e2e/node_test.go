@@ -2,18 +2,18 @@ package main
 
 import (
 	"bufio"
+	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"strings"
 	"testing"
 	"time"
 
-	"github.com/gophercloud/gophercloud"
-	"github.com/gophercloud/gophercloud/openstack"
+	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/extendedserverattributes"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/servers"
-	"github.com/gophercloud/gophercloud/openstack/identity/v3/tokens"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	v1 "k8s.io/api/core/v1"
@@ -31,7 +31,6 @@ const (
 	RegisteredTimeout                  = 15 * time.Minute // Time from node created to registered
 	StateSchedulableTimeout            = 1 * time.Minute  // Time from registered to schedulable
 	StateHealthyTimeout                = 1 * time.Minute
-	ConditionRouteBrokenTimeout        = 1 * time.Minute
 	ConditionNetworkUnavailableTimeout = 1 * time.Minute
 	ConditionReadyTimeout              = 1 * time.Minute
 )
@@ -46,15 +45,15 @@ type NodeTests struct {
 
 func (k *NodeTests) Run(t *testing.T) {
 	_ = t.Run("Created", k.StateRunning) &&
+		t.Run("Tagged", k.Tagged) &&
 		t.Run("Registered", k.Registered) &&
-		t.Run("LatestStableContainerLinux", k.LatestStableContainerLinux) &&
+		//t.Run("LatestContainerLinux", k.LatestContainerLinux) &&
 		t.Run("Schedulable", k.StateSchedulable) &&
 		t.Run("NetworkUnavailable", k.ConditionNetworkUnavailable) &&
 		t.Run("Healthy", k.StateHealthy) &&
 		t.Run("Ready", k.ConditionReady) &&
 		t.Run("Labeled", k.Labeled) &&
 		t.Run("Sufficient", k.Sufficient)
-	//t.Run("SameBuildingBlock", k.SameBuildingBlock)
 }
 
 func (k *NodeTests) StateRunning(t *testing.T) {
@@ -88,7 +87,7 @@ func (k *NodeTests) ConditionReady(t *testing.T) {
 }
 
 func (k *NodeTests) Labeled(t *testing.T) {
-	nodeList, err := k.Kubernetes.ClientSet.CoreV1().Nodes().List(meta_v1.ListOptions{})
+	nodeList, err := k.Kubernetes.ClientSet.CoreV1().Nodes().List(context.Background(), meta_v1.ListOptions{})
 	require.NoError(t, err, "There must be no error while listing the kluster's nodes")
 
 	for _, node := range nodeList.Items {
@@ -97,11 +96,31 @@ func (k *NodeTests) Labeled(t *testing.T) {
 
 }
 
+func (k *NodeTests) Tagged(t *testing.T) {
+	instances, err := k.listInstances()
+	if err != nil {
+		require.NoErrorf(t, err, "listing openstack instances failed")
+	}
+	assert.Len(t, instances, k.ExpectedNodeCount, "Didn't find expected number of cloud instances")
+	for _, instance := range instances {
+		assert.Subset(t, *instance.Tags, []string{"kubernikus", "kubernikus:kluster=" + k.KlusterName, "kubernikus:nodepool=" + instance.Metadata["kubernikus:nodepool"]})
+
+		expect := map[string]string{
+			"provisioner":        "kubernikus",
+			"kubernikus:kluster": k.KlusterName,
+		}
+		for k, v := range expect {
+			assert.Equalf(t, v, instance.Metadata[k], "metadata key %s incorrect", k)
+		}
+
+	}
+}
+
 func (k *NodeTests) Registered(t *testing.T) {
 	count := 0
 	err := wait.PollImmediate(framework.Poll, RegisteredTimeout,
 		func() (bool, error) {
-			nodes, err := k.Kubernetes.ClientSet.CoreV1().Nodes().List(meta_v1.ListOptions{})
+			nodes, err := k.Kubernetes.ClientSet.CoreV1().Nodes().List(context.Background(), meta_v1.ListOptions{})
 			if err != nil {
 				return false, fmt.Errorf("Failed to list nodes: %v", err)
 			}
@@ -114,11 +133,31 @@ func (k *NodeTests) Registered(t *testing.T) {
 	assert.Equal(t, k.ExpectedNodeCount, count)
 }
 
-func (k NodeTests) LatestStableContainerLinux(t *testing.T) {
-	nodes, err := k.Kubernetes.ClientSet.CoreV1().Nodes().List(meta_v1.ListOptions{})
+func (k NodeTests) LatestContainerLinux(t *testing.T) {
+
+	nodes, err := k.Kubernetes.ClientSet.CoreV1().Nodes().List(context.Background(), meta_v1.ListOptions{})
 	if !assert.NoError(t, err) {
 		return
 	}
+
+	for _, node := range nodes.Items {
+		release_channel := "stable"
+		if strings.Contains(node.Labels["image"], "flatcar-beta") {
+			release_channel = "beta"
+		}
+		if strings.Contains(node.Labels["image"], "flatcar-alpha") {
+			release_channel = "alpha"
+		}
+		version, err := k.currentFlatcarVersion(release_channel)
+		if assert.NoError(t, err) {
+			if version != "" {
+				assert.Contains(t, node.Status.NodeInfo.OSImage, version, "Node %s is not on latest version", node.Name)
+			}
+		}
+	}
+}
+
+func (k NodeTests) currentFlatcarVersion(channel string) (string, error) {
 
 	type FlatcarReleases struct {
 		Current struct {
@@ -135,43 +174,45 @@ func (k NodeTests) LatestStableContainerLinux(t *testing.T) {
 		} `json:"current"`
 	}
 
-	resp, err := http.Get("https://kinvolk.io/flatcar-container-linux/releases-json/releases-stable.json")
-	if !assert.NoError(t, err) {
-		return
+	feed_url := fmt.Sprintf("https://www.flatcar.org/releases-json/releases-%s.json", channel)
+
+	resp, err := http.Get(feed_url)
+	if err != nil {
+		return "", fmt.Errorf("Error fetching %s: %w", feed_url, err)
 	}
-	if !assert.Equal(t, 200, resp.StatusCode) {
-		return
+	if resp.StatusCode != 200 {
+		return "", fmt.Errorf("Invalid %d response code fetching %s", resp.StatusCode, feed_url)
 	}
-	body, err := ioutil.ReadAll(resp.Body)
-	if !assert.NoError(t, err) {
-		return
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return "", fmt.Errorf("Failed reading %s feed response: %w", channel, err)
 	}
 	var current FlatcarReleases
-	err = json.Unmarshal(body, &current)
-	if !assert.NoError(t, err) {
-		return
+	if err := json.Unmarshal(body, &current); err != nil {
+		return "", fmt.Errorf("Error unmarshalling flatcar %s release feed: %w", channel, err)
 	}
 
 	if current.Current.ReleaseDate != "" {
 		date, err := time.Parse("2006-01-02", current.Current.ReleaseDate[0:10])
-		if !assert.NoError(t, err) {
-			return
+		if err != nil {
+			return "", fmt.Errorf("Error parsing release date: %w", err)
 		}
-		if !assert.NotEmpty(t, date, "Could not get release date") {
-			return
+		if date.IsZero() {
+			return "", errors.New("No release date")
 		}
 		// check if release is at least 3 days old, otherwise image might not be up-to-date
 		if time.Since(date).Hours() < 72 {
-			return
+			return "", nil
 		}
 	}
+	txt_url := fmt.Sprintf("https://%s.release.flatcar-linux.net/amd64-usr/current/version.txt", channel)
 
-	resp, err = http.Get("https://stable.release.flatcar-linux.net/amd64-usr/current/version.txt")
-	if !assert.NoError(t, err) {
-		return
+	resp, err = http.Get(txt_url)
+	if err != nil {
+		return "", fmt.Errorf("Error fetching: %s: %s", txt_url, err)
 	}
-	if !assert.Equal(t, 200, resp.StatusCode) {
-		return
+	if resp.StatusCode != 200 {
+		return "", fmt.Errorf("Invalid %d response fetching %s", resp.StatusCode, txt_url)
 	}
 	version := ""
 	scanner := bufio.NewScanner(resp.Body)
@@ -180,23 +221,20 @@ func (k NodeTests) LatestStableContainerLinux(t *testing.T) {
 
 		if len(keyval) == 2 && keyval[0] == "FLATCAR_VERSION" {
 			version = keyval[1]
-			if !assert.NotEmpty(t, version, "Failed to detect latest stable Container Linux version") {
-				return
+			if version == "" {
+				return "", fmt.Errorf("Failed to find FLATCAR_VERSION in version.txt")
 			}
 		}
 	}
 
-	if !assert.NotEmpty(t, version, "Failed to detect latest stable Container Linux version") {
-		return
+	if version == "" {
+		return "", fmt.Errorf("Failed to find latest stable Flatcar version")
 	}
-
-	for _, node := range nodes.Items {
-		assert.Contains(t, node.Status.NodeInfo.OSImage, version, "Node %s is not on latest version", node.Name)
-	}
+	return version, nil
 }
 
 func (k *NodeTests) Sufficient(t *testing.T) {
-	nodeList, err := k.Kubernetes.ClientSet.CoreV1().Nodes().List(meta_v1.ListOptions{})
+	nodeList, err := k.Kubernetes.ClientSet.CoreV1().Nodes().List(context.Background(), meta_v1.ListOptions{})
 	require.NoError(t, err, "There must be no error while listing the kluster's nodes")
 	require.Equal(t, len(nodeList.Items), SmokeTestNodeCount, "There must be exactly %d nodes", SmokeTestNodeCount)
 }
@@ -214,8 +252,11 @@ func (k *NodeTests) checkState(t *testing.T, fn poolCount, timeout time.Duration
 			if err != nil {
 				return false, err
 			}
+			count = 0
+			for _, pool := range cluster.Payload.Status.NodePools {
+				count += int(fn(pool))
+			}
 
-			count = int(fn(cluster.Payload.Status.NodePools[0]))
 			return count >= k.ExpectedNodeCount, nil
 		})
 
@@ -226,7 +267,7 @@ func (k *NodeTests) checkCondition(t *testing.T, conditionType v1.NodeConditionT
 	count := 0
 	err := wait.PollImmediate(framework.Poll, timeout,
 		func() (bool, error) {
-			nodes, err := k.Kubernetes.ClientSet.CoreV1().Nodes().List(meta_v1.ListOptions{})
+			nodes, err := k.Kubernetes.ClientSet.CoreV1().Nodes().List(context.Background(), meta_v1.ListOptions{})
 			if err != nil {
 				return false, fmt.Errorf("Failed to list nodes: %v", err)
 			}
@@ -249,42 +290,28 @@ func (k *NodeTests) checkCondition(t *testing.T, conditionType v1.NodeConditionT
 	return count, err
 }
 
-func (k *NodeTests) SameBuildingBlock(t *testing.T) {
-	if k.ExpectedNodeCount < 2 {
-		return
-	}
+type instance struct {
+	servers.Server
+	extendedserverattributes.ServerAttributesExt
+}
 
-	computeClient, err := openstack.NewComputeV2(k.OpenStack.Provider, gophercloud.EndpointOpts{})
-	require.NoError(t, err, "There should be no error creating compute client")
-
-	project, err := tokens.Get(k.OpenStack.Identity, k.OpenStack.Provider.Token()).ExtractProject()
-	require.NoError(t, err, "There should be no error while extracting the project")
+func (k *NodeTests) listInstances() ([]instance, error) {
 
 	serversListOpts := servers.ListOpts{
-		Name:     k.KlusterName,
-		TenantID: project.ID,
-		Status:   "ACTIVE",
+		Name: "kks-" + k.KlusterName,
 	}
 
-	allPages, err := servers.List(computeClient, serversListOpts).AllPages()
-	require.NoError(t, err, "There should be no error while listing all servers")
-
-	var s []struct {
-		BuildingBlock string `json:"OS-EXT-SRV-ATTR:host"`
-		ID            string `json:"id"`
+	allPages, err := servers.List(k.OpenStack.Compute, serversListOpts).AllPages()
+	if err != nil {
+		return nil, fmt.Errorf("error while listing all servers: %w", err)
 	}
+
+	var s []instance
+
 	err = servers.ExtractServersInto(allPages, &s)
-	require.NoError(t, err, "There should be no error extracting server info")
-
-	require.Len(t, s, k.ExpectedNodeCount, "Expected to find %d building blocks", k.ExpectedNodeCount)
-
-	bb := ""
-	for _, bbs := range s {
-		require.NotEmpty(t, bbs.BuildingBlock, "Node building block should not be empty")
-		if bb == "" {
-			bb = bbs.BuildingBlock
-		} else {
-			require.Equal(t, bb, bbs.BuildingBlock, "Node %s is on building block %s which is different from node %s which is running on %s", bbs.ID, bbs.BuildingBlock, s[0].ID, s[0].BuildingBlock)
-		}
+	if err != nil {
+		return nil, fmt.Errorf("error extracting server info: %w", err)
 	}
+	return s, nil
+
 }

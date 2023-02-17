@@ -6,7 +6,7 @@ image:
   pullPolicy: IfNotPresent
 
 # Settings for the openstack cloudprovider
-openstack:
+openstack: {}
   #authURL:
   #username:
   #password:
@@ -43,6 +43,12 @@ api:
   replicaCount: 1
   # apiserverHost:
   # wormholeHost:
+  oidc:
+    # issuerURL:
+    clientID: kubernetes
+    groupsClaim: groups
+    usernamePrefix: "-"
+    usernameClaim: name
   resources:
     requests:
       cpu: 200m
@@ -128,8 +134,8 @@ csi:
         cpu: 20m
         memory: 50Mi
       limits:
-        cpu: 50m
-        memory: 80Mi
+        cpu: 100m
+        memory: 100Mi
     provisioner:
       requests:
         cpu: 10m
@@ -142,8 +148,8 @@ csi:
         cpu: 10m
         memory: 32Mi
       limits:
-        cpu: 30m
-        memory: 50Mi
+        cpu: 100m
+        memory: 100Mi
     snapshotter:
       requests:
         cpu: 10m
@@ -163,5 +169,7 @@ csi:
         cpu: 10m
         memory: 32Mi
       limits:
-        cpu: 30m
-        memory: 50Mi
+        cpu: 100m
+        memory: 100Mi
+
+audit: ""

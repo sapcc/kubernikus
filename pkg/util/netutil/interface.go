@@ -7,7 +7,7 @@ import (
 
 var NotFound = errors.New("Not found")
 
-//InterfaceAddress returns the first ipv4 address of the given interface
+// InterfaceAddress returns the first ipv4 address of the given interface
 func InterfaceAddress(name string) (net.IP, error) {
 	intf, err := net.InterfaceByName(name)
 	if err != nil {
@@ -27,7 +27,7 @@ func InterfaceAddress(name string) (net.IP, error) {
 	return nil, NotFound
 }
 
-//PrimaryIP returns the first ipv4 Address of the interface which is used by the default route
+// PrimaryIP returns the first ipv4 Address of the interface which is used by the default route
 func PrimaryIP() (net.IP, error) {
 	intf, err := DefaultInterfaceName()
 	if err != nil {

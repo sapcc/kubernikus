@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net"
@@ -8,7 +9,6 @@ import (
 
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/validate"
-
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
@@ -47,32 +47,11 @@ func (d *createCluster) Handle(params operations.CreateClusterParams, principal 
 		}
 	}
 
-	var metadata *models.OpenstackMetadata
-	var defaultAVZ string
-	if len(spec.NodePools) > 0 {
-		m, err := FetchOpenstackMetadataFunc(params.HTTPRequest, principal)
-		if err != nil {
-			return NewErrorResponse(&operations.CreateClusterDefault{}, 500, err.Error())
-		}
-		metadata = m
-
-		avz, err := getDefaultAvailabilityZone(metadata)
-		if err != nil {
-			return NewErrorResponse(&operations.CreateClusterDefault{}, 500, err.Error())
-		}
-		defaultAVZ = avz
-	}
-
 	spec.Name = name
 	for i, pool := range spec.NodePools {
 		// Set default image
 		if pool.Image == "" {
 			spec.NodePools[i].Image = DEFAULT_IMAGE
-		}
-
-		// Set default AvailabilityZone
-		if pool.AvailabilityZone == "" {
-			spec.NodePools[i].AvailabilityZone = defaultAVZ
 		}
 
 		allowReboot := true
@@ -92,10 +71,6 @@ func (d *createCluster) Handle(params operations.CreateClusterParams, principal 
 			spec.NodePools[i].Config.AllowReplace = &allowReplace
 		}
 
-		// Validate AVZ
-		if err := validateAavailabilityZone(spec.NodePools[i].AvailabilityZone, metadata); err != nil {
-			return NewErrorResponse(&operations.CreateClusterDefault{}, 409, "Availability Zone %s is invalid: %s", spec.NodePools[i].AvailabilityZone, err)
-		}
 	}
 
 	kluster, err := kubernikus.NewKlusterFactory().KlusterFor(spec)
@@ -137,13 +112,16 @@ func (d *createCluster) Handle(params operations.CreateClusterParams, principal 
 	}
 
 	kluster.ObjectMeta = metav1.ObjectMeta{
-		Name:        qualifiedName(name, principal.Account),
-		Labels:      map[string]string{"account": principal.Account},
+		Name: qualifiedName(name, principal.Account),
+		Labels: map[string]string{
+			"account":                             principal.Account,
+			"kubernikus.cloud.sap/seed-reconcile": "true",
+		},
 		Annotations: map[string]string{"creator": fmt.Sprintf("%s/%s", principal.Name, principal.Domain)},
 	}
 
 	k8sutil.EnsureNamespace(d.Kubernetes, d.Namespace)
-	kluster, err = d.Kubernikus.Kubernikus().Klusters(d.Namespace).Create(kluster)
+	kluster, err = d.Kubernikus.KubernikusV1().Klusters(d.Namespace).Create(context.TODO(), kluster, metav1.CreateOptions{})
 	if err != nil {
 		logger.Log(
 			"msg", "failed to create cluster",
@@ -187,7 +165,7 @@ func (d *createCluster) overlapWithControlPlane(cidr string) (bool, error) {
 
 func (d *createCluster) overlapWithSiblingCluster(cidr string, routerID string, principal *models.Principal) (bool, error) {
 	listOpts := metav1.ListOptions{LabelSelector: accountSelector(principal).String()}
-	klusterList, err := d.Kubernikus.Kubernikus().Klusters(d.Namespace).List(listOpts)
+	klusterList, err := d.Kubernikus.KubernikusV1().Klusters(d.Namespace).List(context.TODO(), listOpts)
 	if err != nil {
 		return false, err
 	}
@@ -212,12 +190,12 @@ func (d *createCluster) overlapWithSiblingCluster(cidr string, routerID string, 
 	return false, nil
 }
 
-//approximate the control plane service CIDR by getting one service IP and assuming a /17 prefix
+// approximate the control plane service CIDR by getting one service IP and assuming a /17 prefix
 func (d *createCluster) controlPlaneServiceCIDR() *net.IPNet {
 	if d.cpServiceCIDR != nil {
 		return d.cpServiceCIDR
 	}
-	svc, err := d.Kubernetes.Core().Services("default").Get("kubernetes", metav1.GetOptions{})
+	svc, err := d.Kubernetes.CoreV1().Services("default").Get(context.TODO(), "kubernetes", metav1.GetOptions{})
 	if err != nil {
 		return nil
 	}
@@ -229,16 +207,24 @@ func (d *createCluster) controlPlaneServiceCIDR() *net.IPNet {
 	return d.cpServiceCIDR
 }
 
-//we infer the clusterCIDR by taking a Pod IP and assuming /16
+// we infer the clusterCIDR by taking a Pod IP and assuming /16
 func (d *createCluster) controlPlaneClusterCIDR() *net.IPNet {
 	if d.cpClusterCIDR != nil {
 		return d.cpClusterCIDR
 	}
-	podList, err := d.Kubernetes.Core().Pods(metav1.NamespaceAll).List(metav1.ListOptions{Limit: 1})
+	podList, err := d.Kubernetes.CoreV1().Pods(metav1.NamespaceAll).List(context.TODO(), metav1.ListOptions{})
+
 	if err != nil || len(podList.Items) == 0 {
 		return nil
 	}
-	_, ipnet, err := net.ParseCIDR(podList.Items[0].Status.PodIP + "/16")
+	//find pod which is not in hostNetwork mode
+	idx := 0
+	for idx = range podList.Items {
+		if !podList.Items[idx].Spec.HostNetwork {
+			break
+		}
+	}
+	_, ipnet, err := net.ParseCIDR(podList.Items[idx].Status.PodIP + "/16")
 
 	if err != nil {
 		return nil

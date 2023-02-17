@@ -3,6 +3,8 @@
 package fake
 
 import (
+	"context"
+
 	kubernikusv1 "github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	labels "k8s.io/apimachinery/pkg/labels"
@@ -23,7 +25,7 @@ var klustersResource = schema.GroupVersionResource{Group: "kubernikus.sap.cc", V
 var klustersKind = schema.GroupVersionKind{Group: "kubernikus.sap.cc", Version: "v1", Kind: "Kluster"}
 
 // Get takes name of the kluster, and returns the corresponding kluster object, and an error if there is any.
-func (c *FakeKlusters) Get(name string, options v1.GetOptions) (result *kubernikusv1.Kluster, err error) {
+func (c *FakeKlusters) Get(ctx context.Context, name string, options v1.GetOptions) (result *kubernikusv1.Kluster, err error) {
 	obj, err := c.Fake.
 		Invokes(testing.NewGetAction(klustersResource, c.ns, name), &kubernikusv1.Kluster{})
 
@@ -34,7 +36,7 @@ func (c *FakeKlusters) Get(name string, options v1.GetOptions) (result *kubernik
 }
 
 // List takes label and field selectors, and returns the list of Klusters that match those selectors.
-func (c *FakeKlusters) List(opts v1.ListOptions) (result *kubernikusv1.KlusterList, err error) {
+func (c *FakeKlusters) List(ctx context.Context, opts v1.ListOptions) (result *kubernikusv1.KlusterList, err error) {
 	obj, err := c.Fake.
 		Invokes(testing.NewListAction(klustersResource, klustersKind, c.ns, opts), &kubernikusv1.KlusterList{})
 
@@ -56,14 +58,14 @@ func (c *FakeKlusters) List(opts v1.ListOptions) (result *kubernikusv1.KlusterLi
 }
 
 // Watch returns a watch.Interface that watches the requested klusters.
-func (c *FakeKlusters) Watch(opts v1.ListOptions) (watch.Interface, error) {
+func (c *FakeKlusters) Watch(ctx context.Context, opts v1.ListOptions) (watch.Interface, error) {
 	return c.Fake.
 		InvokesWatch(testing.NewWatchAction(klustersResource, c.ns, opts))
 
 }
 
 // Create takes the representation of a kluster and creates it.  Returns the server's representation of the kluster, and an error, if there is any.
-func (c *FakeKlusters) Create(kluster *kubernikusv1.Kluster) (result *kubernikusv1.Kluster, err error) {
+func (c *FakeKlusters) Create(ctx context.Context, kluster *kubernikusv1.Kluster, opts v1.CreateOptions) (result *kubernikusv1.Kluster, err error) {
 	obj, err := c.Fake.
 		Invokes(testing.NewCreateAction(klustersResource, c.ns, kluster), &kubernikusv1.Kluster{})
 
@@ -74,7 +76,7 @@ func (c *FakeKlusters) Create(kluster *kubernikusv1.Kluster) (result *kubernikus
 }
 
 // Update takes the representation of a kluster and updates it. Returns the server's representation of the kluster, and an error, if there is any.
-func (c *FakeKlusters) Update(kluster *kubernikusv1.Kluster) (result *kubernikusv1.Kluster, err error) {
+func (c *FakeKlusters) Update(ctx context.Context, kluster *kubernikusv1.Kluster, opts v1.UpdateOptions) (result *kubernikusv1.Kluster, err error) {
 	obj, err := c.Fake.
 		Invokes(testing.NewUpdateAction(klustersResource, c.ns, kluster), &kubernikusv1.Kluster{})
 
@@ -86,7 +88,7 @@ func (c *FakeKlusters) Update(kluster *kubernikusv1.Kluster) (result *kubernikus
 
 // UpdateStatus was generated because the type contains a Status member.
 // Add a +genclient:noStatus comment above the type to avoid generating UpdateStatus().
-func (c *FakeKlusters) UpdateStatus(kluster *kubernikusv1.Kluster) (*kubernikusv1.Kluster, error) {
+func (c *FakeKlusters) UpdateStatus(ctx context.Context, kluster *kubernikusv1.Kluster, opts v1.UpdateOptions) (*kubernikusv1.Kluster, error) {
 	obj, err := c.Fake.
 		Invokes(testing.NewUpdateSubresourceAction(klustersResource, "status", c.ns, kluster), &kubernikusv1.Kluster{})
 
@@ -97,7 +99,7 @@ func (c *FakeKlusters) UpdateStatus(kluster *kubernikusv1.Kluster) (*kubernikusv
 }
 
 // Delete takes name of the kluster and deletes it. Returns an error if one occurs.
-func (c *FakeKlusters) Delete(name string, options *v1.DeleteOptions) error {
+func (c *FakeKlusters) Delete(ctx context.Context, name string, opts v1.DeleteOptions) error {
 	_, err := c.Fake.
 		Invokes(testing.NewDeleteAction(klustersResource, c.ns, name), &kubernikusv1.Kluster{})
 
@@ -105,17 +107,17 @@ func (c *FakeKlusters) Delete(name string, options *v1.DeleteOptions) error {
 }
 
 // DeleteCollection deletes a collection of objects.
-func (c *FakeKlusters) DeleteCollection(options *v1.DeleteOptions, listOptions v1.ListOptions) error {
-	action := testing.NewDeleteCollectionAction(klustersResource, c.ns, listOptions)
+func (c *FakeKlusters) DeleteCollection(ctx context.Context, opts v1.DeleteOptions, listOpts v1.ListOptions) error {
+	action := testing.NewDeleteCollectionAction(klustersResource, c.ns, listOpts)
 
 	_, err := c.Fake.Invokes(action, &kubernikusv1.KlusterList{})
 	return err
 }
 
 // Patch applies the patch and returns the patched kluster.
-func (c *FakeKlusters) Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *kubernikusv1.Kluster, err error) {
+func (c *FakeKlusters) Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *kubernikusv1.Kluster, err error) {
 	obj, err := c.Fake.
-		Invokes(testing.NewPatchSubresourceAction(klustersResource, c.ns, name, data, subresources...), &kubernikusv1.Kluster{})
+		Invokes(testing.NewPatchSubresourceAction(klustersResource, c.ns, name, pt, data, subresources...), &kubernikusv1.Kluster{})
 
 	if obj == nil {
 		return nil, err

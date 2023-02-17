@@ -3,15 +3,10 @@ package framework
 import (
 	"fmt"
 	"net/url"
-	"os"
 	"strings"
 	"time"
 
 	"github.com/go-openapi/runtime"
-	"github.com/go-openapi/strfmt"
-	"github.com/gophercloud/gophercloud"
-	"github.com/gophercloud/gophercloud/openstack"
-	"github.com/gophercloud/gophercloud/openstack/identity/v3/tokens"
 	"k8s.io/apimachinery/pkg/util/wait"
 
 	kubernikus "github.com/sapcc/kubernikus/pkg/api/client"
@@ -21,24 +16,10 @@ import (
 
 type Kubernikus struct {
 	Client   *kubernikus.Kubernikus
-	AuthInfo runtime.ClientAuthInfoWriterFunc
+	AuthInfo runtime.ClientAuthInfoWriter
 }
 
-func NewKubernikusFramework(kubernikusURL *url.URL, authOptions *tokens.AuthOptions) (*Kubernikus, error) {
-	provider, err := openstack.NewClient(os.Getenv("OS_AUTH_URL"))
-	if err != nil {
-		return nil, fmt.Errorf("could not initialize openstack client: %v", err)
-	}
-
-	if err := openstack.AuthenticateV3(provider, authOptions, gophercloud.EndpointOpts{}); err != nil {
-		return nil, fmt.Errorf("could not authenticate with openstack: %v", err)
-	}
-
-	authInfo := runtime.ClientAuthInfoWriterFunc(
-		func(req runtime.ClientRequest, reg strfmt.Registry) error {
-			req.SetHeaderParam("X-AUTH-TOKEN", provider.Token())
-			return nil
-		})
+func NewKubernikusFramework(kubernikusURL *url.URL, authInfo runtime.ClientAuthInfoWriter) *Kubernikus {
 
 	kubernikusClient := kubernikus.NewHTTPClientWithConfig(
 		nil,
@@ -51,7 +32,7 @@ func NewKubernikusFramework(kubernikusURL *url.URL, authOptions *tokens.AuthOpti
 	return &Kubernikus{
 		Client:   kubernikusClient,
 		AuthInfo: authInfo,
-	}, nil
+	}
 }
 
 func (f *Kubernikus) WaitForKlusterPhase(klusterName string, expectedPhase models.KlusterPhase, timeout time.Duration) (finalPhase models.KlusterPhase, err error) {
@@ -95,8 +76,12 @@ func (k *Kubernikus) WaitForKlusterToHaveEnoughSchedulableNodes(klusterName stri
 }
 
 func (k *Kubernikus) WaitForKlusterToBeDeleted(klusterName string, timeout time.Duration) error {
+	count := 0
+	overall := time.Now()
 	return wait.PollImmediate(Poll, timeout,
 		func() (done bool, err error) {
+			count++
+			req_start := time.Now()
 			_, err = k.Client.Operations.ShowCluster(
 				operations.NewShowClusterParams().WithName(klusterName),
 				k.AuthInfo,
@@ -107,7 +92,7 @@ func (k *Kubernikus) WaitForKlusterToBeDeleted(klusterName string, timeout time.
 					result := err.(*operations.ShowClusterDefault)
 					return result.Code() == 404, nil
 				}
-				return false, err
+				return false, fmt.Errorf("Polling cluster state failed after %d tries and %s. Failed request took %s: %w", count, time.Now().Sub(overall), time.Now().Sub(req_start), err)
 			}
 			return false, nil
 		},

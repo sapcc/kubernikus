@@ -30,6 +30,7 @@ type Controller struct {
 	tunnel      *guttle.Server
 	queue       workqueue.RateLimitingInterface
 	store       map[string][]route
+	storeMu     sync.RWMutex
 	iptables    iptables.Interface
 	hijackPort  int
 	serviceCIDR string
@@ -102,12 +103,7 @@ func (c *Controller) Run(threadiness int, stopCh <-chan struct{}, wg *sync.WaitG
 		for {
 			select {
 			case <-ticker.C:
-				c.Logger.Log(
-					"msg", "Running periodic recheck. Queuing all known nodes...",
-					"v", 5)
-				for key := range c.store {
-					c.queue.Add(key)
-				}
+				c.recheckNodes()
 			case <-stopCh:
 				ticker.Stop()
 				return
@@ -116,6 +112,17 @@ func (c *Controller) Run(threadiness int, stopCh <-chan struct{}, wg *sync.WaitG
 	}()
 
 	<-stopCh
+}
+
+func (c *Controller) recheckNodes() {
+	c.Logger.Log(
+		"msg", "Running periodic recheck. Queuing all known nodes...",
+		"v", 5)
+	c.storeMu.RLock()
+	defer c.storeMu.RUnlock()
+	for key := range c.store {
+		c.queue.Add(key)
+	}
 }
 
 func (c *Controller) runWorker() {
@@ -202,14 +209,14 @@ func (c *Controller) addNode(key string, node *v1.Node) error {
 	if err := c.tunnel.AddClientRoute(podCIDR, identifier); err != nil {
 		return err
 	}
-	c.store[key] = append(c.store[key], route{cidr: podCIDR, identifier: identifier})
+	c.storeRoute(key, route{cidr: podCIDR, identifier: identifier})
 	if err := c.tunnel.AddRoute(podCIDR); err != nil {
 		return err
 	}
 	if err := c.tunnel.AddClientRoute(nodeCIDR, identifier); err != nil {
 		return err
 	}
-	c.store[key] = append(c.store[key], route{cidr: nodeCIDR, identifier: identifier})
+	c.storeRoute(key, route{cidr: nodeCIDR, identifier: identifier})
 	if err := c.tunnel.AddRoute(nodeCIDR); err != nil {
 		return err
 	}
@@ -217,12 +224,22 @@ func (c *Controller) addNode(key string, node *v1.Node) error {
 	return c.redoIPTablesSpratz()
 }
 
+func (c *Controller) storeRoute(key string, r route) {
+	c.storeMu.Lock()
+	defer c.storeMu.Unlock()
+	c.store[key] = append(c.store[key], r)
+}
+
 func (c *Controller) delNode(key string) error {
+	// We can't defer the unlock here becase redoIPTablesSpratz also requests a lock
+	// take care when changing this function to not create a race
+	c.storeMu.RLock()
 	routes := c.store[key]
 	for _, route := range routes {
 		c.tunnel.DeleteClientRoute(route.cidr, route.identifier)
 		c.tunnel.DeleteRoute(route.cidr)
 	}
+	c.storeMu.RUnlock()
 	return c.redoIPTablesSpratz()
 }
 
@@ -269,6 +286,8 @@ func (c *Controller) redoIPTablesSpratz() error {
 		writeLine(natChains, iptables.MakeChainLine(KUBERNIKUS_TUNNELS))
 	}
 
+	c.storeMu.RLock()
+	defer c.storeMu.RUnlock()
 	for key := range c.store {
 		err := c.writeTunnelRedirect(key, natRules)
 		if err != nil {

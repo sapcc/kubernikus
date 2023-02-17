@@ -5,14 +5,14 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/golang/glog"
+	"k8s.io/klog"
 )
 
 func CheckError(err error) {
 	if err != nil {
 		if err != context.Canceled {
-			glog.V(3).Infof("%+v", err)
-			fmt.Fprintf(os.Stderr, fmt.Sprintf("An error occurred: %v\n", err))
+			klog.V(3).Infof("%+v", err)
+			fmt.Fprintf(os.Stderr, "An error occurred: %v\n", err)
 		}
 		os.Exit(1)
 	}

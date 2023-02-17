@@ -3,7 +3,7 @@ platform: 'linux'
 image_resource:
   type: registry-image
   source:
-    repository: keppel.eu-de-2.cloud.sap/ccloud/whitesource-agent
+    repository: keppel.eu-de-1.cloud.sap/ccloud/whitesource-agent
     tag: 20.1.3-kubernikus
 inputs:
   - name: kubernikus.builds
@@ -48,7 +48,7 @@ run:
       
       #wss.connectionTimeoutMinutes=60
       # URL to your WhiteSource server.
-      wss.url=https://saas.whitesourcesoftware.com/agent
+      wss.url=https://sap.whitesourcesoftware.com/agent
       
       # resolveDependencies parameter is important and need to be true
       go.resolveDependencies=true

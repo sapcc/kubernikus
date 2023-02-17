@@ -8,9 +8,9 @@ package operations
 import (
 	"net/http"
 
-	middleware "github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/runtime/middleware"
 
-	models "github.com/sapcc/kubernikus/pkg/api/models"
+	"github.com/sapcc/kubernikus/pkg/api/models"
 )
 
 // TerminateClusterHandlerFunc turns a function with the right signature into a terminate cluster handler
@@ -31,10 +31,10 @@ func NewTerminateCluster(ctx *middleware.Context, handler TerminateClusterHandle
 	return &TerminateCluster{Context: ctx, Handler: handler}
 }
 
-/*TerminateCluster swagger:route DELETE /api/v1/clusters/{name} terminateCluster
+/*
+	TerminateCluster swagger:route DELETE /api/v1/clusters/{name} terminateCluster
 
 Terminate the specified cluster
-
 */
 type TerminateCluster struct {
 	Context *middleware.Context
@@ -44,17 +44,16 @@ type TerminateCluster struct {
 func (o *TerminateCluster) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	route, rCtx, _ := o.Context.RouteInfo(r)
 	if rCtx != nil {
-		r = rCtx
+		*r = *rCtx
 	}
 	var Params = NewTerminateClusterParams()
-
 	uprinc, aCtx, err := o.Context.Authorize(r, route)
 	if err != nil {
 		o.Context.Respond(rw, r, route.Produces, route, err)
 		return
 	}
 	if aCtx != nil {
-		r = aCtx
+		*r = *aCtx
 	}
 	var principal *models.Principal
 	if uprinc != nil {
@@ -67,7 +66,6 @@ func (o *TerminateCluster) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	}
 
 	res := o.Handler.Handle(Params, principal) // actually handle the request
-
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
 }

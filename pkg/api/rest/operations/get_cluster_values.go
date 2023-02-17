@@ -8,9 +8,9 @@ package operations
 import (
 	"net/http"
 
-	middleware "github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/runtime/middleware"
 
-	models "github.com/sapcc/kubernikus/pkg/api/models"
+	"github.com/sapcc/kubernikus/pkg/api/models"
 )
 
 // GetClusterValuesHandlerFunc turns a function with the right signature into a get cluster values handler
@@ -31,10 +31,10 @@ func NewGetClusterValues(ctx *middleware.Context, handler GetClusterValuesHandle
 	return &GetClusterValues{Context: ctx, Handler: handler}
 }
 
-/*GetClusterValues swagger:route GET /api/v1/{account}/clusters/{name}/values getClusterValues
+/*
+	GetClusterValues swagger:route GET /api/v1/{account}/clusters/{name}/values getClusterValues
 
 Get values for cluster chart (admin-only)
-
 */
 type GetClusterValues struct {
 	Context *middleware.Context
@@ -44,17 +44,16 @@ type GetClusterValues struct {
 func (o *GetClusterValues) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	route, rCtx, _ := o.Context.RouteInfo(r)
 	if rCtx != nil {
-		r = rCtx
+		*r = *rCtx
 	}
 	var Params = NewGetClusterValuesParams()
-
 	uprinc, aCtx, err := o.Context.Authorize(r, route)
 	if err != nil {
 		o.Context.Respond(rw, r, route.Produces, route, err)
 		return
 	}
 	if aCtx != nil {
-		r = aCtx
+		*r = *aCtx
 	}
 	var principal *models.Principal
 	if uprinc != nil {
@@ -67,7 +66,6 @@ func (o *GetClusterValues) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	}
 
 	res := o.Handler.Handle(Params, principal) // actually handle the request
-
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
 }

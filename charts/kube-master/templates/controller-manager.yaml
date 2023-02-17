@@ -1,5 +1,5 @@
 {{/* vim: set filetype=gotexttmpl: */ -}}
-{{- if semverCompare ">=1.16-0" .Capabilities.KubeVersion.GitVersion }}
+{{- if .Capabilities.APIVersions.Has "apps/v1" }}
 apiVersion: "apps/v1"
 {{- else }}
 apiVersion: "extensions/v1beta1"
@@ -137,7 +137,7 @@ spec:
 {{- if and (semverCompare ">= 1.14" .Values.version.kubernetes) (semverCompare "< 1.17" .Values.version.kubernetes) }}
             - --feature-gates=NodeLease=false
 {{- end }}
-{{- if (semverCompare ">= 1.20" .Values.version.kubernetes) }}
+{{- if and (.Values.openstack) (semverCompare ">= 1.20" .Values.version.kubernetes) }}
             - --feature-gates=CSIMigration=true,CSIMigrationOpenStack=true,ExpandCSIVolumes=true
 {{- end }}
             - --leader-elect=false
@@ -145,6 +145,8 @@ spec:
             - --service-account-private-key-file=/etc/kubernetes/certs/apiserver-clients-ca-key.pem
             - --service-cluster-ip-range={{ .Values.serviceCIDR }}
             - --use-service-account-credentials
+            - --pv-recycler-pod-template-filepath-hostpath=/etc/kubernetes/config/pv-recycler-template
+            - --pv-recycler-pod-template-filepath-nfs=/etc/kubernetes/config/pv-recycler-template
           livenessProbe:
             httpGet:
               path: /healthz

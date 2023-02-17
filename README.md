@@ -17,7 +17,7 @@ It allows to easily manage Kubernetes clusters that are natively integrated with
 
 ## Features
 
-  * Architecured to be operated as a managed service
+  * Architectured to be operated as a managed service
   * Masters are managed centrally 
   * Nodes are decentralized in customer's projects
   * 100% Vanilla Kubernetes

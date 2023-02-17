@@ -5,12 +5,12 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/golang/glog"
 	"github.com/howeyc/gopass"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	keyring "github.com/zalando/go-keyring"
+	"k8s.io/klog"
 
 	"github.com/sapcc/kubernikus/pkg/cmd/kubernikusctl/common"
 )
@@ -50,6 +50,8 @@ func (o *RefreshOptions) BindFlags(flags *pflag.FlagSet) {
 	common.BindLogFlags(flags)
 	flags.StringVar(&o.openstack.Password, "password", "", "User password [OS_PASSWORD]")
 	flags.StringVar(&o.openstack.TokenID, "token", "", "Token to authenticate with [OS_TOKEN]")
+	flags.StringVar(&o.openstack.CertFile, "client-cert", "", "tls client certificate [OS_CERT]")
+	flags.StringVar(&o.openstack.KeyFile, "client-key", "", "tls client key [OS_KEY]")
 	flags.StringVar(&o.kubeconfigPath, "kubeconfig", o.kubeconfigPath, "Overwrites kubeconfig auto-detection with explicit path")
 	flags.StringVar(&o.context, "context", o.context, "Overwrites current-context in kubeconfig")
 	flags.BoolVar(&o.force, "force", o.force, "Force refresh")
@@ -69,13 +71,13 @@ func (o *RefreshOptions) Complete(args []string) (err error) {
 
 func (o *RefreshOptions) Run(c *cobra.Command) error {
 
-	glog.V(2).Infof("Using context %v", o.context)
+	klog.V(2).Infof("Using context %v", o.context)
 	ktx, err := common.NewKubernikusContext(o.kubeconfigPath, o.context)
 	if err != nil {
 		return errors.Wrapf(err, "Failed to load kubeconfig")
 	}
 	if isKubernikusCtx, err := ktx.IsKubernikusContext(); err != nil || !isKubernikusCtx {
-		glog.V(2).Infof("%s is not a valid Kubernikus context: %v", o.context, err)
+		klog.V(2).Infof("%s is not a valid Kubernikus context: %v", o.context, err)
 		return nil
 	}
 
@@ -83,7 +85,7 @@ func (o *RefreshOptions) Run(c *cobra.Command) error {
 		return errors.Wrap(err, "Verification of certificate failed.")
 	} else {
 		if ok && !o.force {
-			glog.V(2).Infof("Certificates are good. Doing nothing.")
+			klog.V(2).Infof("Certificates are good. Doing nothing.")
 			return nil
 		}
 	}
@@ -97,9 +99,9 @@ func (o *RefreshOptions) Run(c *cobra.Command) error {
 		return errors.Wrap(err, "Couldn't get project ID")
 	}
 
-	glog.V(2).Infof("Detected auth-url: %v", authURL)
+	klog.V(2).Infof("Detected auth-url: %v", authURL)
 	o.openstack.IdentityEndpoint = authURL
-	glog.V(2).Infof("Detected authentication scope for project-id: %v", projectID)
+	klog.V(2).Infof("Detected authentication scope for project-id: %v", projectID)
 	o.openstack.Scope.ProjectID = projectID
 	//Ignore conflicting values from environment
 	o.openstack.Scope.ProjectName = ""
@@ -110,7 +112,7 @@ func (o *RefreshOptions) Run(c *cobra.Command) error {
 	if err != nil {
 		return errors.Wrap(err, "Couldn't get kubernikus URL from certificate")
 	}
-	glog.V(2).Infof("Detected Kubernikus URL: %v", kurl)
+	klog.V(2).Infof("Detected Kubernikus URL: %v", kurl)
 	if o.url, err = url.Parse(kurl); err != nil {
 		return errors.Wrap(err, "Couldn't parse Kubernikus URL. Rerun init.")
 	}
@@ -120,13 +122,13 @@ func (o *RefreshOptions) Run(c *cobra.Command) error {
 		if o.openstack.Username, err = ktx.Username(); err != nil {
 			return errors.Wrap(err, "Failed to extract username from certificate")
 		}
-		glog.V(2).Infof("Detected username: %v", o.openstack.Username)
+		klog.V(2).Infof("Detected username: %v", o.openstack.Username)
 		o.openstack.UserID = "" //Ignore conflicting value from env environment
 
 		if o.openstack.DomainName, err = ktx.UserDomainname(); err != nil {
 			return errors.Wrap(err, "Failed to extract user domain from certificate")
 		}
-		glog.V(2).Infof("Detected domain-name: %v", o.openstack.DomainName)
+		klog.V(2).Infof("Detected domain-name: %v", o.openstack.DomainName)
 		o.openstack.DomainID = "" //Ignore conflicting value from environment
 
 		if o.openstack.Password == "" {
@@ -175,7 +177,7 @@ func (o *RefreshOptions) setupClients() error {
 		return err
 	}
 
-	glog.V(2).Infof(o.openstack.PrintDebugAuthInfo())
+	klog.V(2).Infof(o.openstack.PrintDebugAuthInfo())
 	fmt.Println(o.openstack.PrintAuthInfo())
 
 	if err := o.openstack.Authenticate(); err != nil {

@@ -1,7 +1,9 @@
 package controller
 
 import (
+	"context"
 	"fmt"
+	"net"
 	"path"
 	"reflect"
 	"strings"
@@ -12,7 +14,9 @@ import (
 	"github.com/go-kit/kit/log"
 	"github.com/go-openapi/swag"
 	"github.com/pkg/errors"
-	"google.golang.org/grpc"
+	"github.com/prometheus/client_golang/prometheus"
+	"helm.sh/helm/v3/pkg/action"
+	"helm.sh/helm/v3/pkg/chart/loader"
 	api_v1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -21,13 +25,15 @@ import (
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/record"
 	"k8s.io/client-go/util/workqueue"
-	"k8s.io/helm/pkg/helm"
 
 	"github.com/sapcc/kubernikus/pkg/api/models"
 	v1 "github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
+	"github.com/sapcc/kubernikus/pkg/client/openstack/project"
 	"github.com/sapcc/kubernikus/pkg/controller/config"
 	"github.com/sapcc/kubernikus/pkg/controller/ground"
+	"github.com/sapcc/kubernikus/pkg/controller/ground/bootstrap/ccm"
 	"github.com/sapcc/kubernikus/pkg/controller/ground/bootstrap/csi"
+	"github.com/sapcc/kubernikus/pkg/controller/ground/bootstrap/network"
 	"github.com/sapcc/kubernikus/pkg/controller/metrics"
 	informers_kubernikus "github.com/sapcc/kubernikus/pkg/generated/informers/externalversions/kubernikus/v1"
 	"github.com/sapcc/kubernikus/pkg/util"
@@ -48,6 +54,7 @@ const (
 	GroundctlFinalizer = "groundctl"
 
 	UpgradeEnableAnnotation = "kubernikus.cloud.sap/upgrade"
+	SeedReconcileLabelKey   = "kubernikus.cloud.sap/seed-reconcile"
 )
 
 type GroundControl struct {
@@ -82,6 +89,7 @@ func NewGroundController(threadiness int, factories config.Factories, clients co
 
 	//Register kluster collector
 	metrics.RegisterKlusterCollector(operator.klusterInformer.Lister())
+	prometheus.MustRegister(metrics.SeedReconciliationFailuresTotal)
 
 	operator.klusterInformer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
 		AddFunc:    operator.klusterAdd,
@@ -115,11 +123,7 @@ func (op *GroundControl) Run(stopCh <-chan struct{}, wg *sync.WaitGroup) {
 		for {
 			select {
 			case <-ticker.C:
-				op.Logger.Log(
-					"msg", "I now would do reconciliation if it was implemented",
-					"kluster_recheck_interval", KLUSTER_RECHECK_INTERVAL,
-					"v", 2)
-				//op.queue.Add(true)
+				op.enqueueAllKlusters()
 			case <-stopCh:
 				ticker.Stop()
 				return
@@ -128,6 +132,20 @@ func (op *GroundControl) Run(stopCh <-chan struct{}, wg *sync.WaitGroup) {
 	}()
 
 	<-stopCh
+}
+
+func (op *GroundControl) enqueueAllKlusters() {
+	klusterList, err := op.Clients.Kubernikus.KubernikusV1().Klusters(op.Config.Kubernikus.Namespace).List(context.TODO(), meta_v1.ListOptions{})
+	if err != nil {
+		op.Logger.Log(
+			"msg", "Error enqueuing klusters",
+			"err", err)
+		return
+	}
+	for _, kluster := range klusterList.Items {
+		klusterKey := kluster.Namespace + "/" + kluster.Name
+		op.queue.AddRateLimited(klusterKey)
+	}
 }
 
 func (op *GroundControl) runWorker() {
@@ -159,7 +177,7 @@ func (op *GroundControl) processNextWorkItem() bool {
 
 func (op *GroundControl) updateKluster(kluster *v1.Kluster, updateFunc func(*v1.Kluster) error) error {
 	_, err := util.UpdateKlusterWithRetries(
-		op.Clients.Kubernikus.Kubernikus().Klusters(kluster.Namespace),
+		op.Clients.Kubernikus.KubernikusV1().Klusters(kluster.Namespace),
 		op.klusterInformer.Lister().Klusters(kluster.Namespace),
 		kluster.Name,
 		updateFunc)
@@ -177,10 +195,6 @@ func (op *GroundControl) handler(key string) error {
 		if _, name, err := cache.SplitMetaNamespaceKey(key); err == nil {
 			metrics.SetMetricKlusterTerminated(name)
 		}
-		op.Logger.Log(
-			"msg", "kluster resource already deleted",
-			"kluster", key,
-			"v", 2)
 	} else {
 		kluster := obj.(*v1.Kluster)
 		if kluster.Disabled() {
@@ -271,8 +285,32 @@ func (op *GroundControl) handler(key string) error {
 				"expected", expectedPods,
 				"actual", podsReady)
 			if podsReady == expectedPods {
-				if err := ground.SeedKluster(op.Clients, op.Factories, op.Images, kluster); err != nil {
+				klusterSecret, err := util.KlusterSecret(op.Clients.Kubernetes, kluster)
+				if err != nil {
 					return err
+				}
+				accessMode, err := util.PVAccessMode(op.Clients.Kubernetes, nil)
+				if err != nil {
+					return err
+				}
+				helmValues, err := helm_util.KlusterToHelmValues(kluster, klusterSecret, kluster.Spec.Version, &op.Config.Images, accessMode)
+				if err != nil {
+					return err
+				}
+				projectClient, err := op.Factories.Openstack.ProjectAdminClientFor(kluster.Account())
+				if err != nil {
+					return err
+				}
+				// we need to reconcile twice.
+				// on the first run CRD will be added but these are not in the discovery client cache at that point in time, so creating CRD instances will silently fail.
+				// we fail silently so reconciliation continues even when CRD's are not established.
+				// we await CRD creation in the first run.
+				// on the second run a new discovery client is created, so we know about all CRD's and respective instance can be created.
+				for i := 0; i < 2; i++ {
+					err = op.reconcileSeed(kluster, projectClient, helmValues)
+					if err != nil {
+						return err
+					}
 				}
 				if err := op.updatePhase(kluster, models.KlusterPhaseRunning); err != nil {
 					op.Logger.Log(
@@ -292,6 +330,37 @@ func (op *GroundControl) handler(key string) error {
 				return err
 			}
 
+			klusterSecret, err := util.KlusterSecret(op.Clients.Kubernetes, kluster)
+			if err != nil {
+				return err
+			}
+			if err := op.ensureStorageContainers(kluster, klusterSecret); err != nil {
+				return err
+			}
+
+			accessMode, err := util.PVAccessMode(op.Clients.Kubernetes, nil)
+			if err != nil {
+				return err
+			}
+
+			if kluster.Labels[SeedReconcileLabelKey] == "true" {
+				helmValues, err := helm_util.KlusterToHelmValues(kluster, klusterSecret, kluster.Spec.Version, &op.Config.Images, accessMode)
+				if err != nil {
+					return err
+				}
+				projectClient, err := op.Factories.Openstack.ProjectAdminClientFor(kluster.Account())
+				if err != nil {
+					return err
+				}
+				if err := op.reconcileSeed(kluster, projectClient, helmValues); err != nil {
+					op.Logger.Log(
+						"msg", "Failed seed reconciliation",
+						"kluster", kluster.GetName(),
+						"project", kluster.Account(),
+						"err", err)
+				}
+			}
+
 			updated, err := op.updateVersionStatus(kluster)
 			if err != nil {
 				op.Logger.Log(
@@ -304,8 +373,12 @@ func (op *GroundControl) handler(key string) error {
 			if updated {
 				return nil //wait for update to settle
 			}
+			upgradedNeeded, err := util.KlusterNeedsUpgrade(kluster)
+			if err != nil {
+				return fmt.Errorf("Failed to check if kluster needs upgrading: %w", err)
+			}
 
-			if !util.DisabledValue(kluster.Annotations[UpgradeEnableAnnotation]) && kluster.Status.ApiserverVersion != kluster.Spec.Version {
+			if upgradedNeeded {
 				if _, found := op.Images.Versions[kluster.Spec.Version]; !found {
 					err := fmt.Errorf("Unsupported kubernetes version specified: %s", kluster.Spec.Version)
 					op.Logger.Log(
@@ -409,6 +482,36 @@ func (op *GroundControl) handler(key string) error {
 	return nil
 }
 
+func (op *GroundControl) reconcileSeed(kluster *v1.Kluster, projectClient project.ProjectClient, helmValues map[string]interface{}) error {
+	isNetErr := func(err error) bool {
+		current := err
+		for current != nil {
+			_, ok := current.(net.Error)
+			if ok {
+				return true
+			}
+			current = errors.Unwrap(current)
+		}
+		return false
+	}
+
+	seedReconciler := ground.NewSeedReconciler(&op.Clients, kluster, op.Logger)
+	if err := seedReconciler.EnrichHelmValuesForSeed(projectClient, helmValues); err != nil {
+		if !isNetErr(err) {
+			metrics.SeedReconciliationFailuresTotal.With(prometheus.Labels{"kluster_name": kluster.Spec.Name}).Inc()
+		}
+		return fmt.Errorf("Enrichting seed values failed: %w", err)
+	}
+	if err := seedReconciler.ReconcileSeeding(path.Join(op.Config.Helm.ChartDirectory, "seed"), helmValues); err != nil {
+		if !isNetErr(err) {
+			metrics.SeedReconciliationFailuresTotal.With(prometheus.Labels{"kluster_name": kluster.Spec.Name}).Inc()
+		}
+		return fmt.Errorf("Seeding reconciliation failed: %w", err)
+	}
+	op.Logger.Log("msg", "reconciled seeding successfully", "kluster", kluster.GetName(), "v", 2)
+	return nil
+}
+
 func (op *GroundControl) klusterAdd(obj interface{}) {
 	c := obj.(*v1.Kluster)
 	key, err := cache.MetaNamespaceKeyFunc(c)
@@ -463,8 +566,9 @@ func (op *GroundControl) updateVersionStatus(kluster *v1.Kluster) (bool, error) 
 			}
 		}
 	}
-	if rlsContent, err := op.Clients.Helm.ReleaseContent(kluster.GetName()); err == nil {
-		chartMD := rlsContent.Release.Chart.GetMetadata()
+	get := action.NewGet(op.Clients.Helm3)
+	if release, err := get.Run(kluster.Name); err == nil {
+		chartMD := release.Chart.Metadata
 		if kluster.Status.ChartName != chartMD.Name || kluster.Status.ChartVersion != chartMD.Version {
 			if err := op.updateKluster(kluster, func(k *v1.Kluster) error {
 				k.Status.ChartName = chartMD.Name
@@ -485,7 +589,7 @@ func (op *GroundControl) updatePhase(kluster *v1.Kluster, phase models.KlusterPh
 	if kluster.Status.Phase == phase {
 		return nil
 	}
-	err := util.UpdateKlusterPhase(op.Clients.Kubernikus.Kubernikus(), kluster, phase)
+	err := util.UpdateKlusterPhase(op.Clients.Kubernikus.KubernikusV1(), kluster, phase)
 
 	if err == nil {
 		op.Recorder.Eventf(kluster, api_v1.EventTypeNormal, string(phase), "%s kluster", phase)
@@ -501,11 +605,6 @@ func (op *GroundControl) createKluster(kluster *v1.Kluster) error {
 	accessMode, err := util.PVAccessMode(op.Clients.Kubernetes, nil)
 	if err != nil {
 		return fmt.Errorf("Couldn't determine access mode for pvc: %s", err)
-	}
-
-	region, err := op.Clients.OpenstackAdmin.GetRegion()
-	if err != nil {
-		return err
 	}
 
 	if err := util.EnsureFinalizerCreated(op.Clients.Kubernikus.KubernikusV1(), op.klusterInformer.Lister(), kluster, GroundctlFinalizer); err != nil {
@@ -540,57 +639,73 @@ func (op *GroundControl) createKluster(kluster *v1.Kluster) error {
 		return fmt.Errorf("Failed to generate certificates: %s", err)
 	}
 	klusterSecret.BootstrapToken = util.GenerateBootstrapToken()
-	klusterSecret.Openstack.AuthURL = op.Config.Openstack.AuthURL
-	klusterSecret.Openstack.Username = fmt.Sprintf("kubernikus-%s", kluster.Name)
-	klusterSecret.Openstack.DomainName = "kubernikus"
-	klusterSecret.Openstack.Region = region
-	klusterSecret.Openstack.ProjectID = kluster.Account()
-	//TODO: remove once the backup credentials are disentageled from the service user (e.g. backup to s3)
-	if klusterSecret.Openstack.ProjectID == "" {
+
+	if !kluster.Spec.NoCloud {
+		adminClient, err := op.Factories.Openstack.AdminClient()
+		if err != nil {
+			return err
+		}
+		region, err := adminClient.GetRegion()
+		if err != nil {
+			return err
+		}
+
+		klusterSecret.Openstack.AuthURL = op.Config.Openstack.AuthURL
+		klusterSecret.Openstack.Username = fmt.Sprintf("kubernikus-%s", kluster.Name)
+		klusterSecret.Openstack.DomainName = "kubernikus"
+		klusterSecret.Openstack.Region = region
 		klusterSecret.Openstack.ProjectID = kluster.Account()
-	}
+		//TODO: remove once the backup credentials are disentageled from the service user (e.g. backup to s3)
+		if klusterSecret.Openstack.ProjectID == "" {
+			klusterSecret.Openstack.ProjectID = kluster.Account()
+		}
 
-	domainNameByProject, err := op.OpenstackAdmin.GetDomainNameByProject(klusterSecret.Openstack.ProjectID)
-	if err != nil {
-		return fmt.Errorf("Failed to retrieve domain name by project: %s", err)
-	}
-	klusterSecret.Openstack.ProjectDomainName = domainNameByProject
+		domainNameByProject, err := adminClient.GetDomainNameByProject(klusterSecret.Openstack.ProjectID)
+		if err != nil {
+			return fmt.Errorf("Failed to retrieve domain name by project: %s", err)
+		}
+		klusterSecret.Openstack.ProjectDomainName = domainNameByProject
 
-	if klusterSecret.Openstack.Password, err = goutils.Random(20, 32, 127, true, true); err != nil {
-		return fmt.Errorf("Failed to generated password for cluster service user: %s", err)
-	}
+		userDomainID, err := adminClient.GetDomainID(klusterSecret.Openstack.DomainName)
+		if err != nil {
+			return err
+		}
+		projectDomainID, err := adminClient.GetDomainID(domainNameByProject)
+		if err != nil {
+			return err
+		}
+		klusterSecret.UserDomainID = userDomainID
+		klusterSecret.ProjectDomainID = projectDomainID
 
-	op.Logger.Log(
-		"msg", "creating service user",
-		"username", klusterSecret.Openstack.Username,
-		"kluster", kluster.GetName(),
-		"project", kluster.Account())
+		if klusterSecret.Openstack.Password, err = goutils.Random(20, 32, 127, true, true); err != nil {
+			return fmt.Errorf("Failed to generated password for cluster service user: %s", err)
+		}
 
-	if err := op.Clients.OpenstackAdmin.CreateKlusterServiceUser(
-		klusterSecret.Openstack.Username,
-		klusterSecret.Openstack.Password,
-		klusterSecret.Openstack.DomainName,
-		klusterSecret.Openstack.ProjectID,
-	); err != nil {
-		return err
+		op.Logger.Log(
+			"msg", "creating service user",
+			"username", klusterSecret.Openstack.Username,
+			"kluster", kluster.GetName(),
+			"project", kluster.Account())
+
+		if err := adminClient.CreateKlusterServiceUser(
+			klusterSecret.Openstack.Username,
+			klusterSecret.Openstack.Password,
+			klusterSecret.Openstack.DomainName,
+			klusterSecret.Openstack.ProjectID,
+		); err != nil {
+			return err
+		}
 	}
 
 	if err := util.UpdateKlusterSecret(op.Clients.Kubernetes, kluster, klusterSecret); err != nil {
 		return fmt.Errorf("Failed to update kluster secret: %s", err)
 	}
 
-	if kluster.Spec.Backup == "on" {
-		if err := op.Clients.OpenstackAdmin.CreateStorageContainer(
-			klusterSecret.Openstack.ProjectID,
-			etcd_util.DefaultStorageContainer(kluster),
-			klusterSecret.Openstack.Username,
-			klusterSecret.Openstack.DomainName,
-		); err != nil {
-			return fmt.Errorf("Failed to create container for etcd backups. Check if the project has quota for object-store usage: %s", err)
-		}
+	if err = op.ensureStorageContainers(kluster, klusterSecret); err != nil {
+		return err
 	}
 
-	rawValues, err := helm_util.KlusterToHelmValues(kluster, klusterSecret, kluster.Spec.Version, &op.Config.Images, accessMode)
+	helmValues, err := helm_util.KlusterToHelmValues(kluster, klusterSecret, kluster.Spec.Version, &op.Config.Images, accessMode)
 	if err != nil {
 		return err
 	}
@@ -602,10 +717,17 @@ func (op *GroundControl) createKluster(kluster *v1.Kluster) error {
 
 	op.Logger.Log(
 		"msg", "Debug Chart Values",
-		"values", string(rawValues),
+		"values", fmt.Sprintf("%#v", helmValues),
 		"v", 6)
 
-	_, err = op.Clients.Helm.InstallRelease(path.Join(op.Config.Helm.ChartDirectory, "kube-master"), kluster.Namespace, helm.ValueOverrides(rawValues), helm.ReleaseName(kluster.GetName()))
+	chart, err := loader.Load(path.Join(op.Config.Helm.ChartDirectory, "kube-master"))
+	if err != nil {
+		return err
+	}
+	install := action.NewInstall(op.Helm3)
+	install.ReleaseName = kluster.GetName()
+	install.Namespace = kluster.GetNamespace()
+	_, err = install.Run(chart, helmValues)
 	return err
 }
 
@@ -615,7 +737,7 @@ func (op *GroundControl) upgradeKluster(kluster *v1.Kluster, toVersion string) e
 		return err
 	}
 
-	if strings.HasPrefix(toVersion, "1.20") {
+	if !kluster.Spec.NoCloud && strings.HasPrefix(toVersion, "1.20") && strings.HasPrefix(kluster.Status.ApiserverVersion, "1.19") {
 		dynamicKubernetes, err := op.Clients.Satellites.DynamicClientFor(kluster)
 		if err != nil {
 			return errors.Wrap(err, "dynamic client")
@@ -644,16 +766,65 @@ func (op *GroundControl) upgradeKluster(kluster *v1.Kluster, toVersion string) e
 		}
 	}
 
+	if !kluster.Spec.NoCloud && strings.HasPrefix(toVersion, "1.21") && strings.HasPrefix(kluster.Status.ApiserverVersion, "1.20") {
+		kubernetes, err := op.Clients.Satellites.ClientFor(kluster)
+		if err != nil {
+			return errors.Wrap(err, "client")
+		}
+
+		if err := csi.SeedCinderCSIRoles(kubernetes); err != nil {
+			return errors.Wrap(err, "seed cinder CSI roles on upgrade")
+		}
+	}
+
+	if !kluster.Spec.NoCloud && strings.HasPrefix(toVersion, "1.23") && strings.HasPrefix(kluster.Status.ApiserverVersion, "1.22") {
+		kubernetes, err := op.Clients.Satellites.ClientFor(kluster)
+		if err != nil {
+			return errors.Wrap(err, "client")
+		}
+
+		if err := csi.SeedCinderCSIRoles123(kubernetes); err != nil {
+			return errors.Wrap(err, "seed cinder CSI roles on upgrade")
+		}
+	}
+
+	if !kluster.Spec.NoCloud && strings.HasPrefix(toVersion, "1.24") && strings.HasPrefix(kluster.Status.ApiserverVersion, "1.23") {
+		kubernetes, err := op.Clients.Satellites.ClientFor(kluster)
+		if err != nil {
+			return errors.Wrap(err, "client")
+		}
+
+		if err := network.SeedNetwork(kubernetes, op.Images.Versions[kluster.Spec.Version], *kluster.Spec.ClusterCIDR, kluster.Status.Apiserver, kluster.Spec.AdvertiseAddress, kluster.Spec.AdvertisePort); err != nil {
+			return errors.Wrap(err, "seed CNI config on upgrade")
+		}
+	}
+
+	if !kluster.Spec.NoCloud && strings.HasPrefix(toVersion, "1.25") && strings.HasPrefix(kluster.Status.ApiserverVersion, "1.24") {
+		kubernetes, err := op.Clients.Satellites.ClientFor(kluster)
+		if err != nil {
+			return errors.Wrap(err, "client")
+		}
+
+		if err := ccm.SeedCloudControllerManagerRoles(kubernetes); err != nil {
+			return errors.Wrap(err, "seed CCM roles")
+		}
+	}
+
 	accessMode, err := util.PVAccessMode(op.Clients.Kubernetes, kluster)
 	if err != nil {
 		return fmt.Errorf("Couldn't determine access mode for pvc: %s", err)
 	}
 
-	rawValues, err := helm_util.KlusterToHelmValues(kluster, klusterSecret, toVersion, &op.Config.Images, accessMode)
+	values, err := helm_util.KlusterToHelmValues(kluster, klusterSecret, toVersion, &op.Config.Images, accessMode)
 	if err != nil {
 		return err
 	}
-	_, err = op.Clients.Helm.UpdateRelease(kluster.GetName(), path.Join(op.Config.Helm.ChartDirectory, "kube-master"), helm.UpdateValueOverrides(rawValues))
+	chart, err := loader.Load(path.Join(op.Config.Helm.ChartDirectory, "kube-master"))
+	if err != nil {
+		return err
+	}
+	upgrade := action.NewUpgrade(op.Helm3)
+	_, err = upgrade.Run(kluster.Name, chart, values)
 	return err
 }
 
@@ -665,7 +836,11 @@ func (op *GroundControl) terminateKluster(kluster *v1.Kluster) error {
 		username := secret.Openstack.Username
 		domain := secret.Openstack.DomainName
 		//If the cluster was still in state Pending we don't have a service user yet: skip deletion
-		if username != "" && domain != "" {
+		if !kluster.Spec.NoCloud && username != "" && domain != "" {
+			adminClient, err := op.Factories.Openstack.AdminClient()
+			if err != nil {
+				return err
+			}
 			op.Logger.Log(
 				"msg", "Deleting openstack user",
 				"kluster", kluster.GetName(),
@@ -673,7 +848,7 @@ func (op *GroundControl) terminateKluster(kluster *v1.Kluster) error {
 				"username", username,
 				"domain", domain)
 
-			if err := op.Clients.OpenstackAdmin.DeleteUser(username, domain); err != nil {
+			if err := adminClient.DeleteUser(username, domain); err != nil {
 				return err
 			}
 		}
@@ -684,8 +859,10 @@ func (op *GroundControl) terminateKluster(kluster *v1.Kluster) error {
 		"kluster", kluster.GetName(),
 		"project", kluster.Account())
 
-	_, err := op.Clients.Helm.DeleteRelease(kluster.GetName(), helm.DeletePurge(true))
-	if err != nil && !strings.Contains(grpc.ErrorDesc(err), fmt.Sprintf(`release: "%s" not found`, kluster.GetName())) {
+	uninstall := action.NewUninstall(op.Helm3)
+	_, err := uninstall.Run(kluster.GetName())
+
+	if err != nil && !strings.Contains(err.Error(), fmt.Sprintf(`%s: release: not found`, kluster.GetName())) { //nolint:staticcheck
 		return err
 	}
 
@@ -714,7 +891,7 @@ func (op *GroundControl) terminateKluster(kluster *v1.Kluster) error {
 	//
 	// See: https://github.com/kubernetes/kubernetes/issues/50528
 	propagationPolicy := meta_v1.DeletePropagationBackground
-	err = op.Clients.Kubernikus.KubernikusV1().Klusters(kluster.Namespace).Delete(kluster.Name, &meta_v1.DeleteOptions{PropagationPolicy: &propagationPolicy})
+	err = op.Clients.Kubernikus.KubernikusV1().Klusters(kluster.Namespace).Delete(context.TODO(), kluster.Name, meta_v1.DeleteOptions{PropagationPolicy: &propagationPolicy})
 
 	if err != nil && !apierrors.IsNotFound(err) {
 		return err
@@ -915,6 +1092,46 @@ func (op *GroundControl) discoverOpenstackInfo(kluster *v1.Kluster) error {
 	return nil
 }
 
+func (op *GroundControl) ensureStorageContainers(kluster *v1.Kluster, klusterSecret *v1.Secret) error {
+	if kluster.Spec.NoCloud {
+		return nil
+	}
+	adminClient, err := op.Factories.Openstack.AdminClient()
+	if err != nil {
+		return err
+	}
+
+	ensureContainer := func(name string) error {
+		exists, err := adminClient.StorageContainerExists(klusterSecret.Openstack.ProjectID, name)
+		if err != nil {
+			return err
+		}
+		if !exists {
+			if err := adminClient.CreateStorageContainer(
+				klusterSecret.Openstack.ProjectID,
+				name,
+				klusterSecret.Openstack.Username,
+				klusterSecret.Openstack.DomainName,
+			); err != nil {
+				return fmt.Errorf("Failed to create container %s. Check if the project has quota for object-store usage: %w", name, err)
+			}
+		}
+		return nil
+	}
+
+	if kluster.Spec.Backup == "on" {
+		if err = ensureContainer(etcd_util.DefaultStorageContainer(kluster)); err != nil {
+			return err
+		}
+	}
+	if swag.StringValue(kluster.Spec.Audit) == "swift" {
+		if err = ensureContainer(kluster.Name + "-audit-log"); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func (op *GroundControl) podAdd(obj interface{}) {
 	pod := obj.(*api_v1.Pod)
 
@@ -931,6 +1148,9 @@ func (op *GroundControl) podAdd(obj interface{}) {
 }
 
 func (op *GroundControl) podDelete(obj interface{}) {
+	if deleted, ok := obj.(cache.DeletedFinalStateUnknown); ok {
+		obj = deleted.Obj
+	}
 	pod := obj.(*api_v1.Pod)
 	if klusterName, found := pod.GetLabels()["release"]; found && len(klusterName) > 0 {
 		klusterKey := pod.GetNamespace() + "/" + klusterName

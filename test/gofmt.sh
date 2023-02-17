@@ -11,7 +11,7 @@ if [ -n "$VIOLATING_FILES" ]; then
 fi
 
 #Run gofmt to check for possible simplifications (-s flag)
-VIOLATING_FILES=$(gofmt -s -l $@ | sed /server.go/d)
+VIOLATING_FILES=$(gofmt -s -l $@ | sed -e /server.go/d -e /zz_generated.deepcopy.go/d)
 if [ -n "$VIOLATING_FILES" ]; then
   echo "Gofmt code is not formatted in these files:"
   echo "$VIOLATING_FILES"

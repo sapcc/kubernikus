@@ -1,0 +1,19 @@
+run:
+  timeout: 5m
+linters:
+  enable:
+  - deadcode
+  - exportloopref
+  - gci
+  - gofmt
+  disable:
+  - errcheck
+  - gosimple
+issues:
+  fix: false
+linters-settings:
+  gci:
+    sections:
+      - standard
+      - default
+      - prefix(github.com/sapcc/kubernikus)

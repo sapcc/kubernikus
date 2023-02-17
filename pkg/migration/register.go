@@ -26,6 +26,8 @@ func init() {
 		AddDexSecretAndRoleBindings,
 		ReconcileAdvertisePortConfigDefault,
 		FixFlannelOnFlatcar,
+		KlusterSecretOpenStackIds,
+		Helm2to3,
 		// <-- Insert new migrations at the end only!
 	}
 }

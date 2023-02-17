@@ -10,8 +10,7 @@ import (
 	"io"
 
 	"github.com/go-openapi/runtime"
-
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 
 	"github.com/sapcc/kubernikus/pkg/api/models"
 )
@@ -24,14 +23,12 @@ type CreateClusterReader struct {
 // ReadResponse reads a server response into the received o.
 func (o *CreateClusterReader) ReadResponse(response runtime.ClientResponse, consumer runtime.Consumer) (interface{}, error) {
 	switch response.Code() {
-
 	case 201:
 		result := NewCreateClusterCreated()
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
 			return nil, err
 		}
 		return result, nil
-
 	default:
 		result := NewCreateClusterDefault(response.Code())
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
@@ -49,7 +46,8 @@ func NewCreateClusterCreated() *CreateClusterCreated {
 	return &CreateClusterCreated{}
 }
 
-/*CreateClusterCreated handles this case with default header values.
+/*
+CreateClusterCreated describes a response with status code 201, with default header values.
 
 OK
 */
@@ -57,8 +55,41 @@ type CreateClusterCreated struct {
 	Payload *models.Kluster
 }
 
+// IsSuccess returns true when this create cluster created response has a 2xx status code
+func (o *CreateClusterCreated) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this create cluster created response has a 3xx status code
+func (o *CreateClusterCreated) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this create cluster created response has a 4xx status code
+func (o *CreateClusterCreated) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this create cluster created response has a 5xx status code
+func (o *CreateClusterCreated) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this create cluster created response a status code equal to that given
+func (o *CreateClusterCreated) IsCode(code int) bool {
+	return code == 201
+}
+
 func (o *CreateClusterCreated) Error() string {
 	return fmt.Sprintf("[POST /api/v1/clusters][%d] createClusterCreated  %+v", 201, o.Payload)
+}
+
+func (o *CreateClusterCreated) String() string {
+	return fmt.Sprintf("[POST /api/v1/clusters][%d] createClusterCreated  %+v", 201, o.Payload)
+}
+
+func (o *CreateClusterCreated) GetPayload() *models.Kluster {
+	return o.Payload
 }
 
 func (o *CreateClusterCreated) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -80,7 +111,8 @@ func NewCreateClusterDefault(code int) *CreateClusterDefault {
 	}
 }
 
-/*CreateClusterDefault handles this case with default header values.
+/*
+CreateClusterDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,8 +127,41 @@ func (o *CreateClusterDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this create cluster default response has a 2xx status code
+func (o *CreateClusterDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this create cluster default response has a 3xx status code
+func (o *CreateClusterDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this create cluster default response has a 4xx status code
+func (o *CreateClusterDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this create cluster default response has a 5xx status code
+func (o *CreateClusterDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this create cluster default response a status code equal to that given
+func (o *CreateClusterDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *CreateClusterDefault) Error() string {
 	return fmt.Sprintf("[POST /api/v1/clusters][%d] CreateCluster default  %+v", o._statusCode, o.Payload)
+}
+
+func (o *CreateClusterDefault) String() string {
+	return fmt.Sprintf("[POST /api/v1/clusters][%d] CreateCluster default  %+v", o._statusCode, o.Payload)
+}
+
+func (o *CreateClusterDefault) GetPayload() *models.Error {
+	return o.Payload
 }
 
 func (o *CreateClusterDefault) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {

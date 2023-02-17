@@ -24,17 +24,17 @@ type updateCluster struct {
 }
 
 func (d *updateCluster) Handle(params operations.UpdateClusterParams, principal *models.Principal) middleware.Responder {
-	metadata, err := FetchOpenstackMetadataFunc(params.HTTPRequest, principal)
-	if err != nil {
-		return NewErrorResponse(&operations.UpdateClusterDefault{}, 500, err.Error())
+	// validate spec.name has some value that makes sense
+	// as it is read-only on a semantic level.
+	if !(params.Body.Spec.Name == "" || params.Body.Spec.Name == params.Name) {
+		return NewErrorResponse(&operations.UpdateClusterDefault{}, 500, "spec.name needs to be removed, an empty string or the clusters name")
 	}
 
-	defaultAVZ, err := getDefaultAvailabilityZone(metadata)
-	if err != nil {
-		return NewErrorResponse(&operations.UpdateClusterDefault{}, 500, err.Error())
-	}
+	kluster, err := editCluster(d.Kubernikus.KubernikusV1().Klusters(d.Namespace), principal, params.Name, func(kluster *v1.Kluster) error {
+		// ensure audit value reaches the spec so it
+		// can be considered when upgrading the kluster
+		kluster.Spec.Audit = params.Body.Spec.Audit
 
-	kluster, err := editCluster(d.Kubernikus.Kubernikus().Klusters(d.Namespace), principal, params.Name, func(kluster *v1.Kluster) error {
 		// find the deleted nodepools
 		deletedNodePoolNames, err := detectNodePoolChanges(kluster.Spec.NodePools, params.Body.Spec.NodePools)
 		if err != nil {
@@ -88,10 +88,6 @@ func (d *updateCluster) Handle(params operations.UpdateClusterParams, principal 
 
 		// restore defaults
 		for i, paramPool := range nodePools {
-			// Set default AvailabilityZone
-			if paramPool.AvailabilityZone == "" {
-				nodePools[i].AvailabilityZone = defaultAVZ
-			}
 
 			allowReboot := true
 			allowReplace := true
@@ -110,9 +106,6 @@ func (d *updateCluster) Handle(params operations.UpdateClusterParams, principal 
 				nodePools[i].Config.AllowReplace = &allowReplace
 			}
 
-			if err := validateAavailabilityZone(nodePools[i].AvailabilityZone, metadata); err != nil {
-				return apierrors.NewBadRequest(fmt.Sprintf("Availability Zone %s is invalid: %s", nodePools[i].AvailabilityZone, err))
-			}
 		}
 
 		// Update nodepool
@@ -148,42 +141,40 @@ func (d *updateCluster) Handle(params operations.UpdateClusterParams, principal 
 			}
 		}
 
-		// If dex is disabled
-		if !swag.BoolValue(kluster.Spec.Dex) {
+		dexEnabled := swag.BoolValue(kluster.Spec.Dex)
+		dashboardEnabled := swag.BoolValue(kluster.Spec.Dashboard)
+		if params.Body.Spec.Dex != nil {
+			dexEnabled = swag.BoolValue(params.Body.Spec.Dex)
+		}
+		if params.Body.Spec.Dashboard != nil {
+			dashboardEnabled = swag.BoolValue(params.Body.Spec.Dashboard)
+		}
 
-			// Check for dashboard
-			if swag.BoolValue(params.Body.Spec.Dashboard) && !swag.BoolValue(params.Body.Spec.Dex) {
-				return apierrors.NewBadRequest(fmt.Sprintf("Dashboard cannot be enabled while Dex is disabled"))
+		if !dexEnabled && dashboardEnabled {
+			return apierrors.NewBadRequest(fmt.Sprintf("Dashboard cannot be enabled while Dex is disabled"))
+		}
+
+		//Dex value changed
+		if params.Body.Spec.Dex != nil && swag.BoolValue(params.Body.Spec.Dex) != swag.BoolValue(kluster.Spec.Dex) {
+			kluster.Spec.Dex = params.Body.Spec.Dex
+		}
+
+		//Dashboard value changed
+		if params.Body.Spec.Dashboard != nil && swag.BoolValue(params.Body.Spec.Dashboard) != swag.BoolValue(kluster.Spec.Dashboard) {
+
+			kluster.Spec.Dashboard = params.Body.Spec.Dashboard
+			if dashboardEnabled && kluster.Status.Apiserver != "" {
+				apiURL := kluster.Status.Apiserver
+				kluster.Status.Dashboard = strings.Replace(apiURL, kluster.GetName(), fmt.Sprintf("dashboard-%s.ingress", kluster.GetName()), -1)
 			}
 
-			// Enable dex
-			if swag.BoolValue(params.Body.Spec.Dex) {
-				kluster.Spec.Dex = params.Body.Spec.Dex
-			}
-
-			// Enable dashboard
-			if swag.BoolValue(params.Body.Spec.Dashboard) {
-				kluster.Spec.Dashboard = params.Body.Spec.Dashboard
-				if kluster.Status.Apiserver != "" {
-					apiURL := kluster.Status.Apiserver
-					kluster.Status.Dashboard = strings.Replace(apiURL, kluster.GetName(), fmt.Sprintf("dashboard-%s.ingress", kluster.GetName()), -1)
-				}
-			}
-		} else {
-			// Enable dashboard if dex is enabled
-			if swag.BoolValue(params.Body.Spec.Dashboard) {
-				kluster.Spec.Dashboard = params.Body.Spec.Dashboard
-				if kluster.Status.Apiserver != "" {
-					apiURL := kluster.Status.Apiserver
-					kluster.Status.Dashboard = strings.Replace(apiURL, kluster.GetName(), fmt.Sprintf("dashboard-%s.ingress", kluster.GetName()), -1)
-				}
-			}
 		}
 
 		return nil
 	})
 
 	if err != nil {
+		d.Logger.Log("msg", "Failed to update cluster", "kluster", qualifiedName(params.Name, principal.Account), "err", err)
 
 		switch e := err.(type) {
 		case apierrors.APIStatus:

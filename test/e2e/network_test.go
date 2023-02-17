@@ -1,20 +1,20 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"net"
 	"strings"
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	v1 "k8s.io/api/core/v1"
 	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/apimachinery/pkg/util/wait"
-
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 
 	"github.com/sapcc/kubernikus/pkg/util/generator"
 	"github.com/sapcc/kubernikus/test/e2e/framework"
@@ -22,7 +22,7 @@ import (
 
 const (
 	TestWaitForPodsRunningTimeout      = 5 * time.Minute
-	TestWaitForKubeDNSRunningTimeout   = 2 * time.Minute
+	TestWaitForKubeDNSRunningTimeout   = 5 * time.Minute
 	TestWaitForServiceEndpointsTimeout = 5 * time.Minute
 
 	TestPodTimeout                 = 1 * time.Minute
@@ -48,8 +48,9 @@ func (n *NetworkTests) Run(t *testing.T) {
 	n.Namespace = generator.SimpleNameGenerator.GenerateName("e2e-network-")
 
 	var err error
-	n.Nodes, err = n.Kubernetes.ClientSet.CoreV1().Nodes().List(meta_v1.ListOptions{})
+	n.Nodes, err = n.Kubernetes.ClientSet.CoreV1().Nodes().List(context.Background(), meta_v1.ListOptions{})
 	require.NoError(t, err, "There must be no error while listing the kluster's nodes")
+	require.NotEmpty(t, n.Nodes.Items, "No nodes returned by list")
 
 	defer t.Run("Cleanup", n.DeleteNamespace)
 	t.Run("CreateNamespace", n.CreateNamespace)
@@ -71,7 +72,7 @@ func (n *NetworkTests) Run(t *testing.T) {
 }
 
 func (n *NetworkTests) CreateNamespace(t *testing.T) {
-	_, err := n.Kubernetes.ClientSet.CoreV1().Namespaces().Create(&v1.Namespace{ObjectMeta: meta_v1.ObjectMeta{Name: n.Namespace}})
+	_, err := n.Kubernetes.ClientSet.CoreV1().Namespaces().Create(context.Background(), &v1.Namespace{ObjectMeta: meta_v1.ObjectMeta{Name: n.Namespace}}, meta_v1.CreateOptions{})
 	require.NoError(t, err, "There should be no error while creating a namespace")
 }
 
@@ -81,7 +82,7 @@ func (n *NetworkTests) WaitForNamespace(t *testing.T) {
 }
 
 func (n *NetworkTests) DeleteNamespace(t *testing.T) {
-	err := n.Kubernetes.ClientSet.CoreV1().Namespaces().Delete(n.Namespace, nil)
+	err := n.Kubernetes.ClientSet.CoreV1().Namespaces().Delete(context.Background(), n.Namespace, meta_v1.DeleteOptions{})
 	require.NoError(t, err, "There should be no error while deleting a namespace")
 }
 
@@ -90,7 +91,7 @@ func (n *NetworkTests) CreatePods(t *testing.T) {
 		node := node
 
 		t.Run(fmt.Sprintf("CreatePodForNode-%v", node.Name), func(t *testing.T) {
-			_, err := n.Kubernetes.ClientSet.CoreV1().Pods(n.Namespace).Create(&v1.Pod{
+			_, err := n.Kubernetes.ClientSet.CoreV1().Pods(n.Namespace).Create(context.Background(), &v1.Pod{
 				ObjectMeta: meta_v1.ObjectMeta{
 					GenerateName: fmt.Sprintf("%s-", node.Name),
 					Namespace:    n.Namespace,
@@ -114,7 +115,7 @@ func (n *NetworkTests) CreatePods(t *testing.T) {
 						},
 					},
 				},
-			})
+			}, meta_v1.CreateOptions{})
 			assert.NoError(t, err, "There should be no error while creating a pod")
 		})
 	}
@@ -164,7 +165,7 @@ func (n *NetworkTests) CreateServices(t *testing.T) {
 				},
 			}
 
-			_, err := n.Kubernetes.ClientSet.CoreV1().Services(n.Namespace).Create(service)
+			_, err := n.Kubernetes.ClientSet.CoreV1().Services(n.Namespace).Create(context.Background(), service, meta_v1.CreateOptions{})
 			require.NoError(t, err, "There should be no error while creating a service")
 		})
 	}
@@ -182,7 +183,7 @@ func (n *NetworkTests) WaitForServiceEndpoints(t *testing.T) {
 func (n *NetworkTests) TestPods(t *testing.T) {
 	runParallel(t)
 
-	pods, err := n.Kubernetes.ClientSet.CoreV1().Pods(n.Namespace).List(meta_v1.ListOptions{})
+	pods, err := n.Kubernetes.ClientSet.CoreV1().Pods(n.Namespace).List(context.Background(), meta_v1.ListOptions{})
 	assert.NoError(t, err, "There should be no error while listing the kluster's pods")
 	assert.Equal(t, len(n.Nodes.Items), len(pods.Items), "There should one pod for each node")
 
@@ -214,11 +215,11 @@ func (n *NetworkTests) TestPods(t *testing.T) {
 func (n *NetworkTests) TestServices(t *testing.T) {
 	runParallel(t)
 
-	services, err := n.Kubernetes.ClientSet.CoreV1().Services(n.Namespace).List(meta_v1.ListOptions{LabelSelector: "service=e2e"})
+	services, err := n.Kubernetes.ClientSet.CoreV1().Services(n.Namespace).List(context.Background(), meta_v1.ListOptions{LabelSelector: "service=e2e"})
 	assert.NoError(t, err, "There should be no error while listing services")
 	assert.Equal(t, len(n.Nodes.Items), len(services.Items), "There should one service for each node")
 
-	pods, err := n.Kubernetes.ClientSet.CoreV1().Pods(n.Namespace).List(meta_v1.ListOptions{})
+	pods, err := n.Kubernetes.ClientSet.CoreV1().Pods(n.Namespace).List(context.Background(), meta_v1.ListOptions{})
 	assert.NoError(t, err, "There should be no error while listing the kluster's pods")
 	assert.Equal(t, len(n.Nodes.Items), len(pods.Items), "There should one pod for each node")
 
@@ -251,11 +252,11 @@ func (n *NetworkTests) TestServices(t *testing.T) {
 func (n *NetworkTests) TestServicesWithDNS(t *testing.T) {
 	runParallel(t)
 
-	services, err := n.Kubernetes.ClientSet.CoreV1().Services(n.Namespace).List(meta_v1.ListOptions{LabelSelector: "service=e2e"})
+	services, err := n.Kubernetes.ClientSet.CoreV1().Services(n.Namespace).List(context.Background(), meta_v1.ListOptions{LabelSelector: "service=e2e"})
 	assert.NoError(t, err, "There should be no error while listing services")
 	assert.Equal(t, len(n.Nodes.Items), len(services.Items), "There should one service for each node")
 
-	pods, err := n.Kubernetes.ClientSet.CoreV1().Pods(n.Namespace).List(meta_v1.ListOptions{})
+	pods, err := n.Kubernetes.ClientSet.CoreV1().Pods(n.Namespace).List(context.Background(), meta_v1.ListOptions{})
 	assert.NoError(t, err, "There should be no error while listing the kluster's pods")
 	assert.Equal(t, len(n.Nodes.Items), len(pods.Items), "There should one pod for each node")
 
@@ -310,7 +311,7 @@ func (n *NetworkTests) CreateLoadbalancer(t *testing.T) {
 		},
 	}
 
-	_, err := n.Kubernetes.ClientSet.CoreV1().Services(n.Namespace).Create(service)
+	_, err := n.Kubernetes.ClientSet.CoreV1().Services(n.Namespace).Create(context.Background(), service, meta_v1.CreateOptions{})
 	require.NoError(t, err, "There should be no error while creating a loadbalancer")
 }
 
@@ -319,7 +320,7 @@ func (n *NetworkTests) TestLoadbalancer(t *testing.T) {
 
 	err := wait.PollImmediate(PollInterval, TestServiceLoadbalancerTimeout,
 		func() (bool, error) {
-			lb, _ := n.Kubernetes.ClientSet.CoreV1().Services(n.Namespace).Get("e2e-lb", meta_v1.GetOptions{})
+			lb, _ := n.Kubernetes.ClientSet.CoreV1().Services(n.Namespace).Get(context.Background(), "e2e-lb", meta_v1.GetOptions{})
 
 			if len(lb.Status.LoadBalancer.Ingress) > 0 && net.ParseIP(lb.Status.LoadBalancer.Ingress[0].IP) != nil {
 				return true, nil
@@ -329,6 +330,6 @@ func (n *NetworkTests) TestLoadbalancer(t *testing.T) {
 		})
 	assert.NoError(t, err, "Loadbalancers should get an external IP: %s", err)
 
-	err = n.Kubernetes.ClientSet.CoreV1().Services(n.Namespace).Delete("e2e-lb", &meta_v1.DeleteOptions{})
+	err = n.Kubernetes.ClientSet.CoreV1().Services(n.Namespace).Delete(context.Background(), "e2e-lb", meta_v1.DeleteOptions{})
 	assert.NoError(t, err, "There should be no error deleting loadbalancer service: %s", err)
 }

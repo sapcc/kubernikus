@@ -1,15 +1,18 @@
 package deorbit
 
 import (
+	"context"
+	"fmt"
+	"net/http"
 	"testing"
-	"time"
 
 	"github.com/go-kit/kit/log"
+	th "github.com/gophercloud/gophercloud/testhelper"
+	tc "github.com/gophercloud/gophercloud/testhelper/client"
 	"github.com/stretchr/testify/assert"
 	core_v1 "k8s.io/api/core/v1"
 	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-
 	"k8s.io/client-go/kubernetes/fake"
 
 	kubernikus_v1 "github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
@@ -106,7 +109,7 @@ var (
 		},
 	}
 
-	svcLB0 = &core_v1.Service{
+	svcLB0 *core_v1.Service = &core_v1.Service{
 		ObjectMeta: meta_v1.ObjectMeta{
 			Name: "svc-lb0",
 		},
@@ -136,23 +139,21 @@ var (
 
 func TestIsServiceCleanupFinished(testing *testing.T) {
 	type test_case struct {
-		message   string
-		expected  bool
-		deletedAt time.Time
+		expected bool
+		message  string
+		objects  []runtime.Object
 	}
 
 	for i, t := range []test_case{
-		{"true if grace period is not expired.", false, time.Now()},
-		{"true if grace period is expired.", true, time.Now().Add(-1 * ServiceDeletionGracePeriod)},
+		{true, "true if no services with type LoadBalancer exist", []runtime.Object{svcCIP}},
+		{false, "false if service with type LoadBalancer exists", []runtime.Object{svcLB0, svcLB1, svcCIP}},
 	} {
 
-		k := kluster.DeepCopy()
-		k.DeletionTimestamp = &meta_v1.Time{Time: t.deletedAt}
 		done := make(chan struct{})
-		client := fake.NewSimpleClientset()
+		client := fake.NewSimpleClientset(t.objects...)
 		logger := log.NewNopLogger()
 
-		deorbiter := &ConcreteDeorbiter{k, done, client, logger}
+		deorbiter := &ConcreteDeorbiter{kluster, done, client, logger, nil}
 		finished, err := deorbiter.isServiceCleanupFinished()
 
 		assert.Equal(testing, t.expected, finished, "Test %d failed: %v", i, t.message)
@@ -178,12 +179,108 @@ func TestIsPersistentVolumesCleanupFinished(testing *testing.T) {
 		client := fake.NewSimpleClientset(t.objects...)
 		logger := log.NewNopLogger()
 
-		deorbiter := &ConcreteDeorbiter{kluster, done, client, logger}
+		th.SetupHTTP()
+		defer th.TeardownHTTP()
+		MockVolumeListResponse(testing)
+		serviceClient := tc.ServiceClient()
+
+		deorbiter := &ConcreteDeorbiter{kluster, done, client, logger, serviceClient}
 		finished, err := deorbiter.isPersistentVolumesCleanupFinished()
 
 		assert.Equal(testing, t.expected, finished, "Test %d failed: %v", i, t.message)
 		assert.NoError(testing, err, "test %d failed", i)
 	}
+}
+
+func MockVolumeListResponse(t *testing.T) {
+	th.Mux.HandleFunc("/volumes/detail", func(w http.ResponseWriter, r *http.Request) {
+		th.TestMethod(t, r, "GET")
+		th.TestHeader(t, r, "X-Auth-Token", tc.TokenID)
+
+		w.Header().Add("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+
+		r.ParseForm()
+		marker := r.Form.Get("marker")
+		switch marker {
+		case "":
+			fmt.Fprintf(w, `
+  {
+  "volumes": [
+    {
+      "volume_type": "lvmdriver-1",
+      "created_at": "2015-09-17T03:35:03.000000",
+      "bootable": "false",
+      "name": "vol-001",
+      "os-vol-mig-status-attr:name_id": null,
+      "consistencygroup_id": null,
+      "source_volid": null,
+      "os-volume-replication:driver_data": null,
+      "multiattach": false,
+      "snapshot_id": null,
+      "replication_status": "disabled",
+      "os-volume-replication:extended_status": null,
+      "encrypted": false,
+      "os-vol-host-attr:host": "host-001",
+      "availability_zone": "nova",
+      "attachments": [{
+        "server_id": "83ec2e3b-4321-422b-8706-a84185f52a0a",
+        "attachment_id": "05551600-a936-4d4a-ba42-79a037c1-c91a",
+        "attached_at": "2016-08-06T14:48:20.000000",
+        "host_name": "foobar",
+        "volume_id": "d6cacb1a-8b59-4c88-ad90-d70ebb82bb75",
+        "device": "/dev/vdc",
+        "id": "d6cacb1a-8b59-4c88-ad90-d70ebb82bb75"
+      }],
+      "id": "hase",
+      "size": 75,
+      "user_id": "ff1ce52c03ab433aaba9108c2e3ef541",
+      "os-vol-tenant-attr:tenant_id": "304dc00909ac4d0da6c62d816bcb3459",
+      "os-vol-mig-status-attr:migstat": null,
+      "metadata": {"foo": "bar"},
+      "status": "available",
+      "description": null
+    },
+    {
+      "volume_type": "lvmdriver-1",
+      "created_at": "2015-09-17T03:32:29.000000",
+      "bootable": "false",
+      "name": "vol-002",
+      "os-vol-mig-status-attr:name_id": null,
+      "consistencygroup_id": null,
+      "source_volid": null,
+      "os-volume-replication:driver_data": null,
+      "multiattach": false,
+      "snapshot_id": null,
+      "replication_status": "disabled",
+      "os-volume-replication:extended_status": null,
+      "encrypted": false,
+      "os-vol-host-attr:host": null,
+      "availability_zone": "nova",
+      "attachments": [],
+      "id": "maus",
+      "size": 75,
+      "user_id": "ff1ce52c03ab433aaba9108c2e3ef541",
+      "os-vol-tenant-attr:tenant_id": "304dc00909ac4d0da6c62d816bcb3459",
+      "os-vol-mig-status-attr:migstat": null,
+      "metadata": {},
+      "status": "available",
+      "description": null
+    }
+  ],
+	"volumes_links": [
+	{
+		"href": "%s/volumes/detail?marker=1",
+		"rel": "next"
+	}]
+}
+  `, th.Server.URL)
+		case "1":
+			fmt.Fprintf(w, `{"volumes": []}`)
+		default:
+			t.Fatalf("Unexpected marker: [%s]", marker)
+		}
+	})
 }
 
 func TestDeletePersistentVolumeClaims(testing *testing.T) {
@@ -203,9 +300,9 @@ func TestDeletePersistentVolumeClaims(testing *testing.T) {
 		client := fake.NewSimpleClientset(t.objects...)
 		logger := log.NewNopLogger()
 
-		deorbiter := &ConcreteDeorbiter{kluster, done, client, logger}
+		deorbiter := &ConcreteDeorbiter{kluster, done, client, logger, nil}
 		deleted, err := deorbiter.DeletePersistentVolumeClaims()
-		remaining, _ := client.Core().PersistentVolumeClaims(meta_v1.NamespaceAll).List(meta_v1.ListOptions{})
+		remaining, _ := client.CoreV1().PersistentVolumeClaims(meta_v1.NamespaceAll).List(context.Background(), meta_v1.ListOptions{})
 
 		assert.Equal(testing, t.remaining, len(remaining.Items), "Test %d failed: %v", i, t.message)
 		assert.Equal(testing, t.deleted, len(deleted), "Test %d failed: %v", i, t.message)
@@ -230,9 +327,9 @@ func TestDeleteServices(testing *testing.T) {
 		client := fake.NewSimpleClientset(t.objects...)
 		logger := log.NewNopLogger()
 
-		deorbiter := &ConcreteDeorbiter{kluster, done, client, logger}
+		deorbiter := &ConcreteDeorbiter{kluster, done, client, logger, nil}
 		deleted, err := deorbiter.DeleteServices()
-		remaining, _ := client.Core().Services(meta_v1.NamespaceAll).List(meta_v1.ListOptions{})
+		remaining, _ := client.CoreV1().Services(meta_v1.NamespaceAll).List(context.Background(), meta_v1.ListOptions{})
 
 		assert.Equal(testing, t.remaining, len(remaining.Items), "Test %d failed: %v", i, t.message)
 		assert.Equal(testing, t.deleted, len(deleted), "Test %d failed: %v", i, t.message)

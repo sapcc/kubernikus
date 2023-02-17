@@ -1,6 +1,6 @@
 {{/* vim: set filetype=gotexttmpl: */ -}}
 {{ if .Values.dex.enabled }}
-{{- if semverCompare ">=1.16-0" .Capabilities.KubeVersion.GitVersion }}
+{{- if .Capabilities.APIVersions.Has "apps/v1" }}
 apiVersion: "apps/v1"
 {{- else }}
 apiVersion: "extensions/v1beta1"
@@ -138,9 +138,9 @@ spec:
 {{- end }}
       volumes:
       - name: config
-        defaultMode: 420
         configMap:
           name: {{ include "master.fullname" . }}-dex
+          defaultMode: 0420
           items:
           - key: config.yaml
             path: config.yaml
@@ -175,7 +175,11 @@ spec:
   selector:
     app: {{ include "master.fullname" . }}-dex
 ---
-apiVersion: extensions/v1beta1
+{{- if semverCompare ">= 1.19" .Capabilities.KubeVersion.GitVersion }}
+apiVersion: networking.k8s.io/v1
+{{- else }}
+apiVersion: networking.k8s.io/v1beta1
+{{- end }}
 kind: Ingress
 metadata:
   labels:
@@ -188,10 +192,19 @@ spec:
   - host: {{ include "dex.url" . }} 
     http:
       paths:
-      - backend:
+      - path: /
+{{- if semverCompare ">= 1.19" .Capabilities.KubeVersion.GitVersion }}
+        pathType: Prefix
+        backend:
+          service:
+            name: {{ include "master.fullname" . }}-dex
+            port:
+              number: 80
+{{- else }}
+        backend:
           serviceName: {{ include "master.fullname" . }}-dex
           servicePort: 80
-        path: /
+{{- end }}
   tls:
   - hosts:
     -  {{ include "dex.url" . }}

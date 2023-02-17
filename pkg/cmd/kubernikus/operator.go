@@ -11,6 +11,7 @@ import (
 	"strings"
 	"sync"
 	"syscall"
+	"time"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
@@ -45,7 +46,6 @@ type Options struct {
 func NewOperatorOptions() *Options {
 	options := &Options{}
 	options.ChartDirectory = "charts/"
-	options.AuthURL = "http://keystone.monsoon3:5000/v3"
 	options.AuthUsername = "kubernikus"
 	options.AuthDomain = "Default"
 	options.KubernikusDomain = "kluster.staging.cloud.sap"
@@ -53,6 +53,7 @@ func NewOperatorOptions() *Options {
 	options.MetricPort = 9091
 	options.Controllers = []string{"groundctl", "launchctl", "deorbiter", "routegc", "flight", "migration", "hammertime", "servicing", "certs"}
 	options.Region = "eu-de-1"
+	options.NodeUpdateHoldoff = 7 * 24 * time.Hour
 	return options
 }
 
@@ -75,6 +76,8 @@ func (o *Options) BindFlags(flags *pflag.FlagSet) {
 	flags.IntVar(&o.MetricPort, "metric-port", o.MetricPort, "Port on which metrics are exposed")
 	flags.StringSliceVar(&o.Controllers, "controllers", o.Controllers, fmt.Sprintf("A list of controllers to enable.  Default is to enable all. controllers: %s", strings.Join(o.Controllers, ", ")))
 	flags.IntVar(&o.LogLevel, "v", 0, "log level")
+
+	flags.DurationVar(&o.NodeUpdateHoldoff, "node-update-holdoff", o.NodeUpdateHoldoff, "Holdoff duration before node update is applied.")
 }
 
 func (o *Options) Validate(c *cobra.Command, args []string) error {
@@ -83,7 +86,7 @@ func (o *Options) Validate(c *cobra.Command, args []string) error {
 		o.AuthPassword = os.Getenv("OS_PASSWORD")
 	}
 
-	if o.AuthPassword == "" {
+	if o.AuthURL != "" && o.AuthPassword == "" {
 		return errors.New("you must specify the auth-password flag")
 	}
 

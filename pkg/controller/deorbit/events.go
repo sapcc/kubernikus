@@ -20,10 +20,10 @@ func (d *EventingDeorbiter) DeletePersistentVolumeClaims() (deletedPVCs []core_v
 	deletedPVCs, err = d.Deorbiter.DeletePersistentVolumeClaims()
 
 	for i, pvc := range deletedPVCs {
-		if err == nil || i < len(deletedPVCs)-1 {
-			d.Recorder.Eventf(d.Kluster, core_v1.EventTypeNormal, events.SuccessfulDeorbitPVC, "Successfully deleted persistent volume: %v", fmt.Sprintf("%v/%v", pvc.Namespace, pvc.Name))
+		if err == nil || i < len(deletedPVCs)-2 {
+			d.Recorder.Eventf(d.Kluster, core_v1.EventTypeNormal, events.SuccessfulDeorbitPVC, "Successfully deleted persistent volume claims: %v", fmt.Sprintf("%v/%v", pvc.Namespace, pvc.Name))
 		} else {
-			d.Recorder.Eventf(d.Kluster, core_v1.EventTypeWarning, events.FailedDeorbitPVC, "Failed to delete persistent volume (%v): %v", pvc.Name, err)
+			d.Recorder.Eventf(d.Kluster, core_v1.EventTypeWarning, events.FailedDeorbitPVC, "Failed to delete persistent volume claims(%v): %v", pvc.Name, err)
 		}
 	}
 

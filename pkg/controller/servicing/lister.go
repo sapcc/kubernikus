@@ -1,7 +1,6 @@
 package servicing
 
 import (
-	"fmt"
 	"strings"
 	"time"
 
@@ -19,8 +18,13 @@ import (
 	"github.com/sapcc/kubernikus/pkg/controller/servicing/coreos"
 	"github.com/sapcc/kubernikus/pkg/controller/servicing/flatcar"
 	"github.com/sapcc/kubernikus/pkg/util"
-	"github.com/sapcc/kubernikus/pkg/util/generator"
 	"github.com/sapcc/kubernikus/pkg/util/version"
+)
+
+const (
+	AnnotationNodeForceReplace = "kubernikus.cloud.sap/forceReplace"
+	AnnotationNodeSkipReplace  = "kubernikus.cloud.sap/skipReplace"
+	LabelMaintenanceController = "cloud.sap/maintenance-profile"
 )
 
 type (
@@ -33,6 +37,7 @@ type (
 		Successful() []*core_v1.Node
 		Failed() []*core_v1.Node
 		NotReady() []*core_v1.Node
+		Maintained() []*core_v1.Node
 	}
 
 	// ListerFactory produces a Lister
@@ -42,23 +47,25 @@ type (
 
 	// NodeListerFactory produces a NodeLister
 	NodeListerFactory struct {
-		Logger          log.Logger
-		NodeObservatory *nodeobservatory.NodeObservatory
-		CoreOSVersion   *coreos.Version
-		CoreOSRelease   *coreos.Release
-		FlatcarVersion  *flatcar.Version
-		FlatcarRelease  *flatcar.Release
+		Logger            log.Logger
+		NodeObservatory   *nodeobservatory.NodeObservatory
+		CoreOSVersion     *coreos.Version
+		CoreOSRelease     *coreos.Release
+		FlatcarVersion    *flatcar.Version
+		FlatcarRelease    *flatcar.Release
+		NodeUpdateHoldoff time.Duration
 	}
 
 	// NodeLister knows how to figure out the state of Nodes
 	NodeLister struct {
-		Logger         log.Logger
-		Kluster        *v1.Kluster
-		Lister         listers_core_v1.NodeLister
-		CoreOSVersion  *coreos.Version
-		CoreOSRelease  *coreos.Release
-		FlatcarVersion *flatcar.Version
-		FlatcarRelease *flatcar.Release
+		Logger            log.Logger
+		Kluster           *v1.Kluster
+		Lister            listers_core_v1.NodeLister
+		CoreOSVersion     *coreos.Version
+		CoreOSRelease     *coreos.Release
+		FlatcarVersion    *flatcar.Version
+		FlatcarRelease    *flatcar.Release
+		NodeUpdateHoldoff time.Duration
 	}
 
 	// LoggingLister writes log messages
@@ -69,14 +76,15 @@ type (
 )
 
 // NewNodeListerFactory produces a new factory
-func NewNodeListerFactory(logger log.Logger, recorder record.EventRecorder, factories config.Factories, clients config.Clients) ListerFactory {
+func NewNodeListerFactory(logger log.Logger, recorder record.EventRecorder, factories config.Factories, clients config.Clients, holdoff time.Duration) ListerFactory {
 	return &NodeListerFactory{
-		Logger:          logger,
-		NodeObservatory: factories.NodesObservatory.NodeInformer(),
-		CoreOSVersion:   &coreos.Version{},
-		CoreOSRelease:   &coreos.Release{},
-		FlatcarVersion:  &flatcar.Version{},
-		FlatcarRelease:  &flatcar.Release{},
+		Logger:            logger,
+		NodeObservatory:   factories.NodesObservatory.NodeInformer(),
+		CoreOSVersion:     &coreos.Version{},
+		CoreOSRelease:     &coreos.Release{},
+		FlatcarVersion:    &flatcar.Version{},
+		FlatcarRelease:    &flatcar.Release{},
+		NodeUpdateHoldoff: holdoff,
 	}
 }
 
@@ -91,13 +99,14 @@ func (f *NodeListerFactory) Make(k *v1.Kluster) (Lister, error) {
 	}
 
 	lister = &NodeLister{
-		Logger:         logger,
-		Kluster:        k,
-		Lister:         klusterLister,
-		CoreOSVersion:  f.CoreOSVersion,
-		CoreOSRelease:  f.CoreOSRelease,
-		FlatcarVersion: f.FlatcarVersion,
-		FlatcarRelease: f.FlatcarRelease,
+		Logger:            logger,
+		Kluster:           k,
+		Lister:            klusterLister,
+		CoreOSVersion:     f.CoreOSVersion,
+		CoreOSRelease:     f.CoreOSRelease,
+		FlatcarVersion:    f.FlatcarVersion,
+		FlatcarRelease:    f.FlatcarRelease,
+		NodeUpdateHoldoff: f.NodeUpdateHoldoff,
 	}
 
 	lister = &LoggingLister{
@@ -134,7 +143,7 @@ func (d *NodeLister) Reboot() []*core_v1.Node {
 		return found
 	}
 
-	releasedFlatcar, err := d.FlatcarRelease.GrownUp(latestFlatcar)
+	releasedFlatcar, err := d.FlatcarRelease.GrownUp(latestFlatcar, d.NodeUpdateHoldoff)
 	if err != nil {
 		d.Logger.Log(
 			"msg", "Couldn't get Flatcar releases.",
@@ -143,17 +152,15 @@ func (d *NodeLister) Reboot() []*core_v1.Node {
 	}
 
 	for _, pool := range d.Kluster.Spec.NodePools {
-		if *pool.Config.AllowReboot == false {
-			continue
-		}
-
-		prefix := fmt.Sprintf("%v-%v-", d.Kluster.Spec.Name, pool.Name)
 		for _, node := range d.All() {
-			if !strings.HasPrefix(node.GetName(), prefix) {
-				continue
-			}
-			if len(node.GetName()) == len(prefix)+generator.RandomLength {
-				rebootable = append(rebootable, node)
+			if util.IsKubernikusNode(node.Name, d.Kluster.Spec.Name, pool.Name) {
+				if util.IsFlatcarNodeWithRkt(node) {
+					continue
+				}
+
+				if *pool.Config.AllowReboot == true {
+					rebootable = append(rebootable, node)
+				}
 			}
 		}
 	}
@@ -195,22 +202,32 @@ func (d *NodeLister) Replace() []*core_v1.Node {
 	var nodeNameToPool map[string]*models.NodePool
 	nodeNameToPool = make(map[string]*models.NodePool)
 
+	latestFlatcar, err := d.FlatcarVersion.Stable()
+	if err != nil {
+		d.Logger.Log(
+			"msg", "Couldn't get Flatcar version.",
+			"err", err,
+		)
+		return found
+	}
+
+	releasedFlatcar, err := d.FlatcarRelease.GrownUp(latestFlatcar, d.NodeUpdateHoldoff)
+	if err != nil {
+		d.Logger.Log(
+			"msg", "Couldn't get Flatcar releases.",
+			"err", err,
+		)
+	}
+
 	for i, pool := range d.Kluster.Spec.NodePools {
-		if *pool.Config.AllowReplace == false {
-			continue
-		}
-
-		prefix := fmt.Sprintf("%v-%v-", d.Kluster.Spec.Name, pool.Name)
 		for _, node := range d.All() {
-			if !strings.HasPrefix(node.GetName(), prefix) {
-				continue
-			}
-
-			if len(node.GetName()) == len(prefix)+generator.RandomLength {
+			if util.IsKubernikusNode(node.Name, d.Kluster.Spec.Name, pool.Name) {
 				nodeNameToPool[node.GetName()] = &d.Kluster.Spec.NodePools[i]
-				upgradable = append(upgradable, node)
-			}
 
+				if *pool.Config.AllowReplace == true || util.IsFlatcarNodeWithRkt(node) || util.EnabledValue(node.Annotations[AnnotationNodeForceReplace]) {
+					upgradable = append(upgradable, node)
+				}
+			}
 		}
 	}
 
@@ -220,6 +237,15 @@ func (d *NodeLister) Replace() []*core_v1.Node {
 	}
 
 	for _, node := range upgradable {
+		if util.EnabledValue(node.Annotations[AnnotationNodeSkipReplace]) {
+			continue
+		}
+
+		if util.EnabledValue(node.Annotations[AnnotationNodeForceReplace]) {
+			found = append(found, node)
+			continue
+		}
+
 		if util.IsCoreOSNode(node) && util.IsFlatcarNodePool(nodeNameToPool[node.GetName()]) {
 			found = append(found, node)
 			continue
@@ -262,6 +288,33 @@ func (d *NodeLister) Replace() []*core_v1.Node {
 		if kubeProxyVersion.LessThan(klusterVersion) {
 			found = append(found, node)
 			continue
+		}
+
+		if util.IsFlatcarNodeWithRkt(node) {
+			uptodate := true
+
+			if strings.HasPrefix(node.Status.NodeInfo.OSImage, "Flatcar Container Linux") {
+				if releasedFlatcar {
+					uptodate, err = d.FlatcarVersion.IsNodeUptodate(node)
+				}
+			} else {
+				d.Logger.Log(
+					"msg", "Unsupported OS on node. Skipping OS upgrade.",
+					"os", node.Status.NodeInfo.OSImage,
+				)
+				continue
+			}
+			if err != nil {
+				d.Logger.Log(
+					"msg", "Couldn't get OS version from Node. Skipping OS upgrade.",
+					"err", err,
+				)
+				continue
+			}
+
+			if !uptodate {
+				found = append(found, node)
+			}
 		}
 	}
 
@@ -369,6 +422,20 @@ func (d *NodeLister) Failed() []*core_v1.Node {
 	return found
 }
 
+// Returns all nodes that are assumed to be maintained by the maintenance-controller.
+func (d *NodeLister) Maintained() []*core_v1.Node {
+	var found []*core_v1.Node
+
+	for _, node := range d.All() {
+		_, ok := node.Labels[LabelMaintenanceController]
+		if ok {
+			found = append(found, node)
+		}
+	}
+
+	return found
+}
+
 func (d *NodeLister) updateTimeout() []*core_v1.Node {
 	var found []*core_v1.Node
 
@@ -429,23 +496,6 @@ func (d *NodeLister) hasAnnotation(name string) []*core_v1.Node {
 		}
 
 		found = append(found, node)
-	}
-
-	return found
-}
-
-func (d *NodeLister) withAnnotation(name, expected string) []*core_v1.Node {
-	var found []*core_v1.Node
-
-	for _, node := range d.All() {
-		value, ok := node.ObjectMeta.Annotations[name]
-		if !ok {
-			continue
-		}
-
-		if value == expected {
-			found = append(found, node)
-		}
 	}
 
 	return found
@@ -540,6 +590,18 @@ func (l *LoggingLister) Failed() (nodes []*core_v1.Node) {
 		)
 	}(time.Now())
 	return l.Lister.Failed()
+}
+
+func (l *LoggingLister) Maintained() (nodes []*core_v1.Node) {
+	defer func(begin time.Time) {
+		l.Logger.Log(
+			"msg", "listing nodes assumed to be maintained by the maintenance-controller",
+			"took", time.Since(begin),
+			"count", len(nodes),
+			"v", 3,
+		)
+	}(time.Now())
+	return l.Lister.Maintained()
 }
 
 func getKubeletVersion(node *core_v1.Node) (*version.Version, error) {

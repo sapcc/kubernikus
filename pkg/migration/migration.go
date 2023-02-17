@@ -1,7 +1,13 @@
 package migration
 
 import (
+	"context"
+	"encoding/json"
 	"fmt"
+
+	jsonpatch "github.com/evanphx/json-patch"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
 
 	v1 "github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
 	"github.com/sapcc/kubernikus/pkg/controller/config"
@@ -17,27 +23,27 @@ var defaultRegistry Registry
 // The kubernetes client can be used to modify other things (e.g. kluster secret)
 type Migration func(klusterRaw []byte, kluster *v1.Kluster, clients config.Clients, factories config.Factories) (err error)
 
-//Latest returns to latest spec version available
+// Latest returns to latest spec version available
 func Latest() int {
 	return defaultRegistry.Latest()
 }
 
-//MigrationsPending returns true if a kluster needs to be migrated
+// MigrationsPending returns true if a kluster needs to be migrated
 func MigrationsPending(kluster *v1.Kluster) bool {
 	return defaultRegistry.MigrationsPending(kluster)
 }
 
-//Migrate a kluster to the most recent spec version
+// Migrate a kluster to the most recent spec version
 func Migrate(k *v1.Kluster, clients config.Clients, factories config.Factories) error {
 	return defaultRegistry.Migrate(k, clients, factories)
 }
 
-//Registry manages an ordered list of migration steps
+// Registry manages an ordered list of migration steps
 type Registry struct {
 	migrations []Migration
 }
 
-//AddMigration appends a migration to the list
+// AddMigration appends a migration to the list
 func (r *Registry) AddMigration(m Migration) {
 	r.migrations = append(r.migrations, m)
 }
@@ -72,10 +78,12 @@ func migrateKluster(kluster *v1.Kluster, version int, migration Migration, clien
 	var rawData []byte
 	var err error
 
+	original := kluster.DeepCopy()
+
 	//TODO: Don't import fake pkg outside of test code
 	if _, ok := clients.Kubernikus.(*kubernikusfake.Clientset); !ok {
-		request := clients.Kubernikus.Kubernikus().RESTClient().Get().Namespace(kluster.Namespace).Resource("klusters").Name(kluster.Name)
-		if rawData, err = request.DoRaw(); err != nil {
+		request := clients.Kubernikus.KubernikusV1().RESTClient().Get().Namespace(kluster.Namespace).Resource("klusters").Name(kluster.Name)
+		if rawData, err = request.DoRaw(context.TODO()); err != nil {
 			return nil, err
 		}
 	}
@@ -84,5 +92,19 @@ func migrateKluster(kluster *v1.Kluster, version int, migration Migration, clien
 		return nil, err
 	}
 	kluster.Status.SpecVersion = int64(version)
-	return clients.Kubernikus.Kubernikus().Klusters(kluster.Namespace).Update(kluster)
+
+	originalJSON, err := json.Marshal(original)
+	if err != nil {
+		return nil, err
+	}
+	klusterJSON, err := json.Marshal(kluster)
+	if err != nil {
+		return nil, err
+	}
+	patchJSON, err := jsonpatch.CreateMergePatch(originalJSON, klusterJSON)
+	if err != nil {
+		return nil, err
+	}
+
+	return clients.Kubernikus.KubernikusV1().Klusters(kluster.Namespace).Patch(context.TODO(), kluster.Name, types.MergePatchType, patchJSON, metav1.PatchOptions{})
 }

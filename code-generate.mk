@@ -40,7 +40,7 @@ lister-gen: $(BIN)/lister-gen
 	  --output-package $(GENERATED_BASE)/listers 
 
 deepcopy-gen: $(BIN)/deepcopy-gen
-	@rm -rf $(API_BASE)/kubernikus/v1/zz_generated.deepcopy
+	 find . -name zz_generated.deepcopy.go -delete
 	${BIN}/deepcopy-gen \
 	  --input-dirs $(API_BASE)/kubernikus/v1 --input-dirs $(INPUT_BASE)/pkg/api/models \
 	  -O zz_generated.deepcopy \
@@ -51,4 +51,4 @@ deepcopy-gen: $(BIN)/deepcopy-gen
 
 $(OUTPUT)/bin/%:
 	@mkdir -p _output/bin
-	go build -o $@ ./vendor/k8s.io/code-generator/cmd/$*
+	GOBIN=$(PWD)/_output/bin go install k8s.io/code-generator/cmd/$*@kubernetes-1.21.14

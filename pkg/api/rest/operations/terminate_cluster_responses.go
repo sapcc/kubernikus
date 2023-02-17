@@ -10,13 +10,14 @@ import (
 
 	"github.com/go-openapi/runtime"
 
-	models "github.com/sapcc/kubernikus/pkg/api/models"
+	"github.com/sapcc/kubernikus/pkg/api/models"
 )
 
 // TerminateClusterAcceptedCode is the HTTP code returned for type TerminateClusterAccepted
 const TerminateClusterAcceptedCode int = 202
 
-/*TerminateClusterAccepted OK
+/*
+TerminateClusterAccepted OK
 
 swagger:response terminateClusterAccepted
 */
@@ -37,7 +38,8 @@ func (o *TerminateClusterAccepted) WriteResponse(rw http.ResponseWriter, produce
 	rw.WriteHeader(202)
 }
 
-/*TerminateClusterDefault Error
+/*
+TerminateClusterDefault Error
 
 swagger:response terminateClusterDefault
 */

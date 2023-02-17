@@ -1,10 +1,10 @@
 package handlers
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
-	"sort"
 	"strings"
 
 	kitlog "github.com/go-kit/kit/log"
@@ -12,6 +12,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 
+	"github.com/sapcc/kubernikus/pkg/api/auth"
 	"github.com/sapcc/kubernikus/pkg/api/models"
 	"github.com/sapcc/kubernikus/pkg/api/spec"
 	v1 "github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
@@ -37,7 +38,7 @@ func qualifiedName(name string, accountId string) string {
 }
 
 func editCluster(client kubernikusv1.KlusterInterface, principal *models.Principal, name string, updateFunc func(k *v1.Kluster) error) (*v1.Kluster, error) {
-	kluster, err := client.Get(qualifiedName(name, principal.Account), metav1.GetOptions{})
+	kluster, err := client.Get(context.TODO(), qualifiedName(name, principal.Account), metav1.GetOptions{})
 	if err != nil {
 		return nil, err
 	}
@@ -47,7 +48,7 @@ func editCluster(client kubernikusv1.KlusterInterface, principal *models.Princip
 		return nil, err
 	}
 
-	updatedCluster, err := client.Update(kluster)
+	updatedCluster, err := client.Update(context.TODO(), kluster, metav1.UpdateOptions{})
 	if err != nil {
 		return nil, err
 	}
@@ -118,7 +119,7 @@ func fetchOpenstackMetadata(request *http.Request, principal *models.Principal) 
 	tokenID := request.Header.Get("X-Auth-Token")
 
 	authOptions := &tokens.AuthOptions{
-		IdentityEndpoint: principal.AuthURL,
+		IdentityEndpoint: auth.OpenStackAuthURL(),
 		TokenID:          tokenID,
 		Scope: tokens.Scope{
 			ProjectID: principal.Account,
@@ -131,27 +132,4 @@ func fetchOpenstackMetadata(request *http.Request, principal *models.Principal) 
 	}
 
 	return client.GetMetadata()
-}
-
-func getDefaultAvailabilityZone(metadata *models.OpenstackMetadata) (string, error) {
-	sort.Slice(metadata.AvailabilityZones, func(i, j int) bool { return metadata.AvailabilityZones[i].Name > metadata.AvailabilityZones[j].Name })
-	if len(metadata.AvailabilityZones) == 0 {
-		return "", errors.New("couldn't determine default availability zone")
-	}
-	//eu-de2b is full, default to different az
-	if metadata.AvailabilityZones[0].Name == "eu-de-2b" && len(metadata.AvailabilityZones) > 1 {
-		return metadata.AvailabilityZones[1].Name, nil
-	}
-
-	return metadata.AvailabilityZones[0].Name, nil
-}
-
-func validateAavailabilityZone(avz string, metadata *models.OpenstackMetadata) error {
-	for _, a := range metadata.AvailabilityZones {
-		if a.Name == avz {
-			return nil
-		}
-	}
-
-	return errors.New("availability zone not found")
 }

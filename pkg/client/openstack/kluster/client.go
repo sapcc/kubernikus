@@ -7,18 +7,24 @@ import (
 	"strings"
 
 	"github.com/gophercloud/gophercloud"
+	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/bootfromvolume"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/schedulerhints"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/secgroups"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/servergroups"
+	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/tags"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/servers"
 	securitygroups "github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/security/groups"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/security/rules"
 	"github.com/gophercloud/gophercloud/pagination"
+	flavorutil "github.com/gophercloud/utils/openstack/compute/v2/flavors"
+	imageutil "github.com/gophercloud/utils/openstack/imageservice/v2/images"
+	"k8s.io/apimachinery/pkg/util/sets"
 
 	"github.com/sapcc/kubernikus/pkg/api/models"
 	v1 "github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
 	"github.com/sapcc/kubernikus/pkg/client/openstack/compute"
-	"github.com/sapcc/kubernikus/pkg/util/generator"
+	"github.com/sapcc/kubernikus/pkg/templates"
+	"github.com/sapcc/kubernikus/pkg/util"
 )
 
 type KlusterClient interface {
@@ -30,20 +36,24 @@ type KlusterClient interface {
 	EnsureKubernikusRuleInSecurityGroup(*v1.Kluster) (bool, error)
 	EnsureServerGroup(name string) (string, error)
 	DeleteServerGroup(name string) error
+	EnsureNodeTags(node Node, klusterName, poolName string) ([]string, error)
+	EnsureMetadata(node Node, klusterName, poolName string) (map[string]string, error)
 }
 
 type klusterClient struct {
 	NetworkClient  *gophercloud.ServiceClient
 	ComputeClient  *gophercloud.ServiceClient
 	IdentityClient *gophercloud.ServiceClient
+	ImageClient    *gophercloud.ServiceClient
 }
 
-func NewKlusterClient(network, compute, identity *gophercloud.ServiceClient) KlusterClient {
+func NewKlusterClient(network, compute, identity, image *gophercloud.ServiceClient) KlusterClient {
 	var client KlusterClient
 	client = &klusterClient{
 		NetworkClient:  network,
 		ComputeClient:  compute,
 		IdentityClient: identity,
+		ImageClient:    image,
 	}
 
 	return client
@@ -69,23 +79,39 @@ func (c *klusterClient) CreateNode(kluster *v1.Kluster, pool *models.NodePool, n
 			{UUID: kluster.Spec.Openstack.NetworkID},
 		}
 	}
+	flavorID, err := flavorutil.IDFromName(c.ComputeClient, pool.Flavor)
+	if err != nil {
+		return "", fmt.Errorf("Failed to find id for flavor %s: %w", pool.Flavor, err)
+	}
+	imageID, err := imageutil.IDFromName(c.ImageClient, pool.Image)
+	if err != nil {
+		return "", fmt.Errorf("Failed to find id for image %s: %w", pool.Image, err)
+	}
+
+	tags := nodeTags(kluster.Spec.Name, pool.Name)
+	tags = append(tags, "kubernikus:template-version="+templates.TEMPLATE_VERSION)
+	tags = append(tags, "kubernikus:api-version="+kluster.Spec.Version)
+	metadata := nodeMetadata(kluster.Spec.Name, pool.Name)
+	metadata["kubernikus:template-version"] = templates.TEMPLATE_VERSION
+	metadata["kubernikus:api-version"] = kluster.Spec.Version
 
 	var createOpts servers.CreateOptsBuilder = servers.CreateOpts{
 		Name:             name,
-		FlavorName:       pool.Flavor,
-		ImageName:        pool.Image,
+		FlavorRef:        flavorID,
+		ImageRef:         imageID,
 		AvailabilityZone: pool.AvailabilityZone,
 		Networks:         networks,
 		UserData:         userData,
-		ServiceClient:    c.ComputeClient,
 		SecurityGroups:   []string{kluster.Spec.Openstack.SecurityGroupName},
 		ConfigDrive:      &configDrive,
+		Metadata:         metadata,
+		Tags:             tags,
 	}
 
 	if os.Getenv("NODEPOOL_AFFINITY") != "" {
 		serverGroupID, err := c.EnsureServerGroup(kluster.Name + "/" + pool.Name)
 		if err != nil {
-			return "", err
+			return "", fmt.Errorf("Failed to ensure server group: %w", err)
 		}
 
 		createOpts = schedulerhints.CreateOptsExt{
@@ -94,10 +120,29 @@ func (c *klusterClient) CreateNode(kluster *v1.Kluster, pool *models.NodePool, n
 		}
 	}
 
-	server, err := compute.Create(c.ComputeClient, createOpts).Extract()
+	var server *servers.Server
+
+	if pool.CustomRootDiskSize > 0 {
+		blockDevices := []bootfromvolume.BlockDevice{{
+			UUID:                imageID,
+			VolumeSize:          int(pool.CustomRootDiskSize),
+			BootIndex:           0,
+			DeleteOnTermination: true,
+			SourceType:          "image",
+			DestinationType:     "volume",
+		}}
+		createOpts = &bootfromvolume.CreateOptsExt{
+			CreateOptsBuilder: createOpts,
+			BlockDevice:       blockDevices,
+		}
+
+		server, err = bootfromvolume.Create(c.ComputeClient, createOpts).Extract()
+	} else {
+		server, err = compute.Create(c.ComputeClient, createOpts).Extract()
+	}
 
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("Failed to create node: %w", err)
 	}
 
 	return server.ID, nil
@@ -115,15 +160,14 @@ func (c *klusterClient) RebootNode(id string) error {
 func (c *klusterClient) ListNodes(k *v1.Kluster, pool *models.NodePool) ([]Node, error) {
 	var unfilteredNodes []Node
 	var filteredNodes []Node
-	var err error
 
-	prefix := fmt.Sprintf("%v-%v-", k.Spec.Name, pool.Name)
-	err = servers.List(c.ComputeClient, servers.ListOpts{Name: prefix}).EachPage(func(page pagination.Page) (bool, error) {
+	err := servers.List(c.ComputeClient, servers.ListOpts{}).EachPage(func(page pagination.Page) (bool, error) {
 		if page != nil {
-			unfilteredNodes, err = ExtractServers(page)
+			nodes, err := ExtractServers(page)
 			if err != nil {
 				return false, err
 			}
+			unfilteredNodes = append(unfilteredNodes, nodes...)
 		}
 		return true, nil
 	})
@@ -132,13 +176,10 @@ func (c *klusterClient) ListNodes(k *v1.Kluster, pool *models.NodePool) ([]Node,
 	}
 
 	//filter nodeList https://github.com/golang/go/wiki/SliceTricks#filtering-without-allocating
-	//we only keep nodes whose where the name length is matched the expected length of a name for this pool
-	//otherwise we would be returning nodes from other nodepools here if the current pool name is a prefix of other pools
 	filteredNodes = unfilteredNodes[:0]
 	for _, node := range unfilteredNodes {
-		if len(node.GetName()) == len(prefix)+generator.RandomLength {
+		if util.IsKubernikusNode(node.Name, k.Spec.Name, pool.Name) {
 			filteredNodes = append(filteredNodes, node)
-
 		}
 	}
 
@@ -269,7 +310,7 @@ func (c *klusterClient) DeleteServerGroup(name string) error {
 }
 
 func (c *klusterClient) serverGroupByName(name string) (*servergroups.ServerGroup, error) {
-	page, err := servergroups.List(c.ComputeClient).AllPages()
+	page, err := servergroups.List(c.ComputeClient, servergroups.ListOpts{}).AllPages()
 	if err != nil {
 		return nil, err
 	}
@@ -289,4 +330,58 @@ func ExtractServers(r pagination.Page) ([]Node, error) {
 	var s []Node
 	err := servers.ExtractServersInto(r, &s)
 	return s, err
+}
+
+func (c *klusterClient) EnsureNodeTags(node Node, klusterName, poolName string) ([]string, error) {
+
+	exitingTags := sets.NewString()
+	if node.Tags != nil {
+		exitingTags.Insert(*node.Tags...)
+	}
+	missingTags := sets.NewString(nodeTags(klusterName, poolName)...).Difference(exitingTags).UnsortedList()
+
+	added := []string{}
+	for _, tag := range missingTags {
+		if err := tags.Add(c.ComputeClient, node.ID, tag).ExtractErr(); err != nil {
+			return added, fmt.Errorf("Failed to add tag %s to instance %s, %w", tag, node.ID, err)
+
+		}
+		added = append(added, tag)
+	}
+	return added, nil
+
+}
+
+func (c *klusterClient) EnsureMetadata(node Node, klusterName, poolName string) (map[string]string, error) {
+
+	metadata := nodeMetadata(klusterName, poolName)
+	if node.Metadata == nil {
+		node.Metadata = map[string]string{}
+	}
+	//remove metadata keys that are aleady present
+	for k, v := range metadata {
+		if node.Metadata[k] == v {
+			delete(metadata, k)
+		}
+	}
+	if len(metadata) == 0 {
+		return nil, nil // nothing left to set
+	}
+	return servers.UpdateMetadata(c.ComputeClient, node.ID, servers.MetadataOpts(metadata)).Extract()
+}
+
+func nodeTags(kluster, pool string) []string {
+	return []string{
+		"kubernikus",
+		"kubernikus:kluster=" + kluster,
+		"kubernikus:nodepool=" + pool,
+	}
+}
+
+func nodeMetadata(kluster, pool string) map[string]string {
+	return map[string]string{
+		"provisioner":         "kubernikus",
+		"kubernikus:nodepool": pool,
+		"kubernikus:kluster":  kluster,
+	}
 }

@@ -1,30 +1,36 @@
 package util
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"os"
+	"strconv"
 	"strings"
 
 	"github.com/Masterminds/semver"
 	v1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes"
 
 	"github.com/sapcc/kubernikus/pkg/api/models"
+	"github.com/sapcc/kubernikus/pkg/controller/servicing/flatcar"
+	"github.com/sapcc/kubernikus/pkg/util/generator"
 	"github.com/sapcc/kubernikus/pkg/util/netutil"
 )
 
 const (
-	NODE_COREOS_PREFIX     = "Container Linux by CoreOS"
-	NODE_FLATCAR_PREFIX    = "Flatcar Container Linux"
-	NODEPOOL_COREOS_IMAGE  = "coreos-stable-amd64"
-	NODEPOOL_FLATCAR_IMAGE = "flatcar-stable-amd64"
+	NODE_COREOS_PREFIX             = "Container Linux by CoreOS"
+	NODE_FLATCAR_PREFIX            = "Flatcar Container Linux"
+	NODEPOOL_COREOS_IMAGE          = "coreos-stable-amd64"
+	NODEPOOL_FLATCAR_IMAGE         = "flatcar-stable-amd64"
+	NODE_NAMING_PATTERN_OLD_PREFIX = "%v-%v-"
+	NODE_NAMING_PATTERN_PREFIX     = "kks-%v-%v-"
 )
 
-//Taken from https://github.com/kubernetes/kubernetes/blob/886e04f1fffbb04faf8a9f9ee141143b2684ae68/pkg/api/v1/node/util.go
+// Taken from https://github.com/kubernetes/kubernetes/blob/886e04f1fffbb04faf8a9f9ee141143b2684ae68/pkg/api/v1/node/util.go
 // IsNodeReady returns true if a node is ready; false otherwise.
 func IsNodeReady(node *v1.Node) bool {
 	for _, c := range node.Status.Conditions {
@@ -100,7 +106,7 @@ var machineIDPath = "/etc/machine-id"
 // http://www.freedesktop.org/software/systemd/man/sd_id128_get_machine.html
 
 func GetMachineID() (string, error) {
-	machineID, err := ioutil.ReadFile(machineIDPath)
+	machineID, err := os.ReadFile(machineIDPath)
 	if err != nil {
 		return "", fmt.Errorf("failed to read %s: %v", machineIDPath, err)
 	}
@@ -120,7 +126,7 @@ func AddNodeAnnotation(nodeName, key, val string, client kubernetes.Interface) e
 	if err != nil {
 		return fmt.Errorf("Failed to marshal annotation %v = %v: %s", key, val, err)
 	}
-	_, err = client.CoreV1().Nodes().Patch(nodeName, types.MergePatchType, data)
+	_, err = client.CoreV1().Nodes().Patch(context.TODO(), nodeName, types.MergePatchType, data, metav1.PatchOptions{})
 	return err
 }
 
@@ -131,7 +137,7 @@ func RemoveNodeAnnotation(nodeName, key string, client kubernetes.Interface) err
 	if err != nil {
 		return fmt.Errorf("Failed to marshal annotation %v = %v: %s", key, nil, err)
 	}
-	_, err = client.CoreV1().Nodes().Patch(nodeName, types.MergePatchType, data)
+	_, err = client.CoreV1().Nodes().Patch(context.TODO(), nodeName, types.MergePatchType, data, metav1.PatchOptions{})
 	return err
 }
 
@@ -141,6 +147,26 @@ func IsCoreOSNode(node *v1.Node) bool {
 
 func IsFlatcarNode(node *v1.Node) bool {
 	return strings.HasPrefix(node.Status.NodeInfo.OSImage, NODE_FLATCAR_PREFIX)
+}
+
+func IsFlatcarNodeWithRkt(node *v1.Node) bool {
+	extractVersion, err := flatcar.ExractVersion(node)
+	if err != nil {
+		return false
+	}
+	return NodeTemplateVersion(node) < 1 && extractVersion.Major() < 2905
+}
+
+func NodeTemplateVersion(node *v1.Node) int {
+	if node == nil || node.Labels == nil {
+		return 0
+	}
+	if strVal, ok := node.Labels["kubernikus.cloud.sap/template-version"]; ok {
+		if ver, err := strconv.Atoi(strVal); err == nil {
+			return ver
+		}
+	}
+	return 0
 }
 
 func IsCoreOSNodePool(pool *models.NodePool) bool {
@@ -161,4 +187,11 @@ func NodeVersionConstraint(node *v1.Node, constraint string) (bool, error) {
 		return false, err
 	}
 	return c.Check(v), nil
+}
+
+func IsKubernikusNode(nodeName, klusterName, nodePool string) bool {
+	oldPrefix := fmt.Sprintf(NODE_NAMING_PATTERN_OLD_PREFIX, klusterName, nodePool)
+	prefix := fmt.Sprintf(NODE_NAMING_PATTERN_PREFIX, klusterName, nodePool)
+	return (strings.HasPrefix(nodeName, oldPrefix) && len(nodeName) == len(oldPrefix)+generator.RandomLength) ||
+		(strings.HasPrefix(nodeName, prefix) && len(nodeName) == len(prefix)+generator.RandomLength)
 }

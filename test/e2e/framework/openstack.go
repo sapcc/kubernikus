@@ -1,7 +1,9 @@
 package framework
 
 import (
+	"crypto/tls"
 	"fmt"
+	"net/http"
 	"os"
 
 	"github.com/gophercloud/gophercloud"
@@ -34,6 +36,21 @@ func NewOpenStackFramework() (*OpenStack, error) {
 		return nil, fmt.Errorf("could not initialize openstack client: %v", err)
 	}
 
+	transport := &http.Transport{}
+	if os.Getenv("OS_CERT") != "" && os.Getenv("OS_KEY") != "" {
+		cert, err := tls.LoadX509KeyPair(os.Getenv("OS_CERT"), os.Getenv("OS_KEY"))
+		if err != nil {
+			return nil, fmt.Errorf("failed to load x509 keypair: %w", err)
+		}
+		transport.TLSClientConfig = &tls.Config{
+			Certificates: []tls.Certificate{cert},
+			MinVersion:   tls.VersionTLS12,
+		}
+		provider.HTTPClient = http.Client{
+			Transport: transport,
+		}
+	}
+
 	provider.UseTokenLock()
 
 	err = openstack.AuthenticateV3(provider, authOptions, gophercloud.EndpointOpts{})
@@ -47,6 +64,7 @@ func NewOpenStackFramework() (*OpenStack, error) {
 	}
 
 	compute, err := openstack.NewComputeV2(provider, gophercloud.EndpointOpts{})
+	compute.Microversion = "2.52"
 	if err != nil {
 		return nil, fmt.Errorf("could not initialize compute client: %v", err)
 	}

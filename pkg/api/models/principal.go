@@ -6,12 +6,14 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-	strfmt "github.com/go-openapi/strfmt"
+	"context"
 
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 )
 
 // Principal principal
+//
 // swagger:model Principal
 type Principal struct {
 
@@ -21,11 +23,11 @@ type Principal struct {
 	// account name
 	AccountName string `json:"account_name,omitempty"`
 
-	// Identity Endpoint
-	AuthURL string `json:"authUrl,omitempty"`
-
 	// user's domain name
 	Domain string `json:"domain,omitempty"`
+
+	// list of groups the user belongs to
+	Groups []string `json:"groups"`
 
 	// userid
 	ID string `json:"id,omitempty"`
@@ -39,6 +41,11 @@ type Principal struct {
 
 // Validate validates this principal
 func (m *Principal) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this principal based on context it is used
+func (m *Principal) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 

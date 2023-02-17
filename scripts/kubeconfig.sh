@@ -13,12 +13,19 @@ case $KUBECONTEXT in
   k-*)
     BASE_URL=kubernikus.${KUBECONTEXT#"k-"}.cloud.sap
     ;;
+  a-*)
+    BASE_URL=kubernikus.admin.${KUBECONTEXT#"a-"}.cloud.sap
+    ;;
   admin)
     BASE_URL=$KUBENAMESPACE.admin.cloud.sap
     ;;
 esac
 
-kubectl get secret -n$KUBENAMESPACE $1-secret -ogo-template-file=<(cat<< EOF
+if [ "$KUBENAMESPACE" != "kubernikus" ]; then
+  BASE_URL=k-dev.qa-de-1.cloud.sap
+fi
+
+kubectl get secret --context=$KUBECONTEXT -n$KUBENAMESPACE $1-secret -ogo-template-file=<(cat<< EOF
 {{ \$cluster := index .metadata.ownerReferences 0 "name" -}}
 apiVersion: v1
 kind: Config

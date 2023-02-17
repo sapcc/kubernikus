@@ -281,9 +281,29 @@ func TestServicingControllerReconcile(t *testing.T) {
 			expectedReboot:  false,
 			expectedReplace: false,
 		},
+		{
+			message: "Klusters assumed to be maintained by the maintenance-controller should neither be rebooted nor replaced",
+			options: &FakeKlusterOptions{
+				Phase: models.KlusterPhaseRunning,
+				NodePools: []FakeNodePoolOptions{
+					{
+						AllowReboot:         true,
+						AllowReplace:        true,
+						NodeHealthy:         true,
+						NodeOSOutdated:      true,
+						NodeKubeletOutdated: true,
+						Size:                2,
+						Labels:              []string{"cloud.sap/maintenance-profile=flatcar"},
+					},
+				},
+			},
+			expectedDrain:   false,
+			expectedReboot:  false,
+			expectedReplace: false,
+		},
 	} {
 		t.Run(string(subject.message), func(t *testing.T) {
-			kluster, nodes := NewFakeKluster(subject.options)
+			kluster, nodes := NewFakeKluster(subject.options, true)
 			logger := log.With(TestLogger(), "controller", "servicing")
 
 			mockCycler := &MockLifeCycler{}
@@ -303,8 +323,8 @@ func TestServicingControllerReconcile(t *testing.T) {
 			listers := &NodeListerFactory{
 				Logger:          logger,
 				NodeObservatory: nodeobservatory.NewFakeController(kluster, nodes...),
-				FlatcarVersion:  flatcar.NewFakeVersion(t, "2303.4.0"),
-				FlatcarRelease:  flatcar.NewFakeRelease(t, "2303.4.0"),
+				FlatcarVersion:  flatcar.NewFakeVersion(t, "3000.0.0"),
+				FlatcarRelease:  flatcar.NewFakeRelease(t, "3000.0.0"),
 			}
 
 			reconcilers := &KlusterReconcilerFactory{
@@ -312,7 +332,7 @@ func TestServicingControllerReconcile(t *testing.T) {
 				ListerFactory:     listers,
 				LifeCyclerFactory: lifecyclers,
 				KlusterLister:     NewFakeKlusterLister(kluster),
-				KubernikusClient:  kubernikusfake.NewSimpleClientset(kluster).Kubernikus(),
+				KubernikusClient:  kubernikusfake.NewSimpleClientset(kluster).KubernikusV1(),
 			}
 
 			controller := &Controller{

@@ -8,9 +8,9 @@ package operations
 import (
 	"net/http"
 
-	middleware "github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/runtime/middleware"
 
-	models "github.com/sapcc/kubernikus/pkg/api/models"
+	"github.com/sapcc/kubernikus/pkg/api/models"
 )
 
 // CreateClusterHandlerFunc turns a function with the right signature into a create cluster handler
@@ -31,10 +31,10 @@ func NewCreateCluster(ctx *middleware.Context, handler CreateClusterHandler) *Cr
 	return &CreateCluster{Context: ctx, Handler: handler}
 }
 
-/*CreateCluster swagger:route POST /api/v1/clusters createCluster
+/*
+	CreateCluster swagger:route POST /api/v1/clusters createCluster
 
 Create a cluster
-
 */
 type CreateCluster struct {
 	Context *middleware.Context
@@ -44,17 +44,16 @@ type CreateCluster struct {
 func (o *CreateCluster) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	route, rCtx, _ := o.Context.RouteInfo(r)
 	if rCtx != nil {
-		r = rCtx
+		*r = *rCtx
 	}
 	var Params = NewCreateClusterParams()
-
 	uprinc, aCtx, err := o.Context.Authorize(r, route)
 	if err != nil {
 		o.Context.Respond(rw, r, route.Produces, route, err)
 		return
 	}
 	if aCtx != nil {
-		r = aCtx
+		*r = *aCtx
 	}
 	var principal *models.Principal
 	if uprinc != nil {
@@ -67,7 +66,6 @@ func (o *CreateCluster) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	}
 
 	res := o.Handler.Handle(Params, principal) // actually handle the request
-
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
 }

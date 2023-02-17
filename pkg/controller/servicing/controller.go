@@ -3,9 +3,8 @@ package servicing
 import (
 	"time"
 
-	"github.com/pkg/errors"
-
 	"github.com/go-kit/kit/log"
+	"github.com/pkg/errors"
 	"k8s.io/client-go/tools/record"
 
 	"github.com/sapcc/kubernikus/pkg/api/models"
@@ -41,21 +40,20 @@ var (
 // For rollout and testing purposed the node upgrades are disabled by default.
 // They can manually be enabled by setting the node annotaion:
 //
-//    kubernikus.cloud.sap/servicing=true
-//
+//	kubernikus.cloud.sap/servicing=true
 type Controller struct {
 	Logger     log.Logger
 	Reconciler ReconcilerFactory
 }
 
 // NewController is a helper to create a Servicing Controller instance
-func NewController(threadiness int, factories config.Factories, clients config.Clients, recorder record.EventRecorder, logger log.Logger) base.Controller {
+func NewController(threadiness int, factories config.Factories, clients config.Clients, recorder record.EventRecorder, holdoff time.Duration, logger log.Logger) base.Controller {
 	logger = log.With(logger, "controller", "servicing")
 
 	var controller base.Reconciler
 	controller = &Controller{
 		Logger:     logger,
-		Reconciler: NewKlusterReconcilerFactory(logger, recorder, factories, clients),
+		Reconciler: NewKlusterReconcilerFactory(logger, recorder, factories, clients, holdoff),
 	}
 
 	RegisterServicingNodesCollector(logger, factories)
@@ -69,9 +67,13 @@ func (d *Controller) Reconcile(k *v1.Kluster) (requeue bool, err error) {
 	if k.Status.Phase != models.KlusterPhaseRunning {
 		return false, nil
 	}
+	//no servicing for no cloud clusters
+	if k.Spec.NoCloud {
+		return false, nil
+	}
 	reconciler, err := d.Reconciler.Make(k)
 	if err != nil {
-		d.Logger.Log("msg", "skippig upgrades. Internal server error.", "err", err)
+		d.Logger.Log("msg", "skippig upgrades. Internal server error.", "kluster", k.Name, "err", err)
 		return true, errors.Wrap(err, "Couldn't make Servicing Reconciler.")
 	}
 

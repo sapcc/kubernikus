@@ -29,6 +29,30 @@ type SharedOpenstackClientFactory interface {
 	AdminClient() (admin.AdminClient, error)
 }
 
+var _ SharedOpenstackClientFactory = &NotAvailableFactory{}
+
+type NotAvailableFactory struct {
+}
+
+func (_ NotAvailableFactory) KlusterClientFor(*kubernikus_v1.Kluster) (openstack_kluster.KlusterClient, error) {
+	return nil, errors.New("Openstack not configured")
+}
+func (_ NotAvailableFactory) ProjectClientFor(authOptions *tokens.AuthOptions) (openstack_project.ProjectClient, error) {
+	return nil, errors.New("Openstack not configured")
+}
+func (_ NotAvailableFactory) ProjectAdminClientFor(string) (openstack_project.ProjectClient, error) {
+	return nil, errors.New("Openstack not configured")
+}
+func (_ NotAvailableFactory) ProviderClientFor(authOptions *tokens.AuthOptions, logger log.Logger) (*gophercloud.ProviderClient, error) {
+	return nil, errors.New("Openstack not configured")
+}
+func (_ NotAvailableFactory) ProviderClientForKluster(kluster *kubernikus_v1.Kluster, logger log.Logger) (*gophercloud.ProviderClient, error) {
+	return nil, errors.New("Openstack not configured")
+}
+func (_ NotAvailableFactory) AdminClient() (admin.AdminClient, error) {
+	return nil, errors.New("Openstack not configured")
+}
+
 type factory struct {
 	klusterClients sync.Map
 	projectClients sync.Map
@@ -97,13 +121,13 @@ func (f *factory) KlusterClientFor(kluster *kubernikus_v1.Kluster) (openstack_kl
 		return nil, err
 	}
 
-	identity, compute, network, err := f.serviceClientsFor(authOptions, f.logger)
+	identity, compute, network, image, err := f.serviceClientsFor(authOptions, f.logger)
 	if err != nil {
 		return nil, err
 	}
 
 	var client openstack_kluster.KlusterClient
-	client = openstack_kluster.NewKlusterClient(network, compute, identity)
+	client = openstack_kluster.NewKlusterClient(network, compute, identity, image)
 	client = &openstack_kluster.LoggingClient{Client: client, Logger: log.With(f.logger, "kluster", kluster.GetName(), "project", kluster.Account())}
 
 	f.klusterClients.Store(kluster.GetUID(), client)
@@ -130,7 +154,7 @@ func (f *factory) projectClient(projectID string, authOptions *tokens.AuthOption
 		return obj.(openstack_project.ProjectClient), nil
 	}
 
-	identity, compute, network, err := f.serviceClientsFor(authOptions, f.logger)
+	identity, compute, network, _, err := f.serviceClientsFor(authOptions, f.logger)
 	if err != nil {
 		return nil, err
 	}
@@ -195,27 +219,31 @@ func (f *factory) ProviderClientFor(authOptions *tokens.AuthOptions, logger log.
 	return provider, nil
 }
 
-func (f *factory) serviceClientsFor(authOptions *tokens.AuthOptions, logger log.Logger) (*gophercloud.ServiceClient, *gophercloud.ServiceClient, *gophercloud.ServiceClient, error) {
+func (f *factory) serviceClientsFor(authOptions *tokens.AuthOptions, logger log.Logger) (*gophercloud.ServiceClient, *gophercloud.ServiceClient, *gophercloud.ServiceClient, *gophercloud.ServiceClient, error) {
 	providerClient, err := f.ProviderClientFor(authOptions, logger)
 	if err != nil {
-		return nil, nil, nil, err
+		return nil, nil, nil, nil, err
 	}
 
 	identity, err := openstack.NewIdentityV3(providerClient, gophercloud.EndpointOpts{})
 	if err != nil {
-		return nil, nil, nil, err
+		return nil, nil, nil, nil, err
 	}
 
 	compute, err := openstack.NewComputeV2(providerClient, gophercloud.EndpointOpts{})
-	compute.Microversion = "2.25" // 2.25 is the maximum in mitaka. we need at least 2.15 to create `soft-affinity` server groups
+	compute.Microversion = "2.52" // 2.52 supports specifying server tags during create
 	if err != nil {
-		return nil, nil, nil, err
+		return nil, nil, nil, nil, err
 	}
 
 	network, err := openstack.NewNetworkV2(providerClient, gophercloud.EndpointOpts{})
 	if err != nil {
-		return nil, nil, nil, err
+		return nil, nil, nil, nil, err
+	}
+	image, err := openstack.NewImageServiceV2(providerClient, gophercloud.EndpointOpts{})
+	if err != nil {
+		return nil, nil, nil, nil, err
 	}
 
-	return identity, compute, network, nil
+	return identity, compute, network, image, nil
 }

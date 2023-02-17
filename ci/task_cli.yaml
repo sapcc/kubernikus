@@ -3,8 +3,8 @@ platform: 'linux'
 image_resource:
   type: registry-image
   source:
-    repository: keppel.eu-de-2.cloud.sap/ccloud-dockerhub-mirror/library/golang
-    tag: 1.14-alpine
+    repository: keppel.eu-de-1.cloud.sap/ccloud-dockerhub-mirror/library/golang
+    tag: 1.18-alpine
 inputs:
   - name: kubernikus.builds
     path: gopath/src/github.com/sapcc/kubernikus
@@ -21,9 +21,10 @@ run:
       export CGO_ENABLED=0
 
       cd gopath/src/github.com/sapcc/kubernikus
-      apk add --no-cache upx make git
+      apk add --no-cache upx bash make git
 
       make bin/darwin/kubernikusctl
+      make bin/darwin/kubernikusctl.arm64 GOOARCH=arm64
       make bin/linux/kubernikusctl
       make bin/windows/kubernikusctl.exe
       upx bin/linux/*
@@ -35,6 +36,7 @@ run:
       echo "1.0.0+$SHA" > $BINARIES/tag
 
       cp bin/darwin/kubernikusctl $BINARIES/kubernikusctl_darwin_amd64
+      cp bin/darwin/kubernikusctl.arm64 $BINARIES/kubernikusctl_darwin_arm64
       cp bin/linux/kubernikusctl $BINARIES/kubernikusctl_linux_amd64
       cp bin/windows/kubernikusctl.exe $BINARIES/kubernikusctl_windows_amd64.exe
 

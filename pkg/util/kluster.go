@@ -1,6 +1,7 @@
 package util
 
 import (
+	"context"
 	"fmt"
 	"strconv"
 
@@ -50,9 +51,11 @@ func UpdateKlusterMigrationStatus(client clientset.KubernikusV1Interface, kluste
 	//patches are retried on the server side so a single try should be sufficient
 
 	_, err := client.Klusters(kluster.Namespace).Patch(
+		context.TODO(),
 		kluster.Name,
 		types.MergePatchType,
 		[]byte(fmt.Sprintf(`{"status":{"migrationsPending":%s}}`, strconv.FormatBool(pending))),
+		meta_v1.PatchOptions{},
 	)
 	return err
 }
@@ -66,9 +69,11 @@ func UpdateKlusterPhase(client clientset.KubernikusV1Interface, kluster *v1.Klus
 	//patches are retried on the server side so a single try should be sufficient
 
 	_, err := client.Klusters(kluster.Namespace).Patch(
+		context.TODO(),
 		kluster.Name,
 		types.MergePatchType,
 		[]byte(fmt.Sprintf(`{"status":{"phase":"%s"}}`, phase)),
+		meta_v1.PatchOptions{},
 	)
 	return err
 }
@@ -83,7 +88,7 @@ func EnsureKlusterSecret(client kubernetes.Interface, kluster *v1.Kluster) (*v1.
 			OwnerReferences: []meta_v1.OwnerReference{*klusterRef},
 		},
 	}
-	apiSecret, err := client.Core().Secrets(kluster.Namespace).Create(&s)
+	apiSecret, err := client.CoreV1().Secrets(kluster.Namespace).Create(context.TODO(), &s, meta_v1.CreateOptions{})
 	if apierrors.IsAlreadyExists(err) {
 		return KlusterSecret(client, kluster)
 	}
@@ -95,7 +100,7 @@ func EnsureKlusterSecret(client kubernetes.Interface, kluster *v1.Kluster) (*v1.
 
 // NOTE: this is not threadsafe (but we are only calling this once per kluster for the time being)
 func UpdateKlusterSecret(client kubernetes.Interface, kluster *v1.Kluster, secret *v1.Secret) error {
-	api_secret, err := client.Core().Secrets(kluster.Namespace).Get(klusterSecretName(kluster), meta_v1.GetOptions{})
+	api_secret, err := client.CoreV1().Secrets(kluster.Namespace).Get(context.TODO(), klusterSecretName(kluster), meta_v1.GetOptions{})
 	if err != nil {
 		return err
 	}
@@ -103,13 +108,13 @@ func UpdateKlusterSecret(client kubernetes.Interface, kluster *v1.Kluster, secre
 	if err != nil {
 		return fmt.Errorf("Failed to serialize secret data: %s", err)
 	}
-	_, err = client.Core().Secrets(kluster.Namespace).Update(api_secret)
+	_, err = client.CoreV1().Secrets(kluster.Namespace).Update(context.TODO(), api_secret, meta_v1.UpdateOptions{})
 	return err
 
 }
 
 func DeleteKlusterSecret(client kubernetes.Interface, kluster *v1.Kluster) error {
-	err := client.Core().Secrets(kluster.Namespace).Delete(klusterSecretName(kluster), nil)
+	err := client.CoreV1().Secrets(kluster.Namespace).Delete(context.TODO(), klusterSecretName(kluster), meta_v1.DeleteOptions{})
 	if apierrors.IsNotFound(err) {
 		return nil
 	}
@@ -121,7 +126,7 @@ func klusterSecretName(k *v1.Kluster) string {
 }
 
 func KlusterSecret(client kubernetes.Interface, kluster *v1.Kluster) (*v1.Secret, error) {
-	secret, err := client.CoreV1().Secrets(kluster.Namespace).Get(klusterSecretName(kluster), meta_v1.GetOptions{})
+	secret, err := client.CoreV1().Secrets(kluster.Namespace).Get(context.TODO(), klusterSecretName(kluster), meta_v1.GetOptions{})
 	if err != nil {
 		return nil, err
 	}
@@ -138,6 +143,20 @@ func KlusterVersionConstraint(kluster *v1.Kluster, constraint string) (bool, err
 		return false, err
 	}
 	return c.Check(v), nil
+}
+
+func KlusterNeedsUpgrade(kluster *v1.Kluster) (bool, error) {
+
+	from, err := semver.NewVersion(kluster.Status.ApiserverVersion)
+	if err != nil {
+		return false, err
+	}
+
+	to, err := semver.NewVersion(kluster.Spec.Version)
+	if err != nil {
+		return false, err
+	}
+	return from.Compare(to) != 0 && (from.Minor() == to.Minor() || from.Minor()+1 == to.Minor()), nil
 }
 
 func KlusterPodsReadyCount(kluster *v1.Kluster, podLister listers_core_v1.PodLister) (int, int, error) {

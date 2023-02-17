@@ -3,7 +3,7 @@ platform: "linux"
 image_resource:
   type: registry-image
   source:
-    repository: keppel.eu-de-2.cloud.sap/ccloud-dockerhub-mirror/sapcc/unified-kubernetes-toolbox
+    repository: keppel.eu-de-1.cloud.sap/ccloud-dockerhub-mirror/sapcc/unified-kubernetes-toolbox
     tag: 'latest'
 
 inputs:
@@ -29,7 +29,11 @@ run:
       touch /tmp/kubernikus-dex.yaml
       [[ "${KUBERNIKUS_NAME}" == "k-master" ]] && printf "dex:\n  dns:\n    zone: ingress.kubernikus-master" > /tmp/kubernikus-dex.yaml
 
+      # Interpolate secrets
+      vault-injector interpolate secrets.git/$REGION/values/keystone.yaml secrets.git/$REGION/values/globals.yaml /tmp/kubernikus-dex.yaml
+
       helm diff upgrade kubernikus-dex kubernikus-copy.builds/charts/kubernikus-dex/ \
+        --namespace=kubernikus \
         --values secrets.git/$REGION/values/keystone.yaml \
         --values secrets.git/$REGION/values/globals.yaml \
         --values /tmp/kubernikus-dex.yaml \
@@ -49,4 +53,8 @@ params:
   KUBELOGON_PASSWORD:
   KUBERNIKUS_NAME:
   KUBERNIKUS_URL:
-  HELM_VERSION: 2.11.0
+  HELM_VERSION: 3.9.0
+  VAULT_ADDR:      https://vault.global.cloud.sap # DO NOT CHANGE
+  VAULT_KV_ENGINE: secrets                        # DO NOT CHANGE
+  VAULT_ROLE_ID:   # (required) set this to ((auth.role_id)) to receive credentials automatically from Concourse
+  VAULT_SECRET_ID: # (required) set this to ((auth.secret_id)) to receive credentials automatically from Concourse

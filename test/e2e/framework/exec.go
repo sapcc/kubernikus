@@ -2,6 +2,7 @@ package framework
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"io"
 	"net/url"
@@ -51,7 +52,7 @@ func (f *Kubernetes) ExecWithOptions(options ExecOptions) (string, string, error
 	}, scheme.ParameterCodec)
 
 	var stdout, stderr bytes.Buffer
-	err := execute("POST", req.URL(), f.restClientConfig, options.Stdin, &stdout, &stderr, tty)
+	err := execute("POST", req.URL(), f.RestConfig, options.Stdin, &stdout, &stderr, tty)
 
 	if options.PreserveWhitespace {
 		return stdout.String(), stderr.String(), err
@@ -89,7 +90,7 @@ func (f *Kubernetes) ExecShellInContainer(namespace, podName, containerName stri
 }
 
 func (f *Kubernetes) ExecCommandInPod(namespace, podName string, cmd ...string) string {
-	pod, err := f.ClientSet.CoreV1().Pods(namespace).Get(podName, metav1.GetOptions{})
+	pod, err := f.ClientSet.CoreV1().Pods(namespace).Get(context.Background(), podName, metav1.GetOptions{})
 	if err != nil {
 		return fmt.Sprintf("failed to get pod %s/%s: %s", namespace, podName, err)
 	}
@@ -97,7 +98,7 @@ func (f *Kubernetes) ExecCommandInPod(namespace, podName string, cmd ...string) 
 }
 
 func (f *Kubernetes) ExecCommandInPodWithFullOutput(namespace, podName string, cmd ...string) (string, string, error) {
-	pod, err := f.ClientSet.CoreV1().Pods(namespace).Get(podName, metav1.GetOptions{})
+	pod, err := f.ClientSet.CoreV1().Pods(namespace).Get(context.Background(), podName, metav1.GetOptions{})
 	if err != nil {
 		return "", "", fmt.Errorf("failed to get pod")
 	}

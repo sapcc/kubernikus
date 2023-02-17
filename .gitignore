@@ -4,3 +4,6 @@ _output
 *.swp
 .envrc
 .idea
+.env
+/ci/pipeline.yaml
+

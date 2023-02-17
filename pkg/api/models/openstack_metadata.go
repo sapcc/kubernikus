@@ -6,15 +6,16 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"context"
 	"strconv"
 
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 )
 
 // OpenstackMetadata openstack metadata
+//
 // swagger:model OpenstackMetadata
 type OpenstackMetadata struct {
 
@@ -65,7 +66,6 @@ func (m *OpenstackMetadata) Validate(formats strfmt.Registry) error {
 }
 
 func (m *OpenstackMetadata) validateAvailabilityZones(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.AvailabilityZones) { // not required
 		return nil
 	}
@@ -75,6 +75,8 @@ func (m *OpenstackMetadata) validateAvailabilityZones(formats strfmt.Registry) e
 		if err := m.AvailabilityZones[i].Validate(formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("availabilityZones" + "." + strconv.Itoa(i))
+			} else if ce, ok := err.(*errors.CompositeError); ok {
+				return ce.ValidateName("availabilityZones" + "." + strconv.Itoa(i))
 			}
 			return err
 		}
@@ -85,7 +87,6 @@ func (m *OpenstackMetadata) validateAvailabilityZones(formats strfmt.Registry) e
 }
 
 func (m *OpenstackMetadata) validateFlavors(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.Flavors) { // not required
 		return nil
 	}
@@ -95,6 +96,8 @@ func (m *OpenstackMetadata) validateFlavors(formats strfmt.Registry) error {
 		if err := m.Flavors[i].Validate(formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("flavors" + "." + strconv.Itoa(i))
+			} else if ce, ok := err.(*errors.CompositeError); ok {
+				return ce.ValidateName("flavors" + "." + strconv.Itoa(i))
 			}
 			return err
 		}
@@ -105,7 +108,6 @@ func (m *OpenstackMetadata) validateFlavors(formats strfmt.Registry) error {
 }
 
 func (m *OpenstackMetadata) validateKeyPairs(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.KeyPairs) { // not required
 		return nil
 	}
@@ -119,6 +121,8 @@ func (m *OpenstackMetadata) validateKeyPairs(formats strfmt.Registry) error {
 			if err := m.KeyPairs[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("keyPairs" + "." + strconv.Itoa(i))
+				} else if ce, ok := err.(*errors.CompositeError); ok {
+					return ce.ValidateName("keyPairs" + "." + strconv.Itoa(i))
 				}
 				return err
 			}
@@ -130,7 +134,6 @@ func (m *OpenstackMetadata) validateKeyPairs(formats strfmt.Registry) error {
 }
 
 func (m *OpenstackMetadata) validateRouters(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.Routers) { // not required
 		return nil
 	}
@@ -144,6 +147,8 @@ func (m *OpenstackMetadata) validateRouters(formats strfmt.Registry) error {
 			if err := m.Routers[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("routers" + "." + strconv.Itoa(i))
+				} else if ce, ok := err.(*errors.CompositeError); ok {
+					return ce.ValidateName("routers" + "." + strconv.Itoa(i))
 				}
 				return err
 			}
@@ -155,7 +160,6 @@ func (m *OpenstackMetadata) validateRouters(formats strfmt.Registry) error {
 }
 
 func (m *OpenstackMetadata) validateSecurityGroups(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.SecurityGroups) { // not required
 		return nil
 	}
@@ -169,6 +173,134 @@ func (m *OpenstackMetadata) validateSecurityGroups(formats strfmt.Registry) erro
 			if err := m.SecurityGroups[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("securityGroups" + "." + strconv.Itoa(i))
+				} else if ce, ok := err.(*errors.CompositeError); ok {
+					return ce.ValidateName("securityGroups" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+// ContextValidate validate this openstack metadata based on the context it is used
+func (m *OpenstackMetadata) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateAvailabilityZones(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateFlavors(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateKeyPairs(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateRouters(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateSecurityGroups(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *OpenstackMetadata) contextValidateAvailabilityZones(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.AvailabilityZones); i++ {
+
+		if err := m.AvailabilityZones[i].ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("availabilityZones" + "." + strconv.Itoa(i))
+			} else if ce, ok := err.(*errors.CompositeError); ok {
+				return ce.ValidateName("availabilityZones" + "." + strconv.Itoa(i))
+			}
+			return err
+		}
+
+	}
+
+	return nil
+}
+
+func (m *OpenstackMetadata) contextValidateFlavors(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.Flavors); i++ {
+
+		if err := m.Flavors[i].ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("flavors" + "." + strconv.Itoa(i))
+			} else if ce, ok := err.(*errors.CompositeError); ok {
+				return ce.ValidateName("flavors" + "." + strconv.Itoa(i))
+			}
+			return err
+		}
+
+	}
+
+	return nil
+}
+
+func (m *OpenstackMetadata) contextValidateKeyPairs(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.KeyPairs); i++ {
+
+		if m.KeyPairs[i] != nil {
+			if err := m.KeyPairs[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("keyPairs" + "." + strconv.Itoa(i))
+				} else if ce, ok := err.(*errors.CompositeError); ok {
+					return ce.ValidateName("keyPairs" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *OpenstackMetadata) contextValidateRouters(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.Routers); i++ {
+
+		if m.Routers[i] != nil {
+			if err := m.Routers[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("routers" + "." + strconv.Itoa(i))
+				} else if ce, ok := err.(*errors.CompositeError); ok {
+					return ce.ValidateName("routers" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *OpenstackMetadata) contextValidateSecurityGroups(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.SecurityGroups); i++ {
+
+		if m.SecurityGroups[i] != nil {
+			if err := m.SecurityGroups[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("securityGroups" + "." + strconv.Itoa(i))
+				} else if ce, ok := err.(*errors.CompositeError); ok {
+					return ce.ValidateName("securityGroups" + "." + strconv.Itoa(i))
 				}
 				return err
 			}

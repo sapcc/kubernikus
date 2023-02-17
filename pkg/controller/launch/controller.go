@@ -85,9 +85,9 @@ func (lr *LaunchReconciler) Reconcile(kluster *v1.Kluster) (requeue bool, err er
 	}
 	switch kluster.Status.Phase {
 	case models.KlusterPhaseCreating:
-		util.EnsureFinalizerCreated(lr.Kubernikus.Kubernikus(), lr.klusterInformer.Lister(), kluster, LaunchctlFinalizer)
+		util.EnsureFinalizerCreated(lr.Kubernikus.KubernikusV1(), lr.klusterInformer.Lister(), kluster, LaunchctlFinalizer)
 	case models.KlusterPhaseRunning:
-		util.EnsureFinalizerCreated(lr.Kubernikus.Kubernikus(), lr.klusterInformer.Lister(), kluster, LaunchctlFinalizer)
+		util.EnsureFinalizerCreated(lr.Kubernikus.KubernikusV1(), lr.klusterInformer.Lister(), kluster, LaunchctlFinalizer)
 		return lr.reconcilePools(kluster)
 	case models.KlusterPhaseTerminating:
 		if kluster.TerminationProtection() {
@@ -160,6 +160,11 @@ func (lr *LaunchReconciler) reconcilePool(kluster *v1.Kluster, pool *models.Node
 		return
 	}
 
+	err = pm.SetStatus(status)
+	if err != nil {
+		return
+	}
+
 	switch {
 	case status.Needed > 0:
 		for i := 0; i < int(status.Needed); i++ {
@@ -188,6 +193,5 @@ func (lr *LaunchReconciler) reconcilePool(kluster *v1.Kluster, pool *models.Node
 		requeue = true
 	}
 
-	err = pm.SetStatus(status)
 	return
 }

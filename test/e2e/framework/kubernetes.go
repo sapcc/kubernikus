@@ -24,8 +24,8 @@ const (
 )
 
 type Kubernetes struct {
-	ClientSet        *kubernetes.Clientset
-	restClientConfig *restclient.Config
+	ClientSet  *kubernetes.Clientset
+	RestConfig *restclient.Config
 }
 
 func NewKubernetesFramework(kubernikus *Kubernikus, kluster string) (*Kubernetes, error) {
@@ -53,20 +53,20 @@ func NewKubernetesFramework(kubernikus *Kubernikus, kluster string) (*Kubernetes
 	}
 
 	return &Kubernetes{
-		ClientSet:        clientset,
-		restClientConfig: restConfig,
+		ClientSet:  clientset,
+		RestConfig: restConfig,
 	}, nil
 }
 
 func (f *Kubernetes) WaitForDefaultServiceAccountInNamespace(namespace string) error {
-	w, err := f.ClientSet.CoreV1().ServiceAccounts(namespace).Watch(metav1.SingleObject(metav1.ObjectMeta{Name: "default"}))
+	w, err := f.ClientSet.CoreV1().ServiceAccounts(namespace).Watch(context.Background(), metav1.SingleObject(metav1.ObjectMeta{Name: "default"}))
 	if err != nil {
 		return err
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), ServiceAccountProvisionTimeout)
 	defer cancel()
 
-	_, err = watch.UntilWithoutRetry(ctx, w, ServiceAccountHasSecrets)
+	_, err = watch.UntilWithoutRetry(ctx, w, Created)
 	return err
 }
 
@@ -98,7 +98,7 @@ func (f *Kubernetes) WaitForPodsWithLabelRunningReady(ns string, label labels.Se
 func (f *Kubernetes) WaitForPodsWithLabel(ns string, label labels.Selector) (pods *v1.PodList, err error) {
 	for t := time.Now(); time.Since(t) < PodListTimeout; time.Sleep(Poll) {
 		options := metav1.ListOptions{LabelSelector: label.String()}
-		pods, err = f.ClientSet.CoreV1().Pods(ns).List(options)
+		pods, err = f.ClientSet.CoreV1().Pods(ns).List(context.Background(), options)
 		if err != nil {
 			if IsRetryableAPIError(err) {
 				continue
@@ -120,7 +120,7 @@ func (f *Kubernetes) WaitForServiceEndpointsWithLabelNum(namespace string, label
 	err = wait.Poll(Poll, timeout,
 		func() (bool, error) {
 			options := metav1.ListOptions{LabelSelector: label.String()}
-			services, err := f.ClientSet.CoreV1().Services(namespace).List(options)
+			services, err := f.ClientSet.CoreV1().Services(namespace).List(context.Background(), options)
 			if err != nil {
 				if IsRetryableAPIError(err) {
 					return false, nil
@@ -128,7 +128,7 @@ func (f *Kubernetes) WaitForServiceEndpointsWithLabelNum(namespace string, label
 				return false, fmt.Errorf("Failed to list services: %v", err)
 			}
 
-			endpoints, err := f.ClientSet.CoreV1().Endpoints(namespace).List(metav1.ListOptions{})
+			endpoints, err := f.ClientSet.CoreV1().Endpoints(namespace).List(context.Background(), metav1.ListOptions{})
 			if err != nil {
 				if IsRetryableAPIError(err) {
 					return false, nil
@@ -156,6 +156,7 @@ func (f *Kubernetes) WaitForServiceEndpointsWithLabelNum(namespace string, label
 // WaitForPVCBound waits until the pvc is bound or operation timed out
 func (f *Kubernetes) WaitForPVCBound(pvcNs, pvcName string, timeout time.Duration) error {
 	w, err := f.ClientSet.CoreV1().PersistentVolumeClaims(pvcNs).Watch(
+		context.Background(),
 		metav1.SingleObject(
 			metav1.ObjectMeta{
 				Name: pvcName,

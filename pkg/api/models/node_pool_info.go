@@ -6,12 +6,14 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-	strfmt "github.com/go-openapi/strfmt"
+	"context"
 
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 )
 
 // NodePoolInfo node pool info
+//
 // swagger:model NodePoolInfo
 type NodePoolInfo struct {
 
@@ -33,6 +35,11 @@ type NodePoolInfo struct {
 
 // Validate validates this node pool info
 func (m *NodePoolInfo) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this node pool info based on context it is used
+func (m *NodePoolInfo) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 

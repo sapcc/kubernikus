@@ -1,10 +1,13 @@
 package csi
 
 import (
+	"context"
+
 	"github.com/pkg/errors"
 	apps "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
 	rbac "k8s.io/api/rbac/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -176,10 +179,54 @@ rescan-on-resize = yes
 		return errors.Wrap(err, "CSISnapshotControllerRoleBinding")
 	}
 
-	gvrSnapClass := schema.GroupVersionResource{Group: "snapshot.storage.k8s.io", Version: "v1beta1", Resource: "volumesnapshotclasses"}
+	gvrSnapClass := schema.GroupVersionResource{Group: "snapshot.storage.k8s.io", Version: "v1", Resource: "volumesnapshotclasses"}
 	err = createDynamicResource(dynamicClient, CSIVolumeSnapshotClass, gvrSnapClass)
 	if err != nil {
 		return errors.Wrap(err, "CSIVolumeSnapshotClass")
+	}
+
+	return nil
+}
+
+func SeedCinderCSIRoles(client clientset.Interface) error {
+	err := createRole(client, CSIRole)
+	if err != nil {
+		return errors.Wrap(err, "CSIRole")
+	}
+
+	err = createClusterRole(client, CSISnapshotControllerClusterRole)
+	if err != nil {
+		return errors.Wrap(err, "CSISnapshotControllerClusterRole")
+	}
+
+	err = createClusterRole(client, CSIClusterRoleAttacher)
+	if err != nil {
+		return errors.Wrap(err, "CSIClusterRoleAttacher")
+	}
+
+	err = createClusterRole(client, CSIClusterRoleNodePlugin)
+	if err != nil {
+		return errors.Wrap(err, "CSIClusterRoleNodePlugin")
+	}
+
+	err = createClusterRole(client, CSIClusterRoleProvisioner)
+	if err != nil {
+		return errors.Wrap(err, "CSIClusterRoleProvisioner")
+	}
+
+	err = createClusterRole(client, CSIClusterRoleResizer)
+	if err != nil {
+		return errors.Wrap(err, "CSIClusterRoleResizer")
+	}
+
+	err = createClusterRole(client, CSIClusterRoleSnapshotter)
+	if err != nil {
+		return errors.Wrap(err, "CSIClusterRoleSnapshotter")
+	}
+
+	err = createRole(client, CSISnapshotControllerRole)
+	if err != nil {
+		return errors.Wrap(err, "CSISnapshotControllerRole")
 	}
 
 	return nil
@@ -193,9 +240,10 @@ func createDynamicResource(dynamicClient dynamic.Interface, manifest string, gvr
 		return errors.Wrap(err, "Decode")
 	}
 
-	_, err = dynamicClient.Resource(gvr).Create(resource, metav1.CreateOptions{})
-	if err != nil {
-		return errors.Wrap(err, "Create")
+	if _, err = dynamicClient.Resource(gvr).Create(context.TODO(), resource, metav1.CreateOptions{}); err != nil {
+		if !apierrors.IsAlreadyExists(err) {
+			return errors.Wrap(err, "Create")
+		}
 	}
 
 	return nil
@@ -203,24 +251,6 @@ func createDynamicResource(dynamicClient dynamic.Interface, manifest string, gvr
 
 func createSecret(client clientset.Interface, secret *v1.Secret) error {
 	if err := bootstrap.CreateOrUpdateSecret(client, secret); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func createService(client clientset.Interface, manifest string) error {
-	template, err := bootstrap.RenderManifest(manifest, nil)
-	if err != nil {
-		return err
-	}
-
-	service, _, err := serializer.NewCodecFactory(clientsetscheme.Scheme).UniversalDeserializer().Decode(template, nil, &v1.Service{})
-	if err != nil {
-		return err
-	}
-
-	if err := bootstrap.CreateOrUpdateService(client, service.(*v1.Service)); err != nil {
 		return err
 	}
 

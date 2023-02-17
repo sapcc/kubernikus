@@ -5,7 +5,7 @@ import (
 	"github.com/sapcc/kubernikus/pkg/controller/config"
 )
 
-//This is primarily to fix very old (1.7) clusters
+// This is primarily to fix very old (1.7) clusters
 func EnsureSecurityGroupName(rawKluster []byte, current *v1.Kluster, clients config.Clients, factories config.Factories) (err error) {
 
 	if current.Spec.Openstack.SecurityGroupName == "" {

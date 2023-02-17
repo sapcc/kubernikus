@@ -1,5 +1,5 @@
 {{/* vim: set filetype=gotexttmpl: */ -}}
-{{- if semverCompare ">=1.16-0" .Capabilities.KubeVersion.GitVersion }}
+{{- if .Capabilities.APIVersions.Has "apps/v1" }}
 apiVersion: "apps/v1"
 {{- else }}
 apiVersion: "extensions/v1beta1"
@@ -44,6 +44,11 @@ spec:
         - name: config
           configMap:
             name: {{ include "master.fullname" . }}
+{{- if .Values.scheduler.config }}
+        - name: scheduler-config
+          configMap:
+            name: {{ include "master.fullname" }}-scheduler
+{{- end }}
       containers:
         - name: scheduler
 {{- if (semverCompare ">= 1.12" .Values.version.kubernetes) }}
@@ -72,6 +77,9 @@ spec:
             - --authorization-kubeconfig=/etc/kubernetes/config/kubeconfig
 {{- end }}
             - --leader-elect=false
+{{- if .Values.scheduler.config }}
+            - --config=/etc/kubernetes/scheduler/scheduler.config
+{{- end }}
           livenessProbe:
             httpGet:
               path: /healthz
@@ -91,5 +99,24 @@ spec:
             - mountPath: /etc/kubernetes/config
               name: config
               readOnly: true
+{{- if .Values.scheduler.config }}
+            - mountPath: /etc/kubernetes/scheduler
+              name: scheduler-config
+              readOnly: true
+{{- end}}
           resources:
 {{ toYaml .Values.scheduler.resources | indent 12 }}
+{{- if .Values.scheduler.config }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "master.fullname" }}-scheduler
+  labels:
+    app: {{ include "master.fullname" }}-scheduler
+    chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+    release: {{ .Release.Name }}
+data:
+  scheduler.config: |-
+{{ toYaml .Values.scheduler.config | indent 4 }}
+{{- end}}

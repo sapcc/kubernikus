@@ -1,4 +1,4 @@
-FROM keppel.eu-de-1.cloud.sap/ccloud-dockerhub-mirror/library/alpine:3.8
+FROM keppel.eu-de-1.cloud.sap/ccloud-dockerhub-mirror/library/alpine:3.15
 LABEL source_repository="https://github.com/sapcc/kubernikus"
 
 ARG HUGO_VERSION=0.30.2

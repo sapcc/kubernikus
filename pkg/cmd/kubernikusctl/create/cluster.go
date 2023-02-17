@@ -2,12 +2,12 @@ package create
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
 	"os"
 
-	"github.com/golang/glog"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
+	"k8s.io/klog"
 
 	"github.com/sapcc/kubernikus/pkg/api/models"
 	"github.com/sapcc/kubernikus/pkg/cmd"
@@ -33,24 +33,24 @@ func (o *CreateOptions) clusterPreRun(c *cobra.Command, args []string) {
 func (o *CreateOptions) clusterRun(c *cobra.Command, args []string) {
 	var raw []byte
 	var err error
-	glog.V(2).Infof("ReadFile: %v", o.ReadFile)
+	klog.V(2).Infof("ReadFile: %v", o.ReadFile)
 	if o.ReadFile != "" {
-		raw, err = ioutil.ReadFile(o.ReadFile)
+		raw, err = os.ReadFile(o.ReadFile)
 		if err != nil {
-			glog.V(2).Infof("error reading spec file: %v", err)
+			klog.V(2).Infof("error reading spec file: %v", err)
 			cmd.CheckError(errors.Wrap(err, "Error reading from spec file"))
 		}
 	} else {
-		raw, err = ioutil.ReadAll(os.Stdin)
+		raw, err = io.ReadAll(os.Stdin)
 		if err != nil {
-			glog.V(2).Infof("error reading from stdin: %v", err)
+			klog.V(2).Infof("error reading from stdin: %v", err)
 			cmd.CheckError(errors.Wrap(err, "Error reading from Stdin"))
 		}
 	}
-	glog.V(2).Infof("Raw read: \n%v", string(raw))
+	klog.V(2).Infof("Raw read: \n%v", string(raw))
 	var cluster models.Kluster
 	cmd.CheckError(cluster.UnmarshalBinary(raw))
-	glog.V(2).Infof("cluster: %v", cluster)
+	klog.V(2).Infof("cluster: %v", cluster)
 	cmd.CheckError(o.Kubernikus.CreateCluster(&cluster))
 	fmt.Printf("Cluster %v created.", cluster.Name)
 }

@@ -1,10 +1,11 @@
 package ground
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/pkg/errors"
-	rbac "k8s.io/api/rbac/v1beta1"
+	rbac "k8s.io/api/rbac/v1"
 	storage "k8s.io/api/storage/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -14,9 +15,11 @@ import (
 	openstack_project "github.com/sapcc/kubernikus/pkg/client/openstack/project"
 	"github.com/sapcc/kubernikus/pkg/controller/config"
 	"github.com/sapcc/kubernikus/pkg/controller/ground/bootstrap"
+	"github.com/sapcc/kubernikus/pkg/controller/ground/bootstrap/ccm"
 	"github.com/sapcc/kubernikus/pkg/controller/ground/bootstrap/csi"
 	"github.com/sapcc/kubernikus/pkg/controller/ground/bootstrap/dns"
 	"github.com/sapcc/kubernikus/pkg/controller/ground/bootstrap/gpu"
+	"github.com/sapcc/kubernikus/pkg/controller/ground/bootstrap/network"
 	"github.com/sapcc/kubernikus/pkg/util"
 	"github.com/sapcc/kubernikus/pkg/version"
 )
@@ -60,7 +63,11 @@ func SeedKluster(clients config.Clients, factories config.Factories, images vers
 		images.Versions[kluster.Spec.Version].CoreDNS.Tag != "" {
 		coreDNSImage = images.Versions[kluster.Spec.Version].CoreDNS.Repository + ":" + images.Versions[kluster.Spec.Version].CoreDNS.Tag
 	}
-	if ok, _ := util.KlusterVersionConstraint(kluster, ">= 1.16"); ok {
+	if ok, _ := util.KlusterVersionConstraint(kluster, ">= 1.23"); ok {
+		if err := dns.SeedCoreDNS123(kubernetes, coreDNSImage, kluster.Spec.DNSDomain, kluster.Spec.DNSAddress); err != nil {
+			return errors.Wrap(err, "seed coredns")
+		}
+	} else if ok, _ := util.KlusterVersionConstraint(kluster, ">= 1.16"); ok {
 		if err := dns.SeedCoreDNS116(kubernetes, coreDNSImage, kluster.Spec.DNSDomain, kluster.Spec.DNSAddress); err != nil {
 			return errors.Wrap(err, "seed coredns")
 		}
@@ -91,8 +98,28 @@ func SeedKluster(clients config.Clients, factories config.Factories, images vers
 			return errors.Wrap(err, "get kluster secret")
 		}
 
-		if err := csi.SeedCinderCSIPlugin(kubernetes, dynamicKubernetes, klusterSecret, images.Versions[kluster.Spec.Version]); err != nil {
-			return errors.Wrap(err, "seed cinder CSI plugin")
+		if ok, _ := util.KlusterVersionConstraint(kluster, ">= 1.23"); ok {
+			if err := csi.SeedCinderCSIPlugin123(kubernetes, dynamicKubernetes, klusterSecret, images.Versions[kluster.Spec.Version]); err != nil {
+				return errors.Wrap(err, "seed cinder CSI plugin")
+			}
+		} else {
+			if err := csi.SeedCinderCSIPlugin(kubernetes, dynamicKubernetes, klusterSecret, images.Versions[kluster.Spec.Version]); err != nil {
+				return errors.Wrap(err, "seed cinder CSI plugin")
+			}
+		}
+	}
+
+	if ok, _ := util.KlusterVersionConstraint(kluster, ">= 1.25"); ok {
+		if err := ccm.SeedCloudControllerManagerRoles(kubernetes); err != nil {
+			return errors.Wrap(err, "seed CCM roles")
+		}
+	}
+
+	if !kluster.Spec.NoCloud {
+		if ok, _ := util.KlusterVersionConstraint(kluster, ">= 1.24"); ok {
+			if err := network.SeedNetwork(kubernetes, images.Versions[kluster.Spec.Version], *kluster.Spec.ClusterCIDR, kluster.Status.Apiserver, kluster.Spec.AdvertiseAddress, kluster.Spec.AdvertisePort); err != nil {
+				return errors.Wrap(err, "seed cni config")
+			}
 		}
 	}
 
@@ -159,12 +186,12 @@ func createStorageClass(client clientset.Interface, name, avz string, isDefault 
 		}
 	}
 
-	if _, err := client.StorageV1().StorageClasses().Create(&storageClass); err != nil {
+	if _, err := client.StorageV1().StorageClasses().Create(context.TODO(), &storageClass, metav1.CreateOptions{}); err != nil {
 		if !apierrors.IsAlreadyExists(err) {
 			return fmt.Errorf("unable to create storage class: %v", err)
 		}
 
-		if _, err := client.StorageV1().StorageClasses().Update(&storageClass); err != nil {
+		if _, err := client.StorageV1().StorageClasses().Update(context.TODO(), &storageClass, metav1.UpdateOptions{}); err != nil {
 			return fmt.Errorf("unable to update storage class: %v", err)
 		}
 	}
@@ -173,7 +200,7 @@ func createStorageClass(client clientset.Interface, name, avz string, isDefault 
 }
 
 func DeleteCinderStorageClasses(client clientset.Interface, openstack openstack_project.ProjectClient) error {
-	if err := client.StorageV1().StorageClasses().Delete("cinder-default", &metav1.DeleteOptions{}); err != nil {
+	if err := client.StorageV1().StorageClasses().Delete(context.TODO(), "cinder-default", metav1.DeleteOptions{}); err != nil {
 		if !apierrors.IsNotFound(err) {
 			return err
 		}
@@ -187,7 +214,7 @@ func DeleteCinderStorageClasses(client clientset.Interface, openstack openstack_
 	for _, avz := range metadata.AvailabilityZones {
 		name := fmt.Sprintf("cinder-zone-%s", avz.Name[len(avz.Name)-1:])
 
-		if err := client.StorageV1().StorageClasses().Delete(name, &metav1.DeleteOptions{}); err != nil {
+		if err := client.StorageV1().StorageClasses().Delete(context.TODO(), name, metav1.DeleteOptions{}); err != nil {
 			if !apierrors.IsNotFound(err) {
 				return err
 			}
@@ -198,7 +225,7 @@ func DeleteCinderStorageClasses(client clientset.Interface, openstack openstack_
 }
 
 func SeedKubernikusAdmin(client clientset.Interface) error {
-	return bootstrap.CreateOrUpdateClusterRoleBinding(client, &rbac.ClusterRoleBinding{
+	return bootstrap.CreateOrUpdateClusterRoleBindingV1(client, &rbac.ClusterRoleBinding{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: "kubernikus:admin",
 		},
@@ -217,14 +244,14 @@ func SeedKubernikusAdmin(client clientset.Interface) error {
 }
 
 func SeedKubernikusMember(client clientset.Interface) error {
-	return bootstrap.CreateOrUpdateRoleBinding(client, &rbac.RoleBinding{
+	return bootstrap.CreateOrUpdateRoleBindingV1(client, &rbac.RoleBinding{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "kubernikus:member",
 			Namespace: "default",
 		},
 		RoleRef: rbac.RoleRef{
 			APIGroup: rbac.GroupName,
-			Kind:     "Role",
+			Kind:     "ClusterRole",
 			Name:     "edit",
 		},
 		Subjects: []rbac.Subject{
@@ -237,7 +264,7 @@ func SeedKubernikusMember(client clientset.Interface) error {
 }
 
 func SeedAllowBootstrapTokensToPostCSRs(client clientset.Interface) error {
-	return bootstrap.CreateOrUpdateClusterRoleBinding(client, &rbac.ClusterRoleBinding{
+	return bootstrap.CreateOrUpdateClusterRoleBindingV1(client, &rbac.ClusterRoleBinding{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: "kubernikus:kubelet-bootstrap",
 		},
@@ -256,7 +283,7 @@ func SeedAllowBootstrapTokensToPostCSRs(client clientset.Interface) error {
 }
 
 func SeedAllowApiserverToAccessKubeletAPI(client clientset.Interface) error {
-	return bootstrap.CreateOrUpdateClusterRoleBinding(client, &rbac.ClusterRoleBinding{
+	return bootstrap.CreateOrUpdateClusterRoleBindingV1(client, &rbac.ClusterRoleBinding{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: "kubernikus:apiserver-kubeletapi",
 		},
@@ -275,7 +302,7 @@ func SeedAllowApiserverToAccessKubeletAPI(client clientset.Interface) error {
 }
 
 func SeedAutoApproveNodeBootstrapTokens(client clientset.Interface) error {
-	err := bootstrap.CreateOrUpdateClusterRole(client, &rbac.ClusterRole{
+	err := bootstrap.CreateOrUpdateClusterRoleV1(client, &rbac.ClusterRole{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: "kubernikus:approve-node-client-csr",
 		},
@@ -291,7 +318,7 @@ func SeedAutoApproveNodeBootstrapTokens(client clientset.Interface) error {
 		return err
 	}
 
-	return bootstrap.CreateOrUpdateClusterRoleBinding(client, &rbac.ClusterRoleBinding{
+	return bootstrap.CreateOrUpdateClusterRoleBindingV1(client, &rbac.ClusterRoleBinding{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: "kubernikus:node-client-csr-autoapprove",
 		},
@@ -310,7 +337,7 @@ func SeedAutoApproveNodeBootstrapTokens(client clientset.Interface) error {
 }
 
 func SeedAutoRenewalNodeCertificates(client clientset.Interface) error {
-	err := bootstrap.CreateOrUpdateClusterRole(client, &rbac.ClusterRole{
+	err := bootstrap.CreateOrUpdateClusterRoleV1(client, &rbac.ClusterRole{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: "system:certificates.k8s.io:certificatesigningrequests:selfnodeclient",
 		},
@@ -326,7 +353,7 @@ func SeedAutoRenewalNodeCertificates(client clientset.Interface) error {
 		return err
 	}
 
-	return bootstrap.CreateOrUpdateClusterRoleBinding(client, &rbac.ClusterRoleBinding{
+	return bootstrap.CreateOrUpdateClusterRoleBindingV1(client, &rbac.ClusterRoleBinding{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: "kubernikus:auto-approve-renewals-for-nodes",
 		},
@@ -347,7 +374,7 @@ func SeedAutoRenewalNodeCertificates(client clientset.Interface) error {
 
 func SeedOpenStackClusterRoleBindings(client clientset.Interface) error {
 
-	err := bootstrap.CreateOrUpdateClusterRoleBinding(client, &rbac.ClusterRoleBinding{
+	err := bootstrap.CreateOrUpdateClusterRoleBindingV1(client, &rbac.ClusterRoleBinding{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: "kubernikus:openstack-kubernetes-admin",
 		},
@@ -376,7 +403,7 @@ func SeedOpenStackClusterRoleBindings(client clientset.Interface) error {
 		return err
 	}
 
-	err = bootstrap.CreateOrUpdateClusterRoleBinding(client, &rbac.ClusterRoleBinding{
+	err = bootstrap.CreateOrUpdateClusterRoleBindingV1(client, &rbac.ClusterRoleBinding{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: "kubernikus:openstack-kubernetes-member",
 		},

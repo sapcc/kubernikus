@@ -3,8 +3,8 @@ platform: 'linux'
 image_resource:
   type: registry-image
   source:
-    repository: keppel.eu-de-2.cloud.sap/ccloud-dockerhub-mirror/library/golang
-    tag: 1.14-alpine
+    repository: keppel.eu-de-1.cloud.sap/ccloud-dockerhub-mirror/library/golang
+    tag: 1.18-alpine
 
 inputs:
   - name: kubernikus.builds
@@ -25,7 +25,7 @@ run:
       export GOPATH=$PWD/gopath
       OUTPUT=$PWD/checksum
       cd gopath/src/github.com/sapcc/kubernikus
-      apk add --no-cache make
+      apk add --no-cache make bash
       make $TARGET VERSION=latest
       CHECKSUM=$(sha256sum $TARGET | cut -f1 -d ' ')
       echo checksum=$CHECKSUM > $OUTPUT/properties

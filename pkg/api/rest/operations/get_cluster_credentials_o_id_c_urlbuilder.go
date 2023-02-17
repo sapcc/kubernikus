@@ -46,7 +46,7 @@ func (o *GetClusterCredentialsOIDCURL) Build() (*url.URL, error) {
 	if name != "" {
 		_path = strings.Replace(_path, "{name}", name, -1)
 	} else {
-		return nil, errors.New("Name is required on GetClusterCredentialsOIDCURL")
+		return nil, errors.New("name is required on GetClusterCredentialsOIDCURL")
 	}
 
 	_basePath := o._basePath

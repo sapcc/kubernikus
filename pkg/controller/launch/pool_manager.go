@@ -1,8 +1,12 @@
 package launch
 
 import (
+	"context"
 	"fmt"
-	"strings"
+
+	"github.com/go-kit/kit/log"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
 
 	"github.com/sapcc/kubernikus/pkg/api/models"
 	v1 "github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
@@ -15,7 +19,6 @@ import (
 	"github.com/sapcc/kubernikus/pkg/util"
 	"github.com/sapcc/kubernikus/pkg/util/generator"
 	"github.com/sapcc/kubernikus/pkg/version"
-
 	"github.com/go-kit/kit/log"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -151,7 +154,7 @@ func (cpm *ConcretePoolManager) SetStatus(status *PoolStatus) error {
 		},
 	)
 
-	copy, err := cpm.Clients.Kubernikus.Kubernikus().Klusters(cpm.Kluster.Namespace).Get(cpm.Kluster.Name, metav1.GetOptions{})
+	copy, err := cpm.Clients.Kubernikus.KubernikusV1().Klusters(cpm.Kluster.Namespace).Get(context.TODO(), cpm.Kluster.Name, metav1.GetOptions{})
 	if err != nil {
 		return err
 	}
@@ -183,7 +186,7 @@ func (cpm *ConcretePoolManager) SetStatus(status *PoolStatus) error {
 	}
 
 	if updated {
-		_, err = util.UpdateKlusterWithRetries(cpm.Clients.Kubernikus.Kubernikus().Klusters(cpm.Kluster.Namespace), cpm.Lister.Klusters(cpm.Kluster.Namespace), cpm.Kluster.GetName(), func(kluster *v1.Kluster) error {
+		_, err = util.UpdateKlusterWithRetries(cpm.Clients.Kubernikus.KubernikusV1().Klusters(cpm.Kluster.Namespace), cpm.Lister.Klusters(cpm.Kluster.Namespace), cpm.Kluster.GetName(), func(kluster *v1.Kluster) error {
 			kluster.Status.NodePools = copy.Status.NodePools
 			return nil
 		})
@@ -198,11 +201,11 @@ func (cpm *ConcretePoolManager) CreateNode() (id string, err error) {
 		return "", err
 	}
 
-	nodeName := generator.SimpleNameGenerator.GenerateName(fmt.Sprintf("%v-%v-", cpm.Kluster.Spec.Name, cpm.Pool.Name))
+	nodeName := generator.SimpleNameGenerator.GenerateName(fmt.Sprintf(util.NODE_NAMING_PATTERN_PREFIX, cpm.Kluster.Spec.Name, cpm.Pool.Name))
 
 	calicoNetworking := false
 	if client, err := cpm.Clients.Satellites.ClientFor(cpm.Kluster); err == nil {
-		if _, err := client.AppsV1().DaemonSets("kube-system").Get("calico-node", metav1.GetOptions{}); err == nil {
+		if _, err := client.AppsV1().DaemonSets("kube-system").Get(context.TODO(), "calico-node", metav1.GetOptions{}); err == nil {
 			calicoNetworking = true
 		}
 	}
@@ -298,7 +301,7 @@ func (cpm *ConcretePoolManager) healthyAndSchedulable() (healthy int, schedulabl
 	prefix := fmt.Sprintf("%s-%s-", cpm.Kluster.Spec.Name, cpm.Pool.Name)
 	for i, node := range nodes {
 		//Does the node belong to this pool?
-		if strings.HasPrefix(node.Name, prefix) && len(node.Name) == len(prefix)+generator.RandomLength {
+		if util.IsKubernikusNode(node.Name, cpm.Kluster.Spec.Name, cpm.Pool.Name) {
 			if !node.Spec.Unschedulable {
 				schedulable++
 				schedNodes = append(schedNodes, nodes[i])

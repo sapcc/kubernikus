@@ -57,7 +57,7 @@ data:
       --listen-metrics-urls=http://0.0.0.0:8081
 {{- end }}
 ---
-{{- if semverCompare ">=1.16-0" .Capabilities.KubeVersion.GitVersion }}
+{{- if .Capabilities.APIVersions.Has "apps/v1" }}
 apiVersion: "apps/v1"
 {{- else }}
 apiVersion: "extensions/v1beta1"
@@ -70,6 +70,11 @@ metadata:
     release: {{ .Release.Name }}
 spec:
   replicas: 1
+  strategy:
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
+    type: RollingUpdate
   selector:
     matchLabels:
       app: {{ include "fullname" . }}
@@ -79,9 +84,10 @@ spec:
         app: {{ include "fullname" . }}
         release: {{ .Release.Name }}
         component: etcd
+{{- if .Values.backup.enabled }}
       annotations:
         prometheus.io/scrape: "true"
-        prometheus.io/port: "8080"
+{{- end }}
     spec:
       volumes:
         - name: data
@@ -161,6 +167,7 @@ spec:
                 {{- end }}
             initialDelaySeconds: 300
             periodSeconds: 30
+            timeoutSeconds: 3
           readinessProbe:
             exec:
               command:
@@ -173,6 +180,7 @@ spec:
                 {{- end }}
             initialDelaySeconds: 5
             periodSeconds: 5
+            timeoutSeconds: 3
           resources:
 {{ toYaml .Values.resources | indent 12 }}
 {{- if .Values.backup.enabled }}
@@ -186,8 +194,13 @@ spec:
             {{- end }}
             - --data-dir=/var/lib/etcd/new.etcd
             - --storage-provider={{ .Values.backup.storageProvider | default "Swift" }}
+            {{- if (semverCompare ">= 1.23" .Values.version.kubernetes) }}
+            - --delta-snapshot-period={{ .Values.backup.deltaSnapshotPeriod }}s
+            - --garbage-collection-period={{ .Values.backup.garbageCollectionPeriod }}s
+            {{- else }}
             - --delta-snapshot-period-seconds={{ .Values.backup.deltaSnapshotPeriod }}
             - --garbage-collection-period-seconds={{ .Values.backup.garbageCollectionPeriod }}
+            {{- end }}
             - --garbage-collection-policy={{ .Values.backup.garbageCollectionPolicy }}
             {{- if .Values.secure.enabled }}
             - --cacert=/etc/kubernetes/certs/tls-etcd-ca.pem
@@ -200,7 +213,8 @@ spec:
           image: "{{ include "etcdBackup.image" . }}"
           ports:
             - containerPort: 8080
-              name: server
+              # the name is important here, so that we get metrics
+              name: metrics
               protocol: TCP
           env:
 {{- if eq .Values.backup.storageProvider "S3" }}

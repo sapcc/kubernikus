@@ -33,9 +33,3 @@ func configureTLS(tlsConfig *tls.Config) {
 // scheme value will be set accordingly: "http", "https" or "unix"
 func configureServer(s *http.Server, scheme, addr string) {
 }
-
-// The middleware configuration is for the handler executors. These do not apply to the swagger.json document.
-// The middleware executes after routing but before authentication, binding and validation
-func setupMiddlewares(handler http.Handler) http.Handler {
-	return handler
-}

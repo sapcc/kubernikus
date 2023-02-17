@@ -10,13 +10,14 @@ import (
 
 	"github.com/go-openapi/runtime"
 
-	models "github.com/sapcc/kubernikus/pkg/api/models"
+	"github.com/sapcc/kubernikus/pkg/api/models"
 )
 
 // GetClusterEventsOKCode is the HTTP code returned for type GetClusterEventsOK
 const GetClusterEventsOKCode int = 200
 
-/*GetClusterEventsOK OK
+/*
+GetClusterEventsOK OK
 
 swagger:response getClusterEventsOK
 */
@@ -51,16 +52,17 @@ func (o *GetClusterEventsOK) WriteResponse(rw http.ResponseWriter, producer runt
 	rw.WriteHeader(200)
 	payload := o.Payload
 	if payload == nil {
+		// return empty array
 		payload = make([]*models.Event, 0, 50)
 	}
 
 	if err := producer.Produce(rw, payload); err != nil {
 		panic(err) // let the recovery middleware deal with this
 	}
-
 }
 
-/*GetClusterEventsDefault Error
+/*
+GetClusterEventsDefault Error
 
 swagger:response getClusterEventsDefault
 */

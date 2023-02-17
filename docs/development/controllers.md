@@ -107,7 +107,7 @@ This happens by updating the node's Neutron port and adding the required CIDR to
 `allowed_address_pairs`. This triggers an event that the port was updated. The DVS
 agent are catching this update and adding an additional rule to the security group.
 
-Occasionally, this update is missed. Until a full reconcilation loop happens
+Occasionally, this update is missed. Until a full reconciliation loop happens
 (usually by restarting or update of the DVS agents) the following symptoms appear:
 
  * Sporadic Pod Communication
@@ -151,7 +151,7 @@ Symptoms are similar to (1):
 Possible Workaround:
 
  * Reconcile Security Group Associations
-	 Periodically check that instances which haven't registerd as nodes do have
+	 Periodically check that instances which haven't registered as nodes do have
 	 the required security group enabled. If not, set it again.
 
 

@@ -37,6 +37,9 @@ etcd:
     etcdBackup:
       repository: abc
       tag: xyz
+  version:
+    kubernikus: xyz
+    kubernetes: 1.0.0
 images:
   hyperkube:
     repository: abc
@@ -49,8 +52,16 @@ images:
   etcdBackup:
     repository: abc
     tag: xyz
+  fluentd:
+    repository: abc
+    tag: xyz
+  recycler:
+    repository: abc
+    tag: xyz
 
 dashboard:
   enabled: false
 dex:
   enabled: false
+
+audit: "swift"

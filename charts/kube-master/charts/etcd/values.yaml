@@ -44,3 +44,6 @@ backup:
       memory: 1.5Gi
 secure:
   enabled: true
+version: {}
+# kubernikus:
+# kubernetes: 1.10.11

@@ -12,7 +12,7 @@ func SortFlavors(flavors []Flavor) {
 	sort.Sort(&flavorSorter{flavors: flavors})
 }
 
-//Part of sort.Interface
+// Part of sort.Interface
 func (fs *flavorSorter) Len() int {
 	return len(fs.flavors)
 }
@@ -22,8 +22,8 @@ func (fs *flavorSorter) Swap(i, j int) {
 }
 
 func (fs *flavorSorter) Less(i, j int) bool {
-	if fs.flavors[i].RAM <= fs.flavors[j].RAM {
-		return true
+	if fs.flavors[i].RAM == fs.flavors[j].RAM {
+		return fs.flavors[i].Vcpus < fs.flavors[j].Vcpus
 	}
-	return fs.flavors[i].Vcpus < fs.flavors[i].Vcpus
+	return fs.flavors[i].RAM < fs.flavors[j].RAM
 }

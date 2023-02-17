@@ -3,12 +3,15 @@ platform: 'linux'
 image_resource:
   type: registry-image
   source:
-    repository: keppel.eu-de-2.cloud.sap/ccloud-dockerhub-mirror/sapcc/unified-kubernetes-toolbox
+    repository: keppel.eu-de-1.cloud.sap/ccloud-dockerhub-mirror/sapcc/unified-kubernetes-toolbox
     tag: 'latest'
 
 inputs:
   - name: kubernikus.builds
   - name: secrets.git
+
+outputs:
+  - name: metadata
 
 run:
   path: /bin/sh
@@ -24,12 +27,30 @@ run:
 
       keppel validate $IMAGE:$VERSION
 
+      #Interpolate secrets
+      vault-injector interpolate secrets.git/global/values/kubernikus.yaml secrets.git/kubernikus/$KUBERNIKUS_NAME/values/kubernikus.yaml
+
       helm diff upgrade kubernikus kubernikus.builds/charts/kubernikus/ \
+        --namespace=kubernikus-system \
         --suppress-secrets --allow-unreleased --context 5 \
         --values secrets.git/global/values/kubernikus.yaml \
         --values secrets.git/kubernikus/$KUBERNIKUS_NAME/values/kubernikus.yaml \
         --set image=$IMAGE \
         --set imageTag=$VERSION
+
+      metadataDir="${PWD}/metadata"
+      metadataFile="${metadataDir}/metadata.properties"
+      mkdir -p "${metadataDir}"
+
+      # if the target cluster is not specified, use the region's baremetal cluster by default
+      export CONTEXT="${CONTEXT:-$REGION}"
+
+      echo "CHART_PATH=https://github.com/sapcc/kubernikus/tree/master/charts" >> "${metadataFile}"
+      echo "RELEASE=kubernikus" >> "${metadataFile}"
+      echo "NAMESPACE=kubernikus-system" >> "${metadataFile}"
+      echo "CONTEXT=${CONTEXT}" >> "${metadataFile}"
+      echo "VERSION=${VERSION}" >> "${metadataFile}"
+      echo "DEPLOYMENT_STARTED=$(date -Iseconds)" >>"${metadataFile}"
 
       helm upgrade kubernikus kubernikus.builds/charts/kubernikus/ \
         --namespace=kubernikus-system \
@@ -42,6 +63,8 @@ run:
       kubectl rollout status deployment/kubernikus-operator --namespace=kubernikus-system
       kubectl rollout status deployment/k8sniff-ingress-lb --namespace=kubernikus-system
 
+      echo "DEPLOYMENT_FINISHED=$(date -Iseconds)" >> "${metadataFile}"
+
 params:
   REGION:
   CONTEXT:
@@ -49,4 +72,8 @@ params:
   KUBELOGON_PASSWORD:
   KUBERNIKUS_NAME:
   KUBERNIKUS_URL:
-  HELM_VERSION: 2.11.0
+  HELM_VERSION: 3.9.0
+  VAULT_ADDR:      https://vault.global.cloud.sap # DO NOT CHANGE
+  VAULT_KV_ENGINE: secrets                        # DO NOT CHANGE
+  VAULT_ROLE_ID:   # (required) set this to ((auth.role_id)) to receive credentials automatically from Concourse
+  VAULT_SECRET_ID: # (required) set this to ((auth.secret_id)) to receive credentials automatically from Concourse

@@ -36,12 +36,14 @@ spec:
             - kubernikus
             - operator
             - --chart-directory=/etc/kubernikus/charts
+            {{- if .Values.openstack.auth_url }}
             {{- /* This is a bit convoluted but making sure that the url ends with /v3 */}}
             - --auth-url={{ trimSuffix "/" .Values.openstack.auth_url | trimSuffix "/v3" }}/v3
             - --auth-username={{ .Values.openstack.auth_user_id }}
             - --auth-domain={{ .Values.openstack.auth_domain }}
             - --auth-project={{ .Values.openstack.auth_project }}
             - --auth-project-domain={{ .Values.openstack.auth_project_domain }}
+            {{- end }}
             - --kubernikus-domain={{ .Values.domain }}
             - --namespace={{ default "kubernikus" .Values.namespace }}
             - --metric-port={{ default 9091 .Values.operator.metrics_port }}
@@ -49,8 +51,13 @@ spec:
             - --controllers={{ join "," .Values.operator.controllers }}
             {{- end }}
             - --v={{ default 1 .Values.groundctl.log_level }}
-            {{- if and (.Values.openstack.region) (ne .Values.openstack.region "qa-de-1") }}
+            {{- if .Values.openstack.region}}
+            {{- if ne .Values.openstack.region "qa-de-1" }}
             - --region={{ .Values.openstack.region }}
+            {{- end }}
+            {{- end }}
+            {{- if .Values.operator.nodeUpdateHoldoff }}
+            - --node-update-holdoff={{ .Values.operator.nodeUpdateHoldoff }}
             {{- end }}
           env:
             {{- if .Values.operator.nodeAffinity }}
@@ -61,11 +68,13 @@ spec:
             - name: USE_OCTAVIA
               value: "true"
             {{- end }}
+            {{- if .Values.openstack.auth_url }}
             - name: OS_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: kubernikus-operator
                   key: password
+            {{- end }}
           ports:
             - name: metrics
               containerPort: {{ .Values.operator.metrics_port }}

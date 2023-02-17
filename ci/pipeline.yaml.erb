@@ -1,22 +1,30 @@
 <%
+require 'yaml'
+
+VERSIONS = [
+  '1.25.6',
+  '1.24.9',
+  '1.23.15'
+]
+
 REGIONS = {
-  "ap-ae-1": { continent: 'ASIA',     install: 'terraform', e2e: 'terraform' },
-  "ap-au-1": { continent: 'ASIA',     install: 'manual'   , e2e: 'manual' },
-  "ap-cn-1": { continent: 'ASIA',     install: 'terraform', e2e: 'terraform' },
-  "ap-jp-1": { continent: 'ASIA',     install: 'terraform', e2e: 'terraform' },
-  "ap-jp-2": { continent: 'ASIA',     install: 'terraform', e2e: 'terraform' },
-  "ap-sa-1": { continent: 'ASIA',     install: 'terraform', e2e: 'terraform' },
-  "eu-de-1": { continent: 'EMEA',     install: 'manual'   , e2e: 'manual' },
-  "eu-de-2": { continent: 'EMEA',     install: 'manual'   , e2e: 'manual' },
-  "eu-nl-1": { continent: 'EMEA',     install: 'manual'   , e2e: 'terraform' },
-  "eu-ru-1": { continent: 'EMEA',     install: 'terraform', e2e: 'terraform' },
-  "la-br-1": { continent: 'AMERICAS', install: 'terraform', e2e: 'terraform' },
-  "na-ca-1": { continent: 'AMERICAS', install: 'terraform', e2e: 'terraform' },
-  "na-us-1": { continent: 'AMERICAS', install: 'manual'   , e2e: 'manual', nodepool_avz: 'na-us-1b' },
-  "na-us-2": { continent: 'AMERICAS', install: 'terraform', e2e: 'terraform' },
-  "na-us-3": { continent: 'AMERICAS', install: 'terraform', e2e: 'terraform' },
-  "qa-de-1": { continent: 'INFRA',    install: 'terraform', e2e: 'terraform', nodepool_avz: 'qa-de-1a'},
-  "master":  { continent: "INFRA",    install: 'virtual'  , e2e: 'virtual' }
+  "ap-ae-1": { continent: 'silver', install: 'terraform', e2e: 'terraform', nodepool_avz: 'ap-ae-1a', oidc: '9a2d0e1181194fb1bca52e7951666bc3'},
+  "ap-au-1": { continent: 'silver', install: 'manual'   , e2e: 'manual', nodepool_avz: 'ap-au-1a', oidc: 'f34304c03d2147cc964470c31d00ce97' },
+  "ap-cn-1": { continent: 'silver', install: 'terraform', e2e: 'terraform', nodepool_avz: 'ap-cn-1b', oidc: 'e83ddace725b4c5da605e3f66d266f2c' },
+  "ap-jp-1": { continent: 'silver', install: 'terraform', e2e: 'terraform', nodepool_avz: 'ap-jp-1a', oidc: 'b505497ca03e4942a2d0aa50dfbdc7a0' },
+  "ap-jp-2": { continent: 'bronze', install: 'terraform', e2e: 'terraform', nodepool_avz: 'ap-jp-2a', oidc: 'f34b8aa879334a7fb20e1b96cb1c576e' },
+  "ap-sa-1": { continent: 'silver', install: 'terraform', e2e: 'terraform', nodepool_avz: 'ap-sa-1a', oidc: '436297dc67b9428f97da11227dc070ec' },
+  "ap-sa-2": { continent: 'bronze', install: 'terraform', e2e: 'terraform', nodepool_avz: 'ap-sa-2a', oidc: '37c3822fe4194ab586d9625d81b9d532' },
+  "eu-de-1": { continent: 'gold',   install: 'manual'   , e2e: 'manual', nodepool_avz: 'eu-de-1d', oidc: 'd7df5ce6c37643e49b3c93528c29818b' },
+  "eu-de-2": { continent: 'gold',   install: 'manual'   , e2e: 'manual', nodepool_avz: 'eu-de-2b', oidc: '57da32d8d50d49a9a9fbbe6b890e9e13' },
+  "eu-nl-1": { continent: 'gold',   install: 'manual'   , e2e: 'terraform', nodepool_avz: 'eu-nl-1a', oidc: 'd9b056a6762649f684a8a02b30f38324' },
+  "la-br-1": { continent: 'silver', install: 'terraform', e2e: 'terraform', nodepool_avz: 'la-br-1a', oidc: 'b33ac00cb0004d50bb34eb4e4cbbeb54' },
+  "na-ca-1": { continent: 'bronze', install: 'terraform', e2e: 'terraform', nodepool_avz: 'na-ca-1b', oidc: 'b7269ea1dde54a6383453ab69f25cce4' },
+  "na-us-1": { continent: 'gold',   install: 'manual'   , e2e: 'manual', nodepool_avz: 'na-us-1b', oidc: '040ed45cb5d8403790cf341a26c50601' },
+  "na-us-2": { continent: 'gold',   install: 'terraform', e2e: 'terraform', nodepool_avz: 'na-us-2b', oidc: 'fc0f2b8450e1444197609800c8b5c4cb' },
+  "na-us-3": { continent: 'bronze', install: 'terraform', e2e: 'terraform', nodepool_avz: 'na-us-3a', oidc: 'aa579369ca944a41bccb76f49f20924f' },
+  "qa-de-1": { continent: 'infra',  install: 'terraform', e2e: 'terraform', nodepool_avz: 'qa-de-1a', oidc: 'ce5462b173184391a9b47b486fabe580'},
+  "master":  { continent: "infra",  install: 'virtual'  , e2e: 'virtual', nodepool_avz: 'eu-nl-1a', oidc: 'a8b6853024494e1eb56136025b04866b' }
 }
 
 GROUPS             = REGIONS.values.map{ |v| v[:continent]}.uniq
@@ -25,15 +33,25 @@ DEPLOYABLE_REGIONS = REGIONS.select{ |k, v| ["terraform", "manual"].include?(v[:
 
 <% REGIONS.each do |region, meta| %>
 auth_<%= region %>: &auth_<%= region %>
-  KUBELOGON_USER:     ((KUBELOGON_USER))
-  KUBELOGON_PASSWORD: ((KUBELOGON_PASSWORD))
+  KUBELOGON_USER:     ((unified-kubernetes-auth/default.username))
+  KUBELOGON_PASSWORD: ((unified-kubernetes-auth/default.password))
   KUBERNIKUS_NAME: k-<%= region %>
   KUBERNIKUS_URL: https://kubernikus.admin.<%= region == :master ? "eu-nl-1": region %>.cloud.sap
+  VAULT_ROLE_ID: ((auth.role_id))
+  VAULT_SECRET_ID: ((auth.secret_id))
 
 auth_e2e_<%= region %>: &auth_e2e_<%= region %>
   CP_KLUSTER: k-<%= region %>
   CP_KUBERNIKUS_URL: https://kubernikus.admin.<%= region == :master ? "eu-nl-1" : region %>.cloud.sap
   CP_OS_PROJECT_DOMAIN_NAME: ccadmin
+  VAULT_ROLE_ID: ((auth.role_id))
+  VAULT_SECRET_ID: ((auth.secret_id))
+<% if meta[:oidc] %>
+  CP_OIDC_AUTH_URL: https://kubernikus.admin.<%= region == :master ? "eu-nl-1" : region %>.cloud.sap/auth/login
+  CP_OIDC_CONNECTOR_ID: <%= meta[:oidc] %>
+  CP_OIDC_USERNAME: ((unified-kubernetes-auth/default.username))
+  CP_OIDC_PASSWORD: ((unified-kubernetes-auth/default.password))
+<% end %>
   KUBERNIKUS_NAME: e2e
   OS_PROJECT_DOMAIN_NAME: ccadmin
 <% if meta[:nodepool_avz] %>
@@ -42,7 +60,7 @@ auth_e2e_<%= region %>: &auth_e2e_<%= region %>
 <% if meta[:e2e] == "terraform" %>
   OS_AUTH_URL: https://identity-3.<%= region %>.cloud.sap/v3
   OS_USERNAME: kubernikus-pipeline
-  OS_PASSWORD: ((kubernikus-pipeline-password))
+  OS_PASSWORD: ((keystone-user-password/kubernikus-pipeline))
   OS_USER_DOMAIN_NAME: Default
   OS_PROJECT_NAME: kubernikus_e2e
   OS_REGION_NAME: <%= region %>
@@ -51,8 +69,8 @@ auth_e2e_<%= region %>: &auth_e2e_<%= region %>
 <% end %>
 <% if meta[:e2e] == "manual" %>
   OS_AUTH_URL: https://identity-3.<%= region %>.cloud.sap/v3
-  OS_USERNAME: ((kubernikus-prod-username))
-  OS_PASSWORD: ((kubernikus-prod-password))
+  OS_USERNAME: T175B19A704E280EC
+  OS_PASSWORD: ((ldap-user-password/T175B19A704E280EC))
   OS_USER_DOMAIN_NAME: ccadmin
   OS_PROJECT_NAME: kubernikus-e2e
   OS_REGION_NAME: <%= region %>
@@ -61,8 +79,8 @@ auth_e2e_<%= region %>: &auth_e2e_<%= region %>
 <% end %>
 <% if meta[:e2e] == "virtual" %>
   OS_AUTH_URL: https://identity-3.eu-nl-1.cloud.sap/v3
-  OS_USERNAME: ((kubernikus-prod-username))
-  OS_PASSWORD: ((kubernikus-prod-password))
+  OS_USERNAME: T175B19A704E280EC
+  OS_PASSWORD: ((ldap-user-password/T175B19A704E280EC))
   OS_USER_DOMAIN_NAME: ccadmin
   OS_PROJECT_NAME: kubernikus-e2e
   OS_REGION_NAME: eu-nl-1
@@ -82,9 +100,7 @@ slack: &slack
   on_abort:   { put: slack-alert, inputs: [], params: {alert_type: broke } }
   on_error:   { put: slack-alert, inputs: [], params: {alert_type: broke } }
 
-
 resources:
-
   - name: docs.git
     type: git
     source:
@@ -105,8 +121,8 @@ resources:
     source:
     check_every: 24h
     source:
-      username: ((keppel.username))
-      password: ((keppel.password))
+      username: ((registry-user/keppel-ccloud.username))
+      password: ((registry-user/keppel-ccloud.password))
       repository: keppel.eu-de-1.cloud.sap/ccloud/kubernikus-docs-builder
       tag: latest
 
@@ -115,8 +131,8 @@ resources:
     source:
     check_every: 24h
     source:
-      username: ((keppel.username))
-      password: ((keppel.password))
+      username: ((registry-user/keppel-ccloud.username))
+      password: ((registry-user/keppel-ccloud.password))
       repository: keppel.eu-de-1.cloud.sap/ccloud/kubernikus
       tag: latest
 
@@ -125,30 +141,18 @@ resources:
     source:
       owner: sapcc
       repository: kubernikus
-      access_token: ((github-com-access-token))
+      access_token: ((github-access-token/sapcc-bot))
 
   - name: secrets.git
     icon: key-variant
-    type: git
+    type: git-proxy
     webhook_token: aldhjalkdhahdjkahdjkhjadhjadhkjadlkjhAAdd
     check_every: 1h
     source:
       uri:         git@github.wdf.sap.corp:cc/secrets.git
-      private_key: ((secrets-ssh-key))
+      private_key: ((github-private-key/cc-secrets))
       branch:      master
       depth: 1
-
-  - name: tiller-version.git
-    icon: key-variant
-    type: git
-    webhook_token: aldhjalkdhahdjkahdjkhjadhjadhkjadlkjhAAdd
-    check_every: 1h
-    source:
-      uri:         git@github.wdf.sap.corp:cc/secrets.git
-      private_key: ((secrets-ssh-key))
-      branch:      master
-      depth: 1
-      paths: [ kubernikus/tiller.version, kubernikus/*/tiller.version ]
 
   - name: helm-charts.git
     type: git
@@ -162,14 +166,14 @@ resources:
     type: slack-alert
     icon: slack
     source:
-      url: ((slack-webhook-url))
+      url: ((slack-webhook-url/kubernikus-ci))
       channel: '#kubernikus-ci'
 
   - name: slack-notification
     type: slack-notification
     icon: slack
     source:
-      url: ((slack-webhook-url))
+      url: ((slack-webhook-url/kubernikus-ci))
 
 <% GROUPS.each do |group| %>
   - name: <%= group %>.tag
@@ -178,31 +182,63 @@ resources:
     source:
       group: <%= group %>
       pipeline: kubernikus # we do this so we don't get versions from other pipelines
+
+<% REGIONS.select{ |k, v| v[:continent] == group }.each do |region, meta| %>
+<% if ["terraform", "manual"].include? meta[:install] %>
+  - name: <%= region %>.release
+    type: release
+    check_every: never
+    source: { region: <%= region %>, tenso_password: ((keystone-user-password/tenso-prod)) }
+    expose_build_created_by: true
+<% end %>
+<% end %>
 <% end %>
 
   - name: hourly
     type: time
     source: {interval: 1h}
 
+  - name: all-versions.trigger
+    type: time-version-resource
+    check_every: 525600h
+    source:
+      pipeline: kubernikus
+
 resource_types:
   - name: slack-alert
     type: docker-image
     check_every: 24h
     source:
-      repository: arbourd/concourse-slack-alert-resource
+      repository: keppel.eu-de-2.cloud.sap/ccloud-dockerhub-mirror/arbourd/concourse-slack-alert-resource
+      tag: v0.16.0
+
   - name: slack-notification
     type: docker-image
     check_every: 24h
     source:
-      repository: cfcommunity/slack-notification-resource
+      repository: keppel.eu-de-2.cloud.sap/ccloud-dockerhub-mirror/cfcommunity/slack-notification-resource
       tag: latest
 
   - name: time-version-resource
     type: docker-image
     check_every: 24h
     source:
-      repository: keppel.eu-de-1.cloud.sap/ccloud/concourse-time-version-resource
+      repository: keppel.eu-de-2.cloud.sap/ccloud/concourse-time-version-resource
       tag: v2
+
+  - name: git-proxy
+    type: registry-image
+    check_every: 24h
+    source:
+      repository: keppel.eu-de-2.cloud.sap/ccloud-dockerhub-mirror/sapcc/concourse-git-resource-proxy
+      tag: 0.5.0
+
+  - name: release
+    type: docker-image
+    check_every: 24h
+    source:
+      repository: keppel.eu-de-1.cloud.sap/ccloud/concourse-release-resource
+      tag: v2.latest
 
 jobs:
   - name: docs
@@ -244,20 +280,31 @@ jobs:
           image: image/image.tar
           additional_tags: kubernikus.git/.git/ref
 
-  - name: tiller_master
+  - name: replicate-images
     plan:
-      - in_parallel:
-        - get: tiller-version.git
-          trigger: true
-      - in_parallel:
-        - task: master
-          config:
-            <<: *task_tiller
-          timeout: 10m
-          params:
-            REGION: "k-master"
-            <<: *auth_master
-    <<: *slack
+    - in_parallel:
+      - get: kubernikus.git
+      - get: docs-builder.image
+        passed: [docs]
+        trigger: true
+        passed: [docs]
+    - task: replicate
+      timeout: 30m
+      config:
+        platform: linux
+        image_resource:
+          type: docker-image
+          source:
+            repository: keppel.eu-de-1.cloud.sap/ccloud-dockerhub-mirror/sapcc/unified-kubernetes-toolbox
+            tag: "20220714153155"
+        inputs:
+        - name: kubernikus.git
+        run:
+          path: /bin/sh
+          args: 
+          - -cx
+          - |
+            yq e '.imagesForVersion.*.*|.repository + ":" + .tag' kubernikus.git/charts/images.yaml | grep -v -E 'changeme|/ccloud/' | sed -E 's/\$REGION|global/eu-de-1/g' | sort -u | xargs -n1 keppel validate
 
   - name: master
     serial: true
@@ -266,7 +313,7 @@ jobs:
         - get: secrets.git
         - get: kubernikus.builds
           resource: kubernikus.git
-          passed: [build]
+          passed: [replicate-images, build]
           trigger: true
       - in_parallel:
         - task: kubernikus
@@ -316,13 +363,19 @@ jobs:
       - task: build
         file: kubernikus.builds/ci/task_whitesource.yaml
         params:
-          API_KEY: ((whitesource-api-key))
-          USER_KEY: ((whitesource-user-key))
+          API_KEY: ((whitesource-auth/credentials.api-key))
+          USER_KEY: ((whitesource-auth/credentials.user-key))
           PROJECT_NAME: CCloud Kubernikus
-          PRODUCT_TOKEN: ((whitesource-product-token))
+          PRODUCT_TOKEN: ((whitesource-auth/credentials.product-token))
     <<: *slack
 
-  - name: e2e
+  - name: all-versions
+    serial: true
+    plan:
+      - put: all-versions.trigger
+
+<% VERSIONS.each_with_index do |version, index| %>
+  - name: e2e-<%= version %>
     serial: true
     plan:
       - in_parallel:
@@ -331,20 +384,28 @@ jobs:
           resource: kubernikus.git
           passed: [master]
           trigger: true
+        - get: all-versions.trigger
+          trigger: true
+          passed: [all-versions]
       - task: e2e_tests
         config:
           <<: *task_e2e_tests
         timeout: 2h
         params:
+          KLUSTER_VERSION: "<%= version %>"
+          KLUSTER_CIDR: "100.<%= 100+index %>.0.0/16"
+          ISOLATE_TEST: "true"
+          KLUSTER_OS_IMAGES: flatcar-stable-amd64,flatcar-beta-amd64
           <<: *auth_e2e_master
     <<: *slack
+<% end %>
 
   - name: prod
     serial: true
     plan:
       - get: kubernikus.builds
         resource: kubernikus.git
-        passed: [e2e]
+        passed: [e2e-<%= VERSIONS[0] %>]
       - task: changes
         config:
           <<: *task_github_compare_url
@@ -389,32 +450,13 @@ jobs:
           <<: *auth_<%= region %>
     <<: *slack
 
-  - name: tiller_<%= region %>
-    plan:
-      - in_parallel:
-        - get: <%= group %>.tag
-          trigger: true
-          passed: [seed_<%= region %>]
-        - get: tiller-version.git
-          trigger: true
-      - in_parallel:
-        - task: k-<%= region %>
-          config:
-            <<: *task_tiller
-          timeout: 10m
-          params:
-            REGION: <%= region %>
-            CONTEXT: k-<%= region %>
-            <<: *auth_<%= region %>
-    <<: *slack
-
   - name: deploy_<%= region %>
     serial: true
     plan:
       - in_parallel:
         - get: <%= group %>.tag
           trigger: true
-          passed: [tiller_<%= region %>]
+          passed: [seed_<%= region %>]
         - get: secrets.git
           passed: [seed_<%= region %>]
         - get: kubernikus.builds
@@ -428,6 +470,8 @@ jobs:
             REGION: <%= region %>
             CONTEXT: k-<%= region %>
             <<: *auth_<%= region %>
+          ensure:
+            put: <%= region %>.release
         - task: kubernikus-dex_<%= region %>
           config:
             <<: *task_helm_kubernikus-dex
@@ -456,6 +500,10 @@ jobs:
         timeout: 45m
         params:
           <<: *auth_e2e_<%= region %>
+<% if region == :'qa-de-1' %>
+          KLUSTER_OS_IMAGES: flatcar-stable-amd64,flatcar-beta-amd64
+<% end %>
+          KLUSTER_VERSION: <%= YAML::load(File.read(File.expand_path('../../charts/images.yaml', __FILE__)))["imagesForVersion"].keys.sort_by { |v| Gem::Version.new(v) }.max %>
         on_failure:
           put: slack-notification
           params:
@@ -484,8 +532,11 @@ groups:
       - master
       - cli
       - whitesource
-      - tiller_master
-      - e2e
+      - all-versions
+      - replicate-images
+<% VERSIONS.each do |version| %>
+      - e2e-<%= version %>
+<% end %>
       - prod
 <% GROUPS.each do |group| %>
       - <%= group %>
@@ -496,25 +547,25 @@ groups:
     jobs:
       - <%= meta.fetch(:continent) %>
       - seed_<%= region %>
-      - tiller_<%= region %>
       - deploy_<%= region %>
       - soak_<%= region %>
 <% end %>
 
-  - name: WORLD
+  - name: world
     jobs:
       - master
       - cli
       - whitesource
-      - tiller_master
-      - e2e
+      - all-versions
+<% VERSIONS.each do |version| %>
+      - e2e-<%= version %>
+<% end %>
       - prod
 <% GROUPS.each do |group| %>
       - <%= group %>
 <% end %>
 <% DEPLOYABLE_REGIONS.each do |region, meta| %>
       - seed_<%= region %>
-      - tiller_<%= region %>
       - deploy_<%= region %>
       - soak_<%= region %>
 <% end %>

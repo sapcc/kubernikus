@@ -10,8 +10,7 @@ import (
 	"io"
 
 	"github.com/go-openapi/runtime"
-
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 
 	"github.com/sapcc/kubernikus/pkg/api/models"
 )
@@ -24,14 +23,12 @@ type ShowClusterReader struct {
 // ReadResponse reads a server response into the received o.
 func (o *ShowClusterReader) ReadResponse(response runtime.ClientResponse, consumer runtime.Consumer) (interface{}, error) {
 	switch response.Code() {
-
 	case 200:
 		result := NewShowClusterOK()
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
 			return nil, err
 		}
 		return result, nil
-
 	default:
 		result := NewShowClusterDefault(response.Code())
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
@@ -49,7 +46,8 @@ func NewShowClusterOK() *ShowClusterOK {
 	return &ShowClusterOK{}
 }
 
-/*ShowClusterOK handles this case with default header values.
+/*
+ShowClusterOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -57,8 +55,41 @@ type ShowClusterOK struct {
 	Payload *models.Kluster
 }
 
+// IsSuccess returns true when this show cluster o k response has a 2xx status code
+func (o *ShowClusterOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this show cluster o k response has a 3xx status code
+func (o *ShowClusterOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this show cluster o k response has a 4xx status code
+func (o *ShowClusterOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this show cluster o k response has a 5xx status code
+func (o *ShowClusterOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this show cluster o k response a status code equal to that given
+func (o *ShowClusterOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *ShowClusterOK) Error() string {
 	return fmt.Sprintf("[GET /api/v1/clusters/{name}][%d] showClusterOK  %+v", 200, o.Payload)
+}
+
+func (o *ShowClusterOK) String() string {
+	return fmt.Sprintf("[GET /api/v1/clusters/{name}][%d] showClusterOK  %+v", 200, o.Payload)
+}
+
+func (o *ShowClusterOK) GetPayload() *models.Kluster {
+	return o.Payload
 }
 
 func (o *ShowClusterOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -80,7 +111,8 @@ func NewShowClusterDefault(code int) *ShowClusterDefault {
 	}
 }
 
-/*ShowClusterDefault handles this case with default header values.
+/*
+ShowClusterDefault describes a response with status code -1, with default header values.
 
 Error
 */
@@ -95,8 +127,41 @@ func (o *ShowClusterDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this show cluster default response has a 2xx status code
+func (o *ShowClusterDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this show cluster default response has a 3xx status code
+func (o *ShowClusterDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this show cluster default response has a 4xx status code
+func (o *ShowClusterDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this show cluster default response has a 5xx status code
+func (o *ShowClusterDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this show cluster default response a status code equal to that given
+func (o *ShowClusterDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *ShowClusterDefault) Error() string {
 	return fmt.Sprintf("[GET /api/v1/clusters/{name}][%d] ShowCluster default  %+v", o._statusCode, o.Payload)
+}
+
+func (o *ShowClusterDefault) String() string {
+	return fmt.Sprintf("[GET /api/v1/clusters/{name}][%d] ShowCluster default  %+v", o._statusCode, o.Payload)
+}
+
+func (o *ShowClusterDefault) GetPayload() *models.Error {
+	return o.Payload
 }
 
 func (o *ShowClusterDefault) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {

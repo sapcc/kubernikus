@@ -67,13 +67,13 @@ type (
 )
 
 // NewKlusterReconcilerFactory produces a new Factory
-func NewKlusterReconcilerFactory(logger log.Logger, recorder record.EventRecorder, factories config.Factories, clients config.Clients) ReconcilerFactory {
+func NewKlusterReconcilerFactory(logger log.Logger, recorder record.EventRecorder, factories config.Factories, clients config.Clients, holdoff time.Duration) ReconcilerFactory {
 	return &KlusterReconcilerFactory{
 		Logger:            logger,
-		ListerFactory:     NewNodeListerFactory(logger, recorder, factories, clients),
+		ListerFactory:     NewNodeListerFactory(logger, recorder, factories, clients, holdoff),
 		LifeCyclerFactory: NewNodeLifeCyclerFactory(logger, recorder, factories, clients),
 		KlusterLister:     factories.Kubernikus.Kubernikus().V1().Klusters().Lister(),
-		KubernikusClient:  clients.Kubernikus.Kubernikus(),
+		KubernikusClient:  clients.Kubernikus.KubernikusV1(),
 	}
 }
 
@@ -118,7 +118,12 @@ func (r *KlusterReconciler) Do() error {
 	}
 
 	if util.DisabledValue(r.Kluster.ObjectMeta.Annotations[AnnotationServicingSafeguard]) {
-		r.Logger.Log("msg", "Skippig upgrades. Manually disabled with safeguard annotation.")
+		r.Logger.Log("msg", "Skippig upgrades. Manually disabled with safeguard annotation.", "v", 2)
+		return nil
+	}
+
+	if len(r.Lister.Maintained()) > 0 {
+		r.Logger.Log("msg", "Skipping upgrades. At least one node seems to be maintained by the maintenance-controller.", "v", 2)
 		return nil
 	}
 
@@ -150,7 +155,14 @@ func (r *KlusterReconciler) Do() error {
 	update := r.Lister.Updating()
 	replace := r.Lister.Replace()
 	reboot := r.Lister.Reboot()
+
+	// The following block retires already updating nodes
 	if len(update) > 0 {
+		// loop through all nodes needing to be replaced
+		// 	 find the one that is already being replaced
+		//     retry to drain
+		//     retry to replace
+		// skip further changes this service interval
 		for _, tbReplaced := range replace {
 			if tbReplaced == update[0] {
 				if err := r.LifeCycler.Drain(update[0]); err != nil {
@@ -165,11 +177,22 @@ func (r *KlusterReconciler) Do() error {
 			}
 		}
 
+		// loop through all nodes needing to be rebooted
+		// 	 find the node that was already rebooted before
+		//     retry to drain
+		//     retry to replace
+		// skip further changes this service interval
 		for _, tbRebooted := range reboot {
 			if tbRebooted == update[0] {
+				if err := r.LifeCycler.Drain(update[0]); err != nil {
+					return errors.Wrap(err, "Failed to drain node that is about to be rebooted")
+				}
+
 				if err := r.LifeCycler.Reboot(update[0]); err != nil {
 					return errors.Wrap(err, "Failed to reboot node")
 				}
+
+				return nil
 			}
 		}
 	}
@@ -182,6 +205,9 @@ func (r *KlusterReconciler) Do() error {
 		if err := r.LifeCycler.Replace(replace[0]); err != nil {
 			return errors.Wrap(err, "Failed to replace node")
 		}
+
+		// do not continue and also reboot another node
+		return nil
 	}
 
 	if len(reboot) > 0 {

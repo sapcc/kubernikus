@@ -13,60 +13,75 @@ import (
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
 	cr "github.com/go-openapi/runtime/client"
-
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 )
 
-// NewShowClusterParams creates a new ShowClusterParams object
-// with the default values initialized.
+// NewShowClusterParams creates a new ShowClusterParams object,
+// with the default timeout for this client.
+//
+// Default values are not hydrated, since defaults are normally applied by the API server side.
+//
+// To enforce default values in parameter, use SetDefaults or WithDefaults.
 func NewShowClusterParams() *ShowClusterParams {
-	var ()
 	return &ShowClusterParams{
-
 		timeout: cr.DefaultTimeout,
 	}
 }
 
 // NewShowClusterParamsWithTimeout creates a new ShowClusterParams object
-// with the default values initialized, and the ability to set a timeout on a request
+// with the ability to set a timeout on a request.
 func NewShowClusterParamsWithTimeout(timeout time.Duration) *ShowClusterParams {
-	var ()
 	return &ShowClusterParams{
-
 		timeout: timeout,
 	}
 }
 
 // NewShowClusterParamsWithContext creates a new ShowClusterParams object
-// with the default values initialized, and the ability to set a context for a request
+// with the ability to set a context for a request.
 func NewShowClusterParamsWithContext(ctx context.Context) *ShowClusterParams {
-	var ()
 	return &ShowClusterParams{
-
 		Context: ctx,
 	}
 }
 
 // NewShowClusterParamsWithHTTPClient creates a new ShowClusterParams object
-// with the default values initialized, and the ability to set a custom HTTPClient for a request
+// with the ability to set a custom HTTPClient for a request.
 func NewShowClusterParamsWithHTTPClient(client *http.Client) *ShowClusterParams {
-	var ()
 	return &ShowClusterParams{
 		HTTPClient: client,
 	}
 }
 
-/*ShowClusterParams contains all the parameters to send to the API endpoint
-for the show cluster operation typically these are written to a http.Request
+/*
+ShowClusterParams contains all the parameters to send to the API endpoint
+
+	for the show cluster operation.
+
+	Typically these are written to a http.Request.
 */
 type ShowClusterParams struct {
 
-	/*Name*/
+	// Name.
 	Name string
 
 	timeout    time.Duration
 	Context    context.Context
 	HTTPClient *http.Client
+}
+
+// WithDefaults hydrates default values in the show cluster params (not the query body).
+//
+// All values with no default are reset to their zero value.
+func (o *ShowClusterParams) WithDefaults() *ShowClusterParams {
+	o.SetDefaults()
+	return o
+}
+
+// SetDefaults hydrates default values in the show cluster params (not the query body).
+//
+// All values with no default are reset to their zero value.
+func (o *ShowClusterParams) SetDefaults() {
+	// no default values defined for this parameter
 }
 
 // WithTimeout adds the timeout to the show cluster params

@@ -2,26 +2,31 @@ package common
 
 import (
 	"bytes"
+	"crypto/tls"
 	"fmt"
 	"html/template"
+	"net/http"
 	"net/url"
 	"os"
 	"strings"
 
-	"github.com/golang/glog"
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack"
 	"github.com/gophercloud/gophercloud/openstack/identity/v3/tokens"
+	"github.com/gophercloud/utils/env"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	keyring "github.com/zalando/go-keyring"
+	"k8s.io/klog"
 )
 
 type OpenstackClient struct {
 	*tokens.AuthOptions
 	Provider *gophercloud.ProviderClient
 	Identity *gophercloud.ServiceClient
+	CertFile string
+	KeyFile  string
 }
 
 func NewOpenstackClient() *OpenstackClient {
@@ -30,7 +35,7 @@ func NewOpenstackClient() *OpenstackClient {
 			IdentityEndpoint: os.Getenv("OS_AUTH_URL"),
 			Password:         os.Getenv("OS_PASSWORD"),
 			AllowReauth:      true,
-		}, nil, nil,
+		}, nil, nil, "", "",
 	}
 }
 
@@ -48,6 +53,8 @@ func (o *OpenstackClient) BindFlags(flags *pflag.FlagSet) {
 	flags.StringVar(&o.ApplicationCredentialName, "application-credential-name", o.ApplicationCredentialName, "Project application credential name [OS_APPLICATION_CREDENTIAL_NAME]")
 	flags.StringVar(&o.ApplicationCredentialID, "application-credential-id", o.ApplicationCredentialName, "Project application credential id [OS_APPLICATION_CREDENTIAL_ID]")
 	flags.StringVar(&o.ApplicationCredentialSecret, "application-credential-secret", "", "Project application credential secret [OS_APPLICATION_CREDENTIAL_SECRET]")
+	flags.StringVar(&o.CertFile, "client-cert", "", "client tls certificate [OS_CERT]")
+	flags.StringVar(&o.KeyFile, "client-key", "", "client tls private key [OS_KEY]")
 	flags.StringVar(&o.TokenID, "token", "", "Token to authenticate with [OS_TOKEN]")
 }
 
@@ -67,6 +74,13 @@ func (o *OpenstackClient) Validate(c *cobra.Command, args []string) error {
 		}
 	}
 
+	if o.CertFile == "" {
+		o.CertFile = env.Getenv("OS_CERT")
+	}
+	if o.KeyFile == "" {
+		o.KeyFile = env.Getenv("OS_KEY")
+	}
+
 	if o.ApplicationCredentialID == "" {
 		o.ApplicationCredentialID = os.Getenv("OS_APPLICATION_CREDENTIAL_ID")
 	}
@@ -79,7 +93,7 @@ func (o *OpenstackClient) Validate(c *cobra.Command, args []string) error {
 
 	//Only use environment variables if nothing was given on the command line
 	if o.Username == "" && o.UserID == "" {
-		o.UserID = os.Getenv("OS_USERID")
+		o.UserID = os.Getenv("OS_USER_ID")
 		if o.UserID == "" {
 			o.Username = os.Getenv("OS_USERNAME")
 			if o.DomainName == "" && o.DomainID == "" {
@@ -163,13 +177,27 @@ func (o *OpenstackClient) Setup() error {
 			if password, err := keyring.Get("kubernikus", strings.ToLower(username)); err == nil {
 				o.Password = password
 			} else {
-				glog.V(2).Infof("Failed to get credential from keyring: %s", err)
+				klog.V(2).Infof("Failed to get credential from keyring: %s", err)
 			}
 		}
 	}
 
 	if o.Provider, err = openstack.NewClient(o.IdentityEndpoint); err != nil {
 		return errors.Wrap(err, "Creating Gophercloud ProviderClient failed")
+	}
+
+	if o.CertFile != "" && o.KeyFile != "" {
+		cert, err := tls.LoadX509KeyPair(o.CertFile, o.KeyFile)
+		if err != nil {
+			return errors.Wrap(err, "Failed to load tls client credentials")
+		}
+		o.Provider.HTTPClient = http.Client{
+			Transport: &http.Transport{
+				TLSClientConfig: &tls.Config{
+					Certificates: []tls.Certificate{cert},
+				},
+			},
+		}
 	}
 
 	if o.Identity, err = openstack.NewIdentityV3(o.Provider, gophercloud.EndpointOpts{}); err != nil {
@@ -232,7 +260,9 @@ func (o *OpenstackClient) PrintDebugAuthInfo() string {
       ProjectID:                {{ .Scope.ProjectID }}
       ProjectName:              {{ .Scope.ProjectName }}
       DomainID:                 {{ .Scope.DomainID }}
-      DomainName:               {{ .Scope.DomainName }}`
+      DomainName:               {{ .Scope.DomainName }}
+    CertFile:                   {{ .CertFile }}
+    KeyFile:                    {{ .KeyFile }}`
 
 	t := template.Must(template.New("t").Funcs(funcMap).Parse(tmpl))
 	var output bytes.Buffer

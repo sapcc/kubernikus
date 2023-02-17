@@ -1,14 +1,16 @@
 package hammertime
 
 import (
+	"context"
 	"fmt"
 	"time"
 
 	kitlog "github.com/go-kit/kit/log"
-	coord_v1beta1 "k8s.io/api/coordination/v1beta1"
+	autoscalingv1 "k8s.io/api/autoscaling/v1"
+	coord_v1 "k8s.io/api/coordination/v1"
 	core_v1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
-	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/record"
@@ -122,17 +124,15 @@ func (hc *hammertimeController) scaleDeployment(kluster *v1.Kluster, disable boo
 		metrics.HammertimeStatus.WithLabelValues(kluster.Name).Set(0)
 	}
 
-	scaleClient := NewScaleClient(hc.client, kluster.Namespace)
-
 	deploymentName := fmt.Sprintf("%s-ccmanager", kluster.GetName())
-	replicas, err := scaleClient.GetScale(deploymentName)
+	replicas, err := hc.getScale(deploymentName, kluster.Namespace)
 	if apierrors.IsNotFound(err) {
-		deploymentName := fmt.Sprintf("%s-cmanager", kluster.GetName())
-		replicas, err = scaleClient.GetScale(deploymentName)
+		deploymentName = fmt.Sprintf("%s-cmanager", kluster.GetName())
+		replicas, err = hc.getScale(deploymentName, kluster.Namespace)
 	}
 	if apierrors.IsNotFound(err) {
 		deploymentName = fmt.Sprintf("%s-controller-manager", kluster.GetName())
-		replicas, err = scaleClient.GetScale(deploymentName)
+		replicas, err = hc.getScale(deploymentName, kluster.Namespace)
 	}
 	if err != nil {
 		return fmt.Errorf("Failed to get deployment scale: %s", err)
@@ -140,16 +140,28 @@ func (hc *hammertimeController) scaleDeployment(kluster *v1.Kluster, disable boo
 
 	if replicas > 0 {
 		if disable {
-			err = scaleClient.UpdateScale(deploymentName, 0)
+			err = hc.scale(deploymentName, kluster.Namespace, 0)
 			logger.Log("msg", "Scaling down", "deployment", deploymentName, "err", err)
 		}
 	} else {
 		if !disable {
-			err = scaleClient.UpdateScale(deploymentName, 1)
+			err = hc.scale(deploymentName, kluster.Namespace, 1)
 			logger.Log("msg", "Scaling up", "deployment", deploymentName, "err", err)
 		}
 	}
 	return err
+}
+func (hc *hammertimeController) scale(deploymentName, ns string, replicas int32) error {
+	_, err := hc.client.AppsV1().Deployments(ns).UpdateScale(context.TODO(), deploymentName, &autoscalingv1.Scale{ObjectMeta: metav1.ObjectMeta{Name: deploymentName, Namespace: ns}, Spec: autoscalingv1.ScaleSpec{Replicas: replicas}}, metav1.UpdateOptions{})
+	return err
+}
+
+func (hc *hammertimeController) getScale(deploymentName, ns string) (int32, error) {
+	scale, err := hc.client.AppsV1().Deployments(ns).GetScale(context.TODO(), deploymentName, metav1.GetOptions{})
+	if err != nil {
+		return -1, err
+	}
+	return scale.Spec.Replicas, nil
 }
 
 func nodeReadyCondition(node *core_v1.Node) *core_v1.NodeCondition {
@@ -161,7 +173,7 @@ func nodeReadyCondition(node *core_v1.Node) *core_v1.NodeCondition {
 	return nil
 }
 
-func getNodeLease(node *core_v1.Node, clientset kubernetes.Interface) (*coord_v1beta1.Lease, error) {
-	leaseClient := clientset.CoordinationV1beta1().Leases(core_v1.NamespaceNodeLease)
-	return leaseClient.Get(node.Name, meta_v1.GetOptions{})
+func getNodeLease(node *core_v1.Node, clientset kubernetes.Interface) (*coord_v1.Lease, error) {
+	leaseClient := clientset.CoordinationV1().Leases(core_v1.NamespaceNodeLease)
+	return leaseClient.Get(context.TODO(), node.Name, metav1.GetOptions{})
 }

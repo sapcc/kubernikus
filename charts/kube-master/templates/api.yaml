@@ -1,5 +1,5 @@
 {{/* vim: set filetype=gotexttmpl: */ -}}
-{{- if semverCompare ">=1.16-0" .Capabilities.KubeVersion.GitVersion }}
+{{- if .Capabilities.APIVersions.Has "apps/v1" }}
 apiVersion: "apps/v1"
 {{- else }}
 apiVersion: "extensions/v1beta1"
@@ -121,6 +121,16 @@ spec:
             items:
               - key: local-kubeconfig
                 path: kubeconfig
+        {{- if .Values.audit }}
+        - name: audit-policy
+          configMap:
+            name: {{ include "master.fullname" . }}
+            items:
+              - key: audit-policy.yaml
+                path: audit-policy.yaml
+        - name: logs
+          emptyDir: {}
+        {{- end }}
       initContainers:
         - name: etcd-wait
           image: "{{ include "etcd.image" . }}"
@@ -140,6 +150,18 @@ spec:
 {{- else }}
             - until etcdctl --total-timeout=4s --endpoints http://{{ include "etcd.fullname" . }}:2379 cluster-health; do sleep 5; done;
 {{- end }}
+{{- if and (semverCompare ">= 1.22" .Values.version.kubernetes) .Values.audit }}
+        - name: auditlog-permission-fix
+          image: "{{ include "fluentd.image" . }}"
+          command:
+            - sh
+            - -c
+          args:
+            - touch /var/log/audit.log && chmod 644 /var/log/audit.log
+          volumeMounts:
+            - mountPath: /var/log
+              name: logs
+{{- end}}
       containers:
         - name: apiserver
           ports:
@@ -213,7 +235,7 @@ spec:
             # https://github.com/kubernetes/kubernetes/issues/85867
             - --feature-gates=ValidateProxyRedirects=true
 {{- end }}
-{{- if (semverCompare ">= 1.20" .Values.version.kubernetes) }}
+{{- if and (.Values.openstack) (semverCompare ">= 1.20" .Values.version.kubernetes) }}
             - --feature-gates=CSIMigration=true,CSIMigrationOpenStack=true,ExpandCSIVolumes=true
 {{- end }}
             #Cert Spratz
@@ -237,13 +259,19 @@ spec:
 {{- if .Values.api.corsAllowedOrigins }}
             - --cors-allowed-origins={{ .Values.api.corsAllowedOrigins }}
 {{- end }}
-            {{ if .Values.dex.enabled }}
-            - --oidc-issuer-url=https://{{ include "dex.url" . }}
-            - --oidc-client-id=kubernetes
-            - --oidc-groups-claim=groups
-            - --oidc-username-prefix=-
-            - --oidc-username-claim=name
+            {{ if or .Values.dex.enabled .Values.api.oidc.issuerURL }}
+            - --oidc-issuer-url={{ default  (printf "https://%s" (include "dex.url" .)) .Values.api.oidc.issuerURL }}
+            - --oidc-client-id={{ .Values.api.oidc.clientID }}
+            - --oidc-groups-claim={{ .Values.api.oidc.groupsClaim }}
+            - --oidc-username-prefix={{ .Values.api.oidc.usernamePrefix }}
+            - --oidc-username-claim={{ .Values.api.oidc.usernameClaim }}
             {{ end }}
+            {{- if .Values.audit }}
+            - --audit-policy-file=/audit/audit-policy.yaml
+            - --audit-log-path=/var/log/audit.log
+            - --audit-log-maxage=1
+            - --audit-log-maxbackup=1
+            {{- end }}
           volumeMounts:
             - mountPath: /etc/kubernetes/certs
               name: certs
@@ -265,6 +293,13 @@ spec:
             - mountPath: /liveness-probe
               name: liveness-probe
 {{- end }}
+            {{- if .Values.audit }}
+            - mountPath: /audit
+              name: audit-policy
+              readOnly: true
+            - mountPath: /var/log
+              name: logs
+            {{- end}}
           livenessProbe:
 {{- if .Values.etcd.backup.enabled }}
             exec:
@@ -280,14 +315,16 @@ spec:
               port: {{ .Values.advertisePort }}
               scheme: HTTPS
 {{- end }}
-            initialDelaySeconds: 60
+            initialDelaySeconds: 5
             periodSeconds: 60
+            failureThreshold: 2
+            timeoutSeconds: 3
           readinessProbe:
             httpGet:
               path: /healthz
               port: {{ .Values.advertisePort }}
               scheme: HTTPS
-            initialDelaySeconds: 15
+            initialDelaySeconds: 5
             timeoutSeconds: 3
           env:
             - name: ETCD_HOST
@@ -298,16 +335,18 @@ spec:
 {{ toYaml .Values.api.resources | indent 12 }}
         - name: wormhole
           image: {{ include "wormhole.image" . | quote }}
-          args:
-            - wormhole
-            - server
-            - --kubeconfig=/etc/kubernetes/config/kubeconfig
-            - --ca=/etc/kubernetes/certs/apiserver-nodes-ca.pem
-            - --cert=/etc/kubernetes/certs/tls-wormhole.pem
-            - --key=/etc/kubernetes/certs/tls-wormhole-key.pem
-            - --service-cidr={{ .Values.serviceCIDR }}
-            - --api-port={{ .Values.advertisePort }}
-            - --v=5
+          command:
+            - sh
+            - -ec
+            - |
+              cp /etc/kubernetes/certs/tls-wormhole.pem /tmp/tls-wormhole.livenessprobe
+              exec wormhole server --kubeconfig=/etc/kubernetes/config/kubeconfig \
+              --ca=/etc/kubernetes/certs/apiserver-nodes-ca.pem \
+              --cert=/etc/kubernetes/certs/tls-wormhole.pem \
+              --key=/etc/kubernetes/certs/tls-wormhole-key.pem \
+              --service-cidr={{ .Values.serviceCIDR }} \
+              --api-port={{ .Values.advertisePort }} \
+              --v=5
           securityContext:
             capabilities:
               add:
@@ -319,3 +358,104 @@ spec:
             - mountPath: /etc/kubernetes/config
               name: wormhole-config
               readOnly: true
+          livenessProbe:
+            exec:
+              command:
+              - cmp
+              - -s
+              - /etc/kubernetes/certs/tls-wormhole.pem
+              - /tmp/tls-wormhole.livenessprobe
+            initialDelaySeconds: 60
+            periodSeconds: 60
+            timeoutSeconds: 3
+        {{- if .Values.audit }}
+        - name: fluentd
+          image: {{ include "fluentd.image" . | quote }}
+          resources:
+            requests:
+              ephemeral-storage: "2Gi"
+          args: ["--suppress-config-dump"]
+          env:
+          {{- if eq .Values.audit "elasticsearch" }}
+          - name: ELK_USERNAME
+            valueFrom:
+              secretKeyRef:
+                name: {{ include "master.fullname" . }}-elk
+                key: elk-username
+          - name: ELK_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: {{ include "master.fullname" . }}-elk
+                key: elk-password
+          - name: ELK_HOSTS
+            valueFrom:
+              secretKeyRef:
+                name: {{ include "master.fullname" . }}-elk
+                key: elk-hosts
+          - name: ELK_INDEX
+            valueFrom:
+              secretKeyRef:
+                name: {{ include "master.fullname" . }}-elk
+                key: elk-index
+          {{- end }}
+          {{- if eq .Values.audit "swift" }}
+          - name: OS_AUTH_URL
+            valueFrom:
+              secretKeyRef:
+                name: {{ include "master.fullname" . }}-secret
+                key: openstack-auth-url
+          - name: OS_USERNAME
+            valueFrom:
+              secretKeyRef:
+                name: {{ include "master.fullname" . }}-secret
+                key: openstack-username
+          - name: OS_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: {{ include "master.fullname" . }}-secret
+                key: openstack-password
+          - name: OS_PROJECT_ID
+            valueFrom:
+              secretKeyRef:
+                name: {{ include "master.fullname" . }}-secret
+                key: openstack-project-id
+          - name: OS_USER_DOMAIN_ID
+            valueFrom:
+              secretKeyRef:
+                name: {{ include "master.fullname" . }}-secret
+                key: openstack-user-domain-id
+          - name: OS_PROJECT_DOMAIN_ID
+            valueFrom:
+              secretKeyRef:
+                name: {{ include "master.fullname" . }}-secret
+                key: openstack-project-domain-id
+          - name: OS_REGION
+            valueFrom:
+              secretKeyRef:
+                name: {{ include "master.fullname" . }}-secret
+                key: openstack-region
+          {{- end}}
+          {{- if eq .Values.audit "http" }}
+          - name: HTTP_USERNAME
+            valueFrom:
+              secretKeyRef:
+                name: {{ include "master.fullname" . }}-http
+                key: http-username
+          - name: HTTP_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: {{ include "master.fullname" . }}-http
+                key: http-password
+          - name: HTTP_ENDPOINT
+            valueFrom:
+              secretKeyRef:
+                name: {{ include "master.fullname" . }}-http
+                key: http-endpoint
+          {{- end }}
+          volumeMounts:
+            - mountPath: /fluentd/etc
+              name: config
+              readOnly: true
+            - mountPath: /var/log
+              name: logs
+        {{- end }}

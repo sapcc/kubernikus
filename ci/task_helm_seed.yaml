@@ -3,7 +3,7 @@ platform: linux
 image_resource:
   type: registry-image
   source:
-    repository: keppel.eu-de-2.cloud.sap/ccloud-dockerhub-mirror/sapcc/unified-kubernetes-toolbox
+    repository: keppel.eu-de-1.cloud.sap/ccloud-dockerhub-mirror/sapcc/unified-kubernetes-toolbox
     tag: 'latest'
 
 inputs:
@@ -16,6 +16,9 @@ run:
     - -exc
     - |
       set -o pipefail
+
+      vault-injector interpolate secrets.git/global/values/kubernikus-seed.yaml secrets.git/$REGION/values/globals.yaml
+
       helm upgrade $RELEASE helm-charts.git/openstack/kubernikus --namespace $NAMESPACE --values secrets.git/global/values/kubernikus-seed.yaml --values secrets.git/$REGION/values/globals.yaml  --install
 
 params:
@@ -25,4 +28,8 @@ params:
   KUBELOGON_PASSWORD:
   NAMESPACE: monsoon3
   RELEASE: kubernikus
-  HELM_VERSION: 2.11.0
+  HELM_VERSION: 3.9.0
+  VAULT_ADDR:      https://vault.global.cloud.sap # DO NOT CHANGE
+  VAULT_KV_ENGINE: secrets                        # DO NOT CHANGE
+  VAULT_ROLE_ID:   # (required) set this to ((auth.role_id)) to receive credentials automatically from Concourse
+  VAULT_SECRET_ID: # (required) set this to ((auth.secret_id)) to receive credentials automatically from Concourse

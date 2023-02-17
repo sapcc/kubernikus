@@ -1,0 +1,21 @@
+dns:
+  kube: false
+images:
+  wormhole:
+    registry: reg
+    tag: tag
+  kubeProxy:
+    registry: reg
+    tag: tag
+  coreDNS:
+    registry: reg
+    tag: tag
+  cniPlugins:
+    registry: reg
+    tag: tag
+  flannelCNIPlugin:
+    registry: reg
+    tag: tag
+  flannel:
+    registry: reg
+    tag: tag

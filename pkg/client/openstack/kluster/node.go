@@ -3,12 +3,13 @@ package kluster
 import (
 	"time"
 
+	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/extendedstatus"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/servers"
 )
 
 type Node struct {
 	servers.Server
-	StateExt
+	extendedstatus.ServerExtendedStatusExt
 }
 
 func (n *Node) Starting() bool {
@@ -21,7 +22,7 @@ func (n *Node) Starting() bool {
 		return false
 	}
 
-	if n.VMState == "building" {
+	if n.VmState == "building" {
 		return true
 	}
 
@@ -67,7 +68,7 @@ func (n *Node) Running() bool {
 	//ERROR = 'error'
 	//SHELVED = 'shelved'
 	//SHELVED_OFFLOADED = 'shelved_offloaded'
-	if n.VMState == "active" {
+	if n.VmState == "active" {
 		return true
 	}
 
@@ -79,7 +80,7 @@ func (n *Node) Erroring() bool {
 		return false
 	}
 
-	return n.VMState == "error"
+	return n.VmState == "error"
 }
 
 func (n *Node) GetID() string {
@@ -102,14 +103,4 @@ func (n *Node) GetSecurityGroupNames() []string {
 		}
 	}
 	return names
-}
-
-type StateExt struct {
-	TaskState  string `json:"OS-EXT-STS:task_state"`
-	VMState    string `json:"OS-EXT-STS:vm_state"`
-	PowerState int    `json:"OS-EXT-STS:power_state"`
-}
-
-func (r *StateExt) UnmarshalJSON(b []byte) error {
-	return nil
 }

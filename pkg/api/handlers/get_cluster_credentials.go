@@ -7,7 +7,6 @@ import (
 	"github.com/ghodss/yaml"
 	"github.com/go-openapi/runtime/middleware"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
-	certutil "k8s.io/client-go/util/cert"
 
 	"github.com/sapcc/kubernikus/pkg/api"
 	"github.com/sapcc/kubernikus/pkg/api/models"
@@ -43,11 +42,6 @@ func (d *getClusterCredentials) Handle(params operations.GetClusterCredentialsPa
 
 	factory := util.NewCertificateFactory(kluster, &secret.Certificates, "")
 
-	var organizations []string
-	for _, role := range principal.Roles {
-		organizations = append(organizations, "os:"+role)
-	}
-
 	cert, err := factory.UserCert(principal, fmt.Sprintf("%s://%s", requestutil.Scheme(params.HTTPRequest), requestutil.HostWithPort(params.HTTPRequest)))
 	if err != nil {
 		return NewErrorResponse(&operations.GetClusterCredentialsDefault{}, 500, "Failed to issue cert: %s", err)
@@ -56,8 +50,8 @@ func (d *getClusterCredentials) Handle(params operations.GetClusterCredentialsPa
 		params.Name,
 		fmt.Sprintf("%v@%v", principal.Name, params.Name),
 		kluster.Status.Apiserver,
-		certutil.EncodePrivateKeyPEM(cert.PrivateKey),
-		certutil.EncodeCertPEM(cert.Certificate),
+		util.EncodePrivateKeyPEM(cert.PrivateKey),
+		util.EncodeCertPEM(cert.Certificate),
 		[]byte(secret.TLSCACertificate),
 		"",
 	)

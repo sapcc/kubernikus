@@ -6,6 +6,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/go-openapi/runtime"
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack"
 	"github.com/gophercloud/gophercloud/openstack/blockstorage/v3/volumes"
@@ -19,6 +20,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/wait"
 
 	"github.com/sapcc/kubernikus/pkg/api/client/operations"
+	"github.com/sapcc/kubernikus/pkg/api/models"
 	etcd_util "github.com/sapcc/kubernikus/pkg/util/etcd"
 	"github.com/sapcc/kubernikus/test/e2e/framework"
 )
@@ -32,10 +34,11 @@ type PyrolisisTests struct {
 	Kubernikus *framework.Kubernikus
 	OpenStack  *framework.OpenStack
 	Reuse      bool
+	Isolate    bool
 }
 
 func (p *PyrolisisTests) Run(t *testing.T) {
-	if p.Reuse == false {
+	if p.Reuse == false && p.Isolate == false {
 		quota := t.Run("SettingKlustersOnFire", p.SettingKlustersOnFire)
 		require.True(t, quota, "Klusters must burn")
 
@@ -45,22 +48,19 @@ func (p *PyrolisisTests) Run(t *testing.T) {
 
 		t.Run("CleanupVolumes", p.CleanupVolumes)
 		t.Run("CleanupInstances", p.CleanupInstances)
-
-		cleanupStorageContainer := t.Run("CleanupBackupStorageContainers", p.CleanupBackupStorageContainers)
-		require.True(t, cleanupStorageContainer, "Etcd backup storage container cleanup failed")
-
-		t.Run("CleanupLoadbalancers", p.CleanupLoadbalancers)
 	}
+
+	cleanupStorageContainer := t.Run("CleanupBackupStorageContainers", p.CleanupBackupStorageContainers)
+	require.True(t, cleanupStorageContainer, "Etcd backup storage container cleanup failed")
+
+	t.Run("CleanupLoadbalancers", p.CleanupLoadbalancers)
 }
 
 func (p *PyrolisisTests) SettingKlustersOnFire(t *testing.T) {
-	res, err := p.Kubernikus.Client.Operations.ListClusters(
-		operations.NewListClustersParams(),
-		p.Kubernikus.AuthInfo,
-	)
+	klusters, err := listKlusters(p.Kubernikus.Client.Operations, p.Kubernikus.AuthInfo)
 	require.NoError(t, err, "There should be no error while listing klusters")
 
-	for _, kluster := range res.Payload {
+	for _, kluster := range klusters {
 		if strings.HasPrefix(kluster.Name, "e2e-") {
 			t.Run(fmt.Sprintf("TerminatingKluster-%v", kluster.Name), func(t *testing.T) {
 				_, err := p.Kubernikus.Client.Operations.TerminateCluster(
@@ -71,6 +71,19 @@ func (p *PyrolisisTests) SettingKlustersOnFire(t *testing.T) {
 			})
 		}
 	}
+}
+
+func listKlusters(client operations.ClientService, authinfo runtime.ClientAuthInfoWriter) ([]*models.Kluster, error) {
+	res, err := client.ListClusters(
+		operations.NewListClustersParams(),
+		authinfo,
+	)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return res.Payload, nil
 }
 
 func (p *PyrolisisTests) WaitForE2EKlustersTerminated(t *testing.T) {
@@ -91,13 +104,36 @@ func (p *PyrolisisTests) CleanupBackupStorageContainers(t *testing.T) {
 	allContainers, err := containers.ExtractNames(allPages)
 	require.NoError(t, err, "There should be no error while extracting storage containers")
 
+	klusters, err := listKlusters(p.Kubernikus.Client.Operations, p.Kubernikus.AuthInfo)
+	require.NoError(t, err, "There should be no error while listing klusters")
+
+	// do not delete containers where there is still a kluster running
+	var containersToDelete []string
+	for _, container := range allContainers {
+		found := false
+
+		for _, kluster := range klusters {
+			if strings.HasPrefix(container, fmt.Sprintf("%s-%s", etcd_util.BackupStorageContainerBase, kluster.Name)) {
+				found = true
+			}
+		}
+
+		if !found {
+			containersToDelete = append(containersToDelete, container)
+		}
+	}
+
 	objectsListOpts := objects.ListOpts{
 		Full: false,
 	}
-	for _, container := range allContainers {
+
+	for _, container := range containersToDelete {
 		if strings.HasPrefix(container, etcd_util.BackupStorageContainerBase) {
 			allPages, err := objects.List(storageClient, container, objectsListOpts).AllPages()
-			require.NoError(t, err, "There should be no error while lising objetcs in container %s", container)
+			if _, ok := err.(gophercloud.ErrDefault404); ok {
+				continue
+			}
+			require.NoError(t, err, "There should be no error while lising objetcs in container %s:", container)
 
 			allObjects, err := objects.ExtractNames(allPages)
 			require.NoError(t, err, "There should be no error while extracting objetcs names for container %s", container)
@@ -114,7 +150,7 @@ func (p *PyrolisisTests) CleanupBackupStorageContainers(t *testing.T) {
 			err = wait.PollImmediate(CleanupBackupContainerDeleteInterval, CleanupBackupContainerDeleteTimeout,
 				func() (bool, error) {
 					_, err := containers.Delete(storageClient, container).Extract()
-					if errResponseCode, ok := err.(gophercloud.ErrUnexpectedResponseCode); ok && errResponseCode.Actual == 409 {
+					if _, ok := err.(gophercloud.ErrDefault409); ok {
 						return false, nil
 					}
 					//Ignore 404 from swift, this can happen for a successful delete becase of the eventual consistency
@@ -195,9 +231,34 @@ func (p *PyrolisisTests) CleanupLoadbalancers(t *testing.T) {
 	allLoadbalancers, err := loadbalancers.ExtractLoadBalancers(allPages)
 	require.NoError(t, err, "There should be no error while extracting loadbalancers")
 
+	klusters, err := listKlusters(p.Kubernikus.Client.Operations, p.Kubernikus.AuthInfo)
+	require.NoError(t, err, "There should be no error while listing klusters")
+
+	// do not delete loadbalancers where there is still a kluster running
+	var lbsToDelete []loadbalancers.LoadBalancer
 	for _, lb := range allLoadbalancers {
+		found := false
+
+		for _, kluster := range klusters {
+			if strings.HasPrefix(lb.Name, fmt.Sprintf("kube_service_%s", kluster.Name)) {
+				found = true
+			}
+		}
+
+		if !found {
+			lbsToDelete = append(lbsToDelete, lb)
+		}
+	}
+
+	for _, lb := range lbsToDelete {
 		if strings.HasSuffix(lb.Name, "_e2e-lb") {
-			err := loadbalancers.Delete(lbClient, lb.ID, loadbalancers.DeleteOpts{}).ExtractErr()
+			err := loadbalancers.Delete(lbClient, lb.ID, loadbalancers.DeleteOpts{Cascade: true}).ExtractErr()
+
+			// Ignore PENDING_DELETE error
+			if _, ok := err.(gophercloud.ErrDefault409); ok {
+				continue
+			}
+
 			require.NoError(t, err, "There should be no error while deleting loadbalancer %s", lb.Name)
 		}
 	}

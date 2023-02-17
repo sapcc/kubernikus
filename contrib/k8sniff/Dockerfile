@@ -1,4 +1,4 @@
-FROM golang:1.12-alpine
+FROM keppel.eu-de-1.cloud.sap/ccloud-dockerhub-mirror/library/golang:1.16-alpine3.13
 
 WORKDIR /go/src/github.com/kubermatic/k8sniff
 
