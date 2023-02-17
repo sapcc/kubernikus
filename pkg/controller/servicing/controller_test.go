@@ -241,28 +241,26 @@ func TestServicingControllerReconcile(t *testing.T) {
 			expectedReboot:  false,
 			expectedReplace: true,
 		},
-		/*
-			{
-				message: "Nodes with outdate OS should be rebooted",
-				options: &FakeKlusterOptions{
-					Phase:       models.KlusterPhaseRunning,
-					LastService: nil,
-					NodePools: []FakeNodePoolOptions{
-						{
-							AllowReboot:         true,
-							AllowReplace:        true,
-							NodeHealthy:         true,
-							NodeOSOutdated:      true,
-							NodeKubeletOutdated: false,
-							Size:                1,
-						},
+		{
+			message: "Nodes with outdate OS should be rebooted",
+			options: &FakeKlusterOptions{
+				Phase:       models.KlusterPhaseRunning,
+				LastService: nil,
+				NodePools: []FakeNodePoolOptions{
+					{
+						AllowReboot:         true,
+						AllowReplace:        true,
+						NodeHealthy:         true,
+						NodeOSOutdated:      true,
+						NodeKubeletOutdated: false,
+						Size:                1,
 					},
 				},
-				expectedDrain:   true,
-				expectedReboot:  true,
-				expectedReplace: false,
 			},
-		*/
+			expectedDrain:   true,
+			expectedReboot:  true,
+			expectedReplace: false,
+		},
 		{
 			message: "Up-to-date Node should neither be rebooted nor be replaced",
 			options: &FakeKlusterOptions{
