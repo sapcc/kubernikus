@@ -31,16 +31,15 @@ type PoolManager interface {
 }
 
 type PoolStatus struct {
-	Nodes            []string
-	Running          int
-	Starting         int
-	Stopping         int
-	Needed           int
-	UnNeeded         int
-	Healthy          int
-	Schedulable      int
-	SchedulableNodes []*corev1.Node
-	OrderedNodes     []*corev1.Node
+	Nodes        []string
+	Running      int
+	Starting     int
+	Stopping     int
+	Needed       int
+	UnNeeded     int
+	Healthy      int
+	Schedulable  int
+	OrderedNodes []*corev1.Node
 }
 
 type ConcretePoolManager struct {
@@ -88,19 +87,18 @@ func (cpm *ConcretePoolManager) GetStatus() (status *PoolStatus, err error) {
 	if err != nil {
 		return status, err
 	}
-	healthy, schedulable, schedNodes, orderedNodes := cpm.healthyAndSchedulable()
+	healthy, schedulable, orderedNodes := cpm.healthyAndSchedulable()
 
 	return &PoolStatus{
-		Nodes:            cpm.nodeIDs(nodes),
-		Running:          cpm.running(nodes),
-		Starting:         cpm.starting(nodes),
-		Stopping:         cpm.stopping(nodes),
-		Needed:           cpm.needed(nodes),
-		UnNeeded:         cpm.unNeeded(nodes),
-		Healthy:          healthy,
-		Schedulable:      schedulable,
-		SchedulableNodes: schedNodes,
-		OrderedNodes:     orderedNodes,
+		Nodes:        cpm.nodeIDs(nodes),
+		Running:      cpm.running(nodes),
+		Starting:     cpm.starting(nodes),
+		Stopping:     cpm.stopping(nodes),
+		Needed:       cpm.needed(nodes),
+		UnNeeded:     cpm.unNeeded(nodes),
+		Healthy:      healthy,
+		Schedulable:  schedulable,
+		OrderedNodes: orderedNodes,
 	}, nil
 }
 
@@ -131,7 +129,7 @@ func removeNodePool(pool []models.NodePoolInfo, name string) ([]models.NodePoolI
 }
 
 func (cpm *ConcretePoolManager) SetStatus(status *PoolStatus) error {
-	healthy, schedulable, _, _ := cpm.healthyAndSchedulable()
+	healthy, schedulable, _ := cpm.healthyAndSchedulable()
 
 	newInfo := models.NodePoolInfo{
 		Name:        cpm.Pool.Name,
@@ -286,7 +284,7 @@ func (cpm ConcretePoolManager) unNeeded(nodes []openstack_kluster.Node) int {
 	return unneeded
 }
 
-func (cpm *ConcretePoolManager) healthyAndSchedulable() (healthy, schedulable int, schedNodes, orderedNodes []*corev1.Node) {
+func (cpm *ConcretePoolManager) healthyAndSchedulable() (healthy, schedulable int, orderedNodes []*corev1.Node) {
 	nodeLister, err := cpm.nodeObservatory.GetListerForKluster(cpm.Kluster)
 	if err != nil {
 		return
@@ -303,7 +301,6 @@ func (cpm *ConcretePoolManager) healthyAndSchedulable() (healthy, schedulable in
 			} else {
 				schedulable++
 				orderedNodes = append(orderedNodes, nodes[i])
-				schedNodes = append(schedNodes, nodes[i])
 			}
 			if util.IsNodeReady(node) {
 				healthy++
