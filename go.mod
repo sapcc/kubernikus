@@ -29,7 +29,7 @@ require (
 	github.com/go-openapi/validate v0.21.0
 	github.com/go-stack/stack v1.8.1
 	github.com/godbus/dbus v4.1.0+incompatible // indirect
-	github.com/google/uuid v1.2.0 // indirect
+	github.com/google/uuid v1.2.0
 	github.com/gophercloud/gophercloud v0.19.0
 	github.com/gophercloud/utils v0.0.0-20210720165645-8a3ad2ad9e70
 	github.com/hashicorp/yamux v0.0.0-20180826203732-cc6d2ea263b2 // indirect
