@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/go-kit/kit/log"
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 
@@ -19,10 +20,6 @@ import (
 	"github.com/sapcc/kubernikus/pkg/util"
 	"github.com/sapcc/kubernikus/pkg/util/generator"
 	"github.com/sapcc/kubernikus/pkg/version"
-	"github.com/go-kit/kit/log"
-	corev1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/labels"
 )
 
 type PoolManager interface {
@@ -298,15 +295,14 @@ func (cpm *ConcretePoolManager) healthyAndSchedulable() (healthy int, schedulabl
 	if err != nil {
 		return
 	}
-	prefix := fmt.Sprintf("%s-%s-", cpm.Kluster.Spec.Name, cpm.Pool.Name)
 	for i, node := range nodes {
 		//Does the node belong to this pool?
 		if util.IsKubernikusNode(node.Name, cpm.Kluster.Spec.Name, cpm.Pool.Name) {
-			if !node.Spec.Unschedulable {
+			if node.Spec.Unschedulable {
+				unschedNodes = append(unschedNodes, nodes[i])
+			} else {
 				schedulable++
 				schedNodes = append(schedNodes, nodes[i])
-			} else {
-				unschedNodes = append(unschedNodes, nodes[i])
 			}
 			if util.IsNodeReady(node) {
 				healthy++
