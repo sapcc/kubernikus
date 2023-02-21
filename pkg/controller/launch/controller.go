@@ -174,27 +174,23 @@ func (lr *LaunchReconciler) reconcilePool(kluster *v1.Kluster, pool *models.Node
 				return
 			}
 		}
-		return
+		break
 	case status.UnNeeded > 0:
 		requeue = true
-		if len(status.UnschedulableNodes) > 0 {
-			id := strings.Replace(status.UnschedulableNodes[0].Spec.ProviderID, "openstack:///", "", 1)
-			if _, err = uuid.Parse(id); err != nil {
-				return
-			}
-			if err = pm.DeleteNode(id); err != nil {
-				return
-			}
-		} else {
-			if err = pm.DeleteNode(status.Nodes[0]); err != nil {
-				return
-			}
+		id := strings.Replace(status.OrderedNodes[0].Spec.ProviderID, "openstack:///", "", 1)
+		if _, err = uuid.Parse(id); err != nil {
+			return
 		}
-		return
+		if err = pm.DeleteNode(id); err != nil {
+			return
+		}
+		break
 	case status.Starting > 0:
 		requeue = true
+		break
 	case status.Stopping > 0:
 		requeue = true
+		break
 	}
 
 	return

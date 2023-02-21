@@ -31,16 +31,16 @@ type PoolManager interface {
 }
 
 type PoolStatus struct {
-	Nodes              []string
-	Running            int
-	Starting           int
-	Stopping           int
-	Needed             int
-	UnNeeded           int
-	Healthy            int
-	Schedulable        int
-	SchedulableNodes   []*corev1.Node
-	UnschedulableNodes []*corev1.Node
+	Nodes            []string
+	Running          int
+	Starting         int
+	Stopping         int
+	Needed           int
+	UnNeeded         int
+	Healthy          int
+	Schedulable      int
+	SchedulableNodes []*corev1.Node
+	OrderedNodes     []*corev1.Node
 }
 
 type ConcretePoolManager struct {
@@ -88,19 +88,19 @@ func (cpm *ConcretePoolManager) GetStatus() (status *PoolStatus, err error) {
 	if err != nil {
 		return status, err
 	}
-	healthy, schedulable, schedNodes, unschedNodes := cpm.healthyAndSchedulable()
+	healthy, schedulable, schedNodes, orderedNodes := cpm.healthyAndSchedulable()
 
 	return &PoolStatus{
-		Nodes:              cpm.nodeIDs(nodes),
-		Running:            cpm.running(nodes),
-		Starting:           cpm.starting(nodes),
-		Stopping:           cpm.stopping(nodes),
-		Needed:             cpm.needed(nodes),
-		UnNeeded:           cpm.unNeeded(nodes),
-		Healthy:            healthy,
-		Schedulable:        schedulable,
-		SchedulableNodes:   schedNodes,
-		UnschedulableNodes: unschedNodes,
+		Nodes:            cpm.nodeIDs(nodes),
+		Running:          cpm.running(nodes),
+		Starting:         cpm.starting(nodes),
+		Stopping:         cpm.stopping(nodes),
+		Needed:           cpm.needed(nodes),
+		UnNeeded:         cpm.unNeeded(nodes),
+		Healthy:          healthy,
+		Schedulable:      schedulable,
+		SchedulableNodes: schedNodes,
+		OrderedNodes:     orderedNodes,
 	}, nil
 }
 
@@ -286,7 +286,7 @@ func (cpm ConcretePoolManager) unNeeded(nodes []openstack_kluster.Node) int {
 	return unneeded
 }
 
-func (cpm *ConcretePoolManager) healthyAndSchedulable() (healthy int, schedulable int, schedNodes []*corev1.Node, unschedNodes []*corev1.Node) {
+func (cpm *ConcretePoolManager) healthyAndSchedulable() (healthy, schedulable int, schedNodes, orderedNodes []*corev1.Node) {
 	nodeLister, err := cpm.nodeObservatory.GetListerForKluster(cpm.Kluster)
 	if err != nil {
 		return
@@ -299,9 +299,10 @@ func (cpm *ConcretePoolManager) healthyAndSchedulable() (healthy int, schedulabl
 		//Does the node belong to this pool?
 		if util.IsKubernikusNode(node.Name, cpm.Kluster.Spec.Name, cpm.Pool.Name) {
 			if node.Spec.Unschedulable {
-				unschedNodes = append(unschedNodes, nodes[i])
+				orderedNodes = append([]*corev1.Node{nodes[i]}, orderedNodes...) // prepend
 			} else {
 				schedulable++
+				orderedNodes = append(orderedNodes, nodes[i])
 				schedNodes = append(schedNodes, nodes[i])
 			}
 			if util.IsNodeReady(node) {
