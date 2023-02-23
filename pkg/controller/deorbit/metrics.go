@@ -5,6 +5,7 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus"
 	core_v1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 )
 
 type InstrumentingDeorbiter struct {
@@ -16,6 +17,11 @@ type InstrumentingDeorbiter struct {
 	Failed     *prometheus.CounterVec
 }
 
+func (d *InstrumentingDeorbiter) DeleteSnapshots() (deleted []*unstructured.Unstructured, err error) {
+	defer d.instrument("DeleteSnapshots", time.Now(), err)
+	return d.Deorbiter.DeleteSnapshots()
+}
+
 func (d *InstrumentingDeorbiter) DeletePersistentVolumeClaims() (deleted []core_v1.PersistentVolumeClaim, err error) {
 	defer d.instrument("DeletePersistentVolumeClaims", time.Now(), err)
 	return d.Deorbiter.DeletePersistentVolumeClaims()
@@ -24,6 +30,11 @@ func (d *InstrumentingDeorbiter) DeletePersistentVolumeClaims() (deleted []core_
 func (d *InstrumentingDeorbiter) DeleteServices() (deleted []core_v1.Service, err error) {
 	defer d.instrument("DeleteServices", time.Now(), err)
 	return d.Deorbiter.DeleteServices()
+}
+
+func (d *InstrumentingDeorbiter) WaitForSnapshotCleanUp() (err error) {
+	defer d.instrument("WaitForSnapshotCleanUp", time.Now(), err)
+	return d.Deorbiter.WaitForSnapshotCleanUp()
 }
 
 func (d *InstrumentingDeorbiter) WaitForPersistentVolumeCleanup() (err error) {

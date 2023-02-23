@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	core_v1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/client-go/tools/record"
 
 	v1 "github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
@@ -16,15 +17,35 @@ type EventingDeorbiter struct {
 	Recorder  record.EventRecorder
 }
 
+func (d *EventingDeorbiter) DeleteSnapshots() (deletedSnapshots []*unstructured.Unstructured, err error) {
+	deletedSnapshots, err = d.Deorbiter.DeleteSnapshots()
+
+	successfullyDeletedSnapshotLength := len(deletedSnapshots)
+
+	if err != nil && successfullyDeletedSnapshotLength > 0 {
+		defer d.Recorder.Eventf(d.Kluster, core_v1.EventTypeWarning, events.FailedDeorbitSnapshot, "Failed to delete snapshots(%v): %v", deletedSnapshots[len(deletedSnapshots)-1], err)
+		successfullyDeletedSnapshotLength = len(deletedSnapshots) - 1
+	}
+
+	for i := 0; i < successfullyDeletedSnapshotLength; i++ {
+		d.Recorder.Eventf(d.Kluster, core_v1.EventTypeNormal, events.SuccessfulDeorbitSnapshot, "Successfully deleted snapshots: %v", fmt.Sprintf("%v/%v", deletedSnapshots[i].GetNamespace(), deletedSnapshots[i].GetName()))
+	}
+
+	return
+}
+
 func (d *EventingDeorbiter) DeletePersistentVolumeClaims() (deletedPVCs []core_v1.PersistentVolumeClaim, err error) {
 	deletedPVCs, err = d.Deorbiter.DeletePersistentVolumeClaims()
 
-	for i, pvc := range deletedPVCs {
-		if err == nil || i < len(deletedPVCs)-2 {
-			d.Recorder.Eventf(d.Kluster, core_v1.EventTypeNormal, events.SuccessfulDeorbitPVC, "Successfully deleted persistent volume claims: %v", fmt.Sprintf("%v/%v", pvc.Namespace, pvc.Name))
-		} else {
-			d.Recorder.Eventf(d.Kluster, core_v1.EventTypeWarning, events.FailedDeorbitPVC, "Failed to delete persistent volume claims(%v): %v", pvc.Name, err)
-		}
+	successfullyDeletedPVCLength := len(deletedPVCs)
+
+	if err != nil && successfullyDeletedPVCLength > 0 {
+		defer d.Recorder.Eventf(d.Kluster, core_v1.EventTypeWarning, events.FailedDeorbitPVC, "Failed to delete persistent volume claims(%v): %v", deletedPVCs[len(deletedPVCs)-1], err)
+		successfullyDeletedPVCLength = len(deletedPVCs) - 1
+	}
+
+	for i := 0; i < successfullyDeletedPVCLength; i++ {
+		d.Recorder.Eventf(d.Kluster, core_v1.EventTypeNormal, events.SuccessfulDeorbitPVC, "Successfully deleted persistent volume claims: %v", fmt.Sprintf("%v/%v", deletedPVCs[i].GetNamespace(), deletedPVCs[i].GetName()))
 	}
 
 	return
@@ -33,12 +54,29 @@ func (d *EventingDeorbiter) DeletePersistentVolumeClaims() (deletedPVCs []core_v
 func (d *EventingDeorbiter) DeleteServices() (deletedServices []core_v1.Service, err error) {
 	deletedServices, err = d.Deorbiter.DeleteServices()
 
-	for i, service := range deletedServices {
-		if err == nil || i < len(deletedServices)-1 {
-			d.Recorder.Eventf(d.Kluster, core_v1.EventTypeNormal, events.SuccessfulDeorbitService, "Successfully deleted service of type LoadBalancer: %v", fmt.Sprintf("%v/%v", service.Namespace, service.Name))
-		} else {
-			d.Recorder.Eventf(d.Kluster, core_v1.EventTypeWarning, events.FailedDeorbitService, "Failed to delete service of type LoadBalancer (%v): %v", err)
-		}
+	successfullyDeletedServiceLength := len(deletedServices)
+
+	if err != nil && successfullyDeletedServiceLength > 0 {
+		defer d.Recorder.Eventf(d.Kluster, core_v1.EventTypeWarning, events.FailedDeorbitService, "Failed to delete service of type LoadBalancer (%v): %v", deletedServices[len(deletedServices)-1], err)
+		successfullyDeletedServiceLength = len(deletedServices) - 1
+	}
+
+	for i := 0; i < successfullyDeletedServiceLength; i++ {
+		d.Recorder.Eventf(d.Kluster, core_v1.EventTypeNormal, events.SuccessfulDeorbitService, "Successfully deleted service of type LoadBalancer : %v", fmt.Sprintf("%v/%v", deletedServices[i].GetNamespace(), deletedServices[i].GetName()))
+	}
+
+	return
+}
+
+func (d *EventingDeorbiter) WaitForSnapshotCleanUp() (err error) {
+	d.Recorder.Eventf(d.Kluster, core_v1.EventTypeNormal, events.WaitingForDeorbitSnapshots, "Waiting for cleanup of Snapshots")
+
+	err = d.Deorbiter.WaitForSnapshotCleanUp()
+
+	if err == nil {
+		d.Recorder.Eventf(d.Kluster, core_v1.EventTypeNormal, events.SuccessfulDeorbitSnapshots, "Successfully cleaned up Snapshots")
+	} else {
+		d.Recorder.Eventf(d.Kluster, core_v1.EventTypeNormal, events.FailedDeorbitSnapshots, "Failed to clean up Snapshots: %v", err)
 	}
 
 	return
