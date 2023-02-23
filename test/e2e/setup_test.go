@@ -25,6 +25,8 @@ type SetupTests struct {
 	OpenStack   *framework.OpenStack
 	KlusterName string
 	Reuse       bool
+	Dex         bool
+	Dashboard   bool
 }
 
 func (s *SetupTests) Run(t *testing.T) {
@@ -80,6 +82,8 @@ func (s *SetupTests) CreateCluster(t *testing.T) {
 			Openstack: models.OpenstackSpec{
 				RouterID: os.Getenv("KLUSTER_ROUTER"),
 			},
+			Dex:       &s.Dex,
+			Dashboard: &s.Dashboard,
 		},
 	}
 

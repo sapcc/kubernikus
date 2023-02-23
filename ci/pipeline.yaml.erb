@@ -2,7 +2,7 @@
 require 'yaml'
 
 VERSIONS = [
-  '1.25.5',
+  '1.25.6',
   '1.24.9',
   '1.23.15'
 ]
@@ -289,7 +289,7 @@ jobs:
         trigger: true
         passed: [docs]
     - task: replicate
-      timeout: 15m
+      timeout: 30m
       config:
         platform: linux
         image_resource:
