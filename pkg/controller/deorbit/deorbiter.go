@@ -105,12 +105,12 @@ func (d *ConcreteDeorbiter) DeleteSnapshots() (deleted []*unstructured.Unstructu
 		return deleted, err
 	}
 
-	for _, snapshot := range snapshotList.Items {
-		err = d.DynamicClient.Resource(SnapshotGvr).Namespace(meta_v1.NamespaceAll).Delete(context.Background(), snapshot.GetName(), meta_v1.DeleteOptions{})
+	for index := range snapshotList.Items {
+		err = d.DynamicClient.Resource(SnapshotGvr).Namespace(meta_v1.NamespaceAll).Delete(context.Background(), snapshotList.Items[index].GetName(), meta_v1.DeleteOptions{})
 		if err != nil {
 			return deleted, err
 		}
-		deleted = append(deleted, &snapshot)
+		deleted = append(deleted, &snapshotList.Items[index])
 	}
 	return deleted, err
 }
@@ -171,43 +171,15 @@ func (d *ConcreteDeorbiter) DeleteServices() (deleted []core_v1.Service, err err
 }
 
 func (d *ConcreteDeorbiter) WaitForSnapshotCleanUp() (err error) {
-	done, err := d.isSnapshotCleanupFinished()
-
-	if err != nil {
-		return err
-	}
-
-	if done {
-		return nil
-	}
-
-	return wait.PollUntil(PollInterval, d.isSnapshotCleanupFinished, d.Stop)
+	return wait.PollImmediateUntil(PollInterval, d.isSnapshotCleanupFinished, d.Stop)
 }
 
 func (d *ConcreteDeorbiter) WaitForPersistentVolumeCleanup() (err error) {
-	done, err := d.isPersistentVolumesCleanupFinished()
-	if err != nil {
-		return err
-	}
-
-	if done {
-		return nil
-	}
-
-	return wait.PollUntil(PollInterval, d.isPersistentVolumesCleanupFinished, d.Stop)
+	return wait.PollImmediateUntil(PollInterval, d.isPersistentVolumesCleanupFinished, d.Stop)
 }
 
 func (d *ConcreteDeorbiter) WaitForServiceCleanup() (err error) {
-	done, err := d.isServiceCleanupFinished()
-	if err != nil {
-		return err
-	}
-
-	if done {
-		return nil
-	}
-
-	return wait.PollUntil(PollInterval, d.isServiceCleanupFinished, d.Stop)
+	return wait.PollImmediateUntil(PollInterval, d.isServiceCleanupFinished, d.Stop)
 }
 
 func (d *ConcreteDeorbiter) SelfDestruct(reason SelfDestructReason) (err error) {
