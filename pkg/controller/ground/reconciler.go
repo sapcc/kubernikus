@@ -42,6 +42,7 @@ const SkipPatchValue string = "true"
 var recreateKinds map[string]struct{} = map[string]struct{}{
 	"RoleBinding":        {},
 	"ClusterRoleBinding": {},
+	"StorageClass":       {},
 }
 
 type objectDiff struct {
