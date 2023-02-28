@@ -65,7 +65,7 @@ func (collector *klusterCollector) Collect(ch chan<- prometheus.Metric) {
 			kluster.Status.ChartName,
 			getCreatorFromAnnotations(kluster.Annotations),
 			getAccountFromLabels(kluster.Labels),
-			kluster.Spec.Backup,
+			getBackupFromSpec(kluster.Spec),
 			getAuditFromSpec(kluster.Spec),
 		)
 	}
