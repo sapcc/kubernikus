@@ -40,7 +40,6 @@ type PoolStatus struct {
 	UnNeeded     int
 	Healthy      int
 	Schedulable  int
-	OrderedNodes []*corev1.Node
 }
 
 type ConcretePoolManager struct {
