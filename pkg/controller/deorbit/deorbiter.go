@@ -106,7 +106,7 @@ func (d *ConcreteDeorbiter) DeleteSnapshots() (deleted []*unstructured.Unstructu
 	}
 
 	for index := range snapshotList.Items {
-		err = d.DynamicClient.Resource(SnapshotGvr).Namespace(meta_v1.NamespaceAll).Delete(context.Background(), snapshotList.Items[index].GetName(), meta_v1.DeleteOptions{})
+		err = d.DynamicClient.Resource(SnapshotGvr).Namespace(snapshotList.Items[index].GetNamespace()).Delete(context.Background(), snapshotList.Items[index].GetName(), meta_v1.DeleteOptions{})
 		if err != nil {
 			return deleted, err
 		}
