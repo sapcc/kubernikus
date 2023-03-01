@@ -754,7 +754,7 @@ imagesForVersion:
       tag: v4.2.1
     dashboard:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/kubernetesui/dashboard
-      tag: v2.0.4
+      tag: v2.4.0
     dashboardProxy:
       repository: keppel.global.cloud.sap/ccloud/keycloak-gatekeeper
       tag: 6.0.1
@@ -830,7 +830,7 @@ imagesForVersion:
       tag: v4.2.1
     dashboard:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/kubernetesui/dashboard
-      tag: v2.0.4
+      tag: v2.4.0
     dashboardProxy:
       repository: keppel.global.cloud.sap/ccloud/keycloak-gatekeeper
       tag: 6.0.1
@@ -906,7 +906,7 @@ imagesForVersion:
       tag: v4.2.1
     dashboard:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/kubernetesui/dashboard
-      tag: v2.0.4
+      tag: v2.4.0
     dashboardProxy:
       repository: keppel.global.cloud.sap/ccloud/keycloak-gatekeeper
       tag: 6.0.1
@@ -982,7 +982,7 @@ imagesForVersion:
       tag: v4.2.1
     dashboard:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/kubernetesui/dashboard
-      tag: v2.0.4
+      tag: v2.4.0
     dashboardProxy:
       repository: keppel.global.cloud.sap/ccloud/keycloak-gatekeeper
       tag: 6.0.1
@@ -1058,7 +1058,7 @@ imagesForVersion:
       tag: v5.0.1
     dashboard:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/kubernetesui/dashboard
-      tag: v2.0.4
+      tag: v2.5.1
     dashboardProxy:
       repository: keppel.global.cloud.sap/ccloud/keycloak-gatekeeper
       tag: 6.0.1
@@ -1135,7 +1135,7 @@ imagesForVersion:
       tag: v5.0.1
     dashboard:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/kubernetesui/dashboard
-      tag: v2.0.4
+      tag: v2.5.1
     dashboardProxy:
       repository: keppel.global.cloud.sap/ccloud/keycloak-gatekeeper
       tag: 6.0.1
@@ -1212,7 +1212,7 @@ imagesForVersion:
       tag: v5.0.1
     dashboard:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/kubernetesui/dashboard
-      tag: v2.0.4
+      tag: v2.5.1
     dashboardProxy:
       repository: keppel.global.cloud.sap/ccloud/keycloak-gatekeeper
       tag: 6.0.1
@@ -1289,7 +1289,7 @@ imagesForVersion:
       tag: v5.0.1
     dashboard:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/kubernetesui/dashboard
-      tag: v2.0.4
+      tag: v2.5.1
     dashboardProxy:
       repository: keppel.global.cloud.sap/ccloud/keycloak-gatekeeper
       tag: 6.0.1
@@ -1367,7 +1367,7 @@ imagesForVersion:
       tag: v5.0.1
     dashboard:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/kubernetesui/dashboard
-      tag: v2.0.4
+      tag: v2.5.1
     dashboardProxy:
       repository: keppel.global.cloud.sap/ccloud/keycloak-gatekeeper
       tag: 6.0.1
@@ -1447,7 +1447,7 @@ imagesForVersion:
       tag: v5.0.1
     dashboard:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/kubernetesui/dashboard
-      tag: v2.0.4
+      tag: v2.6.1
     dashboardProxy:
       repository: keppel.global.cloud.sap/ccloud/keycloak-gatekeeper
       tag: 6.0.1
@@ -1530,7 +1530,7 @@ imagesForVersion:
       tag: v5.0.1
     dashboard:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/kubernetesui/dashboard
-      tag: v2.0.4
+      tag: v2.6.1
     dashboardProxy:
       repository: keppel.global.cloud.sap/ccloud/keycloak-gatekeeper
       tag: 6.0.1
@@ -1613,7 +1613,7 @@ imagesForVersion:
       tag: v5.0.1
     dashboard:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/kubernetesui/dashboard
-      tag: v2.0.4
+      tag: v2.6.1
     dashboardProxy:
       repository: keppel.global.cloud.sap/ccloud/keycloak-gatekeeper
       tag: 6.0.1
@@ -1696,7 +1696,7 @@ imagesForVersion:
       tag: v5.0.1
     dashboard:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/kubernetesui/dashboard
-      tag: v2.0.4
+      tag: v2.6.1
     dashboardProxy:
       repository: keppel.global.cloud.sap/ccloud/keycloak-gatekeeper
       tag: 6.0.1
@@ -1779,7 +1779,7 @@ imagesForVersion:
       tag: v5.0.1
     dashboard:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/kubernetesui/dashboard
-      tag: v2.0.4
+      tag: v2.6.1
     dashboardProxy:
       repository: keppel.global.cloud.sap/ccloud/keycloak-gatekeeper
       tag: 6.0.1
@@ -1862,7 +1862,7 @@ imagesForVersion:
       tag: v5.0.1
     dashboard:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/kubernetesui/dashboard
-      tag: v2.0.4
+      tag: v2.6.1
     dashboardProxy:
       repository: keppel.global.cloud.sap/ccloud/keycloak-gatekeeper
       tag: 6.0.1
@@ -2028,7 +2028,7 @@ imagesForVersion:
       tag: v5.0.1
     dashboard:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/kubernetesui/dashboard
-      tag: v2.0.4
+      tag: v2.7.0
     dashboardProxy:
       repository: keppel.global.cloud.sap/ccloud/keycloak-gatekeeper
       tag: 6.0.1
@@ -2111,7 +2111,7 @@ imagesForVersion:
       tag: v5.0.1
     dashboard:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/kubernetesui/dashboard
-      tag: v2.0.4
+      tag: v2.7.0
     dashboardProxy:
       repository: keppel.global.cloud.sap/ccloud/keycloak-gatekeeper
       tag: 6.0.1
@@ -2194,7 +2194,7 @@ imagesForVersion:
       tag: v5.0.1
     dashboard:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/kubernetesui/dashboard
-      tag: v2.0.4
+      tag: v2.7.0
     dashboardProxy:
       repository: keppel.global.cloud.sap/ccloud/keycloak-gatekeeper
       tag: 6.0.1
