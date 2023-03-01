@@ -3,6 +3,7 @@ package launch
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/go-kit/kit/log"
 	corev1 "k8s.io/api/core/v1"
@@ -87,18 +88,18 @@ func (cpm *ConcretePoolManager) GetStatus() (status *PoolStatus, err error) {
 	if err != nil {
 		return status, err
 	}
-	healthy, schedulable, orderedNodes := cpm.healthyAndSchedulable()
+	nIDs := cpm.nodeIDs(nodes)
+	healthy, schedulable, orderedNodeIDs := cpm.healthyAndSchedulable(nIDs)
 
 	return &PoolStatus{
-		Nodes:        cpm.nodeIDs(nodes),
-		Running:      cpm.running(nodes),
-		Starting:     cpm.starting(nodes),
-		Stopping:     cpm.stopping(nodes),
-		Needed:       cpm.needed(nodes),
-		UnNeeded:     cpm.unNeeded(nodes),
-		Healthy:      healthy,
-		Schedulable:  schedulable,
-		OrderedNodes: orderedNodes,
+		Nodes:       orderedNodeIDs,
+		Running:     cpm.running(nodes),
+		Starting:    cpm.starting(nodes),
+		Stopping:    cpm.stopping(nodes),
+		Needed:      cpm.needed(nodes),
+		UnNeeded:    cpm.unNeeded(nodes),
+		Healthy:     healthy,
+		Schedulable: schedulable,
 	}, nil
 }
 
@@ -129,7 +130,7 @@ func removeNodePool(pool []models.NodePoolInfo, name string) ([]models.NodePoolI
 }
 
 func (cpm *ConcretePoolManager) SetStatus(status *PoolStatus) error {
-	healthy, schedulable, _ := cpm.healthyAndSchedulable()
+	healthy, schedulable, _ := cpm.healthyAndSchedulable([]string{})
 
 	newInfo := models.NodePoolInfo{
 		Name:        cpm.Pool.Name,
@@ -284,28 +285,54 @@ func (cpm ConcretePoolManager) unNeeded(nodes []openstack_kluster.Node) int {
 	return unneeded
 }
 
-func (cpm *ConcretePoolManager) healthyAndSchedulable() (healthy, schedulable int, orderedNodes []*corev1.Node) {
+func (cpm *ConcretePoolManager) healthyAndSchedulable(nodeIDs []string) (int, int, []string) {
 	nodeLister, err := cpm.nodeObservatory.GetListerForKluster(cpm.Kluster)
 	if err != nil {
-		return
+		return 0, 0, nil
 	}
+
 	nodes, err := nodeLister.List(labels.Everything())
 	if err != nil {
-		return
+		return 0, 0, nil
 	}
-	for i, node := range nodes {
+
+	healthy := 0
+	schedulable := 0
+
+	for _, node := range nodes {
 		//Does the node belong to this pool?
 		if util.IsKubernikusNode(node.Name, cpm.Kluster.Spec.Name, cpm.Pool.Name) {
 			if node.Spec.Unschedulable {
-				orderedNodes = append([]*corev1.Node{nodes[i]}, orderedNodes...) // prepend
+				if nodeIDs != nil && len(nodeIDs) > 0 {
+					id := strings.Replace(node.Spec.ProviderID, "openstack:///", "", 1)
+					pos := findString(nodeIDs, id)
+					if pos >= 0 {
+						nodeIDs = toTop(nodeIDs, pos)
+					}
+				}
 			} else {
 				schedulable++
-				orderedNodes = append(orderedNodes, nodes[i])
 			}
 			if util.IsNodeReady(node) {
 				healthy++
 			}
 		}
 	}
-	return
+
+	return healthy, schedulable, nodeIDs
+}
+
+func findString(slice []string, s string) int {
+	for i := range slice {
+		if slice[i] == s {
+			return i
+		}
+	}
+	return -1
+}
+
+func toTop(slice []string, s int) []string {
+	id := []string{slice[s]}
+	slice = append(slice[:s], slice[s+1:]...)
+	return append(id, slice...)
 }

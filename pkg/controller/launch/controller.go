@@ -1,10 +1,7 @@
 package launch
 
 import (
-	"strings"
-
 	"github.com/go-kit/kit/log"
-	"github.com/google/uuid"
 	core_v1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/record"
@@ -177,11 +174,7 @@ func (lr *LaunchReconciler) reconcilePool(kluster *v1.Kluster, pool *models.Node
 		break
 	case status.UnNeeded > 0:
 		requeue = true
-		id := strings.Replace(status.OrderedNodes[0].Spec.ProviderID, "openstack:///", "", 1)
-		if _, err = uuid.Parse(id); err != nil {
-			return
-		}
-		if err = pm.DeleteNode(id); err != nil {
+		if err = pm.DeleteNode(status.Nodes[0]); err != nil {
 			return
 		}
 		break
