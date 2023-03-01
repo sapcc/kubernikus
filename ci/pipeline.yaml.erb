@@ -282,12 +282,8 @@ jobs:
 
   - name: replicate-images
     plan:
-    - in_parallel:
-      - get: kubernikus.git
-      - get: docs-builder.image
-        passed: [docs]
-        trigger: true
-        passed: [docs]
+    - get: kubernikus.git
+      trigger: true
     - task: replicate
       timeout: 30m
       config:

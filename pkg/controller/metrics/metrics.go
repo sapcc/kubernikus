@@ -140,6 +140,15 @@ func getAuditFromSpec(spec models.KlusterSpec) string {
 	return *spec.Audit
 }
 
+func getBackupFromSpec(spec models.KlusterSpec) string {
+	switch spec.Backup {
+	case "", "on":
+		return "swift"
+	default:
+		return spec.Backup
+	}
+}
+
 func init() {
 	prometheus.MustRegister(
 		klusterStatusPhase,
