@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	"github.com/go-kit/kit/log"
-	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 
@@ -32,14 +31,14 @@ type PoolManager interface {
 }
 
 type PoolStatus struct {
-	Nodes        []string
-	Running      int
-	Starting     int
-	Stopping     int
-	Needed       int
-	UnNeeded     int
-	Healthy      int
-	Schedulable  int
+	Nodes       []string
+	Running     int
+	Starting    int
+	Stopping    int
+	Needed      int
+	UnNeeded    int
+	Healthy     int
+	Schedulable int
 }
 
 type ConcretePoolManager struct {
