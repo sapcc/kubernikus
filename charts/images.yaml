@@ -19,7 +19,7 @@ imagesForVersion:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/sapcc/hyperkube
       tag: v1.10.1
     recycler:
-      repository: keppel.global.cloud.sap/ccloud-k8sgcr-mirror/debian-base
+      repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/debian-base
       tag: v2.0.0
     wormhole:
       repository: keppel.global.cloud.sap/ccloud/kubernikus
@@ -44,7 +44,7 @@ imagesForVersion:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/sapcc/hyperkube
       tag: v1.10.11
     recycler:
-      repository: keppel.global.cloud.sap/ccloud-k8sgcr-mirror/debian-base
+      repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/debian-base
       tag: v2.0.0
     wormhole:
       repository: keppel.global.cloud.sap/ccloud/kubernikus
@@ -69,7 +69,7 @@ imagesForVersion:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/sapcc/hyperkube
       tag: v1.10.7
     recycler:
-      repository: keppel.global.cloud.sap/ccloud-k8sgcr-mirror/debian-base
+      repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/debian-base
       tag: v2.0.0
     wormhole:
       repository: keppel.global.cloud.sap/ccloud/kubernikus
@@ -100,7 +100,7 @@ imagesForVersion:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/sapcc/hyperkube
       tag: v1.11.9
     recycler:
-      repository: keppel.global.cloud.sap/ccloud-k8sgcr-mirror/debian-base
+      repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/debian-base
       tag: v2.0.0
     wormhole:
       repository: keppel.global.cloud.sap/ccloud/kubernikus
@@ -134,7 +134,7 @@ imagesForVersion:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/sapcc/pause-amd64
       tag: '3.1'
     recycler:
-      repository: keppel.global.cloud.sap/ccloud-k8sgcr-mirror/debian-base
+      repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/debian-base
       tag: v2.0.0
     wormhole:
       repository: keppel.global.cloud.sap/ccloud/kubernikus
@@ -174,7 +174,7 @@ imagesForVersion:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/sapcc/pause-amd64
       tag: '3.1'
     recycler:
-      repository: keppel.global.cloud.sap/ccloud-k8sgcr-mirror/debian-base
+      repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/debian-base
       tag: v2.0.0
     wormhole:
       repository: keppel.global.cloud.sap/ccloud/kubernikus
@@ -214,7 +214,7 @@ imagesForVersion:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/sapcc/pause-amd64
       tag: '3.1'
     recycler:
-      repository: keppel.global.cloud.sap/ccloud-k8sgcr-mirror/debian-base
+      repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/debian-base
       tag: v2.0.0
     wormhole:
       repository: keppel.global.cloud.sap/ccloud/kubernikus
@@ -254,7 +254,7 @@ imagesForVersion:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/sapcc/pause-amd64
       tag: '3.1'
     recycler:
-      repository: keppel.global.cloud.sap/ccloud-k8sgcr-mirror/debian-base
+      repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/debian-base
       tag: v2.0.0
     wormhole:
       repository: keppel.global.cloud.sap/ccloud/kubernikus
@@ -294,7 +294,7 @@ imagesForVersion:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/sapcc/pause-amd64
       tag: '3.1'
     recycler:
-      repository: keppel.global.cloud.sap/ccloud-k8sgcr-mirror/debian-base
+      repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/debian-base
       tag: v2.0.0
     wormhole:
       repository: keppel.global.cloud.sap/ccloud/kubernikus
@@ -334,7 +334,7 @@ imagesForVersion:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/sapcc/pause-amd64
       tag: '3.1'
     recycler:
-      repository: keppel.global.cloud.sap/ccloud-k8sgcr-mirror/debian-base
+      repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/debian-base
       tag: v2.0.0
     wormhole:
       repository: keppel.global.cloud.sap/ccloud/kubernikus
@@ -374,7 +374,7 @@ imagesForVersion:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/sapcc/pause-amd64
       tag: '3.1'
     recycler:
-      repository: keppel.global.cloud.sap/ccloud-k8sgcr-mirror/debian-base
+      repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/debian-base
       tag: v2.0.0
     wormhole:
       repository: keppel.global.cloud.sap/ccloud/kubernikus
@@ -414,7 +414,7 @@ imagesForVersion:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/sapcc/pause-amd64
       tag: '3.1'
     recycler:
-      repository: keppel.global.cloud.sap/ccloud-k8sgcr-mirror/debian-base
+      repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/debian-base
       tag: v2.0.0
     wormhole:
       repository: keppel.global.cloud.sap/ccloud/kubernikus
@@ -454,7 +454,7 @@ imagesForVersion:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/sapcc/pause-amd64
       tag: '3.1'
     recycler:
-      repository: keppel.global.cloud.sap/ccloud-k8sgcr-mirror/debian-base
+      repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/debian-base
       tag: v2.0.0
     wormhole:
       repository: keppel.global.cloud.sap/ccloud/kubernikus
@@ -503,7 +503,7 @@ imagesForVersion:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/sapcc/pause-amd64
       tag: '3.1'
     recycler:
-      repository: keppel.global.cloud.sap/ccloud-k8sgcr-mirror/debian-base
+      repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/debian-base
       tag: v2.0.0
     scheduler:
       repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/kube-scheduler
@@ -555,7 +555,7 @@ imagesForVersion:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/sapcc/pause-amd64
       tag: '3.1'
     recycler:
-      repository: keppel.global.cloud.sap/ccloud-k8sgcr-mirror/debian-base
+      repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/debian-base
       tag: v2.0.0
     scheduler:
       repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/kube-scheduler
@@ -631,7 +631,7 @@ imagesForVersion:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/sapcc/pause-amd64
       tag: '3.1'
     recycler:
-      repository: keppel.global.cloud.sap/ccloud-k8sgcr-mirror/debian-base
+      repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/debian-base
       tag: v2.0.0
     scheduler:
       repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/kube-scheduler
@@ -707,7 +707,7 @@ imagesForVersion:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/sapcc/pause-amd64
       tag: '3.1'
     recycler:
-      repository: keppel.global.cloud.sap/ccloud-k8sgcr-mirror/debian-base
+      repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/debian-base
       tag: v2.0.0
     scheduler:
       repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/kube-scheduler
@@ -783,7 +783,7 @@ imagesForVersion:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/sapcc/pause-amd64
       tag: '3.1'
     recycler:
-      repository: keppel.global.cloud.sap/ccloud-k8sgcr-mirror/debian-base
+      repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/debian-base
       tag: v2.0.0
     scheduler:
       repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/kube-scheduler
@@ -859,7 +859,7 @@ imagesForVersion:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/sapcc/pause-amd64
       tag: '3.1'
     recycler:
-      repository: keppel.global.cloud.sap/ccloud-k8sgcr-mirror/debian-base
+      repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/debian-base
       tag: v2.0.0
     scheduler:
       repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/kube-scheduler
@@ -935,7 +935,7 @@ imagesForVersion:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/sapcc/pause-amd64
       tag: '3.1'
     recycler:
-      repository: keppel.global.cloud.sap/ccloud-k8sgcr-mirror/debian-base
+      repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/debian-base
       tag: v2.0.0
     scheduler:
       repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/kube-scheduler
@@ -1011,7 +1011,7 @@ imagesForVersion:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/sapcc/pause-amd64
       tag: '3.1'
     recycler:
-      repository: keppel.global.cloud.sap/ccloud-k8sgcr-mirror/debian-base
+      repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/debian-base
       tag: v2.0.0
     scheduler:
       repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/kube-scheduler
@@ -1087,7 +1087,7 @@ imagesForVersion:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/sapcc/pause-amd64
       tag: '3.1'
     recycler:
-      repository: keppel.global.cloud.sap/ccloud-k8sgcr-mirror/debian-base
+      repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/debian-base
       tag: v2.0.0
     scheduler:
       repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/kube-scheduler
@@ -1164,7 +1164,7 @@ imagesForVersion:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/sapcc/pause-amd64
       tag: '3.1'
     recycler:
-      repository: keppel.global.cloud.sap/ccloud-k8sgcr-mirror/debian-base
+      repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/debian-base
       tag: v2.0.0
     scheduler:
       repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/kube-scheduler
@@ -1241,7 +1241,7 @@ imagesForVersion:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/sapcc/pause-amd64
       tag: '3.1'
     recycler:
-      repository: keppel.global.cloud.sap/ccloud-k8sgcr-mirror/debian-base
+      repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/debian-base
       tag: v2.0.0
     scheduler:
       repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/kube-scheduler
@@ -1319,7 +1319,7 @@ imagesForVersion:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/sapcc/pause-amd64
       tag: '3.1'
     recycler:
-      repository: keppel.global.cloud.sap/ccloud-k8sgcr-mirror/debian-base
+      repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/debian-base
       tag: v2.0.0
     scheduler:
       repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/kube-scheduler
@@ -1396,7 +1396,7 @@ imagesForVersion:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/sapcc/pause-amd64
       tag: '3.1'
     recycler:
-      repository: keppel.global.cloud.sap/ccloud-k8sgcr-mirror/debian-base
+      repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/debian-base
       tag: v2.0.0
     scheduler:
       repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/kube-scheduler
@@ -1479,7 +1479,7 @@ imagesForVersion:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/sapcc/pause-amd64
       tag: '3.1'
     recycler:
-      repository: keppel.global.cloud.sap/ccloud-k8sgcr-mirror/debian-base
+      repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/debian-base
       tag: v2.0.0
     scheduler:
       repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/kube-scheduler
@@ -1562,7 +1562,7 @@ imagesForVersion:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/sapcc/pause-amd64
       tag: '3.1'
     recycler:
-      repository: keppel.global.cloud.sap/ccloud-k8sgcr-mirror/debian-base
+      repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/debian-base
       tag: v2.0.0
     scheduler:
       repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/kube-scheduler
@@ -1645,7 +1645,7 @@ imagesForVersion:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/sapcc/pause-amd64
       tag: '3.1'
     recycler:
-      repository: keppel.global.cloud.sap/ccloud-k8sgcr-mirror/debian-base
+      repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/debian-base
       tag: v2.0.0
     scheduler:
       repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/kube-scheduler
@@ -1728,7 +1728,7 @@ imagesForVersion:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/sapcc/pause-amd64
       tag: '3.1'
     recycler:
-      repository: keppel.global.cloud.sap/ccloud-k8sgcr-mirror/debian-base
+      repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/debian-base
       tag: v2.0.0
     scheduler:
       repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/kube-scheduler
@@ -1811,7 +1811,7 @@ imagesForVersion:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/sapcc/pause-amd64
       tag: '3.1'
     recycler:
-      repository: keppel.global.cloud.sap/ccloud-k8sgcr-mirror/debian-base
+      repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/debian-base
       tag: v2.0.0
     scheduler:
       repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/kube-scheduler
@@ -1894,7 +1894,7 @@ imagesForVersion:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/sapcc/pause-amd64
       tag: '3.1'
     recycler:
-      repository: keppel.global.cloud.sap/ccloud-k8sgcr-mirror/debian-base
+      repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/debian-base
       tag: v2.0.0
     scheduler:
       repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/kube-scheduler
@@ -1977,7 +1977,7 @@ imagesForVersion:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/sapcc/pause-amd64
       tag: '3.1'
     recycler:
-      repository: keppel.global.cloud.sap/ccloud-k8sgcr-mirror/debian-base
+      repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/debian-base
       tag: v2.0.0
     scheduler:
       repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/kube-scheduler
@@ -2060,7 +2060,7 @@ imagesForVersion:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/sapcc/pause-amd64
       tag: '3.1'
     recycler:
-      repository: keppel.global.cloud.sap/ccloud-k8sgcr-mirror/debian-base
+      repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/debian-base
       tag: v2.0.0
     scheduler:
       repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/kube-scheduler
@@ -2143,7 +2143,7 @@ imagesForVersion:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/sapcc/pause-amd64
       tag: '3.1'
     recycler:
-      repository: keppel.global.cloud.sap/ccloud-k8sgcr-mirror/debian-base
+      repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/debian-base
       tag: v2.0.0
     scheduler:
       repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/kube-scheduler
@@ -2226,7 +2226,7 @@ imagesForVersion:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/sapcc/pause-amd64
       tag: '3.1'
     recycler:
-      repository: keppel.global.cloud.sap/ccloud-k8sgcr-mirror/debian-base
+      repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/debian-base
       tag: v2.0.0
     scheduler:
       repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/kube-scheduler
