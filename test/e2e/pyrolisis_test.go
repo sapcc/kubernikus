@@ -191,11 +191,9 @@ func (p *PyrolisisTests) CleanupSnapshots(t *testing.T) {
 
 	for _, snapshot := range allSnapshots {
 
-		volume, volumeErr := volumes.Get(storageClient, snapshot.VolumeID).Extract()
-		require.NoError(t, volumeErr, "There should be no error getting volume of snapshot")
+		residesWithinE2eKluster := strings.HasPrefix(snapshot.Metadata["cinder.csi.openstack.org/cluster"], "e2e-")
 
-		// only delete snapshot if attached volume was created by our tests
-		if volume.Metadata["csi.storage.k8s.io/pvc/name"] != PVCTestName {
+		if !residesWithinE2eKluster {
 			continue
 		}
 
