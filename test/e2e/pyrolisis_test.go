@@ -9,6 +9,7 @@ import (
 	"github.com/go-openapi/runtime"
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack"
+	"github.com/gophercloud/gophercloud/openstack/blockstorage/v2/snapshots"
 	"github.com/gophercloud/gophercloud/openstack/blockstorage/v3/volumes"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/servers"
 	"github.com/gophercloud/gophercloud/openstack/identity/v3/tokens"
@@ -18,6 +19,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"k8s.io/apimachinery/pkg/util/wait"
+	"k8s.io/utils/strings/slices"
 
 	"github.com/sapcc/kubernikus/pkg/api/client/operations"
 	"github.com/sapcc/kubernikus/pkg/api/models"
@@ -26,9 +28,13 @@ import (
 )
 
 const (
-	CleanupBackupContainerDeleteInterval = 1 * time.Second
-	CleanupBackupContainerDeleteTimeout  = 1 * time.Minute
+	CleanupBackupContainerDeleteInterval       = 1 * time.Second
+	CleanupBackupContainerDeleteTimeout        = 1 * time.Minute
+	WaitForSnapshotDeletionTimeoutInSeconds    = 300
+	WaitForVolumeStabilisationTimeoutInSeconds = 300
 )
+
+var StableVolumeStatesForDeletion = [4]string{"available", "error", "error_restoring", "error_managing"}
 
 type PyrolisisTests struct {
 	Kubernikus *framework.Kubernikus
@@ -42,11 +48,13 @@ func (p *PyrolisisTests) Run(t *testing.T) {
 		quota := t.Run("SettingKlustersOnFire", p.SettingKlustersOnFire)
 		require.True(t, quota, "Klusters must burn")
 
+		t.Run("CleanupSnapshots", p.CleanupSnapshots)
+		t.Run("CleanupVolumes", p.CleanupVolumes)
+
 		t.Run("Wait", func(t *testing.T) {
 			t.Run("Klusters", p.WaitForE2EKlustersTerminated)
 		})
 
-		t.Run("CleanupVolumes", p.CleanupVolumes)
 		t.Run("CleanupInstances", p.CleanupInstances)
 	}
 
@@ -164,6 +172,47 @@ func (p *PyrolisisTests) CleanupBackupStorageContainers(t *testing.T) {
 	}
 }
 
+func (p *PyrolisisTests) CleanupSnapshots(t *testing.T) {
+	storageClient, err := openstack.NewBlockStorageV3(p.OpenStack.Provider, gophercloud.EndpointOpts{})
+	require.NoError(t, err, "There should be no error while creating storage client")
+
+	project, err := tokens.Get(p.OpenStack.Identity, p.OpenStack.Provider.Token()).ExtractProject()
+	require.NoError(t, err, "There should be no error while extracting the project")
+
+	listOpts := snapshots.ListOpts{
+		TenantID: project.ID,
+	}
+
+	allPages, err := snapshots.List(storageClient, listOpts).AllPages()
+	require.NoError(t, err, "There should be no error retieving all snapshot pages")
+
+	allSnapshots, err := snapshots.ExtractSnapshots(allPages)
+	require.NoError(t, err, "There should be no error extracting all snapshots")
+
+	for _, snapshot := range allSnapshots {
+
+		residesWithinE2eKluster := strings.HasPrefix(snapshot.Metadata["cinder.csi.openstack.org/cluster"], "e2e-")
+
+		if !residesWithinE2eKluster {
+			continue
+		}
+
+		err := snapshots.Delete(storageClient, snapshot.ID).ExtractErr()
+		require.NoError(t, err, "There should be no error deleting the snapshot")
+
+		deleteError := gophercloud.WaitFor(WaitForSnapshotDeletionTimeoutInSeconds,
+			func() (bool, error) {
+				_, err := snapshots.Get(storageClient, snapshot.ID).Extract()
+				if err == nil {
+					return false, nil
+				}
+				return true, nil
+			})
+		require.NoError(t, deleteError, "There should be no error waiting for the snapshot deletion to finish")
+	}
+
+}
+
 func (p *PyrolisisTests) CleanupVolumes(t *testing.T) {
 	storageClient, err := openstack.NewBlockStorageV3(p.OpenStack.Provider, gophercloud.EndpointOpts{})
 	require.NoError(t, err, "Could not create block storage client")
@@ -182,6 +231,28 @@ func (p *PyrolisisTests) CleanupVolumes(t *testing.T) {
 	require.NoError(t, err, "There should be no error while extracting volumes")
 
 	for _, vol := range allVolumes {
+
+		// Make sure volume is in stable state for deletion
+		volumeStableErr := gophercloud.WaitFor(WaitForVolumeStabilisationTimeoutInSeconds,
+			func() (bool, error) {
+				transientVolume, err := volumes.Get(storageClient, vol.ID).Extract()
+				if err != nil {
+					return false, err
+				}
+				if slices.Contains(StableVolumeStatesForDeletion[:], transientVolume.Status) {
+					return true, nil
+				}
+				return false, nil
+			},
+		)
+
+		// Volume has been deleted while waiting for stable state
+		if volumeStableErr.Error() == "Resource not found" {
+			continue
+		}
+
+		require.NoError(t, volumeStableErr, "All volumes with snapshots attached must be in a stable state for deletion")
+
 		// in-tree
 		if strings.HasPrefix(vol.Name, "kubernetes-dynamic-pvc-") &&
 			strings.HasPrefix(vol.Metadata["kubernetes.io/created-for/pvc/namespace"], "e2e-volumes-") {
