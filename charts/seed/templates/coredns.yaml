@@ -101,11 +101,7 @@ spec:
     protocol: TCP
     port: 9153
 ---
-{{- if semverCompare ">= 1.16" .Capabilities.KubeVersion.Version -}}
 apiVersion: apps/v1
-{{- else if semverCompare ">= 1.13" .Capabilities.KubeVersion.Version -}}
-apiVersion: extensions/v1beta1
-{{- end }}
 kind: Deployment
 metadata:
   name: coredns

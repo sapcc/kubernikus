@@ -130,6 +130,12 @@ func (d *DeorbitReconciler) deorbit(kluster *v1.Kluster) (err error) {
 }
 
 func (d *DeorbitReconciler) doDeorbit(deorbiter Deorbiter) (err error) {
+
+	_, err = deorbiter.DeleteSnapshots()
+	if err != nil {
+		return err
+	}
+
 	_, err = deorbiter.DeletePersistentVolumeClaims()
 	if err != nil {
 		return err
@@ -137,6 +143,10 @@ func (d *DeorbitReconciler) doDeorbit(deorbiter Deorbiter) (err error) {
 
 	_, err = deorbiter.DeleteServices()
 	if err != nil {
+		return err
+	}
+
+	if err := deorbiter.WaitForSnapshotCleanUp(); err != nil {
 		return err
 	}
 

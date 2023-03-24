@@ -2,33 +2,33 @@
 require 'yaml'
 
 VERSIONS = [
-  '1.25.5',
-  '1.24.9',
+  '1.25.7',
+  '1.24.11',
   '1.23.15'
 ]
 
 REGIONS = {
-  "ap-ae-1": { continent: 'silver', install: 'terraform', e2e: 'terraform', nodepool_avz: 'ap-ae-1a', oidc: '9a2d0e1181194fb1bca52e7951666bc3'},
-  "ap-au-1": { continent: 'silver', install: 'manual'   , e2e: 'manual', nodepool_avz: 'ap-au-1a', oidc: 'f34304c03d2147cc964470c31d00ce97' },
-  "ap-cn-1": { continent: 'silver', install: 'terraform', e2e: 'terraform', nodepool_avz: 'ap-cn-1b', oidc: 'e83ddace725b4c5da605e3f66d266f2c' },
-  "ap-jp-1": { continent: 'silver', install: 'terraform', e2e: 'terraform', nodepool_avz: 'ap-jp-1a', oidc: 'b505497ca03e4942a2d0aa50dfbdc7a0' },
-  "ap-jp-2": { continent: 'bronze', install: 'terraform', e2e: 'terraform', nodepool_avz: 'ap-jp-2a', oidc: 'f34b8aa879334a7fb20e1b96cb1c576e' },
-  "ap-sa-1": { continent: 'silver', install: 'terraform', e2e: 'terraform', nodepool_avz: 'ap-sa-1a', oidc: '436297dc67b9428f97da11227dc070ec' },
-  "ap-sa-2": { continent: 'bronze', install: 'terraform', e2e: 'terraform', nodepool_avz: 'ap-sa-2a', oidc: '37c3822fe4194ab586d9625d81b9d532' },
-  "eu-de-1": { continent: 'gold',   install: 'manual'   , e2e: 'manual', nodepool_avz: 'eu-de-1d', oidc: 'd7df5ce6c37643e49b3c93528c29818b' },
-  "eu-de-2": { continent: 'gold',   install: 'manual'   , e2e: 'manual', nodepool_avz: 'eu-de-2b', oidc: '57da32d8d50d49a9a9fbbe6b890e9e13' },
-  "eu-nl-1": { continent: 'gold',   install: 'manual'   , e2e: 'terraform', nodepool_avz: 'eu-nl-1a', oidc: 'd9b056a6762649f684a8a02b30f38324' },
-  "la-br-1": { continent: 'silver', install: 'terraform', e2e: 'terraform', nodepool_avz: 'la-br-1a', oidc: 'b33ac00cb0004d50bb34eb4e4cbbeb54' },
-  "na-ca-1": { continent: 'bronze', install: 'terraform', e2e: 'terraform', nodepool_avz: 'na-ca-1b', oidc: 'b7269ea1dde54a6383453ab69f25cce4' },
-  "na-us-1": { continent: 'gold',   install: 'manual'   , e2e: 'manual', nodepool_avz: 'na-us-1b', oidc: '040ed45cb5d8403790cf341a26c50601' },
-  "na-us-2": { continent: 'gold',   install: 'terraform', e2e: 'terraform', nodepool_avz: 'na-us-2b', oidc: 'fc0f2b8450e1444197609800c8b5c4cb' },
-  "na-us-3": { continent: 'bronze', install: 'terraform', e2e: 'terraform', nodepool_avz: 'na-us-3a', oidc: 'aa579369ca944a41bccb76f49f20924f' },
-  "qa-de-1": { continent: 'infra',  install: 'terraform', e2e: 'terraform', nodepool_avz: 'qa-de-1a', oidc: 'ce5462b173184391a9b47b486fabe580'},
-  "master":  { continent: "infra",  install: 'virtual'  , e2e: 'virtual', nodepool_avz: 'eu-nl-1a', oidc: 'a8b6853024494e1eb56136025b04866b' }
+  "ap-ae-1": { continent: 'silver', e2e: 'terraform', nodepool_avz: 'ap-ae-1a', oidc: '9a2d0e1181194fb1bca52e7951666bc3' },
+  "ap-au-1": { continent: 'silver', e2e: 'terraform', nodepool_avz: 'ap-au-1a', oidc: 'f34304c03d2147cc964470c31d00ce97' },
+  "ap-cn-1": { continent: 'silver', e2e: 'terraform', nodepool_avz: 'ap-cn-1b', oidc: 'e83ddace725b4c5da605e3f66d266f2c' },
+  "ap-jp-1": { continent: 'silver', e2e: 'terraform', nodepool_avz: 'ap-jp-1a', oidc: 'b505497ca03e4942a2d0aa50dfbdc7a0' },
+  "ap-jp-2": { continent: 'bronze', e2e: 'terraform', nodepool_avz: 'ap-jp-2a', oidc: 'f34b8aa879334a7fb20e1b96cb1c576e' },
+  "ap-sa-1": { continent: 'silver', e2e: 'terraform', nodepool_avz: 'ap-sa-1a', oidc: '436297dc67b9428f97da11227dc070ec' },
+  "ap-sa-2": { continent: 'bronze', e2e: 'terraform', nodepool_avz: 'ap-sa-2a', oidc: '37c3822fe4194ab586d9625d81b9d532' },
+  "eu-de-1": { continent: 'gold',   e2e: 'terraform', nodepool_avz: 'eu-de-1d', oidc: 'd7df5ce6c37643e49b3c93528c29818b' },
+  "eu-de-2": { continent: 'gold',   e2e: 'terraform', nodepool_avz: 'eu-de-2b', oidc: '57da32d8d50d49a9a9fbbe6b890e9e13' },
+  "eu-nl-1": { continent: 'gold',   e2e: 'terraform', nodepool_avz: 'eu-nl-1a', oidc: 'd9b056a6762649f684a8a02b30f38324' },
+  "la-br-1": { continent: 'silver', e2e: 'terraform', nodepool_avz: 'la-br-1a', oidc: 'b33ac00cb0004d50bb34eb4e4cbbeb54' },
+  "na-ca-1": { continent: 'bronze', e2e: 'terraform', nodepool_avz: 'na-ca-1b', oidc: 'b7269ea1dde54a6383453ab69f25cce4' },
+  "na-us-1": { continent: 'gold',   e2e: 'terraform', nodepool_avz: 'na-us-1b', oidc: '040ed45cb5d8403790cf341a26c50601' },
+  "na-us-2": { continent: 'gold',   e2e: 'terraform', nodepool_avz: 'na-us-2b', oidc: 'fc0f2b8450e1444197609800c8b5c4cb' },
+  "na-us-3": { continent: 'bronze', e2e: 'terraform', nodepool_avz: 'na-us-3a', oidc: 'aa579369ca944a41bccb76f49f20924f' },
+  "qa-de-1": { continent: 'infra',  e2e: 'terraform', nodepool_avz: 'qa-de-1a', oidc: 'ce5462b173184391a9b47b486fabe580' },
+  "master":  { continent: "infra",  e2e: 'virtual',   nodepool_avz: 'eu-nl-1a', oidc: 'a8b6853024494e1eb56136025b04866b' }
 }
 
 GROUPS             = REGIONS.values.map{ |v| v[:continent]}.uniq
-DEPLOYABLE_REGIONS = REGIONS.select{ |k, v| ["terraform", "manual"].include?(v[:install]) }
+DEPLOYABLE_REGIONS = REGIONS.select{ |k, v| ["terraform"].include?(v[:e2e]) }
 %>
 
 <% REGIONS.each do |region, meta| %>
@@ -67,21 +67,11 @@ auth_e2e_<%= region %>: &auth_e2e_<%= region %>
   KUBERNIKUS_URL: https://kubernikus.<%= region %>.cloud.sap
   CP_OS_PROJECT_NAME: kubernikus
 <% end %>
-<% if meta[:e2e] == "manual" %>
-  OS_AUTH_URL: https://identity-3.<%= region %>.cloud.sap/v3
-  OS_USERNAME: T175B19A704E280EC
-  OS_PASSWORD: ((ldap-user-password/T175B19A704E280EC))
-  OS_USER_DOMAIN_NAME: ccadmin
-  OS_PROJECT_NAME: kubernikus-e2e
-  OS_REGION_NAME: <%= region %>
-  KUBERNIKUS_URL: https://kubernikus.<%= region %>.cloud.sap
-  CP_OS_PROJECT_NAME: kubernikus
-<% end %>
 <% if meta[:e2e] == "virtual" %>
   OS_AUTH_URL: https://identity-3.eu-nl-1.cloud.sap/v3
-  OS_USERNAME: T175B19A704E280EC
-  OS_PASSWORD: ((ldap-user-password/T175B19A704E280EC))
-  OS_USER_DOMAIN_NAME: ccadmin
+  OS_USERNAME: kubernikus-pipeline
+  OS_PASSWORD: ((keystone-user-password/kubernikus-pipeline))
+  OS_USER_DOMAIN_NAME: Default
   OS_PROJECT_NAME: kubernikus-e2e
   OS_REGION_NAME: eu-nl-1
   KUBERNIKUS_URL: https://kubernikus-master.eu-nl-1.cloud.sap
@@ -184,7 +174,7 @@ resources:
       pipeline: kubernikus # we do this so we don't get versions from other pipelines
 
 <% REGIONS.select{ |k, v| v[:continent] == group }.each do |region, meta| %>
-<% if ["terraform", "manual"].include? meta[:install] %>
+<% if ["terraform"].include? meta[:e2e] %>
   - name: <%= region %>.release
     type: release
     check_every: never
@@ -282,14 +272,10 @@ jobs:
 
   - name: replicate-images
     plan:
-    - in_parallel:
-      - get: kubernikus.git
-      - get: docs-builder.image
-        passed: [docs]
-        trigger: true
-        passed: [docs]
+    - get: kubernikus.git
+      trigger: true
     - task: replicate
-      timeout: 15m
+      timeout: 30m
       config:
         platform: linux
         image_resource:
@@ -426,7 +412,7 @@ jobs:
         - put: <%= group %>.tag
 
 <% REGIONS.select{ |k, v| v[:continent] == group }.each do |region, meta| %>
-<% if ["terraform", "manual"].include? meta[:install] %>
+<% if ["terraform"].include? meta[:e2e] %>
 
   - name: seed_<%= region %>
     serial: true

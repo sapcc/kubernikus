@@ -209,7 +209,4 @@ func (p *VolumeTests) WaitForSnapshot(t *testing.T) {
 			return readyToUse, nil
 		})
 	require.NoError(t, waitForSnapshotErr, "The snapshot must be ready to use")
-
-	deleteSnapShotErr := dynamicClient.Resource(snapshotGvr).Namespace(p.Namespace).Delete(context.Background(), snapshotName, meta_v1.DeleteOptions{})
-	require.NoError(t, deleteSnapShotErr, "There must be no error deleting the snapshot")
 }
