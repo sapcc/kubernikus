@@ -194,7 +194,7 @@ spec:
             {{- end }}
             - --data-dir=/var/lib/etcd/new.etcd
             - --storage-provider={{ .Values.backup.storageProvider | default "Swift" }}
-            {{- if (semverCompare ">= 1.23" .Values.version.kubernetes) }}
+            {{- if (semverCompare ">= 1.23-0" .Values.version.kubernetes) }}
             - --delta-snapshot-period={{ .Values.backup.deltaSnapshotPeriod }}s
             - --garbage-collection-period={{ .Values.backup.garbageCollectionPeriod }}s
             {{- else }}

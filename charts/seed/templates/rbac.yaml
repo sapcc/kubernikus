@@ -122,7 +122,7 @@ subjects:
 - kind: Group
   name: openstack_role:kubernetes_member
 {{ end }}
-{{- if semverCompare ">= 1.25" .Capabilities.KubeVersion.Version }}
+{{- if semverCompare ">= 1.25-0" .Capabilities.KubeVersion.Version }}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
