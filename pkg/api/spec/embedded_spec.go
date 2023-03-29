@@ -669,7 +669,7 @@ func init() {
         "version": {
           "description": "Kubernetes version",
           "type": "string",
-          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+          "pattern": "^(?P\u003cmajor\u003e0|[1-9]\\d*)\\.(?P\u003cminor\u003e0|[1-9]\\d*)\\.(?P\u003cpatch\u003e0|[1-9]\\d*)(?:-(?P\u003cprerelease\u003e(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+(?P\u003cbuildmetadata\u003e[0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$"
         }
       },
       "x-nullable": false
@@ -1716,7 +1716,7 @@ func init() {
         "version": {
           "description": "Kubernetes version",
           "type": "string",
-          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+          "pattern": "^(?P\u003cmajor\u003e0|[1-9]\\d*)\\.(?P\u003cminor\u003e0|[1-9]\\d*)\\.(?P\u003cpatch\u003e0|[1-9]\\d*)(?:-(?P\u003cprerelease\u003e(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+(?P\u003cbuildmetadata\u003e[0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$"
         }
       },
       "x-nullable": false

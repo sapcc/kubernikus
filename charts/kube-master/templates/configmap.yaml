@@ -44,7 +44,7 @@ data:
         user:
           client-certificate: /etc/kubernetes/certs/kube-client.pem
           client-key: /etc/kubernetes/certs/kube-client.key
-{{- if (semverCompare ">= 1.20" .Values.version.kubernetes) }}
+{{- if (semverCompare ">= 1.20-0" .Values.version.kubernetes) }}
   csi-kubeconfig: |-
     apiVersion: v1
     kind: Config

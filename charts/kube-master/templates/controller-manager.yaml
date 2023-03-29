@@ -68,7 +68,7 @@ spec:
         {{- end }}
       initContainers:
         - name: apiserver-wait
-{{- if (semverCompare ">= 1.19" .Values.version.kubernetes) }}
+{{- if (semverCompare ">= 1.19-0" .Values.version.kubernetes) }}
           image: {{ include "kubelet.image" . | quote }}
 {{- else }}
           image: {{ include "hyperkube.image" . }}
@@ -87,13 +87,13 @@ spec:
               readOnly: true
       containers:
         - name: controller-manager
-{{- if (semverCompare ">= 1.12" .Values.version.kubernetes) }}
+{{- if (semverCompare ">= 1.12-0" .Values.version.kubernetes) }}
           ports:
           - containerPort: 10257
             name: metrics
             protocol: TCP
 {{- end }}
-{{- if (semverCompare ">= 1.19" .Values.version.kubernetes) }}
+{{- if (semverCompare ">= 1.19-0" .Values.version.kubernetes) }}
           image: {{ include "controllerManager.image" . | quote }}
 {{- else }}
           image: {{ include "hyperkube.image" . | quote }}
@@ -102,7 +102,7 @@ spec:
 {{- if (semverCompare "< 1.17" .Values.version.kubernetes) }}
             - /hyperkube
 {{- end }}
-{{- if (semverCompare ">= 1.15" .Values.version.kubernetes) }}
+{{- if (semverCompare ">= 1.15-0" .Values.version.kubernetes) }}
             - kube-controller-manager
 {{- else }}
             - controller-manager
@@ -115,7 +115,7 @@ spec:
             {{- if (semverCompare "< 1.21" .Values.version.kubernetes) }}
             - --cloud-config=/etc/kubernetes/cloudprovider/openstack.config
             {{- end }}
-{{- if (semverCompare ">= 1.13" .Values.version.kubernetes) }}
+{{- if (semverCompare ">= 1.13-0" .Values.version.kubernetes) }}
             {{- if (semverCompare "< 1.21" .Values.version.kubernetes) }}
             - --cloud-provider=external
             - --external-cloud-volume-plugin=openstack
@@ -130,15 +130,17 @@ spec:
             - --cluster-signing-key-file=/etc/kubernetes/certs/apiserver-nodes-ca-key.pem
             - --controllers=*,bootstrapsigner,tokencleaner
             - --kubeconfig=/etc/kubernetes/config/kubeconfig
-{{- if (semverCompare ">= 1.12" .Values.version.kubernetes) }}
+{{- if (semverCompare ">= 1.12-0" .Values.version.kubernetes) }}
             - --authentication-kubeconfig=/etc/kubernetes/config/kubeconfig
             - --authorization-kubeconfig=/etc/kubernetes/config/kubeconfig
 {{- end }}
-{{- if and (semverCompare ">= 1.14" .Values.version.kubernetes) (semverCompare "< 1.17" .Values.version.kubernetes) }}
+{{- if and (semverCompare ">= 1.14-0" .Values.version.kubernetes) (semverCompare "< 1.17" .Values.version.kubernetes) }}
             - --feature-gates=NodeLease=false
 {{- end }}
-{{- if and (.Values.openstack) (semverCompare ">= 1.20" .Values.version.kubernetes) }}
+{{- if and (.Values.openstack) (semverCompare ">= 1.20-0" .Values.version.kubernetes) }}
+            {{- if semverCompare "< 1.27.0-0" .Values.version.kubernetes }}
             - --feature-gates=CSIMigration=true,CSIMigrationOpenStack=true,ExpandCSIVolumes=true
+            {{- end }}
 {{- end }}
             - --leader-elect=false
             - --root-ca-file=/etc/kubernetes/certs/tls-ca.pem
@@ -150,7 +152,7 @@ spec:
           livenessProbe:
             httpGet:
               path: /healthz
-{{- if (semverCompare ">= 1.13" .Values.version.kubernetes) }}
+{{- if (semverCompare ">= 1.13-0" .Values.version.kubernetes) }}
               port: 10257
               scheme: HTTPS
 {{- else }}

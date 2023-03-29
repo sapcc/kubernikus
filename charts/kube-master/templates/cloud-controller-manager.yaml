@@ -1,5 +1,5 @@
 {{- if .Values.openstack }}
-{{- if (semverCompare ">= 1.13" .Values.version.kubernetes) }}
+{{- if (semverCompare ">= 1.13-0" .Values.version.kubernetes) }}
 {{/* vim: set filetype=gotexttmpl: */ -}}
 {{- if .Capabilities.APIVersions.Has "apps/v1" }}
 apiVersion: "apps/v1"
@@ -52,7 +52,7 @@ spec:
           secret:
             secretName: {{ include "master.fullname" . }}-generated
             items:
-{{- if (semverCompare ">= 1.16" .Values.version.kubernetes) }}
+{{- if (semverCompare ">= 1.16-0" .Values.version.kubernetes) }}
               - key: openstack-ccmanager.config
 {{- else }}
               - key: openstack.config
@@ -60,7 +60,7 @@ spec:
                 path: openstack.config
       initContainers:
         - name: apiserver-wait
-{{- if (semverCompare ">= 1.19" .Values.version.kubernetes) }}
+{{- if (semverCompare ">= 1.19-0" .Values.version.kubernetes) }}
           image: {{ include "kubelet.image" . | quote }}
 {{- else }}
           image: {{ include "hyperkube.image" . }}
@@ -90,7 +90,7 @@ spec:
             - --cluster-cidr={{ .Values.clusterCIDR }}
             - --cluster-name={{ .Values.name }}
             - --configure-cloud-routes=true
-{{- if and (semverCompare ">= 1.14" .Values.version.kubernetes) (semverCompare "< 1.17" .Values.version.kubernetes) }}
+{{- if and (semverCompare ">= 1.14-0" .Values.version.kubernetes) (semverCompare "< 1.17" .Values.version.kubernetes) }}
             - --feature-gates=NodeLease=false
 {{- end }}
             - --kubeconfig=/etc/kubernetes/config/kubeconfig

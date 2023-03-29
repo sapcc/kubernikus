@@ -25,7 +25,7 @@ spec:
     spec:
       initContainers:
         - name: apiserver-wait
-{{- if (semverCompare ">= 1.19" .Values.version.kubernetes) }}
+{{- if (semverCompare ">= 1.19-0" .Values.version.kubernetes) }}
           image: {{ include "kubelet.image" . | quote }}
 {{- else }}
           image: {{ include "hyperkube.image" . }}
@@ -94,11 +94,11 @@ spec:
             initialDelaySeconds: 15
             periodSeconds: 15
           args:
-          {{- if (semverCompare ">= 1.12.10" .Values.version.kubernetes) }}
+          {{- if (semverCompare ">= 1.12.10-0" .Values.version.kubernetes) }}
             - --namespace=kube-system # creates dashboard resources in the namespace, introduced in v2.0.0-beta1
           {{- end }}
             - --kubeconfig=/etc/kubernetes/config/kubeconfig
-          {{- if (semverCompare ">= 1.15.2" .Values.version.kubernetes) }}
+          {{- if (semverCompare ">= 1.15.2-0" .Values.version.kubernetes) }}
             - --metrics-provider=none  #introduced in v2.0.0-beta3
           {{- else }}
             - --metric-client-check-period=2592000 # 30 days in seconds, since heapster is not installed
@@ -151,7 +151,7 @@ spec:
   selector:
     app: {{ include "master.fullname" . }}-dashboard
 ---
-{{- if semverCompare ">= 1.19" .Capabilities.KubeVersion.GitVersion }}
+{{- if semverCompare ">= 1.19-0" .Capabilities.KubeVersion.GitVersion }}
 apiVersion: networking.k8s.io/v1
 {{- else }}
 apiVersion: networking.k8s.io/v1beta1
@@ -170,7 +170,7 @@ spec:
   - host: {{ include "dashboard.url" . }}
     http:
       paths:
-{{- if semverCompare ">= 1.19" .Capabilities.KubeVersion.GitVersion }}
+{{- if semverCompare ">= 1.19-0" .Capabilities.KubeVersion.GitVersion }}
       - backend:
           service:
             name: {{ include "master.fullname" . }}-dashboard
