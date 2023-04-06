@@ -247,7 +247,7 @@ func (p *PyrolisisTests) CleanupVolumes(t *testing.T) {
 		)
 
 		// Volume has been deleted while waiting for stable state
-		if volumeStableErr.Error() == "Resource not found" {
+		if volumeStableErr != nil && volumeStableErr.Error() == "Resource not found" {
 			continue
 		}
 
