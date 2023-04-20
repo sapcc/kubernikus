@@ -409,8 +409,10 @@ func (sr *SeedReconciler) patchDeployed(client dynamic.Interface, mapping *meta.
 	// the token. Clearing that causes a new token to be created in versions below
 	// 1.24 filling up the controlplane. That field is no longer present in newer
 	// versions.
-	if secrets, ok := deployed.Object["secrets"]; ok {
-		planned.Object["secrets"] = secrets
+	if deployed.GetKind() == "ServiceAccount" {
+		if secrets, ok := deployed.Object["secrets"]; ok {
+			planned.Object["secrets"] = secrets
+		}
 	}
 	// Depending on the concrete resource there still patches that are not strictly
 	// required fallthrough here. A prime example is the Container Spec of Deployments,
