@@ -18,10 +18,11 @@ import (
 	"github.com/coreos/butane/config/common"
 	"github.com/coreos/vcontext/report"
 	"github.com/go-kit/kit/log"
+	"github.com/tredoe/osutil/user/crypt/sha512_crypt"
+
 	"github.com/sapcc/kubernikus/pkg/api/models"
 	kubernikusv1 "github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
 	"github.com/sapcc/kubernikus/pkg/version"
-	"github.com/tredoe/osutil/user/crypt/sha512_crypt"
 )
 
 type ignition struct {
