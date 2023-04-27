@@ -7,22 +7,21 @@ variant: flatcar
 version: 1.0.0
 passwd:
   users:
-{{- if .Flatcar }}
     - name: core
-{{- end }}
 {{- if .Gardenlinux }}
-    - name: admin
+      shell: /bin/bash
+      groups:
+        - sudo
 {{- end }}
       password_hash: {{ .LoginPassword }}
 {{- if .LoginPublicKey }}
       ssh_authorized_keys:
         - {{ .LoginPublicKey | quote }}
 {{- end }}
-      shell: /bin/bash
 systemd:
   units:
     - name: ccloud-metadata-hostname.service
-      enable: true
+      enabled: true
       contents: |
         [Unit]
         Description=Workaround for coreos-metadata hostname bug
@@ -37,7 +36,7 @@ systemd:
         WantedBy=multi-user.target
 {{- if .Flatcar }}
     - name: containerd.service
-      enable: true
+      enabled: true
       dropins:
         - name: 10-custom-config.conf
           contents: |
@@ -46,14 +45,14 @@ systemd:
             ExecStart=/usr/bin/env PATH=${TORCX_BINDIR}:${PATH} ${TORCX_BINDIR}/containerd
 {{- end }}
     - name: docker.service
-      enable: true
+      enabled: true
       dropins:
         - name: 20-docker-opts.conf
           contents: |
             [Service]
             Environment="DOCKER_OPTS=--iptables=false --bridge=none"
     - name: kubelet.service
-      enable: true
+      enabled: true
       contents: |
         [Unit]
         Description=Kubelet
@@ -91,7 +90,7 @@ systemd:
         WantedBy=multi-user.target
     - name: updatecertificates.service
       command: start
-      enable: true
+      enabled: true
       contents: |
         [Unit]
         Description=Update the certificates w/ self-signed root CAs
@@ -106,6 +105,12 @@ systemd:
 storage:
   files:
 {{- if .Gardenlinux }}
+    - path: /etc/sudoers.d/core
+      filesystem: root
+      mode: 0644
+      contents:
+        inline: |
+          core ALL=(ALL) NOPASSWD:ALL
     - path: /etc/ssh/sshd_config.d/20-enable-passwords.conf
       filesystem: root
       mode: 0644
