@@ -105,7 +105,7 @@ data:
       redirectURIs:
       - https://{{ include "dashboard.url" . }}/oauth/callback # for dashboard access
       - http://localhost:33768/auth/callback
-      - http://localhost:33768/ # for https://github.com/int128/kubelogin access
+      - http://localhost:33768 # for https://github.com/int128/kubelogin access
       name: kubernetes
       secret: {{ required "dex.staticClientSecret" .Values.dex.staticClientSecret }}
 
