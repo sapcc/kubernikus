@@ -7,6 +7,7 @@ import (
 
 	"github.com/go-kit/kit/log"
 	core_v1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 )
 
 type LoggingDeorbiter struct {
@@ -31,6 +32,23 @@ func (d *LoggingDeorbiter) DeleteServices() (deleted []core_v1.Service, err erro
 	return d.Deorbiter.DeleteServices()
 }
 
+func (d *LoggingDeorbiter) DeleteSnapshots() (deleted []*unstructured.Unstructured, err error) {
+	defer func(begin time.Time) {
+		list := make([]string, len(deleted))
+		for i, v := range deleted {
+			list[i] = fmt.Sprintf("%v/%v", v.GetNamespace(), v.GetName())
+		}
+
+		d.Logger.Log(
+			"msg", "deleted snapshots",
+			"services", strings.Join(list, ", "),
+			"took", time.Since(begin),
+			"err", err,
+		)
+	}(time.Now())
+	return d.Deorbiter.DeleteSnapshots()
+}
+
 func (d *LoggingDeorbiter) DeletePersistentVolumeClaims() (deleted []core_v1.PersistentVolumeClaim, err error) {
 	defer func(begin time.Time) {
 		list := make([]string, len(deleted))
@@ -46,6 +64,17 @@ func (d *LoggingDeorbiter) DeletePersistentVolumeClaims() (deleted []core_v1.Per
 		)
 	}(time.Now())
 	return d.Deorbiter.DeletePersistentVolumeClaims()
+}
+
+func (d *LoggingDeorbiter) WaitForSnapshotCleanUp() (err error) {
+	defer func(begin time.Time) {
+		d.Logger.Log(
+			"msg", "waited for snapshot cleanup",
+			"took", time.Since(begin),
+			"err", err,
+		)
+	}(time.Now())
+	return d.Deorbiter.WaitForSnapshotCleanUp()
 }
 
 func (d *LoggingDeorbiter) WaitForPersistentVolumeCleanup() (err error) {

@@ -43,6 +43,7 @@ const SkipPatchValue string = "true"
 var recreateKinds map[string]struct{} = map[string]struct{}{
 	"RoleBinding":        {},
 	"ClusterRoleBinding": {},
+	"StorageClass":       {},
 }
 
 type objectDiff struct {
@@ -61,7 +62,7 @@ type SeedReconciler struct {
 	Logger  log.Logger
 }
 
-func (sr *SeedReconciler) EnrichHelmValuesForSeed(client project.ProjectClient, values map[string]interface{}) error {
+func (sr *SeedReconciler) EnrichHelmValuesForSeed(client project.ProjectClient, values map[string]interface{}, customCNI bool) error {
 	metadata, err := client.GetMetadata()
 	if err != nil {
 		return err
@@ -94,6 +95,7 @@ func (sr *SeedReconciler) EnrichHelmValuesForSeed(client project.ProjectClient, 
 		"domain":  sr.Kluster.Spec.DNSDomain,
 		"kube":    isKubeDns,
 	}
+	values["customCNI"] = customCNI
 	return nil
 }
 
@@ -488,6 +490,15 @@ func (sr *SeedReconciler) patchDeployed(client dynamic.Interface, mapping *meta.
 	}
 	if _, ok := deployed.Object["reclaimPolicy"]; ok {
 		planned.Object["reclaimPolicy"] = deployed.Object["reclaimPolicy"]
+	}
+	// ServiceAccounts have a top level secret field, which contains a reference to
+	// the token. Clearing that causes a new token to be created in versions below
+	// 1.24 filling up the controlplane. That field is no longer present in newer
+	// versions.
+	if deployed.GetKind() == "ServiceAccount" {
+		if secrets, ok := deployed.Object["secrets"]; ok {
+			planned.Object["secrets"] = secrets
+		}
 	}
 	// Depending on the concrete resource there still patches that are not strictly
 	// required fallthrough here. A prime example is the Container Spec of Deployments,

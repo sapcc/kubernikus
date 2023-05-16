@@ -224,12 +224,6 @@ data:
     {{- if eq .Values.audit "stdout" }}
     <match apiserver.audit>
       @type stdout
-      <buffer>
-        @type memory
-        flush_at_shutdown true
-        flush_mode immediate
-        chunk_limit_size 8m
-      </buffer>
       <format>
         @type json
       </format>

@@ -534,6 +534,10 @@ definitions:
         x-nullable: false
         enum: ["on", "off", "externalAWS"]
         default: "on"
+      customCNI:
+        type: boolean
+        x-nullable: false
+        default: false
   OpenstackSpec:
     type: object
     x-nullable: false

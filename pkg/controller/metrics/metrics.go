@@ -133,6 +133,22 @@ func getAccountFromLabels(labels map[string]string) string {
 	return account
 }
 
+func getAuditFromSpec(spec models.KlusterSpec) string {
+	if spec.Audit == nil {
+		return ""
+	}
+	return *spec.Audit
+}
+
+func getBackupFromSpec(spec models.KlusterSpec) string {
+	switch spec.Backup {
+	case "", "on":
+		return "swift"
+	default:
+		return spec.Backup
+	}
+}
+
 func init() {
 	prometheus.MustRegister(
 		klusterStatusPhase,

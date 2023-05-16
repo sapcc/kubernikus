@@ -10,7 +10,10 @@ import (
 	"github.com/gophercloud/gophercloud/openstack/blockstorage/v3/volumes"
 	core_v1 "k8s.io/api/core/v1"
 	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/util/wait"
+	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/record"
 
@@ -44,9 +47,14 @@ const (
 	PollInterval = 15 * time.Second
 )
 
+// Snapshot group version resource for dynamic kubernetes client
+var SnapshotGvr = schema.GroupVersionResource{Group: "snapshot.storage.k8s.io", Version: "v1", Resource: "volumesnapshots"}
+
 type Deorbiter interface {
+	DeleteSnapshots() ([]*unstructured.Unstructured, error)
 	DeletePersistentVolumeClaims() ([]core_v1.PersistentVolumeClaim, error)
 	DeleteServices() ([]core_v1.Service, error)
+	WaitForSnapshotCleanUp() error
 	WaitForPersistentVolumeCleanup() error
 	WaitForServiceCleanup() error
 	SelfDestruct(SelfDestructReason) error
@@ -58,6 +66,7 @@ type ConcreteDeorbiter struct {
 	Kluster       *v1.Kluster
 	Stop          <-chan struct{}
 	Client        kubernetes.Interface
+	DynamicClient dynamic.Interface
 	Logger        log.Logger
 	ServiceClient *gophercloud.ServiceClient
 }
@@ -68,8 +77,13 @@ func NewDeorbiter(kluster *v1.Kluster, stopCh <-chan struct{}, clients config.Cl
 		return nil, err
 	}
 
+	dynamicClient, err := clients.Satellites.DynamicClientFor(kluster)
+	if err != nil {
+		return nil, err
+	}
+
 	var deorbiter Deorbiter
-	deorbiter = &ConcreteDeorbiter{kluster, stopCh, client, logger, serviceClient}
+	deorbiter = &ConcreteDeorbiter{kluster, stopCh, client, dynamicClient, logger, serviceClient}
 	deorbiter = &LoggingDeorbiter{deorbiter, logger}
 	deorbiter = &EventingDeorbiter{deorbiter, kluster, recorder}
 	deorbiter = &InstrumentingDeorbiter{
@@ -81,6 +95,24 @@ func NewDeorbiter(kluster *v1.Kluster, stopCh <-chan struct{}, clients config.Cl
 	}
 
 	return deorbiter, nil
+}
+
+func (d *ConcreteDeorbiter) DeleteSnapshots() (deleted []*unstructured.Unstructured, err error) {
+	deleted = []*unstructured.Unstructured{}
+
+	snapshotList, err := d.DynamicClient.Resource(SnapshotGvr).Namespace(meta_v1.NamespaceAll).List(context.TODO(), meta_v1.ListOptions{})
+	if err != nil {
+		return deleted, err
+	}
+
+	for index := range snapshotList.Items {
+		err = d.DynamicClient.Resource(SnapshotGvr).Namespace(snapshotList.Items[index].GetNamespace()).Delete(context.Background(), snapshotList.Items[index].GetName(), meta_v1.DeleteOptions{})
+		if err != nil {
+			return deleted, err
+		}
+		deleted = append(deleted, &snapshotList.Items[index])
+	}
+	return deleted, err
 }
 
 func (d *ConcreteDeorbiter) DeletePersistentVolumeClaims() (deleted []core_v1.PersistentVolumeClaim, err error) {
@@ -138,30 +170,16 @@ func (d *ConcreteDeorbiter) DeleteServices() (deleted []core_v1.Service, err err
 	return deleted, err
 }
 
+func (d *ConcreteDeorbiter) WaitForSnapshotCleanUp() (err error) {
+	return wait.PollImmediateUntil(PollInterval, d.isSnapshotCleanupFinished, d.Stop)
+}
+
 func (d *ConcreteDeorbiter) WaitForPersistentVolumeCleanup() (err error) {
-	done, err := d.isPersistentVolumesCleanupFinished()
-	if err != nil {
-		return err
-	}
-
-	if done {
-		return nil
-	}
-
-	return wait.PollUntil(PollInterval, d.isPersistentVolumesCleanupFinished, d.Stop)
+	return wait.PollImmediateUntil(PollInterval, d.isPersistentVolumesCleanupFinished, d.Stop)
 }
 
 func (d *ConcreteDeorbiter) WaitForServiceCleanup() (err error) {
-	done, err := d.isServiceCleanupFinished()
-	if err != nil {
-		return err
-	}
-
-	if done {
-		return nil
-	}
-
-	return wait.PollUntil(PollInterval, d.isServiceCleanupFinished, d.Stop)
+	return wait.PollImmediateUntil(PollInterval, d.isServiceCleanupFinished, d.Stop)
 }
 
 func (d *ConcreteDeorbiter) SelfDestruct(reason SelfDestructReason) (err error) {
@@ -175,6 +193,17 @@ func (d *ConcreteDeorbiter) IsAPIUnavailableTimeout() bool {
 
 func (d *ConcreteDeorbiter) IsDeorbitHangingTimeout() bool {
 	return d.Kluster.ObjectMeta.DeletionTimestamp.Add(DeorbitHangingTimeout).Before(time.Now())
+}
+
+func (d *ConcreteDeorbiter) isSnapshotCleanupFinished() (bool, error) {
+	snapshots, err := d.DynamicClient.Resource(SnapshotGvr).Namespace(meta_v1.NamespaceAll).List(context.TODO(), meta_v1.ListOptions{})
+	if err != nil {
+		return false, err
+	}
+	if len(snapshots.Items) > 0 {
+		return false, nil
+	}
+	return true, nil
 }
 
 func (d *ConcreteDeorbiter) isPersistentVolumesCleanupFinished() (bool, error) {

@@ -58,7 +58,7 @@ spec:
               mountPath: "/certs"
       containers:
         - name: pause
-          image: gcr.io/google-containers/pause:latest
+          image: keppel.global.cloud.sap/ccloud-dockerhub-mirror/sapcc/pause-amd64:3.1
       volumes:
         - name: host
           hostPath:
