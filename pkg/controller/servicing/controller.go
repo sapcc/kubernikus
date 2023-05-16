@@ -73,7 +73,7 @@ func (d *Controller) Reconcile(k *v1.Kluster) (requeue bool, err error) {
 	}
 	reconciler, err := d.Reconciler.Make(k)
 	if err != nil {
-		d.Logger.Log("msg", "skippig upgrades. Internal server error.", "kluster", k.Name, "err", err)
+		d.Logger.Log("msg", "skipping upgrades. Internal server error.", "kluster", k.Name, "err", err)
 		return true, errors.Wrap(err, "Couldn't make Servicing Reconciler.")
 	}
 
