@@ -279,14 +279,11 @@ func isServicingTimeWindow() bool {
 	if err == nil && time.Now().In(location).IsDST() {
 		hour = hour + 1
 	}
-	if hour >= 9 && hour <= 15 {
-		return true
-	}
 
 	servicingDays := []string{"Monday", "Tuesday", "Wednesday", "Thursday", "Friday"}
 	day := time.Now().UTC().Weekday().String()
 	for _, d := range servicingDays {
-		if day == d {
+		if day == d && hour >= 9 && hour <= 14 {
 			return true
 		}
 	}
