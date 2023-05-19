@@ -450,9 +450,11 @@ spec:
               memory: 96Mi
           args:
             - /bin/cinder-csi-plugin
-            - "--nodeid=$(NODE_ID)"
-            - "--endpoint=$(CSI_ENDPOINT)"
-            - "--cloud-config=$(CLOUD_CONFIG)"
+            - --nodeid=$(NODE_ID)
+            - --endpoint=$(CSI_ENDPOINT)
+            - --cloud-config=$(CLOUD_CONFIG)
+            - --user-agent=kubernikus
+            - --user-agent={{ .Values.Name }}-{{ .Values.openstack.projectID }}
           env:
             - name: NODE_ID
               valueFrom:

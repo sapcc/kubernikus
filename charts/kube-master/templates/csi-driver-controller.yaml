@@ -59,6 +59,8 @@ spec:
         - --endpoint=$(CSI_ENDPOINT)
         - --cloud-config=/etc/kubernetes/cloudprovider/openstack.config
         - --cluster={{ include "master.fullname" . }}
+        - --user-agent=kubernikus
+        - --user-agent={{ include "master.fullname" . }}
         - --v=3
         env:
         - name: CSI_ENDPOINT
