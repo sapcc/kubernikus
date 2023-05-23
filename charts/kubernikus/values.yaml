@@ -62,3 +62,13 @@ operator:
   useOctavia: false
 
 includeRBAC: false
+
+owner-info:
+  helm-chart-url: 'https://github.com/sapcc/kubernikus/charts/kubernikus'
+  maintainers:
+    - Fabian Ruff
+    - Erik Schubert
+    - Uwe Mayer
+    - Jan Knipper
+  support-group: containers
+  service: kubernikus
