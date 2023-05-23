@@ -1,5 +1,7 @@
 #!/bin/ash
 
+helm repo add ccloud https://charts.eu-de-2.cloud.sap
+
 pwd=$(pwd)
 for chart in $pwd/charts/*; do
   if [ -d "$chart" ]; then
