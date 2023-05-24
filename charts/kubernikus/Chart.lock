@@ -8,5 +8,5 @@ dependencies:
 - name: owner-info
   repository: https://charts.eu-de-2.cloud.sap
   version: 0.2.0
-digest: sha256:e64c08081719ae1b76291a0d19047e5e9f824a3da48b32b033f3a8e99323390c
-generated: "2023-05-23T16:37:12.350373746+02:00"
+digest: sha256:c6f41895296e5aeccf8800cbc847016d1d788cb7768c95b76956f91fd371df7e
+generated: "2023-05-24T09:15:58.503772622+02:00"

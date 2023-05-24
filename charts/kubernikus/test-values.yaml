@@ -27,3 +27,5 @@ dex:
     - name: ldap2
       id: ldap2
       projectID: project2
+owner-info:
+  enabled: false

@@ -1,6 +1,6 @@
 #!/bin/ash
 
-helm repo add ccloud https://charts.eu-de-2.cloud.sap
+helm repo add ccloud https://charts.eu-de-2.cloud.sap | true
 
 pwd=$(pwd)
 for chart in $pwd/charts/*; do
