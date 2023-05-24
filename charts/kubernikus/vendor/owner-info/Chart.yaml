@@ -1,0 +1,5 @@
+apiVersion: v2
+description: owner-info deploys a ConfigMap that contains info about chart's owner.
+  It is meant to be used as a dependency by other charts.
+name: owner-info
+version: 0.2.0
