@@ -6,7 +6,7 @@ dependencies:
   repository: file://vendor/rbac
   version: 0.1.6
 - name: owner-info
-  repository: https://charts.eu-de-2.cloud.sap
+  repository: file://vendor/owner-info
   version: 0.2.0
-digest: sha256:c6f41895296e5aeccf8800cbc847016d1d788cb7768c95b76956f91fd371df7e
-generated: "2023-05-24T09:15:58.503772622+02:00"
+digest: sha256:0111c6527e67624cf7869d4a3af5f58dfc2193020266b13c1feaf5b715043207
+generated: "2023-05-24T09:26:58.683150792+02:00"

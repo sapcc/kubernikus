@@ -1,7 +1,5 @@
 #!/bin/ash
 
-helm repo add ccloud https://charts.eu-de-2.cloud.sap | true
-
 pwd=$(pwd)
 for chart in $pwd/charts/*; do
   if [ -d "$chart" ]; then
@@ -13,7 +11,7 @@ for chart in $pwd/charts/*; do
       rm -rf ./charts
       mv ./charts.bak ./charts
     fi
-    helm dependency build --debug | true
+    helm dependency build --debug
     if [ -f test-values.yaml ]; then
       helm template --debug -f test-values.yaml . > /tmp/chart.yaml
     else

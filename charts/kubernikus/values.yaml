@@ -64,8 +64,7 @@ operator:
 includeRBAC: false
 
 owner-info:
-  enabled: true
-  helm-chart-url: 'https://github.com/sapcc/kubernikus/charts/kubernikus'
+  helm-chart-url: https://github.com/sapcc/kubernikus/charts/kubernikus
   maintainers:
     - Fabian Ruff
     - Erik Schubert
