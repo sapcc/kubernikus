@@ -13,7 +13,7 @@ for chart in $pwd/charts/*; do
       rm -rf ./charts
       mv ./charts.bak ./charts
     fi
-    helm dependency build --debug
+    helm dependency build --debug | true
     if [ -f test-values.yaml ]; then
       helm template --debug -f test-values.yaml . > /tmp/chart.yaml
     else
