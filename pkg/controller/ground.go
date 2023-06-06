@@ -1095,11 +1095,11 @@ func (op *GroundControl) ensureStorageContainers(kluster *v1.Kluster, klusterSec
 	}
 
 	ensureContainer := func(name string) error {
-		exists, err := adminClient.StorageContainerExists(klusterSecret.Openstack.ProjectID, name)
+		meta, err := adminClient.GetStorageContainerMeta(klusterSecret.Openstack.ProjectID, name)
 		if err != nil {
 			return err
 		}
-		if !exists {
+		if meta == nil {
 			if err := adminClient.CreateStorageContainer(
 				klusterSecret.Openstack.ProjectID,
 				name,
@@ -1108,6 +1108,23 @@ func (op *GroundControl) ensureStorageContainers(kluster *v1.Kluster, klusterSec
 			); err != nil {
 				return fmt.Errorf("Failed to create container %s. Check if the project has quota for object-store usage: %w", name, err)
 			}
+			return nil
+		}
+		aclStr, err := adminClient.GetContainerACLEntry(klusterSecret.Openstack.ProjectID, klusterSecret.Openstack.Username, klusterSecret.Openstack.DomainName)
+		if err != nil {
+			return fmt.Errorf("Failed to determine swift acl entry for kluster %s: %w", kluster.Name, err)
+		}
+		needsUpdate := false
+		if swag.ContainsStrings(meta.ReadACL, aclStr) == false {
+			meta.ReadACL = append(meta.ReadACL, aclStr)
+			needsUpdate = true
+		}
+		if swag.ContainsStrings(meta.WriteACL, aclStr) == false {
+			meta.WriteACL = append(meta.WriteACL, aclStr)
+			needsUpdate = true
+		}
+		if needsUpdate {
+			adminClient.UpdateStorageContainerMeta(klusterSecret.Openstack.ProjectID, name, *meta)
 		}
 		return nil
 	}
