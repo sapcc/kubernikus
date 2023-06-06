@@ -66,9 +66,4 @@ var managedGVKs = []schema.GroupVersionKind{
 		Version: "v1",
 		Kind:    "ServiceAccount",
 	},
-	{
-		Group:   "apiextensions.k8s.io/v1",
-		Version: "v1",
-		Kind:    "CustomResourceDefinition",
-	},
 }
