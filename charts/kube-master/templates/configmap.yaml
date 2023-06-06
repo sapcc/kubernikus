@@ -224,12 +224,6 @@ data:
     {{- if eq .Values.audit "stdout" }}
     <match apiserver.audit>
       @type stdout
-      <buffer>
-        @type memory
-        flush_at_shutdown true
-        flush_mode immediate
-        chunk_limit_size 8m
-      </buffer>
       <format>
         @type json
       </format>
@@ -246,7 +240,7 @@ data:
       containers:
       - args:
         - -c
-        - test -e /scrub && rm -rf /scrub/..?* /scrub/.[!.]* /scrub/*  && test -z "$(ls -A /scrub)" || exit 1
+        - test -e /scrub && find /scrub -mindepth 1 -delete && test -z "$(ls -A /scrub)" || exit 1
         command:
         - /bin/sh
         image: {{ include "recycler.image" . | quote }}

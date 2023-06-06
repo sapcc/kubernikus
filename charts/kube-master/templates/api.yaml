@@ -235,7 +235,7 @@ spec:
             # https://github.com/kubernetes/kubernetes/issues/85867
             - --feature-gates=ValidateProxyRedirects=true
 {{- end }}
-{{- if and (.Values.openstack) (semverCompare ">= 1.20" .Values.version.kubernetes) }}
+{{- if and (.Values.openstack) (semverCompare ">= 1.20" .Values.version.kubernetes) (semverCompare "< 1.26" .Values.version.kubernetes)}}
             - --feature-gates=CSIMigration=true,CSIMigrationOpenStack=true,ExpandCSIVolumes=true
 {{- end }}
             #Cert Spratz
@@ -272,6 +272,11 @@ spec:
             - --audit-log-maxage=1
             - --audit-log-maxbackup=1
             {{- end }}
+{{- if (semverCompare ">= 1.22" .Values.version.kubernetes) }}
+            - --tls-cipher-suites=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_AES_128_GCM_SHA256,TLS_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384
+{{- else }}
+            - --tls-cipher-suites=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305,TLS_RSA_WITH_AES_128_CBC_SHA,TLS_RSA_WITH_AES_256_CBC_SHA,TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA
+{{- end }}
           volumeMounts:
             - mountPath: /etc/kubernetes/certs
               name: certs

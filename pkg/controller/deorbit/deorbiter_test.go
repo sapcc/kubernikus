@@ -12,7 +12,10 @@ import (
 	"github.com/stretchr/testify/assert"
 	core_v1 "k8s.io/api/core/v1"
 	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
+	dynamicFake "k8s.io/client-go/dynamic/fake"
 	"k8s.io/client-go/kubernetes/fake"
 
 	kubernikus_v1 "github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
@@ -135,6 +138,38 @@ var (
 			Type: "ClusterIP",
 		},
 	}
+
+	snap01 = &unstructured.Unstructured{
+		Object: map[string]interface{}{
+			"apiVersion": "snapshot.storage.k8s.io/v1",
+			"kind":       "VolumeSnapshot",
+			"metadata": map[string]interface{}{
+				"name": "volume-snapshot-1",
+			},
+			"spec": map[string]interface{}{
+				"volumeSnapshotClassName": "csi-cinder-snapclass",
+				"source": map[string]interface{}{
+					"persistentVolumeClaimName": "pvc-hostname",
+				},
+			},
+		},
+	}
+
+	snap02 = &unstructured.Unstructured{
+		Object: map[string]interface{}{
+			"apiVersion": "snapshot.storage.k8s.io/v1",
+			"kind":       "VolumeSnapshot",
+			"metadata": map[string]interface{}{
+				"name": "volume-snapshot-2",
+			},
+			"spec": map[string]interface{}{
+				"volumeSnapshotClassName": "csi-cinder-snapclass",
+				"source": map[string]interface{}{
+					"persistentVolumeClaimName": "pvc-hostname",
+				},
+			},
+		},
+	}
 )
 
 func TestIsServiceCleanupFinished(testing *testing.T) {
@@ -151,9 +186,10 @@ func TestIsServiceCleanupFinished(testing *testing.T) {
 
 		done := make(chan struct{})
 		client := fake.NewSimpleClientset(t.objects...)
+		dynamicClient := dynamicFake.NewSimpleDynamicClient(runtime.NewScheme())
 		logger := log.NewNopLogger()
 
-		deorbiter := &ConcreteDeorbiter{kluster, done, client, logger, nil}
+		deorbiter := &ConcreteDeorbiter{kluster, done, client, dynamicClient, logger, nil}
 		finished, err := deorbiter.isServiceCleanupFinished()
 
 		assert.Equal(testing, t.expected, finished, "Test %d failed: %v", i, t.message)
@@ -177,6 +213,7 @@ func TestIsPersistentVolumesCleanupFinished(testing *testing.T) {
 
 		done := make(chan struct{})
 		client := fake.NewSimpleClientset(t.objects...)
+		dynamicClient := dynamicFake.NewSimpleDynamicClient(runtime.NewScheme())
 		logger := log.NewNopLogger()
 
 		th.SetupHTTP()
@@ -184,7 +221,7 @@ func TestIsPersistentVolumesCleanupFinished(testing *testing.T) {
 		MockVolumeListResponse(testing)
 		serviceClient := tc.ServiceClient()
 
-		deorbiter := &ConcreteDeorbiter{kluster, done, client, logger, serviceClient}
+		deorbiter := &ConcreteDeorbiter{kluster, done, client, dynamicClient, logger, serviceClient}
 		finished, err := deorbiter.isPersistentVolumesCleanupFinished()
 
 		assert.Equal(testing, t.expected, finished, "Test %d failed: %v", i, t.message)
@@ -283,6 +320,30 @@ func MockVolumeListResponse(t *testing.T) {
 	})
 }
 
+func TestIsSnapshotCleanupFinished(testing *testing.T) {
+	type test struct {
+		message  string
+		expected bool
+		objects  []runtime.Object
+	}
+
+	for i, t := range []test{
+		{"false if snapshots remain", false, []runtime.Object{snap01}},
+		{"true if no snapshots remain", true, []runtime.Object{}},
+	} {
+		done := make(chan struct{})
+		client := fake.NewSimpleClientset()
+		dynamicClient := dynamicFake.NewSimpleDynamicClientWithCustomListKinds(runtime.NewScheme(), map[schema.GroupVersionResource]string{SnapshotGvr: "volumesnapshotsList"}, t.objects...)
+		logger := log.NewNopLogger()
+
+		deorbiter := &ConcreteDeorbiter{kluster, done, client, dynamicClient, logger, nil}
+		finished, err := deorbiter.isSnapshotCleanupFinished()
+
+		assert.Equal(testing, t.expected, finished, "Test %d failed: %v", i, t.message)
+		assert.NoError(testing, err, "test %d failed", i)
+	}
+}
+
 func TestDeletePersistentVolumeClaims(testing *testing.T) {
 	type test struct {
 		message   string
@@ -298,11 +359,38 @@ func TestDeletePersistentVolumeClaims(testing *testing.T) {
 
 		done := make(chan struct{})
 		client := fake.NewSimpleClientset(t.objects...)
+		dynamicClient := dynamicFake.NewSimpleDynamicClient(runtime.NewScheme())
 		logger := log.NewNopLogger()
 
-		deorbiter := &ConcreteDeorbiter{kluster, done, client, logger, nil}
+		deorbiter := &ConcreteDeorbiter{kluster, done, client, dynamicClient, logger, nil}
 		deleted, err := deorbiter.DeletePersistentVolumeClaims()
 		remaining, _ := client.CoreV1().PersistentVolumeClaims(meta_v1.NamespaceAll).List(context.Background(), meta_v1.ListOptions{})
+
+		assert.Equal(testing, t.remaining, len(remaining.Items), "Test %d failed: %v", i, t.message)
+		assert.Equal(testing, t.deleted, len(deleted), "Test %d failed: %v", i, t.message)
+		assert.NoError(testing, err, "test %d failed", i)
+	}
+}
+
+func TestDeleteSnapshots(testing *testing.T) {
+	type test struct {
+		message   string
+		remaining int
+		deleted   int
+		objects   []runtime.Object
+	}
+
+	for i, t := range []test{
+		{"deletes all Snapshots", 0, 2, []runtime.Object{snap01, snap02}},
+	} {
+		done := make(chan struct{})
+		client := fake.NewSimpleClientset()
+		dynamicClient := dynamicFake.NewSimpleDynamicClientWithCustomListKinds(runtime.NewScheme(), map[schema.GroupVersionResource]string{SnapshotGvr: "volumesnapshotsList"}, t.objects...)
+		logger := log.NewNopLogger()
+
+		deorbiter := &ConcreteDeorbiter{kluster, done, client, dynamicClient, logger, nil}
+		deleted, err := deorbiter.DeleteSnapshots()
+		remaining, _ := dynamicClient.Resource(SnapshotGvr).Namespace(meta_v1.NamespaceAll).List(context.TODO(), meta_v1.ListOptions{})
 
 		assert.Equal(testing, t.remaining, len(remaining.Items), "Test %d failed: %v", i, t.message)
 		assert.Equal(testing, t.deleted, len(deleted), "Test %d failed: %v", i, t.message)
@@ -325,9 +413,10 @@ func TestDeleteServices(testing *testing.T) {
 
 		done := make(chan struct{})
 		client := fake.NewSimpleClientset(t.objects...)
+		dynamicClient := dynamicFake.NewSimpleDynamicClient(runtime.NewScheme())
 		logger := log.NewNopLogger()
 
-		deorbiter := &ConcreteDeorbiter{kluster, done, client, logger, nil}
+		deorbiter := &ConcreteDeorbiter{kluster, done, client, dynamicClient, logger, nil}
 		deleted, err := deorbiter.DeleteServices()
 		remaining, _ := client.CoreV1().Services(meta_v1.NamespaceAll).List(context.Background(), meta_v1.ListOptions{})
 

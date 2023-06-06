@@ -5,7 +5,6 @@ import (
 
 	"github.com/go-kit/kit/log"
 	"github.com/pkg/errors"
-	core_v1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/tools/record"
 
 	"github.com/sapcc/kubernikus/pkg/api/models"
@@ -22,11 +21,14 @@ const (
 
 	// AnnotationUpdateTImestamp shows when a node update was started
 	AnnotationUpdateTimestamp = "kubernikus.cloud.sap/updateTimestamp"
+
+	// AnnotationServicingIgnoreTimeWindow ignores servicing time window and do it anyway
+	AnnotationServicingIgnoreTimeWindow = "kubernikus.cloud.sap/ignoreServicingTime"
 )
 
 var (
 	// ServiceInterval defines how often a kluster is serviced
-	ServiceInterval = 1 * time.Hour
+	ServiceInterval = 20 * time.Minute
 	UpdateTimeout   = 3*time.Hour + 15*time.Minute
 )
 
@@ -113,6 +115,11 @@ func (f *KlusterReconcilerFactory) Make(k *v1.Kluster) (Reconciler, error) {
 func (r *KlusterReconciler) Do() error {
 	r.Logger.Log("msg", "reconciling", "v", 2)
 
+	if !isServicingTimeWindow() && !util.EnabledValue(r.Kluster.ObjectMeta.Annotations[AnnotationServicingIgnoreTimeWindow]) {
+		r.Logger.Log("msg", "skipping servicing, outside time window.", "v", 5)
+		return nil
+	}
+
 	if r.Kluster.Status.Phase != models.KlusterPhaseRunning {
 		r.Logger.Log("msg", "skipped upgrades because kluster is not running", "v", 2)
 		return nil
@@ -155,8 +162,7 @@ func (r *KlusterReconciler) Do() error {
 
 	update := r.Lister.Updating()
 	replace := r.Lister.Replace()
-	//reboot := r.Lister.Reboot()
-	reboot := make([]*core_v1.Node, 0)
+	reboot := r.Lister.Reboot()
 
 	// The following block retires already updating nodes
 	if len(update) > 0 {
@@ -265,4 +271,22 @@ func (r *KlusterReconciler) getLastServicingTime(annotations map[string]string) 
 func (r *KlusterReconciler) isServiceIntervalElapsed() bool {
 	nextServiceTime := r.getLastServicingTime(r.Kluster.ObjectMeta.GetAnnotations()).Add(ServiceInterval)
 	return Now().After(nextServiceTime)
+}
+
+func isServicingTimeWindow() bool {
+	hour := time.Now().UTC().Hour() + 1
+	location, err := time.LoadLocation("Europe/Berlin")
+	if err == nil && time.Now().In(location).IsDST() {
+		hour = hour + 1
+	}
+
+	servicingDays := []string{"Monday", "Tuesday", "Wednesday", "Thursday", "Friday"}
+	day := time.Now().UTC().Weekday().String()
+	for _, d := range servicingDays {
+		if day == d && hour >= 9 && hour <= 14 {
+			return true
+		}
+	}
+
+	return false
 }

@@ -378,7 +378,6 @@ metadata:
   name: csi-cinder-snapclass
 driver: cinder.csi.openstack.org 
 deletionPolicy: Delete
-{{- end }}
 ---
 kind: DaemonSet
 apiVersion: apps/v1
@@ -404,6 +403,10 @@ spec:
           args:
             - "--csi-address=$(ADDRESS)"
             - "--kubelet-registration-path=$(DRIVER_REG_SOCK_PATH)"
+          resources:
+            requests:
+              cpu: 25m
+              memory: 96Mi
           lifecycle:
             preStop:
               exec:
@@ -425,6 +428,10 @@ spec:
               mountPath: /registration
         - name: liveness-probe
           image: "{{ .Values.images.csiLivenessProbe.repository }}:{{ .Values.images.csiLivenessProbe.tag }}"
+          resources:
+            requests:
+              cpu: 25m
+              memory: 96Mi
           args:
             - --csi-address=/csi/csi.sock
           volumeMounts:
@@ -437,6 +444,10 @@ spec:
               add: ["SYS_ADMIN"]
             allowPrivilegeEscalation: true
           image: "{{ .Values.images.cinderCSIPlugin.repository }}:{{ .Values.images.cinderCSIPlugin.tag }}"
+          resources:
+            requests:
+              cpu: 25m
+              memory: 96Mi
           args:
             - /bin/cinder-csi-plugin
             - "--nodeid=$(NODE_ID)"
@@ -497,3 +508,4 @@ spec:
         - name: secret-cinderplugin
           secret:
             secretName: cloud-config
+{{- end }}

@@ -5,22 +5,50 @@ import (
 
 	core_v1 "k8s.io/api/core/v1"
 	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 )
 
 type FakeDeorbiter struct {
 	CinderPVCCount int
 	LBServiceCount int
+	SnapshotCount  int
 
 	APIDown bool
 	Hanging bool
 
+	HasCalledDeleteSnapshots                bool
 	HasCalledDeletePersistentVolumeClaims   bool
 	HasCalledDeleteServices                 bool
+	HasCalledWaitForSnapshotCleanup         bool
 	HasCalledWaitForPersistentVolumeCleanup bool
 	HasCalledWaitForServiceCleanup          bool
 	HasCalledSeldDestruct                   bool
 
 	SelfDestructReason SelfDestructReason
+}
+
+func (d *FakeDeorbiter) DeleteSnapshots() (deleted []*unstructured.Unstructured, err error) {
+	d.HasCalledDeleteSnapshots = true
+
+	for i := 0; i < d.SnapshotCount; i++ {
+		snapshot := &unstructured.Unstructured{}
+		snapshot.SetUnstructuredContent(map[string]interface{}{
+			"apiVersion": "snapshot.storage.k8s.io/v1",
+			"kind":       "VolumeSnapshot",
+			"metadata": map[string]interface{}{
+				"name": fmt.Sprintf("volume-snapshot-%d", i),
+			},
+			"spec": map[string]interface{}{
+				"volumeSnapshotClassName": "csi-cinder-snapclass",
+				"source": map[string]interface{}{
+					"persistentVolumeClaimName": "pvc-hostname",
+				},
+			},
+		})
+		deleted = append(deleted, snapshot)
+	}
+
+	return deleted, nil
 }
 
 func (d *FakeDeorbiter) DeletePersistentVolumeClaims() (deleted []core_v1.PersistentVolumeClaim, err error) {
@@ -59,6 +87,11 @@ func (d *FakeDeorbiter) DeleteServices() (deleted []core_v1.Service, err error) 
 	}
 
 	return deleted, nil
+}
+
+func (d *FakeDeorbiter) WaitForSnapshotCleanUp() (err error) {
+	d.HasCalledWaitForSnapshotCleanup = true
+	return nil
 }
 
 func (d *FakeDeorbiter) WaitForPersistentVolumeCleanup() (err error) {

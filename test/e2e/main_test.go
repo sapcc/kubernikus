@@ -23,6 +23,8 @@ var (
 	reuse         = flag.Bool("reuse", false, "Reuse exisiting Kluster")
 	cleanup       = flag.Bool("cleanup", true, "Cleanup after tests have been run")
 	isolate       = flag.Bool("isolate", false, "Do not destroy or depend on resources of other tests running in the same project")
+	dex           = flag.Bool("dex", true, "Spin up dex pod on cluster creation")
+	dashboard     = flag.Bool("dashboard", true, "Spin up dashboard pod on cluster creation")
 )
 
 const (
@@ -108,6 +110,8 @@ func TestRunner(t *testing.T) {
 	fmt.Printf("Reuse:                     %v\n", *reuse)
 	fmt.Printf("Cleanup:                   %v\n", *cleanup)
 	fmt.Printf("Isolate:                   %v\n", *isolate)
+	fmt.Printf("Spin up dex:               %v\n", *dex)
+	fmt.Printf("Spin up k8s dashboard:     %v\n", *dashboard)
 	fmt.Println("")
 	fmt.Printf("Dashboard:                 https://dashboard.%s.cloud.sap/%s/%s/kubernetes\n", os.Getenv("OS_REGION_NAME"), os.Getenv("OS_PROJECT_DOMAIN_NAME"), os.Getenv("OS_PROJECT_NAME"))
 	if os.Getenv("CP_KLUSTER") != "" {
@@ -192,7 +196,7 @@ func TestRunner(t *testing.T) {
 		defer t.Run("Cleanup", cleanupTests.Run)
 	}
 
-	setupTests := &SetupTests{kubernikus, openstack, klusterName, *reuse}
+	setupTests := &SetupTests{kubernikus, openstack, klusterName, *reuse, *dex, *dashboard}
 	if !t.Run("Setup", setupTests.Run) {
 		return
 	}

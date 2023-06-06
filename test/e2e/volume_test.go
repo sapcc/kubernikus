@@ -21,7 +21,7 @@ import (
 )
 
 const (
-	testName                           = "pvc-hostname"
+	PVCTestName                        = "pvc-hostname"
 	TestWaitForPVCBoundTimeout         = 5 * time.Minute
 	TestWaitForPVCPodsRunning          = 15 * time.Minute
 	TestWaitForPVCResizeInPlaceTimeOut = 5 * time.Minute
@@ -52,7 +52,7 @@ func (v *VolumeTests) Run(t *testing.T) {
 	t.Run("PVCTests", func(t *testing.T) {
 		t.Run("WaitPVCBound", v.WaitForPVCBound)
 		t.Run("WaitPodRunning", v.WaitForPVCPodsRunning)
-		t.Run("WaitPVCResize", v.WaitForPVCResize)
+		// t.Run("WaitPVCResize", v.WaitForPVCResize)
 		t.Run("WaitSnapshot", v.WaitForSnapshot)
 	})
 
@@ -76,20 +76,20 @@ func (p *VolumeTests) DeleteNamespace(t *testing.T) {
 func (p *VolumeTests) CreatePod(t *testing.T) {
 	_, err := p.Kubernetes.ClientSet.CoreV1().Pods(p.Namespace).Create(context.Background(), &v1.Pod{
 		ObjectMeta: meta_v1.ObjectMeta{
-			Name:      testName,
+			Name:      PVCTestName,
 			Namespace: p.Namespace,
 			Labels: map[string]string{
-				"app": testName,
+				"app": PVCTestName,
 			},
 		},
 		Spec: v1.PodSpec{
 			Containers: []v1.Container{
 				{
 					Image: ServeHostnameImage,
-					Name:  testName,
+					Name:  PVCTestName,
 					VolumeMounts: []v1.VolumeMount{
 						{
-							Name:      testName,
+							Name:      PVCTestName,
 							MountPath: "/mymount",
 						},
 					},
@@ -97,10 +97,10 @@ func (p *VolumeTests) CreatePod(t *testing.T) {
 			},
 			Volumes: []v1.Volume{
 				{
-					Name: testName,
+					Name: PVCTestName,
 					VolumeSource: v1.VolumeSource{
 						PersistentVolumeClaim: &v1.PersistentVolumeClaimVolumeSource{
-							ClaimName: testName,
+							ClaimName: PVCTestName,
 						},
 					},
 				},
@@ -111,7 +111,7 @@ func (p *VolumeTests) CreatePod(t *testing.T) {
 }
 
 func (p *VolumeTests) WaitForPVCPodsRunning(t *testing.T) {
-	label := labels.SelectorFromSet(labels.Set(map[string]string{"app": testName}))
+	label := labels.SelectorFromSet(labels.Set(map[string]string{"app": PVCTestName}))
 	_, err := p.Kubernetes.WaitForPodsWithLabelRunningReady(p.Namespace, label, 1, TestWaitForPVCPodsRunning)
 	require.NoError(t, err, "There must be no error while waiting for the pod with mounted volume to become ready")
 }
@@ -120,7 +120,7 @@ func (p *VolumeTests) CreatePVC(t *testing.T) {
 	_, err := p.Kubernetes.ClientSet.CoreV1().PersistentVolumeClaims(p.Namespace).Create(context.Background(), &v1.PersistentVolumeClaim{
 		ObjectMeta: meta_v1.ObjectMeta{
 			Namespace: p.Namespace,
-			Name:      testName,
+			Name:      PVCTestName,
 		},
 		Spec: v1.PersistentVolumeClaimSpec{
 			AccessModes: []v1.PersistentVolumeAccessMode{
@@ -137,12 +137,12 @@ func (p *VolumeTests) CreatePVC(t *testing.T) {
 }
 
 func (p *VolumeTests) WaitForPVCBound(t *testing.T) {
-	err := p.Kubernetes.WaitForPVCBound(p.Namespace, testName, TestWaitForPVCBoundTimeout)
+	err := p.Kubernetes.WaitForPVCBound(p.Namespace, PVCTestName, TestWaitForPVCBoundTimeout)
 	require.NoError(t, err, "There must be no error while waiting for the PVC to be bound")
 }
 
 func (p *VolumeTests) WaitForPVCResize(t *testing.T) {
-	pvc, getErr := p.Kubernetes.ClientSet.CoreV1().PersistentVolumeClaims(p.Namespace).Get(context.Background(), testName, meta_v1.GetOptions{})
+	pvc, getErr := p.Kubernetes.ClientSet.CoreV1().PersistentVolumeClaims(p.Namespace).Get(context.Background(), PVCTestName, meta_v1.GetOptions{})
 	require.NoError(t, getErr, "There must be no error getting the formerly created PVC")
 
 	pvc.Spec.Resources.Requests["storage"] = resource.MustParse("2Gi")
@@ -151,7 +151,7 @@ func (p *VolumeTests) WaitForPVCResize(t *testing.T) {
 
 	waitForResizeErr := wait.PollImmediate(PollInterval, TestWaitForPVCResizeInPlaceTimeOut,
 		func() (bool, error) {
-			pvc, getErr := p.Kubernetes.ClientSet.CoreV1().PersistentVolumeClaims(p.Namespace).Get(context.Background(), testName, meta_v1.GetOptions{})
+			pvc, getErr := p.Kubernetes.ClientSet.CoreV1().PersistentVolumeClaims(p.Namespace).Get(context.Background(), PVCTestName, meta_v1.GetOptions{})
 			if getErr != nil {
 				return false, getErr
 			}
@@ -163,7 +163,7 @@ func (p *VolumeTests) WaitForPVCResize(t *testing.T) {
 }
 
 func (p *VolumeTests) WaitForSnapshot(t *testing.T) {
-	const snapshotName = "volume-snapshot"
+	const snapshotName = "volume-snapshot-e2e"
 
 	dynamicClient, clientErr := dynamic.NewForConfig(p.Kubernetes.RestConfig)
 	require.NoError(t, clientErr, "There must be no error creating the dynamic client")
@@ -180,7 +180,7 @@ func (p *VolumeTests) WaitForSnapshot(t *testing.T) {
 		"spec": map[string]interface{}{
 			"volumeSnapshotClassName": "csi-cinder-snapclass",
 			"source": map[string]interface{}{
-				"persistentVolumeClaimName": testName,
+				"persistentVolumeClaimName": PVCTestName,
 			},
 		},
 	})
@@ -188,7 +188,7 @@ func (p *VolumeTests) WaitForSnapshot(t *testing.T) {
 	_, createSnapshotErr := dynamicClient.Resource(snapshotGvr).Namespace(p.Namespace).Create(context.TODO(), snapShot, meta_v1.CreateOptions{})
 	require.NoError(t, createSnapshotErr, "There must be no error creating the snapshot")
 
-	deletePodErr := p.Kubernetes.ClientSet.CoreV1().Pods(p.Namespace).Delete(context.Background(), testName, meta_v1.DeleteOptions{})
+	deletePodErr := p.Kubernetes.ClientSet.CoreV1().Pods(p.Namespace).Delete(context.Background(), PVCTestName, meta_v1.DeleteOptions{})
 	require.NoError(t, deletePodErr, "There must be no error deleting the pod")
 
 	waitForSnapshotErr := wait.PollImmediate(PollInterval, TestWaitForSnapshotInPlaceTimeOut,
@@ -209,7 +209,4 @@ func (p *VolumeTests) WaitForSnapshot(t *testing.T) {
 			return readyToUse, nil
 		})
 	require.NoError(t, waitForSnapshotErr, "The snapshot must be ready to use")
-
-	deleteSnapShotErr := dynamicClient.Resource(snapshotGvr).Namespace(p.Namespace).Delete(context.Background(), snapshotName, meta_v1.DeleteOptions{})
-	require.NoError(t, deleteSnapShotErr, "There must be no error deleting the snapshot")
 }

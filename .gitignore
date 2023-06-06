@@ -6,4 +6,5 @@ _output
 .idea
 .env
 /ci/pipeline.yaml
+.vscode
 

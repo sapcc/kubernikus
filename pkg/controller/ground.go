@@ -3,6 +3,7 @@ package controller
 import (
 	"context"
 	"fmt"
+	"net"
 	"path"
 	"reflect"
 	"strings"
@@ -300,16 +301,9 @@ func (op *GroundControl) handler(key string) error {
 				if err != nil {
 					return err
 				}
-				// we need to reconcile twice.
-				// on the first run CRD will be added but these are not in the discovery client cache at that point in time, so creating CRD instances will silently fail.
-				// we fail silently so reconciliation continues even when CRD's are not established.
-				// we await CRD creation in the first run.
-				// on the second run a new discovery client is created, so we know about all CRD's and respective instance can be created.
-				for i := 0; i < 2; i++ {
-					err = op.reconcileSeed(kluster, projectClient, helmValues)
-					if err != nil {
-						return err
-					}
+				err = op.reconcileSeed(kluster, projectClient, helmValues)
+				if err != nil {
+					return err
 				}
 				if err := op.updatePhase(kluster, models.KlusterPhaseRunning); err != nil {
 					op.Logger.Log(
@@ -482,13 +476,29 @@ func (op *GroundControl) handler(key string) error {
 }
 
 func (op *GroundControl) reconcileSeed(kluster *v1.Kluster, projectClient project.ProjectClient, helmValues map[string]interface{}) error {
+	isNetErr := func(err error) bool {
+		current := err
+		for current != nil {
+			_, ok := current.(net.Error)
+			if ok {
+				return true
+			}
+			current = errors.Unwrap(current)
+		}
+		return false
+	}
+
 	seedReconciler := ground.NewSeedReconciler(&op.Clients, kluster, op.Logger)
-	if err := seedReconciler.EnrichHelmValuesForSeed(projectClient, helmValues); err != nil {
-		metrics.SeedReconciliationFailuresTotal.With(prometheus.Labels{"kluster_name": kluster.Spec.Name}).Inc()
+	if err := seedReconciler.EnrichHelmValuesForSeed(projectClient, helmValues, kluster.Spec.CustomCNI); err != nil {
+		if !isNetErr(err) {
+			metrics.SeedReconciliationFailuresTotal.With(prometheus.Labels{"kluster_name": kluster.Spec.Name}).Inc()
+		}
 		return fmt.Errorf("Enrichting seed values failed: %w", err)
 	}
 	if err := seedReconciler.ReconcileSeeding(path.Join(op.Config.Helm.ChartDirectory, "seed"), helmValues); err != nil {
-		metrics.SeedReconciliationFailuresTotal.With(prometheus.Labels{"kluster_name": kluster.Spec.Name}).Inc()
+		if !isNetErr(err) {
+			metrics.SeedReconciliationFailuresTotal.With(prometheus.Labels{"kluster_name": kluster.Spec.Name}).Inc()
+		}
 		return fmt.Errorf("Seeding reconciliation failed: %w", err)
 	}
 	op.Logger.Log("msg", "reconciled seeding successfully", "kluster", kluster.GetName(), "v", 2)

@@ -16,20 +16,22 @@ kubectl apply --context $CONTEXT -n default -f - <<EOF
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
-  name: restart-wormhole
+  name: flatcar-update-reset
 spec:
   selector:
     matchLabels:
-      app: restart-wormhole
+      app: flatcar-update-reset
   template:
     metadata:
       labels:
-        app: restart-wormhole
+        app: flatcar-update-reset
     spec:
+      tolerations:
+        - operator: Exists
       hostPID: true
       initContainers:
         - name: init
-          image: keppel.eu-de-1.cloud.sap/ccloud-dockerhub-mirror/library/alpine:latest
+          image: keppel.global.cloud.sap/ccloud-dockerhub-mirror/library/alpine:latest
           securityContext:
             privileged: true
           command:
@@ -38,13 +40,8 @@ spec:
           args:
             - |-
               set -xe
-              sleep $((RANDOM % 15))s
-
-              chroot /host systemctl restart wormhole
-              chroot /host systemctl restart flanneld
-              sleep 5
-              chroot /host journalctl -u wormhole -n 5 --no-pager
-              sleep 5
+              chroot /host update_engine_client -reset_status
+              chroot /host update_engine_client -check_for_update
           volumeMounts:
             - name: host
               mountPath: "/host"
@@ -55,6 +52,7 @@ spec:
         - name: host
           hostPath:
               path: "/"
-      tolerations:
-        - operator: Exists
 EOF
+
+timeout -v 300 kubectl rollout status --context $CONTEXT -n default daemonset/flatcar-update-reset
+kubectl delete --context $CONTEXT -n default daemonset/flatcar-update-reset

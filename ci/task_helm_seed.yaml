@@ -3,7 +3,7 @@ platform: linux
 image_resource:
   type: registry-image
   source:
-    repository: keppel.eu-de-1.cloud.sap/ccloud-dockerhub-mirror/sapcc/unified-kubernetes-toolbox
+    repository: keppel.eu-de-1.cloud.sap/ccloud/unified-kubernetes-toolbox
     tag: 'latest'
 
 inputs:
@@ -18,6 +18,8 @@ run:
       set -o pipefail
 
       vault-injector interpolate secrets.git/global/values/kubernikus-seed.yaml secrets.git/$REGION/values/globals.yaml
+
+      helm dependency build helm-charts.git/openstack/kubernikus --debug
 
       helm upgrade $RELEASE helm-charts.git/openstack/kubernikus --namespace $NAMESPACE --values secrets.git/global/values/kubernikus-seed.yaml --values secrets.git/$REGION/values/globals.yaml  --install
 
