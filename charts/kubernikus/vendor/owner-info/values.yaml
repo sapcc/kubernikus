@@ -1,0 +1,13 @@
+# "helm-chart-url" must be a HTTP(S) URL describing where to find the Helm chart in GitHub etc.
+helm-chart-url: ''
+# "maintainers" is an optional list of names of all people who maintain the Helm chart. If
+# multiple people can help with issues regarding the chart, feel free to include as many names
+# as you like.
+maintainers: []
+
+# "support-group" is required for routing alerts/tickets regarding this
+# deployment to the right support group
+support-group: ''
+# "service" is optional and allows sorting of alerts/tickets within the realm
+# of a single support group
+service: ''

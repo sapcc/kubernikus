@@ -2,9 +2,9 @@
 require 'yaml'
 
 VERSIONS = [
-  '1.26.4',
-  '1.25.9',
-  '1.24.13'
+  '1.26.5',
+  '1.25.10',
+  '1.24.14'
 ]
 
 REGIONS = {
@@ -282,7 +282,7 @@ jobs:
           type: docker-image
           source:
             repository: keppel.eu-de-1.cloud.sap/ccloud/unified-kubernetes-toolbox
-            tag: "20230316132629"
+            tag: latest
         inputs:
         - name: kubernikus.git
         run:

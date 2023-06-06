@@ -19,6 +19,8 @@ run:
 
       vault-injector interpolate secrets.git/global/values/kubernikus-seed.yaml secrets.git/$REGION/values/globals.yaml
 
+      helm dependency build helm-charts.git/openstack/kubernikus --debug
+
       helm upgrade $RELEASE helm-charts.git/openstack/kubernikus --namespace $NAMESPACE --values secrets.git/global/values/kubernikus-seed.yaml --values secrets.git/$REGION/values/globals.yaml  --install
 
 params:
