@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	kitlog "github.com/go-kit/kit/log"
+	kitlog "github.com/go-kit/log"
 	"k8s.io/client-go/kubernetes"
 
 	v1 "github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"

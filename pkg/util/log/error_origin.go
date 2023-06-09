@@ -3,7 +3,7 @@ package log
 import (
 	"fmt"
 
-	kitlog "github.com/go-kit/kit/log"
+	kitlog "github.com/go-kit/log"
 	"github.com/pkg/errors"
 )
 

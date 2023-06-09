@@ -3,7 +3,7 @@ package log
 import (
 	"errors"
 
-	kitlog "github.com/go-kit/kit/log"
+	kitlog "github.com/go-kit/log"
 )
 
 type levelFilter struct {

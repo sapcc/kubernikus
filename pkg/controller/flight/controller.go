@@ -1,7 +1,7 @@
 package flight
 
 import (
-	"github.com/go-kit/kit/log"
+	"github.com/go-kit/log"
 	"k8s.io/client-go/tools/record"
 
 	"github.com/sapcc/kubernikus/pkg/api/models"

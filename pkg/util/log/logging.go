@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	kitLog "github.com/go-kit/kit/log"
+	kitLog "github.com/go-kit/log"
 	"github.com/go-stack/stack"
 	"k8s.io/klog"
 )

@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	kitlog "github.com/go-kit/kit/log"
+	kitlog "github.com/go-kit/log"
 	uuid "github.com/satori/go.uuid"
 )
 

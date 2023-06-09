@@ -1,7 +1,7 @@
 package launch
 
 import (
-	"github.com/go-kit/kit/log"
+	"github.com/go-kit/log"
 	core_v1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/record"
