@@ -3,12 +3,13 @@ package launch
 import (
 	"context"
 	"fmt"
+	"sort"
 	"strings"
 
 	"github.com/go-kit/kit/log"
+	core_v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
-	"k8s.io/utils/strings/slices"
 
 	"github.com/sapcc/kubernikus/pkg/api/models"
 	v1 "github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
@@ -319,46 +320,27 @@ func (cpm *ConcretePoolManager) sortByUnschedulableNodes(nodeIDs []string) []str
 		return nil
 	}
 
-	nodeIDsCopy := make([]string, len(nodeIDs))
-	copy(nodeIDsCopy, nodeIDs)
-
-	openstackIDs := []string{}
-
-	for pos, nodeID := range nodeIDsCopy {
-		found := false
-
-		for _, node := range nodes {
-			id := strings.Replace(node.Spec.ProviderID, "openstack:///", "", 1)
-			if nodeID == id {
-				found = true
-
-				if node.Spec.Unschedulable {
-					nodeIDs = toTop(nodeIDs, pos)
-				}
-
-				break
-			}
-
-		}
-
-		if !found {
-			openstackIDs = append(openstackIDs, nodeID)
-		}
+	kubernetesIDs := make(map[string]*core_v1.Node)
+	for i := range nodes {
+		id := strings.Replace(nodes[i].Spec.ProviderID, "openstack:///", "", 1)
+		kubernetesIDs[id] = nodes[i]
 	}
 
-	// sort abandoned openstack nodes to top
-	for _, oID := range openstackIDs {
-		pos := slices.Index(nodeIDs, oID)
-		if pos > 0 {
-			nodeIDs = toTop(nodeIDs, pos)
+	sort.Slice(nodeIDs, func(i, j int) bool {
+		if _, ok := kubernetesIDs[nodeIDs[i]]; !ok {
+			return true
 		}
-	}
+		if _, ok := kubernetesIDs[nodeIDs[j]]; !ok {
+			return false
+		}
+		if n, ok := kubernetesIDs[nodeIDs[i]]; ok && n.Spec.Unschedulable {
+			return true
+		}
+		if n, ok := kubernetesIDs[nodeIDs[j]]; ok && n.Spec.Unschedulable {
+			return false
+		}
+		return true
+	})
 
 	return nodeIDs
-}
-
-func toTop(slice []string, s int) []string {
-	id := []string{slice[s]}
-	slice = append(slice[:s], slice[s+1:]...)
-	return append(id, slice...)
 }
