@@ -196,7 +196,7 @@ func (n *NetworkTests) TestPods(t *testing.T) {
 			t.Run(fmt.Sprintf("%v->%v", source.Status.PodIP, target.Status.PodIP), func(t *testing.T) {
 				var stdout string
 				cmd := strings.Split(fmt.Sprintf("curl -f --max-time 5 http://%v:%v", target.Status.PodIP, ServeHostnamePort), " ")
-				err = wait.PollImmediate(PollInterval, TestPodTimeout,
+				err = wait.PollImmediate(PollInterval, TestPodTimeout, //nolint:staticcheck
 					func() (bool, error) {
 						stdout, _, err = n.Kubernetes.ExecCommandInContainerWithFullOutput(n.Namespace, source.Name, source.Spec.Containers[0].Name, cmd...)
 						if err != nil {
@@ -232,7 +232,7 @@ func (n *NetworkTests) TestServices(t *testing.T) {
 			t.Run(fmt.Sprintf("%v->%v", source.Status.PodIP, target.Spec.ClusterIP), func(t *testing.T) {
 				var stdout string
 				cmd := strings.Split(fmt.Sprintf("curl -f --max-time 5 http://%v:%v", target.Spec.ClusterIP, ServeHostnamePort), " ")
-				err = wait.PollImmediate(PollInterval, TestServicesTimeout,
+				err = wait.PollImmediate(PollInterval, TestServicesTimeout, //nolint:staticcheck
 					func() (bool, error) {
 						stdout, _, err = n.Kubernetes.ExecCommandInContainerWithFullOutput(n.Namespace, source.Name, source.Spec.Containers[0].Name, cmd...)
 						if err != nil {
@@ -270,7 +270,7 @@ func (n *NetworkTests) TestServicesWithDNS(t *testing.T) {
 			t.Run(fmt.Sprintf("%v->%v", source.Status.PodIP, service), func(t *testing.T) {
 				var stdout string
 				cmd := []string{"dig", service}
-				err = wait.PollImmediate(PollInterval, TestServicesWithDNSTimeout,
+				err = wait.PollImmediate(PollInterval, TestServicesWithDNSTimeout, //nolint:staticcheck
 					func() (bool, error) {
 						stdout, _, err = n.Kubernetes.ExecCommandInContainerWithFullOutput(n.Namespace, source.Name, source.Spec.Containers[0].Name, cmd...)
 						if err != nil {
@@ -318,7 +318,7 @@ func (n *NetworkTests) CreateLoadbalancer(t *testing.T) {
 func (n *NetworkTests) TestLoadbalancer(t *testing.T) {
 	runParallel(t)
 
-	err := wait.PollImmediate(PollInterval, TestServiceLoadbalancerTimeout,
+	err := wait.PollImmediate(PollInterval, TestServiceLoadbalancerTimeout, //nolint:staticcheck
 		func() (bool, error) {
 			lb, _ := n.Kubernetes.ClientSet.CoreV1().Services(n.Namespace).Get(context.Background(), "e2e-lb", meta_v1.GetOptions{})
 

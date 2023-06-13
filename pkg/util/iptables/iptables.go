@@ -652,7 +652,7 @@ func grabIptablesLocks(lockfilePath string) (iptablesLocker, error) {
 		return nil, fmt.Errorf("failed to open iptables lock %s: %v", lockfilePath, err)
 	}
 
-	if err := wait.PollImmediate(200*time.Millisecond, 2*time.Second, func() (bool, error) {
+	if err := wait.PollImmediate(200*time.Millisecond, 2*time.Second, func() (bool, error) { //nolint:staticcheck
 		if err := grabIptablesFileLock(l.lock16); err != nil {
 			return false, nil
 		}
@@ -662,7 +662,7 @@ func grabIptablesLocks(lockfilePath string) (iptablesLocker, error) {
 	}
 
 	// Roughly duplicate iptables 1.4.x xtables_lock() function.
-	if err := wait.PollImmediate(200*time.Millisecond, 2*time.Second, func() (bool, error) {
+	if err := wait.PollImmediate(200*time.Millisecond, 2*time.Second, func() (bool, error) { //nolint:staticcheck
 		l.lock14, err = net.ListenUnix("unix", &net.UnixAddr{Name: "@xtables", Net: "unix"})
 		if err != nil {
 			return false, nil

@@ -343,7 +343,7 @@ func (n *NodeObservatory) GetListerForKluster(kluster *v1.Kluster) (listers_core
 		return nil, err
 	}
 
-	if err := wait.PollImmediate(100*time.Millisecond, 5*time.Second, func() (bool, error) { return informer.HasSynced(), nil }); err != nil {
+	if err := wait.PollImmediate(100*time.Millisecond, 5*time.Second, func() (bool, error) { return informer.HasSynced(), nil }); err != nil { //nolint:staticcheck
 		return nil, errors.New("Node cache not synced")
 	}
 	return listers_core_v1.NewNodeLister(informer.GetIndexer()), nil

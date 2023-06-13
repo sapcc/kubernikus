@@ -171,15 +171,15 @@ func (d *ConcreteDeorbiter) DeleteServices() (deleted []core_v1.Service, err err
 }
 
 func (d *ConcreteDeorbiter) WaitForSnapshotCleanUp() (err error) {
-	return wait.PollImmediateUntil(PollInterval, d.isSnapshotCleanupFinished, d.Stop)
+	return wait.PollImmediateUntil(PollInterval, d.isSnapshotCleanupFinished, d.Stop) //nolint:staticcheck
 }
 
 func (d *ConcreteDeorbiter) WaitForPersistentVolumeCleanup() (err error) {
-	return wait.PollImmediateUntil(PollInterval, d.isPersistentVolumesCleanupFinished, d.Stop)
+	return wait.PollImmediateUntil(PollInterval, d.isPersistentVolumesCleanupFinished, d.Stop) //nolint:staticcheck
 }
 
 func (d *ConcreteDeorbiter) WaitForServiceCleanup() (err error) {
-	return wait.PollImmediateUntil(PollInterval, d.isServiceCleanupFinished, d.Stop)
+	return wait.PollImmediateUntil(PollInterval, d.isServiceCleanupFinished, d.Stop) //nolint:staticcheck
 }
 
 func (d *ConcreteDeorbiter) SelfDestruct(reason SelfDestructReason) (err error) {
