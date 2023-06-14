@@ -1576,10 +1576,10 @@ imagesForVersion:
       repository: keppel.global.cloud.sap/ccloud/kube-apiserver
       tag: v1.24.14
     cinderCSIPlugin:
-      repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/k8scloudprovider/cinder-csi-plugin
+      repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/provider-os/cinder-csi-plugin
       tag: v1.24.6
     cloudControllerManager:
-      repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/k8scloudprovider/openstack-cloud-controller-manager
+      repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/provider-os/openstack-cloud-controller-manager
       tag: v1.24.6
     cniPlugins:
       repository: keppel.global.cloud.sap/ccloud/cni-plugins
@@ -2157,10 +2157,10 @@ imagesForVersion:
       repository: keppel.global.cloud.sap/ccloud/kube-apiserver
       tag: v1.25.10
     cinderCSIPlugin:
-      repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/k8scloudprovider/cinder-csi-plugin
+      repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/provider-os/cinder-csi-plugin
       tag: v1.25.6
     cloudControllerManager:
-      repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/k8scloudprovider/openstack-cloud-controller-manager
+      repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/provider-os/openstack-cloud-controller-manager
       tag: v1.25.6
     cniPlugins:
       repository: keppel.global.cloud.sap/ccloud/cni-plugins
@@ -2821,10 +2821,10 @@ imagesForVersion:
       repository: keppel.global.cloud.sap/ccloud/kube-apiserver
       tag: v1.26.5
     cinderCSIPlugin:
-      repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/k8scloudprovider/cinder-csi-plugin
+      repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/provider-os/cinder-csi-plugin
       tag: v1.26.3
     cloudControllerManager:
-      repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/k8scloudprovider/openstack-cloud-controller-manager
+      repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/provider-os/openstack-cloud-controller-manager
       tag: v1.26.3
     cniPlugins:
       repository: keppel.global.cloud.sap/ccloud/cni-plugins
