@@ -1577,10 +1577,10 @@ imagesForVersion:
       tag: v1.24.14
     cinderCSIPlugin:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/k8scloudprovider/cinder-csi-plugin
-      tag: v1.24.5
+      tag: v1.24.6
     cloudControllerManager:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/k8scloudprovider/openstack-cloud-controller-manager
-      tag: v1.24.5
+      tag: v1.24.6
     cniPlugins:
       repository: keppel.global.cloud.sap/ccloud/cni-plugins
       tag: v1.1.1
@@ -2158,10 +2158,10 @@ imagesForVersion:
       tag: v1.25.10
     cinderCSIPlugin:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/k8scloudprovider/cinder-csi-plugin
-      tag: v1.25.3
+      tag: v1.25.6
     cloudControllerManager:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/k8scloudprovider/openstack-cloud-controller-manager
-      tag: v1.25.5
+      tag: v1.25.6
     cniPlugins:
       repository: keppel.global.cloud.sap/ccloud/cni-plugins
       tag: v1.1.1
@@ -2822,10 +2822,10 @@ imagesForVersion:
       tag: v1.26.5
     cinderCSIPlugin:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/k8scloudprovider/cinder-csi-plugin
-      tag: v1.26.2
+      tag: v1.26.3
     cloudControllerManager:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/k8scloudprovider/openstack-cloud-controller-manager
-      tag: v1.26.2
+      tag: v1.26.3
     cniPlugins:
       repository: keppel.global.cloud.sap/ccloud/cni-plugins
       tag: v1.1.1
