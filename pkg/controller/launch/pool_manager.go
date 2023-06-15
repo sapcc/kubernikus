@@ -326,20 +326,22 @@ func (cpm *ConcretePoolManager) sortByUnschedulableNodes(nodeIDs []string) []str
 		kubernetesIDs[id] = nodes[i]
 	}
 
-	sort.Slice(nodeIDs, func(i, j int) bool {
-		if _, ok := kubernetesIDs[nodeIDs[i]]; !ok {
+	sort.SliceStable(nodeIDs, func(i, j int) bool {
+		//func has to return true only if i is actually higher priority
+
+		iNode := kubernetesIDs[nodeIDs[i]]
+		jNode := kubernetesIDs[nodeIDs[j]]
+
+		//if i is not in K8S and j is --> i goes in front
+		if iNode == nil && jNode != nil {
 			return true
 		}
-		if _, ok := kubernetesIDs[nodeIDs[j]]; !ok {
-			return false
-		}
-		if n, ok := kubernetesIDs[nodeIDs[i]]; ok && n.Spec.Unschedulable {
+		// if i is unschedulable and j is --> i goes in front
+		if iNode != nil && iNode.Spec.Unschedulable && jNode != nil && !jNode.Spec.Unschedulable {
 			return true
 		}
-		if n, ok := kubernetesIDs[nodeIDs[j]]; ok && n.Spec.Unschedulable {
-			return false
-		}
-		return true
+		// in all other cases i does not have higher ranking
+		return false
 	})
 
 	return nodeIDs
