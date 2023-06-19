@@ -11,7 +11,6 @@ metadata:
     chart: "{{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}"
     kluster: {{ .Release.Name }}
     release: {{ .Release.Name }}
-
 spec:
   revisionHistoryLimit: {{ .Values.revisionHistoryLimit }}
   replicas: {{ .Values.scheduler.replicaCount }}
@@ -48,7 +47,7 @@ spec:
 {{- if .Values.scheduler.config }}
         - name: scheduler-config
           configMap:
-            name: {{ include "master.fullname" }}-scheduler
+            name: {{ include "master.fullname" . }}-scheduler
 {{- end }}
       containers:
         - name: scheduler
@@ -112,9 +111,9 @@ spec:
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ include "master.fullname" }}-scheduler
+  name: {{ include "master.fullname" . }}-scheduler
   labels:
-    app: {{ include "master.fullname" }}-scheduler
+    app: {{ include "master.fullname" . }}-scheduler
     chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
     release: {{ .Release.Name }}
 data:
