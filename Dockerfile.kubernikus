@@ -1,8 +1,8 @@
 ARG DOCS_IMAGE=keppel.eu-de-1.cloud.sap/ccloud/kubernikus-docs-builder:latest
-FROM keppel.eu-de-1.cloud.sap/ccloud-dockerhub-mirror/library/golang:1.18-alpine3.15 as builder
+FROM keppel.eu-de-1.cloud.sap/ccloud-dockerhub-mirror/library/golang:1.20-alpine3.18 as builder
 WORKDIR /app
 RUN apk add --no-cache make bash git curl gcc musl-dev
-RUN curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.50.0
+RUN curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.53.2
 COPY . .
 ENV GOARCH=amd64
 ARG VERSION
@@ -13,7 +13,7 @@ RUN make build-e2e
 
 FROM ${DOCS_IMAGE} as kubernikus-docs
 
-FROM keppel.eu-de-1.cloud.sap/ccloud-dockerhub-mirror/library/alpine:3.15 as kubernikus
+FROM keppel.eu-de-1.cloud.sap/ccloud-dockerhub-mirror/library/alpine:3.18 as kubernikus
 LABEL source_repository="https://github.com/sapcc/kubernikus"
 MAINTAINER "Fabian Ruff <fabian.ruff@sap.com>"
 RUN apk add --no-cache curl iptables
