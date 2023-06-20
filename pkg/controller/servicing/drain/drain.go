@@ -331,7 +331,7 @@ func (d *Helper) deletePods(pods []corev1.Pod, getPodFn func(namespace, name str
 
 func waitForDelete(params waitForDeleteParams) ([]corev1.Pod, error) {
 	pods := params.pods
-	err := wait.PollImmediate(params.interval, params.timeout, func() (bool, error) {
+	err := wait.PollImmediate(params.interval, params.timeout, func() (bool, error) { //nolint:staticcheck
 		pendingPods := []corev1.Pod{}
 		for i, pod := range pods {
 			p, err := params.getPodFn(pod.Namespace, pod.Name)

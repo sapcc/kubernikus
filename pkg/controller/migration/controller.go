@@ -1,7 +1,7 @@
 package migration
 
 import (
-	"github.com/go-kit/kit/log"
+	"github.com/go-kit/log"
 	api_v1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/tools/record"
 

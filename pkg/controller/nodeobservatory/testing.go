@@ -1,7 +1,7 @@
 package nodeobservatory
 
 import (
-	"github.com/go-kit/kit/log"
+	"github.com/go-kit/log"
 	"k8s.io/apimachinery/pkg/runtime"
 	kubernetes_fake "k8s.io/client-go/kubernetes/fake"
 

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	kitlog "github.com/go-kit/kit/log"
+	kitlog "github.com/go-kit/log"
 	autoscalingv1 "k8s.io/api/autoscaling/v1"
 	coord_v1 "k8s.io/api/coordination/v1"
 	core_v1 "k8s.io/api/core/v1"

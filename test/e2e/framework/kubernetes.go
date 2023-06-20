@@ -72,7 +72,7 @@ func (f *Kubernetes) WaitForDefaultServiceAccountInNamespace(namespace string) e
 
 func (f *Kubernetes) WaitForPodsWithLabelRunningReady(ns string, label labels.Selector, num int, timeout time.Duration) (pods *v1.PodList, err error) {
 	var current int
-	err = wait.Poll(Poll, timeout,
+	err = wait.Poll(Poll, timeout, //nolint:staticcheck
 		func() (bool, error) {
 			pods, err := f.WaitForPodsWithLabel(ns, label)
 			if err != nil {
@@ -117,7 +117,7 @@ func (f *Kubernetes) WaitForPodsWithLabel(ns string, label labels.Selector) (pod
 
 func (f *Kubernetes) WaitForServiceEndpointsWithLabelNum(namespace string, label labels.Selector, expectNum int, timeout time.Duration) (services *v1.ServiceList, err error) {
 	var current int
-	err = wait.Poll(Poll, timeout,
+	err = wait.Poll(Poll, timeout, //nolint:staticcheck
 		func() (bool, error) {
 			options := metav1.ListOptions{LabelSelector: label.String()}
 			services, err := f.ClientSet.CoreV1().Services(namespace).List(context.Background(), options)

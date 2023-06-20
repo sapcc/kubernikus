@@ -3,7 +3,7 @@ package rest
 import (
 	"fmt"
 
-	kitlog "github.com/go-kit/kit/log"
+	kitlog "github.com/go-kit/log"
 	"github.com/spf13/pflag"
 	apiextensionsclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	kubernetes_clientset "k8s.io/client-go/kubernetes"

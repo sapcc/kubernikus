@@ -147,16 +147,17 @@ func KlusterVersionConstraint(kluster *v1.Kluster, constraint string) (bool, err
 
 func KlusterNeedsUpgrade(kluster *v1.Kluster) (bool, error) {
 
-	from, err := semver.NewVersion(kluster.Status.ApiserverVersion)
-	if err != nil {
-		return false, err
-	}
+	// from, err := semver.NewVersion(kluster.Status.ApiserverVersion)
+	// if err != nil {
+	// 	return false, err
+	// }
 
-	to, err := semver.NewVersion(kluster.Spec.Version)
-	if err != nil {
-		return false, err
-	}
-	return from.Compare(to) != 0 && (from.Minor() == to.Minor() || from.Minor()+1 == to.Minor()), nil
+	// to, err := semver.NewVersion(kluster.Spec.Version)
+	// if err != nil {
+	// 	return false, err
+	// }
+	// return from.Compare(to) != 0 && (from.Minor() == to.Minor() || from.Minor()+1 == to.Minor()), nil
+	return false, nil
 }
 
 func KlusterPodsReadyCount(kluster *v1.Kluster, podLister listers_core_v1.PodLister) (int, int, error) {

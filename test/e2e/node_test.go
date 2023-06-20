@@ -118,7 +118,7 @@ func (k *NodeTests) Tagged(t *testing.T) {
 
 func (k *NodeTests) Registered(t *testing.T) {
 	count := 0
-	err := wait.PollImmediate(framework.Poll, RegisteredTimeout,
+	err := wait.PollImmediate(framework.Poll, RegisteredTimeout, //nolint:staticcheck
 		func() (bool, error) {
 			nodes, err := k.Kubernetes.ClientSet.CoreV1().Nodes().List(context.Background(), meta_v1.ListOptions{})
 			if err != nil {
@@ -243,7 +243,7 @@ type poolCount func(models.NodePoolInfo) int64
 
 func (k *NodeTests) checkState(t *testing.T, fn poolCount, timeout time.Duration) (int, error) {
 	count := 0
-	err := wait.PollImmediate(framework.Poll, StateRunningTimeout,
+	err := wait.PollImmediate(framework.Poll, StateRunningTimeout, //nolint:staticcheck
 		func() (done bool, err error) {
 			cluster, err := k.Kubernikus.Client.Operations.ShowCluster(
 				operations.NewShowClusterParams().WithName(k.KlusterName),
@@ -265,7 +265,7 @@ func (k *NodeTests) checkState(t *testing.T, fn poolCount, timeout time.Duration
 
 func (k *NodeTests) checkCondition(t *testing.T, conditionType v1.NodeConditionType, expectedStatus v1.ConditionStatus, timeout time.Duration) (int, error) {
 	count := 0
-	err := wait.PollImmediate(framework.Poll, timeout,
+	err := wait.PollImmediate(framework.Poll, timeout, //nolint:staticcheck
 		func() (bool, error) {
 			nodes, err := k.Kubernetes.ClientSet.CoreV1().Nodes().List(context.Background(), meta_v1.ListOptions{})
 			if err != nil {
