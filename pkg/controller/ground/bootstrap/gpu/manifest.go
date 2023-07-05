@@ -42,7 +42,7 @@ spec:
         hostPath:
           path: /dev
       containers:
-      - image: "k8s.gcr.io/nvidia-gpu-device-plugin@sha256:d18b678437fedc4ec4211c20b3e5469a137a44f989da43dc275e4f2678170db4"
+      - image: "registry.k8s.io/nvidia-gpu-device-plugin@sha256:d18b678437fedc4ec4211c20b3e5469a137a44f989da43dc275e4f2678170db4"
         command:
           - /usr/bin/nvidia-gpu-device-plugin
           - -host-path=/opt/nvidia/current

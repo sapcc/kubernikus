@@ -1,5 +1,5 @@
 VERSION?=v1.23.6
-REGISTRY?=k8s.gcr.io
+REGISTRY?=registry.k8s.io
 REPOSITORY?=kubelet-bm
 IMAGE?=keppel.eu-de-1.cloud.sap/ccloud
 ARCH=amd64

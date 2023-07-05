@@ -20,7 +20,7 @@ RUN	mkdir -p cni-bin/bin && \
 # todo fix multus release env var with undescore
 RUN curl -sSL --retry 5 https://github.com/intel/multus-cni/releases/download/v$MULTUS_RELEASE/multus-cni_3.8_linux_amd64.tar.gz | tar --strip 1 -xz -C cni-bin/bin
 
-FROM k8s.gcr.io/build-image/debian-hyperkube-base-amd64:v1.1.0 
+FROM registry.k8s.io/build-image/debian-hyperkube-base-amd64:v1.1.0
 
 LABEL source_repository="https://github.com/sapcc/kubernikus"
 
