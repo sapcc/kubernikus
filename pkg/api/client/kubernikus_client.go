@@ -6,10 +6,17 @@ package client
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"net/http"
+
+	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
 	httptransport "github.com/go-openapi/runtime/client"
+	"github.com/go-openapi/spec"
 	"github.com/go-openapi/strfmt"
-	"github.com/sapcc/kubernikus/pkg/api/client/operations"
+	"github.com/go-openapi/swag"
+
+	"github.com/sapcc/kubernikus/pkg/api/client"
+	"github.com/sapcc/kubernikus/pkg/api/models"
 )
 
 // Default kubernikus HTTP client.

@@ -48,6 +48,8 @@ type ClientService interface {
 
 	GetClusterValues(params *GetClusterValuesParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GetClusterValuesOK, error)
 
+	GetClusters(params *GetClustersParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GetClustersOK, error)
+
 	GetOpenstackMetadata(params *GetOpenstackMetadataParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GetOpenstackMetadataOK, error)
 
 	Info(params *InfoParams, opts ...ClientOption) (*InfoOK, error)
@@ -396,6 +398,44 @@ func (a *Client) GetClusterValues(params *GetClusterValuesParams, authInfo runti
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*GetClusterValuesDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+GetClusters gets all clusters in a project admin only
+*/
+func (a *Client) GetClusters(params *GetClustersParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GetClustersOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewGetClustersParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "GetClusters",
+		Method:             "GET",
+		PathPattern:        "/api/v1/{account}/clusters",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &GetClustersReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*GetClustersOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*GetClustersDefault)
 	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
