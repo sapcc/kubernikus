@@ -108,12 +108,6 @@ func (i *ignition) GenerateNode(kluster *kubernikusv1.Kluster, pool *models.Node
 	isFlatcar := true
 	if pool != nil {
 		nodeLabels = append(nodeLabels, "ccloud.sap.com/nodepool="+pool.Name)
-		if strings.HasPrefix(pool.Flavor, "zg") {
-			nodeLabels = append(nodeLabels, "gpu=nvidia-tesla-v100")
-		}
-		if strings.HasPrefix(pool.Flavor, "zg") {
-			nodeTaints = append(nodeTaints, "nvidia.com/gpu=present:NoSchedule")
-		}
 		for _, userTaint := range pool.Taints {
 			nodeTaints = append(nodeTaints, userTaint)
 		}
