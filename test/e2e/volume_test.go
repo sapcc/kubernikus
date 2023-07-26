@@ -149,7 +149,7 @@ func (p *VolumeTests) WaitForPVCResize(t *testing.T) {
 	_, updateErr := p.Kubernetes.ClientSet.CoreV1().PersistentVolumeClaims(p.Namespace).Update(context.Background(), pvc, meta_v1.UpdateOptions{})
 	require.NoError(t, updateErr, "There must be no error updating the PVC")
 
-	waitForResizeErr := wait.PollImmediate(PollInterval, TestWaitForPVCResizeInPlaceTimeOut,
+	waitForResizeErr := wait.PollImmediate(PollInterval, TestWaitForPVCResizeInPlaceTimeOut, //nolint:staticcheck
 		func() (bool, error) {
 			pvc, getErr := p.Kubernetes.ClientSet.CoreV1().PersistentVolumeClaims(p.Namespace).Get(context.Background(), PVCTestName, meta_v1.GetOptions{})
 			if getErr != nil {
@@ -191,7 +191,7 @@ func (p *VolumeTests) WaitForSnapshot(t *testing.T) {
 	deletePodErr := p.Kubernetes.ClientSet.CoreV1().Pods(p.Namespace).Delete(context.Background(), PVCTestName, meta_v1.DeleteOptions{})
 	require.NoError(t, deletePodErr, "There must be no error deleting the pod")
 
-	waitForSnapshotErr := wait.PollImmediate(PollInterval, TestWaitForSnapshotInPlaceTimeOut,
+	waitForSnapshotErr := wait.PollImmediate(PollInterval, TestWaitForSnapshotInPlaceTimeOut, //nolint:staticcheck
 		func() (bool, error) {
 			snapshot, getSnapshotErr := dynamicClient.Resource(snapshotGvr).Namespace(p.Namespace).Get(context.Background(), snapshotName, meta_v1.GetOptions{})
 			if getSnapshotErr != nil {

@@ -56,7 +56,7 @@ func (e *EtcdBackupTests) WaitForBackupRestore(t *testing.T) {
 	require.NoError(t, err, "Deletion of etcd data failed: %s", err)
 
 	newRv := string(rv)
-	wait.PollImmediate(EtcdFailPollInterval, EtcdFailTimeout,
+	wait.PollImmediate(EtcdFailPollInterval, EtcdFailTimeout, //nolint:staticcheck
 		func() (bool, error) {
 			pod, _ := e.KubernetesControlPlane.ClientSet.CoreV1().Pods(e.Namespace).Get(context.Background(), etcdPod.Name, meta_v1.GetOptions{})
 			newRv = pod.GetResourceVersion()
@@ -65,7 +65,7 @@ func (e *EtcdBackupTests) WaitForBackupRestore(t *testing.T) {
 	require.NotEqual(t, rv, newRv, "Etcd is still up, can't test recovery")
 
 	var newUID string
-	err = wait.PollImmediate(EtcdRestorePollInterval, EtcdRestoreTimeout,
+	err = wait.PollImmediate(EtcdRestorePollInterval, EtcdRestoreTimeout, //nolint:staticcheck
 		func() (bool, error) {
 			newUID, _ = e.getServiceAccountUID("default", "default")
 			return (UID == newUID), nil
@@ -73,7 +73,7 @@ func (e *EtcdBackupTests) WaitForBackupRestore(t *testing.T) {
 	require.NoError(t, err)
 	require.EqualValues(t, UID, newUID, "Recovery of etcd backup failed")
 
-	err = wait.PollImmediate(EtcdRestorePollInterval, EtcdRestoreTimeout,
+	err = wait.PollImmediate(EtcdRestorePollInterval, EtcdRestoreTimeout, //nolint:staticcheck
 		func() (bool, error) {
 			p, _ := e.KubernetesControlPlane.ClientSet.CoreV1().Pods(e.Namespace).Get(context.Background(), apiPod.Name, meta_v1.GetOptions{})
 

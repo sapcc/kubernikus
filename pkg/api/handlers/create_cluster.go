@@ -137,7 +137,7 @@ func (d *createCluster) Handle(params operations.CreateClusterParams, principal 
 
 	//Wait for a second so that the newly created cluster shows up in the cache
 	//This is a hack so that a subsequent GET /api/v1/cluster/:name will not return 404
-	wait.Poll(50*time.Millisecond, 2*time.Second, func() (bool, error) {
+	wait.Poll(50*time.Millisecond, 2*time.Second, func() (bool, error) { //nolint:staticcheck
 		if _, err := d.Klusters.Klusters(d.Namespace).Get(kluster.Name); err != nil {
 			return false, nil
 		}

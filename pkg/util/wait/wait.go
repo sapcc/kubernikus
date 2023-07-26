@@ -18,7 +18,7 @@ func WaitForKluster(kluster *v1.Kluster, c cache.Indexer, condition func(cache *
 		return err
 	}
 	//Wait for up to 5 seconds for the local cache to reflect the phase change
-	return wait.Poll(50*time.Millisecond, 5*time.Second, func() (bool, error) {
+	return wait.Poll(50*time.Millisecond, 5*time.Second, func() (bool, error) { //nolint:staticcheck
 		o, exists, err := c.GetByKey(key)
 		if !exists {
 			return false, DoesNotExist

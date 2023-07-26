@@ -1,7 +1,7 @@
 package drain
 
 import (
-	"github.com/go-kit/kit/log"
+	"github.com/go-kit/log"
 )
 
 type LogWriter struct {

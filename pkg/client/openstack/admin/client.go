@@ -427,9 +427,11 @@ func (c *adminClient) UpdateStorageContainerMeta(projectID, container string, me
 		return err
 	}
 	storageClient.Endpoint = endpointURL
+	read := strings.Join(meta.ReadACL, ",")
+	write := strings.Join(meta.WriteACL, ",")
 	_, err = containers.Update(storageClient, container, containers.UpdateOpts{
-		ContainerRead:  strings.Join(meta.ReadACL, ","),
-		ContainerWrite: strings.Join(meta.WriteACL, ","),
+		ContainerRead:  &read,
+		ContainerWrite: &write,
 	}).Extract()
 	return err
 }

@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/go-kit/kit/log"
+	"github.com/go-kit/log"
 	th "github.com/gophercloud/gophercloud/testhelper"
 	tc "github.com/gophercloud/gophercloud/testhelper/client"
 	"github.com/stretchr/testify/assert"

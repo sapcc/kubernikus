@@ -1,6 +1,6 @@
 package server
 
-import "github.com/go-kit/kit/log"
+import "github.com/go-kit/log"
 
 type Options struct {
 	Logger log.Logger

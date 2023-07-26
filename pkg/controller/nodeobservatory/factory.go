@@ -3,7 +3,7 @@ package nodeobservatory
 import (
 	"sync"
 
-	"github.com/go-kit/kit/log"
+	"github.com/go-kit/log"
 
 	kube "github.com/sapcc/kubernikus/pkg/client/kubernetes"
 	kubernikus_informers_v1 "github.com/sapcc/kubernikus/pkg/generated/informers/externalversions/kubernikus/v1"
