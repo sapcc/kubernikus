@@ -4,6 +4,7 @@ import (
 	"context"
 	"strings"
 	"text/template"
+	"time"
 
 	"github.com/ghodss/yaml"
 	"github.com/go-openapi/runtime/middleware"
@@ -79,7 +80,7 @@ func (d *getBootstrapConfig) Handle(params operations.GetBootstrapConfigParams, 
 		return NewErrorResponse(&operations.GetBootstrapConfigDefault{}, 500, "Failed to create cluster client: %s", err)
 	}
 
-	token, tokenSecret, err := bootstraptoken.GenerateBootstrapToken()
+	token, tokenSecret, err := bootstraptoken.GenerateBootstrapToken(24 * time.Hour)
 	if err != nil {
 		return NewErrorResponse(&operations.GetBootstrapConfigDefault{}, 500, "Failed to generate bootstrap token: %s", err)
 	}

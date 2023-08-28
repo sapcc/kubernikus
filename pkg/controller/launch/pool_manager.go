@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"sort"
 	"strings"
+	"time"
 
 	"github.com/go-kit/log"
 	core_v1 "k8s.io/api/core/v1"
@@ -20,6 +21,7 @@ import (
 	kubernikus_listers "github.com/sapcc/kubernikus/pkg/generated/listers/kubernikus/v1"
 	"github.com/sapcc/kubernikus/pkg/templates"
 	"github.com/sapcc/kubernikus/pkg/util"
+	"github.com/sapcc/kubernikus/pkg/util/bootstraptoken"
 	"github.com/sapcc/kubernikus/pkg/util/generator"
 	"github.com/sapcc/kubernikus/pkg/version"
 )
@@ -200,14 +202,26 @@ func (cpm *ConcretePoolManager) CreateNode() (id string, err error) {
 
 	nodeName := generator.SimpleNameGenerator.GenerateName(fmt.Sprintf(util.NODE_NAMING_PATTERN_PREFIX, cpm.Kluster.Spec.Name, cpm.Pool.Name))
 
-	calicoNetworking := false
-	if client, err := cpm.Clients.Satellites.ClientFor(cpm.Kluster); err == nil {
-		if _, err := client.AppsV1().DaemonSets("kube-system").Get(context.TODO(), "calico-node", metav1.GetOptions{}); err == nil {
-			calicoNetworking = true
-		}
+	client, err := cpm.Clients.Satellites.ClientFor(cpm.Kluster)
+	if err != nil {
+		return "", fmt.Errorf("Couldn't get client for kluster: %s", err)
 	}
 
-	userdata, err := templates.Ignition.GenerateNode(cpm.Kluster, cpm.Pool, nodeName, secret, calicoNetworking, cpm.imageRegistry, cpm.Logger)
+	calicoNetworking := false
+	if _, err := client.AppsV1().DaemonSets("kube-system").Get(context.TODO(), "calico-node", metav1.GetOptions{}); err == nil {
+		calicoNetworking = true
+	}
+
+	token, tokenSecret, err := bootstraptoken.GenerateBootstrapToken(30 * time.Minute)
+	if err != nil {
+		return "", fmt.Errorf("Node bootstrap token generation failed: %s", err)
+	}
+
+	if _, err := client.CoreV1().Secrets(tokenSecret.Namespace).Create(context.TODO(), tokenSecret, metav1.CreateOptions{}); err != nil {
+		return "", fmt.Errorf("Node bootstrap token secret creation failed: %s", err)
+	}
+
+	userdata, err := templates.Ignition.GenerateNode(cpm.Kluster, cpm.Pool, nodeName, token, secret, calicoNetworking, cpm.imageRegistry, cpm.Logger)
 	if err != nil {
 		return "", err
 	}
