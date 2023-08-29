@@ -610,8 +610,8 @@ func (op *GroundControl) createKluster(kluster *v1.Kluster) error {
 	}
 
 	//contains unamibious characters for generic random passwords
-	var randomPasswordChars = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890")
-	klusterSecret.NodePassword, err = goutils.Random(16, 0, 0, true, true, randomPasswordChars...)
+	var randomPasswordChars = []rune("abcdefghjkmnpqrstuvwxABCDEFGHJKLMNPQRSTUVWX23456789")
+	klusterSecret.NodePassword, err = goutils.Random(12, 0, 0, true, true, randomPasswordChars...)
 	if err != nil {
 		return fmt.Errorf("Failed to generate node password: %s", err)
 	}
