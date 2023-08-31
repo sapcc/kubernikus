@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"strings"
 
-	kitlog "github.com/go-kit/kit/log"
+	kitlog "github.com/go-kit/log"
 	"github.com/gophercloud/gophercloud/openstack/identity/v3/tokens"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"

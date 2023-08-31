@@ -10,7 +10,7 @@ import (
 	"sync"
 
 	"github.com/databus23/guttle"
-	"github.com/go-kit/kit/log"
+	"github.com/go-kit/log"
 )
 
 type Tunnel struct {

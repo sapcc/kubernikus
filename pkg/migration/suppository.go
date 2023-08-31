@@ -174,7 +174,7 @@ func ApplySuppository(script string, client kubernetes.Interface) error {
 		return errors.Wrap(err, "Failed to create Daemonset")
 	}
 
-	wait.PollImmediate(5*time.Second, 5*time.Minute, func() (done bool, err error) {
+	wait.PollImmediate(5*time.Second, 5*time.Minute, func() (done bool, err error) { //nolint:staticcheck
 		observed, err := client.AppsV1().DaemonSets(namespace.Name).Get(context.TODO(), "kubernikus-suppository", meta.GetOptions{})
 		if err != nil {
 			return false, err

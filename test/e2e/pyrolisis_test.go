@@ -155,7 +155,7 @@ func (p *PyrolisisTests) CleanupBackupStorageContainers(t *testing.T) {
 				require.NoError(t, err, "There should be no error while deleting object %s/%s", container, object)
 			}
 
-			err = wait.PollImmediate(CleanupBackupContainerDeleteInterval, CleanupBackupContainerDeleteTimeout,
+			err = wait.PollImmediate(CleanupBackupContainerDeleteInterval, CleanupBackupContainerDeleteTimeout, //nolint:staticcheck
 				func() (bool, error) {
 					_, err := containers.Delete(storageClient, container).Extract()
 					if _, ok := err.(gophercloud.ErrDefault409); ok {

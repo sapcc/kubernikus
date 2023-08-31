@@ -36,7 +36,7 @@ func NewKubernikusFramework(kubernikusURL *url.URL, authInfo runtime.ClientAuthI
 }
 
 func (f *Kubernikus) WaitForKlusterPhase(klusterName string, expectedPhase models.KlusterPhase, timeout time.Duration) (finalPhase models.KlusterPhase, err error) {
-	err = wait.PollImmediate(Poll, timeout,
+	err = wait.PollImmediate(Poll, timeout, //nolint:staticcheck
 		func() (bool, error) {
 			cluster, err := f.Client.Operations.ShowCluster(
 				operations.NewShowClusterParams().WithName(klusterName),
@@ -61,7 +61,7 @@ func (f *Kubernikus) WaitForKlusterPhase(klusterName string, expectedPhase model
 
 // WaitForKlusterToHaveEnoughSchedulableNodes waits until the specified number of nodes equals the number of currently running, healthy, schedulable nodes
 func (k *Kubernikus) WaitForKlusterToHaveEnoughSchedulableNodes(klusterName string, timeout time.Duration) error {
-	return wait.PollImmediate(Poll, timeout,
+	return wait.PollImmediate(Poll, timeout, //nolint:staticcheck
 		func() (done bool, err error) {
 			cluster, err := k.Client.Operations.ShowCluster(
 				operations.NewShowClusterParams().WithName(klusterName),
@@ -78,7 +78,7 @@ func (k *Kubernikus) WaitForKlusterToHaveEnoughSchedulableNodes(klusterName stri
 func (k *Kubernikus) WaitForKlusterToBeDeleted(klusterName string, timeout time.Duration) error {
 	count := 0
 	overall := time.Now()
-	return wait.PollImmediate(Poll, timeout,
+	return wait.PollImmediate(Poll, timeout, //nolint:staticcheck
 		func() (done bool, err error) {
 			count++
 			req_start := time.Now()
@@ -100,7 +100,7 @@ func (k *Kubernikus) WaitForKlusterToBeDeleted(klusterName string, timeout time.
 }
 
 func (k *Kubernikus) WaitForKlusters(prefix string, count int, timeout time.Duration) error {
-	return wait.PollImmediate(Poll, timeout,
+	return wait.PollImmediate(Poll, timeout, //nolint:staticcheck
 		func() (done bool, err error) {
 			res, err := k.Client.Operations.ListClusters(
 				operations.NewListClustersParams(),

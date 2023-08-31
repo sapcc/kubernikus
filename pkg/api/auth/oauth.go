@@ -8,7 +8,7 @@ import (
 
 	"github.com/aokoli/goutils"
 	oidc "github.com/coreos/go-oidc/v3/oidc"
-	"github.com/go-kit/kit/log"
+	"github.com/go-kit/log"
 	errors "github.com/go-openapi/errors"
 	runtime "github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"

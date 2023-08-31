@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	"strings"
 
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/bootfromvolume"
@@ -63,22 +62,6 @@ func (c *klusterClient) CreateNode(kluster *v1.Kluster, pool *models.NodePool, n
 	configDrive := true
 
 	networks := []servers.Network{{UUID: kluster.Spec.Openstack.NetworkID}}
-
-	if strings.HasPrefix(pool.Flavor, "zh") {
-		networks = []servers.Network{
-			{UUID: kluster.Spec.Openstack.NetworkID},
-			{UUID: kluster.Spec.Openstack.NetworkID},
-			{UUID: kluster.Spec.Openstack.NetworkID},
-			{UUID: kluster.Spec.Openstack.NetworkID},
-		}
-	}
-
-	if strings.HasPrefix(pool.Flavor, "zg") {
-		networks = []servers.Network{
-			{UUID: kluster.Spec.Openstack.NetworkID},
-			{UUID: kluster.Spec.Openstack.NetworkID},
-		}
-	}
 	flavorID, err := flavorutil.IDFromName(c.ComputeClient, pool.Flavor)
 	if err != nil {
 		return "", fmt.Errorf("Failed to find id for flavor %s: %w", pool.Flavor, err)

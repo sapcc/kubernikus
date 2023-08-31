@@ -7,7 +7,7 @@ import (
 	"time"
 
 	jsonpatch "github.com/evanphx/json-patch"
-	"github.com/go-kit/kit/log"
+	"github.com/go-kit/log"
 	"helm.sh/helm/v3/pkg/action"
 	"helm.sh/helm/v3/pkg/chart/loader"
 	"helm.sh/helm/v3/pkg/chartutil"
@@ -450,7 +450,7 @@ func (sr *SeedReconciler) createPlanned(client dynamic.Interface, mapping *meta.
 			"kluster", sr.Kluster.GetName(),
 			"project", sr.Kluster.Account(),
 			"v", 6)
-		return wait.Poll(500*time.Millisecond, 20*time.Second, func() (done bool, err error) {
+		return wait.Poll(500*time.Millisecond, 20*time.Second, func() (done bool, err error) { //nolint:staticcheck
 			crd, err := makeScopedClient(client, mapping, obj.GetNamespace()).Get(context.TODO(), obj.GetName(), metav1.GetOptions{})
 			if err != nil {
 				return false, err

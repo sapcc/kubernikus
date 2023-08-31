@@ -3,8 +3,11 @@ package launch
 import (
 	"context"
 	"fmt"
+	"sort"
+	"strings"
 
-	"github.com/go-kit/kit/log"
+	"github.com/go-kit/log"
+	core_v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 
@@ -87,8 +90,10 @@ func (cpm *ConcretePoolManager) GetStatus() (status *PoolStatus, err error) {
 	}
 	healthy, schedulable := cpm.healthyAndSchedulable()
 
+	nodesIDs := cpm.sortByUnschedulableNodes(cpm.nodeIDs(nodes))
+
 	return &PoolStatus{
-		Nodes:       cpm.nodeIDs(nodes),
+		Nodes:       nodesIDs,
 		Running:     cpm.running(nodes),
 		Starting:    cpm.starting(nodes),
 		Stopping:    cpm.stopping(nodes),
@@ -302,4 +307,42 @@ func (cpm *ConcretePoolManager) healthyAndSchedulable() (healthy int, schedulabl
 		}
 	}
 	return
+}
+
+func (cpm *ConcretePoolManager) sortByUnschedulableNodes(nodeIDs []string) []string {
+	nodeLister, err := cpm.nodeObservatory.GetListerForKluster(cpm.Kluster)
+	if err != nil {
+		return nil
+	}
+
+	nodes, err := nodeLister.List(labels.Everything())
+	if err != nil {
+		return nil
+	}
+
+	kubernetesIDs := make(map[string]*core_v1.Node)
+	for i := range nodes {
+		id := strings.Replace(nodes[i].Spec.ProviderID, "openstack:///", "", 1)
+		kubernetesIDs[id] = nodes[i]
+	}
+
+	sort.SliceStable(nodeIDs, func(i, j int) bool {
+		//func has to return true only if i is actually higher priority
+
+		iNode := kubernetesIDs[nodeIDs[i]]
+		jNode := kubernetesIDs[nodeIDs[j]]
+
+		//if i is not in K8S and j is --> i goes in front
+		if iNode == nil && jNode != nil {
+			return true
+		}
+		// if i is unschedulable and j is --> i goes in front
+		if iNode != nil && iNode.Spec.Unschedulable && jNode != nil && !jNode.Spec.Unschedulable {
+			return true
+		}
+		// in all other cases i does not have higher ranking
+		return false
+	})
+
+	return nodeIDs
 }

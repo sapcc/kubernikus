@@ -1,7 +1,7 @@
 package log
 
 import (
-	kitlog "github.com/go-kit/kit/log"
+	kitlog "github.com/go-kit/log"
 )
 
 type nilFilter struct {

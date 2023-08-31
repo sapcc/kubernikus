@@ -3,7 +3,7 @@ package servicing
 import (
 	"time"
 
-	"github.com/go-kit/kit/log"
+	"github.com/go-kit/log"
 	"github.com/pkg/errors"
 	"k8s.io/client-go/tools/record"
 
