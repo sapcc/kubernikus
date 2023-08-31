@@ -1,4 +1,4 @@
-{{- if (semverCompare ">= 1.12" .Values.version.kubernetes) }}
+{{- if (semverCompare ">= 1.12-0" .Values.version.kubernetes) }}
 apiVersion: v1
 kind: Service
 metadata:

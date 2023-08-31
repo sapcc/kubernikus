@@ -51,13 +51,13 @@ spec:
 {{- end }}
       containers:
         - name: scheduler
-{{- if (semverCompare ">= 1.12" .Values.version.kubernetes) }}
+{{- if (semverCompare ">= 1.12-0" .Values.version.kubernetes) }}
           ports:
           - containerPort: 10259
             name: metrics
             protocol: TCP
 {{- end }}
-{{- if (semverCompare ">= 1.19" .Values.version.kubernetes) }}
+{{- if (semverCompare ">= 1.19-0" .Values.version.kubernetes) }}
           image: {{ include "scheduler.image" . | quote }}
 {{- else }}
           image: {{ include "hyperkube.image" . | quote }}
@@ -66,13 +66,13 @@ spec:
 {{- if (semverCompare "< 1.17" .Values.version.kubernetes) }}
             - /hyperkube
 {{- end }}
-{{- if (semverCompare ">= 1.15" .Values.version.kubernetes) }}
+{{- if (semverCompare ">= 1.15-0" .Values.version.kubernetes) }}
             - kube-scheduler
 {{- else }}
             - scheduler
 {{- end }}
             - --kubeconfig=/etc/kubernetes/config/kubeconfig
-{{- if (semverCompare ">= 1.13" .Values.version.kubernetes) }}
+{{- if (semverCompare ">= 1.13-0" .Values.version.kubernetes) }}
             - --authentication-kubeconfig=/etc/kubernetes/config/kubeconfig
             - --authorization-kubeconfig=/etc/kubernetes/config/kubeconfig
 {{- end }}
@@ -83,7 +83,7 @@ spec:
           livenessProbe:
             httpGet:
               path: /healthz
-{{- if (semverCompare ">= 1.13" .Values.version.kubernetes) }}
+{{- if (semverCompare ">= 1.13-0" .Values.version.kubernetes) }}
               port: 10259
               scheme: HTTPS
 {{- else }}

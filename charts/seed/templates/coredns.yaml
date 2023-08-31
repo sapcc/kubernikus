@@ -19,7 +19,7 @@ rules:
   - apiGroups: [""]
     resources: ["endpoints", "services", "pods", "namespaces"]
     verbs: ["list", "watch"]
-  {{- if semverCompare ">= 1.23" .Capabilities.KubeVersion.Version }}
+  {{- if semverCompare ">= 1.23-0" .Capabilities.KubeVersion.Version }}
   - apiGroups: ["discovery.k8s.io"]
     resources: ["endpointslices"]
     verbs: ["list", "watch"]
