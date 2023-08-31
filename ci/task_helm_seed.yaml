@@ -30,7 +30,6 @@ params:
   KUBELOGON_PASSWORD:
   NAMESPACE: monsoon3
   RELEASE: kubernikus
-  HELM_VERSION: 3.12.1
   VAULT_ADDR:      https://vault.global.cloud.sap # DO NOT CHANGE
   VAULT_KV_ENGINE: secrets                        # DO NOT CHANGE
   VAULT_ROLE_ID:   # (required) set this to ((auth.role_id)) to receive credentials automatically from Concourse
