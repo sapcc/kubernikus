@@ -99,7 +99,7 @@ spec:
           image: {{ include "hyperkube.image" . | quote }}
 {{- end }}
           args:
-{{- if (semverCompare "< 1.17" .Values.version.kubernetes) }}
+{{- if (semverCompare "< 1.17-0" .Values.version.kubernetes) }}
             - /hyperkube
 {{- end }}
 {{- if (semverCompare ">= 1.15-0" .Values.version.kubernetes) }}
@@ -112,11 +112,11 @@ spec:
             - --allocate-node-cidrs=true
             {{- end }}
             {{- if .Values.openstack }}
-            {{- if (semverCompare "< 1.21" .Values.version.kubernetes) }}
+            {{- if (semverCompare "< 1.21-0" .Values.version.kubernetes) }}
             - --cloud-config=/etc/kubernetes/cloudprovider/openstack.config
             {{- end }}
 {{- if (semverCompare ">= 1.13-0" .Values.version.kubernetes) }}
-            {{- if (semverCompare "< 1.21" .Values.version.kubernetes) }}
+            {{- if (semverCompare "< 1.21-0" .Values.version.kubernetes) }}
             - --cloud-provider=external
             - --external-cloud-volume-plugin=openstack
             {{- end }}
@@ -134,10 +134,10 @@ spec:
             - --authentication-kubeconfig=/etc/kubernetes/config/kubeconfig
             - --authorization-kubeconfig=/etc/kubernetes/config/kubeconfig
 {{- end }}
-{{- if and (semverCompare ">= 1.14-0" .Values.version.kubernetes) (semverCompare "< 1.17" .Values.version.kubernetes) }}
+{{- if and (semverCompare ">= 1.14-0" .Values.version.kubernetes) (semverCompare "< 1.17-0" .Values.version.kubernetes) }}
             - --feature-gates=NodeLease=false
 {{- end }}
-{{- if and (.Values.openstack) (semverCompare ">= 1.20" .Values.version.kubernetes) (semverCompare "< 1.26" .Values.version.kubernetes)}}
+{{- if and (.Values.openstack) (semverCompare ">= 1.20-0" .Values.version.kubernetes) (semverCompare "< 1.26-0" .Values.version.kubernetes)}}
             - --feature-gates=CSIMigration=true,CSIMigrationOpenStack=true,ExpandCSIVolumes=true
 {{- end }}
             - --leader-elect=false

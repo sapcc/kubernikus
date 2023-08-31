@@ -120,7 +120,7 @@ rules:
   - apiGroups: ["snapshot.storage.k8s.io"]
     resources: ["volumesnapshotcontents"]
     verbs: ["get", "list"]
-  {{- if semverCompare ">= 1.27" .Capabilities.KubeVersion.Version }}
+  {{- if semverCompare ">= 1.27-0" .Capabilities.KubeVersion.Version }}
   - apiGroups: ["storage.k8s.io"]
     resources: ["volumeattachments"]
     verbs: ["get", "list", "watch"]
@@ -163,7 +163,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: csi-resizer-role
 rules:
-  {{- if semverCompare ">= 1.27" .Capabilities.KubeVersion.Version }}
+  {{- if semverCompare ">= 1.27-0" .Capabilities.KubeVersion.Version }}
   - apiGroups: [""]
     resources: ["persistentvolumes"]
     verbs: ["get", "list", "watch", "patch"]
@@ -347,7 +347,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: snapshot-controller-runner
 rules:
-  {{- if semverCompare ">= 1.27" .Capabilities.KubeVersion.Version }}
+  {{- if semverCompare ">= 1.27-0" .Capabilities.KubeVersion.Version }}
   - apiGroups: [""]
     resources: ["persistentvolumes"]
     verbs: ["get", "list", "watch"]
