@@ -75,7 +75,7 @@ controllerManager:
       memory: 256Mi
     limits:
       cpu: 500m
-      memory: 512Mi
+      memory: 1Gi
 
 scheduler:
   replicaCount: 1
@@ -170,6 +170,6 @@ csi:
         memory: 32Mi
       limits:
         cpu: 100m
-        memory: 100Mi
+        memory: 150Mi
 
 audit: ""

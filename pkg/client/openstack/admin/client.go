@@ -23,6 +23,11 @@ import (
 
 var serviceUserRoles = []string{"network_admin", "member"}
 
+type ContainerMeta struct {
+	ReadACL  []string
+	WriteACL []string
+}
+
 type AdminClient interface {
 	CreateKlusterServiceUser(username, password, domainName, projectID string) error
 	DeleteUser(username, domainName string) error
@@ -30,7 +35,9 @@ type AdminClient interface {
 	GetRegion() (string, error)
 	GetDomainID(domainName string) (string, error)
 	CreateStorageContainer(projectID, containerName, serviceUserName, serviceUserDomainName string) error
-	StorageContainerExists(projectID, containerName string) (bool, error)
+	GetStorageContainerMeta(projectID, containerName string) (*ContainerMeta, error)
+	UpdateStorageContainerMeta(projectID, container string, meta ContainerMeta) error
+	GetContainerACLEntry(projectID, serviceUserName, serviceUserDomainName string) (string, error)
 	AssignUserRoles(projectID, userName, domainName string, userRoles []string) error
 	GetUserRoles(projectID, userName, domainName string) ([]string, error)
 	GetDefaultServiceUserRoles() []string
@@ -357,17 +364,10 @@ func (c *adminClient) CreateStorageContainer(projectID, containerName, serviceUs
 	}
 	storageClient.Endpoint = endpointURL
 
-	domainID, err := c.GetDomainID(serviceUserDomainName)
+	acl, err := c.GetContainerACLEntry(projectID, serviceUserName, serviceUserDomainName)
 	if err != nil {
 		return err
 	}
-
-	serviceUser, err := c.getUserByName(serviceUserName, domainID)
-	if err != nil {
-		return err
-	}
-
-	acl := fmt.Sprintf("%s:%s", projectID, serviceUser.ID)
 	createOpts := containers.CreateOpts{
 		ContainerRead:  acl,
 		ContainerWrite: acl,
@@ -378,26 +378,60 @@ func (c *adminClient) CreateStorageContainer(projectID, containerName, serviceUs
 	return err
 }
 
-func (c *adminClient) StorageContainerExists(projectID, containerName string) (bool, error) {
+func (c *adminClient) GetContainerACLEntry(projectID, serviceUserName, serviceUserDomainName string) (string, error) {
+	domainID, err := c.GetDomainID(serviceUserDomainName)
+	if err != nil {
+		return "", err
+	}
+	serviceUser, err := c.getUserByName(serviceUserName, domainID)
+	if err != nil {
+		return "", err
+	}
+	return fmt.Sprintf("%s:%s", projectID, serviceUser.ID), nil
+}
+
+// a nil value and nil error marks a non-existent container
+func (c *adminClient) GetStorageContainerMeta(projectID, containerName string) (*ContainerMeta, error) {
 	endpointURL, err := c.getPublicObjectStoreEndpointURL(projectID)
 	if err != nil {
-		return false, err
+		return nil, err
 	}
 
 	storageClient, err := openstack.NewObjectStorageV1(c.ProviderClient, gophercloud.EndpointOpts{})
 	if err != nil {
-		return false, err
+		return nil, err
 	}
 	storageClient.Endpoint = endpointURL
 
-	_, err = containers.Get(storageClient, containerName, containers.GetOpts{}).Extract()
+	container, err := containers.Get(storageClient, containerName, containers.GetOpts{}).Extract()
 	if err != nil {
 		if _, ok := err.(gophercloud.ErrDefault404); ok {
-			return false, nil
+			return nil, nil
 		}
-		return false, err
+		return nil, err
 	}
-	return true, nil
+	return &ContainerMeta{
+		ReadACL:  container.Read,
+		WriteACL: container.Write,
+	}, nil
+}
+
+func (c *adminClient) UpdateStorageContainerMeta(projectID, container string, meta ContainerMeta) error {
+	endpointURL, err := c.getPublicObjectStoreEndpointURL(projectID)
+	if err != nil {
+		return err
+	}
+
+	storageClient, err := openstack.NewObjectStorageV1(c.ProviderClient, gophercloud.EndpointOpts{})
+	if err != nil {
+		return err
+	}
+	storageClient.Endpoint = endpointURL
+	_, err = containers.Update(storageClient, container, containers.UpdateOpts{
+		ContainerRead:  strings.Join(meta.ReadACL, ","),
+		ContainerWrite: strings.Join(meta.WriteACL, ","),
+	}).Extract()
+	return err
 }
 
 func (c *adminClient) getPublicObjectStoreEndpointURL(projectID string) (string, error) {

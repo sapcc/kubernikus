@@ -118,6 +118,10 @@ spec:
       - name: proxy
         image: "{{ .Values.images.kubeProxy.repository }}:{{ .Values.images.kubeProxy.tag }}"
         imagePullPolicy: IfNotPresent
+        resources:
+          requests:
+            cpu: 25m
+            memory: 256Mi
         lifecycle:
           postStart:
             exec:

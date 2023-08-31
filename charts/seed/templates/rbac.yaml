@@ -94,7 +94,35 @@ roleRef:
   kind: ClusterRole
   name: system:kubelet-api-admin
   apiGroup: rbac.authorization.k8s.io
-{{- if semverCompare ">= 1.25-0" .Capabilities.KubeVersion.Version }}
+{{- if .Values.dex.enabled }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: kubernikus:openstack-kubernetes-admin
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-admin
+subjects:
+- kind: Group
+  name: openstack_role:kubernetes_admin
+- kind: User
+  name: CiQwMDAwMDAwMC0wMDAwLTAwMDAtMDAwMC0wMDAwMDAwMDAwMDESBWxvY2Fs
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: kubernikus:openstack-kubernetes-member
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: view
+subjects:
+- kind: Group
+  name: openstack_role:kubernetes_member
+{{ end }}
+{{- if semverCompare ">= 1.25" .Capabilities.KubeVersion.Version }}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
@@ -241,30 +269,4 @@ subjects:
 - kind: ServiceAccount
   name: cloud-node-controller
   namespace: kube-system
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
-metadata:
-  name: kubernikus:openstack-kubernetes-admin
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: cluster-admin
-subjects:
-- kind: Group
-  name: openstack_role:kubernetes_admin
-- kind: User
-  name: CiQwMDAwMDAwMC0wMDAwLTAwMDAtMDAwMC0wMDAwMDAwMDAwMDESBWxvY2Fs
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
-metadata:
-  name: kubernikus:openstack-kubernetes-member
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: view
-subjects:
-- kind: Group
-  name: openstack_role:kubernetes_member
 {{- end -}}

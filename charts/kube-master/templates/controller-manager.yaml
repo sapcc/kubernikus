@@ -137,8 +137,7 @@ spec:
 {{- if and (semverCompare ">= 1.14-0" .Values.version.kubernetes) (semverCompare "< 1.17" .Values.version.kubernetes) }}
             - --feature-gates=NodeLease=false
 {{- end }}
-{{- if and (.Values.openstack) (semverCompare ">= 1.20-0" .Values.version.kubernetes) }}
-            {{- if semverCompare "< 1.27.0-0" .Values.version.kubernetes }}
+{{- if and (.Values.openstack) (semverCompare ">= 1.20" .Values.version.kubernetes) (semverCompare "< 1.26" .Values.version.kubernetes)}}
             - --feature-gates=CSIMigration=true,CSIMigrationOpenStack=true,ExpandCSIVolumes=true
             {{- end }}
 {{- end }}

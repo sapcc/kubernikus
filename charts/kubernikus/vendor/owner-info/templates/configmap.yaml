@@ -1,0 +1,52 @@
+{{- if (index .Values "helm-chart-url" | regexMatch "^https?://" | not) -}}
+  {{- fail ".Values.owner-info.helm-chart-url is missing or not a HTTP(S) URL" -}}
+{{- end -}}
+{{- if (index .Values "support-group" | regexMatch "^[a-z0-9-]+$" | not) -}}
+  {{- fail ".Values.owner-info.support-group is missing or contains invalid characters" -}}
+{{- end -}}
+{{- if (.Values.service | regexMatch "^[a-z0-9-]*$" | not) -}}
+  {{- fail ".Values.owner-info.service contains invalid characters" -}}
+{{- end -}}
+
+kind: ConfigMap
+apiVersion: v1
+
+metadata:
+  name: owner-of-{{ .Release.Name }}
+  labels:
+    # This can be used to validate via policy that everyone uses a reasonably up-to-date version of this chart.
+    owner-info-version: {{ quote .Chart.Version }}
+
+data:
+  helm-chart-url: {{ index .Values "helm-chart-url" | quote }}
+  {{- if not (eq 0 (len .Values.maintainers)) }}
+  maintainers: {{ join ", " .Values.maintainers | title | quote }}
+  {{- end }}
+
+  support-group: {{ index .Values "support-group" | quote }}
+  {{- if .Values.service }}
+  service: {{ .Values.service | quote }}
+  {{- end }}
+
+---
+
+kind: ConfigMap
+apiVersion: v1
+
+metadata:
+  # We need this configmap to be present early because it is used by a mutating webhook when the
+  # other objects in this Helm release are written into the Kubernetes DB.
+  name: early-owner-of-{{ .Release.Name }}
+  labels:
+    # This can be used to validate via policy that everyone uses a reasonably up-to-date version of this chart.
+    owner-info-version: {{ quote .Chart.Version }}
+  annotations:
+    "helm.sh/hook": pre-install,pre-upgrade
+    "helm.sh/hook-weight": "-100"
+    "helm.sh/hook-delete-policy": before-hook-creation
+
+data:
+  support-group: {{ index .Values "support-group" | quote }}
+  {{- if .Values.service }}
+  service: {{ .Values.service | quote }}
+  {{- end }}

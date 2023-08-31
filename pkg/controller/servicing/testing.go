@@ -58,7 +58,8 @@ func NewFakeKluster(opts *FakeKlusterOptions, afterFlatCarRktRemoval bool) (*v1.
 			Namespace: "servicing",
 			Name:      "test",
 			Annotations: map[string]string{
-				AnnotationServicingSafeguard: "true",
+				AnnotationServicingSafeguard:        "true",
+				AnnotationServicingIgnoreTimeWindow: "true",
 			},
 		},
 		Spec: models.KlusterSpec{

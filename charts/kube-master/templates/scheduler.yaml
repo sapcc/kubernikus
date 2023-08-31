@@ -10,6 +10,7 @@ metadata:
   labels:
     chart: "{{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}"
     kluster: {{ .Release.Name }}
+    release: {{ .Release.Name }}
 
 spec:
   revisionHistoryLimit: {{ .Values.revisionHistoryLimit }}

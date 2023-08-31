@@ -2,9 +2,9 @@
 require 'yaml'
 
 VERSIONS = [
-  '1.25.6',
-  '1.24.9',
-  '1.23.15'
+  '1.26.5',
+  '1.25.10',
+  '1.24.14'
 ]
 
 REGIONS = {
@@ -220,8 +220,8 @@ resource_types:
     type: registry-image
     check_every: 24h
     source:
-      repository: keppel.eu-de-2.cloud.sap/ccloud-dockerhub-mirror/sapcc/concourse-git-resource-proxy
-      tag: 0.5.0
+      repository: keppel.eu-de-2.cloud.sap/ccloud/concourse-git-resource-proxy
+      tag: latest
 
   - name: release
     type: docker-image
@@ -281,8 +281,8 @@ jobs:
         image_resource:
           type: docker-image
           source:
-            repository: keppel.eu-de-1.cloud.sap/ccloud-dockerhub-mirror/sapcc/unified-kubernetes-toolbox
-            tag: "20220714153155"
+            repository: keppel.eu-de-1.cloud.sap/ccloud/unified-kubernetes-toolbox
+            tag: latest
         inputs:
         - name: kubernikus.git
         run:

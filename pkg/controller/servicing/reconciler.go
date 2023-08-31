@@ -21,11 +21,14 @@ const (
 
 	// AnnotationUpdateTImestamp shows when a node update was started
 	AnnotationUpdateTimestamp = "kubernikus.cloud.sap/updateTimestamp"
+
+	// AnnotationServicingIgnoreTimeWindow ignores servicing time window and do it anyway
+	AnnotationServicingIgnoreTimeWindow = "kubernikus.cloud.sap/ignoreServicingTime"
 )
 
 var (
 	// ServiceInterval defines how often a kluster is serviced
-	ServiceInterval = 1 * time.Hour
+	ServiceInterval = 20 * time.Minute
 	UpdateTimeout   = 3*time.Hour + 15*time.Minute
 )
 
@@ -197,6 +200,11 @@ func (r *KlusterReconciler) Do() error {
 		}
 	}
 
+	if !isServicingTimeWindow() && !util.EnabledValue(r.Kluster.ObjectMeta.Annotations[AnnotationServicingIgnoreTimeWindow]) {
+		r.Logger.Log("msg", "skipping servicing, outside time window.", "v", 5)
+		return nil
+	}
+
 	if len(replace) > 0 {
 		if err := r.LifeCycler.Drain(replace[0]); err != nil {
 			return errors.Wrap(err, "Failed to drain node that is about to be replaced")
@@ -263,4 +271,22 @@ func (r *KlusterReconciler) getLastServicingTime(annotations map[string]string) 
 func (r *KlusterReconciler) isServiceIntervalElapsed() bool {
 	nextServiceTime := r.getLastServicingTime(r.Kluster.ObjectMeta.GetAnnotations()).Add(ServiceInterval)
 	return Now().After(nextServiceTime)
+}
+
+func isServicingTimeWindow() bool {
+	hour := time.Now().UTC().Hour() + 1
+	location, err := time.LoadLocation("Europe/Berlin")
+	if err == nil && time.Now().In(location).IsDST() {
+		hour = hour + 1
+	}
+
+	servicingDays := []string{"Monday", "Tuesday", "Wednesday", "Thursday", "Friday"}
+	day := time.Now().UTC().Weekday().String()
+	for _, d := range servicingDays {
+		if day == d && hour >= 9 && hour <= 14 {
+			return true
+		}
+	}
+
+	return false
 }
