@@ -72,7 +72,7 @@ func (i *ignition) getIgnitionTemplate(kluster *kubernikusv1.Kluster) (string, e
 	}
 }
 
-func (i *ignition) GenerateNode(kluster *kubernikusv1.Kluster, pool *models.NodePool, nodeName string, secret *kubernikusv1.Secret, calicoNetworking bool, imageRegistry version.ImageRegistry, logger log.Logger) ([]byte, error) {
+func (i *ignition) GenerateNode(kluster *kubernikusv1.Kluster, pool *models.NodePool, nodeName, token string, secret *kubernikusv1.Secret, calicoNetworking bool, imageRegistry version.ImageRegistry, logger log.Logger) ([]byte, error) {
 
 	ignition, err := i.getIgnitionTemplate(kluster)
 	if err != nil {
@@ -175,7 +175,7 @@ func (i *ignition) GenerateNode(kluster *kubernikusv1.Kluster, pool *models.Node
 		KubeletClientsCA:                   secret.KubeletClientsCACertificate,
 		ApiserverClientsSystemKubeProxy:    secret.ApiserverClientsKubeProxyCertificate,
 		ApiserverClientsSystemKubeProxyKey: secret.ApiserverClientsKubeProxyPrivateKey,
-		BootstrapToken:                     secret.BootstrapToken,
+		BootstrapToken:                     token,
 		ClusterCIDR:                        kluster.ClusterCIDR(),
 		ClusterDNSAddress:                  kluster.Spec.DNSAddress,
 		ClusterDomain:                      kluster.Spec.DNSDomain,

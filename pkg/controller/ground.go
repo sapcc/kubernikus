@@ -631,7 +631,6 @@ func (op *GroundControl) createKluster(kluster *v1.Kluster) error {
 	if _, err := certFactory.Ensure(); err != nil {
 		return fmt.Errorf("Failed to generate certificates: %s", err)
 	}
-	klusterSecret.BootstrapToken = util.GenerateBootstrapToken()
 
 	if !kluster.Spec.NoCloud {
 		adminClient, err := op.Factories.Openstack.AdminClient()

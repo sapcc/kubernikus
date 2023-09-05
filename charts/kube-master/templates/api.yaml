@@ -97,12 +97,6 @@ spec:
               - key: openstack.config
                 path: openstack.config
         {{- end }}
-        - name: bootstrap
-          secret:
-            secretName: {{ include "master.fullname" . }}-generated
-            items:
-              - key: token.csv
-                path: token.csv
         - name: config
           configMap:
             name: {{ include "master.fullname" . }}
@@ -206,7 +200,6 @@ spec:
             - --experimental-bootstrap-token-auth=true
             - --runtime-config=rbac.authorization.k8s.io/v1alpha1,extensions/v1beta1=true,extensions/v1beta1/thirdpartyresources=true
 {{- end }}
-            - --token-auth-file=/etc/kubernetes/bootstrap/token.csv
             - --service-cluster-ip-range={{ .Values.serviceCIDR }}
             - --kubelet-preferred-address-types=InternalIP
 {{- if (semverCompare ">= 1.10-0" .Values.version.kubernetes) }}
@@ -291,9 +284,6 @@ spec:
               name: cloudprovider
               readOnly: true
             {{- end }}
-            - mountPath: /etc/kubernetes/bootstrap
-              name: bootstrap
-              readOnly: true
 {{- if and (.Values.etcd.backup.enabled) (semverCompare "< 1.19" .Values.version.kubernetes) }}
             - mountPath: /liveness-probe
               name: liveness-probe
