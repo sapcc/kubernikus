@@ -56,6 +56,11 @@ data:
       --listen-client-urls=http://0.0.0.0:2379 \
       --listen-metrics-urls=http://0.0.0.0:8081
 {{- end }}
+{{- if (semverCompare ">= 1.27-0" .Values.version.kubernetes) }}
+  etcd.conf.yaml: |-
+    name: kubernikus
+    initial-cluster: default=http://127.0.0.1:2380
+{{- end }}
 ---
 {{- if .Capabilities.APIVersions.Has "apps/v1" }}
 apiVersion: "apps/v1"
@@ -101,6 +106,27 @@ spec:
           configMap:
             name: {{ include "fullname" . }}
             defaultMode: 0700
+{{- if (semverCompare ">= 1.27-0" .Values.version.kubernetes) }}
+        - name: etcd-config-file
+          configMap:
+            name: {{ include "fullname" . }}
+            defaultMode: 0644
+            items:
+            - key: etcd.conf.yaml
+              path: etcd.conf.yaml
+{{- if eq .Values.backup.storageProvider "S3" }}
+        - name: credentials-aws
+          secret:
+            secretName: {{ include "fullname" . }}-aws
+            items:
+            - key: access-key-id
+              path: accessKeyID
+            - key: region
+              path: region
+            - key: secret-access-key
+              path: secretAccessKey
+{{- end }}
+{{- end }}
 {{- if .Values.secure.enabled }}
         - name: certs-etcd
           secret:
@@ -186,7 +212,7 @@ spec:
 {{- if .Values.backup.enabled }}
         - name: backup
           command:
-            - etcdbrctl
+            - {{ if (semverCompare ">= 1.27-0" .Values.version.kubernetes) }}/{{ end }}etcdbrctl
             - server
             - --schedule={{ .Values.backup.schedule }}
             {{- if .Values.backup.maxBackups }}
@@ -211,6 +237,10 @@ spec:
             - --insecure-transport=true
             {{- end }}
           image: "{{ include "etcdBackup.image" . }}"
+{{- if (semverCompare ">= 1.27-0" .Values.version.kubernetes) }}
+          securityContext:
+            runAsUser: 0
+{{- end }}
           ports:
             - containerPort: 8080
               # the name is important here, so that we get metrics
@@ -223,6 +253,10 @@ spec:
                 secretKeyRef:
                   name: {{ include "fullname" . }}-aws
                   key: bucket-name
+{{- if (semverCompare ">= 1.27-0" .Values.version.kubernetes) }}
+            - name: AWS_APPLICATION_CREDENTIALS
+              value: /etc/aws/credentials
+{{- else }}
             - name: AWS_REGION
               valueFrom:
                 secretKeyRef:
@@ -238,6 +272,7 @@ spec:
                 secretKeyRef:
                   name: {{ include "fullname" . }}-aws
                   key: access-key-id
+{{- end }}
 {{- else if eq .Values.backup.storageProvider "Swift" }}
             - name: STORAGE_CONTAINER
               value: {{ .Values.storageContainer }}
@@ -264,6 +299,14 @@ spec:
                   name: {{ include "fullname" . }}
                   key: openstack-project-id
 {{- end }}
+{{- if (semverCompare ">= 1.27-0" .Values.version.kubernetes) }}
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_NAMESPACE
+              value: {{ include "fullname" . }}
+{{- end }}
           volumeMounts:
             - mountPath: /var/lib/etcd
               name: data
@@ -271,6 +314,15 @@ spec:
             - mountPath: /etc/kubernetes/certs
               name: certs-backup
               readOnly: true
+{{- end }}
+{{- if (semverCompare ">= 1.27-0" .Values.version.kubernetes) }}
+            - name: etcd-config-file
+              mountPath: /var/etcd/config
+{{- if eq .Values.backup.storageProvider "S3" }}
+            - name: credentials-aws
+              mountPath: "/etc/aws/credentials"
+              readOnly: true
+{{- end }}
 {{- end }}
           resources:
 {{ toYaml .Values.backup.resources | indent 12 }}
