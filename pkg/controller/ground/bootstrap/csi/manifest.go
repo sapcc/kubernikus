@@ -358,6 +358,7 @@ spec:
         - operator: Exists
       serviceAccount: csi-cinder-node-sa
       hostNetwork: true
+      priorityClassName: system-node-critical
       containers:
         - name: node-driver-registrar
           image: "{{ .ImageNodeDriver }}"
