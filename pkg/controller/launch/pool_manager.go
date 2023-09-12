@@ -3,8 +3,12 @@ package launch
 import (
 	"context"
 	"fmt"
+	"sort"
+	"strings"
+	"time"
 
-	"github.com/go-kit/kit/log"
+	"github.com/go-kit/log"
+	core_v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 
@@ -17,6 +21,7 @@ import (
 	kubernikus_listers "github.com/sapcc/kubernikus/pkg/generated/listers/kubernikus/v1"
 	"github.com/sapcc/kubernikus/pkg/templates"
 	"github.com/sapcc/kubernikus/pkg/util"
+	"github.com/sapcc/kubernikus/pkg/util/bootstraptoken"
 	"github.com/sapcc/kubernikus/pkg/util/generator"
 	"github.com/sapcc/kubernikus/pkg/version"
 )
@@ -87,8 +92,10 @@ func (cpm *ConcretePoolManager) GetStatus() (status *PoolStatus, err error) {
 	}
 	healthy, schedulable := cpm.healthyAndSchedulable()
 
+	nodesIDs := cpm.sortByUnschedulableNodes(cpm.nodeIDs(nodes))
+
 	return &PoolStatus{
-		Nodes:       cpm.nodeIDs(nodes),
+		Nodes:       nodesIDs,
 		Running:     cpm.running(nodes),
 		Starting:    cpm.starting(nodes),
 		Stopping:    cpm.stopping(nodes),
@@ -195,14 +202,26 @@ func (cpm *ConcretePoolManager) CreateNode() (id string, err error) {
 
 	nodeName := generator.SimpleNameGenerator.GenerateName(fmt.Sprintf(util.NODE_NAMING_PATTERN_PREFIX, cpm.Kluster.Spec.Name, cpm.Pool.Name))
 
-	calicoNetworking := false
-	if client, err := cpm.Clients.Satellites.ClientFor(cpm.Kluster); err == nil {
-		if _, err := client.AppsV1().DaemonSets("kube-system").Get(context.TODO(), "calico-node", metav1.GetOptions{}); err == nil {
-			calicoNetworking = true
-		}
+	client, err := cpm.Clients.Satellites.ClientFor(cpm.Kluster)
+	if err != nil {
+		return "", fmt.Errorf("Couldn't get client for kluster: %s", err)
 	}
 
-	userdata, err := templates.Ignition.GenerateNode(cpm.Kluster, cpm.Pool, nodeName, secret, calicoNetworking, cpm.imageRegistry, cpm.Logger)
+	calicoNetworking := false
+	if _, err := client.AppsV1().DaemonSets("kube-system").Get(context.TODO(), "calico-node", metav1.GetOptions{}); err == nil {
+		calicoNetworking = true
+	}
+
+	token, tokenSecret, err := bootstraptoken.GenerateBootstrapToken(30 * time.Minute)
+	if err != nil {
+		return "", fmt.Errorf("Node bootstrap token generation failed: %s", err)
+	}
+
+	if _, err := client.CoreV1().Secrets(tokenSecret.Namespace).Create(context.TODO(), tokenSecret, metav1.CreateOptions{}); err != nil {
+		return "", fmt.Errorf("Node bootstrap token secret creation failed: %s", err)
+	}
+
+	userdata, err := templates.Ignition.GenerateNode(cpm.Kluster, cpm.Pool, nodeName, token, secret, calicoNetworking, cpm.imageRegistry, cpm.Logger)
 	if err != nil {
 		return "", err
 	}
@@ -302,4 +321,42 @@ func (cpm *ConcretePoolManager) healthyAndSchedulable() (healthy int, schedulabl
 		}
 	}
 	return
+}
+
+func (cpm *ConcretePoolManager) sortByUnschedulableNodes(nodeIDs []string) []string {
+	nodeLister, err := cpm.nodeObservatory.GetListerForKluster(cpm.Kluster)
+	if err != nil {
+		return nil
+	}
+
+	nodes, err := nodeLister.List(labels.Everything())
+	if err != nil {
+		return nil
+	}
+
+	kubernetesIDs := make(map[string]*core_v1.Node)
+	for i := range nodes {
+		id := strings.Replace(nodes[i].Spec.ProviderID, "openstack:///", "", 1)
+		kubernetesIDs[id] = nodes[i]
+	}
+
+	sort.SliceStable(nodeIDs, func(i, j int) bool {
+		//func has to return true only if i is actually higher priority
+
+		iNode := kubernetesIDs[nodeIDs[i]]
+		jNode := kubernetesIDs[nodeIDs[j]]
+
+		//if i is not in K8S and j is --> i goes in front
+		if iNode == nil && jNode != nil {
+			return true
+		}
+		// if i is unschedulable and j is --> i goes in front
+		if iNode != nil && iNode.Spec.Unschedulable && jNode != nil && !jNode.Spec.Unschedulable {
+			return true
+		}
+		// in all other cases i does not have higher ranking
+		return false
+	})
+
+	return nodeIDs
 }

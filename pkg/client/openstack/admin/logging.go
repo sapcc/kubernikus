@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/go-kit/kit/log"
+	"github.com/go-kit/log"
 )
 
 type LoggingClient struct {
@@ -83,19 +83,38 @@ func (c LoggingClient) CreateStorageContainer(projectID, containerName, serviceU
 	return c.Client.CreateStorageContainer(projectID, containerName, serviceUserName, serviceUserDomainName)
 }
 
-func (c LoggingClient) StorageContainerExists(projectID, containerName string) (result bool, err error) {
+func (c LoggingClient) GetStorageContainerMeta(projectID, containerName string) (result *ContainerMeta, err error) {
 	defer func(begin time.Time) {
 		c.Logger.Log(
 			"msg", "checking if storage container exists",
 			"project_id", projectID,
 			"container_name", containerName,
 			"took", time.Since(begin),
-			"exists", result,
+			"meta", result,
 			"v", 2,
 			"err", err,
 		)
 	}(time.Now())
-	return c.Client.StorageContainerExists(projectID, containerName)
+	return c.Client.GetStorageContainerMeta(projectID, containerName)
+}
+
+func (c LoggingClient) GetContainerACLEntry(projectID, serviceUserName, serviceUserDomainName string) (result string, err error) {
+	return c.Client.GetContainerACLEntry(projectID, serviceUserName, serviceUserDomainName)
+}
+
+func (c LoggingClient) UpdateStorageContainerMeta(projectID, container string, meta ContainerMeta) (err error) {
+	defer func(begin time.Time) {
+		c.Logger.Log(
+			"msg", "updating storage container",
+			"project_id", projectID,
+			"container_name", container,
+			"took", time.Since(begin),
+			"meta", meta,
+			"v", 2,
+			"err", err,
+		)
+	}(time.Now())
+	return c.Client.UpdateStorageContainerMeta(projectID, container, meta)
 }
 
 func (c LoggingClient) AssignUserRoles(projectID, userName, domainName string, userRoles []string) (err error) {

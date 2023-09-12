@@ -12,7 +12,7 @@ import (
 	"github.com/coreos/container-linux-config-transpiler/config"
 	"github.com/coreos/container-linux-config-transpiler/config/platform"
 	"github.com/coreos/ignition/config/validate/report"
-	"github.com/go-kit/kit/log"
+	"github.com/go-kit/log"
 	"github.com/tredoe/osutil/user/crypt/sha512_crypt"
 
 	"github.com/sapcc/kubernikus/pkg/api/models"
@@ -31,6 +31,8 @@ const TEMPLATE_VERSION = "6"
 
 func (i *ignition) getIgnitionTemplate(kluster *kubernikusv1.Kluster) (string, error) {
 	switch {
+	case strings.HasPrefix(kluster.Spec.Version, "1.27"):
+		return Node_1_27, nil
 	case strings.HasPrefix(kluster.Spec.Version, "1.26"):
 		return Node_1_26, nil
 	case strings.HasPrefix(kluster.Spec.Version, "1.25"):
@@ -70,7 +72,7 @@ func (i *ignition) getIgnitionTemplate(kluster *kubernikusv1.Kluster) (string, e
 	}
 }
 
-func (i *ignition) GenerateNode(kluster *kubernikusv1.Kluster, pool *models.NodePool, nodeName string, secret *kubernikusv1.Secret, calicoNetworking bool, imageRegistry version.ImageRegistry, logger log.Logger) ([]byte, error) {
+func (i *ignition) GenerateNode(kluster *kubernikusv1.Kluster, pool *models.NodePool, nodeName, token string, secret *kubernikusv1.Secret, calicoNetworking bool, imageRegistry version.ImageRegistry, logger log.Logger) ([]byte, error) {
 
 	ignition, err := i.getIgnitionTemplate(kluster)
 	if err != nil {
@@ -106,12 +108,6 @@ func (i *ignition) GenerateNode(kluster *kubernikusv1.Kluster, pool *models.Node
 	isFlatcar := true
 	if pool != nil {
 		nodeLabels = append(nodeLabels, "ccloud.sap.com/nodepool="+pool.Name)
-		if strings.HasPrefix(pool.Flavor, "zg") {
-			nodeLabels = append(nodeLabels, "gpu=nvidia-tesla-v100")
-		}
-		if strings.HasPrefix(pool.Flavor, "zg") {
-			nodeTaints = append(nodeTaints, "nvidia.com/gpu=present:NoSchedule")
-		}
 		for _, userTaint := range pool.Taints {
 			nodeTaints = append(nodeTaints, userTaint)
 		}
@@ -173,7 +169,7 @@ func (i *ignition) GenerateNode(kluster *kubernikusv1.Kluster, pool *models.Node
 		KubeletClientsCA:                   secret.KubeletClientsCACertificate,
 		ApiserverClientsSystemKubeProxy:    secret.ApiserverClientsKubeProxyCertificate,
 		ApiserverClientsSystemKubeProxyKey: secret.ApiserverClientsKubeProxyPrivateKey,
-		BootstrapToken:                     secret.BootstrapToken,
+		BootstrapToken:                     token,
 		ClusterCIDR:                        kluster.ClusterCIDR(),
 		ClusterDNSAddress:                  kluster.Spec.DNSAddress,
 		ClusterDomain:                      kluster.Spec.DNSDomain,
@@ -238,14 +234,14 @@ func (i *ignition) GenerateNode(kluster *kubernikusv1.Kluster, pool *models.Node
 		}
 	}
 
-	ignitionConfig2_0, report := config.ConvertAs2_0(ignitionConfig, platform.OpenStackMetadata, ast)
+	ignitionConfig3, report := config.Convert(ignitionConfig, platform.OpenStackMetadata, ast)
 	if len(report.Entries) > 0 {
 		if report.IsFatal() {
 			return nil, fmt.Errorf("Couldn't convert ignition config: %v", report.String())
 		}
 	}
 
-	dataOut, err = json.Marshal(&ignitionConfig2_0)
+	dataOut, err = json.Marshal(&ignitionConfig3)
 
 	if err != nil {
 		return nil, err

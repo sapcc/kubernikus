@@ -3,7 +3,7 @@ package common
 import (
 	"os"
 
-	kitLog "github.com/go-kit/kit/log"
+	kitLog "github.com/go-kit/log"
 	"github.com/spf13/pflag"
 	"k8s.io/klog"
 

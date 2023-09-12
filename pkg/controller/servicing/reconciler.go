@@ -3,7 +3,7 @@ package servicing
 import (
 	"time"
 
-	"github.com/go-kit/kit/log"
+	"github.com/go-kit/log"
 	"github.com/pkg/errors"
 	"k8s.io/client-go/tools/record"
 
@@ -115,11 +115,6 @@ func (f *KlusterReconcilerFactory) Make(k *v1.Kluster) (Reconciler, error) {
 func (r *KlusterReconciler) Do() error {
 	r.Logger.Log("msg", "reconciling", "v", 2)
 
-	if !isServicingTimeWindow() && !util.EnabledValue(r.Kluster.ObjectMeta.Annotations[AnnotationServicingIgnoreTimeWindow]) {
-		r.Logger.Log("msg", "skipping servicing, outside time window.", "v", 5)
-		return nil
-	}
-
 	if r.Kluster.Status.Phase != models.KlusterPhaseRunning {
 		r.Logger.Log("msg", "skipped upgrades because kluster is not running", "v", 2)
 		return nil
@@ -203,6 +198,11 @@ func (r *KlusterReconciler) Do() error {
 				return nil
 			}
 		}
+	}
+
+	if !isServicingTimeWindow() && !util.EnabledValue(r.Kluster.ObjectMeta.Annotations[AnnotationServicingIgnoreTimeWindow]) {
+		r.Logger.Log("msg", "skipping servicing, outside time window.", "v", 5)
+		return nil
 	}
 
 	if len(replace) > 0 {

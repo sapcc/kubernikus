@@ -76,7 +76,7 @@ type KlusterSpec struct {
 	SSHPublicKey string `json:"sshPublicKey,omitempty"`
 
 	// Kubernetes version
-	// Pattern: ^[0-9]+\.[0-9]+\.[0-9]+$
+	// Pattern: ^(?P<major>0|[1-9]\d*)\.(?P<minor>0|[1-9]\d*)\.(?P<patch>0|[1-9]\d*)(?:-(?P<prerelease>(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+(?P<buildmetadata>[0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$
 	Version string `json:"version,omitempty"`
 }
 
@@ -310,7 +310,7 @@ func (m *KlusterSpec) validateVersion(formats strfmt.Registry) error {
 		return nil
 	}
 
-	if err := validate.Pattern("version", "body", m.Version, `^[0-9]+\.[0-9]+\.[0-9]+$`); err != nil {
+	if err := validate.Pattern("version", "body", m.Version, `^(?P<major>0|[1-9]\d*)\.(?P<minor>0|[1-9]\d*)\.(?P<patch>0|[1-9]\d*)(?:-(?P<prerelease>(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+(?P<buildmetadata>[0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$`); err != nil {
 		return err
 	}
 

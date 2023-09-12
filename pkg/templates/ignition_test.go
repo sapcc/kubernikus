@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/go-kit/kit/log"
+	"github.com/go-kit/log"
 	"github.com/go-openapi/swag"
 	"github.com/stretchr/testify/assert"
 	"github.com/tredoe/osutil/user/crypt/sha512_crypt"
@@ -96,7 +96,7 @@ func TestGenerateNode(t *testing.T) {
 
 	for version := range imageRegistry.Versions {
 		kluster.Spec.Version = version
-		data, err := Ignition.GenerateNode(kluster, nil, "test", &testKlusterSecret, false, imageRegistry, log.NewNopLogger())
+		data, err := Ignition.GenerateNode(kluster, nil, "test", "abc123", &testKlusterSecret, false, imageRegistry, log.NewNopLogger())
 
 		if assert.NoError(t, err, "Failed to generate node for version %s", version) {
 			//Ensure we rendered the expected template
@@ -116,17 +116,9 @@ func TestNodeLabels(t *testing.T) {
 
 	pool := &models.NodePool{Name: "some-name"}
 
-	data, err := Ignition.GenerateNode(kluster, pool, "test", &testKlusterSecret, false, imageRegistry, log.NewNopLogger())
+	data, err := Ignition.GenerateNode(kluster, pool, "test", "abc123", &testKlusterSecret, false, imageRegistry, log.NewNopLogger())
 	if assert.NoError(t, err, "Failed to generate node") {
 		//Ensure we rendered the expected template
 		assert.Contains(t, string(data), fmt.Sprintf("--node-labels=ccloud.sap.com/nodepool=%s", pool.Name))
-	}
-
-	gpuPool := &models.NodePool{Name: "some-name", Flavor: "zghuh"}
-	data, err = Ignition.GenerateNode(kluster, gpuPool, "test", &testKlusterSecret, false, imageRegistry, log.NewNopLogger())
-	if assert.NoError(t, err, "Failed to generate node") {
-		//Ensure we rendered the expected template
-		assert.Contains(t, string(data), fmt.Sprintf("--node-labels=ccloud.sap.com/nodepool=%s,gpu=nvidia-tesla-v100", pool.Name))
-		assert.Contains(t, string(data), fmt.Sprintf("--register-with-taints=nvidia.com/gpu=present:NoSchedule"))
 	}
 }

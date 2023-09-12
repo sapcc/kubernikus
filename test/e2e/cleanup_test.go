@@ -76,7 +76,7 @@ func (s *CleanupTests) QuotaPostFlightCheck(t *testing.T) {
 
 	var computeQ compute_quota.QuotaDetailSet
 	var storageQ blockstorage_quota.QuotaUsageSet
-	err = wait.PollImmediate(5*time.Second, 1*time.Minute, func() (bool, error) {
+	err = wait.PollImmediate(5*time.Second, 1*time.Minute, func() (bool, error) { //nolint:staticcheck
 		var err error
 		if computeQ, err = compute_quota.GetDetail(s.OpenStack.Compute, project.ID).Extract(); err != nil {
 			return false, fmt.Errorf("Failed to fetch compute usage: %w", err)

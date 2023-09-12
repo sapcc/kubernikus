@@ -7,7 +7,7 @@ import (
 	"reflect"
 	"time"
 
-	kitlog "github.com/go-kit/kit/log"
+	kitlog "github.com/go-kit/log"
 	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	apiextensionsv1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	apiextensionsclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
@@ -192,7 +192,7 @@ func EnsureCRD(clientset apiextensionsclient.Interface, logger kitlog.Logger) er
 			return err
 		}
 		// wait for CRD being established
-		err = wait.Poll(500*time.Millisecond, 60*time.Second, func() (bool, error) {
+		err = wait.Poll(500*time.Millisecond, 60*time.Second, func() (bool, error) { //nolint:staticcheck
 			crd, err = clientset.ApiextensionsV1().CustomResourceDefinitions().Get(context.TODO(), klusterCRDName, metav1.GetOptions{})
 			if err != nil {
 				return false, err
@@ -240,7 +240,7 @@ func EnsureCRD(clientset apiextensionsclient.Interface, logger kitlog.Logger) er
 			return err
 		}
 		// wait for CRD being established
-		err = wait.Poll(500*time.Millisecond, 60*time.Second, func() (bool, error) {
+		err = wait.Poll(500*time.Millisecond, 60*time.Second, func() (bool, error) { //nolint:staticcheck
 			crd, err = clientset.ApiextensionsV1beta1().CustomResourceDefinitions().Get(context.TODO(), klusterCRDName, metav1.GetOptions{})
 			if err != nil {
 				return false, err
@@ -273,7 +273,7 @@ func EnsureCRD(clientset apiextensionsclient.Interface, logger kitlog.Logger) er
 func WaitForServer(client kubernetes.Interface, stopCh <-chan struct{}, logger kitlog.Logger) error {
 	var healthzContent string
 
-	err := wait.PollUntil(time.Second, func() (bool, error) {
+	err := wait.PollUntil(time.Second, func() (bool, error) { //nolint:staticcheck
 		healthStatus := 0
 		resp := client.Discovery().RESTClient().Get().AbsPath("/healthz").Do(context.TODO()).StatusCode(&healthStatus)
 		if healthStatus != http.StatusOK {

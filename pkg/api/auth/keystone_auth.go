@@ -7,7 +7,7 @@ import (
 
 	"github.com/databus23/keystone"
 	"github.com/databus23/keystone/cache/memory"
-	"github.com/go-kit/kit/log"
+	"github.com/go-kit/log"
 	errors "github.com/go-openapi/errors"
 	flag "github.com/spf13/pflag"
 

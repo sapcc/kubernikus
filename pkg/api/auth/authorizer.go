@@ -9,7 +9,7 @@ import (
 	"regexp"
 
 	policy "github.com/databus23/goslo.policy"
-	"github.com/go-kit/kit/log"
+	"github.com/go-kit/log"
 	"github.com/go-openapi/loads"
 	runtime "github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware/denco"

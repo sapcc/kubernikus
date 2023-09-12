@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/go-kit/kit/log"
+	"github.com/go-kit/log"
 	core_v1 "k8s.io/api/core/v1"
 	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -58,7 +58,8 @@ func NewFakeKluster(opts *FakeKlusterOptions, afterFlatCarRktRemoval bool) (*v1.
 			Namespace: "servicing",
 			Name:      "test",
 			Annotations: map[string]string{
-				AnnotationServicingSafeguard: "true",
+				AnnotationServicingSafeguard:        "true",
+				AnnotationServicingIgnoreTimeWindow: "true",
 			},
 		},
 		Spec: models.KlusterSpec{

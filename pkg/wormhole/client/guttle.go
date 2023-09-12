@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/databus23/guttle"
-	"github.com/go-kit/kit/log"
+	"github.com/go-kit/log"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/tools/clientcmd/api"
 )

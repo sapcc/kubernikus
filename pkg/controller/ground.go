@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"github.com/Masterminds/goutils"
-	"github.com/go-kit/kit/log"
+	"github.com/go-kit/log"
 	"github.com/go-openapi/swag"
 	"github.com/pkg/errors"
 	"github.com/prometheus/client_golang/prometheus"
@@ -301,16 +301,9 @@ func (op *GroundControl) handler(key string) error {
 				if err != nil {
 					return err
 				}
-				// we need to reconcile twice.
-				// on the first run CRD will be added but these are not in the discovery client cache at that point in time, so creating CRD instances will silently fail.
-				// we fail silently so reconciliation continues even when CRD's are not established.
-				// we await CRD creation in the first run.
-				// on the second run a new discovery client is created, so we know about all CRD's and respective instance can be created.
-				for i := 0; i < 2; i++ {
-					err = op.reconcileSeed(kluster, projectClient, helmValues)
-					if err != nil {
-						return err
-					}
+				err = op.reconcileSeed(kluster, projectClient, helmValues)
+				if err != nil {
+					return err
 				}
 				if err := op.updatePhase(kluster, models.KlusterPhaseRunning); err != nil {
 					op.Logger.Log(
@@ -638,7 +631,6 @@ func (op *GroundControl) createKluster(kluster *v1.Kluster) error {
 	if _, err := certFactory.Ensure(); err != nil {
 		return fmt.Errorf("Failed to generate certificates: %s", err)
 	}
-	klusterSecret.BootstrapToken = util.GenerateBootstrapToken()
 
 	if !kluster.Spec.NoCloud {
 		adminClient, err := op.Factories.Openstack.AdminClient()
@@ -1102,11 +1094,11 @@ func (op *GroundControl) ensureStorageContainers(kluster *v1.Kluster, klusterSec
 	}
 
 	ensureContainer := func(name string) error {
-		exists, err := adminClient.StorageContainerExists(klusterSecret.Openstack.ProjectID, name)
+		meta, err := adminClient.GetStorageContainerMeta(klusterSecret.Openstack.ProjectID, name)
 		if err != nil {
 			return err
 		}
-		if !exists {
+		if meta == nil {
 			if err := adminClient.CreateStorageContainer(
 				klusterSecret.Openstack.ProjectID,
 				name,
@@ -1115,6 +1107,23 @@ func (op *GroundControl) ensureStorageContainers(kluster *v1.Kluster, klusterSec
 			); err != nil {
 				return fmt.Errorf("Failed to create container %s. Check if the project has quota for object-store usage: %w", name, err)
 			}
+			return nil
+		}
+		aclStr, err := adminClient.GetContainerACLEntry(klusterSecret.Openstack.ProjectID, klusterSecret.Openstack.Username, klusterSecret.Openstack.DomainName)
+		if err != nil {
+			return fmt.Errorf("Failed to determine swift acl entry for kluster %s: %w", kluster.Name, err)
+		}
+		needsUpdate := false
+		if swag.ContainsStrings(meta.ReadACL, aclStr) == false {
+			meta.ReadACL = append(meta.ReadACL, aclStr)
+			needsUpdate = true
+		}
+		if swag.ContainsStrings(meta.WriteACL, aclStr) == false {
+			meta.WriteACL = append(meta.WriteACL, aclStr)
+			needsUpdate = true
+		}
+		if needsUpdate {
+			adminClient.UpdateStorageContainerMeta(klusterSecret.Openstack.ProjectID, name, *meta)
 		}
 		return nil
 	}

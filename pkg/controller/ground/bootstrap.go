@@ -18,7 +18,6 @@ import (
 	"github.com/sapcc/kubernikus/pkg/controller/ground/bootstrap/ccm"
 	"github.com/sapcc/kubernikus/pkg/controller/ground/bootstrap/csi"
 	"github.com/sapcc/kubernikus/pkg/controller/ground/bootstrap/dns"
-	"github.com/sapcc/kubernikus/pkg/controller/ground/bootstrap/gpu"
 	"github.com/sapcc/kubernikus/pkg/controller/ground/bootstrap/network"
 	"github.com/sapcc/kubernikus/pkg/util"
 	"github.com/sapcc/kubernikus/pkg/version"
@@ -78,12 +77,6 @@ func SeedKluster(clients config.Clients, factories config.Factories, images vers
 	} else {
 		if err := dns.SeedKubeDNS(kubernetes, "", "", kluster.Spec.DNSDomain, kluster.Spec.DNSAddress); err != nil {
 			return errors.Wrap(err, "seed kubedns")
-		}
-	}
-
-	if ok, _ := util.KlusterVersionConstraint(kluster, ">= 1.10"); ok {
-		if err := gpu.SeedGPUSupport(kubernetes); err != nil {
-			return errors.Wrap(err, "seed GPU support")
 		}
 	}
 

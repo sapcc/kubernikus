@@ -1,7 +1,7 @@
 package wormhole
 
 import (
-	"github.com/go-kit/kit/log"
+	"github.com/go-kit/log"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 
