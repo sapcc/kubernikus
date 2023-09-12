@@ -3,6 +3,8 @@
 package templates
 
 var Node_1_20 = `
+variant: flatcar
+version: 1.0.0
 passwd:
   users:
     - name:          core
@@ -19,9 +21,9 @@ passwd:
 systemd:
   units:
     - name: iptables-restore.service
-      enable: true
+      enabled: true
     - name: ccloud-metadata-hostname.service
-      enable: true
+      enabled: true
       contents: |
         [Unit]
         Description=Workaround for coreos-metadata hostname bug
@@ -37,14 +39,14 @@ systemd:
         [Install]
         WantedBy=multi-user.target
     - name: docker.service
-      enable: true
+      enabled: true
       dropins:
         - name: 20-docker-opts.conf
           contents: |
             [Service]
             Environment="DOCKER_OPTS=--log-opt max-size=5m --log-opt max-file=5 --ip-masq=false --iptables=false --bridge=none"
     - name: flanneld.service
-      enable: true
+      enabled: true
       contents: |
         [Unit]
         Description=flannel - Network fabric for containers (System Application Container)
@@ -93,7 +95,7 @@ systemd:
                                       --volume etc-kube-flannel,kind=host,source=/etc/kube-flannel,readOnly=true \
                                       --mount volume=etc-kube-flannel,target=/etc/kube-flannel"
     - name: flannel-docker-opts.service
-      enable: true
+      enabled: true
       contents: |
         [Unit]
         PartOf=flanneld.service
@@ -103,7 +105,7 @@ systemd:
         Type=oneshot
         ExecStart=/bin/true
     - name: kubelet.service
-      enable: true
+      enabled: true
       contents: |
         [Unit]
         Description=Kubelet
@@ -200,14 +202,14 @@ systemd:
         Restart=always
         RestartSec=10s
     - name: wormhole.path
-      enable: true
+      enabled: true
       contents: |
         [Path]
         PathExists=/var/lib/kubelet/kubeconfig
         [Install]
         WantedBy=multi-user.target
     - name: kube-proxy.service
-      enable: true
+      enabled: true
       contents: |
         [Unit]
         Description=Kube-Proxy
@@ -238,7 +240,7 @@ systemd:
         WantedBy=multi-user.target
     - name: updatecertificates.service
       command: start
-      enable: true
+      enabled: true
       contents: |
         [Unit]
         Description=Update the certificates w/ self-signed root CAs
@@ -260,7 +262,7 @@ systemd:
         Type=oneshot
         ExecStart=/opt/bin/rkt gc --grace-period=${GRACE_PERIOD}
     - name: rkt-gc.timer
-      enable: true
+      enabled: true
       command: start
       contents: |
         [Unit]
@@ -278,6 +280,7 @@ storage:
     - path: /etc/systemd/resolved.conf
       filesystem: root
       mode: 0644
+      overwrite: true
       contents:
         inline: |
           [Resolve]
