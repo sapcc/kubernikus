@@ -8,16 +8,10 @@ import (
 
 	"github.com/Masterminds/sprig"
 	"github.com/aokoli/goutils"
-	"github.com/coreos/container-linux-config-transpiler/config"
-	"github.com/coreos/container-linux-config-transpiler/config/platform"
-	"github.com/coreos/ignition/config/validate/report"
-	"github.com/go-kit/log"
-	"github.com/tredoe/osutil/user/crypt/sha512_crypt"
-
 	butaneConfig "github.com/coreos/butane/config"
 	"github.com/coreos/butane/config/common"
 	"github.com/coreos/vcontext/report"
-	"github.com/go-kit/kit/log"
+	"github.com/go-kit/log"
 	"github.com/tredoe/osutil/user/crypt/sha512_crypt"
 
 	"github.com/sapcc/kubernikus/pkg/api/models"
