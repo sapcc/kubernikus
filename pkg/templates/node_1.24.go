@@ -3,16 +3,9 @@
 package templates
 
 var Node_1_24 = `
-variant: flatcar
-version: 1.0.0
 passwd:
   users:
-    - name: core
-{{- if .Gardenlinux }}
-      shell: /bin/bash
-      groups:
-        - sudo
-{{- end }}
+    - name:          core
       password_hash: {{ .LoginPassword }}
 {{- if .LoginPublicKey }}
       ssh_authorized_keys:
@@ -21,7 +14,7 @@ passwd:
 systemd:
   units:
     - name: ccloud-metadata-hostname.service
-      enabled: true
+      enable: true
       contents: |
         [Unit]
         Description=Workaround for coreos-metadata hostname bug
@@ -34,25 +27,23 @@ systemd:
         RemainAfterExit=yes
         [Install]
         WantedBy=multi-user.target
-{{- if .Flatcar }}
     - name: containerd.service
-      enabled: true
+      enable: true
       dropins:
         - name: 10-custom-config.conf
           contents: |
             [Service]
             ExecStart=
             ExecStart=/usr/bin/env PATH=${TORCX_BINDIR}:${PATH} ${TORCX_BINDIR}/containerd
-{{- end }}
     - name: docker.service
-      enabled: true
+      enable: true
       dropins:
         - name: 20-docker-opts.conf
           contents: |
             [Service]
             Environment="DOCKER_OPTS=--iptables=false --bridge=none"
     - name: kubelet.service
-      enabled: true
+      enable: true
       contents: |
         [Unit]
         Description=Kubelet
@@ -90,7 +81,7 @@ systemd:
         WantedBy=multi-user.target
     - name: updatecertificates.service
       command: start
-      enabled: true
+      enable: true
       contents: |
         [Unit]
         Description=Update the certificates w/ self-signed root CAs
@@ -104,20 +95,6 @@ systemd:
         WantedBy=multi-user.target
 storage:
   files:
-{{- if .Gardenlinux }}
-    - path: /etc/sudoers.d/core
-      filesystem: root
-      mode: 0644
-      contents:
-        inline: |
-          core ALL=(ALL) NOPASSWD:ALL
-    - path: /etc/ssh/sshd_config.d/20-enable-passwords.conf
-      filesystem: root
-      mode: 0644
-      contents:
-        inline: |
-          PasswordAuthentication yes
-{{- end }}
     - path: /etc/crictl.yaml
       filesystem: root
       mode: 0644
@@ -176,7 +153,6 @@ storage:
     - path: /etc/systemd/resolved.conf
       filesystem: root
       mode: 0644
-      overwrite: true
       contents:
         inline: |
           [Resolve]
@@ -353,14 +329,12 @@ storage:
             CSIMigrationOpenStack: true
             ExpandCSIVolumes: true
 {{- end }}
-{{- if .Flatcar }}
     - path: /etc/flatcar/update.conf
       filesystem: root
       mode: 0644
       contents:
         inline: |-
           REBOOT_STRATEGY="off"
-{{- end }}
     - path: /etc/modules-load.d/br_netfilter.conf
       filesystem: root
       mode: 0644
