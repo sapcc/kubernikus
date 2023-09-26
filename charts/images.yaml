@@ -2363,7 +2363,6 @@ imagesForVersion:
     dashboardProxy:
       repository: keppel.global.cloud.sap/ccloud/keycloak-gatekeeper
       tag: 6.0.1
-    default: true
     dex:
       repository: keppel.global.cloud.sap/ccloud/dex
       tag: 38f4f8ea8d487470a1dd5b83d66b428d8b502f81
@@ -2447,7 +2446,6 @@ imagesForVersion:
     dashboardProxy:
       repository: keppel.global.cloud.sap/ccloud/keycloak-gatekeeper
       tag: 6.0.1
-    default: true
     dex:
       repository: keppel.global.cloud.sap/ccloud/dex
       tag: 38f4f8ea8d487470a1dd5b83d66b428d8b502f81
@@ -3478,6 +3476,7 @@ imagesForVersion:
       repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/kube-scheduler
       tag: v1.27.6
     supported: true
+    default: true
     wormhole:
       repository: keppel.global.cloud.sap/ccloud/kubernikus
       tag: changeme
