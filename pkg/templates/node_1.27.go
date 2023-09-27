@@ -92,6 +92,9 @@ systemd:
         Type=oneshot
         [Install]
         WantedBy=multi-user.target
+    - name: audit-rules.service
+      mask: true
+      enable: false
 storage:
   files:
     - path: /etc/crictl.yaml
