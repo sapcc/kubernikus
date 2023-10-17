@@ -133,7 +133,7 @@ storage:
           uid = 0
           # socket gid
           gid = 0
-          [plugins."containerd.runtime.v1.linux"]
+          [plugins."io.containerd.runtime.v1.linux"]
           # shim binary name/path
           shim = "containerd-shim"
           # runtime binary name/path
