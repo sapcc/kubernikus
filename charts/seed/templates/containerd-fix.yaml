@@ -1,0 +1,44 @@
+{{- if semverCompare ">= 1.24-0" .Capabilities.KubeVersion.Version -}}
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: containerd-fix
+  namespace: kube-system
+spec:
+  selector:
+    matchLabels:
+      app: containerd-fix
+  template:
+    metadata:
+      labels:
+        app: containerd-fix
+    spec:
+      tolerations:
+        - operator: Exists
+      hostPID: true
+      initContainers:
+        - name: init
+          image: keppel.global.cloud.sap/ccloud-dockerhub-mirror/library/alpine:latest
+          securityContext:
+            privileged: true
+          command:
+            - sh
+            - -c
+          args:
+            - |-
+              set -xe
+              FILE=/host/etc/containerd/config.toml
+              if [ -f "$FILE" ]; then
+                sed -i 's/\[plugins."containerd.runtime.v1.linux"\]/\[plugins."io.containerd.runtime.v1.linux"\]/g' $FILE
+              fi
+          volumeMounts:
+            - name: host
+              mountPath: "/host"
+      containers:
+        - name: pause
+          image: keppel.global.cloud.sap/ccloud-dockerhub-mirror/sapcc/pause-amd64:3.1
+      volumes:
+        - name: host
+          hostPath:
+            path: "/"
+{{- end }}
