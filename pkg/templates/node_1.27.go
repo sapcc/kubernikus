@@ -104,6 +104,7 @@ systemd:
         After=network-online.target
         Wants=network-online.target
         [Service]
+        WorkingDirectory=/opt/bin/
         ExecStart=/opt/bin/containerd-config-replace.sh
         [Install]
         WantedBy=multi-user.target
@@ -322,7 +323,7 @@ storage:
           # copy original file just in case config injection fails
           mkdir -p /etc/containerd/
           cp /run/torcx/unpack/docker/usr/share/containerd/config.toml /etc/containerd/config.toml
-          
+
           cp /run/torcx/unpack/docker/usr/share/containerd/config.toml  output.toml 
           #download xtoml 
           curl https://repo.eu-de-1.cloud.sap/xtoml/xtoml -o xtoml
