@@ -100,14 +100,11 @@ systemd:
       contents: |
         [Unit]
         Description=Modify startup configuration file of containerd
+        Before=containerd.service
         After=network-online.target
         Wants=network-online.target
         [Service]
-        Type=oneshot
         ExecStart=/opt/bin/containerd-config-replace.sh
-        ExecStartPost=systemctl disable containerd-config-replace.service
-        ExecStartPost=systemctl daemon-reload
-        ExecStartPost=systemctl restart containerd
         [Install]
         WantedBy=multi-user.target
 storage:
