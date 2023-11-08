@@ -32,7 +32,7 @@ func main() {
 	current := 0
 	scanner := bufio.NewScanner(resp.Body)
 	for scanner.Scan() {
-		if line := scanner.Text(); strings.HasPrefix(line, "etcdbr_restoration_duration_seconds_count{succeeded=\"true\"}") {
+		if line := scanner.Text(); strings.HasPrefix(line, "etcdbr_restoration_duration_seconds_count{restore=\"single_node\",succeeded=\"true\"}") {
 			c := strings.Split(line, " ")
 			if current, err = strconv.Atoi(c[1]); err != nil {
 				log.Fatalf("Error converting current: %s", err)
