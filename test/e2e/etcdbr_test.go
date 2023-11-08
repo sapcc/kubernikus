@@ -52,7 +52,7 @@ func (e *EtcdBackupTests) WaitForBackupRestore(t *testing.T) {
 	require.NoError(t, err, "Error retrieving apiserver pod: %s", err)
 
 	cmd := fmt.Sprintf("mv %s %s.bak", EtcdDataDir, EtcdDataDir)
-	_, _, err = e.KubernetesControlPlane.ExecCommandInContainerWithFullOutput(e.Namespace, etcdPod.Name, "backup", "/bin/sh", "-c", cmd)
+	_, _, err = e.KubernetesControlPlane.ExecCommandInContainerWithFullOutput(e.Namespace, etcdPod.Name, "etcd", "/bin/sh", "-c", cmd)
 	require.NoError(t, err, "Deletion of etcd data failed: %s", err)
 
 	newRv := string(rv)
