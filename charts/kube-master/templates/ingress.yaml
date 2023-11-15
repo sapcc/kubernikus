@@ -11,6 +11,7 @@ metadata:
   annotations:
     kubernetes.io/ingress.class: k8sniff
     ingress.kubernetes.io/ssl-passthrough: "true"
+    nginx.ingress.kubernetes.io/ssl-passthrough: "true"
     prometheus.io/probe: "true"
   labels:
     chart: "{{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}"
