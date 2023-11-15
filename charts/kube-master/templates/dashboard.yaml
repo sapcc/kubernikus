@@ -160,6 +160,7 @@ kind: Ingress
 metadata:
   annotations:
     ingress.kubernetes.io/proxy-buffer-size: 8k
+    nginx.ingress.kubernetes.io/proxy-buffer-size: 8k
   labels:
     app: {{ include "master.fullname" . }}-dashboard
     chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
