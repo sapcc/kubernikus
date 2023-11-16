@@ -13,6 +13,7 @@ import (
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack"
 	"github.com/gophercloud/gophercloud/openstack/identity/v3/tokens"
+	osClient "github.com/gophercloud/utils/client"
 	"github.com/gophercloud/utils/env"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
@@ -186,18 +187,23 @@ func (o *OpenstackClient) Setup() error {
 		return errors.Wrap(err, "Creating Gophercloud ProviderClient failed")
 	}
 
+	transport := &http.Transport{}
 	if o.CertFile != "" && o.KeyFile != "" {
 		cert, err := tls.LoadX509KeyPair(o.CertFile, o.KeyFile)
 		if err != nil {
 			return errors.Wrap(err, "Failed to load tls client credentials")
 		}
-		o.Provider.HTTPClient = http.Client{
-			Transport: &http.Transport{
-				TLSClientConfig: &tls.Config{
-					Certificates: []tls.Certificate{cert},
-				},
-			},
+
+		transport.TLSClientConfig = &tls.Config{
+			Certificates: []tls.Certificate{cert},
 		}
+	}
+	o.Provider.HTTPClient.Transport = transport
+
+	// enforce API debug logs
+	o.Provider.HTTPClient.Transport = &osClient.RoundTripper{
+		Rt:     transport,
+		Logger: &osClient.DefaultLogger{},
 	}
 
 	if o.Identity, err = openstack.NewIdentityV3(o.Provider, gophercloud.EndpointOpts{}); err != nil {
