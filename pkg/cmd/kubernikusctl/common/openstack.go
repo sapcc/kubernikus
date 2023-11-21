@@ -284,7 +284,25 @@ func (o *OpenstackClient) Authenticate() error {
 }
 
 func (o *OpenstackClient) DefaultKubernikusURL() (*url.URL, error) {
-	catalog, err := tokens.Create(o.Identity, o).ExtractServiceCatalog()
+	r := o.Provider.GetAuthResult()
+	if r == nil {
+		return nil, errors.Errorf("Couldn't fetch service catalog")
+	}
+
+	// extract a service catalog from the initial auth result
+	var catalog *tokens.ServiceCatalog
+	var err error
+	switch r := r.(type) {
+	case tokens.CreateResult:
+		catalog, err = r.ExtractServiceCatalog()
+	case tokens.GetResult:
+		catalog, err = r.ExtractServiceCatalog()
+	default:
+		return nil, errors.Errorf("got unexpected AuthResult type %t", r)
+	}
+	if catalog == nil {
+		return nil, errors.Errorf("Couldn't fetch service catalog")
+	}
 	if err != nil {
 		return nil, errors.Wrap(err, "Couldn't fetch service catalog")
 	}
