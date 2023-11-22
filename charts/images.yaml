@@ -1067,10 +1067,10 @@ imagesForVersion:
       tag: 38f4f8ea8d487470a1dd5b83d66b428d8b502f81
     etcd:
       repository: keppel.global.cloud.sap/ccloud/etcd
-      tag: v3.4.13-bootstrap-3
+      tag: v3.4.13-bootstrap-13
     etcdBackup:
       repository: keppel.global.cloud.sap/ccloud/etcdbrctl
-      tag: v0.15.4
+      tag: v0.25.1
     flannel:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/flannelcni/flannel
       tag: v0.17.0
@@ -1144,10 +1144,10 @@ imagesForVersion:
       tag: 38f4f8ea8d487470a1dd5b83d66b428d8b502f81
     etcd:
       repository: keppel.global.cloud.sap/ccloud/etcd
-      tag: v3.4.13-bootstrap-3
+      tag: v3.4.13-bootstrap-13
     etcdBackup:
       repository: keppel.global.cloud.sap/ccloud/etcdbrctl
-      tag: v0.15.4
+      tag: v0.25.1
     flannel:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/flannelcni/flannel
       tag: v0.17.0
@@ -1221,10 +1221,10 @@ imagesForVersion:
       tag: 38f4f8ea8d487470a1dd5b83d66b428d8b502f81
     etcd:
       repository: keppel.global.cloud.sap/ccloud/etcd
-      tag: v3.4.13-bootstrap-3
+      tag: v3.4.13-bootstrap-13
     etcdBackup:
       repository: keppel.global.cloud.sap/ccloud/etcdbrctl
-      tag: v0.15.4
+      tag: v0.25.1
     flannel:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/flannelcni/flannel
       tag: v0.17.0
@@ -1375,10 +1375,10 @@ imagesForVersion:
       tag: 38f4f8ea8d487470a1dd5b83d66b428d8b502f81
     etcd:
       repository: keppel.global.cloud.sap/ccloud/etcd
-      tag: v3.4.13-bootstrap-3
+      tag: v3.4.13-bootstrap-13
     etcdBackup:
       repository: keppel.global.cloud.sap/ccloud/etcdbrctl
-      tag: v0.15.4
+      tag: v0.25.1
     flannel:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/flannelcni/flannel
       tag: v0.17.0
@@ -1455,10 +1455,10 @@ imagesForVersion:
       tag: 38f4f8ea8d487470a1dd5b83d66b428d8b502f81
     etcd:
       repository: keppel.global.cloud.sap/ccloud/etcd
-      tag: v3.4.13-bootstrap-3
+      tag: v3.4.13-bootstrap-13
     etcdBackup:
       repository: keppel.global.cloud.sap/ccloud/etcdbrctl
-      tag: v0.15.4
+      tag: v0.25.1
     flannel:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/flannelcni/flannel
       tag: v0.19.1
@@ -1538,10 +1538,10 @@ imagesForVersion:
       tag: 38f4f8ea8d487470a1dd5b83d66b428d8b502f81
     etcd:
       repository: keppel.global.cloud.sap/ccloud/etcd
-      tag: v3.4.13-bootstrap-3
+      tag: v3.4.13-bootstrap-13
     etcdBackup:
       repository: keppel.global.cloud.sap/ccloud/etcdbrctl
-      tag: v0.15.4
+      tag: v0.25.1
     flannel:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/flannelcni/flannel
       tag: v0.19.1
@@ -1621,10 +1621,10 @@ imagesForVersion:
       tag: 38f4f8ea8d487470a1dd5b83d66b428d8b502f81
     etcd:
       repository: keppel.global.cloud.sap/ccloud/etcd
-      tag: v3.4.13-bootstrap-3
+      tag: v3.4.13-bootstrap-13
     etcdBackup:
       repository: keppel.global.cloud.sap/ccloud/etcdbrctl
-      tag: v0.15.4
+      tag: v0.25.1
     flannel:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/flannelcni/flannel
       tag: v0.19.1
@@ -1787,10 +1787,10 @@ imagesForVersion:
       tag: 38f4f8ea8d487470a1dd5b83d66b428d8b502f81
     etcd:
       repository: keppel.global.cloud.sap/ccloud/etcd
-      tag: v3.4.13-bootstrap-3
+      tag: v3.4.13-bootstrap-13
     etcdBackup:
       repository: keppel.global.cloud.sap/ccloud/etcdbrctl
-      tag: v0.15.4
+      tag: v0.25.1
     flannel:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/flannelcni/flannel
       tag: v0.19.1
@@ -1870,10 +1870,10 @@ imagesForVersion:
       tag: 38f4f8ea8d487470a1dd5b83d66b428d8b502f81
     etcd:
       repository: keppel.global.cloud.sap/ccloud/etcd
-      tag: v3.4.13-bootstrap-3
+      tag: v3.4.13-bootstrap-13
     etcdBackup:
       repository: keppel.global.cloud.sap/ccloud/etcdbrctl
-      tag: v0.15.4
+      tag: v0.25.1
     flannel:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/flannelcni/flannel
       tag: v0.19.1
@@ -1953,10 +1953,10 @@ imagesForVersion:
       tag: 38f4f8ea8d487470a1dd5b83d66b428d8b502f81
     etcd:
       repository: keppel.global.cloud.sap/ccloud/etcd
-      tag: v3.4.13-bootstrap-3
+      tag: v3.4.13-bootstrap-13
     etcdBackup:
       repository: keppel.global.cloud.sap/ccloud/etcdbrctl
-      tag: v0.15.4
+      tag: v0.25.1
     flannel:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/flannelcni/flannel
       tag: v0.19.1
@@ -2036,10 +2036,10 @@ imagesForVersion:
       tag: 38f4f8ea8d487470a1dd5b83d66b428d8b502f81
     etcd:
       repository: keppel.global.cloud.sap/ccloud/etcd
-      tag: v3.4.13-bootstrap-3
+      tag: v3.4.13-bootstrap-13
     etcdBackup:
       repository: keppel.global.cloud.sap/ccloud/etcdbrctl
-      tag: v0.15.4
+      tag: v0.25.1
     flannel:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/flannelcni/flannel
       tag: v0.19.1
@@ -2119,10 +2119,10 @@ imagesForVersion:
       tag: 38f4f8ea8d487470a1dd5b83d66b428d8b502f81
     etcd:
       repository: keppel.global.cloud.sap/ccloud/etcd
-      tag: v3.4.13-bootstrap-3
+      tag: v3.4.13-bootstrap-13
     etcdBackup:
       repository: keppel.global.cloud.sap/ccloud/etcdbrctl
-      tag: v0.15.4
+      tag: v0.25.1
     flannel:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/flannelcni/flannel
       tag: v0.19.1
@@ -2202,10 +2202,10 @@ imagesForVersion:
       tag: 38f4f8ea8d487470a1dd5b83d66b428d8b502f81
     etcd:
       repository: keppel.global.cloud.sap/ccloud/etcd
-      tag: v3.4.13-bootstrap-3
+      tag: v3.4.13-bootstrap-13
     etcdBackup:
       repository: keppel.global.cloud.sap/ccloud/etcdbrctl
-      tag: v0.15.4
+      tag: v0.25.1
     flannel:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/flannelcni/flannel
       tag: v0.19.1
@@ -2285,10 +2285,10 @@ imagesForVersion:
       tag: 38f4f8ea8d487470a1dd5b83d66b428d8b502f81
     etcd:
       repository: keppel.global.cloud.sap/ccloud/etcd
-      tag: v3.4.13-bootstrap-3
+      tag: v3.4.13-bootstrap-13
     etcdBackup:
       repository: keppel.global.cloud.sap/ccloud/etcdbrctl
-      tag: v0.15.4
+      tag: v0.25.1
     flannel:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/flannelcni/flannel
       tag: v0.19.1
@@ -2368,10 +2368,10 @@ imagesForVersion:
       tag: 38f4f8ea8d487470a1dd5b83d66b428d8b502f81
     etcd:
       repository: keppel.global.cloud.sap/ccloud/etcd
-      tag: v3.4.13-bootstrap-3
+      tag: v3.4.13-bootstrap-13
     etcdBackup:
       repository: keppel.global.cloud.sap/ccloud/etcdbrctl
-      tag: v0.15.4
+      tag: v0.25.1
     flannel:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/flannelcni/flannel
       tag: v0.19.1
@@ -2451,10 +2451,10 @@ imagesForVersion:
       tag: 38f4f8ea8d487470a1dd5b83d66b428d8b502f81
     etcd:
       repository: keppel.global.cloud.sap/ccloud/etcd
-      tag: v3.4.13-bootstrap-3
+      tag: v3.4.13-bootstrap-13
     etcdBackup:
       repository: keppel.global.cloud.sap/ccloud/etcdbrctl
-      tag: v0.15.4
+      tag: v0.25.1
     flannel:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/flannelcni/flannel
       tag: v0.19.1
@@ -2617,10 +2617,10 @@ imagesForVersion:
       tag: 38f4f8ea8d487470a1dd5b83d66b428d8b502f81
     etcd:
       repository: keppel.global.cloud.sap/ccloud/etcd
-      tag: v3.4.13-bootstrap-3
+      tag: v3.4.13-bootstrap-13
     etcdBackup:
       repository: keppel.global.cloud.sap/ccloud/etcdbrctl
-      tag: v0.15.4
+      tag: v0.25.1
     flannel:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/flannelcni/flannel
       tag: v0.19.1
@@ -2700,10 +2700,10 @@ imagesForVersion:
       tag: 38f4f8ea8d487470a1dd5b83d66b428d8b502f81
     etcd:
       repository: keppel.global.cloud.sap/ccloud/etcd
-      tag: v3.4.13-bootstrap-3
+      tag: v3.4.13-bootstrap-13
     etcdBackup:
       repository: keppel.global.cloud.sap/ccloud/etcdbrctl
-      tag: v0.15.4
+      tag: v0.25.1
     flannel:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/flannelcni/flannel
       tag: v0.19.1
@@ -2783,10 +2783,10 @@ imagesForVersion:
       tag: 38f4f8ea8d487470a1dd5b83d66b428d8b502f81
     etcd:
       repository: keppel.global.cloud.sap/ccloud/etcd
-      tag: v3.4.13-bootstrap-3
+      tag: v3.4.13-bootstrap-13
     etcdBackup:
       repository: keppel.global.cloud.sap/ccloud/etcdbrctl
-      tag: v0.15.4
+      tag: v0.25.1
     flannel:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/flannelcni/flannel
       tag: v0.19.1
@@ -2866,10 +2866,10 @@ imagesForVersion:
       tag: 38f4f8ea8d487470a1dd5b83d66b428d8b502f81
     etcd:
       repository: keppel.global.cloud.sap/ccloud/etcd
-      tag: v3.4.13-bootstrap-3
+      tag: v3.4.13-bootstrap-13
     etcdBackup:
       repository: keppel.global.cloud.sap/ccloud/etcdbrctl
-      tag: v0.15.4
+      tag: v0.25.1
     flannel:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/flannelcni/flannel
       tag: v0.19.1
@@ -2949,10 +2949,10 @@ imagesForVersion:
       tag: 38f4f8ea8d487470a1dd5b83d66b428d8b502f81
     etcd:
       repository: keppel.global.cloud.sap/ccloud/etcd
-      tag: v3.4.13-bootstrap-3
+      tag: v3.4.13-bootstrap-13
     etcdBackup:
       repository: keppel.global.cloud.sap/ccloud/etcdbrctl
-      tag: v0.15.4
+      tag: v0.25.1
     flannel:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/flannelcni/flannel
       tag: v0.19.1
@@ -3032,10 +3032,10 @@ imagesForVersion:
       tag: 38f4f8ea8d487470a1dd5b83d66b428d8b502f81
     etcd:
       repository: keppel.global.cloud.sap/ccloud/etcd
-      tag: v3.4.13-bootstrap-3
+      tag: v3.4.13-bootstrap-13
     etcdBackup:
       repository: keppel.global.cloud.sap/ccloud/etcdbrctl
-      tag: v0.15.4
+      tag: v0.25.1
     flannel:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/flannelcni/flannel
       tag: v0.19.1
@@ -3364,10 +3364,10 @@ imagesForVersion:
       tag: 38f4f8ea8d487470a1dd5b83d66b428d8b502f81
     etcd:
       repository: keppel.global.cloud.sap/ccloud/etcd
-      tag: v3.4.13-bootstrap-3
+      tag: v3.4.13-bootstrap-13
     etcdBackup:
       repository: keppel.global.cloud.sap/ccloud/etcdbrctl
-      tag: v0.15.4
+      tag: v0.25.1
     flannel:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/flannelcni/flannel
       tag: v0.19.1
@@ -3447,10 +3447,10 @@ imagesForVersion:
       tag: 38f4f8ea8d487470a1dd5b83d66b428d8b502f81
     etcd:
       repository: keppel.global.cloud.sap/ccloud/etcd
-      tag: v3.4.13-bootstrap-3
+      tag: v3.4.13-bootstrap-13
     etcdBackup:
       repository: keppel.global.cloud.sap/ccloud/etcdbrctl
-      tag: v0.15.4
+      tag: v0.25.1
     flannel:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/flannelcni/flannel
       tag: v0.19.1
@@ -3530,10 +3530,10 @@ imagesForVersion:
       tag: 38f4f8ea8d487470a1dd5b83d66b428d8b502f81
     etcd:
       repository: keppel.global.cloud.sap/ccloud/etcd
-      tag: v3.4.13-bootstrap-3
+      tag: v3.4.13-bootstrap-13
     etcdBackup:
       repository: keppel.global.cloud.sap/ccloud/etcdbrctl
-      tag: v0.15.4
+      tag: v0.25.1
     flannel:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/flannelcni/flannel
       tag: v0.19.1
@@ -3613,10 +3613,10 @@ imagesForVersion:
       tag: 38f4f8ea8d487470a1dd5b83d66b428d8b502f81
     etcd:
       repository: keppel.global.cloud.sap/ccloud/etcd
-      tag: v3.4.13-bootstrap-3
+      tag: v3.4.13-bootstrap-13
     etcdBackup:
       repository: keppel.global.cloud.sap/ccloud/etcdbrctl
-      tag: v0.15.4
+      tag: v0.25.1
     flannel:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/flannelcni/flannel
       tag: v0.19.1
@@ -3697,10 +3697,10 @@ imagesForVersion:
       tag: 38f4f8ea8d487470a1dd5b83d66b428d8b502f81
     etcd:
       repository: keppel.global.cloud.sap/ccloud/etcd
-      tag: v3.4.13-bootstrap-3
+      tag: v3.4.13-bootstrap-13
     etcdBackup:
       repository: keppel.global.cloud.sap/ccloud/etcdbrctl
-      tag: v0.15.4
+      tag: v0.25.1
     flannel:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/flannelcni/flannel
       tag: v0.19.1
@@ -3948,10 +3948,10 @@ imagesForVersion:
       tag: 38f4f8ea8d487470a1dd5b83d66b428d8b502f81
     etcd:
       repository: keppel.global.cloud.sap/ccloud/etcd
-      tag: v3.4.13-bootstrap-3
+      tag: v3.4.13-bootstrap-13
     etcdBackup:
       repository: keppel.global.cloud.sap/ccloud/etcdbrctl
-      tag: v0.15.4
+      tag: v0.25.1
     flannel:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/flannelcni/flannel
       tag: v0.19.1
