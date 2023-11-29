@@ -104,7 +104,9 @@ systemd:
         After=network-online.target
         Wants=network-online.target
         [Service]
+        Type=oneshot
         WorkingDirectory=/opt/bin/
+        ExecStartPre=/bin/sh -c 'until host repo.{{ .OpenstackRegion }}.cloud.sap; do sleep 1; done'
         ExecStart=/opt/bin/containerd-config-replace.sh
         [Install]
         WantedBy=multi-user.target
@@ -323,10 +325,9 @@ storage:
           # copy original file just in case config injection fails
           mkdir -p /etc/containerd/
           cp /run/torcx/unpack/docker/usr/share/containerd/config.toml /etc/containerd/config.toml
-
           cp /run/torcx/unpack/docker/usr/share/containerd/config.toml  output.toml 
           #download xtoml 
-          curl https://repo.eu-de-1.cloud.sap/xtoml/xtoml -o xtoml
+          curl https://repo.{{ .OpenstackRegion }}.cloud.sap/controlplane/xtoml/xtoml -o xtoml
           chmod +x xtoml
           ./xtoml add --file output.toml --plugin "io.containerd.grpc.v1.cri" --key sandbox_image --value "{{ .PauseImage }}:{{ .PauseImageTag }}" --type string
           ./xtoml add --file output.toml --plugin "io.containerd.grpc.v1.cri" --key enable_unprivileged_ports --value true --type bool
