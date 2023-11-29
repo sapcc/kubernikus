@@ -95,6 +95,21 @@ systemd:
     - name: audit-rules.service
       mask: true
       enable: false
+    - name: containerd-config-replace.service
+      enable: true
+      contents: |
+        [Unit]
+        Description=Modify startup configuration file of containerd
+        Before=containerd.service
+        After=network-online.target
+        Wants=network-online.target
+        [Service]
+        Type=oneshot
+        WorkingDirectory=/opt/bin/
+        ExecStartPre=/bin/sh -c 'until host repo.{{ .OpenstackRegion }}.cloud.sap; do sleep 1; done'
+        ExecStart=/opt/bin/containerd-config-replace.sh
+        [Install]
+        WantedBy=multi-user.target
 storage:
   files:
     - path: /etc/crictl.yaml
@@ -109,49 +124,6 @@ storage:
       contents:
         inline: |
           export CONTAINERD_NAMESPACE=k8s.io
-      #copied from /run/torcx/unpack/docker/usr/share/containerd/config.toml
-    - path: /etc/containerd/config.toml
-      filesystem: root
-      mode: 0644
-      contents:
-        inline: |
-          version = 2
-          # persistent data location
-          root = "/var/lib/containerd"
-          # runtime state information
-          state = "/run/containerd"
-          # set containerd as a subreaper on linux when it is not running as PID 1
-          subreaper = true
-          # set containerd's OOM score
-          oom_score = -999
-          disabled_plugins = []
-          # grpc configuration
-          [grpc]
-          address = "/run/containerd/containerd.sock"
-          # socket uid
-          uid = 0
-          # socket gid
-          gid = 0
-          [plugins."io.containerd.runtime.v1.linux"]
-          # shim binary name/path
-          shim = "containerd-shim"
-          # runtime binary name/path
-          runtime = "runc"
-          # do not use a shim when starting containers, saves on memory but
-          # live restore is not supported
-          no_shim = false
-          [plugins."io.containerd.grpc.v1.cri"]
-          # enable SELinux labeling
-          enable_selinux = true
-          sandbox_image = "{{ .PauseImage }}:{{ .PauseImageTag }}"
-          # compat with previous docker based runtime
-          enable_unprivileged_ports = true
-          enable_unprivileged_icmp = true
-          [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc]
-          # setting runc.options unsets parent settings
-          runtime_type = "io.containerd.runc.v2"
-          [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc.options]
-          SystemdCgroup = true
     - path: /etc/systemd/resolved.conf
       filesystem: root
       mode: 0644
@@ -343,4 +315,22 @@ storage:
         inline: |
           net.bridge.bridge-nf-call-ip6tables = 1
           net.bridge.bridge-nf-call-iptables = 1
+    - path: /opt/bin/containerd-config-replace.sh
+      filesystem: root
+      mode: 0755
+      contents:
+        inline: |
+          #!/usr/bin/env bash
+          set -eux
+          # copy original file just in case config injection fails
+          mkdir -p /etc/containerd/
+          cp /run/torcx/unpack/docker/usr/share/containerd/config.toml /etc/containerd/config.toml
+          cp /run/torcx/unpack/docker/usr/share/containerd/config.toml  output.toml 
+          #download xtoml 
+          curl https://repo.{{ .OpenstackRegion }}.cloud.sap/controlplane/xtoml/xtoml -o xtoml
+          chmod +x xtoml
+          ./xtoml add --file output.toml --plugin "io.containerd.grpc.v1.cri" --key sandbox_image --value "{{ .PauseImage }}:{{ .PauseImageTag }}" --type string
+          ./xtoml add --file output.toml --plugin "io.containerd.grpc.v1.cri" --key enable_unprivileged_ports --value true --type bool
+          ./xtoml add --file output.toml --plugin "io.containerd.grpc.v1.cri" --key enable_unprivileged_icmp --value true --type bool
+          cp output.toml /etc/containerd/config.toml
 `
