@@ -2,16 +2,15 @@ package templates
 
 import (
 	"bytes"
-	"encoding/json"
 	"fmt"
 	"strings"
 	"text/template"
 
 	"github.com/Masterminds/sprig"
 	"github.com/aokoli/goutils"
-	"github.com/coreos/container-linux-config-transpiler/config"
-	"github.com/coreos/container-linux-config-transpiler/config/platform"
-	"github.com/coreos/ignition/config/validate/report"
+	butaneConfig "github.com/coreos/butane/config"
+	"github.com/coreos/butane/config/common"
+	"github.com/coreos/vcontext/report"
 	"github.com/go-kit/log"
 	"github.com/tredoe/osutil/user/crypt/sha512_crypt"
 
@@ -107,7 +106,10 @@ func (i *ignition) GenerateNode(kluster *kubernikusv1.Kluster, pool *models.Node
 	var nodeLabels []string
 	var nodeTaints []string
 
+	isCoreOS := false
 	isFlatcar := true
+	isGardenlinux := false
+
 	if pool != nil {
 		nodeLabels = append(nodeLabels, "ccloud.sap.com/nodepool="+pool.Name)
 		for _, userTaint := range pool.Taints {
@@ -117,7 +119,9 @@ func (i *ignition) GenerateNode(kluster *kubernikusv1.Kluster, pool *models.Node
 			nodeLabels = append(nodeLabels, userLabel)
 		}
 		nodeLabels = append(nodeLabels, "kubernikus.cloud.sap/template-version="+TEMPLATE_VERSION)
-		isFlatcar = !strings.Contains(strings.ToLower(pool.Image), "coreos")
+		isCoreOS = strings.Contains(strings.ToLower(pool.Image), "coreos")
+		isFlatcar = strings.Contains(strings.ToLower(pool.Image), "flatcar")
+		isGardenlinux = strings.Contains(strings.ToLower(pool.Image), "gardenlinux")
 	}
 
 	images, found := imageRegistry.Versions[kluster.Spec.Version]
@@ -163,6 +167,7 @@ func (i *ignition) GenerateNode(kluster *kubernikusv1.Kluster, pool *models.Node
 		CalicoNetworking                   bool
 		Flatcar                            bool
 		CoreOS                             bool
+		Gardenlinux                        bool
 		NoCloud                            bool
 		FlannelImage                       string
 		FlannelImageTag                    string
@@ -203,7 +208,8 @@ func (i *ignition) GenerateNode(kluster *kubernikusv1.Kluster, pool *models.Node
 		PauseImageTag:                      images.Pause.Tag,
 		CalicoNetworking:                   calicoNetworking,
 		Flatcar:                            isFlatcar,
-		CoreOS:                             !isFlatcar,
+		CoreOS:                             isCoreOS,
+		Gardenlinux:                        isGardenlinux,
 		NoCloud:                            kluster.Spec.NoCloud,
 		FlannelImage:                       images.Flannel.Repository,
 		FlannelImageTag:                    images.Flannel.Tag,
@@ -229,24 +235,12 @@ func (i *ignition) GenerateNode(kluster *kubernikusv1.Kluster, pool *models.Node
 		return nil, err
 	}
 
-	ignitionConfig, ast, report := config.Parse(buffer.Bytes())
-	if len(report.Entries) > 0 {
-		if report.IsFatal() {
-			return nil, fmt.Errorf("Couldn't transpile ignition file: %v", report.String())
-		}
-	}
-
-	ignitionConfig3, report := config.Convert(ignitionConfig, platform.OpenStackMetadata, ast)
-	if len(report.Entries) > 0 {
-		if report.IsFatal() {
-			return nil, fmt.Errorf("Couldn't convert ignition config: %v", report.String())
-		}
-	}
-
-	dataOut, err = json.Marshal(&ignitionConfig3)
-
+	dataOut, report, err = butaneConfig.TranslateBytes(
+		buffer.Bytes(),
+		common.TranslateBytesOptions{Pretty: false, Raw: false},
+	)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("Couldn't translate ignition file: %v", report.String())
 	}
 
 	return dataOut, nil
