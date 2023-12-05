@@ -108,12 +108,14 @@ storage:
     - path: /etc/sudoers.d/core
       filesystem: root
       mode: 0644
+      overwrite: true
       contents:
         inline: |
           core ALL=(ALL) NOPASSWD:ALL
     - path: /etc/ssh/sshd_config.d/20-enable-passwords.conf
       filesystem: root
       mode: 0644
+      overwrite: true
       contents:
         inline: |
           PasswordAuthentication yes
@@ -121,12 +123,14 @@ storage:
     - path: /etc/crictl.yaml
       filesystem: root
       mode: 0644
+      overwrite: true
       contents:
         inline: |
           runtime-endpoint: unix:///run/containerd/containerd.sock
     - path: /etc/profile.d/envs.sh
       filesystem: root
       mode: 0644
+      overwrite: true
       contents:
         inline: |
           export CONTAINERD_NAMESPACE=k8s.io
@@ -134,6 +138,7 @@ storage:
     - path: /etc/containerd/config.toml
       filesystem: root
       mode: 0644
+      overwrite: true
       contents:
         inline: |
           version = 2
@@ -184,6 +189,7 @@ storage:
     - path: /etc/systemd/network/50-kubernikus.netdev
       filesystem: root
       mode: 0644
+      overwrite: true
       contents:
         inline: |
           [NetDev]
@@ -193,6 +199,7 @@ storage:
     - path: /etc/systemd/network/51-kubernikus.network
       filesystem: root
       mode: 0644
+      overwrite: true
       contents:
         inline: |
           [Match]
@@ -203,12 +210,14 @@ storage:
     - path: /etc/udev/rules.d/99-vmware-scsi-udev.rules
       filesystem: root
       mode: 0644
+      overwrite: true
       contents:
         inline: |
           ACTION=="add", SUBSYSTEMS=="scsi", ATTRS{vendor}=="VMware  ", ATTRS{model}=="Virtual disk", RUN+="/bin/sh -c 'echo 180 >/sys$DEVPATH/timeout'"
     - path: /etc/ssl/certs/SAPGlobalRootCA.pem
       filesystem: root
       mode: 0644
+      overwrite: true
       contents:
         inline: |
           -----BEGIN CERTIFICATE-----
@@ -250,6 +259,7 @@ storage:
     - path: /etc/ssl/certs/SAPNetCA_G2.pem
       filesystem: root
       mode: 0644
+      overwrite: true
       contents:
         inline: |
           -----BEGIN CERTIFICATE-----
@@ -291,12 +301,14 @@ storage:
     - path: /etc/sysctl.d/10-enable-icmp-redirects.conf
       filesystem: root
       mode: 0644
+      overwrite: true
       contents:
         inline: |-
           net.ipv4.conf.all.accept_redirects=1
     - path: /etc/sysctl.d/20-inotify-max-user.conf
       filesystem: root
       mode: 0644
+      overwrite: true
       contents:
         inline: |-
           fs.inotify.max_user_instances=8192
@@ -304,12 +316,14 @@ storage:
     - path: /etc/kubernetes/certs/kubelet-clients-ca.pem
       filesystem: root
       mode: 0644
+      overwrite: true
       contents:
         inline: |-
 {{ .KubeletClientsCA | indent 10 }}
     - path: /etc/kubernetes/bootstrap/kubeconfig
       filesystem: root
       mode: 0644
+      overwrite: true
       contents:
         inline: |-
           apiVersion: v1
@@ -332,6 +346,7 @@ storage:
     - path: /etc/kubernetes/kubelet/config
       filesystem: root
       mode: 0644
+      overwrite: true
       contents:
         inline: |-
           kind: KubeletConfiguration
@@ -357,6 +372,7 @@ storage:
     - path: /etc/flatcar/update.conf
       filesystem: root
       mode: 0644
+      overwrite: true
       contents:
         inline: |-
           REBOOT_STRATEGY="off"
@@ -364,11 +380,13 @@ storage:
     - path: /etc/modules-load.d/br_netfilter.conf
       filesystem: root
       mode: 0644
+      overwrite: true
       contents:
         inline: br_netfilter
     - path: /etc/sysctl.d/30-br_netfilter.conf
       filesystem: root
       mode: 0644
+      overwrite: true
       contents:
         inline: |
           net.bridge.bridge-nf-call-ip6tables = 1

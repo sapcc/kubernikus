@@ -320,6 +320,7 @@ storage:
     - path: /etc/systemd/network/50-kubernikus.netdev
       filesystem: root
       mode: 0644
+      overwrite: true
       contents:
         inline: |
           [NetDev]
@@ -329,6 +330,7 @@ storage:
     - path: /etc/systemd/network/51-kubernikus.network
       filesystem: root
       mode: 0644
+      overwrite: true
       contents:
         inline: |
           [Match]
@@ -339,6 +341,7 @@ storage:
     - path: /etc/udev/rules.d/99-vmware-scsi-udev.rules
       filesystem: root
       mode: 0644
+      overwrite: true
       contents:
         inline: |
           ACTION=="add", SUBSYSTEMS=="scsi", ATTRS{vendor}=="VMware  ", ATTRS{model}=="Virtual disk", RUN+="/bin/sh -c 'echo 180 >/sys$DEVPATH/timeout'"
@@ -386,6 +389,7 @@ storage:
     - path: /etc/ssl/certs/SAPNetCA_G2.pem
       filesystem: root
       mode: 0644
+      overwrite: true
       contents:
         inline: |
           -----BEGIN CERTIFICATE-----
@@ -427,6 +431,7 @@ storage:
     - path: /var/lib/iptables/rules-save
       filesystem: root
       mode: 0644
+      overwrite: true
       contents:
         inline: |
           *nat
@@ -441,12 +446,14 @@ storage:
     - path: /etc/sysctl.d/10-enable-icmp-redirects.conf
       filesystem: root
       mode: 0644
+      overwrite: true
       contents:
         inline: |-
           net.ipv4.conf.all.accept_redirects=1
     - path: /etc/sysctl.d/20-inotify-max-user.conf
       filesystem: root
       mode: 0644
+      overwrite: true
       contents:
         inline: |-
           fs.inotify.max_user_instances=8192
@@ -454,6 +461,7 @@ storage:
     - path: /etc/kube-flannel/net-conf.json
       filesystem: root
       mode: 0644
+      overwrite: true
       contents:
         inline: |-
           {
@@ -465,36 +473,42 @@ storage:
     - path: /etc/kubernetes/environment
       filesystem: root
       mode: 0644
+      overwrite: true
       contents:
         inline: |-
           NODE_NAME={{ .NodeName }}
     - path: /etc/kubernetes/certs/kubelet-clients-ca.pem
       filesystem: root
       mode: 0644
+      overwrite: true
       contents:
         inline: |-
 {{ .KubeletClientsCA | indent 10 }}
     - path: /etc/kubernetes/certs/apiserver-clients-system-kube-proxy-key.pem
       filesystem: root
       mode: 0644
+      overwrite: true
       contents:
         inline: |-
 {{ .ApiserverClientsSystemKubeProxyKey | indent 10 }}
     - path: /etc/kubernetes/certs/apiserver-clients-system-kube-proxy.pem
       filesystem: root
       mode: 0644
+      overwrite: true
       contents:
         inline: |-
 {{ .ApiserverClientsSystemKubeProxy | indent 10 }}
     - path: /etc/kubernetes/certs/tls-ca.pem
       filesystem: root
       mode: 0644
+      overwrite: true
       contents:
         inline: |-
 {{ .TLSCA | indent 10 }}
     - path: /etc/kubernetes/bootstrap/kubeconfig
       filesystem: root
       mode: 0644
+      overwrite: true
       contents:
         inline: |-
           apiVersion: v1
@@ -517,6 +531,7 @@ storage:
     - path: /etc/kubernetes/kube-proxy/kubeconfig
       filesystem: root
       mode: 0644
+      overwrite: true
       contents:
         inline: |-
           apiVersion: v1
@@ -540,6 +555,7 @@ storage:
     - path: /etc/kubernetes/kubelet/config
       filesystem: root
       mode: 0644
+      overwrite: true
       contents:
         inline: |-
           kind: KubeletConfiguration
@@ -555,6 +571,7 @@ storage:
     - path: /etc/kubernetes/kube-proxy/config
       filesystem: root
       mode: 0644
+      overwrite: true
       contents:
         inline: |-
           apiVersion: kubeproxy.config.k8s.io/v1alpha1
@@ -592,6 +609,7 @@ storage:
     - path: /etc/kubernetes/openstack/openstack.config
       filesystem: root
       mode: 0644
+      overwrite: true
       contents:
         inline: |-
           [Global]
@@ -618,12 +636,14 @@ storage:
     - path: /etc/coreos/update.conf
       filesystem: root
       mode: 0644
+      overwrite: true
       contents:
         inline: |-
           REBOOT_STRATEGY="off"
     - path: /etc/kubernetes/fix-cert-roration.sh
       filesystem: root
       mode: 0755
+      overwrite: true
       contents:
         inline: |-
           #!/bin/bash
@@ -657,6 +677,7 @@ storage:
     - path: /opt/bin/rkt
       filesystem: root
       mode: 0755
+      overwrite: true
       contents:
         remote:
           url: https://repo.{{.OpenstackRegion}}.cloud.sap/controlplane/flatcar-rkt/rkt-v1.30.0.gz
@@ -668,6 +689,7 @@ storage:
     - path: /opt/rkt/stage1-fly.aci
       filesystem: root
       mode: 0644
+      overwrite: true
       contents:
         remote:
           url: https://repo.{{.OpenstackRegion}}.cloud.sap/controlplane/flatcar-rkt/stage1-fly-rkt-v1.30.0.aci
@@ -678,6 +700,7 @@ storage:
     - path: /opt/rkt/stage1-coreos.aci
       filesystem: root
       mode: 0644
+      overwrite: true
       contents:
         remote:
           url: https://repo.{{.OpenstackRegion}}.cloud.sap/controlplane/flatcar-rkt/stage1-coreos-rkt-v1.30.0.aci
@@ -688,6 +711,7 @@ storage:
     - path: /etc/rkt/paths.d/stage1.json
       filesystem: root
       mode: 0644
+      overwrite: true
       contents:
         inline: |-
           {
@@ -699,6 +723,7 @@ storage:
     - path: /opt/bin/kubelet-wrapper
       filesystem: root
       mode: 0755
+      overwrite: true
       contents:
         inline: |-
           #!/bin/bash
@@ -778,6 +803,7 @@ storage:
     - path: /opt/bin/flannel-wrapper
       filesystem: root
       mode: 0755
+      overwrite: true
       contents:
         inline: |-
           #!/bin/bash -e
@@ -852,11 +878,13 @@ storage:
     - path: /etc/modules-load.d/br_netfilter.conf
       filesystem: root
       mode: 0644
+      overwrite: true
       contents:
         inline: br_netfilter
     - path: /etc/sysctl.d/30-br_netfilter.conf
       filesystem: root
       mode: 0644
+      overwrite: true
       contents:
         inline: |
           net.bridge.bridge-nf-call-ip6tables = 1
