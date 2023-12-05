@@ -4,7 +4,7 @@ import (
 	"errors"
 	"reflect"
 
-	"github.com/imdario/mergo"
+	"dario.cat/mergo"
 	"github.com/joeshaw/envdecode"
 )
 

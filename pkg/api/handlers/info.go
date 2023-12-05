@@ -3,7 +3,7 @@ package handlers
 import (
 	"sort"
 
-	"github.com/Masterminds/semver"
+	"github.com/Masterminds/semver/v3"
 	"github.com/go-openapi/runtime/middleware"
 
 	"github.com/sapcc/kubernikus/pkg/api"
