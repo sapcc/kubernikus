@@ -34,7 +34,7 @@ systemd:
           contents: |
             [Service]
             ExecStart=
-            ExecStart=/usr/bin/env PATH=${TORCX_BINDIR}:${PATH} ${TORCX_BINDIR}/containerd
+            ExecStart=/usr/bin/containerd
     - name: docker.service
       enable: true
       dropins:
@@ -324,10 +324,16 @@ storage:
         inline: |
           #!/usr/bin/env bash
           set -eux
+          mkdir -p /etc/containerd
           # copy original file just in case config injection fails
-          mkdir -p /etc/containerd/
-          cp /run/torcx/unpack/docker/usr/share/containerd/config.toml /etc/containerd/config.toml
-          cp /run/torcx/unpack/docker/usr/share/containerd/config.toml  output.toml 
+          if [ -f "/run/torcx/unpack/docker/usr/share/containerd/config.toml" ]; then
+            cp /run/torcx/unpack/docker/usr/share/containerd/config.toml /etc/containerd/config.toml
+          fi
+          # without torcx
+          if [ -f "/usr/share/containerd/config.toml" ]; then
+            cp -f /usr/share/containerd/config.toml /etc/containerd/config.toml
+          fi
+          cp -f /etc/containerd/config.toml output.toml
           #download xtoml 
           curl https://repo.{{ .OpenstackRegion }}.cloud.sap/controlplane/xtoml/xtoml -o xtoml
           chmod +x xtoml
