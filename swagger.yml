@@ -138,7 +138,7 @@ paths:
         in: path
     get:
       operationId: ShowCluster
-      summary: Show the specified cluser
+      summary: Show the specified cluster
       responses:
         '200':
           description: OK
@@ -156,7 +156,7 @@ paths:
           $ref: '#/responses/errorResponse'
     put:
       operationId: UpdateCluster
-      summary: Update the specified cluser
+      summary: Update the specified cluster
       responses:
         '200':
           description: OK
@@ -351,7 +351,7 @@ definitions:
           properties:
             name:
               type: string
-            publicKey: 
+            publicKey:
               type: string
 
       routers:
@@ -476,11 +476,11 @@ definitions:
         type: boolean
       dashboard:
         type: boolean
-        x-nullable: true 
+        x-nullable: true
         x-omitempty: false
       dex:
         type: boolean
-        x-nullable: true 
+        x-nullable: true
         x-omitempty: false
       serviceCIDR:
         description: CIDR Range for Services in the cluster. Can not be updated.
@@ -606,11 +606,11 @@ definitions:
         $ref: '#/definitions/NodePoolConfig'
   NodePoolConfig:
     type: object
-    x-nullable: true 
+    x-nullable: true
     properties:
       allowReboot:
         description: Allow automatic drain and reboot of nodes. Enables OS updates. Required by security policy.
-        x-nullable: true 
+        x-nullable: true
         x-omitempty: false
         type: boolean
       allowReplace:

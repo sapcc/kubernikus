@@ -92,7 +92,7 @@ func init() {
     },
     "/api/v1/clusters/{name}": {
       "get": {
-        "summary": "Show the specified cluser",
+        "summary": "Show the specified cluster",
         "operationId": "ShowCluster",
         "responses": {
           "200": {
@@ -107,7 +107,7 @@ func init() {
         }
       },
       "put": {
-        "summary": "Update the specified cluser",
+        "summary": "Update the specified cluster",
         "operationId": "UpdateCluster",
         "parameters": [
           {
@@ -1150,7 +1150,7 @@ func init() {
     },
     "/api/v1/clusters/{name}": {
       "get": {
-        "summary": "Show the specified cluser",
+        "summary": "Show the specified cluster",
         "operationId": "ShowCluster",
         "responses": {
           "200": {
@@ -1168,7 +1168,7 @@ func init() {
         }
       },
       "put": {
-        "summary": "Update the specified cluser",
+        "summary": "Update the specified cluster",
         "operationId": "UpdateCluster",
         "parameters": [
           {

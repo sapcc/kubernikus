@@ -552,7 +552,7 @@ func (a *Client) ListClusters(params *ListClustersParams, authInfo runtime.Clien
 }
 
 /*
-ShowCluster shows the specified cluser
+ShowCluster shows the specified cluster
 */
 func (a *Client) ShowCluster(params *ShowClusterParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ShowClusterOK, error) {
 	// TODO: Validate the params before sending
@@ -628,7 +628,7 @@ func (a *Client) TerminateCluster(params *TerminateClusterParams, authInfo runti
 }
 
 /*
-UpdateCluster updates the specified cluser
+UpdateCluster updates the specified cluster
 */
 func (a *Client) UpdateCluster(params *UpdateClusterParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*UpdateClusterOK, error) {
 	// TODO: Validate the params before sending
