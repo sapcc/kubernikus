@@ -34,7 +34,7 @@ func NewShowCluster(ctx *middleware.Context, handler ShowClusterHandler) *ShowCl
 /*
 	ShowCluster swagger:route GET /api/v1/clusters/{name} showCluster
 
-Show the specified cluser
+Show the specified cluster
 */
 type ShowCluster struct {
 	Context *middleware.Context

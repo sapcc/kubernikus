@@ -34,7 +34,7 @@ func NewUpdateCluster(ctx *middleware.Context, handler UpdateClusterHandler) *Up
 /*
 	UpdateCluster swagger:route PUT /api/v1/clusters/{name} updateCluster
 
-Update the specified cluser
+Update the specified cluster
 */
 type UpdateCluster struct {
 	Context *middleware.Context
