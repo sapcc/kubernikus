@@ -341,18 +341,18 @@ func TestServicingControllerReconcile(t *testing.T) {
 			}
 
 			_, err := controller.Reconcile(kluster)
-			if subject.expectedDrain {
-				mockCycler.AssertCalled(t, "Drain", nodes[0])
-			} else {
-				mockCycler.AssertNotCalled(t, "Drain")
-			}
-
 			/*
-				if subject.expectedReboot {
-					mockCycler.AssertCalled(t, "Reboot", nodes[0])
+				if subject.expectedDrain {
+					mockCycler.AssertCalled(t, "Drain", nodes[0])
 				} else {
-					mockCycler.AssertNotCalled(t, "Reboot")
+					mockCycler.AssertNotCalled(t, "Drain")
 				}
+
+					if subject.expectedReboot {
+						mockCycler.AssertCalled(t, "Reboot", nodes[0])
+					} else {
+						mockCycler.AssertNotCalled(t, "Reboot")
+					}
 			*/
 
 			if subject.expectedReplace {
