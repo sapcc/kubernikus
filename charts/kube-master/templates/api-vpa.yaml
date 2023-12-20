@@ -20,4 +20,7 @@ spec:
 {{- if .Values.api.resources.limits }}
         maxAllowed:
           {{- toYaml .Values.api.resources.limits | nindent 12 }}
+{{- else if .Values.api.vpa.maxAllowed }}
+        maxAllowed:
+          {{- toYaml .Values.api.vpa.maxAllowed | nindent 12 }}
 {{- end }}

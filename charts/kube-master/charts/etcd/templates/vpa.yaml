@@ -20,14 +20,21 @@ spec:
 {{- if .Values.resources.limits }}
         maxAllowed:
           {{- toYaml .Values.resources.limits | nindent 12 }}
+{{- else if .Values.vpa.maxAllowed }}
+        maxAllowed:
+          {{- toYaml .Values.vpa.maxAllowed | nindent 12 }}
 {{- end }}
-{{- if and .Values.backup.enabled .Values.resources}}
+{{- if and .Values.backup.enabled .Values.backup.resources}}
       - containerName: backup
         controlledResources: ["cpu", "memory"]
         minAllowed:
           {{- toYaml .Values.backup.resources.requests | nindent 12 }}
 {{- if .Values.resources.limits }}
         maxAllowed:
-          {{- toYaml .Values.resources.limits| nindent 12 }}
+          {{- toYaml .Values.backup.resources.limits| nindent 12 }}
+{{- else if .Values.backup.vpa.maxAllowed }}
+        maxAllowed:
+          {{- toYaml .Values.backup.vpa.maxAllowed | nindent 12 }}
+{{- end }}
 {{- end }}
 {{- end }}
