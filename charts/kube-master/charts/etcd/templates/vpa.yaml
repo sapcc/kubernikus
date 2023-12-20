@@ -37,4 +37,3 @@ spec:
           {{- toYaml .Values.backup.vpa.maxAllowed | nindent 12 }}
 {{- end }}
 {{- end }}
-{{- end }}
