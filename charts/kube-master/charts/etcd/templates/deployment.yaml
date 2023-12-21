@@ -89,9 +89,14 @@ spec:
         app: {{ include "fullname" . }}
         release: {{ .Release.Name }}
         component: etcd
-{{- if .Values.backup.enabled }}
+{{- if or .Values.backup.enabled .Values.velero.enabled }}
       annotations:
+      {{- if .Values.backup.enabled }}
         prometheus.io/scrape: "true"
+      {{- end }}
+      {{- if .Values.velero.enabled }}
+        backup.velero.io/backup-volumes: "data"
+      {{- end }}
 {{- end }}
     spec:
       volumes:

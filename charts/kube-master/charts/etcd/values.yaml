@@ -47,3 +47,5 @@ secure:
 version: {}
 # kubernikus:
 # kubernetes: 1.10.11
+velero:
+  enabled: false
