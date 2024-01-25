@@ -1,4 +1,48 @@
 {{- if semverCompare ">= 1.24-0" .Capabilities.KubeVersion.Version -}}
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: wormhole
+  namespace: kube-system
+---
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: wormhole
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - pods
+  verbs:
+  - get
+- apiGroups:
+  - ""
+  resources:
+  - nodes
+  verbs:
+  - list
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - nodes/status
+  verbs:
+  - patch
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: wormhole
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: wormhole
+subjects:
+- kind: ServiceAccount
+  name: wormhole
+  namespace: kube-system
+---
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
@@ -39,7 +83,7 @@ spec:
       tolerations:
       - operator: Exists
         effect: NoSchedule
-      serviceAccountName: flannel
+      serviceAccountName: wormhole
       containers:
       - name: wormhole
         image: "{{ .Values.images.wormhole.repository }}:{{ .Values.version.kubernikus }}"
