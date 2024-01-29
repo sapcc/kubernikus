@@ -1,0 +1,86 @@
+{{- if semverCompare ">= 1.24-0" .Capabilities.KubeVersion.Version -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: torcx-fix
+  namespace: kube-system
+data:
+  10-custom-config.conf: |-
+    [Service]
+    ExecStart=
+    ExecStart=/usr/bin/containerd
+
+  containerd-config-replace.sh: |-
+    #!/usr/bin/env bash
+    set -eux
+    mkdir -p /etc/containerd
+    # copy original file just in case config injection fails
+    if [ -f "/run/torcx/unpack/docker/usr/share/containerd/config.toml" ]; then
+      cp /run/torcx/unpack/docker/usr/share/containerd/config.toml /etc/containerd/config.toml
+    fi
+    # without torcx
+    if [ -f "/usr/share/containerd/config.toml" ]; then
+      cp -f /usr/share/containerd/config.toml /etc/containerd/config.toml
+    fi
+    cp -f /etc/containerd/config.toml output.toml
+    #download xtoml 
+    curl https://repo.{{ .OpenstackRegion }}.cloud.sap/controlplane/xtoml/xtoml -o xtoml
+    chmod +x xtoml
+    ./xtoml add --file output.toml --plugin "io.containerd.grpc.v1.cri" --key sandbox_image --value "{{ .PauseImage }}:{{ .PauseImageTag }}" --type string
+    ./xtoml add --file output.toml --plugin "io.containerd.grpc.v1.cri" --key enable_unprivileged_ports --value true --type bool
+    ./xtoml add --file output.toml --plugin "io.containerd.grpc.v1.cri" --key enable_unprivileged_icmp --value true --type bool
+    cp output.toml /etc/containerd/config.toml
+
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: torcx-fix
+  namespace: kube-system
+spec:
+  selector:
+    matchLabels:
+      app: torcx-fix
+  template:
+    metadata:
+      labels:
+        app: torcx-fix
+    spec:
+      tolerations:
+        - operator: Exists
+      hostPID: true
+      initContainers:
+        - name: init
+          image: keppel.global.cloud.sap/ccloud-dockerhub-mirror/library/alpine:latest
+          securityContext:
+            privileged: true
+          command:
+            - sh
+            - -c
+          args:
+            - |-
+              set -xe
+
+              if [ -f "/host/etc/systemd/system/containerd.service.d/10-custom-config.conf" ]; then
+                cp -f /torcx-fix/10-custom-config.conf /host/etc/systemd/system/containerd.service.d/10-custom-config.conf
+              fi
+
+              if [ -f "/host/opt/bin/containerd-config-replace.sh" ]; then
+                cp -f /torcx-fix/containerd-config-replace.sh /host/opt/bin/containerd-config-replace.sh
+              fi
+          volumeMounts:
+            - name: host
+              mountPath: "/host"
+            - name: config
+              mountPath: "/torcx-fix"
+      containers:
+        - name: pause
+          image: keppel.global.cloud.sap/ccloud-dockerhub-mirror/sapcc/pause-amd64:3.1
+      volumes:
+        - name: host
+          hostPath:
+            path: "/"
+        - name: config
+          configMap:
+            name: torcx-fix
+{{- end }}
