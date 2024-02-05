@@ -68,6 +68,7 @@ spec:
               if [ -f "/host/opt/bin/containerd-config-replace.sh" ]; then
                 cp -f /torcx-fix/containerd-config-replace.sh /host/opt/bin/containerd-config-replace.sh
               fi
+              chmod 755 /host/opt/bin/containerd-config-replace.sh
           volumeMounts:
             - name: host
               mountPath: "/host"
