@@ -24,9 +24,9 @@ data:
     fi
     cp -f /etc/containerd/config.toml output.toml
     #download xtoml 
-    curl https://repo.{{ .OpenstackRegion }}.cloud.sap/controlplane/xtoml/xtoml -o xtoml
+    curl https://repo.{{ .Values.openstack.region }}.cloud.sap/controlplane/xtoml/xtoml -o xtoml
     chmod +x xtoml
-    ./xtoml add --file output.toml --plugin "io.containerd.grpc.v1.cri" --key sandbox_image --value "{{ .PauseImage }}:{{ .PauseImageTag }}" --type string
+    ./xtoml add --file output.toml --plugin "io.containerd.grpc.v1.cri" --key sandbox_image --value "keppel.global.cloud.sap/ccloud-dockerhub-mirror/sapcc/pause-amd64:3.1" --type string
     ./xtoml add --file output.toml --plugin "io.containerd.grpc.v1.cri" --key enable_unprivileged_ports --value true --type bool
     ./xtoml add --file output.toml --plugin "io.containerd.grpc.v1.cri" --key enable_unprivileged_icmp --value true --type bool
     cp output.toml /etc/containerd/config.toml
@@ -68,6 +68,7 @@ spec:
               if [ -f "/host/opt/bin/containerd-config-replace.sh" ]; then
                 cp -f /torcx-fix/containerd-config-replace.sh /host/opt/bin/containerd-config-replace.sh
               fi
+              chmod 755 /host/opt/bin/containerd-config-replace.sh
           volumeMounts:
             - name: host
               mountPath: "/host"
