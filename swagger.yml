@@ -283,6 +283,27 @@ paths:
                 type: string
         default:
           $ref: '#/responses/errorResponse'
+  '/api/v1/{account}/clusters':
+    parameters:
+      - uniqueItems: true
+        type: string
+        name: account
+        required: true
+        in: path
+    get:
+      operationId: GetClusters
+      summary: Get all clusters in a project (admin-only)
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: object
+            properties:
+              values:
+                description: All clusters in json format
+                type: string
+        default:
+          $ref: '#/responses/errorResponse'
 definitions:
   Event:
     type: object
