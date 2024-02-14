@@ -286,6 +286,32 @@ func init() {
         }
       ]
     },
+    "/api/v1/clusters/{name}/kubeadmsecret": {
+      "get": {
+        "summary": "Get CA secret for kubeadm",
+        "operationId": "GetClusterKubeadmSecret",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/KubeadmSecret"
+            }
+          },
+          "default": {
+            "$ref": "#/responses/errorResponse"
+          }
+        }
+      },
+      "parameters": [
+        {
+          "uniqueItems": true,
+          "type": "string",
+          "name": "name",
+          "in": "path",
+          "required": true
+        }
+      ]
+    },
     "/api/v1/openstack/metadata": {
       "get": {
         "summary": "Grab bag of openstack metadata",
@@ -659,6 +685,9 @@ func init() {
         "openstack": {
           "$ref": "#/definitions/OpenstackSpec"
         },
+        "seedKubeadm": {
+          "type": "boolean"
+        },
         "serviceCIDR": {
           "description": "CIDR Range for Services in the cluster. Can not be updated.",
           "type": "string",
@@ -721,6 +750,14 @@ func init() {
       },
       "x-nullable": false,
       "readOnly": true
+    },
+    "KubeadmSecret": {
+      "type": "object",
+      "properties": {
+        "secret": {
+          "type": "string"
+        }
+      }
     },
     "NodePool": {
       "type": "object",
@@ -1368,6 +1405,35 @@ func init() {
         }
       ]
     },
+    "/api/v1/clusters/{name}/kubeadmsecret": {
+      "get": {
+        "summary": "Get CA secret for kubeadm",
+        "operationId": "GetClusterKubeadmSecret",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/KubeadmSecret"
+            }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      },
+      "parameters": [
+        {
+          "uniqueItems": true,
+          "type": "string",
+          "name": "name",
+          "in": "path",
+          "required": true
+        }
+      ]
+    },
     "/api/v1/openstack/metadata": {
       "get": {
         "summary": "Grab bag of openstack metadata",
@@ -1711,6 +1777,9 @@ func init() {
         "openstack": {
           "$ref": "#/definitions/OpenstackSpec"
         },
+        "seedKubeadm": {
+          "type": "boolean"
+        },
         "serviceCIDR": {
           "description": "CIDR Range for Services in the cluster. Can not be updated.",
           "type": "string",
@@ -1773,6 +1842,14 @@ func init() {
       },
       "x-nullable": false,
       "readOnly": true
+    },
+    "KubeadmSecret": {
+      "type": "object",
+      "properties": {
+        "secret": {
+          "type": "string"
+        }
+      }
     },
     "NodePool": {
       "type": "object",

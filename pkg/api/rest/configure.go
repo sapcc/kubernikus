@@ -77,6 +77,7 @@ func Configure(api *operations.KubernikusAPI, rt *apipkg.Runtime) error {
 	api.GetOpenstackMetadataHandler = handlers.NewGetOpenstackMetadata(rt)
 	api.GetClusterEventsHandler = handlers.NewGetClusterEvents(rt)
 	api.GetClusterValuesHandler = handlers.NewGetClusterValues(rt)
+	api.GetClusterKubeadmSecretHandler = handlers.NewGetClusterKubeadmSecret(rt)
 
 	api.ServerShutdown = func() {}
 

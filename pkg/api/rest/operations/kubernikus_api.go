@@ -68,6 +68,9 @@ func NewKubernikusAPI(spec *loads.Document) *KubernikusAPI {
 		GetClusterInfoHandler: GetClusterInfoHandlerFunc(func(params GetClusterInfoParams, principal *models.Principal) middleware.Responder {
 			return middleware.NotImplemented("operation GetClusterInfo has not yet been implemented")
 		}),
+		GetClusterKubeadmSecretHandler: GetClusterKubeadmSecretHandlerFunc(func(params GetClusterKubeadmSecretParams, principal *models.Principal) middleware.Responder {
+			return middleware.NotImplemented("operation GetClusterKubeadmSecret has not yet been implemented")
+		}),
 		GetClusterValuesHandler: GetClusterValuesHandlerFunc(func(params GetClusterValuesParams, principal *models.Principal) middleware.Responder {
 			return middleware.NotImplemented("operation GetClusterValues has not yet been implemented")
 		}),
@@ -165,6 +168,8 @@ type KubernikusAPI struct {
 	GetClusterEventsHandler GetClusterEventsHandler
 	// GetClusterInfoHandler sets the operation handler for the get cluster info operation
 	GetClusterInfoHandler GetClusterInfoHandler
+	// GetClusterKubeadmSecretHandler sets the operation handler for the get cluster kubeadm secret operation
+	GetClusterKubeadmSecretHandler GetClusterKubeadmSecretHandler
 	// GetClusterValuesHandler sets the operation handler for the get cluster values operation
 	GetClusterValuesHandler GetClusterValuesHandler
 	// GetOpenstackMetadataHandler sets the operation handler for the get openstack metadata operation
@@ -288,6 +293,9 @@ func (o *KubernikusAPI) Validate() error {
 	}
 	if o.GetClusterInfoHandler == nil {
 		unregistered = append(unregistered, "GetClusterInfoHandler")
+	}
+	if o.GetClusterKubeadmSecretHandler == nil {
+		unregistered = append(unregistered, "GetClusterKubeadmSecretHandler")
 	}
 	if o.GetClusterValuesHandler == nil {
 		unregistered = append(unregistered, "GetClusterValuesHandler")
@@ -449,6 +457,10 @@ func (o *KubernikusAPI) initHandlerCache() {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/api/v1/clusters/{name}/info"] = NewGetClusterInfo(o.context, o.GetClusterInfoHandler)
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/api/v1/clusters/{name}/kubeadmsecret"] = NewGetClusterKubeadmSecret(o.context, o.GetClusterKubeadmSecretHandler)
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
