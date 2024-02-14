@@ -62,7 +62,7 @@ type SeedReconciler struct {
 	Logger  log.Logger
 }
 
-func (sr *SeedReconciler) EnrichHelmValuesForSeed(client project.ProjectClient, values map[string]interface{}, customCNI bool) error {
+func (sr *SeedReconciler) EnrichHelmValuesForSeed(client project.ProjectClient, values map[string]interface{}, customCNI, seedKubeadm bool) error {
 	metadata, err := client.GetMetadata()
 	if err != nil {
 		return err
@@ -96,6 +96,7 @@ func (sr *SeedReconciler) EnrichHelmValuesForSeed(client project.ProjectClient, 
 		"kube":    isKubeDns,
 	}
 	values["customCNI"] = customCNI
+	values["seedKubeadm"] = seedKubeadm
 	return nil
 }
 

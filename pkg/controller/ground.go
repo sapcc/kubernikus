@@ -489,7 +489,7 @@ func (op *GroundControl) reconcileSeed(kluster *v1.Kluster, projectClient projec
 	}
 
 	seedReconciler := ground.NewSeedReconciler(&op.Clients, kluster, op.Logger)
-	if err := seedReconciler.EnrichHelmValuesForSeed(projectClient, helmValues, kluster.Spec.CustomCNI); err != nil {
+	if err := seedReconciler.EnrichHelmValuesForSeed(projectClient, helmValues, kluster.Spec.CustomCNI, kluster.Spec.SeedKubeadm); err != nil {
 		if !isNetErr(err) {
 			metrics.SeedReconciliationFailuresTotal.With(prometheus.Labels{"kluster_name": kluster.Spec.Name}).Inc()
 		}
