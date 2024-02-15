@@ -1,3 +1,265 @@
 {{- if .Values.seedKubeadm }}
-
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: cc-admin
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-admin
+subjects:
+- kind: User
+  name: {{ .Values.clusterAdminUser }}
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: kubeadm:bootstrap-signer-clusterinfo
+  namespace: kube-public
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: kubeadm:bootstrap-signer-clusterinfo
+subjects:
+- apiGroup: rbac.authorization.k8s.io
+  kind: User
+  name: system:anonymous
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: kubeadm:bootstrap-signer-clusterinfo
+  namespace: kube-public
+rules:
+- apiGroups:
+  - ""
+  resourceNames:
+  - cluster-info
+  resources:
+  - configmaps
+  verbs:
+  - get
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: kubeadm:nodes-kubeadm-config
+  namespace: kube-system
+rules:
+- apiGroups:
+  - ""
+  resourceNames:
+  - kubeadm-config
+  resources:
+  - configmaps
+  verbs:
+  - get
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: kubeadm:nodes-kubeadm-config
+  namespace: kube-system
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: kubeadm:nodes-kubeadm-config
+subjects:
+- apiGroup: rbac.authorization.k8s.io
+  kind: Group
+  name: system:bootstrappers:kubeadm:default-node-token
+- apiGroup: rbac.authorization.k8s.io
+  kind: Group
+  name: system:nodes
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: kube-proxy
+  namespace: kube-system
+rules:
+- apiGroups:
+  - ""
+  resourceNames:
+  - kube-proxy
+  resources:
+  - configmaps
+  verbs:
+  - get
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: kubeadm:kubelet-config
+  namespace: kube-system
+rules:
+- apiGroups:
+  - ""
+  resourceNames:
+  - kubelet-config
+  resources:
+  - configmaps
+  verbs:
+  - get
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: kube-proxy
+  namespace: kube-system
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: kube-proxy
+subjects:
+- apiGroup: rbac.authorization.k8s.io
+  kind: Group
+  name: system:bootstrappers:kubeadm:default-node-token
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: kubeadm:kubelet-config
+  namespace: kube-system
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: kubeadm:kubelet-config
+subjects:
+- apiGroup: rbac.authorization.k8s.io
+  kind: Group
+  name: system:nodes
+- apiGroup: rbac.authorization.k8s.io
+  kind: Group
+  name: system:bootstrappers:kubeadm:default-node-token
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: kubeadm:get-nodes
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - nodes
+  verbs:
+  - get
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: kubeadm:get-nodes
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: kubeadm:get-nodes
+subjects:
+- apiGroup: rbac.authorization.k8s.io
+  kind: Group
+  name: system:bootstrappers:kubeadm:default-node-token
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cluster-info
+  namespace: kube-public
+data: 
+  kubeconfig : |
+    apiVersion: v1
+    clusters:
+    - cluster:
+        certificate-authority-data: {{ .Values.tlsCaCert }}
+        server: https://{{ .Values.api.apiserverHost }}
+      name: ""
+    contexts: null
+    current-context: ""
+    kind: Config
+    preferences: {}
+    users: null
+---
+apiVersion: v1
+data:
+  ClusterConfiguration: |
+    apiServer:
+      extraArgs:
+        authorization-mode: Node,RBAC
+        cloud-provider: external
+      timeoutForControlPlane: 4m0s
+    apiVersion: kubeadm.k8s.io/v1beta3
+    certificatesDir: /etc/kubernetes/pki
+    clusterName: "{{ .Values.name }}"
+    controlPlaneEndpoint: "{{ .Values.api.apiserverHost }}"
+    controllerManager:
+      extraArgs:
+        cloud-provider: external
+    dns: {}
+    etcd:
+      local:
+        dataDir: /var/lib/etcd
+    imageRepository: registry.k8s.io
+    kind: ClusterConfiguration
+    kubernetesVersion: {{ .Capabilities.KubeVersion.Version }}
+    networking:
+      dnsDomain: {{ .Values.dns.domain }}
+      podSubnet: {{ .Values.clusterCIDR }}
+      serviceSubnet: {{ .Values.serviceCIDR }}
+    scheduler: {}
+kind: ConfigMap
+metadata:
+  name: kubeadm-config
+  namespace: kube-system
+---
+apiVersion: v1
+data:
+  kubelet: |
+    apiVersion: kubelet.config.k8s.io/v1beta1
+    authentication:
+      anonymous:
+        enabled: false
+      webhook:
+        cacheTTL: 0s
+        enabled: true
+      x509:
+        clientCAFile: /etc/kubernetes/pki/ca.crt
+    authorization:
+      mode: Webhook
+      webhook:
+        cacheAuthorizedTTL: 0s
+        cacheUnauthorizedTTL: 0s
+    cgroupDriver: systemd
+    clusterDNS:
+    - {{ .Values.dns.address }}
+    clusterDomain: cluster.local
+    containerRuntimeEndpoint: ""
+    cpuManagerReconcilePeriod: 0s
+    evictionPressureTransitionPeriod: 0s
+    fileCheckFrequency: 0s
+    healthzBindAddress: 127.0.0.1
+    healthzPort: 10248
+    httpCheckFrequency: 0s
+    imageMinimumGCAge: 0s
+    kind: KubeletConfiguration
+    logging:
+      flushFrequency: 0
+      options:
+        json:
+          infoBufferSize: "0"
+      verbosity: 0
+    memorySwap: {}
+    nodeStatusReportFrequency: 0s
+    nodeStatusUpdateFrequency: 0s
+    resolvConf: /run/systemd/resolve/resolv.conf
+    rotateCertificates: true
+    runtimeRequestTimeout: 0s
+    shutdownGracePeriod: 0s
+    shutdownGracePeriodCriticalPods: 0s
+    staticPodPath: /etc/kubernetes/manifests
+    streamingConnectionIdleTimeout: 0s
+    syncFrequency: 0s
+    volumeStatsAggPeriod: 0s
+kind: ConfigMap
+metadata:
+  name: kubelet-config
+  namespace: kube-system
 {{- end }}
