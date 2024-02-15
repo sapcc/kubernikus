@@ -188,7 +188,7 @@ data:
       timeoutForControlPlane: 4m0s
     apiVersion: kubeadm.k8s.io/v1beta3
     certificatesDir: /etc/kubernetes/pki
-    clusterName: "{{ .Values.name }}"
+    clusterName: "{{ .Values.shortName }}"
     controlPlaneEndpoint: "{{ .Values.api.apiserverHost }}"
     controllerManager:
       extraArgs:
