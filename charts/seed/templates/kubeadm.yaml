@@ -169,7 +169,7 @@ data:
     apiVersion: v1
     clusters:
     - cluster:
-        certificate-authority-data: {{ .Values.tlsCaCert | b64 }}
+        certificate-authority-data: {{ .Values.tlsCaCert | b64enc }}
         server: https://{{ .Values.api.apiserverHost }}
       name: ""
     contexts: null
