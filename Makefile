@@ -55,6 +55,13 @@ build:
 	docker build $(BUILD_ARGS) -t sapcc/kubernikus-docs:$(VERSION)         -f Dockerfile.kubernikus-docs .
 	docker build $(BUILD_ARGS) -t sapcc/kubernikus:$(VERSION)              -f Dockerfile .
 
+buildx:
+	docker buildx build $(BUILD_ARGS) --provenance=false --platform=linux/amd64 -t sapcc/kubernikus-binaries:$(VERSION)             -f Dockerfile.kubernikus-binaries .
+	docker buildx build $(BUILD_ARGS) --provenance=false --platform=linux/amd64 -t sapcc/kubernikus-docs-builder:$(VERSION) --cache-from=sapcc/kubernikus-docs-builder:latest ./contrib/kubernikus-docs-builder
+	docker buildx build $(BUILD_ARGS) --provenance=false --platform=linux/amd64 -t sapcc/kubernikusctl:$(VERSION)                                                             ./contrib/kubernikusctl
+	docker buildx build $(BUILD_ARGS) --provenance=false --platform=linux/amd64 -t sapcc/kubernikus-docs:$(VERSION)         -f Dockerfile.kubernikus-docs .
+	docker buildx build $(BUILD_ARGS) --push --provenance=false --platform=linux/amd64  -t sapcc/kubernikus:$(VERSION)              -f Dockerfile .
+
 pull:
 	docker pull sapcc/kubernikus-docs-builder:latest
 
