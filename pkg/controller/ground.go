@@ -301,7 +301,7 @@ func (op *GroundControl) handler(key string) error {
 				if err != nil {
 					return err
 				}
-				err = op.reconcileSeed(kluster, projectClient, helmValues)
+				err = op.reconcileSeed(kluster, projectClient, helmValues, klusterSecret)
 				if err != nil {
 					return err
 				}
@@ -345,7 +345,7 @@ func (op *GroundControl) handler(key string) error {
 				if err != nil {
 					return err
 				}
-				if err := op.reconcileSeed(kluster, projectClient, helmValues); err != nil {
+				if err := op.reconcileSeed(kluster, projectClient, helmValues, klusterSecret); err != nil {
 					op.Logger.Log(
 						"msg", "Failed seed reconciliation",
 						"kluster", kluster.GetName(),
@@ -475,7 +475,7 @@ func (op *GroundControl) handler(key string) error {
 	return nil
 }
 
-func (op *GroundControl) reconcileSeed(kluster *v1.Kluster, projectClient project.ProjectClient, helmValues map[string]interface{}) error {
+func (op *GroundControl) reconcileSeed(kluster *v1.Kluster, projectClient project.ProjectClient, helmValues map[string]interface{}, secret *v1.Secret) error {
 	isNetErr := func(err error) bool {
 		current := err
 		for current != nil {
@@ -489,7 +489,7 @@ func (op *GroundControl) reconcileSeed(kluster *v1.Kluster, projectClient projec
 	}
 
 	seedReconciler := ground.NewSeedReconciler(&op.Clients, kluster, op.Logger)
-	if err := seedReconciler.EnrichHelmValuesForSeed(projectClient, helmValues, kluster.Spec.CustomCNI, kluster.Spec.SeedKubeadm); err != nil {
+	if err := seedReconciler.EnrichHelmValuesForSeed(projectClient, helmValues, kluster, secret); err != nil {
 		if !isNetErr(err) {
 			metrics.SeedReconciliationFailuresTotal.With(prometheus.Labels{"kluster_name": kluster.Spec.Name}).Inc()
 		}
