@@ -188,7 +188,7 @@ data:
       timeoutForControlPlane: 4m0s
     apiVersion: kubeadm.k8s.io/v1beta3
     certificatesDir: /etc/kubernetes/pki
-    clusterName: "{{ .Values.shortName }}"
+    clusterName: "{{ .Values.name }}"
     controlPlaneEndpoint: "{{ .Values.api.apiserverHost }}"
     controllerManager:
       extraArgs:
@@ -197,7 +197,7 @@ data:
     etcd:
       local:
         dataDir: /var/lib/etcd
-    imageRepository: registry.k8s.io
+    imageRepository: {{ .Values.kubeadmImageRepository }}
     kind: ClusterConfiguration
     kubernetesVersion: {{ .Capabilities.KubeVersion.Version }}
     networking:
@@ -230,7 +230,7 @@ data:
     cgroupDriver: systemd
     clusterDNS:
     - {{ .Values.dns.address }}
-    clusterDomain: cluster.local
+    clusterDomain: {{ .Values.dns.domain }}
     containerRuntimeEndpoint: ""
     cpuManagerReconcilePeriod: 0s
     evictionPressureTransitionPeriod: 0s

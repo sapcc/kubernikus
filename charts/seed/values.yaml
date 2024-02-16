@@ -40,6 +40,7 @@ version: {}
 # kubernetes: 1.10.11
 
 clusterAdminUser: TCC_D038720_01
+kubeadmImageRepository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror
 # tlsCaCert:
 # serviceCIDR
 
