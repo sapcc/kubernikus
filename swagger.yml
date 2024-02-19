@@ -283,6 +283,23 @@ paths:
                 type: string
         default:
           $ref: '#/responses/errorResponse'
+  '/api/v1/clusters/{name}/kubeadmsecret':
+    parameters:
+      - uniqueItems: true
+        type: string
+        name: name
+        required: true
+        in: path
+    get:
+      operationId: GetClusterKubeadmSecret
+      summary: Get CA secret for kubeadm
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/KubeadmSecret'
+        default:
+          $ref: '#/responses/errorResponse'
 definitions:
   Event:
     type: object
@@ -538,6 +555,8 @@ definitions:
         type: boolean
         x-nullable: false
         default: false
+      seedKubeadm:
+        type: boolean
   OpenstackSpec:
     type: object
     x-nullable: false
@@ -676,6 +695,11 @@ definitions:
       kubeletClientsCAFile:
         type: string
       config:
+        type: string
+  KubeadmSecret:
+    type: object
+    properties:
+      secret:
         type: string
   Principal:
     type: object

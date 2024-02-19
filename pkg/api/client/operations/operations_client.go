@@ -46,6 +46,8 @@ type ClientService interface {
 
 	GetClusterInfo(params *GetClusterInfoParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GetClusterInfoOK, error)
 
+	GetClusterKubeadmSecret(params *GetClusterKubeadmSecretParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GetClusterKubeadmSecretOK, error)
+
 	GetClusterValues(params *GetClusterValuesParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GetClusterValuesOK, error)
 
 	GetOpenstackMetadata(params *GetOpenstackMetadataParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GetOpenstackMetadataOK, error)
@@ -358,6 +360,44 @@ func (a *Client) GetClusterInfo(params *GetClusterInfoParams, authInfo runtime.C
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*GetClusterInfoDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+GetClusterKubeadmSecret gets c a secret for kubeadm
+*/
+func (a *Client) GetClusterKubeadmSecret(params *GetClusterKubeadmSecretParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GetClusterKubeadmSecretOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewGetClusterKubeadmSecretParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "GetClusterKubeadmSecret",
+		Method:             "GET",
+		PathPattern:        "/api/v1/clusters/{name}/kubeadmsecret",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"https"},
+		Params:             params,
+		Reader:             &GetClusterKubeadmSecretReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*GetClusterKubeadmSecretOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*GetClusterKubeadmSecretDefault)
 	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 

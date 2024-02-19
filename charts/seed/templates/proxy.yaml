@@ -75,6 +75,37 @@ data:
     mode: "iptables"
     oomScoreAdj: -999
     portRange: ""
+{{- if .Values.seedKubeadm }}
+  config.conf: |
+    apiVersion: kubeproxy.config.k8s.io/v1alpha1
+    kind: KubeProxyConfiguration
+    bindAddress: 0.0.0.0
+    healthzBindAddress: 0.0.0.0:10256
+    metricsBindAddress: 0.0.0.0:10249
+    clientConnection:
+      acceptContentTypes: ""
+      contentType: application/vnd.kubernetes.protobuf
+      kubeconfig: /var/lib/kube-proxy/kubeconfig
+      qps: 5
+      burst: 10
+    clusterCIDR: {{ .Values.clusterCIDR }}
+    configSyncPeriod: 15m0s
+    conntrack:
+      maxPerCore: 32768
+      min: 131072
+      tcpCloseWaitTimeout: 1h0m0s
+      tcpEstablishedTimeout: 24h0m0s
+    enableProfiling: false
+    featureGates: {}
+    iptables:
+      masqueradeAll: false
+      masqueradeBit: 14
+      minSyncPeriod: 0s
+      syncPeriod: 30s
+    mode: "iptables"
+    oomScoreAdj: -999
+    portRange: ""
+{{- end }}
 ---
 apiVersion: apps/v1
 kind: DaemonSet
