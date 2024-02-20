@@ -99,7 +99,9 @@ func (sr *SeedReconciler) EnrichHelmValuesForSeed(client project.ProjectClient, 
 	values["customCNI"] = kluster.Spec.CustomCNI
 	values["seedKubeadm"] = kluster.Spec.SeedKubeadm
 	idx := strings.LastIndex(kluster.Spec.Name, "-")
-	values["shortName"] = kluster.Spec.Name[:idx]
+	if idx != -1 {
+		values["shortName"] = kluster.Spec.Name[:idx]
+	}
 	values["tlsCaCert"] = secret.TLSCACertificate
 	return nil
 }
