@@ -4359,7 +4359,7 @@ imagesForVersion:
     dashboardProxy:
       repository: keppel.global.cloud.sap/ccloud/keycloak-gatekeeper
       tag: 6.0.1
-    default: true
+    default: false
     dex:
       repository: keppel.global.cloud.sap/ccloud/dex
       tag: 38f4f8ea8d487470a1dd5b83d66b428d8b502f81
@@ -4406,7 +4406,7 @@ imagesForVersion:
       tag: v1.28.1
     cloudControllerManager:
       repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/provider-os/openstack-cloud-controller-manager
-      tag: v1.28.1
+      tag: v1.29.0
     cniPlugins:
       repository: keppel.global.cloud.sap/ccloud/cni-plugins
       tag: v1.1.1
