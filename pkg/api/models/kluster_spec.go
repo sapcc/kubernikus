@@ -64,6 +64,9 @@ type KlusterSpec struct {
 	// node pools
 	NodePools []NodePool `json:"nodePools"`
 
+	// oidc
+	Oidc *OIDC `json:"oidc,omitempty"`
+
 	// openstack
 	Openstack OpenstackSpec `json:"openstack,omitempty"`
 
@@ -104,6 +107,10 @@ func (m *KlusterSpec) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateNodePools(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateOidc(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -267,6 +274,25 @@ func (m *KlusterSpec) validateNodePools(formats strfmt.Registry) error {
 	return nil
 }
 
+func (m *KlusterSpec) validateOidc(formats strfmt.Registry) error {
+	if swag.IsZero(m.Oidc) { // not required
+		return nil
+	}
+
+	if m.Oidc != nil {
+		if err := m.Oidc.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("oidc")
+			} else if ce, ok := err.(*errors.CompositeError); ok {
+				return ce.ValidateName("oidc")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (m *KlusterSpec) validateOpenstack(formats strfmt.Registry) error {
 	if swag.IsZero(m.Openstack) { // not required
 		return nil
@@ -328,6 +354,10 @@ func (m *KlusterSpec) ContextValidate(ctx context.Context, formats strfmt.Regist
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateOidc(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateOpenstack(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -351,6 +381,22 @@ func (m *KlusterSpec) contextValidateNodePools(ctx context.Context, formats strf
 			return err
 		}
 
+	}
+
+	return nil
+}
+
+func (m *KlusterSpec) contextValidateOidc(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Oidc != nil {
+		if err := m.Oidc.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("oidc")
+			} else if ce, ok := err.(*errors.CompositeError); ok {
+				return ce.ValidateName("oidc")
+			}
+			return err
+		}
 	}
 
 	return nil

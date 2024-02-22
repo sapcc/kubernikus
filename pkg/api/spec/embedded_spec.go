@@ -682,6 +682,9 @@ func init() {
             "$ref": "#/definitions/NodePool"
           }
         },
+        "oidc": {
+          "$ref": "#/definitions/OIDC"
+        },
         "openstack": {
           "$ref": "#/definitions/OpenstackSpec"
         },
@@ -858,6 +861,18 @@ func init() {
         }
       },
       "x-nullable": false
+    },
+    "OIDC": {
+      "type": "object",
+      "properties": {
+        "clientID": {
+          "type": "string"
+        },
+        "issuerURL": {
+          "type": "string"
+        }
+      },
+      "x-nullable": true
     },
     "OpenstackMetadata": {
       "type": "object",
@@ -1774,6 +1789,9 @@ func init() {
             "$ref": "#/definitions/NodePool"
           }
         },
+        "oidc": {
+          "$ref": "#/definitions/OIDC"
+        },
         "openstack": {
           "$ref": "#/definitions/OpenstackSpec"
         },
@@ -1951,6 +1969,18 @@ func init() {
         }
       },
       "x-nullable": false
+    },
+    "OIDC": {
+      "type": "object",
+      "properties": {
+        "clientID": {
+          "type": "string"
+        },
+        "issuerURL": {
+          "type": "string"
+        }
+      },
+      "x-nullable": true
     },
     "OpenstackMetadata": {
       "type": "object",
