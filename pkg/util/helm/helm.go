@@ -61,10 +61,11 @@ type etcdBackupValues struct {
 }
 
 type apiValues struct {
-	ApiserverHost      string `yaml:"apiserverHost,omitempty" json:"apiserverHost,omitempty"`
-	WormholeHost       string `yaml:"wormholeHost,omitempty" json:"wormholeHost,omitempty"`
-	CORSAllowedOrigins string `yaml:"corsAllowedOrigins,omitempty" json:"corsAllowedOrigins,omitempty"`
-	SNICertSecret      string `yaml:"sniCertSecret,omitempty" json:"sniCertSecret,omitempty"`
+	ApiserverHost      string     `yaml:"apiserverHost,omitempty" json:"apiserverHost,omitempty"`
+	WormholeHost       string     `yaml:"wormholeHost,omitempty" json:"wormholeHost,omitempty"`
+	CORSAllowedOrigins string     `yaml:"corsAllowedOrigins,omitempty" json:"corsAllowedOrigins,omitempty"`
+	SNICertSecret      string     `yaml:"sniCertSecret,omitempty" json:"sniCertSecret,omitempty"`
+	OIDC               oidcValues `yaml:"oidc,omitempty" json:"oidc,omitempty"`
 }
 
 type versionValues struct {
@@ -81,6 +82,11 @@ type dexValues struct {
 	StaticClientSecret string         `yaml:"staticClientSecret,omitempty" json:"staticClientSecret,omitempty"`
 	StaticPassword     staticPassword `yaml:"staticPasword,omitempty" json:"staticPasword,omitempty"`
 	Connectors         dexConnectors  `yaml:"connectors,omitempty" json:"connectors,omitempty"`
+}
+
+type oidcValues struct {
+	IssuerURL string `yaml:"issuerURL,omitempty" json:"issuerURL,omitempty"`
+	ClientID  string `yaml:"clientID,omitempty" json:"clientID,omitempty"`
 }
 
 type dexConnectors struct {
@@ -228,6 +234,12 @@ func KlusterToHelmValues(kluster *v1.Kluster, secret *v1.Secret, kubernetesVersi
 			LbFloatingNetworkID: kluster.Spec.Openstack.LBFloatingNetworkID,
 			RouterID:            kluster.Spec.Openstack.RouterID,
 			UseOctavia:          true,
+		}
+	}
+	if kluster.Spec.Oidc != nil {
+		values.Api.OIDC = oidcValues{
+			IssuerURL: kluster.Spec.Oidc.IssuerURL,
+			ClientID:  kluster.Spec.Oidc.ClientID,
 		}
 	}
 

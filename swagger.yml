@@ -557,6 +557,16 @@ definitions:
         default: false
       seedKubeadm:
         type: boolean
+      oidc:
+        $ref: '#/definitions/OIDC'
+  OIDC:
+    type: object
+    x-nullable: true
+    properties:
+      issuerURL:
+        type: string
+      clientID:
+        type: string
   OpenstackSpec:
     type: object
     x-nullable: false
