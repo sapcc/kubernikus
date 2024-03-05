@@ -91,7 +91,7 @@ func (c *klusterClient) CreateNode(kluster *v1.Kluster, pool *models.NodePool, n
 		Tags:             tags,
 	}
 
-	if os.Getenv("NODEPOOL_AFFINITY") != "" {
+	if os.Getenv("NODEPOOL_AFFINITY") != "" || os.Getenv("NODEPOOL_ANTI_AFFINITY") != "" {
 		serverGroupID, err := c.EnsureServerGroup(kluster.Name + "/" + pool.Name)
 		if err != nil {
 			return "", fmt.Errorf("Failed to ensure server group: %w", err)
@@ -264,6 +264,10 @@ func (c *klusterClient) EnsureKubernikusRuleInSecurityGroup(kluster *v1.Kluster)
 }
 
 func (c *klusterClient) EnsureServerGroup(name string) (id string, err error) {
+	policy := "soft-affinity"
+	if os.Getenv("NODEPOOL_ANTI_AFFINITY") != "" {
+		policy = "soft-anti-affinity"
+	}
 	sg, err := c.serverGroupByName(name)
 	if err != nil {
 		return "", err
@@ -273,7 +277,7 @@ func (c *klusterClient) EnsureServerGroup(name string) (id string, err error) {
 	}
 	sg, err = servergroups.Create(c.ComputeClient, servergroups.CreateOpts{
 		Name:     name,
-		Policies: []string{"soft-affinity"},
+		Policies: []string{policy},
 	}).Extract()
 	if err != nil {
 		return "", err
