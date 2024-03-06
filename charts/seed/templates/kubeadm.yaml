@@ -258,6 +258,7 @@ data:
     streamingConnectionIdleTimeout: 0s
     syncFrequency: 0s
     volumeStatsAggPeriod: 0s
+    tlsMinVersion: VersionTLS13
 kind: ConfigMap
 metadata:
   name: kubelet-config

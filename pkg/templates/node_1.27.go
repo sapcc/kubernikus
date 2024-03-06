@@ -297,6 +297,7 @@ storage:
           rotateCertificates: true
           nodeLeaseDurationSeconds: 20
           cgroupDriver: systemd
+          tlsMinVersion: VersionTLS13
     - path: /etc/flatcar/update.conf
       filesystem: root
       mode: 0644

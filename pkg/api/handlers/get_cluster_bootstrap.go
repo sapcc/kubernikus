@@ -46,6 +46,7 @@ authentication:
     enabled: true
 rotateCertificates: true
 nodeLeaseDurationSeconds: 20
+tlsMinVersion: VersionTLS13
 featureGates:
 `))
 
