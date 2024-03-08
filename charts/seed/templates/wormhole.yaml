@@ -108,8 +108,18 @@ spec:
         - name: config
           mountPath: /var/lib/kubelet
           readOnly: true
+{{- if .Values.seedKubeadm -}}
+        - name: etc-kubernetes
+          mountPath: /etc/kubernetes
+          readOnly: true
+{{- end }}
       volumes:
       - name: config
         hostPath:
           path: /var/lib/kubelet
+{{- if .Values.seedKubeadm -}}
+      - name: etc-kubernetes
+        hostPath:
+          path: /etc/kubernetes
+{{- end }}
 {{- end }}
