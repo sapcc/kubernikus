@@ -73,3 +73,6 @@ owner-info:
     - Jan Knipper
   support-group: containers
   service: kubernikus
+
+linkerd:
+  enabled: false
