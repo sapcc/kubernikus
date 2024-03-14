@@ -11,7 +11,7 @@ ARG ARCH
 RUN wget https://storage.googleapis.com/kubernetes-release/release/$KUBERNETES_VERSION/bin/linux/amd64/kubelet && \
     chmod +x kubelet && \
     wget https://storage.googleapis.com/kubernetes-release/release/$KUBERNETES_VERSION/bin/linux/amd64/kubectl && \
-    chmod +x kubectl \
+    chmod +x kubectl && \
     wget https://storage.googleapis.com/kubernetes-release/release/$KUBERNETES_VERSION/bin/linux/amd64/kubeadm && \
     chmod +x kubeadm
 RUN mkdir -p cni-bin && \
