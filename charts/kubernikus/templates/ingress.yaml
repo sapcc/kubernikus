@@ -8,6 +8,9 @@ kind: Ingress
 metadata:
   name: kubernikus-api
   annotations:
+    {{- if .Values.linkerd.enabled }}
+    nginx.ingress.kubernetes.io/service-upstream: "true"
+    {{- end }}
 {{- range $key, $val := .Values.ingress.annotations }}
 {{- if typeIs "string" $val }}
     {{ $key }}: {{ $val | quote }}
