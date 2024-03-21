@@ -25,6 +25,7 @@ LABEL source_repository="https://github.com/sapcc/kubernikus"
 ENV PATH="${PATH}:/run/torcx/unpack/docker/bin"
 COPY --from=builder /tmp/kubelet /usr/local/bin/kubelet
 COPY --from=builder /tmp/kubectl /usr/local/bin/kubectl
+COPY --from=builder /tmp/kubeadm /usr/local/bin/kubeadm
 COPY --from=builder /tmp/cni-bin /opt/cni/bin
 
 RUN clean-install \
