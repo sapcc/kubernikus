@@ -102,7 +102,7 @@ func (sr *SeedReconciler) EnrichHelmValuesForSeed(client project.ProjectClient, 
 	if idx != -1 {
 		values["shortName"] = kluster.Spec.Name[:idx]
 	}
-	values["tlsCaCert"] = secret.TLSCACertificate
+	values["tlsCaCert"] = secret.KubeletClientsCACertificate
 	return nil
 }
 
