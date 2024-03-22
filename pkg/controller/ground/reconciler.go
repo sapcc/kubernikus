@@ -102,7 +102,8 @@ func (sr *SeedReconciler) EnrichHelmValuesForSeed(client project.ProjectClient, 
 	if idx != -1 {
 		values["shortName"] = kluster.Spec.Name[:idx]
 	}
-	values["tlsCaCert"] = secret.KubeletClientsCACertificate
+	values["tlsCaCert"] = secret.TLSCACertificate
+	values["kubeletClientsCaCert"] = secret.KubeletClientsCACertificate
 	return nil
 }
 
@@ -415,9 +416,6 @@ func (sr *SeedReconciler) createOrUpdateObjects(client dynamic.Interface, mapper
 			// a planned instace of a CRD could come along here, which cannot be found, as the CRD has not been created yet
 			continue
 		} else if err != nil {
-			return err
-		}
-		if err != nil {
 			return err
 		}
 		if oneDiff.deployed == nil {
