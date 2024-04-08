@@ -27,3 +27,13 @@ dex:
     - name: ldap2
       id: ldap2
       projectID: project2
+operator:
+  resources:
+    limits:
+      cpu: 100m
+      memory: 128Mi
+api:
+  resources:
+    limits:
+      cpu: 200m
+      memory: 256Mi

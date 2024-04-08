@@ -60,6 +60,9 @@ spec:
             - --region={{ .Values.openstack.region }}
             {{- end }}
             {{- end }}
+          {{- if .Values.api.resources }}
+          resources: {{- toYaml .Values.api.resources | nindent 12 }}
+          {{- end}}
           ports:
             - name: http
               containerPort: {{ .Values.api.port }}
