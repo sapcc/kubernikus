@@ -79,6 +79,9 @@ spec:
                   name: kubernikus-operator
                   key: password
             {{- end }}
+          {{- if .Values.operator.resources }}
+          resources: {{- toYaml .Values.operator.resources | nindent 12 }}
+          {{- end}}
           ports:
             - name: metrics
               containerPort: {{ .Values.operator.metrics_port }}
