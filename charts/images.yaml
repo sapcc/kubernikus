@@ -1464,7 +1464,7 @@ imagesForVersion:
       tag: v0.19.1
     flannelCNIPlugin:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/flannelcni/flannel-cni-plugin
-      tag: v1.1.0
+      tag: v1.1.2
     fluentd:
       repository: keppel.global.cloud.sap/ccloud/kubernikus-fluentd
       tag: v1.14.6-1.1
@@ -1547,7 +1547,7 @@ imagesForVersion:
       tag: v0.19.1
     flannelCNIPlugin:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/flannelcni/flannel-cni-plugin
-      tag: v1.1.0
+      tag: v1.1.2
     fluentd:
       repository: keppel.global.cloud.sap/ccloud/kubernikus-fluentd
       tag: v1.14.6-1.1
@@ -1630,7 +1630,7 @@ imagesForVersion:
       tag: v0.19.1
     flannelCNIPlugin:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/flannelcni/flannel-cni-plugin
-      tag: v1.1.0
+      tag: v1.1.2
     fluentd:
       repository: keppel.global.cloud.sap/ccloud/kubernikus-fluentd
       tag: v1.14.6-1.1
@@ -1713,7 +1713,7 @@ imagesForVersion:
       tag: v0.19.1
     flannelCNIPlugin:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/flannelcni/flannel-cni-plugin
-      tag: v1.1.0
+      tag: v1.1.2
     fluentd:
       repository: keppel.global.cloud.sap/ccloud/kubernikus-fluentd
       tag: v1.14.6-1.1
@@ -1796,7 +1796,7 @@ imagesForVersion:
       tag: v0.19.1
     flannelCNIPlugin:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/flannelcni/flannel-cni-plugin
-      tag: v1.1.0
+      tag: v1.1.2
     fluentd:
       repository: keppel.global.cloud.sap/ccloud/kubernikus-fluentd
       tag: v1.14.6-1.1
@@ -1879,7 +1879,7 @@ imagesForVersion:
       tag: v0.19.1
     flannelCNIPlugin:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/flannelcni/flannel-cni-plugin
-      tag: v1.1.0
+      tag: v1.1.2
     fluentd:
       repository: keppel.global.cloud.sap/ccloud/kubernikus-fluentd
       tag: v1.14.6-1.1
@@ -1962,7 +1962,7 @@ imagesForVersion:
       tag: v0.19.1
     flannelCNIPlugin:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/flannelcni/flannel-cni-plugin
-      tag: v1.1.0
+      tag: v1.1.2
     fluentd:
       repository: keppel.global.cloud.sap/ccloud/kubernikus-fluentd
       tag: v1.14.6-1.1
@@ -2045,7 +2045,7 @@ imagesForVersion:
       tag: v0.19.1
     flannelCNIPlugin:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/flannelcni/flannel-cni-plugin
-      tag: v1.1.0
+      tag: v1.1.2
     fluentd:
       repository: keppel.global.cloud.sap/ccloud/kubernikus-fluentd
       tag: v1.14.6-1.1
@@ -2128,7 +2128,7 @@ imagesForVersion:
       tag: v0.19.1
     flannelCNIPlugin:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/flannelcni/flannel-cni-plugin
-      tag: v1.1.0
+      tag: v1.1.2
     fluentd:
       repository: keppel.global.cloud.sap/ccloud/kubernikus-fluentd
       tag: v1.14.6-1.1
@@ -2211,7 +2211,7 @@ imagesForVersion:
       tag: v0.19.1
     flannelCNIPlugin:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/flannelcni/flannel-cni-plugin
-      tag: v1.1.0
+      tag: v1.1.2
     fluentd:
       repository: keppel.global.cloud.sap/ccloud/kubernikus-fluentd
       tag: v1.14.6-1.1
@@ -2294,7 +2294,7 @@ imagesForVersion:
       tag: v0.19.1
     flannelCNIPlugin:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/flannelcni/flannel-cni-plugin
-      tag: v1.1.0
+      tag: v1.1.2
     fluentd:
       repository: keppel.global.cloud.sap/ccloud/kubernikus-fluentd
       tag: v1.14.6-1.1
@@ -2377,7 +2377,7 @@ imagesForVersion:
       tag: v0.19.1
     flannelCNIPlugin:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/flannelcni/flannel-cni-plugin
-      tag: v1.1.0
+      tag: v1.1.2
     fluentd:
       repository: keppel.global.cloud.sap/ccloud/kubernikus-fluentd
       tag: v1.14.6-1.1
@@ -2460,7 +2460,7 @@ imagesForVersion:
       tag: v0.19.1
     flannelCNIPlugin:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/flannelcni/flannel-cni-plugin
-      tag: v1.1.0
+      tag: v1.1.2
     fluentd:
       repository: keppel.global.cloud.sap/ccloud/kubernikus-fluentd
       tag: v1.14.6-1.1
@@ -2543,7 +2543,7 @@ imagesForVersion:
       tag: v0.19.1
     flannelCNIPlugin:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/flannelcni/flannel-cni-plugin
-      tag: v1.1.0
+      tag: v1.1.2
     fluentd:
       repository: keppel.global.cloud.sap/ccloud/kubernikus-fluentd
       tag: v1.14.6-1.1
@@ -2626,7 +2626,7 @@ imagesForVersion:
       tag: v0.19.1
     flannelCNIPlugin:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/flannelcni/flannel-cni-plugin
-      tag: v1.1.0
+      tag: v1.1.2
     fluentd:
       repository: keppel.global.cloud.sap/ccloud/kubernikus-fluentd
       tag: v1.14.6-1.1
@@ -2709,7 +2709,7 @@ imagesForVersion:
       tag: v0.19.1
     flannelCNIPlugin:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/flannelcni/flannel-cni-plugin
-      tag: v1.1.0
+      tag: v1.1.2
     fluentd:
       repository: keppel.global.cloud.sap/ccloud/kubernikus-fluentd
       tag: v1.14.6-1.1
@@ -2792,7 +2792,7 @@ imagesForVersion:
       tag: v0.19.1
     flannelCNIPlugin:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/flannelcni/flannel-cni-plugin
-      tag: v1.1.0
+      tag: v1.1.2
     fluentd:
       repository: keppel.global.cloud.sap/ccloud/kubernikus-fluentd
       tag: v1.14.6-1.1
@@ -2875,7 +2875,7 @@ imagesForVersion:
       tag: v0.19.1
     flannelCNIPlugin:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/flannelcni/flannel-cni-plugin
-      tag: v1.1.0
+      tag: v1.1.2
     fluentd:
       repository: keppel.global.cloud.sap/ccloud/kubernikus-fluentd
       tag: v1.14.6-1.1
@@ -2958,7 +2958,7 @@ imagesForVersion:
       tag: v0.19.1
     flannelCNIPlugin:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/flannelcni/flannel-cni-plugin
-      tag: v1.1.0
+      tag: v1.1.2
     fluentd:
       repository: keppel.global.cloud.sap/ccloud/kubernikus-fluentd
       tag: v1.14.6-1.1
@@ -3041,7 +3041,7 @@ imagesForVersion:
       tag: v0.19.1
     flannelCNIPlugin:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/flannelcni/flannel-cni-plugin
-      tag: v1.1.0
+      tag: v1.1.2
     fluentd:
       repository: keppel.global.cloud.sap/ccloud/kubernikus-fluentd
       tag: v1.14.6-1.1
@@ -3124,7 +3124,7 @@ imagesForVersion:
       tag: v0.19.1
     flannelCNIPlugin:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/flannelcni/flannel-cni-plugin
-      tag: v1.1.0
+      tag: v1.1.2
     fluentd:
       repository: keppel.global.cloud.sap/ccloud/kubernikus-fluentd
       tag: v1.14.6-1.1
@@ -3207,7 +3207,7 @@ imagesForVersion:
       tag: v0.19.1
     flannelCNIPlugin:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/flannelcni/flannel-cni-plugin
-      tag: v1.1.0
+      tag: v1.1.2
     fluentd:
       repository: keppel.global.cloud.sap/ccloud/kubernikus-fluentd
       tag: v1.14.6-1.1
@@ -3290,7 +3290,7 @@ imagesForVersion:
       tag: v0.19.1
     flannelCNIPlugin:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/flannelcni/flannel-cni-plugin
-      tag: v1.1.0
+      tag: v1.1.2
     fluentd:
       repository: keppel.global.cloud.sap/ccloud/kubernikus-fluentd
       tag: v1.14.6-1.1
@@ -3373,7 +3373,7 @@ imagesForVersion:
       tag: v0.19.1
     flannelCNIPlugin:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/flannelcni/flannel-cni-plugin
-      tag: v1.1.0
+      tag: v1.1.2
     fluentd:
       repository: keppel.global.cloud.sap/ccloud/kubernikus-fluentd
       tag: v1.14.6-1.1
@@ -3456,7 +3456,7 @@ imagesForVersion:
       tag: v0.19.1
     flannelCNIPlugin:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/flannelcni/flannel-cni-plugin
-      tag: v1.1.0
+      tag: v1.1.2
     fluentd:
       repository: keppel.global.cloud.sap/ccloud/kubernikus-fluentd
       tag: v1.14.6-1.1
@@ -3539,7 +3539,7 @@ imagesForVersion:
       tag: v0.19.1
     flannelCNIPlugin:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/flannelcni/flannel-cni-plugin
-      tag: v1.1.0
+      tag: v1.1.2
     fluentd:
       repository: keppel.global.cloud.sap/ccloud/kubernikus-fluentd
       tag: v1.14.6-1.1
@@ -3622,7 +3622,7 @@ imagesForVersion:
       tag: v0.19.1
     flannelCNIPlugin:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/flannelcni/flannel-cni-plugin
-      tag: v1.1.0
+      tag: v1.1.2
     fluentd:
       repository: keppel.global.cloud.sap/ccloud/kubernikus-fluentd
       tag: v1.14.6-1.1
@@ -3706,7 +3706,7 @@ imagesForVersion:
       tag: v0.19.1
     flannelCNIPlugin:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/flannelcni/flannel-cni-plugin
-      tag: v1.1.0
+      tag: v1.1.2
     fluentd:
       repository: keppel.global.cloud.sap/ccloud/kubernikus-fluentd
       tag: v1.14.6-1.1
@@ -3790,7 +3790,7 @@ imagesForVersion:
       tag: v0.19.1
     flannelCNIPlugin:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/flannelcni/flannel-cni-plugin
-      tag: v1.1.0
+      tag: v1.1.2
     fluentd:
       repository: keppel.global.cloud.sap/ccloud/kubernikus-fluentd
       tag: v1.14.6-1.1
@@ -3874,7 +3874,7 @@ imagesForVersion:
       tag: v0.19.1
     flannelCNIPlugin:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/flannelcni/flannel-cni-plugin
-      tag: v1.1.0
+      tag: v1.1.2
     fluentd:
       repository: keppel.global.cloud.sap/ccloud/kubernikus-fluentd
       tag: v1.14.6-1.1
@@ -3957,7 +3957,7 @@ imagesForVersion:
       tag: v0.19.1
     flannelCNIPlugin:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/flannelcni/flannel-cni-plugin
-      tag: v1.1.0
+      tag: v1.1.2
     fluentd:
       repository: keppel.global.cloud.sap/ccloud/kubernikus-fluentd
       tag: v1.14.6-1.1
@@ -4041,7 +4041,7 @@ imagesForVersion:
       tag: v0.19.1
     flannelCNIPlugin:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/flannelcni/flannel-cni-plugin
-      tag: v1.1.0
+      tag: v1.1.2
     fluentd:
       repository: keppel.global.cloud.sap/ccloud/kubernikus-fluentd
       tag: v1.14.6-1.1
@@ -4125,7 +4125,7 @@ imagesForVersion:
       tag: v0.19.1
     flannelCNIPlugin:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/flannelcni/flannel-cni-plugin
-      tag: v1.1.0
+      tag: v1.1.2
     fluentd:
       repository: keppel.global.cloud.sap/ccloud/kubernikus-fluentd
       tag: v1.14.6-1.1
@@ -4209,7 +4209,7 @@ imagesForVersion:
       tag: v0.19.1
     flannelCNIPlugin:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/flannelcni/flannel-cni-plugin
-      tag: v1.1.0
+      tag: v1.1.2
     fluentd:
       repository: keppel.global.cloud.sap/ccloud/kubernikus-fluentd
       tag: v1.14.6-1.1
@@ -4292,7 +4292,7 @@ imagesForVersion:
       tag: v0.19.1
     flannelCNIPlugin:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/flannelcni/flannel-cni-plugin
-      tag: v1.1.0
+      tag: v1.1.2
     fluentd:
       repository: keppel.global.cloud.sap/ccloud/kubernikus-fluentd
       tag: v1.14.6-1.1
@@ -4375,7 +4375,7 @@ imagesForVersion:
       tag: v0.19.1
     flannelCNIPlugin:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/flannelcni/flannel-cni-plugin
-      tag: v1.1.0
+      tag: v1.1.2
     fluentd:
       repository: keppel.global.cloud.sap/ccloud/kubernikus-fluentd
       tag: v1.14.6-1.1
@@ -4458,7 +4458,7 @@ imagesForVersion:
       tag: v0.19.1
     flannelCNIPlugin:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/flannelcni/flannel-cni-plugin
-      tag: v1.1.0
+      tag: v1.1.2
     fluentd:
       repository: keppel.global.cloud.sap/ccloud/kubernikus-fluentd
       tag: v1.14.6-1.1
@@ -4542,7 +4542,7 @@ imagesForVersion:
       tag: v0.19.1
     flannelCNIPlugin:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/flannelcni/flannel-cni-plugin
-      tag: v1.1.0
+      tag: v1.1.2
     fluentd:
       repository: keppel.global.cloud.sap/ccloud/kubernikus-fluentd
       tag: v1.14.6-1.1
@@ -4626,7 +4626,7 @@ imagesForVersion:
       tag: v0.19.1
     flannelCNIPlugin:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/flannelcni/flannel-cni-plugin
-      tag: v1.1.0
+      tag: v1.1.2
     fluentd:
       repository: keppel.global.cloud.sap/ccloud/kubernikus-fluentd
       tag: v1.14.6-1.1
@@ -4710,7 +4710,7 @@ imagesForVersion:
       tag: v0.19.1
     flannelCNIPlugin:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/flannelcni/flannel-cni-plugin
-      tag: v1.1.0
+      tag: v1.1.2
     fluentd:
       repository: keppel.global.cloud.sap/ccloud/kubernikus-fluentd
       tag: v1.14.6-1.1
@@ -4794,7 +4794,7 @@ imagesForVersion:
       tag: v0.19.1
     flannelCNIPlugin:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/flannelcni/flannel-cni-plugin
-      tag: v1.1.0
+      tag: v1.1.2
     fluentd:
       repository: keppel.global.cloud.sap/ccloud/kubernikus-fluentd
       tag: v1.14.6-1.1
@@ -4878,7 +4878,7 @@ imagesForVersion:
       tag: v0.19.1
     flannelCNIPlugin:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/flannelcni/flannel-cni-plugin
-      tag: v1.1.0
+      tag: v1.1.2
     fluentd:
       repository: keppel.global.cloud.sap/ccloud/kubernikus-fluentd
       tag: v1.14.6-1.1
