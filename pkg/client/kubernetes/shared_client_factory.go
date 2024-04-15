@@ -4,11 +4,13 @@ import (
 	"context"
 	"fmt"
 	"net"
+	"net/http"
 	"os"
 	"sync"
 	"time"
 
 	kitlog "github.com/go-kit/log"
+	machnet "k8s.io/apimachinery/pkg/util/net"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
@@ -92,6 +94,9 @@ func (f *sharedClientFactory) ConfigFor(k *kubernikus_v1.Kluster) (rest.Config, 
 			CAData:   []byte(secret.TLSCACertificate),
 		},
 		Dial: dialerFunc,
+		// https://github.com/kubernetes/kubernetes/issues/118703#issuecomment-1595072383
+		// TODO: Revert or adapt when upstream fix is available
+		Proxy: machnet.NewProxierWithNoProxyCIDR(http.ProxyFromEnvironment),
 	}
 	return c, nil
 }
