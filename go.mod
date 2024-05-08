@@ -1,8 +1,6 @@
 module github.com/sapcc/kubernikus
 
-go 1.22.0
-
-toolchain go1.22.2
+go 1.22
 
 require (
 	dario.cat/mergo v1.0.0
