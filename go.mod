@@ -2,6 +2,8 @@ module github.com/sapcc/kubernikus
 
 go 1.22.0
 
+toolchain go1.22.2
+
 require (
 	dario.cat/mergo v1.0.0
 	github.com/BurntSushi/toml v1.3.2
