@@ -13,7 +13,7 @@
   {{- end -}}
 {{- end -}}
 
-{{- if (not .Values.seedKubeadm | and .Values.openstack) -}}
+{{- if and (not .Values.seedKubeadm) (not .Values.seedVirtual) .Values.openstack) -}}
 
 {{- range $az := .Values.openstack.azs -}}
 apiVersion: storage.k8s.io/v1

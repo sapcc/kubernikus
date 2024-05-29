@@ -557,6 +557,8 @@ definitions:
         default: false
       seedKubeadm:
         type: boolean
+      seedVirtual:
+        type: boolean
       oidc:
         $ref: '#/definitions/OIDC'
   OIDC:

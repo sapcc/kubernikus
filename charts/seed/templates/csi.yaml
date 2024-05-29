@@ -10,7 +10,7 @@ region="{{ .Values.openstack.region }}"
 rescan-on-resize = yes
 ` -}}
 
-{{- if and (not .Values.seedKubeadm) (semverCompare ">= 1.20-0" .Capabilities.KubeVersion.Version) -}}
+{{- if and (not .Values.seedKubeadm) (not Values.seedVirtual) (semverCompare ">= 1.20-0" .Capabilities.KubeVersion.Version) -}}
 apiVersion: v1
 kind: Secret
 metadata:
