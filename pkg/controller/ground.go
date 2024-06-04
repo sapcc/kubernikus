@@ -493,7 +493,7 @@ func (op *GroundControl) reconcileSeed(kluster *v1.Kluster, projectClient projec
 		if !isNetErr(err) {
 			metrics.SeedReconciliationFailuresTotal.With(prometheus.Labels{"kluster_name": kluster.Spec.Name}).Inc()
 		}
-		return fmt.Errorf("Enrichting seed values failed: %w", err)
+		return fmt.Errorf("Enriching seed values failed: %w", err)
 	}
 	if err := seedReconciler.ReconcileSeeding(path.Join(op.Config.Helm.ChartDirectory, "seed"), helmValues); err != nil {
 		if !isNetErr(err) {
