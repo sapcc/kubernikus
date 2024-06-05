@@ -691,6 +691,9 @@ func init() {
         "seedKubeadm": {
           "type": "boolean"
         },
+        "seedVirtual": {
+          "type": "boolean"
+        },
         "serviceCIDR": {
           "description": "CIDR Range for Services in the cluster. Can not be updated.",
           "type": "string",
@@ -1796,6 +1799,9 @@ func init() {
           "$ref": "#/definitions/OpenstackSpec"
         },
         "seedKubeadm": {
+          "type": "boolean"
+        },
+        "seedVirtual": {
           "type": "boolean"
         },
         "serviceCIDR": {

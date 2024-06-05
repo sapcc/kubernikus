@@ -75,7 +75,7 @@ data:
     mode: "iptables"
     oomScoreAdj: -999
     portRange: ""
-{{- if .Values.seedKubeadm }}
+{{- if or .Values.seedKubeadm .Values.seedVirtual }}
   config.conf: |
     apiVersion: kubeproxy.config.k8s.io/v1alpha1
     kind: KubeProxyConfiguration
