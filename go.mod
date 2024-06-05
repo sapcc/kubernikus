@@ -44,7 +44,7 @@ require (
 	github.com/spf13/cobra v1.8.0
 	github.com/spf13/pflag v1.0.5
 	github.com/stretchr/testify v1.9.0
-	github.com/tredoe/osutil v1.3.6
+	github.com/tredoe/osutil v1.5.0
 	github.com/zalando/go-keyring v0.2.4
 	golang.org/x/crypto v0.22.0
 	golang.org/x/net v0.24.0
