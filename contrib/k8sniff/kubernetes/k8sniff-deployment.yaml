@@ -1,0 +1,37 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: k8sniff-ingress-lb
+  namespace: k8sniff
+  labels:
+    role: k8sniff-ingress-lb
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      role: k8sniff-ingress-lb
+  template:
+    metadata:
+      labels:
+        role: k8sniff-ingress-lb
+    spec:
+      containers:
+      - image: kubermatic/k8sniff:latest
+        name: k8sniff-ingress-lb
+        imagePullPolicy: Always
+        command:
+          - /bin/sh
+          - -c
+          - -x
+          - "/pipeline/source/k8sniff -logtostderr --v=9 --config /etc/config/k8sniff.json"
+        ports:
+        - name: https
+          containerPort: 8443
+        volumeMounts:
+        - name: k8sniff-config
+          mountPath: /etc/config
+          readOnly: true
+      volumes:
+        - name: k8sniff-config
+          configMap:
+            name: k8sniff-configmap

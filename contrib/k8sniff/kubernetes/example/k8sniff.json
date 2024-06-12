@@ -1,0 +1,7 @@
+{
+    "bind": {
+        "host": "localhost",
+        "port": 8443
+    },
+    "kubernetes": {}
+}

@@ -1,7 +1,8 @@
-IMAGE:= sapcc/k8sniff
-VERSION := e7435d989925e8559b0e5ca26da69f84a1035c32
+IMAGE:=keppel.eu-de-1.cloud.sap/ccloud/k8sniff
+VERSION:=$(shell git rev-parse --verify HEAD)
 
 build:
-	docker build --build-arg VERSION=$(VERSION) -t $(IMAGE):$(VERSION) .
+	docker build --network=host -t $(IMAGE):$(VERSION) .
+
 push:
 	docker push $(IMAGE):$(VERSION)

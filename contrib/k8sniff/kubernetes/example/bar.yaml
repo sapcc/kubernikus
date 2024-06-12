@@ -1,0 +1,30 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: bar
+spec:
+  ports:
+    - port: 443
+  selector:
+    app: bar
+---
+kind: Pod
+apiVersion: v1
+metadata:
+  name: bar
+  labels:
+    app: bar
+spec:
+  containers:
+  - name: porter
+    image: gcr.io/google_containers/porter:cd5cb5791ebaa8641955f0e8c2a9bed669b1eaab
+    env:
+    - name: SERVE_TLS_PORT_443
+      value: bar
+    - name: CERT_FILE
+      value: "/localhost.crt"
+    - name: KEY_FILE
+      value: "/localhost.key"
+    ports:
+    - name: https
+      containerPort: 443
