@@ -69,6 +69,8 @@ cloudControllerManager:
 
 controllerManager:
   replicaCount: 1
+  # addresses endpoint issue https://github.com/kubernetes/kubernetes/issues/117193
+  endpointUpdatePeriod: 3s
   resources:
     requests:
       cpu: 100m

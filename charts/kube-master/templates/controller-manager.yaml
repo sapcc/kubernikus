@@ -147,6 +147,9 @@ spec:
             - --use-service-account-credentials
             - --pv-recycler-pod-template-filepath-hostpath=/etc/kubernetes/config/pv-recycler-template
             - --pv-recycler-pod-template-filepath-nfs=/etc/kubernetes/config/pv-recycler-template
+{{- if .Values.controllerManager.endpointUpdatePeriod }}
+            - --endpoint-updates-batch-period={{ .Values.controllerManager.endpointUpdatePeriod }}
+{{- end }}
           livenessProbe:
             httpGet:
               path: /healthz
