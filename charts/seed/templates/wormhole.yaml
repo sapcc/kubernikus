@@ -93,7 +93,7 @@ spec:
         args:
         - |
           cp ${KUBE_CLIENT_CERT} /tmp/client-cert.livenessprobe
-          exec wormhole client --listen {{ .Values.advertiseAddress }}:{{ .Values.advertisePort }} --health-check=false --kubeconfig= {{- if .Values.seedKubeadm -}} /etc/kubernetes/kubelet.conf {{- else -}} /var/lib/kubelet/kubeconfig {{- end }}
+          exec wormhole client --listen {{ .Values.advertiseAddress }}:{{ .Values.advertisePort }} --health-check=false --kubeconfig= {{- if or .Values.seedKubeadm .Values.seedVirtual -}} /etc/kubernetes/kubelet.conf {{- else -}} /var/lib/kubelet/kubeconfig {{- end }}
         env:
           - name: KUBE_CLIENT_CERT
             value: /var/lib/kubelet/pki/kubelet-client-current.pem
@@ -108,7 +108,7 @@ spec:
         - name: config
           mountPath: /var/lib/kubelet
           readOnly: true
-{{- if .Values.seedKubeadm }}
+{{- if or .Values.seedKubeadm .Values.seedVirtual }}
         - name: etc-kubernetes
           mountPath: /etc/kubernetes
           readOnly: true
@@ -117,7 +117,7 @@ spec:
       - name: config
         hostPath:
           path: /var/lib/kubelet
-{{- if .Values.seedKubeadm }}
+{{- if or .Values.seedKubeadm .Values.seedVirtual }}
       - name: etc-kubernetes
         hostPath:
           path: /etc/kubernetes
