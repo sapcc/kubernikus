@@ -4229,7 +4229,7 @@ imagesForVersion:
     scheduler:
       repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/kube-scheduler
       tag: v1.27.16
-    supported: true
+    supported: false
     wormhole:
       repository: keppel.global.cloud.sap/ccloud/kubernikus
       tag: changeme
