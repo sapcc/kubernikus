@@ -8,6 +8,9 @@ linters:
   disable:
   - errcheck
   - gosimple
+  - deadcode
+  - structcheck
+  - varcheck
 issues:
   fix: false
 linters-settings:
