@@ -290,7 +290,7 @@ jobs:
           args: 
           - -cx
           - |
-            yq e '.imagesForVersion.*.*|.repository + ":" + .tag' kubernikus.git/charts/images.yaml | grep -v -E 'changeme|/ccloud/' | sed -E 's/\$REGION|global/eu-de-1/g' | sort -u | xargs -n1 keppel validate
+            yq e '.imagesForVersion.*.*|.repository + ":" + .tag' kubernikus.git/charts/images.yaml | grep -v -E 'changeme|/ccloud/' | sed -E 's/\$REGION|global/eu-de-1/g' | sort -u | xargs -n1 -P2 -I{} sh -c "keppel validate {}; sleep 2"
 
   - name: master
     serial: true
