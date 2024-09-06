@@ -108,12 +108,10 @@ func (c *servicingNodesCollector) Collect(ch chan<- prometheus.Metric) {
 		waitingUptodate := float64(len(nodes.All())) - waitingReboot - waitingReplace
 
 		kubeletVersions := map[string]int{}
-		proxyVersions := map[string]int{}
 		osVersions := map[string]int{}
 
 		for _, node := range nodes.All() {
 			kubeletVersions[node.Status.NodeInfo.KubeletVersion]++
-			proxyVersions[node.Status.NodeInfo.KubeProxyVersion]++
 
 			osVersion, err := flatcar.ExractVersion(node)
 			if err != nil {
@@ -133,10 +131,6 @@ func (c *servicingNodesCollector) Collect(ch chan<- prometheus.Metric) {
 
 		for version, count := range kubeletVersions {
 			ch <- prometheus.MustNewConstMetric(c.kubelet, prometheus.GaugeValue, float64(count), kluster.GetName(), version)
-		}
-
-		for version, count := range proxyVersions {
-			ch <- prometheus.MustNewConstMetric(c.proxy, prometheus.GaugeValue, float64(count), kluster.GetName(), version)
 		}
 
 		for version, count := range osVersions {

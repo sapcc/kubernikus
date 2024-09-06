@@ -63,7 +63,7 @@ type GroundControl struct {
 	config.Config
 	Recorder record.EventRecorder
 
-	queue           workqueue.RateLimitingInterface
+	queue           workqueue.RateLimitingInterface // nolint: staticcheck
 	klusterInformer informers_kubernikus.KlusterInformer
 	podInformer     informers_v1.PodInformer
 
@@ -80,7 +80,7 @@ func NewGroundController(threadiness int, factories config.Factories, clients co
 		Factories:       factories,
 		Config:          config,
 		Recorder:        recorder,
-		queue:           workqueue.NewNamedRateLimitingQueue(workqueue.NewItemExponentialFailureRateLimiter(5*time.Second, 300*time.Second), "ground"),
+		queue:           workqueue.NewNamedRateLimitingQueue(workqueue.NewItemExponentialFailureRateLimiter(5*time.Second, 300*time.Second), "ground"), // nolint: staticcheck
 		klusterInformer: factories.Kubernikus.Kubernikus().V1().Klusters(),
 		podInformer:     factories.Kubernetes.Core().V1().Pods(),
 		Logger:          logger,
