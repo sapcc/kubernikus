@@ -2,16 +2,15 @@ package templates
 
 import (
 	"bytes"
-	"encoding/json"
 	"fmt"
 	"strings"
 	"text/template"
 
 	"github.com/Masterminds/sprig/v3"
 	"github.com/aokoli/goutils"
-	"github.com/coreos/container-linux-config-transpiler/config"
-	"github.com/coreos/container-linux-config-transpiler/config/platform"
-	"github.com/coreos/ignition/config/validate/report"
+	butaneConfig "github.com/coreos/butane/config"
+	"github.com/coreos/butane/config/common"
+	"github.com/coreos/vcontext/report"
 	"github.com/go-kit/log"
 	"github.com/tredoe/osutil/user/crypt/sha512_crypt"
 
@@ -233,24 +232,13 @@ func (i *ignition) GenerateNode(kluster *kubernikusv1.Kluster, pool *models.Node
 		return nil, err
 	}
 
-	ignitionConfig, ast, report := config.Parse(buffer.Bytes())
-	if len(report.Entries) > 0 {
-		if report.IsFatal() {
-			return nil, fmt.Errorf("Couldn't transpile ignition file: %v", report.String())
-		}
-	}
-
-	ignitionConfig3, report := config.Convert(ignitionConfig, platform.OpenStackMetadata, ast)
-	if len(report.Entries) > 0 {
-		if report.IsFatal() {
-			return nil, fmt.Errorf("Couldn't convert ignition config: %v", report.String())
-		}
-	}
-
-	dataOut, err = json.Marshal(&ignitionConfig3)
+	dataOut, report, err = butaneConfig.TranslateBytes(
+		buffer.Bytes(),
+		common.TranslateBytesOptions{Pretty: false, Raw: false},
+	)
 
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("Couldn't translate ignition file: %v", report.String())
 	}
 
 	return dataOut, nil
