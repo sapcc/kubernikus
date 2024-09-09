@@ -3,6 +3,11 @@
 package templates
 
 var Node_1_24 = `
+variant: flatcar
+version: 1.0.0
+kernel_arguments:
+  should_not_exist:
+    - flatcar.autologin
 passwd:
   users:
     - name:          core
@@ -14,7 +19,7 @@ passwd:
 systemd:
   units:
     - name: ccloud-metadata-hostname.service
-      enable: true
+      enabled: true
       contents: |
         [Unit]
         Description=Workaround for coreos-metadata hostname bug
@@ -28,7 +33,7 @@ systemd:
         [Install]
         WantedBy=multi-user.target
     - name: containerd.service
-      enable: true
+      enabled: true
       dropins:
         - name: 10-custom-config.conf
           contents: |
@@ -36,14 +41,14 @@ systemd:
             ExecStart=
             ExecStart=/usr/bin/containerd
     - name: docker.service
-      enable: true
+      enabled: true
       dropins:
         - name: 20-docker-opts.conf
           contents: |
             [Service]
             Environment="DOCKER_OPTS=--iptables=false --bridge=none"
     - name: kubelet.service
-      enable: true
+      enabled: true
       contents: |
         [Unit]
         Description=Kubelet
@@ -81,7 +86,7 @@ systemd:
         WantedBy=multi-user.target
     - name: updatecertificates.service
       command: start
-      enable: true
+      enabled: true
       contents: |
         [Unit]
         Description=Update the certificates w/ self-signed root CAs
@@ -94,7 +99,7 @@ systemd:
         [Install]
         WantedBy=multi-user.target
     - name: containerd-config-replace.service
-      enable: true
+      enabled: true
       contents: |
         [Unit]
         Description=Modify startup configuration file of containerd
@@ -113,18 +118,21 @@ storage:
     - path: /etc/crictl.yaml
       filesystem: root
       mode: 0644
+      overwrite: true
       contents:
         inline: |
           runtime-endpoint: unix:///run/containerd/containerd.sock
     - path: /etc/profile.d/envs.sh
       filesystem: root
       mode: 0644
+      overwrite: true
       contents:
         inline: |
           export CONTAINERD_NAMESPACE=k8s.io
     - path: /etc/systemd/resolved.conf
       filesystem: root
       mode: 0644
+      overwrite: true
       contents:
         inline: |
           [Resolve]
@@ -132,6 +140,7 @@ storage:
     - path: /etc/systemd/network/50-kubernikus.netdev
       filesystem: root
       mode: 0644
+      overwrite: true
       contents:
         inline: |
           [NetDev]
@@ -141,6 +150,7 @@ storage:
     - path: /etc/systemd/network/51-kubernikus.network
       filesystem: root
       mode: 0644
+      overwrite: true
       contents:
         inline: |
           [Match]
@@ -151,12 +161,14 @@ storage:
     - path: /etc/udev/rules.d/99-vmware-scsi-udev.rules
       filesystem: root
       mode: 0644
+      overwrite: true
       contents:
         inline: |
           ACTION=="add", SUBSYSTEMS=="scsi", ATTRS{vendor}=="VMware  ", ATTRS{model}=="Virtual disk", RUN+="/bin/sh -c 'echo 180 >/sys$DEVPATH/timeout'"
     - path: /etc/ssl/certs/SAPGlobalRootCA.pem
       filesystem: root
       mode: 0644
+      overwrite: true
       contents:
         inline: |
           -----BEGIN CERTIFICATE-----
@@ -198,6 +210,7 @@ storage:
     - path: /etc/ssl/certs/SAPNetCA_G2.pem
       filesystem: root
       mode: 0644
+      overwrite: true
       contents:
         inline: |
           -----BEGIN CERTIFICATE-----
@@ -239,12 +252,14 @@ storage:
     - path: /etc/sysctl.d/10-enable-icmp-redirects.conf
       filesystem: root
       mode: 0644
+      overwrite: true
       contents:
         inline: |-
           net.ipv4.conf.all.accept_redirects=1
     - path: /etc/sysctl.d/20-inotify-max-user.conf
       filesystem: root
       mode: 0644
+      overwrite: true
       contents:
         inline: |-
           fs.inotify.max_user_instances=8192
@@ -252,12 +267,14 @@ storage:
     - path: /etc/kubernetes/certs/kubelet-clients-ca.pem
       filesystem: root
       mode: 0644
+      overwrite: true
       contents:
         inline: |-
 {{ .KubeletClientsCA | indent 10 }}
     - path: /etc/kubernetes/bootstrap/kubeconfig
       filesystem: root
       mode: 0644
+      overwrite: true
       contents:
         inline: |-
           apiVersion: v1
@@ -280,6 +297,7 @@ storage:
     - path: /etc/kubernetes/kubelet/config
       filesystem: root
       mode: 0644
+      overwrite: true
       contents:
         inline: |-
           kind: KubeletConfiguration
@@ -304,17 +322,20 @@ storage:
     - path: /etc/flatcar/update.conf
       filesystem: root
       mode: 0644
+      overwrite: true
       contents:
         inline: |-
           REBOOT_STRATEGY="off"
     - path: /etc/modules-load.d/br_netfilter.conf
       filesystem: root
       mode: 0644
+      overwrite: true
       contents:
         inline: br_netfilter
     - path: /etc/sysctl.d/30-br_netfilter.conf
       filesystem: root
       mode: 0644
+      overwrite: true
       contents:
         inline: |
           net.bridge.bridge-nf-call-ip6tables = 1
@@ -322,6 +343,7 @@ storage:
     - path: /opt/bin/containerd-config-replace.sh
       filesystem: root
       mode: 0755
+      overwrite: true
       contents:
         inline: |
           #!/usr/bin/env bash
