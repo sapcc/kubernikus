@@ -6,6 +6,9 @@ var Node_1_10 = `
 variant: flatcar
 version: 1.0.0
 kernel_arguments:
+  should_exist:
+    - systemd.unified_cgroup_hierarchy=0
+    - systemd.legacy_systemd_cgroup_controller
   should_not_exist:
     - flatcar.autologin
 passwd:
@@ -22,18 +25,6 @@ passwd:
       system: true
 systemd:
   units:
-    - name: legacy-cgroup-reboot.service
-      enabled: true
-      contents: |
-        [Unit]
-        Description=Reboot if legacy cgroups are not enabled yet
-        FailureAction=reboot
-        After=extend-filesystems.service
-        [Service]
-        Type=simple
-        ExecStart=/usr/bin/grep 'systemd.unified_cgroup_hierarchy=0' /proc/cmdline
-        [Install]
-        WantedBy=multi-user.target
     - name: iptables-restore.service
       enabled: true
     - name: ccloud-metadata-hostname.service
@@ -299,20 +290,7 @@ systemd:
         [Install]
         WantedBy=multi-user.target
 storage:
-  filesystems:
-    - name: "OEM"
-      mount:
-        device: "/dev/disk/by-label/OEM"
-        format: "btrfs"
   files:
-    - filesystem: "OEM"
-      path: "/grub.cfg"
-      mode: 0644
-      overwrite: true
-      append: true
-      contents:
-        inline: |
-          set linux_append="$linux_append systemd.unified_cgroup_hierarchy=0 systemd.legacy_systemd_cgroup_controller"
     - path: /etc/systemd/resolved.conf
       filesystem: root
       mode: 0644
@@ -684,35 +662,26 @@ storage:
       mode: 0755
       overwrite: true
       contents:
-        remote:
-          url: https://repo.{{.OpenstackRegion}}.cloud.sap/controlplane/flatcar-rkt/rkt-v1.30.0.gz
-          compression: gzip
-          verification:
-            hash:
-              function: sha512
-              sum: 259fd4d1e1d33715c03ec1168af42962962cf70abc5ae9976cf439949f3bcdaf97110455fcf40c415a2adece28f6a52b46f8abd180cad1ee2e802d41a590b35f
+        source: https://repo.{{.OpenstackRegion}}.cloud.sap/controlplane/flatcar-rkt/rkt-v1.30.0.gz
+        compression: gzip
+        verification:
+          hash: sha512-259fd4d1e1d33715c03ec1168af42962962cf70abc5ae9976cf439949f3bcdaf97110455fcf40c415a2adece28f6a52b46f8abd180cad1ee2e802d41a590b35f
     - path: /opt/rkt/stage1-fly.aci
       filesystem: root
       mode: 0644
       overwrite: true
       contents:
-        remote:
-          url: https://repo.{{.OpenstackRegion}}.cloud.sap/controlplane/flatcar-rkt/stage1-fly-rkt-v1.30.0.aci
-          verification:
-            hash:
-              function: sha512
-              sum: 624bcf48b6829d2ac05c5744996d0fbbe2a0757bf2e5ad859f962a7001bb81980b0aa7be8532f3ec1ef7bbf025bbd089f5aa2eee9fdadefed1602343624750f1
+        source: https://repo.{{.OpenstackRegion}}.cloud.sap/controlplane/flatcar-rkt/stage1-fly-rkt-v1.30.0.aci
+        verification:
+          hash: sha512-624bcf48b6829d2ac05c5744996d0fbbe2a0757bf2e5ad859f962a7001bb81980b0aa7be8532f3ec1ef7bbf025bbd089f5aa2eee9fdadefed1602343624750f1
     - path: /opt/rkt/stage1-coreos.aci
       filesystem: root
       mode: 0644
       overwrite: true
       contents:
-        remote:
-          url: https://repo.{{.OpenstackRegion}}.cloud.sap/controlplane/flatcar-rkt/stage1-coreos-rkt-v1.30.0.aci
-          verification:
-            hash:
-              function: sha512
-              sum: b295e35daab8ca312aeb516a59e79781fd8661d585ecd6c2714bbdec9738ee9012114a2ec886b19cb6eb2e212d72da6f902f02ca889394ef23dbd81fbf147f8c
+        source: https://repo.{{.OpenstackRegion}}.cloud.sap/controlplane/flatcar-rkt/stage1-coreos-rkt-v1.30.0.aci
+        verification:
+          hash: sha512-b295e35daab8ca312aeb516a59e79781fd8661d585ecd6c2714bbdec9738ee9012114a2ec886b19cb6eb2e212d72da6f902f02ca889394ef23dbd81fbf147f8c
     - path: /etc/rkt/paths.d/stage1.json
       filesystem: root
       mode: 0644

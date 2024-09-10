@@ -613,35 +613,26 @@ storage:
       mode: 0755
       overwrite: true
       contents:
-        remote:
-          url: https://repo.{{.OpenstackRegion}}.cloud.sap/controlplane/flatcar-rkt/rkt-v1.30.0.gz
-          compression: gzip
-          verification:
-            hash:
-              function: sha512
-              sum: 259fd4d1e1d33715c03ec1168af42962962cf70abc5ae9976cf439949f3bcdaf97110455fcf40c415a2adece28f6a52b46f8abd180cad1ee2e802d41a590b35f
+        source: https://repo.{{.OpenstackRegion}}.cloud.sap/controlplane/flatcar-rkt/rkt-v1.30.0.gz
+        compression: gzip
+        verification:
+          hash: sha512-259fd4d1e1d33715c03ec1168af42962962cf70abc5ae9976cf439949f3bcdaf97110455fcf40c415a2adece28f6a52b46f8abd180cad1ee2e802d41a590b35f
     - path: /opt/rkt/stage1-fly.aci
       filesystem: root
       mode: 0644
       overwrite: true
       contents:
-        remote:
-          url: https://repo.{{.OpenstackRegion}}.cloud.sap/controlplane/flatcar-rkt/stage1-fly-rkt-v1.30.0.aci
-          verification:
-            hash:
-              function: sha512
-              sum: 624bcf48b6829d2ac05c5744996d0fbbe2a0757bf2e5ad859f962a7001bb81980b0aa7be8532f3ec1ef7bbf025bbd089f5aa2eee9fdadefed1602343624750f1
+        source: https://repo.{{.OpenstackRegion}}.cloud.sap/controlplane/flatcar-rkt/stage1-fly-rkt-v1.30.0.aci
+        verification:
+          hash: sha512-624bcf48b6829d2ac05c5744996d0fbbe2a0757bf2e5ad859f962a7001bb81980b0aa7be8532f3ec1ef7bbf025bbd089f5aa2eee9fdadefed1602343624750f1
     - path: /opt/rkt/stage1-coreos.aci
       filesystem: root
       mode: 0644
       overwrite: true
       contents:
-        remote:
-          url: https://repo.{{.OpenstackRegion}}.cloud.sap/controlplane/flatcar-rkt/stage1-coreos-rkt-v1.30.0.aci
-          verification:
-            hash:
-              function: sha512
-              sum: b295e35daab8ca312aeb516a59e79781fd8661d585ecd6c2714bbdec9738ee9012114a2ec886b19cb6eb2e212d72da6f902f02ca889394ef23dbd81fbf147f8c
+        source: https://repo.{{.OpenstackRegion}}.cloud.sap/controlplane/flatcar-rkt/stage1-coreos-rkt-v1.30.0.aci
+        verification:
+          hash: sha512-b295e35daab8ca312aeb516a59e79781fd8661d585ecd6c2714bbdec9738ee9012114a2ec886b19cb6eb2e212d72da6f902f02ca889394ef23dbd81fbf147f8c
     - path: /etc/rkt/paths.d/stage1.json
       filesystem: root
       mode: 0644
@@ -817,6 +808,7 @@ storage:
     - path: /etc/sysctl.d/30-br_netfilter.conf
       filesystem: root
       mode: 0644
+      overwrite: true
       contents:
         inline: |
           net.bridge.bridge-nf-call-ip6tables = 1

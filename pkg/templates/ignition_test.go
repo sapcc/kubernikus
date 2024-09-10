@@ -70,6 +70,11 @@ func init() {
 
 	imageRegistry = version.ImageRegistry{
 		Versions: map[string]version.KlusterVersion{
+			"1.30": {Kubelet: version.ImageVersion{Repository: "nase", Tag: "v1.30"}},
+			"1.29": {Kubelet: version.ImageVersion{Repository: "nase", Tag: "v1.29"}},
+			"1.28": {Kubelet: version.ImageVersion{Repository: "nase", Tag: "v1.28"}},
+			"1.27": {Kubelet: version.ImageVersion{Repository: "nase", Tag: "v1.27"}},
+			"1.26": {Kubelet: version.ImageVersion{Repository: "nase", Tag: "v1.26"}},
 			"1.24": {Kubelet: version.ImageVersion{Repository: "nase", Tag: "v1.24"}},
 			"1.21": {Kubelet: version.ImageVersion{Repository: "nase", Tag: "v1.21"}},
 			"1.20": {Kubelet: version.ImageVersion{Repository: "nase", Tag: "v1.20"}},
@@ -85,7 +90,6 @@ func init() {
 			"1.10": {Hyperkube: version.ImageVersion{Repository: "nase", Tag: "v1.10"}},
 		},
 	}
-
 }
 
 func TestGenerateNode(t *testing.T) {
@@ -97,28 +101,24 @@ func TestGenerateNode(t *testing.T) {
 	for version := range imageRegistry.Versions {
 		kluster.Spec.Version = version
 		data, err := Ignition.GenerateNode(kluster, nil, "test", "abc123", &testKlusterSecret, false, imageRegistry, log.NewNopLogger())
-
 		if assert.NoError(t, err, "Failed to generate node for version %s", version) {
 			//Ensure we rendered the expected template
 			assert.Contains(t, string(data), fmt.Sprintf("v%s", version))
-
-			if version != "1.10" { //skip for 1.10 which exceeds the limit as its super depreacted
-				userData := base64.StdEncoding.EncodeToString(data)
-				assert.LessOrEqualf(t, len(userData), 65535, "userdata exceeds openstack limit for api version %s template", version)
-			}
+			userData := base64.StdEncoding.EncodeToString(data)
+			assert.LessOrEqualf(t, len(userData), 65535, "userdata exceeds openstack limit for api version %s template", version)
 		}
 	}
 }
 
 func TestNodeLabels(t *testing.T) {
 	kluster := testKluster.DeepCopy()
-	kluster.Spec.Version = "1.21"
+	kluster.Spec.Version = "1.30"
 
 	pool := &models.NodePool{Name: "some-name"}
 
 	data, err := Ignition.GenerateNode(kluster, pool, "test", "abc123", &testKlusterSecret, false, imageRegistry, log.NewNopLogger())
 	if assert.NoError(t, err, "Failed to generate node") {
 		//Ensure we rendered the expected template
-		assert.Contains(t, string(data), fmt.Sprintf("--node-labels=ccloud.sap.com/nodepool=%s", pool.Name))
+		assert.Contains(t, string(data), fmt.Sprintf("--node-labels=kubernikus.cloud.sap/cni=true,ccloud.sap.com/nodepool=%s", pool.Name))
 	}
 }

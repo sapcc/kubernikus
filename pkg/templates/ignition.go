@@ -26,7 +26,7 @@ var Ignition = &ignition{}
 
 var passwordHashRounds = 1000000
 
-const TEMPLATE_VERSION = "6"
+const TEMPLATE_VERSION = "7"
 
 func (i *ignition) getIgnitionTemplate(kluster *kubernikusv1.Kluster) (string, error) {
 	switch {
@@ -238,7 +238,7 @@ func (i *ignition) GenerateNode(kluster *kubernikusv1.Kluster, pool *models.Node
 	)
 
 	if err != nil {
-		return nil, fmt.Errorf("Couldn't translate ignition file: %v", report.String())
+		return nil, fmt.Errorf("Couldn't translate ignition file: %v\n%v", report.String(), err)
 	}
 
 	return dataOut, nil
