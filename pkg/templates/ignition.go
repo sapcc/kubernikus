@@ -238,7 +238,7 @@ func (i *ignition) GenerateNode(kluster *kubernikusv1.Kluster, pool *models.Node
 	)
 
 	if err != nil {
-		return nil, fmt.Errorf("Couldn't translate ignition file: %v\n%v", report.String(), err)
+		return nil, fmt.Errorf("Couldn't translate ignition file: %v\n%w", report.String(), err)
 	}
 
 	return dataOut, nil
