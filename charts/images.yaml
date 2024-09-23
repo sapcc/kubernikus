@@ -6123,7 +6123,7 @@ imagesForVersion:
     dashboardProxy:
       repository: keppel.global.cloud.sap/ccloud/keycloak-gatekeeper
       tag: 6.0.1
-    default: true
+    default: false
     dex:
       repository: keppel.global.cloud.sap/ccloud/dex
       tag: 38f4f8ea8d487470a1dd5b83d66b428d8b502f81
@@ -6207,7 +6207,7 @@ imagesForVersion:
     dashboardProxy:
       repository: keppel.global.cloud.sap/ccloud/keycloak-gatekeeper
       tag: 6.0.1
-    default: true
+    default: false
     dex:
       repository: keppel.global.cloud.sap/ccloud/dex
       tag: 38f4f8ea8d487470a1dd5b83d66b428d8b502f81
@@ -6543,7 +6543,7 @@ imagesForVersion:
     dashboardProxy:
       repository: keppel.global.cloud.sap/ccloud/keycloak-gatekeeper
       tag: 6.0.1
-    default: false
+    default: true
     dex:
       repository: keppel.global.cloud.sap/ccloud/dex
       tag: 38f4f8ea8d487470a1dd5b83d66b428d8b502f81
