@@ -48,7 +48,7 @@ func (k *KubernikusClient) GetCredentials(name string) (string, error) {
 		if result.Code() == 404 {
 			return "", errors.Errorf("Cluster %v not found", name)
 		}
-		return "", errors.Errorf(result.Payload.Message)
+		return "", errors.Errorf("Error while getting cluster credentials: %s", result.Payload.Message)
 	case error:
 		return "", errors.Wrapf(err, "A generic error occurred")
 	}
@@ -67,7 +67,7 @@ func (k *KubernikusClient) GetCredentialsOIDC(name string) (string, error) {
 		if result.Code() == 404 {
 			return "", errors.Errorf("Cluster %v not found", name)
 		}
-		return "", errors.Errorf(result.Payload.Message)
+		return "", errors.Errorf("Error while getting oidc cluster credentials: %s", result.Payload.Message)
 	case error:
 		return "", errors.Wrapf(err, "A generic error occurred")
 	}
@@ -81,7 +81,7 @@ func (k *KubernikusClient) CreateCluster(cluster *models.Kluster) error {
 	switch err.(type) {
 	case *operations.CreateClusterDefault:
 		result := err.(*operations.CreateClusterDefault)
-		return errors.Errorf(result.Payload.Message)
+		return errors.Errorf("Error while creating cluster: %s", result.Payload.Message)
 	case error:
 		return errors.Wrap(err, "Error creating cluster")
 	}
@@ -94,7 +94,7 @@ func (k *KubernikusClient) DeleteCluster(name string) error {
 	switch err.(type) {
 	case *operations.TerminateClusterDefault:
 		result := err.(*operations.TerminateClusterDefault)
-		return errors.Errorf(result.Payload.Message)
+		return errors.Errorf("Error while terminating cluster: %s", result.Payload.Message)
 	case error:
 		return errors.Wrap(err, "Error deleting cluster")
 	}
@@ -108,7 +108,7 @@ func (k *KubernikusClient) ShowCluster(name string) (*models.Kluster, error) {
 	switch err.(type) {
 	case *operations.ShowClusterDefault:
 		result := err.(*operations.ShowClusterDefault)
-		return nil, errors.Errorf(result.Payload.Message)
+		return nil, errors.Errorf("Error while showing cluster: %s", result.Payload.Message)
 	case error:
 		return nil, errors.Wrap(err, "Getting cluster failed")
 	}
@@ -124,7 +124,7 @@ func (k *KubernikusClient) GetClusterValues(account, name string) (string, error
 	switch err.(type) {
 	case *operations.GetClusterValuesDefault:
 		result := err.(*operations.GetClusterValuesDefault)
-		return "", errors.Errorf(result.Payload.Message)
+		return "", errors.Errorf("Error while getting cluster values: %s", result.Payload.Message)
 	case error:
 		return "", errors.Wrap(err, "Getting cluster failed")
 	}
@@ -136,7 +136,7 @@ func (k *KubernikusClient) ListAllClusters() ([]*models.Kluster, error) {
 	switch err.(type) {
 	case *operations.ListClustersDefault:
 		result := err.(*operations.ListClustersDefault)
-		return nil, errors.Errorf(result.Payload.Message)
+		return nil, errors.Errorf("Error while listing cluster: %s", result.Payload.Message)
 	case error:
 		return nil, errors.Wrapf(err, "Listing clusters failed")
 	}
@@ -176,7 +176,7 @@ func (k *KubernikusClient) GetDefaultCluster() (*models.Kluster, error) {
 	switch err.(type) {
 	case *operations.ListClustersDefault:
 		result := err.(*operations.ListClustersDefault)
-		return nil, errors.Errorf(result.Payload.Message)
+		return nil, errors.Errorf("Error while listing clusters: %s", result.Payload.Message)
 	case error:
 		return nil, errors.Wrapf(err, "Listing clusters failed")
 	}

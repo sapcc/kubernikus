@@ -51,7 +51,7 @@ func main() {
 		fmt.Fprint(os.Stderr, title+"\n\n")
 		desc := swaggerSpec.Spec().Info.Description
 		if desc != "" {
-			fmt.Fprintf(os.Stderr, desc+"\n\n")
+			fmt.Fprint(os.Stderr, desc+"\n\n")
 		}
 		fmt.Fprintln(os.Stderr, pflag.CommandLine.FlagUsages())
 	}

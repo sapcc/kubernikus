@@ -30,14 +30,14 @@ func (d *getClusterCredentials) Handle(params operations.GetClusterCredentialsPa
 		if apierrors.IsNotFound(err) {
 			return NewErrorResponse(&operations.GetClusterCredentialsDefault{}, 404, "Kluster not found")
 		}
-		return NewErrorResponse(&operations.GetClusterCredentialsDefault{}, 500, err.Error())
+		return NewErrorResponse(&operations.GetClusterCredentialsDefault{}, 500, "%s", err)
 	}
 	secret, err := util.KlusterSecret(d.Kubernetes, kluster)
 	if err != nil {
 		if apierrors.IsNotFound(err) {
 			return NewErrorResponse(&operations.GetClusterCredentialsDefault{}, 404, "Secret not found")
 		}
-		return NewErrorResponse(&operations.GetClusterCredentialsDefault{}, 500, err.Error())
+		return NewErrorResponse(&operations.GetClusterCredentialsDefault{}, 500, "%s", err)
 	}
 
 	factory := util.NewCertificateFactory(kluster, &secret.Certificates, "")

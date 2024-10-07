@@ -72,7 +72,7 @@ func (d *getBootstrapConfig) Handle(params operations.GetBootstrapConfigParams, 
 		if apierrors.IsNotFound(err) {
 			return NewErrorResponse(&operations.GetBootstrapConfigDefault{}, 404, "Kluster not found")
 		}
-		return NewErrorResponse(&operations.GetBootstrapConfigDefault{}, 500, err.Error())
+		return NewErrorResponse(&operations.GetBootstrapConfigDefault{}, 500, "%s", err)
 	}
 
 	secret, err := util.KlusterSecret(d.Kubernetes, kluster)
@@ -80,7 +80,7 @@ func (d *getBootstrapConfig) Handle(params operations.GetBootstrapConfigParams, 
 		if apierrors.IsNotFound(err) {
 			return NewErrorResponse(&operations.GetClusterCredentialsDefault{}, 404, "Secret not found")
 		}
-		return NewErrorResponse(&operations.GetClusterCredentialsDefault{}, 500, err.Error())
+		return NewErrorResponse(&operations.GetClusterCredentialsDefault{}, 500, "%s", err)
 	}
 
 	client, err := d.KlusterClientFactory.ClientFor(kluster)

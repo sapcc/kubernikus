@@ -178,9 +178,9 @@ func (d *updateCluster) Handle(params operations.UpdateClusterParams, principal 
 
 		switch e := err.(type) {
 		case apierrors.APIStatus:
-			return NewErrorResponse(&operations.UpdateClusterDefault{}, int(e.Status().Code), err.Error())
+			return NewErrorResponse(&operations.UpdateClusterDefault{}, int(e.Status().Code), "%s", err)
 		default:
-			return NewErrorResponse(&operations.UpdateClusterDefault{}, 500, err.Error())
+			return NewErrorResponse(&operations.UpdateClusterDefault{}, 500, "%s", err)
 		}
 
 	}
