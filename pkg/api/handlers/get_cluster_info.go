@@ -32,7 +32,7 @@ func (d *getClusterInfo) Handle(params operations.GetClusterInfoParams, principa
 
 	links, err := d.getLinks()
 	if err != nil {
-		return NewErrorResponse(&operations.GetClusterInfoDefault{}, 500, err.Error())
+		return NewErrorResponse(&operations.GetClusterInfoDefault{}, 500, "%s", err)
 	}
 
 	baseURL := fmt.Sprintf("%s://%s", requestutil.Scheme(params.HTTPRequest), requestutil.HostWithPort(params.HTTPRequest))

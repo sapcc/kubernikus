@@ -31,7 +31,7 @@ func (d *getClusterKubeadmSecret) Handle(params operations.GetClusterKubeadmSecr
 		if apierrors.IsNotFound(err) {
 			return NewErrorResponse(&operations.GetClusterKubeadmSecretDefault{}, 404, "Kluster not found")
 		}
-		return NewErrorResponse(&operations.GetClusterKubeadmSecretDefault{}, 500, err.Error())
+		return NewErrorResponse(&operations.GetClusterKubeadmSecretDefault{}, 500, "%s", err)
 	}
 
 	secret, err := util.KlusterSecret(d.Kubernetes, kluster)
@@ -39,7 +39,7 @@ func (d *getClusterKubeadmSecret) Handle(params operations.GetClusterKubeadmSecr
 		if apierrors.IsNotFound(err) {
 			return NewErrorResponse(&operations.GetClusterCredentialsDefault{}, 404, "Secret not found")
 		}
-		return NewErrorResponse(&operations.GetClusterCredentialsDefault{}, 500, err.Error())
+		return NewErrorResponse(&operations.GetClusterCredentialsDefault{}, 500, "%s", err)
 	}
 
 	kadmSecret := corev1.Secret{

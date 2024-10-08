@@ -29,7 +29,7 @@ func (d *terminateCluster) Handle(params operations.TerminateClusterParams, prin
 		if apierrors.IsNotFound(err) {
 			return NewErrorResponse(&operations.TerminateClusterDefault{}, 404, "Not found")
 		}
-		return NewErrorResponse(&operations.TerminateClusterDefault{}, 500, err.Error())
+		return NewErrorResponse(&operations.TerminateClusterDefault{}, 500, "%s", err)
 	}
 	if kluster.TerminationProtection() {
 		return NewErrorResponse(&operations.TerminateClusterDefault{}, 403, "Termination protection enabled")
@@ -40,7 +40,7 @@ func (d *terminateCluster) Handle(params operations.TerminateClusterParams, prin
 		return nil
 	})
 	if err != nil {
-		return NewErrorResponse(&operations.TerminateClusterDefault{}, 500, err.Error())
+		return NewErrorResponse(&operations.TerminateClusterDefault{}, 500, "%s", err)
 	}
 
 	// This issues a delete request for the Kluster CRD
@@ -54,7 +54,7 @@ func (d *terminateCluster) Handle(params operations.TerminateClusterParams, prin
 	// required once a Kluster is deleted.
 	propagationPolicy := metav1.DeletePropagationBackground
 	if err := klusterInterface.Delete(context.TODO(), qualifiedName(params.Name, principal.Account), metav1.DeleteOptions{PropagationPolicy: &propagationPolicy}); err != nil {
-		return NewErrorResponse(&operations.TerminateClusterDefault{}, 500, err.Error())
+		return NewErrorResponse(&operations.TerminateClusterDefault{}, 500, "%s", err)
 	}
 
 	return operations.NewTerminateClusterAccepted()

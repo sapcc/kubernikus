@@ -20,7 +20,7 @@ func (d *listClusters) Handle(params operations.ListClustersParams, principal *m
 	klusterList, err := d.Klusters.List(accountSelector(principal))
 
 	if err != nil {
-		return NewErrorResponse(&operations.ListClustersDefault{}, 500, err.Error())
+		return NewErrorResponse(&operations.ListClustersDefault{}, 500, "%s", err)
 	}
 
 	clusters := make([]*models.Kluster, 0, len(klusterList))

@@ -19,7 +19,7 @@ type getOpenstackMetadata struct {
 func (d *getOpenstackMetadata) Handle(params operations.GetOpenstackMetadataParams, principal *models.Principal) middleware.Responder {
 	openstackMetadata, err := fetchOpenstackMetadata(params.HTTPRequest, principal)
 	if err != nil {
-		return NewErrorResponse(&operations.GetOpenstackMetadataDefault{}, 500, err.Error())
+		return NewErrorResponse(&operations.GetOpenstackMetadataDefault{}, 500, "%s", err)
 	}
 
 	return operations.NewGetOpenstackMetadataOK().WithPayload(openstackMetadata)

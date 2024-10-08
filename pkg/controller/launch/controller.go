@@ -49,7 +49,7 @@ func NewController(threadiness int, factories config.Factories, clients config.C
 		Failed:     metrics.LaunchFailedOperationsTotal,
 	}
 
-	queue := workqueue.NewNamedRateLimitingQueue(workqueue.NewItemExponentialFailureRateLimiter(base.BASE_DELAY, base.MAX_DELAY), "launch")
+	queue := workqueue.NewNamedRateLimitingQueue(workqueue.NewItemExponentialFailureRateLimiter(base.BASE_DELAY, base.MAX_DELAY), "launch") // nolint: staticcheck
 	factories.NodesObservatory.NodeInformer().AddEventHandlerFuncs(nodeobservatory.NodeEventHandlerFuncs{
 		AddFunc: func(kluster *v1.Kluster, node *core_v1.Node) {
 			if key, err := cache.MetaNamespaceKeyFunc(kluster); err == nil {

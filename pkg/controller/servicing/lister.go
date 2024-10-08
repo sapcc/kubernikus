@@ -275,21 +275,6 @@ func (d *NodeLister) Replace() []*core_v1.Node {
 			continue
 		}
 
-		kubeProxyVersion, err := getKubeProxyVersion(node)
-		if err != nil {
-			d.Logger.Log(
-				"msg", "Couldn't get KubeProxy version from Node. Skipping node upgrade.",
-				"node", node.GetName(),
-				"err", err,
-			)
-			continue
-		}
-
-		if kubeProxyVersion.LessThan(klusterVersion) {
-			found = append(found, node)
-			continue
-		}
-
 		if util.IsFlatcarNodeWithRkt(node) {
 			uptodate := true
 
@@ -606,10 +591,6 @@ func (l *LoggingLister) Maintained() (nodes []*core_v1.Node) {
 
 func getKubeletVersion(node *core_v1.Node) (*version.Version, error) {
 	return version.ParseSemantic(node.Status.NodeInfo.KubeletVersion)
-}
-
-func getKubeProxyVersion(node *core_v1.Node) (*version.Version, error) {
-	return version.ParseSemantic(node.Status.NodeInfo.KubeProxyVersion)
 }
 
 // GetNodeCondition extracts the provided condition from the given status and returns that.

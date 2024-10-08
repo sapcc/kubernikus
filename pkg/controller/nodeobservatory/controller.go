@@ -41,7 +41,7 @@ type (
 		clientFactory       kube.SharedClientFactory
 		klusterInformer     kubernikus_informers_v1.KlusterInformer
 		namespace           string
-		queue               workqueue.RateLimitingInterface
+		queue               workqueue.RateLimitingInterface // nolint: staticcheck
 		logger              log.Logger
 		nodeInformerMap     sync.Map
 		handlersMux         sync.RWMutex
@@ -62,7 +62,7 @@ func NewController(informer kubernikus_informers_v1.KlusterInformer, factory kub
 	controller := &NodeObservatory{
 		clientFactory:   factory,
 		klusterInformer: informer,
-		queue:           workqueue.NewNamedRateLimitingQueue(workqueue.NewItemExponentialFailureRateLimiter(BaseDelay, MaxDelay), "nodeobservatory"),
+		queue:           workqueue.NewNamedRateLimitingQueue(workqueue.NewItemExponentialFailureRateLimiter(BaseDelay, MaxDelay), "nodeobservatory"), // nolint: staticcheck
 		logger:          logger,
 		nodeInformerMap: sync.Map{},
 		threadiness:     threadiness,

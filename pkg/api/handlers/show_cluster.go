@@ -25,7 +25,7 @@ func (d *showCluster) Handle(params operations.ShowClusterParams, principal *mod
 		if apierrors.IsNotFound(err) {
 			return NewErrorResponse(&operations.ShowClusterDefault{}, 404, "Not found")
 		}
-		return NewErrorResponse(&operations.ShowClusterDefault{}, 500, err.Error())
+		return NewErrorResponse(&operations.ShowClusterDefault{}, 500, "%s", err)
 	}
 
 	return operations.NewShowClusterOK().WithPayload(klusterFromCRD(kluster))

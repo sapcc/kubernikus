@@ -37,7 +37,7 @@ func (d *createCluster) Handle(params operations.CreateClusterParams, principal 
 	spec := params.Body.Spec
 
 	if err := validate.UniqueItems("name", "body", params.Body.Spec.NodePools); err != nil {
-		return NewErrorResponse(&operations.CreateClusterDefault{}, int(err.Code()), err.Error())
+		return NewErrorResponse(&operations.CreateClusterDefault{}, int(err.Code()), "%s", err)
 	}
 
 	if params.Body.Spec.Version != "" {
@@ -80,7 +80,7 @@ func (d *createCluster) Handle(params operations.CreateClusterParams, principal 
 			"kluster", name,
 			"project", principal.Account,
 			"err", err)
-		return NewErrorResponse(&operations.CreateClusterDefault{}, 400, err.Error())
+		return NewErrorResponse(&operations.CreateClusterDefault{}, 400, "%s", err)
 	}
 
 	if kluster.ClusterCIDR() == "" && !kluster.Spec.NoCloud {
@@ -104,9 +104,9 @@ func (d *createCluster) Handle(params operations.CreateClusterParams, principal 
 		if !kluster.Spec.NoCloud {
 			if overlap, err := d.overlapWithSiblingCluster(kluster.ClusterCIDR(), kluster.Spec.Openstack.RouterID, principal); overlap || err != nil {
 				if overlap {
-					return NewErrorResponse(&operations.CreateClusterDefault{}, 409, err.Error())
+					return NewErrorResponse(&operations.CreateClusterDefault{}, 409, "%s", err)
 				}
-				return NewErrorResponse(&operations.CreateClusterDefault{}, 500, err.Error())
+				return NewErrorResponse(&operations.CreateClusterDefault{}, 500, "%s", err)
 			}
 		}
 	}
@@ -132,7 +132,7 @@ func (d *createCluster) Handle(params operations.CreateClusterParams, principal 
 		if apierrors.IsAlreadyExists(err) {
 			return NewErrorResponse(&operations.CreateClusterDefault{}, 409, "Cluster with name %s already exists", name)
 		}
-		return NewErrorResponse(&operations.CreateClusterDefault{}, 500, err.Error())
+		return NewErrorResponse(&operations.CreateClusterDefault{}, 500, "%s", err)
 	}
 
 	//Wait for a second so that the newly created cluster shows up in the cache

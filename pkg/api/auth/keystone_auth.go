@@ -41,7 +41,7 @@ func Keystone(logger log.Logger) func(token string) (*models.Principal, error) {
 	return func(token string) (*models.Principal, error) {
 		t, err := auth.Validate(token)
 		if err != nil {
-			return nil, errors.New(401, fmt.Sprintf("Authentication failed: %s", err))
+			return nil, errors.New(401, "Authentication failed: %s", err)
 		}
 		if t.Project == nil {
 			return nil, errors.New(401, "Auth token isn't project scoped")

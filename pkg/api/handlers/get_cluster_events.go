@@ -26,7 +26,7 @@ func (d *getClusterEvents) Handle(params operations.GetClusterEventsParams, prin
 	selector := eventsInterface.GetFieldSelector(&klusterName, &d.Namespace, &kind, nil)
 	kEvents, err := eventsInterface.List(context.TODO(), metav1.ListOptions{FieldSelector: selector.String()})
 	if err != nil {
-		return NewErrorResponse(&operations.GetClusterEventsDefault{}, 500, err.Error())
+		return NewErrorResponse(&operations.GetClusterEventsDefault{}, 500, "%s", err)
 	}
 	events := make([]*models.Event, 0, len(kEvents.Items))
 	for _, ev := range kEvents.Items {

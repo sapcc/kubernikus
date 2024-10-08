@@ -28,7 +28,7 @@ const (
 type Controller struct {
 	nodes       informers.NodeInformer
 	tunnel      *guttle.Server
-	queue       workqueue.RateLimitingInterface
+	queue       workqueue.RateLimitingInterface // nolint: staticcheck
 	store       map[string][]route
 	storeMu     sync.RWMutex
 	iptables    iptables.Interface
@@ -48,7 +48,7 @@ func NewController(informer informers.NodeInformer, serviceCIDR string, tunnel *
 	c := &Controller{
 		nodes:       informer,
 		tunnel:      tunnel,
-		queue:       workqueue.NewRateLimitingQueue(workqueue.NewItemExponentialFailureRateLimiter(5*time.Second, 300*time.Second)),
+		queue:       workqueue.NewRateLimitingQueue(workqueue.NewItemExponentialFailureRateLimiter(5*time.Second, 300*time.Second)), // nolint: staticcheck
 		store:       make(map[string][]route),
 		iptables:    iptables.New(utilexec.New(), iptables.ProtocolIpv4, logger),
 		hijackPort:  9191,

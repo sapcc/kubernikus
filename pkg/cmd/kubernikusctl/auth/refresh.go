@@ -177,7 +177,7 @@ func (o *RefreshOptions) setupClients() error {
 		return err
 	}
 
-	klog.V(2).Infof(o.openstack.PrintDebugAuthInfo())
+	klog.V(2).Info(o.openstack.PrintDebugAuthInfo())
 	fmt.Println(o.openstack.PrintAuthInfo())
 
 	if err := o.openstack.Authenticate(); err != nil {

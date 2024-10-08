@@ -143,7 +143,7 @@ func (o *InitOptions) Run(c *cobra.Command) (err error) {
 }
 
 func (o *InitOptions) setup() error {
-	klog.V(2).Infof(o.openstack.PrintDebugAuthInfo())
+	klog.V(2).Info(o.openstack.PrintDebugAuthInfo())
 	fmt.Println(o.openstack.PrintAuthInfo())
 
 	if err := o.openstack.Authenticate(); err != nil {

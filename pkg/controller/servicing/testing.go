@@ -136,10 +136,8 @@ func NewFakeKluster(opts *FakeKlusterOptions, afterFlatCarRktRemoval bool) (*v1.
 
 			if p.NodeKubeletOutdated {
 				node.Status.NodeInfo.KubeletVersion = "v1.10.11"
-				node.Status.NodeInfo.KubeProxyVersion = "v1.10.11"
 			} else {
 				node.Status.NodeInfo.KubeletVersion = "v1.10.15"
-				node.Status.NodeInfo.KubeProxyVersion = "v1.10.15"
 			}
 
 			nodes = append(nodes, node)
