@@ -11,6 +11,7 @@ rescan-on-resize = yes
 ` -}}
 
 {{- if and (not .Values.seedKubeadm) (not .Values.seedVirtual) (semverCompare ">= 1.20-0" .Capabilities.KubeVersion.Version) -}}
+{{- if semverCompare "< 1.31.2" .Capabilities.KubeVersion.Version }}
 apiVersion: v1
 kind: Secret
 metadata:
@@ -20,6 +21,7 @@ type: Opaque
 data:
   cloudprovider.conf: {{ tpl $conf $ | b64enc }}
 ---
+{{- end }}
 apiVersion: v1
 kind: ServiceAccount
 metadata:
@@ -506,7 +508,12 @@ spec:
             - /bin/cinder-csi-plugin
             - "--nodeid=$(NODE_ID)"
             - "--endpoint=$(CSI_ENDPOINT)"
+            {{- if semverCompare "< 1.31.2" .Capabilities.KubeVersion.Version }}
             - "--cloud-config=$(CLOUD_CONFIG)"
+            {{- end }}
+            {{- if semverCompare ">= 1.31.2" .Capabilities.KubeVersion.Version }}
+            - "--node-service-no-os-client=true"
+            {{- end }}
           env:
             - name: NODE_ID
               valueFrom:
@@ -514,8 +521,10 @@ spec:
                   fieldPath: spec.nodeName
             - name: CSI_ENDPOINT
               value: unix://csi/csi.sock
+            {{- if semverCompare "< 1.31.2" .Capabilities.KubeVersion.Version }}
             - name: CLOUD_CONFIG
               value: /etc/config/cloudprovider.conf
+            {{- end }}
           imagePullPolicy: "IfNotPresent"
           ports:
             - containerPort: 9808
@@ -539,9 +548,11 @@ spec:
             - name: pods-probe-dir
               mountPath: /dev
               mountPropagation: "HostToContainer"
+            {{- if semverCompare "< 1.31.2" .Capabilities.KubeVersion.Version }}
             - name: secret-cinderplugin
               mountPath: /etc/config
               readOnly: true
+            {{- end }}
       volumes:
         - name: socket-dir
           hostPath:
@@ -559,7 +570,9 @@ spec:
           hostPath:
             path: /dev
             type: Directory
+        {{- if semverCompare "< 1.31.2" .Capabilities.KubeVersion.Version }}
         - name: secret-cinderplugin
           secret:
             secretName: cloud-config
+        {{- end }}
 {{- end }}
