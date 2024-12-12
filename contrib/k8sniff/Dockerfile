@@ -12,7 +12,7 @@ RUN dep ensure
 
 RUN go build -v -o k8sniff .
 
-FROM alpine:3.9
+FROM alpine:3.21
 LABEL source_repository="https://github.com/sapcc/kubernikus"
 
 RUN apk add --no-cache ca-certificates

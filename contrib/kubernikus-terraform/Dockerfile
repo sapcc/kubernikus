@@ -21,7 +21,7 @@ RUN make
 # RUN XC_OS=linux XC_ARCH=amd64 make bin
 
 FROM sapcc/kubernikus-terraform:v20181113152146 as terraform11
-FROM alpine:3.8
+FROM alpine:3.21
 LABEL source_repository="https://github.com/sapcc/kubernikus"
 
 RUN apk add --update make ca-certificates 
