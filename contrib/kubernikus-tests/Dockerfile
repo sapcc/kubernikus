@@ -1,4 +1,4 @@
-FROM keppel.eu-de-1.cloud.sap/ccloud-dockerhub-mirror/library/golang:1.16-alpine3.13
+FROM keppel.eu-de-1.cloud.sap/ccloud-dockerhub-mirror/library/golang:1.23-alpine3.19
 LABEL source_repository="https://github.com/sapcc/kubernikus"
 
 WORKDIR /go/src/github.com/sapcc/kubernikus/
