@@ -1,4 +1,4 @@
-FROM keppel.eu-de-1.cloud.sap/ccloud-dockerhub-mirror/library/golang:1.16-alpine3.13
+FROM keppel.eu-de-1.cloud.sap/ccloud-dockerhub-mirror/library/golang:1.23-alpine3.21
 
 WORKDIR /go/src/github.com/kubermatic/k8sniff
 
@@ -12,7 +12,7 @@ RUN dep ensure
 
 RUN go build -v -o k8sniff .
 
-FROM alpine:3.9
+FROM alpine:3.21
 LABEL source_repository="https://github.com/sapcc/kubernikus"
 
 RUN apk add --no-cache ca-certificates

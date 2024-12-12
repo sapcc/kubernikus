@@ -1,4 +1,4 @@
-FROM keppel.eu-de-1.cloud.sap/ccloud-dockerhub-mirror/library/golang:1.16-alpine3.13 as builder
+FROM keppel.eu-de-1.cloud.sap/ccloud-dockerhub-mirror/library/golang:1.23-alpine3.21 as builder
 
 RUN apk add --update git make bash gcc musl-dev zip
 
@@ -21,7 +21,7 @@ RUN make
 # RUN XC_OS=linux XC_ARCH=amd64 make bin
 
 FROM sapcc/kubernikus-terraform:v20181113152146 as terraform11
-FROM alpine:3.8
+FROM alpine:3.21
 LABEL source_repository="https://github.com/sapcc/kubernikus"
 
 RUN apk add --update make ca-certificates 
