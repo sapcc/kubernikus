@@ -1,19 +1,10 @@
-FROM keppel.eu-de-1.cloud.sap/ccloud-dockerhub-mirror/library/golang:1.16-alpine3.13
+FROM golang:1.22 as builder
 
 WORKDIR /go/src/github.com/kubermatic/k8sniff
+ADD . .
+RUN CGO_ENABLED=0 go build -ldflags '-s' -o /go/bin/k8sniff .
 
-RUN apk add --no-cache curl git \
-    && curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
-ARG VERSION=master
-RUN git clone https://github.com/kubermatic/k8sniff.git . \
-    && git checkout $VERSION
-
-RUN dep ensure
-
-RUN go build -v -o k8sniff .
-
-FROM alpine:3.9
+FROM alpine
 LABEL source_repository="https://github.com/sapcc/kubernikus"
-
-RUN apk add --no-cache ca-certificates
-COPY --from=0 /go/src/github.com/kubermatic/k8sniff /pipeline/source/k8sniff
+COPY --from=builder /go/bin/k8sniff /pipeline/source/k8sniff
+CMD ["/pipeline/source/k8sniff"]
