@@ -13,7 +13,7 @@ RUN make build-e2e
 
 FROM ${DOCS_IMAGE} as kubernikus-docs
 
-FROM keppel.eu-de-1.cloud.sap/ccloud-dockerhub-mirror/library/alpine:3.19 as kubernikus
+FROM keppel.eu-de-1.cloud.sap/ccloud-dockerhub-mirror/library/alpine:3.21 as kubernikus
 LABEL source_repository="https://github.com/sapcc/kubernikus"
 MAINTAINER "Fabian Ruff <fabian.ruff@sap.com>"
 RUN apk add --no-cache curl iptables
