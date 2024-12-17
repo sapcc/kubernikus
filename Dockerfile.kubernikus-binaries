@@ -1,7 +1,7 @@
 FROM keppel.eu-de-1.cloud.sap/ccloud-dockerhub-mirror/library/golang:1.23-alpine3.21 as builder
 RUN apk add --no-cache make git curl bash gcc musl-dev
 WORKDIR /app
-RUN curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.55.2
+RUN curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.62.2
 COPY . .
 ENV GOARCH=amd64
 ARG VERSION

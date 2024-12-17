@@ -88,8 +88,6 @@ func (n *NetworkTests) DeleteNamespace(t *testing.T) {
 
 func (n *NetworkTests) CreatePods(t *testing.T) {
 	for _, node := range n.Nodes.Items {
-		node := node
-
 		t.Run(fmt.Sprintf("CreatePodForNode-%v", node.Name), func(t *testing.T) {
 			_, err := n.Kubernetes.ClientSet.CoreV1().Pods(n.Namespace).Create(context.Background(), &v1.Pod{
 				ObjectMeta: meta_v1.ObjectMeta{
@@ -139,8 +137,6 @@ func (n *NetworkTests) WaitForKubeDNSRunning(t *testing.T) {
 
 func (n *NetworkTests) CreateServices(t *testing.T) {
 	for _, node := range n.Nodes.Items {
-		node := node
-
 		t.Run(fmt.Sprintf("CreateServiceForNode-%v", node.Name), func(t *testing.T) {
 			service := &v1.Service{
 				ObjectMeta: meta_v1.ObjectMeta{
@@ -188,11 +184,7 @@ func (n *NetworkTests) TestPods(t *testing.T) {
 	assert.Equal(t, len(n.Nodes.Items), len(pods.Items), "There should one pod for each node")
 
 	for _, target := range pods.Items {
-		target := target
-
 		for _, source := range pods.Items {
-			source := source
-
 			t.Run(fmt.Sprintf("%v->%v", source.Status.PodIP, target.Status.PodIP), func(t *testing.T) {
 				var stdout string
 				cmd := strings.Split(fmt.Sprintf("curl -f --max-time 5 http://%v:%v", target.Status.PodIP, ServeHostnamePort), " ")
@@ -224,11 +216,7 @@ func (n *NetworkTests) TestServices(t *testing.T) {
 	assert.Equal(t, len(n.Nodes.Items), len(pods.Items), "There should one pod for each node")
 
 	for _, target := range services.Items {
-		target := target
-
 		for _, source := range pods.Items {
-			source := source
-
 			t.Run(fmt.Sprintf("%v->%v", source.Status.PodIP, target.Spec.ClusterIP), func(t *testing.T) {
 				var stdout string
 				cmd := strings.Split(fmt.Sprintf("curl -f --max-time 5 http://%v:%v", target.Spec.ClusterIP, ServeHostnamePort), " ")
@@ -261,12 +249,9 @@ func (n *NetworkTests) TestServicesWithDNS(t *testing.T) {
 	assert.Equal(t, len(n.Nodes.Items), len(pods.Items), "There should one pod for each node")
 
 	for _, target := range services.Items {
-		target := target
 		service := fmt.Sprintf("%s.%s.svc", target.GetName(), target.GetNamespace())
 
 		for _, source := range pods.Items {
-			source := source
-
 			t.Run(fmt.Sprintf("%v->%v", source.Status.PodIP, service), func(t *testing.T) {
 				var stdout string
 				cmd := []string{"dig", service}
