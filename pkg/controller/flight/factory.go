@@ -68,7 +68,6 @@ func (d *flightReconcilerFactory) getInstances(kluster *v1.Kluster, client opens
 			return nil, err
 		} else {
 			for _, n := range poolNodes {
-				n := n // copy to avoid referencing the loop variable
 				instances = append(instances, &instance{Node: n, pool: pool.Name})
 			}
 		}
