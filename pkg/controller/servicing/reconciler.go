@@ -5,6 +5,7 @@ import (
 
 	"github.com/go-kit/log"
 	"github.com/pkg/errors"
+	core_v1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/tools/record"
 
 	"github.com/sapcc/kubernikus/pkg/api/models"
@@ -157,7 +158,8 @@ func (r *KlusterReconciler) Do() error {
 
 	update := r.Lister.Updating()
 	replace := r.Lister.Replace()
-	reboot := r.Lister.Reboot()
+	// reboot := r.Lister.Reboot()
+	reboot := make([]*core_v1.Node, 0) // disable reboots for now
 
 	// The following block retires already updating nodes
 	if len(update) > 0 {
