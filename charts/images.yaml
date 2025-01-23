@@ -7562,11 +7562,11 @@ imagesForVersion:
       repository: keppel.global.cloud.sap/ccloud/etcdbrctl
       tag: v0.25.1
     flannel:
-      repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/flannelcni/flannel
-      tag: v0.19.1
+      repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/flannel/flannel
+      tag: v0.26.3
     flannelCNIPlugin:
-      repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/flannelcni/flannel-cni-plugin
-      tag: v1.1.2
+      repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/flannel/flannel-cni-plugin
+      tag: v1.6.0-flannel1
     fluentd:
       repository: keppel.global.cloud.sap/ccloud/kubernikus-fluentd
       tag: v1.14.6-1.1
