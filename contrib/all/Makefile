@@ -12,6 +12,9 @@ CNI_PLUGINS_RELEASE=v1.0.1
 FLANNEL_VERSION=v0.17.0
 COREDNS_VERSION=1.9.1
 
+ETCD_IMAGE=gcr.io/etcd-development/etcd
+ETCD_VERSION=v3.4.35
+
 OPTS?=--network=host
 
 all: build push
@@ -23,5 +26,11 @@ build:
 push:
 	docker push ${IMAGE}/kube-apiserver:${VERSION}
 	docker push ${IMAGE}/kubelet:${VERSION}
+
+etcd:
+	docker build ${OPTS} -t ${IMAGE}/etcd:${ETCD_VERSION} --build-arg IMAGE=${ETCD_IMAGE}:${ETCD_VERSION} - < Dockerfile.etcd
+
+etcd-push:
+	docker push ${IMAGE}/etcd:${ETCD_VERSION}
 
 .PHONY: all build push

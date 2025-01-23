@@ -1,0 +1,12 @@
+ARG IMAGE
+FROM $IMAGE as etcd
+
+FROM alpine:3.21
+LABEL source_repository="https://github.com/sapcc/kubernikus"
+
+COPY --from=etcd /usr/local/bin/etcd /usr/local/bin/etcd
+COPY --from=etcd /usr/local/bin/etcdctl /usr/local/bin/etcdctl
+RUN apk add --no-cache bash curl wget
+
+WORKDIR /
+ENTRYPOINT ["/usr/local/bin/etcd"]
