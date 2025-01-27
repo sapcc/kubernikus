@@ -7557,7 +7557,7 @@ imagesForVersion:
       tag: 38f4f8ea8d487470a1dd5b83d66b428d8b502f81
     etcd:
       repository: keppel.global.cloud.sap/ccloud/etcd
-      tag: v3.4.13-bootstrap-13
+      tag: v3.4.35
     etcdBackup:
       repository: keppel.global.cloud.sap/ccloud/etcdbrctl
       tag: v0.25.1
