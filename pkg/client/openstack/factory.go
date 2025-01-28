@@ -35,22 +35,22 @@ type NotAvailableFactory struct {
 }
 
 func (_ NotAvailableFactory) KlusterClientFor(*kubernikus_v1.Kluster) (openstack_kluster.KlusterClient, error) {
-	return nil, errors.New("Openstack not configured")
+	return nil, errors.New("Openstack not configured #1")
 }
 func (_ NotAvailableFactory) ProjectClientFor(authOptions *tokens.AuthOptions) (openstack_project.ProjectClient, error) {
-	return nil, errors.New("Openstack not configured")
+	return nil, errors.New("Openstack not configured #2")
 }
 func (_ NotAvailableFactory) ProjectAdminClientFor(string) (openstack_project.ProjectClient, error) {
-	return nil, errors.New("Openstack not configured")
+	return nil, errors.New("Openstack not configured #3")
 }
 func (_ NotAvailableFactory) ProviderClientFor(authOptions *tokens.AuthOptions, logger log.Logger) (*gophercloud.ProviderClient, error) {
-	return nil, errors.New("Openstack not configured")
+	return nil, errors.New("Openstack not configured #4")
 }
 func (_ NotAvailableFactory) ProviderClientForKluster(kluster *kubernikus_v1.Kluster, logger log.Logger) (*gophercloud.ProviderClient, error) {
-	return nil, errors.New("Openstack not configured")
+	return nil, errors.New("Openstack not configured #5")
 }
 func (_ NotAvailableFactory) AdminClient() (admin.AdminClient, error) {
-	return nil, errors.New("Openstack not configured")
+	return nil, errors.New("Openstack not configured #6")
 }
 
 type factory struct {
@@ -222,27 +222,27 @@ func (f *factory) ProviderClientFor(authOptions *tokens.AuthOptions, logger log.
 func (f *factory) serviceClientsFor(authOptions *tokens.AuthOptions, logger log.Logger) (*gophercloud.ServiceClient, *gophercloud.ServiceClient, *gophercloud.ServiceClient, *gophercloud.ServiceClient, error) {
 	providerClient, err := f.ProviderClientFor(authOptions, logger)
 	if err != nil {
-		return nil, nil, nil, nil, err
+		return nil, nil, nil, nil, fmt.Errorf("Can't create provider client: %v", err)
 	}
 
 	identity, err := openstack.NewIdentityV3(providerClient, gophercloud.EndpointOpts{})
 	if err != nil {
-		return nil, nil, nil, nil, err
+		return nil, nil, nil, nil, fmt.Errorf("Can't create identity client: %v", err)
 	}
 
 	compute, err := openstack.NewComputeV2(providerClient, gophercloud.EndpointOpts{})
 	compute.Microversion = "2.52" // 2.52 supports specifying server tags during create
 	if err != nil {
-		return nil, nil, nil, nil, err
+		return nil, nil, nil, nil, fmt.Errorf("Can't create compute client: %v", err)
 	}
 
 	network, err := openstack.NewNetworkV2(providerClient, gophercloud.EndpointOpts{})
 	if err != nil {
-		return nil, nil, nil, nil, err
+		return nil, nil, nil, nil, fmt.Errorf("Can't create network client: %v", err)
 	}
 	image, err := openstack.NewImageServiceV2(providerClient, gophercloud.EndpointOpts{})
 	if err != nil {
-		return nil, nil, nil, nil, err
+		return nil, nil, nil, nil, fmt.Errorf("Can't create image client: %v", err)
 	}
 
 	return identity, compute, network, image, nil

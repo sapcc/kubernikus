@@ -41,13 +41,16 @@ type KubernikusOperatorOptions struct {
 
 	ChartDirectory string
 
-	AuthURL           string
-	AuthUsername      string
-	AuthPassword      string
-	AuthDomain        string
-	AuthProject       string
-	AuthProjectDomain string
-	Region            string
+	ApplicationCredentialID     string
+	ApplicationCredentialName   string
+	ApplicationCredentialSecret string
+	AuthURL                     string
+	AuthUsername                string
+	AuthPassword                string
+	AuthDomain                  string
+	AuthProject                 string
+	AuthProjectDomain           string
+	Region                      string
 
 	KubernikusDomain    string
 	KubernikusProjectID string
@@ -81,13 +84,6 @@ func NewKubernikusOperator(options *KubernikusOperatorOptions, logger log.Logger
 
 	o := &KubernikusOperator{
 		Config: config.Config{
-			Openstack: config.OpenstackConfig{
-				AuthURL:           options.AuthURL,
-				AuthUsername:      options.AuthUsername,
-				AuthPassword:      options.AuthPassword,
-				AuthProject:       options.AuthProjectDomain,
-				AuthProjectDomain: options.AuthProjectDomain,
-			},
 			Helm: config.HelmConfig{
 				ChartDirectory: options.ChartDirectory,
 			},
@@ -101,6 +97,23 @@ func NewKubernikusOperator(options *KubernikusOperatorOptions, logger log.Logger
 			Images: *imageRegistry,
 		},
 		Logger: logger,
+	}
+
+	if options.ApplicationCredentialSecret != "" {
+		o.Config.Openstack = config.OpenstackConfig{
+			ApplicationCredentialID:     options.ApplicationCredentialID,
+			ApplicationCredentialName:   options.ApplicationCredentialName,
+			ApplicationCredentialSecret: options.ApplicationCredentialSecret,
+			AuthURL:                     options.AuthURL,
+		}
+	} else {
+		o.Config.Openstack = config.OpenstackConfig{
+			AuthURL:           options.AuthURL,
+			AuthUsername:      options.AuthUsername,
+			AuthPassword:      options.AuthPassword,
+			AuthProject:       options.AuthProjectDomain,
+			AuthProjectDomain: options.AuthProjectDomain,
+		}
 	}
 
 	o.Clients.Kubernetes, err = kube.NewClient(options.KubeConfig, options.Context, logger)
@@ -132,16 +145,28 @@ func NewKubernikusOperator(options *KubernikusOperatorOptions, logger log.Logger
 		return nil, fmt.Errorf("Couldn't create CRD: %s", err)
 	}
 
-	adminAuthOptions := &tokens.AuthOptions{
-		IdentityEndpoint: options.AuthURL,
-		Username:         options.AuthUsername,
-		Password:         options.AuthPassword,
-		DomainName:       options.AuthDomain,
-		AllowReauth:      true,
-		Scope: tokens.Scope{
-			ProjectName: options.AuthProject,
-			DomainName:  options.AuthProjectDomain,
-		},
+	var adminAuthOptions *tokens.AuthOptions
+
+	if options.ApplicationCredentialSecret != "" {
+		adminAuthOptions = &tokens.AuthOptions{
+			IdentityEndpoint:            options.AuthURL,
+			ApplicationCredentialID:     options.ApplicationCredentialID,
+			ApplicationCredentialName:   options.ApplicationCredentialName,
+			ApplicationCredentialSecret: options.ApplicationCredentialSecret,
+			AllowReauth:                 true,
+		}
+	} else {
+		adminAuthOptions = &tokens.AuthOptions{
+			IdentityEndpoint: options.AuthURL,
+			Username:         options.AuthUsername,
+			Password:         options.AuthPassword,
+			DomainName:       options.AuthDomain,
+			AllowReauth:      true,
+			Scope: tokens.Scope{
+				ProjectName: options.AuthProject,
+				DomainName:  options.AuthProjectDomain,
+			},
+		}
 	}
 
 	o.Factories.Kubernikus = kubernikus_informers.NewFilteredSharedInformerFactory(o.Clients.Kubernikus, DEFAULT_RECONCILIATION, options.Namespace, nil)
