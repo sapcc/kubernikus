@@ -84,16 +84,20 @@ spec:
                   key: password
             {{- end }}
             {{- if .Values.openstack.application_credential_secret }}
+            {{- if .Values.openstack.application_credential_id }}
             - name: OS_APPLICATION_CREDENTIAL_ID
               valueFrom:
                 secretKeyRef:
                   name: kubernikus-operator
                   key: applicationCredentialID
+            {{- end }}
+            {{- if .Values.openstack.application_credential_name }}
             - name: OS_APPLICATION_CREDENTIAL_NAME
               valueFrom:
                 secretKeyRef:
                   name: kubernikus-operator
                   key: applicationCredentialName
+            {{- end }}
             - name: OS_APPLICATION_CREDENTIAL_SECRET
               valueFrom:
                 secretKeyRef:
