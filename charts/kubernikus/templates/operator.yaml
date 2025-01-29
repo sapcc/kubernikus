@@ -40,7 +40,7 @@ spec:
             - kubernikus
             - operator
             - --chart-directory=/etc/kubernikus/charts
-            {{- if and .Values.openstack.auth_url (emtpy .Values.openstack.application_credential_secret) }}
+            {{- if and .Values.openstack.auth_url (not .Values.openstack.application_credential_secret) }}
             {{- /* This is a bit convoluted but making sure that the url ends with /v3 */}}
             - --auth-url={{ trimSuffix "/" .Values.openstack.auth_url | trimSuffix "/v3" }}/v3
             - --auth-username={{ .Values.openstack.auth_user_id }}
@@ -76,7 +76,7 @@ spec:
             - name: USE_OCTAVIA
               value: "true"
             {{- end }}
-            {{- if and .Values.openstack.auth_url (empty .Values.openstack.application_credential_secret) }}
+            {{- if and .Values.openstack.auth_url (not .Values.openstack.application_credential_secret) }}
             - name: OS_PASSWORD
               valueFrom:
                 secretKeyRef:
