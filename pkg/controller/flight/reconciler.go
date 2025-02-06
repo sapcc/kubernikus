@@ -143,21 +143,20 @@ func (f *flightReconciler) EnsureServiceUserRoles() []string {
 	}
 
 	rolesToCreate := []string{}
-	if len(existingUserRoles) != len(wantedUserRoles) {
-		for _, wantedUserRole := range wantedUserRoles {
-			exists := false
-			for _, existingUserRole := range existingUserRoles {
-				if existingUserRole == wantedUserRole {
-					exists = true
-					break
-				}
-			}
-			if !exists {
-				rolesToCreate = append(rolesToCreate, wantedUserRole)
+	for _, wantedUserRole := range wantedUserRoles {
+		exists := false
+		for _, existingUserRole := range existingUserRoles {
+			if existingUserRole == wantedUserRole {
+				exists = true
+				break
 			}
 		}
-
-		err = f.AdminClient.AssignUserRoles(secret.Openstack.ProjectID, secret.Openstack.Username, secret.Openstack.DomainName, wantedUserRoles)
+		if !exists {
+			rolesToCreate = append(rolesToCreate, wantedUserRole)
+		}
+	}
+	if len(rolesToCreate) > 0 {
+		err = f.AdminClient.AssignUserRoles(secret.Openstack.ProjectID, secret.Openstack.Username, secret.Openstack.DomainName, rolesToCreate)
 		if err != nil {
 			f.Logger.Log("msg", "couldn't reconcile service user roles", "err", err)
 		}
