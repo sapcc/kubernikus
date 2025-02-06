@@ -7,6 +7,9 @@ openstack:
   auth_project: xyz
   auth_project_domain: xyz
   region: xy-xy-1
+  #application_credential_id: xyz
+  #application_credential_name: xyz
+  #application_credential_secret: xyz
 dex:
   clientSecret: uhu-ah-secret
   ldap:

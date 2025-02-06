@@ -62,6 +62,9 @@ func (o *Options) BindFlags(flags *pflag.FlagSet) {
 	flags.StringVar(&o.Context, "context", "", "Override context")
 	flags.StringVar(&o.ChartDirectory, "chart-directory", o.ChartDirectory, "Directory containing the kubernikus related charts")
 	flags.StringVar(&o.Region, "region", o.Region, "Local region. (used for container image localization)")
+	flags.StringVar(&o.ApplicationCredentialID, "application-credential-id", o.ApplicationCredentialID, "Openstack application credential id")
+	flags.StringVar(&o.ApplicationCredentialName, "application-credential-name", o.ApplicationCredentialName, "Openstack application credential name")
+	flags.StringVar(&o.ApplicationCredentialSecret, "application-credential-secret", o.ApplicationCredentialSecret, "Openstack application credential secret")
 	flags.StringVar(&o.AuthURL, "auth-url", o.AuthURL, "Openstack keystone url")
 	flags.StringVar(&o.AuthUsername, "auth-username", o.AuthUsername, "Service user for kubernikus")
 	flags.StringVar(&o.AuthPassword, "auth-password", "", "Service user password (if unset its read from env var OS_PASSWORD)")
@@ -86,8 +89,20 @@ func (o *Options) Validate(c *cobra.Command, args []string) error {
 		o.AuthPassword = os.Getenv("OS_PASSWORD")
 	}
 
-	if o.AuthURL != "" && o.AuthPassword == "" {
-		return errors.New("you must specify the auth-password flag")
+	if o.ApplicationCredentialID == "" {
+		o.ApplicationCredentialID = os.Getenv("OS_APPLICATION_CREDENTIAL_ID")
+	}
+
+	if o.ApplicationCredentialName == "" {
+		o.ApplicationCredentialName = os.Getenv("OS_APPLICATION_CREDENTIAL_NAME")
+	}
+
+	if o.ApplicationCredentialSecret == "" {
+		o.ApplicationCredentialSecret = os.Getenv("OS_APPLICATION_CREDENTIAL_SECRET")
+	}
+
+	if o.AuthURL != "" && o.AuthPassword == "" && o.ApplicationCredentialSecret == "" {
+		return errors.New("you must specify the auth-password or application credential flag")
 	}
 
 	return nil
