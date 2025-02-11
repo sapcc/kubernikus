@@ -82,7 +82,11 @@ func (n *NetworkTests) WaitForNamespace(t *testing.T) {
 }
 
 func (n *NetworkTests) DeleteNamespace(t *testing.T) {
-	err := n.Kubernetes.ClientSet.CoreV1().Namespaces().Delete(context.Background(), n.Namespace, meta_v1.DeleteOptions{})
+	deletePolicy := meta_v1.DeletePropagationForeground
+	deleteOptions := meta_v1.DeleteOptions{
+		PropagationPolicy: &deletePolicy,
+	}
+	err := n.Kubernetes.ClientSet.CoreV1().Namespaces().Delete(context.Background(), n.Namespace, deleteOptions)
 	require.NoError(t, err, "There should be no error while deleting a namespace")
 }
 
