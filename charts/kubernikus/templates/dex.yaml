@@ -6,6 +6,8 @@ metadata:
   labels:
     chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
     release: {{ .Release.Name }}
+  annotations:
+    secret.reloader.stakater.com/reload: "kubernikus-api-dex"
   name: kubernikus-api-dex
 spec:
   replicas: 1
@@ -35,6 +37,11 @@ spec:
             secretKeyRef:
               name: kubernikus-api-dex
               key: bindPW
+        - name: DEX_CLIENT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: kubernikus-api-dex
+              key: clientSecret
         - name: KUBERNETES_POD_NAMESPACE
           valueFrom:
            fieldRef:

@@ -64,7 +64,7 @@ data:
       - https://{{ .Values.domain }}/auth/callback # for dashboard access
       - http://localhost:33768/auth/callback
       name: kubernikus
-      secret: {{ required "missing dex.clientSecret" .Values.dex.clientSecret | quote }}
+      secret: $DEX_CLIENT_SECRET
 ---
 apiVersion: v1
 kind: Secret
@@ -74,4 +74,5 @@ metadata:
 type: Opaque
 data:
   bindPW: {{ required ".Values.dex.ldap.config.bindPW undefined" .Values.dex.ldap.config.bindPW | b64enc | quote}}
+  clientSecret: {{ required "missing dex.clientSecret" .Values.dex.clientSecret | b64enc | quote }}
 {{ end }}
