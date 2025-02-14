@@ -38,14 +38,23 @@ spec:
       containers:
         - name: api
           image: "{{ .Values.image }}:{{ .Values.imageTag }}"
+          env:
+          {{- if .Values.dex.enabled }}
+          - name: DEX_CLIENT_SECRET
+            valueFrom:
+              secretKeyRef:
+                name: kubernikus-api-dex
+                key: clientSecret
+          {{- end }}
           args:
             - apiserver
             - --port={{ .Values.api.port }}
             - --host=0.0.0.0
             {{- if .Values.dex.enabled }}
             - --oidc-issuer-url=https://{{ include "oidc.issuer" . }}
-            - --oidc-client-id={{ required "api.oidc.clientID missing" .Values.dex.clientID }}
-            - --oidc-client-secret={{ required "api.oidc.clientSecret missing" .Values.dex.clientSecret }}
+            - --oidc-client-id={{ required "dex.clientID missing" .Values.dex.clientID }}
+            # Kubelet env var expansion
+            - --oidc-client-secret=$(DEX_CLIENT_SECRET)
             - --oidc-callback-url=https://{{ required "domain missing" .Values.domain }}/auth/callback
             {{- else }}
             - --policy={{ default "/etc/kubernikus/policy.json" .Values.api.policyFile }}
