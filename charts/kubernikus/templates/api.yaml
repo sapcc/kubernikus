@@ -10,6 +10,10 @@ metadata:
   labels:
     app: kubernikus
     type: api
+  {{- if .Values.dex.enabled }}
+  annotations:
+    secret.reloader.stakater.com/reload: "kubernikus-api-dex"
+  {{- end }}
 
 spec:
   strategy:
