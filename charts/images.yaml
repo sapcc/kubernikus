@@ -7511,10 +7511,10 @@ imagesForVersion:
       tag: v1.31.5
     cinderCSIPlugin:
       repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/provider-os/cinder-csi-plugin
-      tag: v1.31.2
+      tag: v1.31.3
     cloudControllerManager:
       repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/provider-os/openstack-cloud-controller-manager
-      tag: v1.31.2
+      tag: v1.31.3
     cniPlugins:
       repository: keppel.global.cloud.sap/ccloud/cni-plugins
       tag: v1.1.1
