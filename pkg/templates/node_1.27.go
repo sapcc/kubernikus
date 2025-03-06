@@ -369,4 +369,8 @@ storage:
           ./xtoml add --file output.toml --plugin "io.containerd.grpc.v1.cri" --key enable_unprivileged_ports --value true --type bool
           ./xtoml add --file output.toml --plugin "io.containerd.grpc.v1.cri" --key enable_unprivileged_icmp --value true --type bool
           cp output.toml /etc/containerd/config.toml
+    - path: /etc/extensions/oem-vmware.raw
+      mode: 0644
+      contents:
+        source: https://repo.{{ .OpenstackRegion }}.cloud.sap/flatcar/stable/current/oem-vmware.raw
 `
