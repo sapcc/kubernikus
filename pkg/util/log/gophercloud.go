@@ -17,6 +17,7 @@ func NewLoggingProviderClient(endpoint string, logger kitlog.Logger) (*gopherclo
 		return nil, err
 	}
 
+	providerClient.UserAgent.Prepend("kubernikus")
 	providerClient.UseTokenLock()
 
 	transport := providerClient.HTTPClient.Transport
