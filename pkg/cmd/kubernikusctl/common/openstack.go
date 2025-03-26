@@ -185,6 +185,7 @@ func (o *OpenstackClient) Setup() error {
 	if o.Provider, err = openstack.NewClient(o.IdentityEndpoint); err != nil {
 		return errors.Wrap(err, "Creating Gophercloud ProviderClient failed")
 	}
+	o.Provider.UserAgent.Prepend("kubernikusctl")
 
 	if o.CertFile != "" && o.KeyFile != "" {
 		cert, err := tls.LoadX509KeyPair(o.CertFile, o.KeyFile)

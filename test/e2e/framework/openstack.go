@@ -35,6 +35,7 @@ func NewOpenStackFramework() (*OpenStack, error) {
 	if err != nil {
 		return nil, fmt.Errorf("could not initialize openstack client: %v", err)
 	}
+	provider.UserAgent.Prepend("kubernikus-e2e-tests")
 
 	transport := &http.Transport{}
 	if os.Getenv("OS_CERT") != "" && os.Getenv("OS_KEY") != "" {
