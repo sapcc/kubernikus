@@ -180,6 +180,10 @@ func (cf *CertificateFactory) Ensure() ([]CertUpdates, error) {
 	if err != nil {
 		return nil, err
 	}
+	admissionCA, err := loadOrCreateCA(cf.kluster, "Admission", &cf.store.AdmissionCACertificate, &cf.store.AdmissionCAPrivateKey, &certUpdates)
+	if err != nil {
+		return nil, err
+	}
 
 	if err := ensureClientCertificate(
 		etcdClientsCA,
@@ -274,6 +278,15 @@ func (cf *CertificateFactory) Ensure() ([]CertUpdates, error) {
 		nil,
 		&cf.store.AggregationAggregatorCertificate,
 		&cf.store.AggregationAggregatorPrivateKey,
+		&certUpdates); err != nil {
+		return nil, err
+	}
+	if err := ensureClientCertificate(
+		admissionCA,
+		"admission",
+		nil,
+		&cf.store.AdmissionCertificate,
+		&cf.store.AdmissionPrivateKey,
 		&certUpdates); err != nil {
 		return nil, err
 	}

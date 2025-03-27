@@ -255,3 +255,27 @@ data:
       restartPolicy: Never
       serviceAccountName: default
       terminationGracePeriodSeconds: 30
+{{- if .Values.admissionConfig.enabled }}
+  admission.yaml: |-
+    apiVersion: apiserver.config.k8s.io/v1
+    kind: AdmissionConfiguration
+    plugins:
+    - name: ValidatingAdmissionWebhook
+      configuration:
+        apiVersion: apiserver.config.k8s.io/v1
+        kind: WebhookAdmissionConfiguration
+        kubeConfigFile: "/etc/kubernetes/admission/kubeconfig"
+    - name: MutatingAdmissionWebhook
+      configuration:
+        apiVersion: apiserver.config.k8s.io/v1
+        kind: WebhookAdmissionConfiguration
+        kubeConfigFile: "/etc/kubernetes/admission/kubeconfig"
+  admission-kubeconfig: |-
+    apiVersion: v1
+    kind: Config
+    users:
+    - name: '*'
+      user:
+        client-certificate: /etc/kubernetes/certs/admission.pem
+        client-key: /etc/kubernetes/certs/admission-key.pem
+{{- end }}
