@@ -126,6 +126,11 @@ type Certificates struct {
 	AggregationCACertificate         string `json:"aggregation-ca.pem"`
 	AggregationAggregatorPrivateKey  string `json:"aggregation-aggregator-key.pem"`
 	AggregationAggregatorCertificate string `json:"aggregation-aggregator.pem"`
+
+	AdmissionCAPrivateKey  string `json:"admission-ca-key.pem"`
+	AdmissionCACertificate string `json:"admission-ca.pem"`
+	AdmissionPrivateKey    string `json:"admission-key.pem"`
+	AdmissionCertificate   string `json:"admission.pem"`
 }
 
 func (s *Certificates) ToStringData() (map[string]string, error) {

@@ -175,3 +175,6 @@ csi:
         memory: 300Mi
 
 audit: ""
+
+admissionConfig:
+  enabled: true
