@@ -25,8 +25,8 @@ import (
 )
 
 const (
-	//by default we generate certs with 2 year validity
-	defaultCertValidity = 2 * time.Hour * 24 * 365
+	//by default we generate certs with 1 year validity
+	defaultCertValidity = 1 * time.Hour * 24 * 365
 	//out CAs are valid for 10 years
 	caValidity = 10 * time.Hour * 24 * 365
 	// renew certs 90 days before they expire

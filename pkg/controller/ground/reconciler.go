@@ -14,6 +14,7 @@ import (
 	"helm.sh/helm/v3/pkg/chartutil"
 	"helm.sh/helm/v3/pkg/engine"
 	"helm.sh/helm/v3/pkg/releaseutil"
+	corev1 "k8s.io/api/core/v1"
 	extensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
@@ -32,6 +33,7 @@ import (
 	v1 "github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
 	"github.com/sapcc/kubernikus/pkg/client/openstack/project"
 	"github.com/sapcc/kubernikus/pkg/controller/config"
+	"github.com/sapcc/kubernikus/pkg/util"
 )
 
 const SeedChartPath string = "charts/seed"
@@ -40,6 +42,7 @@ const ManagedByLabelKey string = "cloud.sap/managed-by"
 const ManagedByLabelValue string = "kubernikus"
 const SkipPatchKey string = "kubernikus.cloud.sap/skip-manage"
 const SkipPatchValue string = "true"
+const InjectAdmissionCAKey string = "kubernikus.cloud.sap/inject-admission-ca"
 
 var recreateKinds map[string]struct{} = map[string]struct{}{
 	"RoleBinding":        {},
@@ -206,6 +209,49 @@ func (sr *SeedReconciler) ReconcileSeeding(chartPath string, values map[string]i
 	if err != nil {
 		return err
 	}
+
+	// inject admission CA in labeled namespaces
+	k8sClient, err := sr.Clients.Satellites.ClientFor(sr.Kluster)
+	if err != nil {
+		return err
+	}
+	nsList, err := k8sClient.CoreV1().Namespaces().List(context.TODO(), metav1.ListOptions{LabelSelector: fmt.Sprintf("%s=true", InjectAdmissionCAKey)})
+	if err != nil {
+		return err
+	}
+	if nsList.Size() > 0 {
+		secret, err := util.KlusterSecret(sr.Clients.Kubernetes, sr.Kluster)
+		if err != nil {
+			return fmt.Errorf("Couldn't get kluster secret: %s", err)
+		}
+		ca := map[string]string{"ca.crt": secret.Certificates.AdmissionCACertificate}
+		cm := corev1.ConfigMap{
+			TypeMeta: metav1.TypeMeta{
+				Kind:       "ConfigMap",
+				APIVersion: "v1",
+			},
+			ObjectMeta: metav1.ObjectMeta{
+				Name: "admission-auth-ca",
+			},
+			Data: ca,
+		}
+		for _, ns := range nsList.Items {
+			_, err = k8sClient.CoreV1().ConfigMaps(ns.Name).Create(context.TODO(), &cm, metav1.CreateOptions{})
+			if errors.IsAlreadyExists(err) {
+				_, err = k8sClient.CoreV1().ConfigMaps(ns.Name).Update(context.TODO(), &cm, metav1.UpdateOptions{})
+			}
+			if err != nil {
+				return fmt.Errorf("Admission CA certificate reconciliation in namespace %s failed: %", ns.Name, err)
+			}
+			sr.Logger.Log(
+				"msg", "Reconciling admission CA certificate",
+				"namespace", ns.Name,
+				"kluster", sr.Kluster.GetName(),
+				"project", sr.Kluster.Account(),
+				"v", 6)
+		}
+	}
+
 	sr.Logger.Log(
 		"msg", "Seed reconciliation: successful",
 		"kluster", sr.Kluster.GetName(),
