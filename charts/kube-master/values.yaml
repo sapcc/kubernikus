@@ -56,6 +56,8 @@ api:
     limits:
       cpu: 1
       memory: 2Gi
+  admissionConfig:
+    enabled: true
 
 cloudControllerManager:
   replicaCount: 1
@@ -175,6 +177,3 @@ csi:
         memory: 300Mi
 
 audit: ""
-
-admissionConfig:
-  enabled: true
