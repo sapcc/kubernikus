@@ -241,7 +241,7 @@ func (sr *SeedReconciler) ReconcileSeeding(chartPath string, values map[string]i
 				_, err = k8sClient.CoreV1().ConfigMaps(ns.Name).Update(context.TODO(), &cm, metav1.UpdateOptions{})
 			}
 			if err != nil {
-				return fmt.Errorf("Admission CA certificate reconciliation in namespace %s failed: %", ns.Name, err)
+				return fmt.Errorf("Admission CA certificate reconciliation in namespace %s failed: %s", ns.Name, err)
 			}
 			sr.Logger.Log(
 				"msg", "Reconciling admission CA certificate",
