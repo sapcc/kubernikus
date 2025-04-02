@@ -56,6 +56,8 @@ api:
     limits:
       cpu: 1
       memory: 2Gi
+  admissionConfig:
+    enabled: false
 
 cloudControllerManager:
   replicaCount: 1

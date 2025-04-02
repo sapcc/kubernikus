@@ -25,8 +25,8 @@ import (
 )
 
 const (
-	//by default we generate certs with 2 year validity
-	defaultCertValidity = 2 * time.Hour * 24 * 365
+	//by default we generate certs with 1 year validity
+	defaultCertValidity = 1 * time.Hour * 24 * 365
 	//out CAs are valid for 10 years
 	caValidity = 10 * time.Hour * 24 * 365
 	// renew certs 90 days before they expire
@@ -180,6 +180,10 @@ func (cf *CertificateFactory) Ensure() ([]CertUpdates, error) {
 	if err != nil {
 		return nil, err
 	}
+	admissionCA, err := loadOrCreateCA(cf.kluster, "Admission", &cf.store.AdmissionCACertificate, &cf.store.AdmissionCAPrivateKey, &certUpdates)
+	if err != nil {
+		return nil, err
+	}
 
 	if err := ensureClientCertificate(
 		etcdClientsCA,
@@ -274,6 +278,15 @@ func (cf *CertificateFactory) Ensure() ([]CertUpdates, error) {
 		nil,
 		&cf.store.AggregationAggregatorCertificate,
 		&cf.store.AggregationAggregatorPrivateKey,
+		&certUpdates); err != nil {
+		return nil, err
+	}
+	if err := ensureClientCertificate(
+		admissionCA,
+		"admission",
+		nil,
+		&cf.store.AdmissionCertificate,
+		&cf.store.AdmissionPrivateKey,
 		&certUpdates); err != nil {
 		return nil, err
 	}

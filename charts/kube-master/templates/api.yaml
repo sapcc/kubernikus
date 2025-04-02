@@ -66,6 +66,12 @@ spec:
                 path: aggregation-aggregator.pem
               - key: aggregation-aggregator-key.pem
                 path: aggregation-aggregator-key.pem
+{{- if .Values.api.admissionConfig.enabled }}
+              - key: admission.pem
+                path: admission.pem
+              - key: admission-key.pem
+                path: admission-key.pem
+{{- end }}
 {{- if .Values.api.sniCertSecret }}
         - name: sni-certs
           secret:
@@ -125,6 +131,16 @@ spec:
         - name: logs
           emptyDir: {}
         {{- end }}
+{{- if .Values.api.admissionConfig.enabled }}
+        - name: admission-config
+          configMap:
+            name: {{ include "master.fullname" . }}
+            items:
+            - key: admission.yaml
+              path: config.yaml
+            - key: admission-kubeconfig
+              path: kubeconfig
+{{- end }}
       initContainers:
         - name: etcd-wait
           image: "{{ include "etcd.image" . }}"
@@ -270,6 +286,9 @@ spec:
 {{- else }}
             - --tls-cipher-suites=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305,TLS_RSA_WITH_AES_128_CBC_SHA,TLS_RSA_WITH_AES_256_CBC_SHA,TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA
 {{- end }}
+{{- if .Values.api.admissionConfig.enabled }}
+            - --admission-control-config-file=/etc/kubernetes/admission/config.yaml
+{{- end }}
           volumeMounts:
             - mountPath: /etc/kubernetes/certs
               name: certs
@@ -295,6 +314,11 @@ spec:
             - mountPath: /var/log
               name: logs
             {{- end}}
+{{- if .Values.api.admissionConfig.enabled }}
+            - mountPath: /etc/kubernetes/admission
+              name: admission-config
+              readOnly: true
+{{- end }}
           livenessProbe:
 {{- if .Values.etcd.backup.enabled }}
             exec:
