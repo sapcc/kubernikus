@@ -95,7 +95,7 @@ data:
       - group: ""
         resources: ["secrets", "serviceaccounts"]
       - group: ""
-        resources: ["pods/log"]
+        resources: ["pods/log", "pods/exec", "pods/attach"]
     - level: Request
       resources:
       - group: "rbac.authorization.k8s.io"
