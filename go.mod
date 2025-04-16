@@ -45,7 +45,7 @@ require (
 	github.com/tredoe/osutil v1.5.0
 	github.com/zalando/go-keyring v0.2.6
 	golang.org/x/crypto v0.36.0
-	golang.org/x/net v0.37.0
+	golang.org/x/net v0.38.0
 	golang.org/x/oauth2 v0.26.0
 	golang.org/x/sys v0.31.0
 	gopkg.in/yaml.v2 v2.4.0
