@@ -49,9 +49,6 @@ api:
     groupsClaim: groups
     usernamePrefix: "-"
     usernameClaim: name
-  structuredAuth:
-    enabled: false
-    #configMapName:
   resources:
     requests:
       cpu: 200m

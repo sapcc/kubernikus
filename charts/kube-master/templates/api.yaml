@@ -141,10 +141,10 @@ spec:
             - key: admission-kubeconfig
               path: kubeconfig
 {{- end }}
-{{- if .Values.api.structuredAuth.enabled }}
+{{- if (semverCompare ">= 1.30" .Values.version.kubernetes) }}
         - name: auth-config
           configMap:
-            name: {{ .Values.api.structuredAuth.configMapName }}
+            name: {{ include "master.fullname" . }}-auth
             items:
             - key: config.yaml
               path: config.yaml
@@ -276,7 +276,7 @@ spec:
 {{- if .Values.api.corsAllowedOrigins }}
             - --cors-allowed-origins={{ .Values.api.corsAllowedOrigins }}
 {{- end }}
-            {{ if .Values.api.structuredAuth.enabled }}
+            {{ if (semverCompare ">= 1.30" .Values.version.kubernetes)}}
             - --authentication-config=/etc/kubernetes/auth/config.yaml
             {{ else if or .Values.dex.enabled .Values.api.oidc.issuerURL }}
             - --oidc-issuer-url={{ default  (printf "https://%s" (include "dex.url" .)) .Values.api.oidc.issuerURL }}
@@ -329,7 +329,7 @@ spec:
               name: admission-config
               readOnly: true
 {{- end }}
-{{- if .Values.api.structuredAuth.enabled }}
+{{- if (semverCompare ">= 1.30" .Values.version.kubernetes) }}
             - mountPath: /etc/kubernetes/auth
               name: auth-config
               readOnly: true
