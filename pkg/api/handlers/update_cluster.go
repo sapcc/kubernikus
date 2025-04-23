@@ -151,7 +151,7 @@ func (d *updateCluster) Handle(params operations.UpdateClusterParams, principal 
 		}
 
 		if !dexEnabled && dashboardEnabled {
-			return apierrors.NewBadRequest(fmt.Sprintf("Dashboard cannot be enabled while Dex is disabled"))
+			return apierrors.NewBadRequest("Dashboard cannot be enabled while Dex is disabled")
 		}
 
 		//Dex value changed
@@ -168,6 +168,14 @@ func (d *updateCluster) Handle(params operations.UpdateClusterParams, principal 
 				kluster.Status.Dashboard = strings.Replace(apiURL, kluster.GetName(), fmt.Sprintf("dashboard-%s.ingress", kluster.GetName()), -1)
 			}
 
+		}
+
+		// oidc values changed
+		if params.Body.Spec.Oidc != kluster.Spec.Oidc {
+			if dexEnabled && params.Body.Spec.Oidc != nil {
+				return apierrors.NewBadRequest("OIDC cannot be customized while Dex is enabled")
+			}
+			kluster.Spec.Oidc = params.Body.Spec.Oidc
 		}
 
 		return nil
