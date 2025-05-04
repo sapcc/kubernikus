@@ -5,6 +5,7 @@ import (
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/availabilityzones"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/keypairs"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/flavors"
+	"github.com/gophercloud/gophercloud/openstack/identity/v3/projects"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/layer3/routers"
 	securitygroups "github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/security/groups"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/networks"
@@ -17,6 +18,7 @@ import (
 
 type ProjectClient interface {
 	GetMetadata() (*models.OpenstackMetadata, error)
+	GetProjectTags() ([]string, error)
 }
 
 type projectClient struct {
@@ -68,6 +70,14 @@ func (c *projectClient) GetMetadata() (metadata *models.OpenstackMetadata, err e
 	}
 
 	return metadata, nil
+}
+
+func (c *projectClient) GetProjectTags() ([]string, error) {
+	project, err := projects.Get(c.IdentityClient, c.projectID).Extract()
+	if err != nil {
+		return nil, err
+	}
+	return project.Tags, nil
 }
 
 func (c *projectClient) getRouters() ([]*models.Router, error) {
