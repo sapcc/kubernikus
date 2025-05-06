@@ -31,6 +31,13 @@ type KlusterSpec struct {
 	// Enum: [elasticsearch swift http stdout]
 	Audit *string `json:"audit,omitempty"`
 
+	// Enables structured authentication for the cluster by specifying a valid AuthenticationConfiguration YAML resource.
+	// This configuration is passed directly to the API server via the --authentication-config flag.
+	// Note: Using this option overrides the OIDC configuration for both Dex and the OIDC API fields.
+	// Requires Kubernetes version 1.30 or later.
+	//
+	AuthenticationConfiguration AuthenticationConfiguration `json:"authenticationConfiguration,omitempty"`
+
 	// backup
 	// Enum: [on off externalAWS]
 	Backup string `json:"backup,omitempty"`
@@ -94,6 +101,10 @@ func (m *KlusterSpec) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateAudit(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateAuthenticationConfiguration(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -181,6 +192,23 @@ func (m *KlusterSpec) validateAudit(formats strfmt.Registry) error {
 
 	// value enum
 	if err := m.validateAuditEnum("audit", "body", *m.Audit); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *KlusterSpec) validateAuthenticationConfiguration(formats strfmt.Registry) error {
+	if swag.IsZero(m.AuthenticationConfiguration) { // not required
+		return nil
+	}
+
+	if err := m.AuthenticationConfiguration.Validate(formats); err != nil {
+		if ve, ok := err.(*errors.Validation); ok {
+			return ve.ValidateName("authenticationConfiguration")
+		} else if ce, ok := err.(*errors.CompositeError); ok {
+			return ce.ValidateName("authenticationConfiguration")
+		}
 		return err
 	}
 
