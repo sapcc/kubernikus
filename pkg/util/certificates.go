@@ -101,11 +101,15 @@ func (ca Bundle) Sign(config Config) (*Bundle, error) {
 		notBefore = ca.Certificate.NotBefore
 	}
 
-	authorityKeyId, err := asn1.Marshal(authorityKeyId{
-		KeyIdentifier: ca.Certificate.SubjectKeyId,
-	})
-	if err != nil {
-		return nil, fmt.Errorf("Failed to marshal authority key id: %s", err)
+	var authorityKeyIdent []byte
+	if ca.Certificate.SubjectKeyId != nil {
+		var err error
+		authorityKeyIdent, err = asn1.Marshal(authorityKeyId{
+			KeyIdentifier: ca.Certificate.SubjectKeyId,
+		})
+		if err != nil {
+			return nil, fmt.Errorf("Failed to marshal authority key id: %s", err)
+		}
 	}
 
 	certTmpl := x509.Certificate{
@@ -123,7 +127,7 @@ func (ca Bundle) Sign(config Config) (*Bundle, error) {
 		NotAfter:       time.Now().Add(config.ValidFor).UTC(),
 		KeyUsage:       x509.KeyUsageKeyEncipherment | x509.KeyUsageDigitalSignature,
 		ExtKeyUsage:    config.Usages,
-		AuthorityKeyId: authorityKeyId,
+		AuthorityKeyId: authorityKeyIdent,
 	}
 
 	certDERBytes, _ := x509.CreateCertificate(cryptorand.Reader, &certTmpl, ca.Certificate, key.Public(), ca.PrivateKey)
