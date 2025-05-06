@@ -15,6 +15,7 @@ import (
 	"math/big"
 	"net"
 	"reflect"
+	"slices"
 	"strings"
 	"time"
 
@@ -393,7 +394,17 @@ func (cf *CertificateFactory) UserCert(principal *models.Principal, apiURL strin
 }
 
 func loadOrCreateCA(kluster *v1.Kluster, name string, cert, key *string, certUpdates *[]CertUpdates) (*Bundle, error) {
-	if *cert != "" && *key != "" {
+	regenerate := false
+	if name == "TLS" && *cert != "" {
+		caCert, err := x509.ParseCertificate([]byte(*cert))
+		if err != nil {
+			return nil, fmt.Errorf("Failed to parse TLS CA certificate: %s", err)
+		}
+		if caCert.SubjectKeyId == nil {
+			regenerate = true
+		}
+	}
+	if *cert != "" && *key != "" && !regenerate {
 		return NewBundle([]byte(*key), []byte(*cert))
 	}
 	caBundle, err := createCA(kluster.Name, name)
@@ -543,6 +554,10 @@ func isCertChangedOrExpires(origCert, newCert, caCert *x509.Certificate, duratio
 
 	if !reflect.DeepEqual(origCert.IPAddresses, newCert.IPAddresses) {
 		return "SAN IP changes: " + strings.Join(IPSliceDiff(origCert.IPAddresses, newCert.IPAddresses), " "), true
+	}
+
+	if !slices.Equal(origCert.AuthorityKeyId, newCert.AuthorityKeyId) {
+		return "AuthorityKeyId changed", true
 	}
 
 	expire := time.Now().Add(duration)
