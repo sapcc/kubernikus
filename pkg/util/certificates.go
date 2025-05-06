@@ -3,8 +3,10 @@ package util
 import (
 	cryptorand "crypto/rand"
 	"crypto/rsa"
+	"crypto/sha1"
 	"crypto/x509"
 	"crypto/x509/pkix"
+	"encoding/asn1"
 	"encoding/json"
 	"encoding/pem"
 	"errors"
@@ -13,6 +15,7 @@ import (
 	"math/big"
 	"net"
 	"reflect"
+	"slices"
 	"strings"
 	"time"
 
@@ -76,6 +79,10 @@ type AltNames struct {
 	IPs      []net.IP
 }
 
+type authorityKeyId struct {
+	KeyIdentifier []byte `asn1:"optional,tag:0"`
+}
+
 func (ca Bundle) Sign(config Config) (*Bundle, error) {
 	if !ca.Certificate.IsCA {
 		return nil, errors.New("You can't use this certificate for signing. It's not a CA...")
@@ -95,6 +102,17 @@ func (ca Bundle) Sign(config Config) (*Bundle, error) {
 		notBefore = ca.Certificate.NotBefore
 	}
 
+	var authorityKeyIdent []byte
+	if ca.Certificate.SubjectKeyId != nil {
+		var err error
+		authorityKeyIdent, err = asn1.Marshal(authorityKeyId{
+			KeyIdentifier: ca.Certificate.SubjectKeyId,
+		})
+		if err != nil {
+			return nil, fmt.Errorf("Failed to marshal authority key id: %s", err)
+		}
+	}
+
 	certTmpl := x509.Certificate{
 		Subject: pkix.Name{
 			CommonName:         config.Sign,
@@ -103,13 +121,14 @@ func (ca Bundle) Sign(config Config) (*Bundle, error) {
 			Province:           config.Province,
 			Locality:           config.Locality,
 		},
-		DNSNames:     config.AltNames.DNSNames,
-		IPAddresses:  config.AltNames.IPs,
-		SerialNumber: serial,
-		NotBefore:    notBefore,
-		NotAfter:     time.Now().Add(config.ValidFor).UTC(),
-		KeyUsage:     x509.KeyUsageKeyEncipherment | x509.KeyUsageDigitalSignature,
-		ExtKeyUsage:  config.Usages,
+		DNSNames:       config.AltNames.DNSNames,
+		IPAddresses:    config.AltNames.IPs,
+		SerialNumber:   serial,
+		NotBefore:      notBefore,
+		NotAfter:       time.Now().Add(config.ValidFor).UTC(),
+		KeyUsage:       x509.KeyUsageKeyEncipherment | x509.KeyUsageDigitalSignature,
+		ExtKeyUsage:    config.Usages,
+		AuthorityKeyId: authorityKeyIdent,
 	}
 
 	certDERBytes, _ := x509.CreateCertificate(cryptorand.Reader, &certTmpl, ca.Certificate, key.Public(), ca.PrivateKey)
@@ -375,7 +394,17 @@ func (cf *CertificateFactory) UserCert(principal *models.Principal, apiURL strin
 }
 
 func loadOrCreateCA(kluster *v1.Kluster, name string, cert, key *string, certUpdates *[]CertUpdates) (*Bundle, error) {
-	if *cert != "" && *key != "" {
+	regenerate := false
+	if name == "TLS" && *cert != "" {
+		caCert, err := x509.ParseCertificate([]byte(*cert))
+		if err != nil {
+			return nil, fmt.Errorf("Failed to parse TLS CA certificate: %s", err)
+		}
+		if caCert.SubjectKeyId == nil {
+			regenerate = true
+		}
+	}
+	if *cert != "" && *key != "" && !regenerate {
 		return NewBundle([]byte(*key), []byte(*cert))
 	}
 	caBundle, err := createCA(kluster.Name, name)
@@ -489,6 +518,9 @@ func createCA(klusterName, name string) (*Bundle, error) {
 		return nil, fmt.Errorf("Failed to generate private key for %s ca: %s", name, err)
 	}
 
+	keyBytes := x509.MarshalPKCS1PublicKey(&privateKey.PublicKey)
+	keyHash := sha1.Sum(keyBytes)
+
 	now := time.Now()
 	tmpl := x509.Certificate{
 		SerialNumber: new(big.Int).SetInt64(0),
@@ -501,6 +533,7 @@ func createCA(klusterName, name string) (*Bundle, error) {
 		KeyUsage:              x509.KeyUsageKeyEncipherment | x509.KeyUsageDigitalSignature | x509.KeyUsageCertSign,
 		BasicConstraintsValid: true,
 		IsCA:                  true,
+		SubjectKeyId:          keyHash[:],
 	}
 
 	certDERBytes, err := x509.CreateCertificate(cryptorand.Reader, &tmpl, &tmpl, privateKey.Public(), privateKey)
@@ -521,6 +554,10 @@ func isCertChangedOrExpires(origCert, newCert, caCert *x509.Certificate, duratio
 
 	if !reflect.DeepEqual(origCert.IPAddresses, newCert.IPAddresses) {
 		return "SAN IP changes: " + strings.Join(IPSliceDiff(origCert.IPAddresses, newCert.IPAddresses), " "), true
+	}
+
+	if !slices.Equal(origCert.AuthorityKeyId, newCert.AuthorityKeyId) {
+		return "AuthorityKeyId changed", true
 	}
 
 	expire := time.Now().Add(duration)
