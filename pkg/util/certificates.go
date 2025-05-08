@@ -396,7 +396,11 @@ func (cf *CertificateFactory) UserCert(principal *models.Principal, apiURL strin
 func loadOrCreateCA(kluster *v1.Kluster, name string, cert, key *string, certUpdates *[]CertUpdates) (*Bundle, error) {
 	regenerate := false
 	if name == "TLS" && *cert != "" {
-		caCert, err := x509.ParseCertificate([]byte(*cert))
+		block, _ := pem.Decode([]byte(*cert))
+		if block == nil {
+			return nil, fmt.Errorf("Failed to decode TLS CA certificate")
+		}
+		caCert, err := x509.ParseCertificate(block.Bytes)
 		if err != nil {
 			return nil, fmt.Errorf("Failed to parse TLS CA certificate: %s", err)
 		}
