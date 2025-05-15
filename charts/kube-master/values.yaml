@@ -145,8 +145,8 @@ csi:
         cpu: 10m
         memory: 32Mi
       limits:
-        cpu: 30m
-        memory: 50Mi
+        cpu: 50m
+        memory: 100Mi
     attacher:
       requests:
         cpu: 10m
