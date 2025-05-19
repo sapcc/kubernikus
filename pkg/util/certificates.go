@@ -375,10 +375,38 @@ func (cf *CertificateFactory) UserCert(principal *models.Principal, apiURL strin
 }
 
 func loadOrCreateCA(kluster *v1.Kluster, name string, cert, key *string, certUpdates *[]CertUpdates) (*Bundle, error) {
-	if *cert != "" && *key != "" {
+	var existingKey *rsa.PrivateKey
+	regenerate := false
+
+	if name == "TLS" && *cert != "" {
+		block, _ := pem.Decode([]byte(*cert))
+		if block == nil {
+			return nil, fmt.Errorf("Failed to decode TLS CA certificate")
+		}
+		caCert, err := x509.ParseCertificate(block.Bytes)
+		if err != nil {
+			return nil, fmt.Errorf("Failed to parse TLS CA certificate: %s", err)
+		}
+		if caCert.SubjectKeyId == nil {
+			regenerate = true
+
+			var isRSAKey bool
+			k, err := keyutil.ParsePrivateKeyPEM([]byte(*key))
+			if err != nil {
+				return nil, err
+			}
+			existingKey, isRSAKey = k.(*rsa.PrivateKey)
+			if !isRSAKey {
+				return nil, errors.New("Key does not seem to be of type RSA")
+			}
+		}
+	}
+
+	if *cert != "" && *key != "" && !regenerate {
 		return NewBundle([]byte(*key), []byte(*cert))
 	}
-	caBundle, err := createCA(kluster.Name, name)
+
+	caBundle, err := createCA(kluster.Name, name, existingKey)
 	if err != nil {
 		return nil, err
 	}
@@ -483,10 +511,17 @@ func ensureServerCertificate(ca *Bundle, cn string, dnsNames []string, ips []net
 	return nil
 }
 
-func createCA(klusterName, name string) (*Bundle, error) {
-	privateKey, err := NewPrivateKey()
-	if err != nil {
-		return nil, fmt.Errorf("Failed to generate private key for %s ca: %s", name, err)
+func createCA(klusterName, name string, existingKey *rsa.PrivateKey) (*Bundle, error) {
+	var privateKey *rsa.PrivateKey
+	var err error
+
+	if existingKey != nil {
+		privateKey = existingKey
+	} else {
+		privateKey, err = NewPrivateKey()
+		if err != nil {
+			return nil, fmt.Errorf("Failed to generate private key for %s ca: %s", name, err)
+		}
 	}
 
 	now := time.Now()
