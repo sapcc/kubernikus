@@ -55,6 +55,7 @@ const (
 
 	UpgradeEnableAnnotation = "kubernikus.cloud.sap/upgrade"
 	SeedReconcileLabelKey   = "kubernikus.cloud.sap/seed-reconcile"
+	InjectAdmissionCAKey    = "kubernikus.cloud.sap/inject-admission-ca"
 )
 
 type GroundControl struct {
@@ -328,6 +329,9 @@ func (op *GroundControl) handler(key string) error {
 				return err
 			}
 			if err := op.ensureStorageContainers(kluster, klusterSecret); err != nil {
+				return err
+			}
+			if err := op.ensureAdmissionCA(kluster, klusterSecret); err != nil {
 				return err
 			}
 
@@ -1137,6 +1141,48 @@ func (op *GroundControl) ensureStorageContainers(kluster *v1.Kluster, klusterSec
 		if err = ensureContainer(kluster.Name + "-audit-log"); err != nil {
 			return err
 		}
+	}
+	return nil
+}
+
+// inject admission CA in labeled namespaces
+func (op *GroundControl) ensureAdmissionCA(kluster *v1.Kluster, klusterSecret *v1.Secret) error {
+	k8sClient, err := op.Clients.Satellites.ClientFor(kluster)
+	if err != nil {
+		return err
+	}
+	nsList, err := k8sClient.CoreV1().Namespaces().List(context.TODO(), meta_v1.ListOptions{LabelSelector: fmt.Sprintf("%s=true", InjectAdmissionCAKey)})
+	if err != nil {
+		return err
+	}
+	if nsList.Size() == 0 {
+		return nil
+	}
+	ca := map[string]string{"ca.crt": klusterSecret.Certificates.AdmissionCACertificate}
+	cm := api_v1.ConfigMap{
+		TypeMeta: meta_v1.TypeMeta{
+			Kind:       "ConfigMap",
+			APIVersion: "v1",
+		},
+		ObjectMeta: meta_v1.ObjectMeta{
+			Name: "admission-auth-ca",
+		},
+		Data: ca,
+	}
+	for _, ns := range nsList.Items {
+		_, err = k8sClient.CoreV1().ConfigMaps(ns.Name).Create(context.TODO(), &cm, meta_v1.CreateOptions{})
+		if apierrors.IsAlreadyExists(err) {
+			_, err = k8sClient.CoreV1().ConfigMaps(ns.Name).Update(context.TODO(), &cm, meta_v1.UpdateOptions{})
+		}
+		if err != nil {
+			return fmt.Errorf("Admission CA certificate reconciliation in namespace %s failed: %s", ns.Name, err)
+		}
+		op.Logger.Log(
+			"msg", "Reconciled admission CA certificate",
+			"namespace", ns.Name,
+			"kluster", kluster.GetName(),
+			"project", kluster.Account(),
+			"v", 6)
 	}
 	return nil
 }
