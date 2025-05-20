@@ -1,6 +1,7 @@
 package util
 
 import (
+	"bytes"
 	cryptorand "crypto/rand"
 	"crypto/rsa"
 	"crypto/x509"
@@ -556,6 +557,10 @@ func isCertChangedOrExpires(origCert, newCert, caCert *x509.Certificate, duratio
 
 	if !reflect.DeepEqual(origCert.IPAddresses, newCert.IPAddresses) {
 		return "SAN IP changes: " + strings.Join(IPSliceDiff(origCert.IPAddresses, newCert.IPAddresses), " "), true
+	}
+
+	if !bytes.Equal(origCert.AuthorityKeyId, newCert.AuthorityKeyId) {
+		return fmt.Sprintf("Authority key identifier changes: %v != %v", origCert.AuthorityKeyId, newCert.AuthorityKeyId), true
 	}
 
 	expire := time.Now().Add(duration)
