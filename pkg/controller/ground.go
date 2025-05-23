@@ -78,11 +78,10 @@ type GroundControl struct {
 
 var (
 	apiserverEncoder runtime.Encoder
-	apiserverScheme  *runtime.Scheme
 )
 
 func init() {
-	apiserverScheme = runtime.NewScheme()
+	apiserverScheme := runtime.NewScheme()
 	utilruntime.Must(apiserverv1beta1.AddToScheme(apiserverScheme))
 	apiserverEncoder = json.NewSerializerWithOptions(json.DefaultMetaFactory, apiserverScheme, apiserverScheme, json.SerializerOptions{Yaml: true})
 }
@@ -1212,11 +1211,7 @@ func (op *GroundControl) ensureStructuredAuthConfigMap(kluster *v1.Kluster) erro
 		configContent = string(kluster.Spec.AuthenticationConfiguration)
 	} else {
 		authConfig := &apiserverv1beta1.AuthenticationConfiguration{}
-		gvks, _, err := apiserverScheme.ObjectKinds(authConfig)
-		if err != nil {
-			return fmt.Errorf("cannot determine GVK: %w", err)
-		}
-		authConfig.GetObjectKind().SetGroupVersionKind(gvks[0])
+		authConfig.GetObjectKind().SetGroupVersionKind(apiserverv1beta1.ConfigSchemeGroupVersion.WithKind("AuthenticationConfiguration"))
 		if swag.BoolValue(kluster.Spec.Dex) {
 			authConfig.JWT = append(authConfig.JWT, apiserverv1beta1.JWTAuthenticator{
 				Issuer: apiserverv1beta1.Issuer{
@@ -1279,5 +1274,4 @@ func (op *GroundControl) ensureStructuredAuthConfigMap(kluster *v1.Kluster) erro
 		return err
 	}
 	return nil
-
 }
