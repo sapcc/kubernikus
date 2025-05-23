@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"net"
@@ -20,7 +21,11 @@ import (
 	api_v1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/serializer/json"
+	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/apimachinery/pkg/util/wait"
+	apiserverv1beta1 "k8s.io/apiserver/pkg/apis/apiserver/v1beta1"
 	informers_v1 "k8s.io/client-go/informers/core/v1"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/record"
@@ -70,6 +75,16 @@ type GroundControl struct {
 
 	Logger      log.Logger
 	threadiness int
+}
+
+var (
+	apiserverEncoder runtime.Encoder
+)
+
+func init() {
+	apiserverScheme := runtime.NewScheme()
+	utilruntime.Must(apiserverv1beta1.AddToScheme(apiserverScheme))
+	apiserverEncoder = json.NewSerializerWithOptions(json.DefaultMetaFactory, apiserverScheme, apiserverScheme, json.SerializerOptions{Yaml: true})
 }
 
 func NewGroundController(threadiness int, factories config.Factories, clients config.Clients, recorder record.EventRecorder, config config.Config, logger log.Logger) *GroundControl {
@@ -212,6 +227,8 @@ func (op *GroundControl) handler(key string) error {
 		}(time.Now())
 
 		metrics.SetMetricKlusterStatusPhase(kluster.GetName(), kluster.Status.Phase)
+
+		op.ensureStructuredAuthConfigMap(kluster)
 
 		switch phase := kluster.Status.Phase; phase {
 		case models.KlusterPhasePending:
@@ -1232,4 +1249,75 @@ func (op *GroundControl) podUpdate(cur, old interface{}) {
 			op.queue.Add(klusterKey)
 		}
 	}
+}
+
+func (op *GroundControl) ensureStructuredAuthConfigMap(kluster *v1.Kluster) error {
+	var configContent string
+	if kluster.Spec.AuthenticationConfiguration != "" {
+		configContent = string(kluster.Spec.AuthenticationConfiguration)
+	} else {
+		authConfig := &apiserverv1beta1.AuthenticationConfiguration{}
+		authConfig.GetObjectKind().SetGroupVersionKind(apiserverv1beta1.ConfigSchemeGroupVersion.WithKind("AuthenticationConfiguration"))
+		if swag.BoolValue(kluster.Spec.Dex) {
+			authConfig.JWT = append(authConfig.JWT, apiserverv1beta1.JWTAuthenticator{
+				Issuer: apiserverv1beta1.Issuer{
+					URL:       fmt.Sprintf("https://auth-%s.ingress.%s", kluster.Name, op.Config.Kubernikus.Domain),
+					Audiences: []string{"kubernetes"},
+				},
+				ClaimMappings: apiserverv1beta1.ClaimMappings{
+					Username: apiserverv1beta1.PrefixedClaimOrExpression{Prefix: swag.String(""), Claim: "name"},
+					Groups:   apiserverv1beta1.PrefixedClaimOrExpression{Prefix: swag.String(""), Claim: "groups"},
+				},
+			})
+		}
+		if kluster.Spec.Oidc != nil && (kluster.Spec.Oidc.IssuerURL != "" && kluster.Spec.Oidc.ClientID != "") {
+			authConfig.JWT = append(authConfig.JWT, apiserverv1beta1.JWTAuthenticator{
+				Issuer: apiserverv1beta1.Issuer{
+					URL:       kluster.Spec.Oidc.IssuerURL,
+					Audiences: []string{kluster.Spec.Oidc.ClientID},
+				},
+				ClaimMappings: apiserverv1beta1.ClaimMappings{
+					Username: apiserverv1beta1.PrefixedClaimOrExpression{Prefix: swag.String(""), Claim: "name"},
+					Groups:   apiserverv1beta1.PrefixedClaimOrExpression{Prefix: swag.String(""), Claim: "groups"},
+				},
+			})
+		}
+		var buf bytes.Buffer
+		if err := apiserverEncoder.Encode(authConfig, &buf); err != nil {
+			return fmt.Errorf("failed to encode authentication configuration: %w", err)
+		}
+		configContent = buf.String()
+
+	}
+	klusterRef := util.NewOwnerRef(kluster, v1.SchemeGroupVersion.WithKind("Kluster"))
+	cm := &api_v1.ConfigMap{
+		ObjectMeta: meta_v1.ObjectMeta{
+			Name:            fmt.Sprintf("%s-auth", kluster.Name),
+			Namespace:       kluster.GetNamespace(),
+			OwnerReferences: []meta_v1.OwnerReference{*klusterRef},
+		},
+		Data: map[string]string{
+			"config.yaml": configContent,
+		},
+	}
+	existingConfigMap, err := op.Clients.Kubernetes.CoreV1().ConfigMaps(cm.GetNamespace()).Get(context.TODO(), cm.Name, meta_v1.GetOptions{})
+	if err != nil {
+		// if the configmap does not exist, create it
+		if apierrors.IsNotFound(err) {
+			_, err := op.Clients.Kubernetes.CoreV1().ConfigMaps(cm.GetNamespace()).Create(context.TODO(), cm, meta_v1.CreateOptions{})
+			return err
+		}
+		return err
+	}
+	// only update existing configmap if the content is different
+	if existingConfigMap.Data["config.yaml"] != cm.Data["config.yaml"] {
+		_, err := op.Clients.Kubernetes.CoreV1().ConfigMaps(cm.GetNamespace()).Update(context.TODO(), cm, meta_v1.UpdateOptions{})
+		op.Logger.Log(
+			"msg", "Updating authentication configuration configmap",
+			"name", cm.GetName(),
+			"kluster", kluster.GetName(),
+			"err", err)
+		return err
+	}
+	return nil
 }

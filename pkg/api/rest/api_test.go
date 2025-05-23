@@ -147,7 +147,7 @@ func TestCreateCluster(t *testing.T) {
 		assert.Contains(t, string(body), "nase")
 	}
 
-	//Ensure specifying a different router doesn't obverlap
+	//Ensure specifying a different router doesn't overlap
 	req = createRequest("POST", "/api/v1/clusters", `{"name": "ohr", "spec": { "openstack": { "routerID":"routerB"}}}`)
 	code, _, body = result(handler, req)
 	assert.Equal(t, 201, code, "specifying a different router should not conflict. response: %s", string(body))
@@ -169,7 +169,7 @@ func TestCreateCluster(t *testing.T) {
 		assert.Contains(t, string(body), "CIDR")
 	}
 
-	//Ensure specifying a different router doesn't obverlap
+	//Ensure specifying an empty clusterCIDR does not fail
 	req = createRequest("POST", "/api/v1/clusters", `{"name": "nocidr", "spec": { "clusterCIDR": "", "noCloud": true, "serviceCIDR":"5.5.5.5/24"}}`)
 
 	code, _, body = result(handler, req)
@@ -178,6 +178,73 @@ func TestCreateCluster(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Empty(t, k.Spec.ClusterCIDR)
 
+}
+
+func TestAuthenticationConfigurationValidation(t *testing.T) {
+	handler, _, cancel := createTestHandler(t)
+	defer cancel()
+	//Ensure invalid authentication configuration is rejected
+	invalidAuthConfig, err := json.Marshal(models.Kluster{
+		Name: "auth",
+		Spec: models.KlusterSpec{
+			AuthenticationConfiguration: models.AuthenticationConfiguration(`
+apiVersion: apiserver.config.k8s.io/v1beta1
+kind: AuthenticationConfiguration
+jwt:
+- issuer:
+    url: https://issuer1.example.com
+    audiences:
+    - audience1
+    - audience2
+    audienceMatchPolicy: MatchAny
+`),
+		},
+	})
+	assert.NoError(t, err, "failed to marshal authentication configuration")
+	req := createRequest("POST", "/api/v1/clusters", string(invalidAuthConfig))
+	code, _, body := result(handler, req)
+	assert.Equal(t, 400, code, "invalid authentication configuration should be rejected. response: %s, %s", string(body))
+
+	validAuthConfig, err := json.Marshal(models.Kluster{
+		Name: "auth",
+		Spec: models.KlusterSpec{
+			AuthenticationConfiguration: models.AuthenticationConfiguration(`
+apiVersion: apiserver.config.k8s.io/v1beta1
+kind: AuthenticationConfiguration
+jwt:
+- issuer:
+    url: https://issuer1.example.com
+    audiences:
+    - audience1
+    - audience2
+    audienceMatchPolicy: MatchAny
+  claimMappings:
+    username:
+      expression: 'claims.username'
+    groups:
+      expression: 'claims.groups'
+`),
+		},
+	})
+	assert.NoError(t, err, "failed to marshal authentication configuration")
+	req = createRequest("POST", "/api/v1/clusters", string(validAuthConfig))
+	code, _, body = result(handler, req)
+	assert.Equal(t, 201, code, "valid authentication configuration should be accepted. response: %s", string(body))
+
+	emptyAuthConfig, err := json.Marshal(models.Kluster{
+		Name: "emptyauth",
+		Spec: models.KlusterSpec{
+			ClusterCIDR: swag.String("100.101.0.0/16"),
+			AuthenticationConfiguration: models.AuthenticationConfiguration(`
+apiVersion: apiserver.config.k8s.io/v1beta1
+kind: AuthenticationConfiguration
+`),
+		},
+	})
+	assert.NoError(t, err, "failed to marshal authentication configuration")
+	req = createRequest("POST", "/api/v1/clusters", string(emptyAuthConfig))
+	code, _, body = result(handler, req)
+	assert.Equal(t, 201, code, "empty authentication configuration is valid. response: %s", string(body))
 }
 
 func TestClusterShow(t *testing.T) {
@@ -484,5 +551,4 @@ func TestClusterBootstrapConfig(t *testing.T) {
 		ClusterDomain:      "example.com",
 		RotateCertificates: true,
 	}, config)
-
 }
