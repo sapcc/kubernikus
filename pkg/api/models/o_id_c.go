@@ -12,7 +12,7 @@ import (
 	"github.com/go-openapi/swag"
 )
 
-// OIDC o ID c
+// OIDC Deprecated: Use authenticationConfiguration instead
 //
 // swagger:model OIDC
 type OIDC struct {

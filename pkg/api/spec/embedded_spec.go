@@ -630,6 +630,13 @@ func init() {
           ],
           "x-nullable": true
         },
+        "authenticationConfiguration": {
+          "description": "Enables structured authentication for the cluster by specifying a valid AuthenticationConfiguration YAML resource.\nThis configuration is passed directly to the API server via the --authentication-config flag.\nNote: Using this option overrides the OIDC configuration for both Dex and the OIDC API fields.\nRequires Kubernetes version 1.30 or later.\n",
+          "type": "string",
+          "x-go-type": {
+            "type": "AuthenticationConfiguration"
+          }
+        },
         "backup": {
           "type": "string",
           "default": "on",
@@ -866,6 +873,7 @@ func init() {
       "x-nullable": false
     },
     "OIDC": {
+      "description": "Deprecated: Use authenticationConfiguration instead",
       "type": "object",
       "properties": {
         "clientID": {
@@ -1740,6 +1748,13 @@ func init() {
           ],
           "x-nullable": true
         },
+        "authenticationConfiguration": {
+          "description": "Enables structured authentication for the cluster by specifying a valid AuthenticationConfiguration YAML resource.\nThis configuration is passed directly to the API server via the --authentication-config flag.\nNote: Using this option overrides the OIDC configuration for both Dex and the OIDC API fields.\nRequires Kubernetes version 1.30 or later.\n",
+          "type": "string",
+          "x-go-type": {
+            "type": "AuthenticationConfiguration"
+          }
+        },
         "backup": {
           "type": "string",
           "default": "on",
@@ -1977,6 +1992,7 @@ func init() {
       "x-nullable": false
     },
     "OIDC": {
+      "description": "Deprecated: Use authenticationConfiguration instead",
       "type": "object",
       "properties": {
         "clientID": {

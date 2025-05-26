@@ -561,9 +561,19 @@ definitions:
         type: boolean
       oidc:
         $ref: '#/definitions/OIDC'
+      authenticationConfiguration:
+        description: |
+          Enables structured authentication for the cluster by specifying a valid AuthenticationConfiguration YAML resource.
+          This configuration is passed directly to the API server via the --authentication-config flag.
+          Note: Using this option overrides the OIDC configuration for both Dex and the OIDC API fields.
+          Requires Kubernetes version 1.30 or later.
+        type: string
+        x-go-type:
+          type: AuthenticationConfiguration
   OIDC:
     type: object
     x-nullable: true
+    description: "Deprecated: Use authenticationConfiguration instead"
     properties:
       issuerURL:
         type: string
