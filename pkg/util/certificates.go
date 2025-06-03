@@ -377,6 +377,7 @@ func (cf *CertificateFactory) UserCert(principal *models.Principal, apiURL strin
 
 func loadOrCreateCA(kluster *v1.Kluster, name string, cert, key *string, certUpdates *[]CertUpdates) (*Bundle, error) {
 	var existingKey *rsa.PrivateKey
+	var existingSubject []byte
 	regenerate := false
 
 	if name == "TLS" && *cert != "" {
@@ -400,6 +401,7 @@ func loadOrCreateCA(kluster *v1.Kluster, name string, cert, key *string, certUpd
 			if !isRSAKey {
 				return nil, errors.New("Key does not seem to be of type RSA")
 			}
+			existingSubject = caCert.RawSubject
 		}
 	}
 
@@ -407,7 +409,7 @@ func loadOrCreateCA(kluster *v1.Kluster, name string, cert, key *string, certUpd
 		return NewBundle([]byte(*key), []byte(*cert))
 	}
 
-	caBundle, err := createCA(kluster.Name, name, existingKey)
+	caBundle, err := createCA(kluster.Name, name, existingKey, existingSubject)
 	if err != nil {
 		return nil, err
 	}
@@ -512,7 +514,7 @@ func ensureServerCertificate(ca *Bundle, cn string, dnsNames []string, ips []net
 	return nil
 }
 
-func createCA(klusterName, name string, existingKey *rsa.PrivateKey) (*Bundle, error) {
+func createCA(klusterName, name string, existingKey *rsa.PrivateKey, existingSubject []byte) (*Bundle, error) {
 	var privateKey *rsa.PrivateKey
 	var err error
 
@@ -537,6 +539,9 @@ func createCA(klusterName, name string, existingKey *rsa.PrivateKey) (*Bundle, e
 		KeyUsage:              x509.KeyUsageKeyEncipherment | x509.KeyUsageDigitalSignature | x509.KeyUsageCertSign,
 		BasicConstraintsValid: true,
 		IsCA:                  true,
+	}
+	if existingSubject != nil && len(existingSubject) > 0 {
+		tmpl.RawSubject = existingSubject
 	}
 
 	certDERBytes, err := x509.CreateCertificate(cryptorand.Reader, &tmpl, &tmpl, privateKey.Public(), privateKey)
