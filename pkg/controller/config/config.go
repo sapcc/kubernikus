@@ -20,12 +20,15 @@ type Controller interface {
 }
 
 type OpenstackConfig struct {
-	AuthURL           string
-	AuthUsername      string
-	AuthPassword      string
-	AuthDomain        string
-	AuthProject       string
-	AuthProjectDomain string
+	ApplicationCredentialID     string
+	ApplicationCredentialName   string
+	ApplicationCredentialSecret string
+	AuthURL                     string
+	AuthUsername                string
+	AuthPassword                string
+	AuthDomain                  string
+	AuthProject                 string
+	AuthProjectDomain           string
 }
 
 type HelmConfig struct {
