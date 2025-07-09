@@ -70,7 +70,7 @@ func NewOpenStackFramework() (*OpenStack, error) {
 		return nil, fmt.Errorf("could not initialize compute client: %v", err)
 	}
 
-	blockStorage, err := openstack.NewBlockStorageV2(provider, gophercloud.EndpointOpts{})
+	blockStorage, err := openstack.NewBlockStorageV3(provider, gophercloud.EndpointOpts{})
 	if err != nil {
 		return nil, fmt.Errorf("could not initialize blockStorage client: %v", err)
 	}
