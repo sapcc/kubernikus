@@ -177,6 +177,7 @@ func (d *updateCluster) Handle(params operations.UpdateClusterParams, principal 
 			}
 			kluster.Spec.Oidc = params.Body.Spec.Oidc
 		}
+		kluster.Spec.AuthenticationConfiguration = params.Body.Spec.AuthenticationConfiguration
 
 		return nil
 	})
