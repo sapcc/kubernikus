@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -58,15 +59,28 @@ func (s *SetupTests) CreateCluster(t *testing.T) {
 	}
 	require.LessOrEqual(t, len(osImages), SmokeTestNodeCount, "more os images then smoke test node specified")
 
+	flavor := "c_c2_m2"
+	if os.Getenv("KLUSTER_FLAVOR") != "" {
+		flavor = os.Getenv("KLUSTER_FLAVOR")
+	}
+	customerRootDiskSize := 0 // no custom root disk size by default
+	if os.Getenv("KLUSTER_CUSTOM_ROOT_DISK_SIZE") != "" {
+		var err error
+		customerRootDiskSize, err = strconv.Atoi(os.Getenv("KLUSTER_CUSTOM_ROOT_DISK_SIZE"))
+		require.NoError(t, err, "KLUSTER_CUSTOM_ROOT_DISK_SIZE must be a valid integer")
+		require.Greater(t, customerRootDiskSize, 0, "KLUSTER_CUSTOM_ROOT_DISK_SIZE must be greater than 0")
+	}
+
 	pools := []models.NodePool{}
 	for i, image := range osImages {
 		pools = append(pools, models.NodePool{
-			Name:             fmt.Sprintf("pool%d", i+1),
-			Flavor:           "c_c2_m2",
-			Size:             1,
-			AvailabilityZone: os.Getenv("NODEPOOL_AVZ"),
-			Image:            image,
-			Labels:           []string{"image=" + image},
+			Name:               fmt.Sprintf("pool%d", i+1),
+			Flavor:             flavor,
+			Size:               1,
+			AvailabilityZone:   os.Getenv("NODEPOOL_AVZ"),
+			Image:              image,
+			Labels:             []string{"image=" + image},
+			CustomRootDiskSize: int64(customerRootDiskSize),
 		})
 	}
 	//we fill up the first pool in case the number of images is smaller then the  smoke test node count
