@@ -510,7 +510,30 @@ jobs:
 <% end %>
 <% end %>
 <% end %>
-
+  - name: e2e-kvm
+    serial: true
+    build_logs_to_retain: 168
+    plan:
+      - in_parallel:
+        - get: kubernikus.builds
+          resource: kubernikus.git
+        #- get: hourly
+        #  trigger: true
+      - task: e2e_tests
+        config:
+          <<: *task_e2e_tests
+        timeout: 45m
+        params:
+          <<: *auth_e2e_eu-de-2
+          OS_AUTH_URL: https://identity-3.eu-de-2.cloud.sap/v3
+          OS_PROJECT_NAME: kvm-kubernikus-e2e
+          OS_PROJECT_DOMAIN_NAME: monsoon3
+          KLUSTER_OS_IMAGES: flatcar-stable-amd64-kvm
+          NODEPOOL_AVZ: eu-de-2a
+          KLUSTER_FLAVOR: c_k_c2_m2_v2
+          KLUSTER_CUSTOM_ROOT_DISK_SIZE: 64
+          ISOLATE_TEST: true #not sure what this actually does
+          KLUSTER_VERSION: <%= YAML::load(File.read(File.expand_path('../../charts/images.yaml', __FILE__)))["imagesForVersion"].keys.sort_by { |v| Gem::Version.new(v) }.max %>
 groups:
   - name: deploy
     jobs:
@@ -544,6 +567,7 @@ groups:
       - cli
       - whitesource
       - all-versions
+      - e2e-kvm
 <% VERSIONS.each do |version| %>
       - e2e-<%= version %>
 <% end %>
