@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -58,15 +59,28 @@ func (s *SetupTests) CreateCluster(t *testing.T) {
 	}
 	require.LessOrEqual(t, len(osImages), SmokeTestNodeCount, "more os images then smoke test node specified")
 
+	flavor := "c_c2_m2"
+	if os.Getenv("KLUSTER_FLAVOR") != "" {
+		flavor = os.Getenv("KLUSTER_FLAVOR")
+	}
+	customRootDiskSize := 0 // no custom root disk size by default
+	if os.Getenv("KLUSTER_CUSTOM_ROOT_DISK_SIZE") != "" {
+		var err error
+		customRootDiskSize, err = strconv.Atoi(os.Getenv("KLUSTER_CUSTOM_ROOT_DISK_SIZE"))
+		require.NoError(t, err, "KLUSTER_CUSTOM_ROOT_DISK_SIZE must be a valid integer")
+		require.Greater(t, customRootDiskSize, 0, "KLUSTER_CUSTOM_ROOT_DISK_SIZE must be greater than 0")
+	}
+
 	pools := []models.NodePool{}
 	for i, image := range osImages {
 		pools = append(pools, models.NodePool{
-			Name:             fmt.Sprintf("pool%d", i+1),
-			Flavor:           "c_c2_m2",
-			Size:             1,
-			AvailabilityZone: os.Getenv("NODEPOOL_AVZ"),
-			Image:            image,
-			Labels:           []string{"image=" + image},
+			Name:               fmt.Sprintf("pool%d", i+1),
+			Flavor:             flavor,
+			Size:               1,
+			AvailabilityZone:   os.Getenv("NODEPOOL_AVZ"),
+			Image:              image,
+			Labels:             []string{"image=" + image},
+			CustomRootDiskSize: int64(customRootDiskSize),
 		})
 	}
 	//we fill up the first pool in case the number of images is smaller then the  smoke test node count
@@ -76,7 +90,7 @@ func (s *SetupTests) CreateCluster(t *testing.T) {
 		Name: s.KlusterName,
 		Spec: models.KlusterSpec{
 			Version:      version,
-			SSHPublicKey: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQCXIxVEUgtUVkvk2VM1hmIb8MxvxsmvYoiq9OBy3J8akTGNybqKsA2uhcwxSJX5Cn3si8kfMfka9EWiJT+e1ybvtsGILO5XRZPxyhYzexwb3TcALwc3LuzpF3Z/Dg2jYTRELTGhYmyca3mxzTlCjNXvYayLNedjJ8fIBzoCuSXNqDRToHru7h0Glz+wtuE74mNkOiXSvhtuJtJs7VCNVjobFQNfC1aeDsri2bPRHJJZJ0QF4LLYSayMEz3lVwIDyAviQR2Aa97WfuXiofiAemfGqiH47Kq6b8X7j3bOYGBvJKMUV7XeWhGsskAmTsvvnFxkc5PAD3Ct+liULjiQWlzDrmpTE8aMqLK4l0YQw7/8iRVz6gli42iEc2ZG56ob1ErpTLAKFWyCNOebZuGoygdEQaGTIIunAncXg5Rz07TdPl0Tf5ZZLpiAgR5ck0H1SETnjDTZ/S83CiVZWJgmCpu8YOKWyYRD4orWwdnA77L4+ixeojLIhEoNL8KlBgsP9Twx+fFMWLfxMmiuX+yksM6Hu+Lsm+Ao7Q284VPp36EB1rxP1JM7HCiEOEm50Jb6hNKjgN4aoLhG5yg+GnDhwCZqUwcRJo1bWtm3QvRA+rzrGZkId4EY3cyOK5QnYV5+24x93Ex0UspHMn7HGsHUESsVeV0fLqlfXyd2RbHTmDMP6w== Kubernikus Master Key",
+			SSHPublicKey: os.Getenv("KLUSTER_SSH_PUBLIC_KEY"),
 			ClusterCIDR:  &clusterCidr,
 			NodePools:    pools,
 			Openstack: models.OpenstackSpec{

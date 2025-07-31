@@ -141,7 +141,7 @@ build-e2e:
 .PHONY: test-e2e
 test-e2e:
 ifdef KS_PASSWORD
-	export OS_PASSWORD=$(KS_PASSWORD)
+	@export OS_PASSWORD=$(KS_PASSWORD)
 endif
 ifndef KUBERNIKUS_URL
 	$(error set KUBERNIKUS_URL)
