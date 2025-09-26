@@ -8,6 +8,9 @@ openstack: {}
   #auth_domain: "Default"
   #auth_project: "master"
   #auth_project_domain: "Default"
+  #application_credential_id:
+  #application_credential_name:
+  #application_credential_secret:
 
 dex:
   ldap:

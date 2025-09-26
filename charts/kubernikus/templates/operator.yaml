@@ -7,6 +7,10 @@ kind: Deployment
 
 metadata:
   name: kubernikus-operator
+  {{- if .Values.openstack.application_credential_secret }}
+  annotations:
+    secret.reloader.stakater.com/reload: "kubernikus-operator"
+  {{- end }}
   labels:
     app: kubernikus
     type: operator
@@ -36,7 +40,7 @@ spec:
             - kubernikus
             - operator
             - --chart-directory=/etc/kubernikus/charts
-            {{- if .Values.openstack.auth_url }}
+            {{- if and .Values.openstack.auth_url (not .Values.openstack.application_credential_secret) }}
             {{- /* This is a bit convoluted but making sure that the url ends with /v3 */}}
             - --auth-url={{ trimSuffix "/" .Values.openstack.auth_url | trimSuffix "/v3" }}/v3
             - --auth-username={{ .Values.openstack.auth_user_id }}
@@ -72,12 +76,33 @@ spec:
             - name: USE_OCTAVIA
               value: "true"
             {{- end }}
-            {{- if .Values.openstack.auth_url }}
+            {{- if and .Values.openstack.auth_url (not .Values.openstack.application_credential_secret) }}
             - name: OS_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: kubernikus-operator
                   key: password
+            {{- end }}
+            {{- if .Values.openstack.application_credential_secret }}
+            {{- if .Values.openstack.application_credential_id }}
+            - name: OS_APPLICATION_CREDENTIAL_ID
+              valueFrom:
+                secretKeyRef:
+                  name: kubernikus-operator
+                  key: applicationCredentialID
+            {{- end }}
+            {{- if .Values.openstack.application_credential_name }}
+            - name: OS_APPLICATION_CREDENTIAL_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: kubernikus-operator
+                  key: applicationCredentialName
+            {{- end }}
+            - name: OS_APPLICATION_CREDENTIAL_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: kubernikus-operator
+                  key: applicationCredentialSecret
             {{- end }}
           {{- if .Values.operator.resources }}
           resources: {{- toYaml .Values.operator.resources | nindent 12 }}
