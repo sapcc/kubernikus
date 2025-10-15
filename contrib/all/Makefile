@@ -4,7 +4,7 @@ IMAGE?=keppel.eu-de-1.cloud.sap/ccloud
 ARCH?=amd64
 
 # see https://github.com/kubernetes/release/blob/master/images/build/debian-base/variants.yaml
-BASE_VERSION?=bullseye-v1.4.1
+BASE_VERSION?=bookworm-v1.0.6
 BASE_IMAGE?=registry.k8s.io/build-image/debian-base:${BASE_VERSION}
 
 CNI_PLUGINS_RELEASE=v1.0.1
