@@ -7971,7 +7971,7 @@ imagesForVersion:
     dashboardProxy:
       repository: keppel.global.cloud.sap/ccloud/keycloak-gatekeeper
       tag: 6.0.1
-    default: true
+    default: false
     dex:
       repository: keppel.global.cloud.sap/ccloud/dex
       tag: 38f4f8ea8d487470a1dd5b83d66b428d8b502f81
@@ -8089,6 +8089,90 @@ imagesForVersion:
     scheduler:
       repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/kube-scheduler
       tag: v1.33.2
+    supported: false
+    wormhole:
+      repository: keppel.global.cloud.sap/ccloud/kubernikus
+      tag: changeme
+  1.33.5:
+    apiserver:
+      repository: keppel.global.cloud.sap/ccloud/kube-apiserver
+      tag: v1.33.5
+    cinderCSIPlugin:
+      repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/provider-os/cinder-csi-plugin
+      tag: v1.33.0
+    cloudControllerManager:
+      repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/provider-os/openstack-cloud-controller-manager
+      tag: v1.33.0
+    cniPlugins:
+      repository: keppel.global.cloud.sap/ccloud/cni-plugins
+      tag: v1.1.1
+    controllerManager:
+      repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/kube-controller-manager
+      tag: v1.33.5
+    coreDNS:
+      repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/coredns/coredns
+      tag: 1.12.0
+    csiAttacher:
+      repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/sig-storage/csi-attacher
+      tag: v4.7.0
+    csiLivenessProbe:
+      repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/sig-storage/livenessprobe
+      tag: v2.14.0
+    csiNodeDriver:
+      repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/sig-storage/csi-node-driver-registrar
+      tag: v2.12.0
+    csiProvisioner:
+      repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/sig-storage/csi-provisioner
+      tag: v5.1.0
+    csiResizer:
+      repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/sig-storage/csi-resizer
+      tag: v1.12.0
+    csiSnapshotController:
+      repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/sig-storage/snapshot-controller
+      tag: v8.2.0
+    csiSnapshotter:
+      repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/sig-storage/csi-snapshotter
+      tag: v8.2.0
+    dashboard:
+      repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/kubernetesui/dashboard
+      tag: v2.7.0
+    dashboardProxy:
+      repository: keppel.global.cloud.sap/ccloud/keycloak-gatekeeper
+      tag: 6.0.1
+    default: true
+    dex:
+      repository: keppel.global.cloud.sap/ccloud/dex
+      tag: 38f4f8ea8d487470a1dd5b83d66b428d8b502f81
+    etcd:
+      repository: keppel.global.cloud.sap/ccloud/etcd
+      tag: v3.4.35
+    etcdBackup:
+      repository: keppel.global.cloud.sap/ccloud/etcdbrctl
+      tag: v0.25.1
+    flannel:
+      repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/flannel/flannel
+      tag: v0.26.3
+    flannelCNIPlugin:
+      repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/flannel/flannel-cni-plugin
+      tag: v1.6.0-flannel1
+    fluentd:
+      repository: keppel.global.cloud.sap/ccloud/kubernikus-fluentd
+      tag: v1.14.6-1.1
+    kubeProxy:
+      repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/kube-proxy
+      tag: v1.33.5
+    kubelet:
+      repository: keppel.global.cloud.sap/ccloud/kubelet
+      tag: v1.33.5
+    pause:
+      repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/sapcc/pause-amd64
+      tag: '3.1'
+    recycler:
+      repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/debian-base
+      tag: v2.0.0
+    scheduler:
+      repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/kube-scheduler
+      tag: v1.33.5
     supported: true
     wormhole:
       repository: keppel.global.cloud.sap/ccloud/kubernikus
