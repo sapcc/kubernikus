@@ -626,7 +626,7 @@ definitions:
         x-nullable: false
       customRootDiskSize:
         type: integer
-        minimum: 64
+        minimum: 4
         maximum: 1024
         description: Create servers with custom (cinder based) root disked. Size in GB
       taints:

@@ -791,7 +791,7 @@ func init() {
           "description": "Create servers with custom (cinder based) root disked. Size in GB",
           "type": "integer",
           "maximum": 1024,
-          "minimum": 64
+          "minimum": 4
         },
         "flavor": {
           "type": "string",
@@ -1909,7 +1909,7 @@ func init() {
           "description": "Create servers with custom (cinder based) root disked. Size in GB",
           "type": "integer",
           "maximum": 1024,
-          "minimum": 64
+          "minimum": 4
         },
         "flavor": {
           "type": "string",

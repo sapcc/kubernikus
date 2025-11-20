@@ -29,7 +29,7 @@ type NodePool struct {
 
 	// Create servers with custom (cinder based) root disked. Size in GB
 	// Maximum: 1024
-	// Minimum: 64
+	// Minimum: 4
 	CustomRootDiskSize int64 `json:"customRootDiskSize"`
 
 	// flavor
@@ -132,7 +132,7 @@ func (m *NodePool) validateCustomRootDiskSize(formats strfmt.Registry) error {
 		return nil
 	}
 
-	if err := validate.MinimumInt("customRootDiskSize", "body", m.CustomRootDiskSize, 64, false); err != nil {
+	if err := validate.MinimumInt("customRootDiskSize", "body", m.CustomRootDiskSize, 4, false); err != nil {
 		return err
 	}
 
