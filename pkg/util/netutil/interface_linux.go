@@ -31,7 +31,7 @@ func discoverDefaultInterfaceUsingIp() (string, error) {
 			}
 		}
 	}
-	return "", NotFound
+	return "", ErrNotFound
 }
 
 func discoverDefaultInterfaceUsingRoute() (string, error) {
@@ -52,5 +52,5 @@ func discoverDefaultInterfaceUsingRoute() (string, error) {
 			}
 		}
 	}
-	return "", NotFound
+	return "", ErrNotFound
 }
