@@ -12,7 +12,7 @@ import (
 
 	kitlog "github.com/go-kit/log"
 	errors "github.com/go-openapi/errors"
-	"github.com/go-openapi/swag"
+	"github.com/go-openapi/swag/conv"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	yaml "gopkg.in/yaml.v2"
@@ -234,7 +234,7 @@ jwt:
 	emptyAuthConfig, err := json.Marshal(models.Kluster{
 		Name: "emptyauth",
 		Spec: models.KlusterSpec{
-			ClusterCIDR: swag.String("100.101.0.0/16"),
+			ClusterCIDR: conv.Pointer("100.101.0.0/16"),
 			AuthenticationConfiguration: models.AuthenticationConfiguration(`
 apiVersion: apiserver.config.k8s.io/v1beta1
 kind: AuthenticationConfiguration
@@ -337,7 +337,7 @@ func TestClusterUpdate(t *testing.T) {
 		},
 		Spec: models.KlusterSpec{
 			AdvertiseAddress: "0.0.0.0",
-			ClusterCIDR:      swag.String("1.1.1.1/24"),
+			ClusterCIDR:      conv.Pointer("1.1.1.1/24"),
 			DNSAddress:       "2.2.2.254",
 			DNSDomain:        "cluster.local",
 			Name:             "nase",
@@ -372,7 +372,7 @@ func TestClusterUpdate(t *testing.T) {
 		Name: "mund",
 		Spec: models.KlusterSpec{
 			AdvertiseAddress: "7.7.7.7",
-			ClusterCIDR:      swag.String("8.8.8.8/24"),
+			ClusterCIDR:      conv.Pointer("8.8.8.8/24"),
 			DNSAddress:       "9.9.9.9",
 			DNSDomain:        "changed",
 			ServiceCIDR:      "9.9.9.9/24",

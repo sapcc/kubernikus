@@ -6,7 +6,7 @@ import (
 
 	"github.com/Masterminds/semver"
 	"github.com/go-openapi/runtime/middleware"
-	"github.com/go-openapi/swag"
+	"github.com/go-openapi/swag/conv"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 
 	"github.com/sapcc/kubernikus/pkg/api"
@@ -141,13 +141,13 @@ func (d *updateCluster) Handle(params operations.UpdateClusterParams, principal 
 			}
 		}
 
-		dexEnabled := swag.BoolValue(kluster.Spec.Dex)
-		dashboardEnabled := swag.BoolValue(kluster.Spec.Dashboard)
+		dexEnabled := conv.Value(kluster.Spec.Dex)
+		dashboardEnabled := conv.Value(kluster.Spec.Dashboard)
 		if params.Body.Spec.Dex != nil {
-			dexEnabled = swag.BoolValue(params.Body.Spec.Dex)
+			dexEnabled = conv.Value(params.Body.Spec.Dex)
 		}
 		if params.Body.Spec.Dashboard != nil {
-			dashboardEnabled = swag.BoolValue(params.Body.Spec.Dashboard)
+			dashboardEnabled = conv.Value(params.Body.Spec.Dashboard)
 		}
 
 		if !dexEnabled && dashboardEnabled {
@@ -155,12 +155,12 @@ func (d *updateCluster) Handle(params operations.UpdateClusterParams, principal 
 		}
 
 		//Dex value changed
-		if params.Body.Spec.Dex != nil && swag.BoolValue(params.Body.Spec.Dex) != swag.BoolValue(kluster.Spec.Dex) {
+		if params.Body.Spec.Dex != nil && conv.Value(params.Body.Spec.Dex) != conv.Value(kluster.Spec.Dex) {
 			kluster.Spec.Dex = params.Body.Spec.Dex
 		}
 
 		//Dashboard value changed
-		if params.Body.Spec.Dashboard != nil && swag.BoolValue(params.Body.Spec.Dashboard) != swag.BoolValue(kluster.Spec.Dashboard) {
+		if params.Body.Spec.Dashboard != nil && conv.Value(params.Body.Spec.Dashboard) != conv.Value(kluster.Spec.Dashboard) {
 
 			kluster.Spec.Dashboard = params.Body.Spec.Dashboard
 			if dashboardEnabled && kluster.Status.Apiserver != "" {

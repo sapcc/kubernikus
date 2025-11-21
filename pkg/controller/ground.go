@@ -7,13 +7,14 @@ import (
 	"net"
 	"path"
 	"reflect"
+	"slices"
 	"strings"
 	"sync"
 	"time"
 
 	"github.com/Masterminds/goutils"
 	"github.com/go-kit/log"
-	"github.com/go-openapi/swag"
+	"github.com/go-openapi/swag/conv"
 	"github.com/pkg/errors"
 	"github.com/prometheus/client_golang/prometheus"
 	"helm.sh/helm/v3/pkg/action"
@@ -289,9 +290,9 @@ func (op *GroundControl) handler(key string) error {
 				expectedPods = 6
 			}
 
-			if swag.BoolValue(kluster.Spec.Dex) {
+			if conv.Value(kluster.Spec.Dex) {
 				expectedPods = expectedPods + 1
-				if swag.BoolValue(kluster.Spec.Dashboard) {
+				if conv.Value(kluster.Spec.Dashboard) {
 					expectedPods = expectedPods + 1
 				}
 			}
@@ -925,7 +926,7 @@ func (op *GroundControl) requiresOpenstackInfo(kluster *v1.Kluster) bool {
 }
 
 func (op *GroundControl) requiresKubernikusInfo(kluster *v1.Kluster) bool {
-	return kluster.Status.Apiserver == "" || kluster.Status.Wormhole == "" || kluster.Spec.Version == "" || (swag.BoolValue(kluster.Spec.Dashboard) && kluster.Status.Dashboard == "")
+	return kluster.Status.Apiserver == "" || kluster.Status.Wormhole == "" || kluster.Spec.Version == "" || (conv.Value(kluster.Spec.Dashboard) && kluster.Status.Dashboard == "")
 }
 
 func (op *GroundControl) discoverKubernikusInfo(kluster *v1.Kluster) error {
@@ -960,7 +961,7 @@ func (op *GroundControl) discoverKubernikusInfo(kluster *v1.Kluster) error {
 			"project", kluster.Account())
 	}
 
-	if swag.BoolValue(kluster.Spec.Dashboard) && kluster.Status.Dashboard == "" {
+	if conv.Value(kluster.Spec.Dashboard) && kluster.Status.Dashboard == "" {
 		kluster.Status.Dashboard = fmt.Sprintf("https://dashboard-%s.ingress.%s", kluster.GetName(), op.Config.Kubernikus.Domain)
 		op.Logger.Log(
 			"msg", "discovered dashboard URL",
@@ -1135,11 +1136,11 @@ func (op *GroundControl) ensureStorageContainers(kluster *v1.Kluster, klusterSec
 			return fmt.Errorf("failed to determine swift acl entry for kluster %s: %w", kluster.Name, err)
 		}
 		needsUpdate := false
-		if !swag.ContainsStrings(meta.ReadACL, aclStr) {
+		if !slices.Contains(meta.ReadACL, aclStr) {
 			meta.ReadACL = append(meta.ReadACL, aclStr)
 			needsUpdate = true
 		}
-		if !swag.ContainsStrings(meta.WriteACL, aclStr) {
+		if !slices.Contains(meta.WriteACL, aclStr) {
 			meta.WriteACL = append(meta.WriteACL, aclStr)
 			needsUpdate = true
 		}
@@ -1154,7 +1155,7 @@ func (op *GroundControl) ensureStorageContainers(kluster *v1.Kluster, klusterSec
 			return err
 		}
 	}
-	if swag.StringValue(kluster.Spec.Audit) == "swift" {
+	if conv.Value(kluster.Spec.Audit) == "swift" {
 		if err = ensureContainer(kluster.Name + "-audit-log"); err != nil {
 			return err
 		}
@@ -1258,15 +1259,15 @@ func (op *GroundControl) ensureStructuredAuthConfigMap(kluster *v1.Kluster) erro
 	} else {
 		authConfig := &apiserverv1beta1.AuthenticationConfiguration{}
 		authConfig.GetObjectKind().SetGroupVersionKind(apiserverv1beta1.ConfigSchemeGroupVersion.WithKind("AuthenticationConfiguration"))
-		if swag.BoolValue(kluster.Spec.Dex) {
+		if conv.Value(kluster.Spec.Dex) {
 			authConfig.JWT = append(authConfig.JWT, apiserverv1beta1.JWTAuthenticator{
 				Issuer: apiserverv1beta1.Issuer{
 					URL:       fmt.Sprintf("https://auth-%s.ingress.%s", kluster.Name, op.Config.Kubernikus.Domain),
 					Audiences: []string{"kubernetes"},
 				},
 				ClaimMappings: apiserverv1beta1.ClaimMappings{
-					Username: apiserverv1beta1.PrefixedClaimOrExpression{Prefix: swag.String(""), Claim: "name"},
-					Groups:   apiserverv1beta1.PrefixedClaimOrExpression{Prefix: swag.String(""), Claim: "groups"},
+					Username: apiserverv1beta1.PrefixedClaimOrExpression{Prefix: conv.Pointer(""), Claim: "name"},
+					Groups:   apiserverv1beta1.PrefixedClaimOrExpression{Prefix: conv.Pointer(""), Claim: "groups"},
 				},
 			})
 		}
@@ -1277,8 +1278,8 @@ func (op *GroundControl) ensureStructuredAuthConfigMap(kluster *v1.Kluster) erro
 					Audiences: []string{kluster.Spec.Oidc.ClientID},
 				},
 				ClaimMappings: apiserverv1beta1.ClaimMappings{
-					Username: apiserverv1beta1.PrefixedClaimOrExpression{Prefix: swag.String(""), Claim: "name"},
-					Groups:   apiserverv1beta1.PrefixedClaimOrExpression{Prefix: swag.String(""), Claim: "groups"},
+					Username: apiserverv1beta1.PrefixedClaimOrExpression{Prefix: conv.Pointer(""), Claim: "name"},
+					Groups:   apiserverv1beta1.PrefixedClaimOrExpression{Prefix: conv.Pointer(""), Claim: "groups"},
 				},
 			})
 		}

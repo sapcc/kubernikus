@@ -6,7 +6,7 @@ import (
 	"math/rand"
 	"net/url"
 
-	"github.com/go-openapi/swag"
+	"github.com/go-openapi/swag/conv"
 	"golang.org/x/crypto/bcrypt"
 	"sigs.k8s.io/yaml"
 
@@ -142,7 +142,7 @@ func KlusterToHelmValues(kluster *v1.Kluster, secret *v1.Secret, kubernetesVersi
 
 	hashedPassword := ""
 
-	if swag.BoolValue(kluster.Spec.Dex) {
+	if conv.Value(kluster.Spec.Dex) {
 
 		hashedBytes, err := bcrypt.GenerateFromPassword([]byte(secret.DexStaticPassword), bcrypt.DefaultCost)
 		if err != nil {
@@ -152,7 +152,7 @@ func KlusterToHelmValues(kluster *v1.Kluster, secret *v1.Secret, kubernetesVersi
 	}
 
 	dex := dexValues{
-		Enabled: swag.BoolValue(kluster.Spec.Dex),
+		Enabled: conv.Value(kluster.Spec.Dex),
 		StaticPassword: staticPassword{
 			HashedPassword: hashedPassword,
 		},
@@ -166,7 +166,7 @@ func KlusterToHelmValues(kluster *v1.Kluster, secret *v1.Secret, kubernetesVersi
 	values := kubernikusHelmValues{
 		Account:          kluster.Account(),
 		BootstrapToken:   secret.BootstrapToken,
-		Audit:            swag.StringValue(kluster.Spec.Audit),
+		Audit:            conv.Value(kluster.Spec.Audit),
 		ClusterCIDR:      kluster.ClusterCIDR(),
 		SecretName:       kluster.Name + "-secret",
 		ServiceCIDR:      kluster.Spec.ServiceCIDR,
@@ -211,7 +211,7 @@ func KlusterToHelmValues(kluster *v1.Kluster, secret *v1.Secret, kubernetesVersi
 			WormholeHost:  wormholeURL.Hostname(),
 		},
 		Dashboard: dashboardValues{
-			Enabled: swag.BoolValue(kluster.Spec.Dashboard),
+			Enabled: conv.Value(kluster.Spec.Dashboard),
 		},
 		Dex: dex,
 	}
