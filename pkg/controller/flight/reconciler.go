@@ -134,7 +134,7 @@ func (f *flightReconciler) EnsureServiceUserRoles() []string {
 	}
 
 	wantedUserRoles := f.AdminClient.GetDefaultServiceUserRoles()
-	existingUserRoles, err := f.AdminClient.GetUserRoles(secret.Openstack.ProjectID, secret.Openstack.Username, secret.Openstack.DomainName)
+	existingUserRoles, err := f.AdminClient.GetUserRoles(secret.ProjectID, secret.Username, secret.DomainName)
 	if err != nil {
 		f.Logger.Log(
 			"msg", "could not get service user roles",
@@ -156,7 +156,7 @@ func (f *flightReconciler) EnsureServiceUserRoles() []string {
 		}
 	}
 	if len(rolesToCreate) > 0 {
-		err = f.AdminClient.AssignUserRoles(secret.Openstack.ProjectID, secret.Openstack.Username, secret.Openstack.DomainName, rolesToCreate)
+		err = f.AdminClient.AssignUserRoles(secret.ProjectID, secret.Username, secret.DomainName, rolesToCreate)
 		if err != nil {
 			f.Logger.Log("msg", "couldn't reconcile service user roles", "err", err)
 		}

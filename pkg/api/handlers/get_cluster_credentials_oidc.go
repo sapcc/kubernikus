@@ -47,7 +47,7 @@ func (d *getClusterCredentialsOIDC) Handle(params operations.GetClusterCredentia
 	issuerURL := ""
 	if kluster.Status.Apiserver != "" {
 		apiURL := kluster.Status.Apiserver
-		issuerURL = strings.Replace(apiURL, kluster.GetName(), fmt.Sprintf("auth-%s.ingress", kluster.GetName()), -1)
+		issuerURL = strings.ReplaceAll(apiURL, kluster.GetName(), fmt.Sprintf("auth-%s.ingress", kluster.GetName()))
 	}
 
 	if !swag.BoolValue(kluster.Spec.Dex) {

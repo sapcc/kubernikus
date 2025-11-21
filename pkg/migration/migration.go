@@ -68,7 +68,7 @@ func (r *Registry) Migrate(k *v1.Kluster, clients config.Clients, factories conf
 		migration := r.migrations[idx]
 		version := idx + 1
 		if kluster, err = migrateKluster(kluster, version, migration, clients, factories); err != nil {
-			return fmt.Errorf("Error running migration %d: %s", version, err)
+			return fmt.Errorf("error running migration %d: %s", version, err)
 		}
 	}
 	return nil

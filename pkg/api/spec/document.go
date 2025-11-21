@@ -77,7 +77,7 @@ func lookupDefault(definition, property string) (interface{}, error) {
 		return nil, fmt.Errorf("property %s not found in definition %s", property, definition)
 	}
 	if prop.Default == nil {
-		return nil, fmt.Errorf("No default found for property %s", property)
+		return nil, fmt.Errorf("no default found for property %s", property)
 	}
 	return prop.Default, nil
 }

@@ -42,9 +42,8 @@ func (k *KubernikusClient) GetCredentials(name string) (string, error) {
 		operations.NewGetClusterCredentialsParams().WithName(name),
 		k.authFunc())
 
-	switch err.(type) {
+	switch result := err.(type) {
 	case *operations.GetClusterCredentialsDefault:
-		result := err.(*operations.GetClusterCredentialsDefault)
 		if result.Code() == 404 {
 			return "", errors.Errorf("Cluster %v not found", name)
 		}
@@ -61,9 +60,8 @@ func (k *KubernikusClient) GetCredentialsOIDC(name string) (string, error) {
 		operations.NewGetClusterCredentialsOIDCParams().WithName(name),
 		k.authFunc())
 
-	switch err.(type) {
+	switch result := err.(type) {
 	case *operations.GetClusterCredentialsOIDCDefault:
-		result := err.(*operations.GetClusterCredentialsOIDCDefault)
 		if result.Code() == 404 {
 			return "", errors.Errorf("Cluster %v not found", name)
 		}
@@ -78,9 +76,8 @@ func (k *KubernikusClient) GetCredentialsOIDC(name string) (string, error) {
 func (k *KubernikusClient) CreateCluster(cluster *models.Kluster) error {
 	params := operations.NewCreateClusterParams().WithBody(cluster)
 	_, err := k.client.Operations.CreateCluster(params, k.authFunc())
-	switch err.(type) {
+	switch result := err.(type) {
 	case *operations.CreateClusterDefault:
-		result := err.(*operations.CreateClusterDefault)
 		return errors.Errorf("Error while creating cluster: %s", result.Payload.Message)
 	case error:
 		return errors.Wrap(err, "Error creating cluster")
@@ -91,9 +88,8 @@ func (k *KubernikusClient) CreateCluster(cluster *models.Kluster) error {
 func (k *KubernikusClient) DeleteCluster(name string) error {
 	params := operations.NewTerminateClusterParams().WithName(name)
 	_, err := k.client.Operations.TerminateCluster(params, k.authFunc())
-	switch err.(type) {
+	switch result := err.(type) {
 	case *operations.TerminateClusterDefault:
-		result := err.(*operations.TerminateClusterDefault)
 		return errors.Errorf("Error while terminating cluster: %s", result.Payload.Message)
 	case error:
 		return errors.Wrap(err, "Error deleting cluster")
@@ -105,9 +101,8 @@ func (k *KubernikusClient) ShowCluster(name string) (*models.Kluster, error) {
 	params := operations.NewShowClusterParams()
 	params.Name = name
 	ok, err := k.client.Operations.ShowCluster(params, k.authFunc())
-	switch err.(type) {
+	switch result := err.(type) {
 	case *operations.ShowClusterDefault:
-		result := err.(*operations.ShowClusterDefault)
 		return nil, errors.Errorf("Error while showing cluster: %s", result.Payload.Message)
 	case error:
 		return nil, errors.Wrap(err, "Getting cluster failed")
@@ -121,9 +116,8 @@ func (k *KubernikusClient) GetClusterValues(account, name string) (string, error
 	params.Account = account
 
 	ok, err := k.client.Operations.GetClusterValues(params, k.authFunc())
-	switch err.(type) {
+	switch result := err.(type) {
 	case *operations.GetClusterValuesDefault:
-		result := err.(*operations.GetClusterValuesDefault)
 		return "", errors.Errorf("Error while getting cluster values: %s", result.Payload.Message)
 	case error:
 		return "", errors.Wrap(err, "Getting cluster failed")
@@ -133,9 +127,8 @@ func (k *KubernikusClient) GetClusterValues(account, name string) (string, error
 
 func (k *KubernikusClient) ListAllClusters() ([]*models.Kluster, error) {
 	ok, err := k.client.Operations.ListClusters(operations.NewListClustersParams(), k.authFunc())
-	switch err.(type) {
+	switch result := err.(type) {
 	case *operations.ListClustersDefault:
-		result := err.(*operations.ListClustersDefault)
 		return nil, errors.Errorf("Error while listing cluster: %s", result.Payload.Message)
 	case error:
 		return nil, errors.Wrapf(err, "Listing clusters failed")
@@ -173,9 +166,8 @@ func (k *KubernikusClient) ShowNodePool(clusterName string, nodePoolName string)
 func (k *KubernikusClient) GetDefaultCluster() (*models.Kluster, error) {
 	ok, err := k.client.Operations.ListClusters(operations.NewListClustersParams(), k.authFunc())
 
-	switch err.(type) {
+	switch result := err.(type) {
 	case *operations.ListClustersDefault:
-		result := err.(*operations.ListClustersDefault)
 		return nil, errors.Errorf("Error while listing clusters: %s", result.Payload.Message)
 	case error:
 		return nil, errors.Wrapf(err, "Listing clusters failed")

@@ -1,17 +1,33 @@
-run:
-  timeout: 5m
+version: "2"
 linters:
-  enable:
-  - gci
-  - gofmt
   disable:
-  - errcheck
-  - gosimple
+    - errcheck
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
 issues:
   fix: false
-linters-settings:
-  gci:
-    sections:
-      - standard
-      - default
-      - prefix(github.com/sapcc/kubernikus)
+formatters:
+  enable:
+    - gci
+    - gofmt
+  settings:
+    gci:
+      sections:
+        - standard
+        - default
+        - prefix(github.com/sapcc/kubernikus)
+  exclusions:
+    generated: lax
+    paths:
+      - third_party$
+      - builtin$
+      - examples$

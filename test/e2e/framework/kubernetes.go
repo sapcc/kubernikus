@@ -79,11 +79,11 @@ func (f *Kubernetes) WaitForPodsWithLabelRunningReady(ns string, label labels.Se
 				if IsRetryableAPIError(err) {
 					return false, nil
 				}
-				return false, fmt.Errorf("Failed to list pods: %v", err)
+				return false, fmt.Errorf("failed to list pods: %v", err)
 			}
 			current = 0
 			for _, pod := range pods.Items {
-				if flag, err := PodRunningReady(&pod); err == nil && flag == true {
+				if flag, err := PodRunningReady(&pod); err == nil && flag {
 					current++
 				}
 			}
@@ -110,7 +110,7 @@ func (f *Kubernetes) WaitForPodsWithLabel(ns string, label labels.Selector) (pod
 		}
 	}
 	if pods == nil || len(pods.Items) == 0 {
-		err = fmt.Errorf("Timeout while waiting for pods with label %v", label)
+		err = fmt.Errorf("timeout while waiting for pods with label %v", label)
 	}
 	return
 }
@@ -125,7 +125,7 @@ func (f *Kubernetes) WaitForServiceEndpointsWithLabelNum(namespace string, label
 				if IsRetryableAPIError(err) {
 					return false, nil
 				}
-				return false, fmt.Errorf("Failed to list services: %v", err)
+				return false, fmt.Errorf("failed to list services: %v", err)
 			}
 
 			endpoints, err := f.ClientSet.CoreV1().Endpoints(namespace).List(context.Background(), metav1.ListOptions{})
@@ -133,7 +133,7 @@ func (f *Kubernetes) WaitForServiceEndpointsWithLabelNum(namespace string, label
 				if IsRetryableAPIError(err) {
 					return false, nil
 				}
-				return false, fmt.Errorf("Failed to list endpoints: %v", err)
+				return false, fmt.Errorf("failed to list endpoints: %v", err)
 			}
 
 			current = 0

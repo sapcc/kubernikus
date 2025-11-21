@@ -20,7 +20,7 @@ func NewErrorOrigin(logger kitlog.Logger) kitlog.Logger {
 func (l errorOrigin) Log(keyvals ...interface{}) error {
 	for i := len(keyvals) - 2; i >= 0; i -= 2 {
 		if err, ok := keyvals[i+1].(error); ok {
-			if st := originalStackTrace(err); st != nil && len(st) > 0 {
+			if st := originalStackTrace(err); len(st) > 0 {
 				keyvals = append(keyvals, "origin", fmt.Sprintf("%v", st[0]))
 				break
 			}

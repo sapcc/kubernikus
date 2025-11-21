@@ -21,7 +21,7 @@ const (
 
 func (s *IPOrDNSName) UnmarshalJSON(value []byte) error {
 	if len(value) < 3 {
-		return fmt.Errorf(`Parse error: insufficient length for value [%s]`, string(value))
+		return fmt.Errorf(`parse error: insufficient length for value [%s]`, string(value))
 	}
 	if s.IPVal = net.ParseIP(string(value[1 : len(value)-1])); s.IPVal != nil {
 		s.Type = IPType

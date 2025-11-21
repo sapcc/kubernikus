@@ -96,8 +96,8 @@ func (klusterFactory) KlusterFor(spec models.KlusterSpec) (*v1.Kluster, error) {
 		k.Spec.Backup = DEFAULT_ETCD_BACKUP
 	}
 
-	if k.ObjectMeta.Name == "" {
-		k.ObjectMeta.Name = spec.Name
+	if k.Name == "" {
+		k.Name = spec.Name
 	}
 
 	if k.Status.Version == "" {

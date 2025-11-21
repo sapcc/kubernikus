@@ -183,7 +183,7 @@ func (d *createCluster) overlapWithSiblingCluster(cidr string, routerID string, 
 				return false, err
 			}
 			if ip.CIDROverlap(ourCIDR, otherCIDR) {
-				return true, fmt.Errorf("Cluster CIDR %s overlaps with cluster CIDR %s from cluster '%s'. Specify a different CIDR Range or use a dedicated router for this cluster", cidr, other.ClusterCIDR(), other.Spec.Name)
+				return true, fmt.Errorf("cluster CIDR %s overlaps with cluster CIDR %s from cluster '%s'. Specify a different CIDR Range or use a dedicated router for this cluster", cidr, other.ClusterCIDR(), other.Spec.Name)
 			}
 		}
 	}

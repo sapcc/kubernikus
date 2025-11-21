@@ -30,7 +30,7 @@ func RenderManifest(strtmpl string, obj interface{}) ([]byte, error) {
 }
 
 func CreateOrUpdateServiceAccount(client clientset.Interface, sa *v1.ServiceAccount) error {
-	if _, err := client.CoreV1().ServiceAccounts(sa.ObjectMeta.Namespace).Create(context.TODO(), sa, metav1.CreateOptions{}); err != nil {
+	if _, err := client.CoreV1().ServiceAccounts(sa.Namespace).Create(context.TODO(), sa, metav1.CreateOptions{}); err != nil {
 		if !apierrors.IsAlreadyExists(err) {
 			return errors.Wrap(err, "unable to create serviceaccount")
 		}
@@ -39,12 +39,12 @@ func CreateOrUpdateServiceAccount(client clientset.Interface, sa *v1.ServiceAcco
 }
 
 func CreateOrUpdateDeployment(client clientset.Interface, deploy *extensions.Deployment) error {
-	if _, err := client.ExtensionsV1beta1().Deployments(deploy.ObjectMeta.Namespace).Create(context.TODO(), deploy, metav1.CreateOptions{}); err != nil {
+	if _, err := client.ExtensionsV1beta1().Deployments(deploy.Namespace).Create(context.TODO(), deploy, metav1.CreateOptions{}); err != nil {
 		if !apierrors.IsAlreadyExists(err) {
 			return errors.Wrap(err, "unable to create deployment")
 		}
 
-		if _, err := client.ExtensionsV1beta1().Deployments(deploy.ObjectMeta.Namespace).Update(context.TODO(), deploy, metav1.UpdateOptions{}); err != nil {
+		if _, err := client.ExtensionsV1beta1().Deployments(deploy.Namespace).Update(context.TODO(), deploy, metav1.UpdateOptions{}); err != nil {
 			return errors.Wrap(err, "unable to update deployment")
 		}
 	}
@@ -52,12 +52,12 @@ func CreateOrUpdateDeployment(client clientset.Interface, deploy *extensions.Dep
 }
 
 func CreateOrUpdateDeployment116(client clientset.Interface, deploy *apps.Deployment) error {
-	if _, err := client.AppsV1().Deployments(deploy.ObjectMeta.Namespace).Create(context.TODO(), deploy, metav1.CreateOptions{}); err != nil {
+	if _, err := client.AppsV1().Deployments(deploy.Namespace).Create(context.TODO(), deploy, metav1.CreateOptions{}); err != nil {
 		if !apierrors.IsAlreadyExists(err) {
 			return errors.Wrap(err, "unable to create deployment")
 		}
 
-		if _, err := client.AppsV1().Deployments(deploy.ObjectMeta.Namespace).Update(context.TODO(), deploy, metav1.UpdateOptions{}); err != nil {
+		if _, err := client.AppsV1().Deployments(deploy.Namespace).Update(context.TODO(), deploy, metav1.UpdateOptions{}); err != nil {
 			return errors.Wrap(err, "unable to update deployment")
 		}
 	}
@@ -78,12 +78,12 @@ func CreateOrUpdateService(client clientset.Interface, service *v1.Service) erro
 }
 
 func CreateOrUpdateConfigMap(client clientset.Interface, configmap *v1.ConfigMap) error {
-	if _, err := client.CoreV1().ConfigMaps(configmap.ObjectMeta.Namespace).Create(context.TODO(), configmap, metav1.CreateOptions{}); err != nil {
+	if _, err := client.CoreV1().ConfigMaps(configmap.Namespace).Create(context.TODO(), configmap, metav1.CreateOptions{}); err != nil {
 		if !apierrors.IsAlreadyExists(err) {
 			return errors.Wrap(err, "unable to create configmap")
 		}
 
-		if _, err := client.CoreV1().ConfigMaps(configmap.ObjectMeta.Namespace).Update(context.TODO(), configmap, metav1.UpdateOptions{}); err != nil {
+		if _, err := client.CoreV1().ConfigMaps(configmap.Namespace).Update(context.TODO(), configmap, metav1.UpdateOptions{}); err != nil {
 			return errors.Wrap(err, "unable to update configmap")
 		}
 	}
@@ -91,12 +91,12 @@ func CreateOrUpdateConfigMap(client clientset.Interface, configmap *v1.ConfigMap
 }
 
 func CreateOrUpdateDaemonset(client clientset.Interface, daemonset *apps.DaemonSet) error {
-	if _, err := client.AppsV1().DaemonSets(daemonset.ObjectMeta.Namespace).Create(context.TODO(), daemonset, metav1.CreateOptions{}); err != nil {
+	if _, err := client.AppsV1().DaemonSets(daemonset.Namespace).Create(context.TODO(), daemonset, metav1.CreateOptions{}); err != nil {
 		if !apierrors.IsAlreadyExists(err) {
 			return errors.Wrap(err, "unable to create daemonset")
 		}
 
-		if _, err := client.AppsV1().DaemonSets(daemonset.ObjectMeta.Namespace).Update(context.TODO(), daemonset, metav1.UpdateOptions{}); err != nil {
+		if _, err := client.AppsV1().DaemonSets(daemonset.Namespace).Update(context.TODO(), daemonset, metav1.UpdateOptions{}); err != nil {
 			return errors.Wrap(err, "unable to update daemonset")
 		}
 	}

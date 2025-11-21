@@ -25,25 +25,25 @@ func NewKubeClients(logger kitlog.Logger) (kubernikus_clientset.Interface, kuber
 	client, err := kubernikus.NewClient(kubeconfig, ctx)
 
 	if err != nil {
-		return nil, nil, fmt.Errorf("Failed to create kubernikus clients: %s", err)
+		return nil, nil, fmt.Errorf("failed to create kubernikus clients: %s", err)
 	}
 
 	kubernetesClient, err := kubernetes.NewClient(kubeconfig, ctx, logger)
 	if err != nil {
-		return nil, nil, fmt.Errorf("Failed to create kubernetes clients: %s", err)
+		return nil, nil, fmt.Errorf("failed to create kubernetes clients: %s", err)
 	}
 
 	config, err := kubernetes.NewConfig(kubeconfig, ctx)
 	if err != nil {
-		return nil, nil, fmt.Errorf("Failed to create kubernetes config: %s", err)
+		return nil, nil, fmt.Errorf("failed to create kubernetes config: %s", err)
 	}
 	apiextensionsclientset, err := apiextensionsclient.NewForConfig(config)
 	if err != nil {
-		return nil, nil, fmt.Errorf("Failed to create apiextenstionsclient: %s", err)
+		return nil, nil, fmt.Errorf("failed to create apiextenstionsclient: %s", err)
 	}
 
 	if err := kubernetes.EnsureCRD(apiextensionsclientset, logger); err != nil {
-		return nil, nil, fmt.Errorf("Couldn't create CRD: %s", err)
+		return nil, nil, fmt.Errorf("couldn't create CRD: %s", err)
 	}
 
 	return client, kubernetesClient, nil

@@ -20,9 +20,9 @@ func (ce *createError) Error400(e gophercloud.ErrUnexpectedResponseCode) error {
 		} `json:"badRequest"`
 	}
 	if err := json.Unmarshal(e.Body, &response); err != nil || response.BadRequest.Message == "" {
-		return fmt.Errorf("Failed to parse response from compute: %s", string(e.Body))
+		return fmt.Errorf("failed to parse response from compute: %s", string(e.Body))
 	}
-	return fmt.Errorf("Response from compute: %d %s", e.Actual, response.BadRequest.Message)
+	return fmt.Errorf("response from compute: %d %s", e.Actual, response.BadRequest.Message)
 }
 
 func (ce createError) Error() string {
@@ -38,9 +38,9 @@ func (ce *createError) Error403(e gophercloud.ErrUnexpectedResponseCode) error {
 		} `json:"forbidden"`
 	}
 	if err := json.Unmarshal(e.Body, &response); err != nil || response.Forbidden.Message == "" {
-		return fmt.Errorf("Failed to parse response from compute: %s", string(e.Body))
+		return fmt.Errorf("failed to parse response from compute: %s", string(e.Body))
 	}
-	return fmt.Errorf("Response from compute: %d %s", e.Actual, response.Forbidden.Message)
+	return fmt.Errorf("response from compute: %d %s", e.Actual, response.Forbidden.Message)
 }
 
 // Create requests a server to be provisioned to the user in the current tenant.

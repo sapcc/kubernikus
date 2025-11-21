@@ -15,7 +15,7 @@ func ReconcileK8SVersionInSpec(rawKluster []byte, current *v1.Kluster, clients c
 
 	if current.Spec.Version != current.Status.ApiserverVersion {
 		if current.Status.ApiserverVersion == "" {
-			return errors.New("No kubernetes version found in status")
+			return errors.New("no kubernetes version found in status")
 		}
 		current.Spec.Version = current.Status.ApiserverVersion
 	}

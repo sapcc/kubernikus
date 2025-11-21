@@ -14,7 +14,7 @@ import (
 
 type updateKlusterFunc func(kluster *v1.Kluster) error
 
-var KlusterNotUpdated = errors.New("Kluster not updated")
+var ErrKlusterNotUpdated = errors.New("kluster not updated")
 
 // UpdateKlusterWithRetries updates a kluster with given applyUpdate function.
 func UpdateKlusterWithRetries(klusterClient client.KlusterInterface, klusterLister listers_kubernikus.KlusterNamespaceLister, name string, applyUpdate updateKlusterFunc) (*v1.Kluster, error) {
@@ -29,7 +29,7 @@ func UpdateKlusterWithRetries(klusterClient client.KlusterInterface, klusterList
 		kluster = kluster.DeepCopy()
 		// Apply the update, then attempt to push it to the apiserver.
 		if applyErr := applyUpdate(kluster); applyErr != nil {
-			if applyErr == KlusterNotUpdated {
+			if applyErr == ErrKlusterNotUpdated {
 				return nil
 			}
 			return applyErr

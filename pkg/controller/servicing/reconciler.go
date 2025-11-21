@@ -120,7 +120,7 @@ func (r *KlusterReconciler) Do() error {
 		return nil
 	}
 
-	if util.DisabledValue(r.Kluster.ObjectMeta.Annotations[AnnotationServicingSafeguard]) {
+	if util.DisabledValue(r.Kluster.Annotations[AnnotationServicingSafeguard]) {
 		r.Logger.Log("msg", "Skippig upgrades. Manually disabled with safeguard annotation.", "v", 2)
 		return nil
 	}
@@ -200,7 +200,7 @@ func (r *KlusterReconciler) Do() error {
 		}
 	}
 
-	if !isServicingTimeWindow() && !util.EnabledValue(r.Kluster.ObjectMeta.Annotations[AnnotationServicingIgnoreTimeWindow]) {
+	if !isServicingTimeWindow() && !util.EnabledValue(r.Kluster.Annotations[AnnotationServicingIgnoreTimeWindow]) {
 		r.Logger.Log("msg", "skipping servicing, outside time window.", "v", 5)
 		return nil
 	}
@@ -248,7 +248,7 @@ func (r *KlusterReconciler) updateLastServicingTime() error {
 	client := r.KubernikusClient.Klusters(r.Kluster.Namespace)
 	lister := r.KlusterLister.Klusters(r.Kluster.Namespace)
 	_, err := util.UpdateKlusterWithRetries(client, lister, r.Kluster.Name, func(kluster *v1.Kluster) error {
-		kluster.ObjectMeta.Annotations[AnnotationServicingTimestamp] = Now().UTC().Format(time.RFC3339)
+		kluster.Annotations[AnnotationServicingTimestamp] = Now().UTC().Format(time.RFC3339)
 		return nil
 	})
 	return err
@@ -269,7 +269,7 @@ func (r *KlusterReconciler) getLastServicingTime(annotations map[string]string) 
 }
 
 func (r *KlusterReconciler) isServiceIntervalElapsed() bool {
-	nextServiceTime := r.getLastServicingTime(r.Kluster.ObjectMeta.GetAnnotations()).Add(ServiceInterval)
+	nextServiceTime := r.getLastServicingTime(r.Kluster.GetAnnotations()).Add(ServiceInterval)
 	return Now().After(nextServiceTime)
 }
 

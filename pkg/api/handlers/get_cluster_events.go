@@ -31,8 +31,8 @@ func (d *getClusterEvents) Handle(params operations.GetClusterEventsParams, prin
 	events := make([]*models.Event, 0, len(kEvents.Items))
 	for _, ev := range kEvents.Items {
 		events = append(events, &models.Event{
-			FirstTimestamp: ev.FirstTimestamp.Time.String(),
-			LastTimestamp:  ev.LastTimestamp.Time.String(),
+			FirstTimestamp: ev.FirstTimestamp.String(),
+			LastTimestamp:  ev.LastTimestamp.String(),
 			Message:        ev.Message,
 			Reason:         ev.Reason,
 			Count:          int64(ev.Count),

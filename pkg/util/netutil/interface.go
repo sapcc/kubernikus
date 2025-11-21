@@ -5,7 +5,7 @@ import (
 	"net"
 )
 
-var NotFound = errors.New("Not found")
+var ErrNotFound = errors.New("not found")
 
 // InterfaceAddress returns the first ipv4 address of the given interface
 func InterfaceAddress(name string) (net.IP, error) {
@@ -24,7 +24,7 @@ func InterfaceAddress(name string) (net.IP, error) {
 			}
 		}
 	}
-	return nil, NotFound
+	return nil, ErrNotFound
 }
 
 // PrimaryIP returns the first ipv4 Address of the interface which is used by the default route

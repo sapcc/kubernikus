@@ -69,8 +69,7 @@ func NewController(threadiness int, factories config.Factories, clients config.C
 	logger = log.With(logger, "controller", "flight")
 	factory := NewFlightReconcilerFactory(factories.Openstack, clients.Kubernetes, factories.NodesObservatory.NodeInformer(), recorder, logger)
 
-	var controller base.Reconciler
-	controller = &FlightController{factory, logger}
+	controller := &FlightController{factory, logger}
 
 	return base.NewController(threadiness, factories, controller, logger, nil, "flight")
 }

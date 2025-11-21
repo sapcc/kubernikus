@@ -106,7 +106,7 @@ func UpdateKlusterSecret(client kubernetes.Interface, kluster *v1.Kluster, secre
 	}
 	api_secret.Data, err = secret.ToData()
 	if err != nil {
-		return fmt.Errorf("Failed to serialize secret data: %s", err)
+		return fmt.Errorf("failed to serialize secret data: %s", err)
 	}
 	_, err = client.CoreV1().Secrets(kluster.Namespace).Update(context.TODO(), api_secret, meta_v1.UpdateOptions{})
 	return err

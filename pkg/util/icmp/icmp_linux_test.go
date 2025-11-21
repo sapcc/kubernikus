@@ -1,5 +1,4 @@
 //go:build integration && linux
-// +build integration,linux
 
 package icmp
 

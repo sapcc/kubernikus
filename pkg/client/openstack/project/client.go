@@ -28,14 +28,12 @@ type projectClient struct {
 }
 
 func NewProjectClient(projectID string, network, compute, identity *gophercloud.ServiceClient) ProjectClient {
-	var client ProjectClient
-	client = &projectClient{
+	return &projectClient{
 		projectID:      projectID,
 		NetworkClient:  network,
 		ComputeClient:  compute,
 		IdentityClient: identity,
 	}
-	return client
 }
 
 func (c *projectClient) GetMetadata() (metadata *models.OpenstackMetadata, err error) {

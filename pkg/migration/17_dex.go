@@ -16,7 +16,7 @@ func AddDexSecretAndRoleBindings(rawKluster []byte, current *v1.Kluster, clients
 	// Secret
 	apiSecret, err := util.KlusterSecret(clients.Kubernetes, current)
 	if err != nil {
-		return fmt.Errorf("Failed to serialize secret data: %s", err)
+		return fmt.Errorf("failed to serialize secret data: %s", err)
 	}
 
 	var randomPasswordChars = []rune("abcdefghjkmnpqrstuvwxABCDEFGHJKLMNPQRSTUVWX23456789")
@@ -24,18 +24,18 @@ func AddDexSecretAndRoleBindings(rawKluster []byte, current *v1.Kluster, clients
 	if apiSecret.DexClientSecret == "" {
 		apiSecret.DexClientSecret, err = goutils.Random(16, 0, 0, true, true, randomPasswordChars...)
 		if err != nil {
-			return fmt.Errorf("Failed to generate dex client secret: %s", err)
+			return fmt.Errorf("failed to generate dex client secret: %s", err)
 		}
 	}
 
 	if apiSecret.DexStaticPassword == "" {
 		apiSecret.DexStaticPassword, err = goutils.Random(16, 0, 0, true, true, randomPasswordChars...)
 		if err != nil {
-			return fmt.Errorf("Failed to generate dex static password: %s", err)
+			return fmt.Errorf("failed to generate dex static password: %s", err)
 		}
 	}
 
-	if apiSecret.Openstack.ProjectDomainName == "" {
+	if apiSecret.ProjectDomainName == "" {
 
 		admin, err := factories.Openstack.AdminClient()
 		if err != nil {
@@ -45,7 +45,7 @@ func AddDexSecretAndRoleBindings(rawKluster []byte, current *v1.Kluster, clients
 		if err != nil {
 			return err
 		}
-		apiSecret.Openstack.ProjectDomainName = domainFromOpenstack
+		apiSecret.ProjectDomainName = domainFromOpenstack
 
 	}
 

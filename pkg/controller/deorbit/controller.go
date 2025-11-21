@@ -109,14 +109,14 @@ func (d *DeorbitReconciler) deorbit(kluster *v1.Kluster) (err error) {
 	//We need to ensure the done channel is closed otherwise we leak goroutines (thanks to wait.PollUntil)
 	defer once.Do(func() { close(done) })
 
-	providerClient, err := d.Factories.Openstack.ProviderClientForKluster(kluster, logger)
+	providerClient, err := d.Openstack.ProviderClientForKluster(kluster, logger)
 	if err != nil {
-		return fmt.Errorf("Could not get openstack provider client: %v", err)
+		return fmt.Errorf("could not get openstack provider client: %v", err)
 	}
 
 	serviceClient, err := openstack.NewBlockStorageV3(providerClient, gophercloud.EndpointOpts{})
 	if err != nil {
-		return fmt.Errorf("Could not create block storage client: %v", err)
+		return fmt.Errorf("could not create block storage client: %v", err)
 	}
 
 	deorbiter, err := NewDeorbiter(kluster, done, d.Clients, d.Recorder, logger, serviceClient)

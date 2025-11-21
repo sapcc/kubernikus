@@ -95,7 +95,7 @@ func ThisNode(nodes []v1.Node) (*v1.Node, error) {
 		}
 	}
 
-	return nil, errors.New("Not found")
+	return nil, errors.New("not found")
 }
 
 var machineIDPath = "/etc/machine-id"
@@ -124,7 +124,7 @@ func AddNodeAnnotation(nodeName, key, val string, client kubernetes.Interface) e
 	a.Metadata.Annotations = map[string]interface{}{key: val}
 	data, err := json.Marshal(a)
 	if err != nil {
-		return fmt.Errorf("Failed to marshal annotation %v = %v: %s", key, val, err)
+		return fmt.Errorf("failed to marshal annotation %v = %v: %s", key, val, err)
 	}
 	_, err = client.CoreV1().Nodes().Patch(context.TODO(), nodeName, types.MergePatchType, data, metav1.PatchOptions{})
 	return err
@@ -135,7 +135,7 @@ func RemoveNodeAnnotation(nodeName, key string, client kubernetes.Interface) err
 	a.Metadata.Annotations = map[string]interface{}{key: nil}
 	data, err := json.Marshal(a)
 	if err != nil {
-		return fmt.Errorf("Failed to marshal annotation %v = %v: %s", key, nil, err)
+		return fmt.Errorf("failed to marshal annotation %v = %v: %s", key, nil, err)
 	}
 	_, err = client.CoreV1().Nodes().Patch(context.TODO(), nodeName, types.MergePatchType, data, metav1.PatchOptions{})
 	return err

@@ -188,11 +188,11 @@ func (d *ConcreteDeorbiter) SelfDestruct(reason SelfDestructReason) (err error) 
 }
 
 func (d *ConcreteDeorbiter) IsAPIUnavailableTimeout() bool {
-	return d.Kluster.ObjectMeta.DeletionTimestamp.Add(APIUnavailableTimeout).Before(time.Now())
+	return d.Kluster.DeletionTimestamp.Add(APIUnavailableTimeout).Before(time.Now())
 }
 
 func (d *ConcreteDeorbiter) IsDeorbitHangingTimeout() bool {
-	return d.Kluster.ObjectMeta.DeletionTimestamp.Add(DeorbitHangingTimeout).Before(time.Now())
+	return d.Kluster.DeletionTimestamp.Add(DeorbitHangingTimeout).Before(time.Now())
 }
 
 func (d *ConcreteDeorbiter) isSnapshotCleanupFinished() (bool, error) {
@@ -218,12 +218,12 @@ func (d *ConcreteDeorbiter) isPersistentVolumesCleanupFinished() (bool, error) {
 
 	allPages, err := volumes.List(d.ServiceClient, volumeListOpts).AllPages()
 	if err != nil {
-		return false, fmt.Errorf("There should be no error while retrieving volume pages: %v", err)
+		return false, fmt.Errorf("there should be no error while retrieving volume pages: %v", err)
 	}
 
 	allVolumes, err := volumes.ExtractVolumes(allPages)
 	if err != nil {
-		return false, fmt.Errorf("There should be no error while extracting volumes: %v", err)
+		return false, fmt.Errorf("there should be no error while extracting volumes: %v", err)
 	}
 
 	for _, pv := range pvs.Items {
@@ -234,8 +234,8 @@ func (d *ConcreteDeorbiter) isPersistentVolumesCleanupFinished() (bool, error) {
 
 		// ignore volumes already deleted in openstack
 		for _, volume := range allVolumes {
-			if (pv.Spec.PersistentVolumeSource.Cinder != nil && pv.Spec.PersistentVolumeSource.Cinder.VolumeID == volume.ID) ||
-				(pv.Spec.PersistentVolumeSource.CSI != nil && pv.Spec.PersistentVolumeSource.CSI.VolumeHandle == volume.ID) {
+			if (pv.Spec.Cinder != nil && pv.Spec.Cinder.VolumeID == volume.ID) ||
+				(pv.Spec.CSI != nil && pv.Spec.CSI.VolumeHandle == volume.ID) {
 				return false, nil
 			}
 		}
@@ -246,7 +246,7 @@ func (d *ConcreteDeorbiter) isPersistentVolumesCleanupFinished() (bool, error) {
 
 func (d *ConcreteDeorbiter) isServiceCleanupFinished() (bool, error) {
 	if ok, _ := util.KlusterVersionConstraint(d.Kluster, "< 1.17"); ok {
-		return d.Kluster.ObjectMeta.DeletionTimestamp.Add(ServiceDeletionGracePeriod).Before(time.Now()), nil
+		return d.Kluster.DeletionTimestamp.Add(ServiceDeletionGracePeriod).Before(time.Now()), nil
 	}
 	services, err := d.Client.CoreV1().Services(meta_v1.NamespaceAll).List(context.TODO(), meta_v1.ListOptions{})
 	if err != nil {

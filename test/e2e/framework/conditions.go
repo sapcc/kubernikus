@@ -23,12 +23,12 @@ func PodRunningReady(p *v1.Pod) (bool, error) {
 	// Check the phase is running.
 	if p.Status.Phase != v1.PodRunning {
 		return false, fmt.Errorf("want pod '%s' on '%s' to be '%v' but was '%v'",
-			p.ObjectMeta.Name, p.Spec.NodeName, v1.PodRunning, p.Status.Phase)
+			p.Name, p.Spec.NodeName, v1.PodRunning, p.Status.Phase)
 	}
 	// Check the ready condition is true.
 	if !IsPodReady(p) {
 		return false, fmt.Errorf("pod '%s' on '%s' didn't have condition {%v %v}; conditions: %v",
-			p.ObjectMeta.Name, p.Spec.NodeName, v1.PodReady, v1.ConditionTrue, p.Status.Conditions)
+			p.Name, p.Spec.NodeName, v1.PodReady, v1.ConditionTrue, p.Status.Conditions)
 	}
 	return true, nil
 }
@@ -68,7 +68,7 @@ func GetPodCondition(status *v1.PodStatus, conditionType v1.PodConditionType) (i
 	return -1, nil
 }
 
-func CountEndpointsNum(e *v1.Endpoints) int {
+func CountEndpointsNum(e *v1.Endpoints) int { // nolint:staticcheck
 	num := 0
 	for _, sub := range e.Subsets {
 		num += len(sub.Addresses)

@@ -190,7 +190,7 @@ func (d *Helper) daemonSetFilter(pod corev1.Pod) podDeleteStatus {
 }
 
 func (d *Helper) mirrorPodFilter(pod corev1.Pod) podDeleteStatus {
-	if _, found := pod.ObjectMeta.Annotations[corev1.MirrorPodAnnotationKey]; found {
+	if _, found := pod.Annotations[corev1.MirrorPodAnnotationKey]; found {
 		return makePodDeleteStatusSkip()
 	}
 	return makePodDeleteStatusOkay()
@@ -232,8 +232,8 @@ func (d *Helper) unreplicatedFilter(pod corev1.Pod) podDeleteStatus {
 
 func shouldSkipPod(pod corev1.Pod, skipDeletedTimeoutSeconds int) bool {
 	return skipDeletedTimeoutSeconds > 0 &&
-		!pod.ObjectMeta.DeletionTimestamp.IsZero() &&
-		int(time.Now().Sub(pod.ObjectMeta.GetDeletionTimestamp().Time).Seconds()) > skipDeletedTimeoutSeconds
+		!pod.DeletionTimestamp.IsZero() &&
+		int(time.Since(pod.GetDeletionTimestamp().Time).Seconds()) > skipDeletedTimeoutSeconds
 }
 
 func (d *Helper) skipDeletedFilter(pod corev1.Pod) podDeleteStatus {

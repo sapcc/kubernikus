@@ -31,13 +31,13 @@ type KlusterList struct {
 }
 
 func (spec Kluster) Account() string {
-	return spec.ObjectMeta.Labels["account"]
+	return spec.Labels["account"]
 }
 
 func (spec Kluster) ApiServiceIP() (net.IP, error) {
 	_, ipnet, err := net.ParseCIDR(spec.Spec.ServiceCIDR)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to parse service CIDR: %s", err)
+		return nil, fmt.Errorf("failed to parse service CIDR: %s", err)
 	}
 	ip, err := ip.GetIndexedIP(ipnet, 1)
 	if err != nil {
@@ -48,12 +48,12 @@ func (spec Kluster) ApiServiceIP() (net.IP, error) {
 }
 
 func (k *Kluster) NeedsFinalizer(finalizer string) bool {
-	if k.ObjectMeta.DeletionTimestamp != nil {
+	if k.DeletionTimestamp != nil {
 		// already deleted. do not add another finalizer anymore
 		return false
 	}
 
-	for _, f := range k.ObjectMeta.Finalizers {
+	for _, f := range k.Finalizers {
 		if f == finalizer {
 			// Finalizer is already present, nothing to do
 			return false
@@ -64,12 +64,12 @@ func (k *Kluster) NeedsFinalizer(finalizer string) bool {
 }
 
 func (k *Kluster) HasFinalizer(finalizer string) bool {
-	if k.ObjectMeta.DeletionTimestamp == nil {
+	if k.DeletionTimestamp == nil {
 		// not deleted. do not remove finalizers at this time
 		return false
 	}
 
-	for _, f := range k.ObjectMeta.Finalizers {
+	for _, f := range k.Finalizers {
 		if f == finalizer {
 			// Finalizer is already present
 			return true

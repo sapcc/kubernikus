@@ -180,7 +180,7 @@ func ApplySuppository(script string, client kubernetes.Interface) error {
 			return false, err
 		}
 
-		if created.ObjectMeta.Generation != observed.Status.ObservedGeneration {
+		if created.Generation != observed.Status.ObservedGeneration {
 			return false, nil
 		}
 

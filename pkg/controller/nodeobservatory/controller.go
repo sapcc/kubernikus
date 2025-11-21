@@ -224,7 +224,7 @@ func (n *NodeObservatory) createAndWatchNodeInformerForKluster(kluster *v1.Klust
 			return err
 		}
 
-		nodeInformer.SharedIndexInformer.AddEventHandler(cache.ResourceEventHandlerFuncs{
+		nodeInformer.AddEventHandler(cache.ResourceEventHandlerFuncs{
 			AddFunc: func(obj interface{}) {
 				if kluster, err = n.getKlusterByKey(key); err != nil {
 					n.logger.Log(err)
@@ -344,7 +344,7 @@ func (n *NodeObservatory) GetListerForKluster(kluster *v1.Kluster) (listers_core
 	}
 
 	if err := wait.PollImmediate(100*time.Millisecond, 5*time.Second, func() (bool, error) { return informer.HasSynced(), nil }); err != nil { //nolint:staticcheck
-		return nil, errors.New("Node cache not synced")
+		return nil, errors.New("node cache not synced")
 	}
 	return listers_core_v1.NewNodeLister(informer.GetIndexer()), nil
 }

@@ -127,12 +127,12 @@ type kubernikusHelmValues struct {
 func KlusterToHelmValues(kluster *v1.Kluster, secret *v1.Secret, kubernetesVersion string, registry *version.ImageRegistry, accessMode string) (map[string]interface{}, error) {
 	apiserverURL, err := url.Parse(kluster.Status.Apiserver)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to parse apiserver URL: %s", err)
+		return nil, fmt.Errorf("failed to parse apiserver URL: %s", err)
 	}
 
 	wormholeURL, err := url.Parse(kluster.Status.Wormhole)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to parse wormhole server URL: %s", err)
+		return nil, fmt.Errorf("failed to parse wormhole server URL: %s", err)
 	}
 
 	//Get a deterministic value for the cluster between 0-59 for the hourly etcd full backup schedule
@@ -146,7 +146,7 @@ func KlusterToHelmValues(kluster *v1.Kluster, secret *v1.Secret, kubernetesVersi
 
 		hashedBytes, err := bcrypt.GenerateFromPassword([]byte(secret.DexStaticPassword), bcrypt.DefaultCost)
 		if err != nil {
-			return nil, fmt.Errorf("Failed to hash dex static password: %v", err)
+			return nil, fmt.Errorf("failed to hash dex static password: %v", err)
 		}
 		hashedPassword = string(hashedBytes)
 	}
@@ -194,12 +194,12 @@ func KlusterToHelmValues(kluster *v1.Kluster, secret *v1.Secret, kubernetesVersi
 			},
 			StorageContainer: etcd_util.DefaultStorageContainer(kluster),
 			Openstack: openstackValues{
-				AuthURL:           secret.Openstack.AuthURL,
-				Username:          secret.Openstack.Username,
-				Password:          secret.Openstack.Password,
-				DomainName:        secret.Openstack.DomainName,
-				ProjectID:         secret.Openstack.ProjectID,
-				ProjectDomainName: secret.Openstack.ProjectDomainName,
+				AuthURL:           secret.AuthURL,
+				Username:          secret.Username,
+				Password:          secret.Password,
+				DomainName:        secret.DomainName,
+				ProjectID:         secret.ProjectID,
+				ProjectDomainName: secret.ProjectDomainName,
 			},
 			Version: versionValues{
 				Kubernetes: kubernetesVersion,
@@ -223,11 +223,11 @@ func KlusterToHelmValues(kluster *v1.Kluster, secret *v1.Secret, kubernetesVersi
 	}
 	if !kluster.Spec.NoCloud {
 		values.Openstack = openstackValues{
-			AuthURL:             secret.Openstack.AuthURL,
-			Username:            secret.Openstack.Username,
-			Password:            secret.Openstack.Password,
-			DomainName:          secret.Openstack.DomainName,
-			Region:              secret.Openstack.Region,
+			AuthURL:             secret.AuthURL,
+			Username:            secret.Username,
+			Password:            secret.Password,
+			DomainName:          secret.DomainName,
+			Region:              secret.Region,
 			ProjectID:           kluster.Account(),
 			ProjectDomainName:   secret.ProjectDomainName,
 			LbSubnetID:          kluster.Spec.Openstack.LBSubnetID,

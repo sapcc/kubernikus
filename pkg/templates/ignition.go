@@ -79,7 +79,7 @@ func (i *ignition) getIgnitionTemplate(kluster *kubernikusv1.Kluster) (string, e
 	case strings.HasPrefix(kluster.Spec.Version, "1.10"):
 		return Node_1_10, nil
 	default:
-		return "", fmt.Errorf("Can't find iginition template for version %s", kluster.Spec.Version)
+		return "", fmt.Errorf("can't find iginition template for version %s", kluster.Spec.Version)
 	}
 }
 
@@ -102,7 +102,7 @@ func (i *ignition) GenerateNode(kluster *kubernikusv1.Kluster, pool *models.Node
 		//generate 16 byte random salt
 		salt, err := goutils.Random(sha512_crypt.SaltLenMax, 32, 127, true, true)
 		if err != nil {
-			return nil, fmt.Errorf("Unable to generate random salt: %s", err)
+			return nil, fmt.Errorf("unable to generate random salt: %s", err)
 		}
 		//We crank up the heat to 1 million rounds of hashing for this password (default 5000)
 		//Reason for this is we expose the resulting hash in the metadata service which is not very secure.
@@ -110,7 +110,7 @@ func (i *ignition) GenerateNode(kluster *kubernikusv1.Kluster, pool *models.Node
 		// delayed for about a second which should be ok as this password is only meant as a last resort.
 		passwordHash, err = passwordCrypter.Generate([]byte(secret.NodePassword), append([]byte(fmt.Sprintf("%srounds=%d$", sha512_crypt.MagicPrefix, passwordHashRounds)), salt...))
 		if err != nil {
-			return nil, fmt.Errorf("Faied to generate salted password: %s", err)
+			return nil, fmt.Errorf("failed to generate salted password: %s", err)
 		}
 	}
 	var nodeLabels []string
@@ -119,19 +119,15 @@ func (i *ignition) GenerateNode(kluster *kubernikusv1.Kluster, pool *models.Node
 	isFlatcar := true
 	if pool != nil {
 		nodeLabels = append(nodeLabels, "ccloud.sap.com/nodepool="+pool.Name)
-		for _, userTaint := range pool.Taints {
-			nodeTaints = append(nodeTaints, userTaint)
-		}
-		for _, userLabel := range pool.Labels {
-			nodeLabels = append(nodeLabels, userLabel)
-		}
+		nodeTaints = append(nodeTaints, pool.Taints...)
+		nodeLabels = append(nodeLabels, pool.Labels...)
 		nodeLabels = append(nodeLabels, "kubernikus.cloud.sap/template-version="+TEMPLATE_VERSION)
 		isFlatcar = !strings.Contains(strings.ToLower(pool.Image), "coreos")
 	}
 
 	images, found := imageRegistry.Versions[kluster.Spec.Version]
 	if !found {
-		return nil, fmt.Errorf("Can't find images for version: %s ", kluster.Spec.Version)
+		return nil, fmt.Errorf("can't find images for version: %s ", kluster.Spec.Version)
 	}
 
 	data := struct {
@@ -187,11 +183,11 @@ func (i *ignition) GenerateNode(kluster *kubernikusv1.Kluster, pool *models.Node
 		ApiserverURL:                       kluster.Status.Apiserver,
 		ApiserverIP:                        kluster.Spec.AdvertiseAddress,
 		ApiserverPort:                      kluster.Spec.AdvertisePort,
-		OpenstackAuthURL:                   secret.Openstack.AuthURL,
-		OpenstackUsername:                  secret.Openstack.Username,
-		OpenstackPassword:                  secret.Openstack.Password,
-		OpenstackDomain:                    secret.Openstack.DomainName,
-		OpenstackRegion:                    secret.Openstack.Region,
+		OpenstackAuthURL:                   secret.AuthURL,
+		OpenstackUsername:                  secret.Username,
+		OpenstackPassword:                  secret.Password,
+		OpenstackDomain:                    secret.DomainName,
+		OpenstackRegion:                    secret.Region,
 		OpenstackLBSubnetID:                kluster.Spec.Openstack.LBSubnetID,
 		OpenstackLBFloatingNetworkID:       kluster.Spec.Openstack.LBFloatingNetworkID,
 		OpenstackRouterID:                  kluster.Spec.Openstack.RouterID,
@@ -226,7 +222,7 @@ func (i *ignition) GenerateNode(kluster *kubernikusv1.Kluster, pool *models.Node
 		logger.Log(
 			"msg", "ignition debug",
 			"data", data,
-			"yaml", string(buffer.Bytes()),
+			"yaml", buffer.String(),
 			"json", string(dataOut),
 			"report", report.String(),
 			"v", 6,
@@ -244,7 +240,7 @@ func (i *ignition) GenerateNode(kluster *kubernikusv1.Kluster, pool *models.Node
 	)
 
 	if err != nil {
-		return nil, fmt.Errorf("Couldn't translate ignition file: %v\n%w", report.String(), err)
+		return nil, fmt.Errorf("couldn't translate ignition file: %v\n%w", report.String(), err)
 	}
 
 	return dataOut, nil

@@ -34,23 +34,23 @@ var _ SharedOpenstackClientFactory = &NotAvailableFactory{}
 type NotAvailableFactory struct {
 }
 
-func (_ NotAvailableFactory) KlusterClientFor(*kubernikus_v1.Kluster) (openstack_kluster.KlusterClient, error) {
-	return nil, errors.New("Openstack not configured")
+func (NotAvailableFactory) KlusterClientFor(*kubernikus_v1.Kluster) (openstack_kluster.KlusterClient, error) {
+	return nil, errors.New("openstack not configured")
 }
-func (_ NotAvailableFactory) ProjectClientFor(authOptions *tokens.AuthOptions) (openstack_project.ProjectClient, error) {
-	return nil, errors.New("Openstack not configured")
+func (NotAvailableFactory) ProjectClientFor(authOptions *tokens.AuthOptions) (openstack_project.ProjectClient, error) {
+	return nil, errors.New("openstack not configured")
 }
-func (_ NotAvailableFactory) ProjectAdminClientFor(string) (openstack_project.ProjectClient, error) {
-	return nil, errors.New("Openstack not configured")
+func (NotAvailableFactory) ProjectAdminClientFor(string) (openstack_project.ProjectClient, error) {
+	return nil, errors.New("openstack not configured")
 }
-func (_ NotAvailableFactory) ProviderClientFor(authOptions *tokens.AuthOptions, logger log.Logger) (*gophercloud.ProviderClient, error) {
-	return nil, errors.New("Openstack not configured")
+func (NotAvailableFactory) ProviderClientFor(authOptions *tokens.AuthOptions, logger log.Logger) (*gophercloud.ProviderClient, error) {
+	return nil, errors.New("openstack not configured")
 }
-func (_ NotAvailableFactory) ProviderClientForKluster(kluster *kubernikus_v1.Kluster, logger log.Logger) (*gophercloud.ProviderClient, error) {
-	return nil, errors.New("Openstack not configured")
+func (NotAvailableFactory) ProviderClientForKluster(kluster *kubernikus_v1.Kluster, logger log.Logger) (*gophercloud.ProviderClient, error) {
+	return nil, errors.New("openstack not configured")
 }
-func (_ NotAvailableFactory) AdminClient() (admin.AdminClient, error) {
-	return nil, errors.New("Openstack not configured")
+func (NotAvailableFactory) AdminClient() (admin.AdminClient, error) {
+	return nil, errors.New("openstack not configured")
 }
 
 type factory struct {
@@ -148,7 +148,7 @@ func (f *factory) ProjectAdminClientFor(projectID string) (openstack_project.Pro
 
 func (f *factory) projectClient(projectID string, authOptions *tokens.AuthOptions) (openstack_project.ProjectClient, error) {
 	if projectID == "" {
-		return nil, errors.New("Can't create project admin client for empty projectID")
+		return nil, errors.New("can't create project admin client for empty projectID")
 	}
 	if obj, found := f.projectClients.Load(projectID); found {
 		return obj.(openstack_project.ProjectClient), nil
@@ -174,13 +174,13 @@ func (f *factory) authOptionsForKluster(kluster *kubernikus_v1.Kluster) (*tokens
 	}
 
 	authOptions := &tokens.AuthOptions{
-		IdentityEndpoint: secret.Openstack.AuthURL,
-		Username:         secret.Openstack.Username,
-		Password:         secret.Openstack.Password,
-		DomainName:       secret.Openstack.DomainName,
+		IdentityEndpoint: secret.AuthURL,
+		Username:         secret.Username,
+		Password:         secret.Password,
+		DomainName:       secret.DomainName,
 		AllowReauth:      true,
 		Scope: tokens.Scope{
-			ProjectID: secret.Openstack.ProjectID,
+			ProjectID: secret.ProjectID,
 		},
 	}
 

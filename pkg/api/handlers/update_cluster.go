@@ -26,7 +26,7 @@ type updateCluster struct {
 func (d *updateCluster) Handle(params operations.UpdateClusterParams, principal *models.Principal) middleware.Responder {
 	// validate spec.name has some value that makes sense
 	// as it is read-only on a semantic level.
-	if !(params.Body.Spec.Name == "" || params.Body.Spec.Name == params.Name) {
+	if params.Body.Spec.Name != "" && params.Body.Spec.Name != params.Name {
 		return NewErrorResponse(&operations.UpdateClusterDefault{}, 500, "spec.name needs to be removed, an empty string or the clusters name")
 	}
 
@@ -123,7 +123,7 @@ func (d *updateCluster) Handle(params operations.UpdateClusterParams, principal 
 			}
 			currentVersion, err := semver.NewVersion(kluster.Status.ApiserverVersion)
 			if err != nil {
-				return apierrors.NewInternalError(fmt.Errorf("Can't parse current apiserver version (%s): %s", kluster.Status.ApiserverVersion, err))
+				return apierrors.NewInternalError(fmt.Errorf("can't parse current apiserver version (%s): %s", kluster.Status.ApiserverVersion, err))
 			}
 			if newVersion.Major() != currentVersion.Major() || newVersion.Minor() < currentVersion.Minor() || newVersion.Minor() > currentVersion.Minor()+1 {
 				return apierrors.NewBadRequest(fmt.Sprintf("Can't upgrade from version %s to %s", kluster.Status.ApiserverVersion, params.Body.Spec.Version))
@@ -165,7 +165,7 @@ func (d *updateCluster) Handle(params operations.UpdateClusterParams, principal 
 			kluster.Spec.Dashboard = params.Body.Spec.Dashboard
 			if dashboardEnabled && kluster.Status.Apiserver != "" {
 				apiURL := kluster.Status.Apiserver
-				kluster.Status.Dashboard = strings.Replace(apiURL, kluster.GetName(), fmt.Sprintf("dashboard-%s.ingress", kluster.GetName()), -1)
+				kluster.Status.Dashboard = strings.ReplaceAll(apiURL, kluster.GetName(), fmt.Sprintf("dashboard-%s.ingress", kluster.GetName()))
 			}
 
 		}

@@ -86,7 +86,7 @@ func (o *ClientOptions) Run(c *cobra.Command) error {
 		if err != nil {
 			return err
 		}
-		closeCh := make(chan struct{}, 0)
+		closeCh := make(chan struct{})
 
 		group.Add(
 			func() error {

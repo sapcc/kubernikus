@@ -25,13 +25,13 @@ func EnsureLBFloatingNetworkID(rawKluster []byte, current *v1.Kluster, clients c
 		for _, router := range md.Routers {
 			if router.ID == current.Spec.Openstack.RouterID {
 				if router.ExternalNetworkID == "" {
-					return fmt.Errorf("Router %s has no external network ID", router.ID)
+					return fmt.Errorf("router %s has no external network ID", router.ID)
 				}
 				current.Spec.Openstack.LBFloatingNetworkID = router.ExternalNetworkID
 				return nil
 			}
 		}
-		return fmt.Errorf("Couldn't find router %s", current.Spec.Openstack.RouterID)
+		return fmt.Errorf("couldn't find router %s", current.Spec.Openstack.RouterID)
 	}
 
 	return nil

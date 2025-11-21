@@ -115,7 +115,7 @@ func NewFakeKluster(opts *FakeKlusterOptions, afterFlatCarRktRemoval bool) (*v1.
 			}
 
 			if p.NodeUpdating != nil {
-				node.ObjectMeta.Annotations[AnnotationUpdateTimestamp] = p.NodeUpdating.UTC().Format(time.RFC3339)
+				node.Annotations[AnnotationUpdateTimestamp] = p.NodeUpdating.UTC().Format(time.RFC3339)
 			}
 
 			if p.NodeHealthy {

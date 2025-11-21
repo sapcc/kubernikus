@@ -57,7 +57,7 @@ func (o *ServerOptions) BindFlags(flags *pflag.FlagSet) {
 
 func (o *ServerOptions) Validate(c *cobra.Command, args []string) error {
 	if o.ServiceCIDR == "" {
-		return errors.New("You must specify service-cidr")
+		return errors.New("you must specify service-cidr")
 	}
 	return nil
 }
@@ -75,7 +75,7 @@ func (o *ServerOptions) Run(c *cobra.Command) error {
 
 	server, err := server.New(&o.Options)
 	if err != nil {
-		return fmt.Errorf("Failed to initialize server: %s", err)
+		return fmt.Errorf("failed to initialize server: %s", err)
 	}
 
 	go server.Run(stop, wg)

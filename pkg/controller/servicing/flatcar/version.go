@@ -77,12 +77,12 @@ func (d *Version) IsNodeUptodate(node *v1.Node) (bool, error) {
 func ExractVersion(node *v1.Node) (*version.Version, error) {
 	match := flatcarVersionIdentifierRE.FindSubmatch([]byte(node.Status.NodeInfo.OSImage))
 	if len(match) < 2 {
-		return nil, fmt.Errorf("Couldn't match flatcar version from NodeInfo.OSImage: %s", node.Status.NodeInfo.OSImage)
+		return nil, fmt.Errorf("couldn't match flatcar version from NodeInfo.OSImage: %s", node.Status.NodeInfo.OSImage)
 	}
 
 	nodeVersion, err := version.ParseSemantic(string(match[1]))
 	if err != nil {
-		return nil, errors.Wrapf(err, "Node version can't be parsed from %s", match[1])
+		return nil, errors.Wrapf(err, "node version can't be parsed from %s", match[1])
 	}
 
 	return nodeVersion, nil
@@ -110,7 +110,7 @@ func (d *Version) latest(c channel) (*version.Version, error) {
 	if d.versions[c] == nil || now().After(d.fetchedAt[c].Add(flatcarVersionFetchInterval)) {
 		d.versions[c], err = d.fetch(c)
 		if err != nil {
-			return nil, errors.Wrapf(err, "Couldn't fetch latest %s version", c)
+			return nil, errors.Wrapf(err, "couldn't fetch latest %s version", c)
 		}
 	}
 
@@ -120,19 +120,19 @@ func (d *Version) latest(c channel) (*version.Version, error) {
 func (d *Version) fetch(c channel) (*version.Version, error) {
 	r, err := d.Client.Get(fmt.Sprintf(flatcarVersionBaseURL, c))
 	if err != nil {
-		return nil, fmt.Errorf("Couldn't fetch flatcar version: %s", err)
+		return nil, fmt.Errorf("couldn't fetch flatcar version: %s", err)
 	}
 
 	defer r.Body.Close()
 
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
-		return nil, fmt.Errorf("Couldn't read flatcar version: %s", err)
+		return nil, fmt.Errorf("couldn't read flatcar version: %s", err)
 	}
 
 	v := flatcarVersionRE.FindSubmatch(body)
 	if len(v) < 2 {
-		return nil, fmt.Errorf("Couldn't parse flatcar version: %s", err)
+		return nil, fmt.Errorf("couldn't parse flatcar version: %s", err)
 	}
 
 	d.fetchedAt[c] = now()

@@ -147,7 +147,7 @@ func (a *authCallback) verify(authCode, state string) (string, error) {
 	}
 	rawIDToken, ok := oauth2Token.Extra("id_token").(string)
 	if !ok {
-		return "", fmt.Errorf("No id token in response")
+		return "", fmt.Errorf("no id token in response")
 	}
 
 	return rawIDToken, nil

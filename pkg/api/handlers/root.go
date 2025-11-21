@@ -21,7 +21,7 @@ func RootHandler(next http.Handler) http.Handler {
 			for _, accept := range strings.Split(r.Header.Get("Accept"), ",") {
 				switch strings.TrimSpace(accept) {
 				case "text/html":
-					http.Redirect(rw, r, "/docs", 301)
+					http.Redirect(rw, r, "/docs", http.StatusMovedPermanently)
 					return
 				}
 			}

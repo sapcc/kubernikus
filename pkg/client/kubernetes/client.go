@@ -215,7 +215,7 @@ func EnsureCRD(clientset apiextensionsclient.Interface, logger kitlog.Logger) er
 			return false, err
 		})
 		if err != nil {
-			return fmt.Errorf("Kluster CRD V1 couldn't be established: %v", err)
+			return fmt.Errorf("kluster CRD V1 couldn't be established: %v", err)
 		}
 
 	} else {
@@ -263,7 +263,7 @@ func EnsureCRD(clientset apiextensionsclient.Interface, logger kitlog.Logger) er
 			return false, err
 		})
 		if err != nil {
-			return fmt.Errorf("Kluster CRD V1beta1 couldn't be established: %v", err)
+			return fmt.Errorf("kluster CRD V1beta1 couldn't be established: %v", err)
 		}
 	}
 
@@ -288,7 +288,7 @@ func WaitForServer(client kubernetes.Interface, stopCh <-chan struct{}, logger k
 		return true, nil
 	}, stopCh)
 	if err != nil {
-		return fmt.Errorf("Failed to contact apiserver. Last health: %v  Error: %v", healthzContent, err)
+		return fmt.Errorf("failed to contact apiserver. last health: %v error: %v", healthzContent, err)
 	}
 
 	return nil
