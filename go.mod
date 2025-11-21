@@ -1,6 +1,6 @@
 module github.com/sapcc/kubernikus
 
-go 1.23.0
+go 1.25
 
 require (
 	dario.cat/mergo v1.0.1
