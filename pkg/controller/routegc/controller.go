@@ -64,17 +64,17 @@ func (w *routeGarbageCollector) Reconcile(kluster *v1.Kluster) (err error) {
 
 	networkClient, err := openstack.NewNetworkV2(providerClient, gophercloud.EndpointOpts{})
 	if err != nil {
-		return fmt.Errorf("Failed to setup openstack network client: %s", err)
+		return fmt.Errorf("failed to setup openstack network client: %s", err)
 	}
 
 	_, clusterCIDR, err := net.ParseCIDR(kluster.ClusterCIDR())
 	if err != nil {
-		return fmt.Errorf("Failed to parse clusterCIDR: %s", err)
+		return fmt.Errorf("failed to parse clusterCIDR: %s", err)
 	}
 
 	router, err := routers.Get(networkClient, routerID).Extract()
 	if err != nil {
-		return fmt.Errorf("Failed to get router %s: %s", routerID, err)
+		return fmt.Errorf("failed to get router %s: %s", routerID, err)
 	}
 
 	if len(router.Routes) == 0 {
@@ -83,7 +83,7 @@ func (w *routeGarbageCollector) Reconcile(kluster *v1.Kluster) (err error) {
 
 	computeClient, err := openstack.NewComputeV2(providerClient, gophercloud.EndpointOpts{})
 	if err != nil {
-		return fmt.Errorf("Failed to setup openstack compute client: %s", err)
+		return fmt.Errorf("failed to setup openstack compute client: %s", err)
 	}
 
 	validNexthops := map[string]string{}
@@ -104,7 +104,7 @@ func (w *routeGarbageCollector) Reconcile(kluster *v1.Kluster) (err error) {
 		return true, nil
 	})
 	if err != nil {
-		return fmt.Errorf("Failed to list servers: %s", err)
+		return fmt.Errorf("failed to list servers: %s", err)
 	}
 
 	logger := log.With(w.logger, "router", routerID)
@@ -126,7 +126,7 @@ func (w *routeGarbageCollector) Reconcile(kluster *v1.Kluster) (err error) {
 			Routes: &newRoutes,
 		}).Extract()
 		if err != nil {
-			return fmt.Errorf("Failed to remove routes: %s", err)
+			return fmt.Errorf("failed to remove routes: %s", err)
 		}
 		metrics.OrphanedRoutesTotal.With(prometheus.Labels{}).Add(float64(len(router.Routes) - len(newRoutes)))
 		logger.Log("msg", "removed routes")

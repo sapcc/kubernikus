@@ -77,7 +77,7 @@ func (o *HelmOptions) Validate(c *cobra.Command, args []string) error {
 		return errors.New("you must specify the cluster's name")
 	}
 	if !strings.Contains(args[0], ".") {
-		return errors.New("Name must be the fqdn of the apiserver")
+		return errors.New("name must be the fqdn of the apiserver")
 	}
 	if o.AuthURL != "" {
 		if o.ProjectID == "" {
@@ -103,7 +103,7 @@ func (o *HelmOptions) Run(c *cobra.Command) error {
 	nameA := strings.SplitN(o.Name, ".", 2)
 	registry, err := version.NewImageRegistry(o.ImagesFile, o.Region)
 	if err != nil {
-		return fmt.Errorf("Failed to load images from file: %s", err)
+		return fmt.Errorf("failed to load images from file: %s", err)
 	}
 
 	kluster, err := kubernikus.NewKlusterFactory().KlusterFor(models.KlusterSpec{
@@ -119,11 +119,11 @@ func (o *HelmOptions) Run(c *cobra.Command) error {
 		return err
 	}
 
-	secret.Openstack.AuthURL = o.AuthURL
-	secret.Openstack.Username = o.AuthUsername
-	secret.Openstack.Password = o.AuthPassword
-	secret.Openstack.DomainName = o.AuthDomain
-	secret.Openstack.ProjectID = o.ProjectID
+	secret.AuthURL = o.AuthURL
+	secret.Username = o.AuthUsername
+	secret.Password = o.AuthPassword
+	secret.DomainName = o.AuthDomain
+	secret.ProjectID = o.ProjectID
 	secret.BootstrapToken = util.GenerateBootstrapToken()
 
 	values, err := helm.KlusterToHelmValues(kluster, &secret, kluster.Spec.Version, registry, "")

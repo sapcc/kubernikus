@@ -52,7 +52,7 @@ func newNodeInformerForKluster(clientFactory kubernetes.SharedClientFactory, klu
 
 func (ni *NodeInformer) run() {
 	ni.stopCh = make(chan struct{})
-	ni.SharedIndexInformer.Run(ni.stopCh)
+	ni.Run(ni.stopCh)
 }
 
 func (ni *NodeInformer) close() {

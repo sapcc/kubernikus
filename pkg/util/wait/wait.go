@@ -10,7 +10,7 @@ import (
 	v1 "github.com/sapcc/kubernikus/pkg/apis/kubernikus/v1"
 )
 
-var DoesNotExist = errors.New("The object was not found in the cache")
+var ErrDoesNotExist = errors.New("the object was not found in the cache")
 
 func WaitForKluster(kluster *v1.Kluster, c cache.Indexer, condition func(cache *v1.Kluster) (bool, error)) error {
 	key, err := cache.DeletionHandlingMetaNamespaceKeyFunc(kluster)
@@ -21,7 +21,7 @@ func WaitForKluster(kluster *v1.Kluster, c cache.Indexer, condition func(cache *
 	return wait.Poll(50*time.Millisecond, 5*time.Second, func() (bool, error) { //nolint:staticcheck
 		o, exists, err := c.GetByKey(key)
 		if !exists {
-			return false, DoesNotExist
+			return false, ErrDoesNotExist
 		}
 		if err != nil {
 			return false, err
@@ -31,7 +31,7 @@ func WaitForKluster(kluster *v1.Kluster, c cache.Indexer, condition func(cache *
 }
 
 func WaitForKlusterDeletion(kluster *v1.Kluster, c cache.Indexer) error {
-	if err := WaitForKluster(kluster, c, func(_ *v1.Kluster) (bool, error) { return false, nil }); err != DoesNotExist {
+	if err := WaitForKluster(kluster, c, func(_ *v1.Kluster) (bool, error) { return false, nil }); err != ErrDoesNotExist {
 		return err
 	}
 	return nil

@@ -31,7 +31,7 @@ func (l levelFilter) Log(keyvals ...interface{}) error {
 			case int64:
 				lvl = int(n)
 			default:
-				return errors.New("Level value is not of expected type (int)")
+				return errors.New("level value is not of expected type (int)")
 			}
 			if lvl <= l.threshold {
 				return l.next.Log(keyvals...)

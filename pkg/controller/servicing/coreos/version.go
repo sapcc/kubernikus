@@ -74,12 +74,12 @@ func (d *Version) IsNodeUptodate(node *v1.Node) (bool, error) {
 func ExractVersion(node *v1.Node) (*version.Version, error) {
 	match := coreOSVersionIdentifierRE.FindSubmatch([]byte(node.Status.NodeInfo.OSImage))
 	if len(match) < 2 {
-		return nil, fmt.Errorf("Couldn't match CoreOS version from NodeInfo.OSImage: %s", node.Status.NodeInfo.OSImage)
+		return nil, fmt.Errorf("couldn't match CoreOS version from NodeInfo.OSImage: %s", node.Status.NodeInfo.OSImage)
 	}
 
 	nodeVersion, err := version.ParseSemantic(string(match[1]))
 	if err != nil {
-		return nil, errors.Wrapf(err, "Node version can't be parsed from %s", match[1])
+		return nil, errors.Wrapf(err, "node version can't be parsed from %s", match[1])
 	}
 
 	return nodeVersion, nil
@@ -115,19 +115,19 @@ func (d *Version) latest(c channel) (*version.Version, error) {
 func (d *Version) fetch(c channel) (*version.Version, error) {
 	r, err := d.Client.Get(fmt.Sprintf(coreOSVersionBaseURL, c))
 	if err != nil {
-		return nil, fmt.Errorf("Couldn't fetch CoreOS version: %s", err)
+		return nil, fmt.Errorf("couldn't fetch CoreOS version: %s", err)
 	}
 
 	defer r.Body.Close()
 
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
-		return nil, fmt.Errorf("Couldn't read CoreOS version: %s", err)
+		return nil, fmt.Errorf("couldn't read CoreOS version: %s", err)
 	}
 
 	v := coreOSVersionRE.FindSubmatch(body)
 	if len(v) < 2 {
-		return nil, fmt.Errorf("Couldn't parse CoreOS version: %s", err)
+		return nil, fmt.Errorf("couldn't parse CoreOS version: %s", err)
 	}
 
 	d.fetchedAt[c] = now()

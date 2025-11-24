@@ -38,7 +38,7 @@ func Configure(api *operations.KubernikusAPI, rt *apipkg.Runtime) error {
 	if auth.OAuthEnabled() {
 		authHandler, loginHandler, callbackHandler, err := auth.OAuthConfig(rt.Logger)
 		if err != nil {
-			return fmt.Errorf("Failed to configure OAuth based auth: %s", err)
+			return fmt.Errorf("failed to configure OAuth based auth: %s", err)
 		}
 		api.DexAuth = authHandler
 		api.GetAuthLoginHandler = loginHandler

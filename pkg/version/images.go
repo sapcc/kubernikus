@@ -73,7 +73,7 @@ func NewImageRegistry(filepath string, region string) (*ImageRegistry, error) {
 		return nil, err
 	}
 	if len(registry.Versions) < 1 {
-		return nil, fmt.Errorf("No versions found in %s", filepath)
+		return nil, fmt.Errorf("no versions found in %s", filepath)
 	}
 
 	replaceRegionVarInRepositoryField(registry.Versions, region)
@@ -81,55 +81,55 @@ func NewImageRegistry(filepath string, region string) (*ImageRegistry, error) {
 	for v, info := range registry.Versions {
 		if info.Default {
 			if registry.DefaultVersion != "" {
-				return nil, fmt.Errorf("Multiple default versions found: %s and %s", registry.DefaultVersion, v)
+				return nil, fmt.Errorf("multiple default versions found: %s and %s", registry.DefaultVersion, v)
 			}
 			registry.DefaultVersion = v
 		}
 		if info.Apiserver.Repository != "" {
 			if info.Apiserver.Tag == "" {
-				return nil, fmt.Errorf("Tag for apiserver image missing for version %s", v)
+				return nil, fmt.Errorf("tag for apiserver image missing for version %s", v)
 			}
 			if info.ControllerManager.Repository == "" {
-				return nil, fmt.Errorf("Repository for controller manager image missing for version %s", v)
+				return nil, fmt.Errorf("repository for controller manager image missing for version %s", v)
 			}
 			if info.ControllerManager.Tag == "" {
-				return nil, fmt.Errorf("Tag for controller manager image missing for version %s", v)
+				return nil, fmt.Errorf("tag for controller manager image missing for version %s", v)
 			}
 			if info.Scheduler.Repository == "" {
-				return nil, fmt.Errorf("Repository for scheduler image missing for version %s", v)
+				return nil, fmt.Errorf("repository for scheduler image missing for version %s", v)
 			}
 			if info.Scheduler.Tag == "" {
-				return nil, fmt.Errorf("Tag for scheduler image missing for version %s", v)
+				return nil, fmt.Errorf("tag for scheduler image missing for version %s", v)
 			}
 			if info.Kubelet.Repository == "" {
-				return nil, fmt.Errorf("Repository for kubelet image missing for version %s", v)
+				return nil, fmt.Errorf("repository for kubelet image missing for version %s", v)
 			}
 			if info.Kubelet.Tag == "" {
-				return nil, fmt.Errorf("Tag for kubelet image missing for version %s", v)
+				return nil, fmt.Errorf("tag for kubelet image missing for version %s", v)
 			}
 			if info.KubeProxy.Repository == "" {
-				return nil, fmt.Errorf("Repository for kube-proxy image missing for version %s", v)
+				return nil, fmt.Errorf("repository for kube-proxy image missing for version %s", v)
 			}
 			if info.KubeProxy.Tag == "" {
-				return nil, fmt.Errorf("Tag for kube-proxy image missing for version %s", v)
+				return nil, fmt.Errorf("tag for kube-proxy image missing for version %s", v)
 			}
 			if info.Fluentd.Repository == "" {
-				return nil, fmt.Errorf("Repository for fluentd image missing for version %s", v)
+				return nil, fmt.Errorf("repository for fluentd image missing for version %s", v)
 			}
 			if info.Fluentd.Tag == "" {
-				return nil, fmt.Errorf("Tag for fluentd image missing for version %s", v)
+				return nil, fmt.Errorf("tag for fluentd image missing for version %s", v)
 			}
 		} else {
 			if info.Hyperkube.Repository == "" {
-				return nil, fmt.Errorf("Repository for hyperkube image missing for version %s", v)
+				return nil, fmt.Errorf("repository for hyperkube image missing for version %s", v)
 			}
 			if info.Hyperkube.Tag == "" {
-				return nil, fmt.Errorf("Tag for hyperkube image missing for version %s", v)
+				return nil, fmt.Errorf("tag for hyperkube image missing for version %s", v)
 			}
 		}
 	}
 	if registry.DefaultVersion == "" {
-		return nil, errors.New("No default version specified")
+		return nil, errors.New("no default version specified")
 	}
 
 	return registry, nil

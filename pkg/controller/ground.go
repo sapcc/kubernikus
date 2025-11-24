@@ -7,13 +7,14 @@ import (
 	"net"
 	"path"
 	"reflect"
+	"slices"
 	"strings"
 	"sync"
 	"time"
 
 	"github.com/Masterminds/goutils"
 	"github.com/go-kit/log"
-	"github.com/go-openapi/swag"
+	"github.com/go-openapi/swag/conv"
 	"github.com/pkg/errors"
 	"github.com/prometheus/client_golang/prometheus"
 	"helm.sh/helm/v3/pkg/action"
@@ -53,8 +54,8 @@ const (
 
 	//Reason constants for the event recorder
 	ConfigurationError = "ConfigurationError"
-	FailedCreate       = "FailedCreate"
-	FailedUpgrade      = "FailedUpgrade"
+	failedCreate       = "failedCreate"
+	failedUpgrade      = "failedUpgrade"
 
 	GroundctlFinalizer = "groundctl"
 
@@ -64,10 +65,10 @@ const (
 )
 
 type GroundControl struct {
-	config.Clients
-	config.Factories
-	config.Config
-	Recorder record.EventRecorder
+	Clients   config.Clients
+	Factories config.Factories
+	Config    config.Config
+	Recorder  record.EventRecorder
 
 	queue           workqueue.RateLimitingInterface // nolint: staticcheck
 	klusterInformer informers_kubernikus.KlusterInformer
@@ -203,7 +204,7 @@ func (op *GroundControl) updateKluster(kluster *v1.Kluster, updateFunc func(*v1.
 func (op *GroundControl) handler(key string) error {
 	obj, exists, err := op.klusterInformer.Informer().GetIndexer().GetByKey(key)
 	if err != nil {
-		return fmt.Errorf("Failed to fetch key %s from cache: %s", key, err)
+		return fmt.Errorf("failed to fetch key %s from cache: %s", key, err)
 	}
 	if !exists {
 		// make sure to reset klusterStatusPhase metric if the kluster doesn't exist anymore
@@ -255,7 +256,7 @@ func (op *GroundControl) handler(key string) error {
 					"project", kluster.Account(),
 					"phase", kluster.Status.Phase)
 				if err := op.createKluster(kluster); err != nil {
-					op.Recorder.Eventf(kluster, api_v1.EventTypeWarning, FailedCreate, "Failed to create cluster: %s", err)
+					op.Recorder.Eventf(kluster, api_v1.EventTypeWarning, failedCreate, "failed to create cluster: %s", err)
 					return err
 				}
 				if err := op.updatePhase(kluster, models.KlusterPhaseCreating); err != nil {
@@ -289,9 +290,9 @@ func (op *GroundControl) handler(key string) error {
 				expectedPods = 6
 			}
 
-			if swag.BoolValue(kluster.Spec.Dex) {
+			if conv.Value(kluster.Spec.Dex) {
 				expectedPods = expectedPods + 1
-				if swag.BoolValue(kluster.Spec.Dashboard) {
+				if conv.Value(kluster.Spec.Dashboard) {
 					expectedPods = expectedPods + 1
 				}
 			}
@@ -368,7 +369,7 @@ func (op *GroundControl) handler(key string) error {
 				}
 				if err := op.reconcileSeed(kluster, projectClient, helmValues, klusterSecret); err != nil {
 					op.Logger.Log(
-						"msg", "Failed seed reconciliation",
+						"msg", "failed seed reconciliation",
 						"kluster", kluster.GetName(),
 						"project", kluster.Account(),
 						"err", err)
@@ -378,7 +379,7 @@ func (op *GroundControl) handler(key string) error {
 			updated, err := op.updateVersionStatus(kluster)
 			if err != nil {
 				op.Logger.Log(
-					"msg", "Failed to update version status",
+					"msg", "failed to update version status",
 					"kluster", kluster.GetName(),
 					"project", kluster.Account(),
 					"err", err)
@@ -389,18 +390,18 @@ func (op *GroundControl) handler(key string) error {
 			}
 			upgradedNeeded, err := util.KlusterNeedsUpgrade(kluster)
 			if err != nil {
-				return fmt.Errorf("Failed to check if kluster needs upgrading: %w", err)
+				return fmt.Errorf("failed to check if kluster needs upgrading: %w", err)
 			}
 
 			if upgradedNeeded {
-				if _, found := op.Images.Versions[kluster.Spec.Version]; !found {
-					err := fmt.Errorf("Unsupported kubernetes version specified: %s", kluster.Spec.Version)
+				if _, found := op.Config.Images.Versions[kluster.Spec.Version]; !found {
+					err := fmt.Errorf("unsupported kubernetes version specified: %s", kluster.Spec.Version)
 					op.Logger.Log(
 						"msg", "Unsupported kubernetes version specified",
 						"kluster", kluster.GetName(),
 						"project", kluster.Account(),
 						"err", err)
-					op.Recorder.Eventf(kluster, api_v1.EventTypeWarning, FailedUpgrade, err.Error())
+					op.Recorder.Eventf(kluster, api_v1.EventTypeWarning, failedUpgrade, err.Error())
 					return err
 				}
 
@@ -411,7 +412,7 @@ func (op *GroundControl) handler(key string) error {
 						"project", kluster.Account(),
 						"err", err,
 					)
-					op.Recorder.Eventf(kluster, api_v1.EventTypeWarning, FailedUpgrade, "Failed to upgrade cluster: %s", err)
+					op.Recorder.Eventf(kluster, api_v1.EventTypeWarning, failedUpgrade, "failed to upgrade cluster: %s", err)
 					return err
 				}
 				if err := op.updatePhase(kluster, models.KlusterPhaseUpgrading); err != nil {
@@ -429,7 +430,7 @@ func (op *GroundControl) handler(key string) error {
 			updated, err := op.updateVersionStatus(kluster)
 			if err != nil {
 				op.Logger.Log(
-					"msg", "Failed to update version status",
+					"msg", "failed to update version status",
 					"kluster", kluster.GetName(),
 					"project", kluster.Account(),
 					"err", err)
@@ -468,7 +469,7 @@ func (op *GroundControl) handler(key string) error {
 				// There's a "soft" agreement that Finalizers are executed in order from
 				// first to last. Here we check that Groundctl is the last remaining one and
 				// spare us the trouble to maintain a ordered list.
-				if kluster.TerminationProtection() || !(len(kluster.Finalizers) == 1 && kluster.Finalizers[0] == GroundctlFinalizer) {
+				if kluster.TerminationProtection() || len(kluster.Finalizers) != 1 || kluster.Finalizers[0] != GroundctlFinalizer {
 					return nil
 				}
 
@@ -477,9 +478,9 @@ func (op *GroundControl) handler(key string) error {
 					"kluster", kluster.GetName(),
 					"project", kluster.Account())
 				if err := op.terminateKluster(kluster); err != nil {
-					op.Recorder.Eventf(kluster, api_v1.EventTypeWarning, "", "Failed to terminate cluster: %s", err)
+					op.Recorder.Eventf(kluster, api_v1.EventTypeWarning, "", "failed to terminate cluster: %s", err)
 					op.Logger.Log(
-						"msg", "Failed to terminate kluster",
+						"msg", "failed to terminate kluster",
 						"kluster", kluster.GetName(),
 						"project", kluster.Account(),
 						"err", err)
@@ -514,13 +515,13 @@ func (op *GroundControl) reconcileSeed(kluster *v1.Kluster, projectClient projec
 		if !isNetErr(err) {
 			metrics.SeedReconciliationFailuresTotal.With(prometheus.Labels{"kluster_name": kluster.Spec.Name}).Inc()
 		}
-		return fmt.Errorf("Enriching seed values failed: %w", err)
+		return fmt.Errorf("enriching seed values failed: %w", err)
 	}
 	if err := seedReconciler.ReconcileSeeding(path.Join(op.Config.Helm.ChartDirectory, "seed"), helmValues); err != nil {
 		if !isNetErr(err) {
 			metrics.SeedReconciliationFailuresTotal.With(prometheus.Labels{"kluster_name": kluster.Spec.Name}).Inc()
 		}
-		return fmt.Errorf("Seeding reconciliation failed: %w", err)
+		return fmt.Errorf("seeding reconciliation failed: %w", err)
 	}
 	op.Logger.Log("msg", "reconciled seeding successfully", "kluster", kluster.GetName(), "v", 2)
 	return nil
@@ -574,7 +575,7 @@ func (op *GroundControl) updateVersionStatus(kluster *v1.Kluster) (bool, error) 
 		if parsedVersion, err := version.ParseGeneric(v.GitVersion); err == nil {
 			if parsedVersion.String() != kluster.Status.ApiserverVersion {
 				if err := op.updateKluster(kluster, func(k *v1.Kluster) error { k.Status.ApiserverVersion = parsedVersion.String(); return nil }); err != nil {
-					return false, errors.Wrap(err, "Failed to update apiserver version status")
+					return false, errors.Wrap(err, "failed to update apiserver version status")
 				}
 				return true, nil
 			}
@@ -589,7 +590,7 @@ func (op *GroundControl) updateVersionStatus(kluster *v1.Kluster) (bool, error) 
 				k.Status.ChartVersion = chartMD.Version
 				return nil
 			}); err != nil {
-				return false, errors.Wrap(err, "Failed to update chart version status")
+				return false, errors.Wrap(err, "failed to update chart version status")
 			}
 			return true, nil
 		}
@@ -618,7 +619,7 @@ func (op *GroundControl) updatePhase(kluster *v1.Kluster, phase models.KlusterPh
 func (op *GroundControl) createKluster(kluster *v1.Kluster) error {
 	accessMode, err := util.PVAccessMode(op.Clients.Kubernetes, nil)
 	if err != nil {
-		return fmt.Errorf("Couldn't determine access mode for pvc: %s", err)
+		return fmt.Errorf("couldn't determine access mode for pvc: %s", err)
 	}
 
 	if err := util.EnsureFinalizerCreated(op.Clients.Kubernikus.KubernikusV1(), op.klusterInformer.Lister(), kluster, GroundctlFinalizer); err != nil {
@@ -627,30 +628,30 @@ func (op *GroundControl) createKluster(kluster *v1.Kluster) error {
 
 	klusterSecret, err := util.EnsureKlusterSecret(op.Clients.Kubernetes, kluster)
 	if err != nil {
-		return fmt.Errorf("Failed to ensure create kluster secret; %s", err)
+		return fmt.Errorf("failed to ensure create kluster secret; %s", err)
 	}
 
 	//contains unamibious characters for generic random passwords
 	var randomPasswordChars = []rune("abcdefghjkmnpqrstuvwxABCDEFGHJKLMNPQRSTUVWX23456789")
 	klusterSecret.NodePassword, err = goutils.Random(12, 0, 0, true, true, randomPasswordChars...)
 	if err != nil {
-		return fmt.Errorf("Failed to generate node password: %s", err)
+		return fmt.Errorf("failed to generate node password: %s", err)
 	}
 
 	klusterSecret.DexClientSecret, err = goutils.Random(16, 0, 0, true, true, randomPasswordChars...)
 	if err != nil {
-		return fmt.Errorf("Failed to generate dex client secret: %s", err)
+		return fmt.Errorf("failed to generate dex client secret: %s", err)
 	}
 
 	klusterSecret.DexStaticPassword, err = goutils.Random(16, 0, 0, true, true, randomPasswordChars...)
 	if err != nil {
-		return fmt.Errorf("Failed to generate dex static password: %s", err)
+		return fmt.Errorf("failed to generate dex static password: %s", err)
 
 	}
 
 	certFactory := util.NewCertificateFactory(kluster, &klusterSecret.Certificates, op.Config.Kubernikus.Domain)
 	if _, err := certFactory.Ensure(); err != nil {
-		return fmt.Errorf("Failed to generate certificates: %s", err)
+		return fmt.Errorf("failed to generate certificates: %s", err)
 	}
 
 	if !kluster.Spec.NoCloud {
@@ -663,23 +664,23 @@ func (op *GroundControl) createKluster(kluster *v1.Kluster) error {
 			return err
 		}
 
-		klusterSecret.Openstack.AuthURL = op.Config.Openstack.AuthURL
-		klusterSecret.Openstack.Username = fmt.Sprintf("kubernikus-%s", kluster.Name)
-		klusterSecret.Openstack.DomainName = "kubernikus"
-		klusterSecret.Openstack.Region = region
-		klusterSecret.Openstack.ProjectID = kluster.Account()
+		klusterSecret.AuthURL = op.Config.Openstack.AuthURL
+		klusterSecret.Username = fmt.Sprintf("kubernikus-%s", kluster.Name)
+		klusterSecret.DomainName = "kubernikus"
+		klusterSecret.Region = region
+		klusterSecret.ProjectID = kluster.Account()
 		//TODO: remove once the backup credentials are disentageled from the service user (e.g. backup to s3)
-		if klusterSecret.Openstack.ProjectID == "" {
-			klusterSecret.Openstack.ProjectID = kluster.Account()
+		if klusterSecret.ProjectID == "" {
+			klusterSecret.ProjectID = kluster.Account()
 		}
 
-		domainNameByProject, err := adminClient.GetDomainNameByProject(klusterSecret.Openstack.ProjectID)
+		domainNameByProject, err := adminClient.GetDomainNameByProject(klusterSecret.ProjectID)
 		if err != nil {
-			return fmt.Errorf("Failed to retrieve domain name by project: %s", err)
+			return fmt.Errorf("failed to retrieve domain name by project: %s", err)
 		}
-		klusterSecret.Openstack.ProjectDomainName = domainNameByProject
+		klusterSecret.ProjectDomainName = domainNameByProject
 
-		userDomainID, err := adminClient.GetDomainID(klusterSecret.Openstack.DomainName)
+		userDomainID, err := adminClient.GetDomainID(klusterSecret.DomainName)
 		if err != nil {
 			return err
 		}
@@ -690,28 +691,28 @@ func (op *GroundControl) createKluster(kluster *v1.Kluster) error {
 		klusterSecret.UserDomainID = userDomainID
 		klusterSecret.ProjectDomainID = projectDomainID
 
-		if klusterSecret.Openstack.Password, err = goutils.Random(20, 32, 127, true, true); err != nil {
-			return fmt.Errorf("Failed to generated password for cluster service user: %s", err)
+		if klusterSecret.Password, err = goutils.Random(20, 32, 127, true, true); err != nil {
+			return fmt.Errorf("failed to generated password for cluster service user: %s", err)
 		}
 
 		op.Logger.Log(
 			"msg", "creating service user",
-			"username", klusterSecret.Openstack.Username,
+			"username", klusterSecret.Username,
 			"kluster", kluster.GetName(),
 			"project", kluster.Account())
 
 		if err := adminClient.CreateKlusterServiceUser(
-			klusterSecret.Openstack.Username,
-			klusterSecret.Openstack.Password,
-			klusterSecret.Openstack.DomainName,
-			klusterSecret.Openstack.ProjectID,
+			klusterSecret.Username,
+			klusterSecret.Password,
+			klusterSecret.DomainName,
+			klusterSecret.ProjectID,
 		); err != nil {
 			return err
 		}
 	}
 
 	if err := util.UpdateKlusterSecret(op.Clients.Kubernetes, kluster, klusterSecret); err != nil {
-		return fmt.Errorf("Failed to update kluster secret: %s", err)
+		return fmt.Errorf("failed to update kluster secret: %s", err)
 	}
 
 	if err = op.ensureStorageContainers(kluster, klusterSecret); err != nil {
@@ -737,7 +738,7 @@ func (op *GroundControl) createKluster(kluster *v1.Kluster) error {
 	if err != nil {
 		return err
 	}
-	install := action.NewInstall(op.Helm3)
+	install := action.NewInstall(op.Clients.Helm3)
 	install.ReleaseName = kluster.GetName()
 	install.Namespace = kluster.GetNamespace()
 	_, err = install.Run(chart, helmValues)
@@ -761,7 +762,7 @@ func (op *GroundControl) upgradeKluster(kluster *v1.Kluster, toVersion string) e
 			return errors.Wrap(err, "client")
 		}
 
-		if err := csi.SeedCinderCSIPlugin(kubernetes, dynamicKubernetes, klusterSecret, op.Images.Versions[kluster.Spec.Version]); err != nil {
+		if err := csi.SeedCinderCSIPlugin(kubernetes, dynamicKubernetes, klusterSecret, op.Config.Images.Versions[kluster.Spec.Version]); err != nil {
 			return errors.Wrap(err, "seed cinder CSI plugin on upgrade")
 		}
 
@@ -807,7 +808,7 @@ func (op *GroundControl) upgradeKluster(kluster *v1.Kluster, toVersion string) e
 			return errors.Wrap(err, "client")
 		}
 
-		if err := network.SeedNetwork(kubernetes, op.Images.Versions[kluster.Spec.Version], *kluster.Spec.ClusterCIDR, kluster.Status.Apiserver, kluster.Spec.AdvertiseAddress, kluster.Spec.AdvertisePort); err != nil {
+		if err := network.SeedNetwork(kubernetes, op.Config.Images.Versions[kluster.Spec.Version], *kluster.Spec.ClusterCIDR, kluster.Status.Apiserver, kluster.Spec.AdvertiseAddress, kluster.Spec.AdvertisePort); err != nil {
 			return errors.Wrap(err, "seed CNI config on upgrade")
 		}
 	}
@@ -825,7 +826,7 @@ func (op *GroundControl) upgradeKluster(kluster *v1.Kluster, toVersion string) e
 
 	accessMode, err := util.PVAccessMode(op.Clients.Kubernetes, kluster)
 	if err != nil {
-		return fmt.Errorf("Couldn't determine access mode for pvc: %s", err)
+		return fmt.Errorf("couldn't determine access mode for pvc: %s", err)
 	}
 
 	values, err := helm_util.KlusterToHelmValues(kluster, klusterSecret, toVersion, &op.Config.Images, accessMode)
@@ -836,7 +837,7 @@ func (op *GroundControl) upgradeKluster(kluster *v1.Kluster, toVersion string) e
 	if err != nil {
 		return err
 	}
-	upgrade := action.NewUpgrade(op.Helm3)
+	upgrade := action.NewUpgrade(op.Clients.Helm3)
 	_, err = upgrade.Run(kluster.Name, chart, values)
 	return err
 }
@@ -846,8 +847,8 @@ func (op *GroundControl) terminateKluster(kluster *v1.Kluster) error {
 		if err != nil {
 			return err
 		}
-		username := secret.Openstack.Username
-		domain := secret.Openstack.DomainName
+		username := secret.Username
+		domain := secret.DomainName
 		//If the cluster was still in state Pending we don't have a service user yet: skip deletion
 		if !kluster.Spec.NoCloud && username != "" && domain != "" {
 			adminClient, err := op.Factories.Openstack.AdminClient()
@@ -872,7 +873,7 @@ func (op *GroundControl) terminateKluster(kluster *v1.Kluster) error {
 		"kluster", kluster.GetName(),
 		"project", kluster.Account())
 
-	uninstall := action.NewUninstall(op.Helm3)
+	uninstall := action.NewUninstall(op.Clients.Helm3)
 	_, err := uninstall.Run(kluster.GetName())
 
 	if err != nil && !strings.Contains(err.Error(), fmt.Sprintf(`%s: release: not found`, kluster.GetName())) { //nolint:staticcheck
@@ -925,7 +926,7 @@ func (op *GroundControl) requiresOpenstackInfo(kluster *v1.Kluster) bool {
 }
 
 func (op *GroundControl) requiresKubernikusInfo(kluster *v1.Kluster) bool {
-	return kluster.Status.Apiserver == "" || kluster.Status.Wormhole == "" || kluster.Spec.Version == "" || (swag.BoolValue(kluster.Spec.Dashboard) && kluster.Status.Dashboard == "")
+	return kluster.Status.Apiserver == "" || kluster.Status.Wormhole == "" || kluster.Spec.Version == "" || (conv.Value(kluster.Spec.Dashboard) && kluster.Status.Dashboard == "")
 }
 
 func (op *GroundControl) discoverKubernikusInfo(kluster *v1.Kluster) error {
@@ -939,7 +940,7 @@ func (op *GroundControl) discoverKubernikusInfo(kluster *v1.Kluster) error {
 		kluster.Spec.Version = op.Config.Images.DefaultVersion
 	}
 	if _, found := op.Config.Images.Versions[kluster.Spec.Version]; !found {
-		return fmt.Errorf("Unsupported Kubernetes version specified: %s", kluster.Spec.Version)
+		return fmt.Errorf("unsupported Kubernetes version specified: %s", kluster.Spec.Version)
 	}
 
 	if kluster.Status.Apiserver == "" {
@@ -960,7 +961,7 @@ func (op *GroundControl) discoverKubernikusInfo(kluster *v1.Kluster) error {
 			"project", kluster.Account())
 	}
 
-	if swag.BoolValue(kluster.Spec.Dashboard) && kluster.Status.Dashboard == "" {
+	if conv.Value(kluster.Spec.Dashboard) && kluster.Status.Dashboard == "" {
 		kluster.Status.Dashboard = fmt.Sprintf("https://dashboard-%s.ingress.%s", kluster.GetName(), op.Config.Kubernikus.Domain)
 		op.Logger.Log(
 			"msg", "discovered dashboard URL",
@@ -998,7 +999,7 @@ func (op *GroundControl) discoverOpenstackInfo(kluster *v1.Kluster) error {
 			}
 		}
 		if selectedRouter == nil {
-			return fmt.Errorf("Specified router %s not found in project", routerID)
+			return fmt.Errorf("specified router %s not found in project", routerID)
 		}
 	} else {
 		if numRouters := len(metadata.Routers); numRouters == 1 {
@@ -1010,7 +1011,7 @@ func (op *GroundControl) discoverOpenstackInfo(kluster *v1.Kluster) error {
 				"project", kluster.Account())
 			kluster.Spec.Openstack.RouterID = selectedRouter.ID
 		} else {
-			return fmt.Errorf("Found %d routers in project. Auto-configuration not possible.", numRouters)
+			return fmt.Errorf("found %d routers in project, Auto-configuration not possible", numRouters)
 		}
 	}
 
@@ -1024,7 +1025,7 @@ func (op *GroundControl) discoverOpenstackInfo(kluster *v1.Kluster) error {
 			}
 		}
 		if selectedNetwork == nil {
-			return fmt.Errorf("Selected network %s not found on router %s", networkID, selectedRouter.ID)
+			return fmt.Errorf("selected network %s not found on router %s", networkID, selectedRouter.ID)
 		}
 	} else {
 		if numNetworks := len(selectedRouter.Networks); numNetworks == 1 {
@@ -1036,7 +1037,7 @@ func (op *GroundControl) discoverOpenstackInfo(kluster *v1.Kluster) error {
 				"kluster", kluster.GetName(),
 				"project", kluster.Account())
 		} else {
-			return fmt.Errorf("Found %d networks on router %s. Auto-configuration not possible. Please choose one.", numNetworks, selectedRouter.ID)
+			return fmt.Errorf("found %d networks on router %s, Auto-configuration not possible, Please choose one", numNetworks, selectedRouter.ID)
 
 		}
 	}
@@ -1050,7 +1051,7 @@ func (op *GroundControl) discoverOpenstackInfo(kluster *v1.Kluster) error {
 			}
 		}
 		if !found {
-			return fmt.Errorf("Selected subnet %s not found in network %s", subnetID, selectedNetwork.ID)
+			return fmt.Errorf("selected subnet %s not found in network %s", subnetID, selectedNetwork.ID)
 		}
 	} else {
 		if numSubnets := len(selectedNetwork.Subnets); numSubnets == 1 {
@@ -1061,17 +1062,17 @@ func (op *GroundControl) discoverOpenstackInfo(kluster *v1.Kluster) error {
 				"kluster", kluster.GetName(),
 				"project", kluster.Account())
 		} else {
-			return fmt.Errorf("Found %d subnets for network %s. Auto-configuration not possible. Please choose one.", numSubnets, selectedNetwork.ID)
+			return fmt.Errorf("found %d subnets for network %s, Auto-configuration not possible, Please choose one", numSubnets, selectedNetwork.ID)
 		}
 	}
 
 	if floatingNetworkID := kluster.Spec.Openstack.LBFloatingNetworkID; floatingNetworkID != "" {
 		if selectedRouter.ExternalNetworkID != "" && floatingNetworkID != selectedRouter.ExternalNetworkID {
-			return fmt.Errorf("External network missmatch. Router is configured with %s but config specifies %s", selectedRouter.ExternalNetworkID, floatingNetworkID)
+			return fmt.Errorf("external network missmatch, router is configured with %s but config specifies %s", selectedRouter.ExternalNetworkID, floatingNetworkID)
 		}
 	} else {
 		if selectedRouter.ExternalNetworkID == "" {
-			return fmt.Errorf("Selected router %s doesn't have an external network ID set", selectedRouter.ID)
+			return fmt.Errorf("selected router %s doesn't have an external network ID set", selectedRouter.ID)
 		} else {
 			kluster.Spec.Openstack.LBFloatingNetworkID = selectedRouter.ExternalNetworkID
 			op.Logger.Log(
@@ -1091,7 +1092,7 @@ func (op *GroundControl) discoverOpenstackInfo(kluster *v1.Kluster) error {
 			}
 		}
 		if !found {
-			return fmt.Errorf("Selected security group %s not found in project", secGroupName)
+			return fmt.Errorf("selected security group %s not found in project", secGroupName)
 		}
 	} else {
 		kluster.Spec.Openstack.SecurityGroupName = "default"
@@ -1115,36 +1116,36 @@ func (op *GroundControl) ensureStorageContainers(kluster *v1.Kluster, klusterSec
 	}
 
 	ensureContainer := func(name string) error {
-		meta, err := adminClient.GetStorageContainerMeta(klusterSecret.Openstack.ProjectID, name)
+		meta, err := adminClient.GetStorageContainerMeta(klusterSecret.ProjectID, name)
 		if err != nil {
 			return err
 		}
 		if meta == nil {
 			if err := adminClient.CreateStorageContainer(
-				klusterSecret.Openstack.ProjectID,
+				klusterSecret.ProjectID,
 				name,
-				klusterSecret.Openstack.Username,
-				klusterSecret.Openstack.DomainName,
+				klusterSecret.Username,
+				klusterSecret.DomainName,
 			); err != nil {
-				return fmt.Errorf("Failed to create container %s. Check if the project has quota for object-store usage: %w", name, err)
+				return fmt.Errorf("failed to create container %s. Check if the project has quota for object-store usage: %w", name, err)
 			}
 			return nil
 		}
-		aclStr, err := adminClient.GetContainerACLEntry(klusterSecret.Openstack.ProjectID, klusterSecret.Openstack.Username, klusterSecret.Openstack.DomainName)
+		aclStr, err := adminClient.GetContainerACLEntry(klusterSecret.ProjectID, klusterSecret.Username, klusterSecret.DomainName)
 		if err != nil {
-			return fmt.Errorf("Failed to determine swift acl entry for kluster %s: %w", kluster.Name, err)
+			return fmt.Errorf("failed to determine swift acl entry for kluster %s: %w", kluster.Name, err)
 		}
 		needsUpdate := false
-		if swag.ContainsStrings(meta.ReadACL, aclStr) == false {
+		if !slices.Contains(meta.ReadACL, aclStr) {
 			meta.ReadACL = append(meta.ReadACL, aclStr)
 			needsUpdate = true
 		}
-		if swag.ContainsStrings(meta.WriteACL, aclStr) == false {
+		if !slices.Contains(meta.WriteACL, aclStr) {
 			meta.WriteACL = append(meta.WriteACL, aclStr)
 			needsUpdate = true
 		}
 		if needsUpdate {
-			adminClient.UpdateStorageContainerMeta(klusterSecret.Openstack.ProjectID, name, *meta)
+			adminClient.UpdateStorageContainerMeta(klusterSecret.ProjectID, name, *meta)
 		}
 		return nil
 	}
@@ -1154,7 +1155,7 @@ func (op *GroundControl) ensureStorageContainers(kluster *v1.Kluster, klusterSec
 			return err
 		}
 	}
-	if swag.StringValue(kluster.Spec.Audit) == "swift" {
+	if conv.Value(kluster.Spec.Audit) == "swift" {
 		if err = ensureContainer(kluster.Name + "-audit-log"); err != nil {
 			return err
 		}
@@ -1175,7 +1176,7 @@ func (op *GroundControl) ensureAdmissionCA(kluster *v1.Kluster, klusterSecret *v
 	if nsList.Size() == 0 {
 		return nil
 	}
-	ca := map[string]string{"ca.crt": klusterSecret.Certificates.AdmissionCACertificate}
+	ca := map[string]string{"ca.crt": klusterSecret.AdmissionCACertificate}
 	cm := api_v1.ConfigMap{
 		TypeMeta: meta_v1.TypeMeta{
 			Kind:       "ConfigMap",
@@ -1192,7 +1193,7 @@ func (op *GroundControl) ensureAdmissionCA(kluster *v1.Kluster, klusterSecret *v
 			_, err = k8sClient.CoreV1().ConfigMaps(ns.Name).Update(context.TODO(), &cm, meta_v1.UpdateOptions{})
 		}
 		if err != nil {
-			return fmt.Errorf("Admission CA certificate reconciliation in namespace %s failed: %s", ns.Name, err)
+			return fmt.Errorf("admission CA certificate reconciliation in namespace %s failed: %s", ns.Name, err)
 		}
 		op.Logger.Log(
 			"msg", "Reconciled admission CA certificate",
@@ -1258,15 +1259,15 @@ func (op *GroundControl) ensureStructuredAuthConfigMap(kluster *v1.Kluster) erro
 	} else {
 		authConfig := &apiserverv1beta1.AuthenticationConfiguration{}
 		authConfig.GetObjectKind().SetGroupVersionKind(apiserverv1beta1.ConfigSchemeGroupVersion.WithKind("AuthenticationConfiguration"))
-		if swag.BoolValue(kluster.Spec.Dex) {
+		if conv.Value(kluster.Spec.Dex) {
 			authConfig.JWT = append(authConfig.JWT, apiserverv1beta1.JWTAuthenticator{
 				Issuer: apiserverv1beta1.Issuer{
 					URL:       fmt.Sprintf("https://auth-%s.ingress.%s", kluster.Name, op.Config.Kubernikus.Domain),
 					Audiences: []string{"kubernetes"},
 				},
 				ClaimMappings: apiserverv1beta1.ClaimMappings{
-					Username: apiserverv1beta1.PrefixedClaimOrExpression{Prefix: swag.String(""), Claim: "name"},
-					Groups:   apiserverv1beta1.PrefixedClaimOrExpression{Prefix: swag.String(""), Claim: "groups"},
+					Username: apiserverv1beta1.PrefixedClaimOrExpression{Prefix: conv.Pointer(""), Claim: "name"},
+					Groups:   apiserverv1beta1.PrefixedClaimOrExpression{Prefix: conv.Pointer(""), Claim: "groups"},
 				},
 			})
 		}
@@ -1277,8 +1278,8 @@ func (op *GroundControl) ensureStructuredAuthConfigMap(kluster *v1.Kluster) erro
 					Audiences: []string{kluster.Spec.Oidc.ClientID},
 				},
 				ClaimMappings: apiserverv1beta1.ClaimMappings{
-					Username: apiserverv1beta1.PrefixedClaimOrExpression{Prefix: swag.String(""), Claim: "name"},
-					Groups:   apiserverv1beta1.PrefixedClaimOrExpression{Prefix: swag.String(""), Claim: "groups"},
+					Username: apiserverv1beta1.PrefixedClaimOrExpression{Prefix: conv.Pointer(""), Claim: "name"},
+					Groups:   apiserverv1beta1.PrefixedClaimOrExpression{Prefix: conv.Pointer(""), Claim: "groups"},
 				},
 			})
 		}

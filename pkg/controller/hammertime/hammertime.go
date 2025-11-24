@@ -69,7 +69,7 @@ func (hc *hammertimeController) Reconcile(kluster *v1.Kluster) error {
 
 	lister, err := hc.nodeObervatory.GetListerForKluster(kluster)
 	if err != nil {
-		return fmt.Errorf("Failed to get node lister: %s", err)
+		return fmt.Errorf("failed to get node lister: %s", err)
 	}
 	nodes, err := lister.List(labels.Everything())
 	if err != nil {
@@ -85,13 +85,12 @@ func (hc *hammertimeController) Reconcile(kluster *v1.Kluster) error {
 		return hc.scaleDeployment(kluster, false, logger)
 	}
 
-	//var oldestHeartbeat time.Time = time.Now()
-	var newestHearbeat time.Time = time.Time{}
+	var newestHearbeat time.Time
 	for _, node := range nodes {
 		if ok, _ := util.NodeVersionConstraint(node, ">= 1.17"); ok {
 			clientset, err := hc.satellites.ClientFor(kluster)
 			if err != nil {
-				return fmt.Errorf("Failed to get client for kluster: %s", err)
+				return fmt.Errorf("failed to get client for kluster: %s", err)
 			}
 			nodeLease, err := getNodeLease(node, clientset)
 			if err != nil {
@@ -112,7 +111,7 @@ func (hc *hammertimeController) Reconcile(kluster *v1.Kluster) error {
 		}
 	}
 
-	timeout_exeeded := time.Now().Sub(newestHearbeat) > hc.timeout
+	timeout_exeeded := time.Since(newestHearbeat) > hc.timeout
 
 	return hc.scaleDeployment(kluster, timeout_exeeded, logger)
 }
@@ -135,7 +134,7 @@ func (hc *hammertimeController) scaleDeployment(kluster *v1.Kluster, disable boo
 		replicas, err = hc.getScale(deploymentName, kluster.Namespace)
 	}
 	if err != nil {
-		return fmt.Errorf("Failed to get deployment scale: %s", err)
+		return fmt.Errorf("failed to get deployment scale: %s", err)
 	}
 
 	if replicas > 0 {

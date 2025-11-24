@@ -176,11 +176,10 @@ func (c *controller) processNextWorkItem() bool {
 		// This ensures that future processing of updates for this key is not delayed because of
 		// an outdated error history.
 
-		if requeue == false {
-			c.queue.Forget(key)
-		} else {
-			// Requeue requested
+		if requeue {
 			c.queue.AddAfter(key, BASE_DELAY)
+		} else {
+			c.queue.Forget(key)
 		}
 
 		return true

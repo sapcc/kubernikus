@@ -6,7 +6,7 @@ import (
 
 	"github.com/ghodss/yaml"
 	"github.com/go-openapi/runtime/middleware"
-	"github.com/go-openapi/swag"
+	"github.com/go-openapi/swag/conv"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 
 	"github.com/sapcc/kubernikus/pkg/api"
@@ -47,10 +47,10 @@ func (d *getClusterCredentialsOIDC) Handle(params operations.GetClusterCredentia
 	issuerURL := ""
 	if kluster.Status.Apiserver != "" {
 		apiURL := kluster.Status.Apiserver
-		issuerURL = strings.Replace(apiURL, kluster.GetName(), fmt.Sprintf("auth-%s.ingress", kluster.GetName()), -1)
+		issuerURL = strings.ReplaceAll(apiURL, kluster.GetName(), fmt.Sprintf("auth-%s.ingress", kluster.GetName()))
 	}
 
-	if !swag.BoolValue(kluster.Spec.Dex) {
+	if !conv.Value(kluster.Spec.Dex) {
 		if secret.ExtraValues != "" {
 			var oidcValues struct {
 				API struct {

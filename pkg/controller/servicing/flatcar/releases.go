@@ -58,25 +58,25 @@ func (r *Release) releasedAt(c channel, v *version.Version) (time.Time, error) {
 func (r *Release) fetch(c channel, v *version.Version) (time.Time, error) {
 	result, err := r.Client.Get(fmt.Sprintf(versionURL, c, v.String()))
 	if err != nil {
-		return now(), fmt.Errorf("Couldn't fetch flatcar version.txt: %s", err)
+		return now(), fmt.Errorf("couldn't fetch flatcar version.txt: %s", err)
 	}
 
 	defer result.Body.Close()
 
 	body, err := io.ReadAll(result.Body)
 	if err != nil {
-		return now(), fmt.Errorf("Couldn't read flatcar version.txt: %s", err)
+		return now(), fmt.Errorf("couldn't read flatcar version.txt: %s", err)
 	}
 
 	timeRE := regexp.MustCompile(fmt.Sprintf(timeREString, v.String()))
 	ts := timeRE.FindSubmatch(body)
 	if len(ts) < 2 {
-		return now(), fmt.Errorf("Couldn't parse flatcar timestamp %v", ts)
+		return now(), fmt.Errorf("couldn't parse flatcar timestamp %v", ts)
 	}
 
 	t, err := time.Parse("2006-01-02", string(ts[1])[0:10])
 	if err != nil {
-		return now(), fmt.Errorf("Couldn't extract flatcar timestamp: %v", t)
+		return now(), fmt.Errorf("couldn't extract flatcar timestamp: %v", t)
 	}
 
 	return t, nil

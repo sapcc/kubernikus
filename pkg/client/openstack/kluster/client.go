@@ -47,15 +47,12 @@ type klusterClient struct {
 }
 
 func NewKlusterClient(network, compute, identity, image *gophercloud.ServiceClient) KlusterClient {
-	var client KlusterClient
-	client = &klusterClient{
+	return &klusterClient{
 		NetworkClient:  network,
 		ComputeClient:  compute,
 		IdentityClient: identity,
 		ImageClient:    image,
 	}
-
-	return client
 }
 
 func (c *klusterClient) CreateNode(kluster *v1.Kluster, pool *models.NodePool, name string, userData []byte) (string, error) {
@@ -64,11 +61,11 @@ func (c *klusterClient) CreateNode(kluster *v1.Kluster, pool *models.NodePool, n
 	networks := []servers.Network{{UUID: kluster.Spec.Openstack.NetworkID}}
 	flavorID, err := flavorutil.IDFromName(c.ComputeClient, pool.Flavor)
 	if err != nil {
-		return "", fmt.Errorf("Failed to find id for flavor %s: %w", pool.Flavor, err)
+		return "", fmt.Errorf("failed to find id for flavor %s: %w", pool.Flavor, err)
 	}
 	imageID, err := imageutil.IDFromName(c.ImageClient, pool.Image)
 	if err != nil {
-		return "", fmt.Errorf("Failed to find id for image %s: %w", pool.Image, err)
+		return "", fmt.Errorf("failed to find id for image %s: %w", pool.Image, err)
 	}
 
 	tags := nodeTags(kluster.Spec.Name, pool.Name)
@@ -94,7 +91,7 @@ func (c *klusterClient) CreateNode(kluster *v1.Kluster, pool *models.NodePool, n
 	if os.Getenv("NODEPOOL_AFFINITY") != "" || os.Getenv("NODEPOOL_ANTI_AFFINITY") != "" {
 		serverGroupID, err := c.EnsureServerGroup(kluster.Name + "/" + pool.Name)
 		if err != nil {
-			return "", fmt.Errorf("Failed to ensure server group: %w", err)
+			return "", fmt.Errorf("failed to ensure server group: %w", err)
 		}
 
 		createOpts = schedulerhints.CreateOptsExt{
@@ -125,7 +122,7 @@ func (c *klusterClient) CreateNode(kluster *v1.Kluster, pool *models.NodePool, n
 	}
 
 	if err != nil {
-		return "", fmt.Errorf("Failed to create node: %w", err)
+		return "", fmt.Errorf("failed to create node: %w", err)
 	}
 
 	return server.ID, nil
@@ -177,11 +174,11 @@ func (c *klusterClient) EnsureKubernikusRuleInSecurityGroup(kluster *v1.Kluster)
 	sgName := kluster.Spec.Openstack.SecurityGroupName
 	page, err := securitygroups.List(c.NetworkClient, securitygroups.ListOpts{Name: sgName}).AllPages()
 	if err != nil {
-		return false, fmt.Errorf("SecurityGroup %v not found: %s", sgName, err)
+		return false, fmt.Errorf("security group %v not found: %s", sgName, err)
 	}
 
 	if kluster.ClusterCIDR() == "" {
-		return false, errors.New("Cluster CIDR for kluster not set")
+		return false, errors.New("cluster CIDR for kluster not set")
 	}
 
 	groups, err := securitygroups.ExtractGroups(page)
@@ -190,7 +187,7 @@ func (c *klusterClient) EnsureKubernikusRuleInSecurityGroup(kluster *v1.Kluster)
 	}
 
 	if len(groups) != 1 {
-		return false, fmt.Errorf("More than one SecurityGroup with name %v found", sgName)
+		return false, fmt.Errorf("more than one SecurityGroup with name %v found", sgName)
 	}
 
 	udp := false
@@ -330,7 +327,7 @@ func (c *klusterClient) EnsureNodeTags(node Node, klusterName, poolName string) 
 	added := []string{}
 	for _, tag := range missingTags {
 		if err := tags.Add(c.ComputeClient, node.ID, tag).ExtractErr(); err != nil {
-			return added, fmt.Errorf("Failed to add tag %s to instance %s, %w", tag, node.ID, err)
+			return added, fmt.Errorf("failed to add tag %s to instance %s, %w", tag, node.ID, err)
 
 		}
 		added = append(added, tag)

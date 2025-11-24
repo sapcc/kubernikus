@@ -26,23 +26,23 @@ func NewTunnel(options *Options) (*Tunnel, error) {
 	if options.Certificate != "" {
 		tlsConfig, err := newTLSConfig(options.Certificate, options.PrivateKey)
 		if err != nil {
-			return nil, fmt.Errorf("Failed to load cert or key: %s", err)
+			return nil, fmt.Errorf("failed to load cert or key: %s", err)
 		}
 		caPool, err := loadCAFile(options.ClientCA)
 		if err != nil {
-			return nil, fmt.Errorf("Failed to load ca file %s: %s", options.ClientCA, err)
+			return nil, fmt.Errorf("failed to load ca file %s: %s", options.ClientCA, err)
 		}
 		tlsConfig.ClientAuth = tls.RequireAndVerifyClientCert
 		tlsConfig.ClientCAs = caPool
 		listener, err = tls.Listen("tcp", "0.0.0.0:6553", tlsConfig)
 		if err != nil {
-			return nil, fmt.Errorf("Failed to listen to 0.0.0.0:6553: %s", err)
+			return nil, fmt.Errorf("failed to listen to 0.0.0.0:6553: %s", err)
 		}
 	} else {
 		var err error
 		listener, err = net.Listen("tcp", "127.0.0.1:8080")
 		if err != nil {
-			return nil, fmt.Errorf("Failed to listen to 127.0.0.1:8080: %s", err)
+			return nil, fmt.Errorf("failed to listen to 127.0.0.1:8080: %s", err)
 		}
 	}
 	logger.Log(
@@ -78,10 +78,10 @@ func loadCAFile(cafile string) (*x509.CertPool, error) {
 	pool := x509.NewCertPool()
 	cas, err := os.ReadFile(cafile)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to read file %s: %s", cafile, err)
+		return nil, fmt.Errorf("failed to read file %s: %s", cafile, err)
 	}
 	if !pool.AppendCertsFromPEM(cas) {
-		return nil, fmt.Errorf("No certs found in file %s", cafile)
+		return nil, fmt.Errorf("no certs found in file %s", cafile)
 	}
 	return pool, nil
 }

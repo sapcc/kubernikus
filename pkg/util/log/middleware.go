@@ -117,12 +117,12 @@ type hijackLogger struct {
 }
 
 func (l *hijackLogger) Hijack() (net.Conn, *bufio.ReadWriter, error) {
-	h := l.responseLogger.w.(http.Hijacker)
+	h := l.w.(http.Hijacker)
 	conn, rw, err := h.Hijack()
-	if err == nil && l.responseLogger.status == 0 {
+	if err == nil && l.status == 0 {
 		// The status will be StatusSwitchingProtocols if there was no error and
 		// WriteHeader has not been called yet
-		l.responseLogger.status = http.StatusSwitchingProtocols
+		l.status = http.StatusSwitchingProtocols
 	}
 	return conn, rw, err
 }

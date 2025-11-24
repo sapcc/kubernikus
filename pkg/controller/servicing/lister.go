@@ -158,7 +158,7 @@ func (d *NodeLister) Reboot() []*core_v1.Node {
 					continue
 				}
 
-				if *pool.Config.AllowReboot == true {
+				if *pool.Config.AllowReboot {
 					rebootable = append(rebootable, node)
 				}
 			}
@@ -199,8 +199,7 @@ func (d *NodeLister) Reboot() []*core_v1.Node {
 // Replacement lists nodes that have an outdated Kubelet/Kube-Proxy
 func (d *NodeLister) Replace() []*core_v1.Node {
 	var upgradable, found []*core_v1.Node
-	var nodeNameToPool map[string]*models.NodePool
-	nodeNameToPool = make(map[string]*models.NodePool)
+	nodeNameToPool := make(map[string]*models.NodePool)
 
 	latestFlatcar, err := d.FlatcarVersion.Stable()
 	if err != nil {
@@ -224,7 +223,7 @@ func (d *NodeLister) Replace() []*core_v1.Node {
 			if util.IsKubernikusNode(node.Name, d.Kluster.Spec.Name, pool.Name) {
 				nodeNameToPool[node.GetName()] = &d.Kluster.Spec.NodePools[i]
 
-				if *pool.Config.AllowReplace == true || util.IsFlatcarNodeWithRkt(node) || util.EnabledValue(node.Annotations[AnnotationNodeForceReplace]) {
+				if *pool.Config.AllowReplace || util.IsFlatcarNodeWithRkt(node) || util.EnabledValue(node.Annotations[AnnotationNodeForceReplace]) {
 					upgradable = append(upgradable, node)
 				}
 			}
@@ -475,7 +474,7 @@ func (d *NodeLister) hasAnnotation(name string) []*core_v1.Node {
 	var found []*core_v1.Node
 
 	for _, node := range d.All() {
-		_, ok := node.ObjectMeta.Annotations[name]
+		_, ok := node.Annotations[name]
 		if !ok {
 			continue
 		}

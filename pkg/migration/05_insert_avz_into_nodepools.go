@@ -47,7 +47,7 @@ func InsertAVZIntoNodePools(rawKluster []byte, current *v1.Kluster, clients conf
 	case "qa-de-1":
 		avz = "qa-de-1a"
 	default:
-		return fmt.Errorf("Couldn't find default AVZ for region %s", secret.Region)
+		return fmt.Errorf("couldn't find default AVZ for region %s", secret.Region)
 	}
 
 	for i, pool := range current.Spec.NodePools {

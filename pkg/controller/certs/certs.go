@@ -34,19 +34,19 @@ func New(syncPeriod time.Duration, factories config.Factories, config config.Con
 func (cc *certsController) Reconcile(kluster *v1.Kluster) (err error) {
 	secret, err := util.KlusterSecret(cc.client, kluster)
 	if err != nil {
-		return fmt.Errorf("Couldn't get kluster secret: %s", err)
+		return fmt.Errorf("couldn't get kluster secret: %s", err)
 	}
 
 	certFactory := util.NewCertificateFactory(kluster, &secret.Certificates, cc.config.Kubernikus.Domain)
 	updates, err := certFactory.Ensure()
 	if err != nil {
-		return fmt.Errorf("Certificate renewal failed: %s", err)
+		return fmt.Errorf("certificate renewal failed: %s", err)
 	}
 
 	if len(updates) > 0 {
 		err = util.UpdateKlusterSecret(cc.client, kluster, secret)
 		if err != nil {
-			return fmt.Errorf("Couldn't update kluster secret: %s", err)
+			return fmt.Errorf("couldn't update kluster secret: %s", err)
 		}
 
 		cc.logger.Log("msg", "Certificates updated", "kluster", kluster.Name, "changes", fmt.Sprintf("%#v", updates))

@@ -47,23 +47,23 @@ func SeedNetwork(client clientset.Interface, versions version.KlusterVersion, cl
 
 func SeedKubeProxy(client clientset.Interface, versions version.KlusterVersion, clusterCIDR, apiServerURL string) error {
 	if err := createServiceAccount(client, KubeProxyServiceAccount); err != nil {
-		return fmt.Errorf("Failed to bootstrap kube-proxy service account: %w", err)
+		return fmt.Errorf("failed to bootstrap kube-proxy service account: %w", err)
 	}
 	if err := createClusterRoleBinding(client, KubeProxyClusterRoleBinding); err != nil {
-		return fmt.Errorf("Failed to bootstrap kube-proxy cluster role binding: %w", err)
+		return fmt.Errorf("failed to bootstrap kube-proxy cluster role binding: %w", err)
 	}
 	cmData := struct {
 		ClusterCIDR  string
 		APIServerURL string
 	}{clusterCIDR, apiServerURL}
 	if err := createConfigMap(client, KubeProxyConfigMap, cmData); err != nil {
-		return fmt.Errorf("Failed to bootstrap kube-proxy config map: %w", err)
+		return fmt.Errorf("failed to bootstrap kube-proxy config map: %w", err)
 	}
 	data := kubeProxy{
 		KubeProxy: versions.KubeProxy.Repository + ":" + versions.KubeProxy.Tag,
 	}
 	if err := createDaemonSet(client, KubeProxyDaemonSet, data); err != nil {
-		return fmt.Errorf("Failed to bootstrap kube-proxy daemon set: %w", err)
+		return fmt.Errorf("failed to bootstrap kube-proxy daemon set: %w", err)
 	}
 	return nil
 }
@@ -74,7 +74,7 @@ func SeedWormhole(client clientset.Interface, versions version.KlusterVersion, a
 		Listen:   fmt.Sprintf("%s:%d", apiServerIP, apiServerPort),
 	}
 	if err := createDaemonSet(client, WormholeDaemonSet, data); err != nil {
-		return fmt.Errorf("Failed to bootstrap wormhole daemon set: %w", err)
+		return fmt.Errorf("failed to bootstrap wormhole daemon set: %w", err)
 	}
 	return nil
 }
@@ -82,13 +82,13 @@ func SeedWormhole(client clientset.Interface, versions version.KlusterVersion, a
 func SeedCNIConfig(client clientset.Interface, versions version.KlusterVersion, clusterCIDR, apiserverURL string) error {
 
 	if err := createServiceAccount(client, CNIServiceAccount); err != nil {
-		return fmt.Errorf("Failed to bootstrap cni service account: %w", err)
+		return fmt.Errorf("failed to bootstrap cni service account: %w", err)
 	}
 	if err := createClusterRole(client, CNIClusterRole); err != nil {
-		return fmt.Errorf("Failed to bootstrap cni cluster role: %w", err)
+		return fmt.Errorf("failed to bootstrap cni cluster role: %w", err)
 	}
 	if err := createClusterRoleBinding(client, CNIClusterRoleBinding); err != nil {
-		return fmt.Errorf("Failed to bootstrap cni cluster role binding: %w", err)
+		return fmt.Errorf("failed to bootstrap cni cluster role binding: %w", err)
 	}
 
 	cmData := struct {
@@ -96,7 +96,7 @@ func SeedCNIConfig(client clientset.Interface, versions version.KlusterVersion, 
 		APIServerURL string
 	}{clusterCIDR, apiserverURL}
 	if err := createConfigMap(client, CNIConfigMap, cmData); err != nil {
-		return fmt.Errorf("Failed to bootstrap cni config map: %w", err)
+		return fmt.Errorf("failed to bootstrap cni config map: %w", err)
 	}
 
 	dsVals := cni{
@@ -106,7 +106,7 @@ func SeedCNIConfig(client clientset.Interface, versions version.KlusterVersion, 
 	}
 
 	if err := createDaemonSet(client, CNIDaemonSet, dsVals); err != nil {
-		return fmt.Errorf("Failed to bootstrap cni daemon set: %w", err)
+		return fmt.Errorf("failed to bootstrap cni daemon set: %w", err)
 	}
 
 	return nil

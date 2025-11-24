@@ -19,7 +19,7 @@ func New(kubeconfig, context, serverAddr, listenAddr string, logger log.Logger) 
 
 	config, err := clientcmd.LoadFromFile(kubeconfig)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to load kubeconfig file %#v: %s", kubeconfig, err)
+		return nil, fmt.Errorf("failed to load kubeconfig file %#v: %s", kubeconfig, err)
 	}
 	err = api.FlattenConfig(config)
 	if err != nil {
@@ -30,22 +30,22 @@ func New(kubeconfig, context, serverAddr, listenAddr string, logger log.Logger) 
 		context = config.CurrentContext
 	}
 	if context == "" {
-		return nil, fmt.Errorf("No context given")
+		return nil, fmt.Errorf("no context given")
 	}
 
 	ctx, found := config.Contexts[context]
 	if !found {
-		return nil, fmt.Errorf("Context %s not found", context)
+		return nil, fmt.Errorf("context %s not found", context)
 	}
 
 	cluster, found := config.Clusters[ctx.Cluster]
 	if !found {
-		return nil, fmt.Errorf("Cluster not found %s", ctx.Cluster)
+		return nil, fmt.Errorf("cluster not found %s", ctx.Cluster)
 	}
 
 	authInfo, found := config.AuthInfos[ctx.AuthInfo]
 	if !found {
-		return nil, fmt.Errorf("No auth info found for context %s", ctx.AuthInfo)
+		return nil, fmt.Errorf("no auth info found for context %s", ctx.AuthInfo)
 	}
 	cert := authInfo.ClientCertificateData
 	key := authInfo.ClientKeyData
@@ -56,12 +56,12 @@ func New(kubeconfig, context, serverAddr, listenAddr string, logger log.Logger) 
 	if ca != nil {
 		rootCAs = x509.NewCertPool()
 		if !rootCAs.AppendCertsFromPEM(ca) {
-			return nil, fmt.Errorf("Failed to load any certs from %s", ca)
+			return nil, fmt.Errorf("failed to load any certs from %s", ca)
 		}
 	}
 	certificate, err := tls.X509KeyPair(cert, key)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to load certificate/key: %s", err)
+		return nil, fmt.Errorf("failed to load certificate/key: %s", err)
 	}
 
 	if serverAddr == "" {

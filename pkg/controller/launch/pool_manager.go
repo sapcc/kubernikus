@@ -46,7 +46,7 @@ type PoolStatus struct {
 }
 
 type ConcretePoolManager struct {
-	config.Clients
+	Clients config.Clients
 
 	klusterClient   openstack_kluster.KlusterClient
 	nodeObservatory *nodeobservatory.NodeObservatory
@@ -127,7 +127,7 @@ func nodePoolSpecGet(pool []models.NodePool, name string) (int, bool) {
 func removeNodePool(pool []models.NodePoolInfo, name string) ([]models.NodePoolInfo, error) {
 	index, ok := nodePoolInfoGet(pool, name)
 	if !ok {
-		return nil, fmt.Errorf("Failed to delete PoolInfo: %s", name)
+		return nil, fmt.Errorf("failed to delete PoolInfo: %s", name)
 	}
 	return append(pool[:index], pool[index+1:]...), nil
 }
@@ -204,7 +204,7 @@ func (cpm *ConcretePoolManager) CreateNode() (id string, err error) {
 
 	client, err := cpm.Clients.Satellites.ClientFor(cpm.Kluster)
 	if err != nil {
-		return "", fmt.Errorf("Couldn't get client for kluster: %s", err)
+		return "", fmt.Errorf("couldn't get client for kluster: %s", err)
 	}
 
 	calicoNetworking := false
@@ -214,11 +214,11 @@ func (cpm *ConcretePoolManager) CreateNode() (id string, err error) {
 
 	token, tokenSecret, err := bootstraptoken.GenerateBootstrapToken(30 * time.Minute)
 	if err != nil {
-		return "", fmt.Errorf("Node bootstrap token generation failed: %s", err)
+		return "", fmt.Errorf("node bootstrap token generation failed: %s", err)
 	}
 
 	if _, err := client.CoreV1().Secrets(tokenSecret.Namespace).Create(context.TODO(), tokenSecret, metav1.CreateOptions{}); err != nil {
-		return "", fmt.Errorf("Node bootstrap token secret creation failed: %s", err)
+		return "", fmt.Errorf("node bootstrap token secret creation failed: %s", err)
 	}
 
 	userdata, err := templates.Ignition.GenerateNode(cpm.Kluster, cpm.Pool, nodeName, token, secret, calicoNetworking, cpm.imageRegistry, cpm.Logger)
@@ -255,7 +255,7 @@ func (cpm *ConcretePoolManager) nodeIDs(nodes []openstack_kluster.Node) []string
 }
 
 func (cpm *ConcretePoolManager) starting(nodes []openstack_kluster.Node) int {
-	var count int = 0
+	var count int
 	for _, n := range nodes {
 		if n.Starting() {
 			count = count + 1
@@ -265,7 +265,7 @@ func (cpm *ConcretePoolManager) starting(nodes []openstack_kluster.Node) int {
 }
 
 func (cpm *ConcretePoolManager) stopping(nodes []openstack_kluster.Node) int {
-	var count int = 0
+	var count int
 	for _, n := range nodes {
 		if n.Stopping() {
 			count = count + 1
@@ -275,7 +275,7 @@ func (cpm *ConcretePoolManager) stopping(nodes []openstack_kluster.Node) int {
 }
 
 func (cpm *ConcretePoolManager) running(nodes []openstack_kluster.Node) int {
-	var count int = 0
+	var count int
 	for _, n := range nodes {
 		if n.Running() {
 			count = count + 1

@@ -83,7 +83,7 @@ func oidcLogin(username, password, connector_id, authUrl string) (string, error)
 
 	req, err := http.NewRequest("GET", authUrl, nil)
 	if err != nil {
-		return "", fmt.Errorf("Failed to build initial request: %w", err)
+		return "", fmt.Errorf("failed to build initial request: %w", err)
 	}
 	q := url.Values{}
 	q.Set("connector_id", connector_id)
@@ -91,14 +91,14 @@ func oidcLogin(username, password, connector_id, authUrl string) (string, error)
 
 	resp, err := client.Do(req)
 	if err != nil {
-		return "", fmt.Errorf("Failed to call %s: %w", authUrl, err)
+		return "", fmt.Errorf("failed to call %s: %w", authUrl, err)
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode >= 400 {
-		return "", fmt.Errorf("Calling %s failed with %s, maybe because of an incorrect connector_id", resp.Request.URL, resp.Status)
+		return "", fmt.Errorf("calling %s failed with %s, maybe because of an incorrect connector_id", resp.Request.URL, resp.Status)
 	}
 	if redirects < 1 {
-		return "", fmt.Errorf("Login failed, expected some redirects")
+		return "", fmt.Errorf("login failed, expected some redirects")
 	}
 
 	redirects = 0
@@ -108,27 +108,27 @@ func oidcLogin(username, password, connector_id, authUrl string) (string, error)
 	//log.Printf("Logging in using %s", resp.Request.URL.String())
 	resp2, err := client.PostForm(resp.Request.URL.String(), v)
 	if err != nil {
-		return "", fmt.Errorf("Failed to call %s: %w", resp.Request.URL.String(), err)
+		return "", fmt.Errorf("failed to call %s: %w", resp.Request.URL.String(), err)
 	}
 	defer resp2.Body.Close()
 
 	if resp2.StatusCode >= 400 {
-		return "", fmt.Errorf("Calling %s failed with %s", resp2.Request.URL.String(), resp.Status)
+		return "", fmt.Errorf("calling %s failed with %s", resp2.Request.URL.String(), resp.Status)
 	}
 	if redirects < 1 {
-		return "", fmt.Errorf("Login failed, probably because of an incorrect username/password")
+		return "", fmt.Errorf("login failed, probably because of an incorrect username/password")
 	}
 
 	p, err := io.ReadAll(resp2.Body)
 	if err != nil {
-		return "", fmt.Errorf("Failed to read auth response: %w", err)
+		return "", fmt.Errorf("failed to read auth response: %w", err)
 	}
 	var token struct {
 		IDToken string `json:"idToken"`
 		Type    string `json:"type"`
 	}
 	if err := json.Unmarshal(p, &token); err != nil {
-		return "", fmt.Errorf("Failed")
+		return "", fmt.Errorf("failed")
 	}
 	return token.IDToken, err
 

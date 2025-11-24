@@ -20,12 +20,12 @@ func SeedCinderCSIPlugin123(client clientset.Interface, dynamicClient dynamic.In
 		},
 		StringData: map[string]string{
 			"cloudprovider.conf": `[Global]
-auth-url="https://identity-3.` + klusterSecret.Openstack.Region + `.cloud.sap/v3/"
+auth-url="https://identity-3.` + klusterSecret.Region + `.cloud.sap/v3/"
 domain-name="kubernikus"
-tenant-id="` + klusterSecret.Openstack.ProjectID + `"
-username="` + klusterSecret.Openstack.Username + `"
-password="` + klusterSecret.Openstack.Password + `"
-region="` + klusterSecret.Openstack.Region + `"
+tenant-id="` + klusterSecret.ProjectID + `"
+username="` + klusterSecret.Username + `"
+password="` + klusterSecret.Password + `"
+region="` + klusterSecret.Region + `"
 
 [BlockStorage]
 rescan-on-resize = yes

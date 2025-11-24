@@ -6,7 +6,7 @@ import (
 
 	"github.com/Masterminds/semver"
 	"github.com/go-openapi/runtime/middleware"
-	"github.com/go-openapi/swag"
+	"github.com/go-openapi/swag/conv"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 
 	"github.com/sapcc/kubernikus/pkg/api"
@@ -26,7 +26,7 @@ type updateCluster struct {
 func (d *updateCluster) Handle(params operations.UpdateClusterParams, principal *models.Principal) middleware.Responder {
 	// validate spec.name has some value that makes sense
 	// as it is read-only on a semantic level.
-	if !(params.Body.Spec.Name == "" || params.Body.Spec.Name == params.Name) {
+	if params.Body.Spec.Name != "" && params.Body.Spec.Name != params.Name {
 		return NewErrorResponse(&operations.UpdateClusterDefault{}, 500, "spec.name needs to be removed, an empty string or the clusters name")
 	}
 
@@ -123,7 +123,7 @@ func (d *updateCluster) Handle(params operations.UpdateClusterParams, principal 
 			}
 			currentVersion, err := semver.NewVersion(kluster.Status.ApiserverVersion)
 			if err != nil {
-				return apierrors.NewInternalError(fmt.Errorf("Can't parse current apiserver version (%s): %s", kluster.Status.ApiserverVersion, err))
+				return apierrors.NewInternalError(fmt.Errorf("can't parse current apiserver version (%s): %s", kluster.Status.ApiserverVersion, err))
 			}
 			if newVersion.Major() != currentVersion.Major() || newVersion.Minor() < currentVersion.Minor() || newVersion.Minor() > currentVersion.Minor()+1 {
 				return apierrors.NewBadRequest(fmt.Sprintf("Can't upgrade from version %s to %s", kluster.Status.ApiserverVersion, params.Body.Spec.Version))
@@ -141,13 +141,13 @@ func (d *updateCluster) Handle(params operations.UpdateClusterParams, principal 
 			}
 		}
 
-		dexEnabled := swag.BoolValue(kluster.Spec.Dex)
-		dashboardEnabled := swag.BoolValue(kluster.Spec.Dashboard)
+		dexEnabled := conv.Value(kluster.Spec.Dex)
+		dashboardEnabled := conv.Value(kluster.Spec.Dashboard)
 		if params.Body.Spec.Dex != nil {
-			dexEnabled = swag.BoolValue(params.Body.Spec.Dex)
+			dexEnabled = conv.Value(params.Body.Spec.Dex)
 		}
 		if params.Body.Spec.Dashboard != nil {
-			dashboardEnabled = swag.BoolValue(params.Body.Spec.Dashboard)
+			dashboardEnabled = conv.Value(params.Body.Spec.Dashboard)
 		}
 
 		if !dexEnabled && dashboardEnabled {
@@ -155,17 +155,17 @@ func (d *updateCluster) Handle(params operations.UpdateClusterParams, principal 
 		}
 
 		//Dex value changed
-		if params.Body.Spec.Dex != nil && swag.BoolValue(params.Body.Spec.Dex) != swag.BoolValue(kluster.Spec.Dex) {
+		if params.Body.Spec.Dex != nil && conv.Value(params.Body.Spec.Dex) != conv.Value(kluster.Spec.Dex) {
 			kluster.Spec.Dex = params.Body.Spec.Dex
 		}
 
 		//Dashboard value changed
-		if params.Body.Spec.Dashboard != nil && swag.BoolValue(params.Body.Spec.Dashboard) != swag.BoolValue(kluster.Spec.Dashboard) {
+		if params.Body.Spec.Dashboard != nil && conv.Value(params.Body.Spec.Dashboard) != conv.Value(kluster.Spec.Dashboard) {
 
 			kluster.Spec.Dashboard = params.Body.Spec.Dashboard
 			if dashboardEnabled && kluster.Status.Apiserver != "" {
 				apiURL := kluster.Status.Apiserver
-				kluster.Status.Dashboard = strings.Replace(apiURL, kluster.GetName(), fmt.Sprintf("dashboard-%s.ingress", kluster.GetName()), -1)
+				kluster.Status.Dashboard = strings.ReplaceAll(apiURL, kluster.GetName(), fmt.Sprintf("dashboard-%s.ingress", kluster.GetName()))
 			}
 
 		}

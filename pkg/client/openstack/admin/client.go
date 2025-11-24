@@ -102,7 +102,7 @@ func (c *adminClient) CreateKlusterServiceUser(username, password, domainName, p
 
 	err = c.AssignUserRoles(projectID, username, domainName, c.GetDefaultServiceUserRoles())
 	if err != nil {
-		return fmt.Errorf("Failed to assign roles to service user: %s", err)
+		return fmt.Errorf("failed to assign roles to service user: %s", err)
 	}
 
 	return nil
@@ -203,7 +203,7 @@ func (c *adminClient) DeleteUser(username, domainName string) error {
 		case 1:
 			return false, users.Delete(c.IdentityClient, userList[0].ID).ExtractErr()
 		default:
-			return false, errors.New("Multiple users found")
+			return false, errors.New("multiple users found")
 		}
 	})
 }
@@ -229,7 +229,7 @@ func (c *adminClient) GetRegion() (string, error) {
 	}
 
 	if computeServiceID == "" {
-		return "", fmt.Errorf("Couldn't find a compute service. Bailing out.")
+		return "", fmt.Errorf("couldn't find a compute service, bailing out")
 	}
 
 	endpointOpts := endpoints.ListOpts{Availability: gophercloud.AvailabilityPublic, ServiceID: computeServiceID}
@@ -252,7 +252,7 @@ func (c *adminClient) GetRegion() (string, error) {
 	}
 
 	if region == "" {
-		return "", fmt.Errorf("Couldn't find the region. Bailing out.")
+		return "", fmt.Errorf("couldn't find the region, bailing out")
 	}
 
 	return region, nil
@@ -288,12 +288,12 @@ func (c *adminClient) GetDomainID(domainName string) (string, error) {
 		}
 		switch len(domains) {
 		case 0:
-			return false, fmt.Errorf("Domain %s not found", domainName)
+			return false, fmt.Errorf("domain %s not found", domainName)
 		case 1:
 			c.domainNameToID.Store(domainName, domains[0].ID)
 			return false, nil
 		default:
-			return false, errors.New("More than one domain found")
+			return false, errors.New("more than one domain found")
 		}
 	})
 	if err != nil {
@@ -318,7 +318,7 @@ func (c *adminClient) getUserByName(username, domainID string) (*users.User, err
 			user = &users[0]
 			return false, nil
 		default:
-			return false, errors.New("More then one user found")
+			return false, errors.New("more then one user found")
 		}
 	})
 	if err != nil {
@@ -348,7 +348,7 @@ func (c *adminClient) getRoleID(roleName string) (string, error) {
 		return id.(string), nil
 	}
 
-	return "", fmt.Errorf("Role %s not found", roleName)
+	return "", fmt.Errorf("role %s not found", roleName)
 
 }
 

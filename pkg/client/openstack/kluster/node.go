@@ -97,7 +97,7 @@ func (n *Node) GetCreated() time.Time {
 
 func (n *Node) GetSecurityGroupNames() []string {
 	names := []string{}
-	for _, s := range n.Server.SecurityGroups {
+	for _, s := range n.SecurityGroups {
 		if name, ok := s["name"].(string); ok {
 			names = append(names, name)
 		}

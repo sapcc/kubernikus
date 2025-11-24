@@ -42,7 +42,7 @@ func (r *Release) releasedAt(c channel, v *version.Version) (time.Time, error) {
 	if r.ReleaseDates[c] == nil || now().After(r.ReleaseDates[c].FetchedAt.Add(fetchInterval)) {
 		result, err := r.fetch(c)
 		if err != nil {
-			return now(), errors.Wrapf(err, "Couldn't fetch %s releases", c)
+			return now(), errors.Wrapf(err, "couldn't fetch %s releases", c)
 		}
 		r.ReleaseDates[c] = result
 	}
@@ -58,21 +58,21 @@ func (r *Release) releasedAt(c channel, v *version.Version) (time.Time, error) {
 func (r *Release) fetch(c channel) (*releaseDate, error) {
 	result, err := r.Client.Get(fmt.Sprintf(baseURL, c))
 	if err != nil {
-		return nil, fmt.Errorf("Couldn't fetch %s releases: %s", c, err)
+		return nil, fmt.Errorf("couldn't fetch %s releases: %s", c, err)
 	}
 
 	defer result.Body.Close()
 
 	body, err := io.ReadAll(result.Body)
 	if err != nil {
-		return nil, errors.Wrap(err, "Couldn't read body")
+		return nil, errors.Wrap(err, "couldn't read body")
 	}
 
 	var rdates map[string]interface{}
 
 	err = json.Unmarshal(body, &rdates)
 	if err != nil {
-		return nil, errors.Wrap(err, "Couldn't parse response")
+		return nil, errors.Wrap(err, "couldn't parse response")
 	}
 
 	releaseDates := &releaseDate{
@@ -83,12 +83,12 @@ func (r *Release) fetch(c channel) (*releaseDate, error) {
 	for k, v := range rdates {
 		version, err := version.ParseSemantic(k)
 		if err != nil {
-			return nil, errors.Wrap(err, "Couldn't parse version")
+			return nil, errors.Wrap(err, "couldn't parse version")
 		}
 
 		t, err := time.Parse("2006-01-02 15:04:05 +0000", v.(map[string]interface{})["release_date"].(string))
 		if err != nil {
-			return nil, errors.Wrap(err, "Couldn't parse release date")
+			return nil, errors.Wrap(err, "couldn't parse release date")
 		}
 
 		releaseDates.Releases[version.String()] = t

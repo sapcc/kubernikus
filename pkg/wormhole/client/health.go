@@ -41,7 +41,7 @@ func NewHealthChecker(kubeconfig, context, nodeNameOverride string, logger kitlo
 
 	client, err := kubernetes.NewClient(kubeconfig, context, logger)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to create kubernetes client: %s", err)
+		return nil, fmt.Errorf("failed to create kubernetes client: %s", err)
 	}
 	hc.client = client.CoreV1().Nodes()
 
@@ -82,17 +82,17 @@ func (hc *healthChecker) reconcile() error {
 
 	destinationIP, err := netutil.InterfaceAddress("cbr0")
 	if err != nil {
-		return fmt.Errorf("Interface cbr0 not found: %s", err)
+		return fmt.Errorf("interface cbr0 not found: %s", err)
 	}
 
 	nodeName, err := hc.myNodeName()
 	if err != nil {
-		return fmt.Errorf("Failed to discover own node name: %s", err)
+		return fmt.Errorf("failed to discover own node name: %s", err)
 	}
 
 	node, err := hc.client.Get(context.TODO(), nodeName, meta_v1.GetOptions{})
 	if err != nil {
-		return fmt.Errorf("Couldn't get node %s from api: %s", nodeName, err)
+		return fmt.Errorf("couldn't get node %s from api: %s", nodeName, err)
 	}
 
 	newCondition := v1.NodeCondition{Type: NodeRouteBroken}
@@ -122,7 +122,7 @@ func (hc *healthChecker) reconcile() error {
 	}
 
 	if err := hc.SetConditions([]v1.NodeCondition{newCondition}, nodeName); err != nil {
-		return fmt.Errorf("Failed to update condition for node %s: %s", nodeName, err)
+		return fmt.Errorf("failed to update condition for node %s: %s", nodeName, err)
 	}
 	hc.logger.Log("node", nodeName, "check", newCondition.Type, "status", newCondition.Status, "v", 2)
 

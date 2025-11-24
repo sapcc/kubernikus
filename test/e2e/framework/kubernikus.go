@@ -44,7 +44,7 @@ func (f *Kubernikus) WaitForKlusterPhase(klusterName string, expectedPhase model
 			)
 
 			if err != nil {
-				return false, fmt.Errorf("Failed to show kluster: %v", err)
+				return false, fmt.Errorf("failed to show kluster: %v", err)
 			}
 
 			if cluster.Payload == nil {
@@ -87,12 +87,11 @@ func (k *Kubernikus) WaitForKlusterToBeDeleted(klusterName string, timeout time.
 				k.AuthInfo,
 			)
 			if err != nil {
-				switch err.(type) {
+				switch casted := err.(type) {
 				case *operations.ShowClusterDefault:
-					result := err.(*operations.ShowClusterDefault)
-					return result.Code() == 404, nil
+					return casted.Code() == 404, nil
 				}
-				return false, fmt.Errorf("Polling cluster state failed after %d tries and %s. Failed request took %s: %w", count, time.Now().Sub(overall), time.Now().Sub(req_start), err)
+				return false, fmt.Errorf("polling cluster state failed after %d tries and %s. failed request took %s: %w", count, time.Since(overall), time.Since(req_start), err)
 			}
 			return false, nil
 		},

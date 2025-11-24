@@ -50,8 +50,7 @@ type Controller struct {
 func NewController(threadiness int, factories config.Factories, clients config.Clients, recorder record.EventRecorder, holdoff time.Duration, logger log.Logger) base.Controller {
 	logger = log.With(logger, "controller", "servicing")
 
-	var controller base.Reconciler
-	controller = &Controller{
+	controller := &Controller{
 		Logger:     logger,
 		Reconciler: NewKlusterReconcilerFactory(logger, recorder, factories, clients, holdoff),
 	}

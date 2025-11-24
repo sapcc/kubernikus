@@ -61,10 +61,10 @@ type KubernikusOperatorOptions struct {
 }
 
 type KubernikusOperator struct {
-	config.Config
-	config.Factories
-	config.Clients
-	Logger log.Logger
+	Config    config.Config
+	Factories config.Factories
+	Clients   config.Clients
+	Logger    log.Logger
 }
 
 const (
@@ -76,7 +76,7 @@ func NewKubernikusOperator(options *KubernikusOperatorOptions, logger log.Logger
 
 	imageRegistry, err := version.NewImageRegistry(path.Join(options.ChartDirectory, "images.yaml"), options.Region)
 	if err != nil {
-		return nil, fmt.Errorf("Unable to initialize image registry: %s", err)
+		return nil, fmt.Errorf("unable to initialize image registry: %s", err)
 	}
 
 	o := &KubernikusOperator{
@@ -106,30 +106,30 @@ func NewKubernikusOperator(options *KubernikusOperatorOptions, logger log.Logger
 	o.Clients.Kubernetes, err = kube.NewClient(options.KubeConfig, options.Context, logger)
 
 	if err != nil {
-		return nil, fmt.Errorf("Failed to create kubernetes clients: %s", err)
+		return nil, fmt.Errorf("failed to create kubernetes clients: %s", err)
 	}
 
 	o.Clients.Kubernikus, err = kubernikus.NewClient(options.KubeConfig, options.Context)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to create kubernikus clients: %s", err)
+		return nil, fmt.Errorf("failed to create kubernikus clients: %s", err)
 	}
 
 	config, err := kube.NewConfig(options.KubeConfig, options.Context)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to create kubernetes config: %s", err)
+		return nil, fmt.Errorf("failed to create kubernetes config: %s", err)
 	}
 	o.Clients.Helm3, err = helmutil.NewClient3(options.Namespace, options.KubeConfig, options.Context, logger)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to create helm 3 client: %s", err)
+		return nil, fmt.Errorf("failed to create helm 3 client: %s", err)
 	}
 
 	apiextensionsclientset, err := apiextensionsclient.NewForConfig(config)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to create apiextenstionsclient: %s", err)
+		return nil, fmt.Errorf("failed to create apiextenstionsclient: %s", err)
 	}
 
 	if err := kube.EnsureCRD(apiextensionsclientset, logger); err != nil {
-		return nil, fmt.Errorf("Couldn't create CRD: %s", err)
+		return nil, fmt.Errorf("couldn't create CRD: %s", err)
 	}
 
 	adminAuthOptions := &tokens.AuthOptions{

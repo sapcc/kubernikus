@@ -47,7 +47,7 @@ func NewBundle(key, cert []byte) (*Bundle, error) {
 		return nil, err
 	}
 	if len(certificates) < 1 {
-		return nil, errors.New("No certificates found")
+		return nil, errors.New("no certificates found")
 	}
 	k, err := keyutil.ParsePrivateKeyPEM(key)
 	if err != nil {
@@ -55,7 +55,7 @@ func NewBundle(key, cert []byte) (*Bundle, error) {
 	}
 	rsaKey, isRSAKey := k.(*rsa.PrivateKey)
 	if !isRSAKey {
-		return nil, errors.New("Key does not seem to be of type RSA")
+		return nil, errors.New("key does not seem to be of type RSA")
 	}
 
 	return &Bundle{PrivateKey: rsaKey, Certificate: certificates[0]}, nil
@@ -79,7 +79,7 @@ type AltNames struct {
 
 func (ca Bundle) Sign(config Config) (*Bundle, error) {
 	if !ca.Certificate.IsCA {
-		return nil, errors.New("You can't use this certificate for signing. It's not a CA...")
+		return nil, errors.New("you can't use this certificate for signing, it's not a CA")
 	}
 
 	if config.ValidFor == 0 {
@@ -144,7 +144,7 @@ func (cf *CertificateFactory) Ensure() ([]CertUpdates, error) {
 
 	apiIP := net.ParseIP(cf.kluster.Spec.AdvertiseAddress)
 	if apiIP == nil {
-		return nil, fmt.Errorf("Failed to parse clusters advertise address: %s", cf.kluster.Spec.AdvertiseAddress)
+		return nil, fmt.Errorf("failed to parse clusters advertise address: %s", cf.kluster.Spec.AdvertiseAddress)
 	}
 
 	certUpdates := []CertUpdates{}
@@ -297,7 +297,7 @@ func (cf *CertificateFactory) Ensure() ([]CertUpdates, error) {
 	if ann := cf.kluster.Annotations[AdditionalApiserverSANsAnnotation]; ann != "" {
 		dnsNames, ips, err := addtionalSANsFromAnnotation(ann)
 		if err != nil {
-			return nil, fmt.Errorf("Failed to parse annotation %s: %v", AdditionalApiserverSANsAnnotation, err)
+			return nil, fmt.Errorf("failed to parse annotation %s: %v", AdditionalApiserverSANsAnnotation, err)
 		}
 		apiServerDNSNames = append(apiServerDNSNames, dnsNames...)
 		apiServerIPs = append(apiServerIPs, ips...)
@@ -315,7 +315,7 @@ func (cf *CertificateFactory) Ensure() ([]CertUpdates, error) {
 	if ann := cf.kluster.Annotations[AdditionalWormholeSANsAnnotation]; ann != "" {
 		dnsNames, _, err := addtionalSANsFromAnnotation(ann)
 		if err != nil {
-			return nil, fmt.Errorf("Failed to parse annotation %s: %v", AdditionalWormholeSANsAnnotation, err)
+			return nil, fmt.Errorf("failed to parse annotation %s: %v", AdditionalWormholeSANsAnnotation, err)
 		}
 		wormholeDNSNames = append(wormholeDNSNames, dnsNames...)
 	}
@@ -346,10 +346,7 @@ func (cf *CertificateFactory) UserCert(principal *models.Principal, apiURL strin
 		return nil, err
 	}
 
-	var organizations []string
-	for _, group := range principal.Groups {
-		organizations = append(organizations, group)
-	}
+	organizations := principal.Groups
 	for _, role := range principal.Roles {
 		organizations = append(organizations, "os:"+role)
 	}
@@ -383,11 +380,16 @@ func loadOrCreateCA(kluster *v1.Kluster, name string, cert, key *string, certUpd
 	if name == "TLS" && *cert != "" {
 		block, _ := pem.Decode([]byte(*cert))
 		if block == nil {
-			return nil, fmt.Errorf("Failed to decode TLS CA certificate")
+			return nil, fmt.Errorf("failed to decode TLS CA certificate")
 		}
 		caCert, err := x509.ParseCertificate(block.Bytes)
 		if err != nil {
-			return nil, fmt.Errorf("Failed to parse TLS CA certificate: %s", err)
+			return nil, fmt.Errorf("failed to parse TLS CA certificate: %s", err)
+		}
+		for _, ext := range caCert.Extensions {
+			if ext.Id.String() == "id-ce 19" && !ext.Critical {
+				regenerate = true
+			}
 		}
 		if caCert.SubjectKeyId == nil {
 			regenerate = true
@@ -399,7 +401,7 @@ func loadOrCreateCA(kluster *v1.Kluster, name string, cert, key *string, certUpd
 			}
 			existingKey, isRSAKey = k.(*rsa.PrivateKey)
 			if !isRSAKey {
-				return nil, errors.New("Key does not seem to be of type RSA")
+				return nil, errors.New("key does not seem to be of type RSA")
 			}
 			existingSubject = caCert.RawSubject
 		}
@@ -442,7 +444,7 @@ func ensureClientCertificate(ca *Bundle, cn string, groups []string, cert, key *
 		certBundle, err := NewBundle([]byte(*key), []byte(*cert))
 
 		if err != nil {
-			return fmt.Errorf("Failed parsing certificate bundle: %s", err)
+			return fmt.Errorf("failed parsing certificate bundle: %s", err)
 		}
 
 		var invalid bool
@@ -488,7 +490,7 @@ func ensureServerCertificate(ca *Bundle, cn string, dnsNames []string, ips []net
 		certBundle, err := NewBundle([]byte(*key), []byte(*cert))
 
 		if err != nil {
-			return fmt.Errorf("Failed parsing certificate bundle: %s", err)
+			return fmt.Errorf("failed parsing certificate bundle: %s", err)
 		}
 
 		var invalid bool
@@ -523,7 +525,7 @@ func createCA(klusterName, name string, existingKey *rsa.PrivateKey, existingSub
 	} else {
 		privateKey, err = NewPrivateKey()
 		if err != nil {
-			return nil, fmt.Errorf("Failed to generate private key for %s ca: %s", name, err)
+			return nil, fmt.Errorf("failed to generate private key for %s ca: %s", name, err)
 		}
 	}
 
@@ -540,17 +542,17 @@ func createCA(klusterName, name string, existingKey *rsa.PrivateKey, existingSub
 		BasicConstraintsValid: true,
 		IsCA:                  true,
 	}
-	if existingSubject != nil && len(existingSubject) > 0 {
+	if len(existingSubject) > 0 {
 		tmpl.RawSubject = existingSubject
 	}
 
 	certDERBytes, err := x509.CreateCertificate(cryptorand.Reader, &tmpl, &tmpl, privateKey.Public(), privateKey)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to create certificate for %s CA: %s", name, err)
+		return nil, fmt.Errorf("failed to create certificate for %s CA: %s", name, err)
 	}
 	certificate, err := x509.ParseCertificate(certDERBytes)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to parse cert for %s CA: %s", name, err)
+		return nil, fmt.Errorf("failed to parse cert for %s CA: %s", name, err)
 	}
 	return &Bundle{PrivateKey: privateKey, Certificate: certificate}, nil
 }
@@ -582,11 +584,11 @@ func isCertChangedOrExpires(origCert, newCert, caCert *x509.Certificate, duratio
 }
 
 func StringSliceDiff(o, n []string) []string {
-	oInt := make([]interface{}, len(o), len(o))
+	oInt := make([]interface{}, len(o))
 	for i := range o {
 		oInt[i] = o[i]
 	}
-	nInt := make([]interface{}, len(n), len(n))
+	nInt := make([]interface{}, len(n))
 	for i := range n {
 		nInt[i] = n[i]
 	}
@@ -594,11 +596,11 @@ func StringSliceDiff(o, n []string) []string {
 }
 
 func IPSliceDiff(o, n []net.IP) []string {
-	oInt := make([]interface{}, len(o), len(o))
+	oInt := make([]interface{}, len(o))
 	for i := range o {
 		oInt[i] = o[i]
 	}
-	nInt := make([]interface{}, len(n), len(n))
+	nInt := make([]interface{}, len(n))
 	for i := range n {
 		nInt[i] = n[i]
 	}

@@ -85,11 +85,11 @@ func (o *osloPolicyAuthorizer) Authorize(req *http.Request, principal interface{
 	authUser := principal.(*models.Principal)
 	router, ok := o.routers[req.Method]
 	if !ok {
-		return fmt.Errorf("No router found for method %s", req.Method)
+		return fmt.Errorf("no router found for method %s", req.Method)
 	}
 	operation, params, found := router.Lookup(path.Clean(req.URL.EscapedPath()))
 	if !found {
-		return fmt.Errorf("Operation not found for %s %s", req.Method, req.URL.Path)
+		return fmt.Errorf("operation not found for %s %s", req.Method, req.URL.Path)
 	}
 	operationID := operation.(string)
 
@@ -105,7 +105,7 @@ func (o *osloPolicyAuthorizer) Authorize(req *http.Request, principal interface{
 	})
 
 	if !allowed {
-		return fmt.Errorf("Authorization failed for user %s for operation %s", authUser.Name, operationID)
+		return fmt.Errorf("authorization failed for user %s for operation %s", authUser.Name, operationID)
 	}
 
 	return nil

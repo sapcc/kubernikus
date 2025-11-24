@@ -14,7 +14,7 @@ import (
 func UpdateMigrationStatus(client clientset.Interface, lister listers_kubernikus.KlusterLister) error {
 	klusters, err := lister.List(labels.Everything())
 	if err != nil {
-		return fmt.Errorf("Failed to list klusters: %s", err)
+		return fmt.Errorf("failed to list klusters: %s", err)
 	}
 	for _, kluster := range klusters {
 		if migration.MigrationsPending(kluster) {

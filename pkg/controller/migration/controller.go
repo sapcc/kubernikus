@@ -28,8 +28,7 @@ func NewController(threadiness int, factories config.Factories, clients config.C
 	logger = log.With(logger,
 		"controller", "migration")
 
-	var reconciler base.Reconciler
-	reconciler = &MigrationReconciler{clients, factories, recorder, logger}
+	reconciler := &MigrationReconciler{clients, factories, recorder, logger}
 
 	return base.NewController(threadiness, factories, reconciler, logger, nil, "migration")
 }

@@ -72,20 +72,20 @@ func (d *getClusterInfo) getLinks() ([]models.Link, error) {
 	}
 	resp, err := http.Get(fmt.Sprintf("%s/repos/sapcc/kubernikus/releases/tags/%s", d.githubApiURL, release))
 	if err != nil {
-		return nil, fmt.Errorf("Failed to fetch release %s: %s", release, err)
+		return nil, fmt.Errorf("failed to fetch release %s: %s", release, err)
 	}
 	//Fall back to latest relese if the specific release is not found
 	if resp.StatusCode == 404 {
 		resp.Body.Close()
 		resp, err = http.Get(fmt.Sprintf("%s/repos/sapcc/kubernikus/releases/latest", d.githubApiURL))
 		if err != nil {
-			return nil, fmt.Errorf("Failed to fetch latest release: %s", err)
+			return nil, fmt.Errorf("failed to fetch latest release: %s", err)
 		}
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode >= 400 {
-		return nil, fmt.Errorf("Failed to fetch release %s: %s", release, resp.Status)
+		return nil, fmt.Errorf("failed to fetch release %s: %s", release, resp.Status)
 	}
 	var releaseResponse struct {
 		Assets []struct {
@@ -113,7 +113,7 @@ func (d *getClusterInfo) getLinks() ([]models.Link, error) {
 		links = append(links, link)
 	}
 	if len(links) == 0 {
-		return nil, fmt.Errorf("No downloads found for release %s", release)
+		return nil, fmt.Errorf("no downloads found for release %s", release)
 	}
 	d.links = links
 	return links, nil

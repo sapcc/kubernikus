@@ -26,5 +26,5 @@ func DefaultInterfaceName() (string, error) {
 		}
 	}
 
-	return "", NotFound
+	return "", ErrNotFound
 }

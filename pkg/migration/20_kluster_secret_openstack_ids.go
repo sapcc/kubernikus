@@ -25,7 +25,7 @@ func KlusterSecretOpenStackIds(rawKluster []byte, current *v1.Kluster, clients c
 	if err != nil {
 		return err
 	}
-	domainNameByProject, err := adminClient.GetDomainNameByProject(secret.Openstack.ProjectID)
+	domainNameByProject, err := adminClient.GetDomainNameByProject(secret.ProjectID)
 	if err != nil {
 		return err
 	}
