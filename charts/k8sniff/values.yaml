@@ -1,5 +1,5 @@
 image: "keppel.global.cloud.sap/ccloud/k8sniff"
-tag: "c3651f238719362eac34170f1f59370967f10f20"
+tag: "edeab22b1f2209905923d553996648168ff40561"
 metrics_port: 9091
 log_level: 2
 replicas: 2
