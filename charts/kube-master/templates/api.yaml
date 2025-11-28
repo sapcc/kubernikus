@@ -369,6 +369,10 @@ spec:
 {{ toYaml .Values.api.resources | indent 12 }}
         - name: wormhole
           image: {{ include "wormhole.image" . | quote }}
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
           command:
             - sh
             - -ec
@@ -407,6 +411,8 @@ spec:
           image: {{ include "fluentd.image" . | quote }}
           resources:
             requests:
+              cpu: 25m
+              memory: 128Mi
               ephemeral-storage: "2Gi"
           args: ["--suppress-config-dump"]
           env:
