@@ -21,3 +21,15 @@ spec:
         maxAllowed:
           {{- toYaml .Values.api.resources.limits | nindent 12 }}
 {{- end }}
+      - containerName: wormhole
+        controlledResources: ["cpu", "memory"]
+        minAllowed:
+          cpu: 50m
+          memory: 128Mi
+{{- if .Values.audit }}
+      - containerName: fluentd
+        controlledResources: ["cpu", "memory"]
+        minAllowed:
+          cpu: 25m
+          memory: 128Mi
+{{- end }}
