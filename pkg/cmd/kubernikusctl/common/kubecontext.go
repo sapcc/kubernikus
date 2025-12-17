@@ -21,6 +21,11 @@ func NewKubernikusContext(kubeconfig, context string) (*KubernikusContext, error
 	pathOptions.LoadingRules.ExplicitPath = kubeconfig
 
 	config, err := pathOptions.GetStartingConfig()
+
+	if context == "" { // The user did not set the --context flag
+		context = config.CurrentContext
+	}
+
 	if err != nil {
 		return nil, err
 	}
