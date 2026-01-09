@@ -54,6 +54,10 @@ func (ktx *KubernikusContext) IsKubernikusContext() (bool, error) {
 
 }
 
+func (ktx *KubernikusContext) Context() string {
+	return ktx.context
+}
+
 func (ktx *KubernikusContext) UserCertificateValid() (bool, error) {
 	cert, err := ktx.getClientCertificate()
 	if err != nil {
