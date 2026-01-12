@@ -71,13 +71,15 @@ func (o *RefreshOptions) Complete(args []string) (err error) {
 
 func (o *RefreshOptions) Run(c *cobra.Command) error {
 
-	klog.V(2).Infof("Using context %v", o.context)
+	if len(o.context) > 0 {
+		klog.V(2).Infof("Using overridden context %v", o.context)
+	}
 	ktx, err := common.NewKubernikusContext(o.kubeconfigPath, o.context)
 	if err != nil {
 		return errors.Wrapf(err, "Failed to load kubeconfig")
 	}
 	if isKubernikusCtx, err := ktx.IsKubernikusContext(); err != nil || !isKubernikusCtx {
-		klog.V(2).Infof("%s is not a valid Kubernikus context: %v", o.context, err)
+		klog.V(2).Infof("%s is not a valid Kubernikus context: %v", ktx.Context(), err)
 		return nil
 	}
 
@@ -151,8 +153,8 @@ func (o *RefreshOptions) Run(c *cobra.Command) error {
 		return err
 	}
 
-	fmt.Printf("Fetching credentials for %v from %v\n", o.context, o.url)
-	kubeconfig, err := o.kubernikus.GetCredentials(o.context)
+	fmt.Printf("Fetching credentials for %v from %v\n", ktx.Context(), o.url)
+	kubeconfig, err := o.kubernikus.GetCredentials(ktx.Context())
 	if err != nil {
 		return errors.Wrap(err, "Couldn't fetch credentials from Kubernikus API")
 	}
