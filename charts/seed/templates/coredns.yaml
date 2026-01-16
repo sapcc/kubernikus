@@ -1,4 +1,4 @@
-{{ if not .Values.dns.kube }}
+{{ if semverCompare ">= 1.13" .Capabilities.KubeVersion.Version }}
 apiVersion: v1
 kind: ServiceAccount
 metadata:
