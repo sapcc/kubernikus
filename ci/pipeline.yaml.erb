@@ -108,7 +108,6 @@ resources:
 
   - name: docs-builder.image
     type: registry-image
-    source:
     check_every: 24h
     source:
       username: ((registry-user/keppel-ccloud.username))
@@ -118,7 +117,6 @@ resources:
 
   - name: kubernikus.image
     type: registry-image
-    source:
     check_every: 24h
     source:
       username: ((registry-user/keppel-ccloud.username))
@@ -469,7 +467,8 @@ jobs:
 
   - name: soak_<%= region %>
     serial: true
-    build_logs_to_retain: 168
+    build_log_retention:
+      builds: 168
     plan:
       - in_parallel:
         - get: <%= group %>.tag
@@ -511,7 +510,8 @@ jobs:
 <% end %>
   - name: e2e-kvm
     serial: true
-    build_logs_to_retain: 168
+    build_log_retention:
+      builds: 168
     plan:
       - in_parallel:
         - get: kubernikus.builds
