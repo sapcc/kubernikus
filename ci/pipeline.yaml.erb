@@ -456,6 +456,7 @@ jobs:
             <<: *auth_<%= region %>
           ensure:
             put: <%= region %>.release
+            inputs: all
         - task: kubernikus-dex_<%= region %>
           config:
             <<: *task_helm_kubernikus-dex
