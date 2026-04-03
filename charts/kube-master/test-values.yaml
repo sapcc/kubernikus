@@ -40,6 +40,8 @@ etcd:
   version:
     kubernikus: xyz
     kubernetes: 1.0.0
+  annotations:
+    my.fany.etcd.deployment.annotation: "true"
 images:
   hyperkube:
     repository: abc

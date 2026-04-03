@@ -47,3 +47,5 @@ secure:
 version: {}
 # kubernikus:
 # kubernetes: 1.10.11
+annotations: {}
+# secret.reloader.stakater.com/reload: "kluster-name-etcd-aws" # restart etcd on backup secret change
