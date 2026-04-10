@@ -23,7 +23,7 @@ REGIONS = {
   "na-us-1": { continent: 'gold',   e2e: 'terraform', nodepool_avz: 'na-us-1b', oidc: '040ed45cb5d8403790cf341a26c50601' },
   "na-us-2": { continent: 'gold',   e2e: 'terraform', nodepool_avz: 'na-us-2b', oidc: 'fc0f2b8450e1444197609800c8b5c4cb' },
   "na-us-3": { continent: 'bronze', e2e: 'terraform', nodepool_avz: 'na-us-3a', oidc: 'aa579369ca944a41bccb76f49f20924f' },
-  "qa-de-1": { continent: 'infra',  e2e: 'terraform', nodepool_avz: 'qa-de-1a', oidc: 'ce5462b173184391a9b47b486fabe580' },
+  "qa-de-1": { continent: 'infra',  e2e: 'terraform', nodepool_avz: 'qa-de-1b', oidc: 'ce5462b173184391a9b47b486fabe580' },
   "master":  { continent: "infra",  e2e: 'virtual',   nodepool_avz: 'eu-nl-1a', oidc: 'a8b6853024494e1eb56136025b04866b' }
 }
 
@@ -108,7 +108,6 @@ resources:
 
   - name: docs-builder.image
     type: registry-image
-    source:
     check_every: 24h
     source:
       username: ((registry-user/keppel-ccloud.username))
@@ -118,7 +117,6 @@ resources:
 
   - name: kubernikus.image
     type: registry-image
-    source:
     check_every: 24h
     source:
       username: ((registry-user/keppel-ccloud.username))
@@ -458,6 +456,7 @@ jobs:
             <<: *auth_<%= region %>
           ensure:
             put: <%= region %>.release
+            inputs: all
         - task: kubernikus-dex_<%= region %>
           config:
             <<: *task_helm_kubernikus-dex
@@ -469,7 +468,8 @@ jobs:
 
   - name: soak_<%= region %>
     serial: true
-    build_logs_to_retain: 168
+    build_log_retention:
+      builds: 168
     plan:
       - in_parallel:
         - get: <%= group %>.tag
@@ -511,7 +511,8 @@ jobs:
 <% end %>
   - name: e2e-kvm
     serial: true
-    build_logs_to_retain: 168
+    build_log_retention:
+      builds: 168
     plan:
       - in_parallel:
         - get: kubernikus.builds
