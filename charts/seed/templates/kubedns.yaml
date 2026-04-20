@@ -1,6 +1,6 @@
 # More or less ported to adapt kube-dns resources
 # to get them later replced with coredns
-{{ if .Values.dns.kube }}
+{{ if semverCompare "< 1.13" .Capabilities.KubeVersion.Version }}
 apiVersion: v1
 kind: ServiceAccount
 metadata:
