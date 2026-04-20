@@ -17,9 +17,9 @@ use-octavia = {{ default "no" .Values.openstack.useOctavia }}
 subnet-id= {{ required "missing openstack.lbSubnetID" .Values.openstack.lbSubnetID }}
 floating-network-id= {{ required "missing openstack.lbFloatingNetworkID" .Values.openstack.lbFloatingNetworkID }}
 create-monitor = yes
-monitor-delay = 1m
-monitor-timeout = 30s
-monitor-max-retries = 3
+monitor-delay = 10s
+monitor-timeout = 5s
+monitor-max-retries = 1
 [BlockStorage]
 trust-device-path = no
 [Route]
