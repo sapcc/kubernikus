@@ -231,7 +231,7 @@ func (f *factory) serviceClientsFor(authOptions *tokens.AuthOptions, logger log.
 	}
 
 	compute, err := openstack.NewComputeV2(providerClient, gophercloud.EndpointOpts{})
-	compute.Microversion = "2.52" // 2.52 supports specifying server tags during create
+	compute.Microversion = "2.67" // 2.67 supports specifying volume_type when creating a server, which is required for KVM
 	if err != nil {
 		return nil, nil, nil, nil, err
 	}
