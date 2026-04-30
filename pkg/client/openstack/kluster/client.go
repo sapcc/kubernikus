@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"regexp"
 
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/bootfromvolume"
@@ -101,15 +102,26 @@ func (c *klusterClient) CreateNode(kluster *v1.Kluster, pool *models.NodePool, n
 	}
 
 	var server *servers.Server
+	useCinderBasedRootDisk := pool.CustomRootDiskSize > 0
+	volumeType := "vmware"
+	rootDiskSize := int(pool.CustomRootDiskSize)
+	if isKVMFlavour, err := regexp.MatchString(`^(hana|[cgm])_k_.*`, pool.Flavor); err == nil && isKVMFlavour {
+		useCinderBasedRootDisk = true
+		volumeType = "premium"
+		if rootDiskSize == 0 {
+			rootDiskSize = 64
+		}
+	}
 
-	if pool.CustomRootDiskSize > 0 {
+	if useCinderBasedRootDisk {
 		blockDevices := []bootfromvolume.BlockDevice{{
 			UUID:                imageID,
-			VolumeSize:          int(pool.CustomRootDiskSize),
+			VolumeSize:          rootDiskSize,
 			BootIndex:           0,
 			DeleteOnTermination: true,
 			SourceType:          "image",
 			DestinationType:     "volume",
+			VolumeType:          volumeType,
 		}}
 		createOpts = &bootfromvolume.CreateOptsExt{
 			CreateOptsBuilder: createOpts,
