@@ -28,6 +28,19 @@ parameters:
 ---
 {{- end -}}
 
+{{- range $vt := .Values.openstack.volumeTypes -}}
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: cinder-{{ $vt | lower }}
+provisioner: {{ template "seed.storage-provisioner" $ }}
+allowVolumeExpansion: {{ template "seed.storage-expansion" $ }}
+volumeBindingMode: WaitForFirstConsumer
+parameters:
+  type: {{ $vt }}
+---
+{{- end -}}
+
 apiVersion: storage.k8s.io/v1
 kind: StorageClass
 metadata:

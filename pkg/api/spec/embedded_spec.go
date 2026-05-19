@@ -1004,6 +1004,22 @@ func init() {
             },
             "x-go-name": "SecurityGroup"
           }
+        },
+        "volumeTypes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              }
+            },
+            "x-go-name": "VolumeType",
+            "x-nullable": false
+          }
         }
       }
     },
@@ -2036,6 +2052,12 @@ func init() {
           "items": {
             "$ref": "#/definitions/openstackMetadataSecurityGroupsItems"
           }
+        },
+        "volumeTypes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/openstackMetadataVolumeTypesItems"
+          }
         }
       }
     },
@@ -2295,6 +2317,20 @@ func init() {
       },
       "x-go-gen-location": "models",
       "x-go-name": "SecurityGroup"
+    },
+    "openstackMetadataVolumeTypesItems": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        }
+      },
+      "x-go-gen-location": "models",
+      "x-go-name": "VolumeType",
+      "x-nullable": false
     }
   },
   "responses": {
