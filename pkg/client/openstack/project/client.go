@@ -2,6 +2,7 @@ package project
 
 import (
 	"github.com/gophercloud/gophercloud"
+	"github.com/gophercloud/gophercloud/openstack/blockstorage/v3/volumetypes"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/availabilityzones"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/keypairs"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/flavors"
@@ -22,17 +23,19 @@ type ProjectClient interface {
 type projectClient struct {
 	projectID string
 
-	NetworkClient  *gophercloud.ServiceClient
-	ComputeClient  *gophercloud.ServiceClient
-	IdentityClient *gophercloud.ServiceClient
+	NetworkClient      *gophercloud.ServiceClient
+	ComputeClient      *gophercloud.ServiceClient
+	IdentityClient     *gophercloud.ServiceClient
+	BlockStorageClient *gophercloud.ServiceClient
 }
 
-func NewProjectClient(projectID string, network, compute, identity *gophercloud.ServiceClient) ProjectClient {
+func NewProjectClient(projectID string, network, compute, identity, blockStorage *gophercloud.ServiceClient) ProjectClient {
 	return &projectClient{
-		projectID:      projectID,
-		NetworkClient:  network,
-		ComputeClient:  compute,
-		IdentityClient: identity,
+		projectID:          projectID,
+		NetworkClient:      network,
+		ComputeClient:      compute,
+		IdentityClient:     identity,
+		BlockStorageClient: blockStorage,
 	}
 }
 
@@ -43,6 +46,7 @@ func (c *projectClient) GetMetadata() (metadata *models.OpenstackMetadata, err e
 		Routers:           make([]*models.Router, 0),
 		SecurityGroups:    make([]*models.SecurityGroup, 0),
 		AvailabilityZones: make([]models.AvailabilityZone, 0),
+		VolumeTypes:       make([]models.VolumeType, 0),
 	}
 
 	if metadata.Routers, err = c.getRouters(); err != nil {
@@ -62,6 +66,10 @@ func (c *projectClient) GetMetadata() (metadata *models.OpenstackMetadata, err e
 	}
 
 	if metadata.AvailabilityZones, err = c.getAvailabilityZones(); err != nil {
+		return metadata, err
+	}
+
+	if metadata.VolumeTypes, err = c.getVolumeTypes(); err != nil {
 		return metadata, err
 	}
 
@@ -237,4 +245,21 @@ func (c *projectClient) getAvailabilityZones() ([]models.AvailabilityZone, error
 	}
 
 	return result, nil
+}
+
+func (c *projectClient) getVolumeTypes() ([]models.VolumeType, error) {
+	result := []models.VolumeType{}
+
+	err := volumetypes.List(c.BlockStorageClient, volumetypes.ListOpts{}).EachPage(func(page pagination.Page) (bool, error) {
+		vtList, err := volumetypes.ExtractVolumeTypes(page)
+		if err != nil {
+			return false, err
+		}
+		for _, vt := range vtList {
+			result = append(result, models.VolumeType{ID: vt.ID, Name: vt.Name})
+		}
+		return true, nil
+	})
+
+	return result, err
 }

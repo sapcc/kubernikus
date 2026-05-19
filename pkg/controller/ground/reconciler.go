@@ -72,9 +72,14 @@ func (sr *SeedReconciler) EnrichHelmValuesForSeed(client project.ProjectClient, 
 	for _, az := range metadata.AvailabilityZones {
 		azNames = append(azNames, az.Name)
 	}
+	volumeTypeNames := make([]interface{}, 0)
+	for _, vt := range metadata.VolumeTypes {
+		volumeTypeNames = append(volumeTypeNames, vt.Name)
+	}
 	if osValues, ok := values["openstack"]; ok {
 		casted := osValues.(map[string]interface{})
 		casted["azs"] = azNames
+		casted["volumeTypes"] = volumeTypeNames
 	}
 
 	k8sClient, err := sr.Clients.Satellites.ClientFor(sr.Kluster)

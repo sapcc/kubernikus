@@ -21,6 +21,7 @@ func (c LoggingClient) GetMetadata() (metadata *models.OpenstackMetadata, err er
 			"keypairs", len(metadata.KeyPairs),
 			"routers", len(metadata.Routers),
 			"security_groups", len(metadata.SecurityGroups),
+			"volume_types", len(metadata.VolumeTypes),
 			"took", time.Since(begin),
 			"v", 2,
 			"err", err,

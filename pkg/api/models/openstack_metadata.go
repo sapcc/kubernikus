@@ -33,6 +33,9 @@ type OpenstackMetadata struct {
 
 	// security groups
 	SecurityGroups []*SecurityGroup `json:"securityGroups"`
+
+	// volume types
+	VolumeTypes []VolumeType `json:"volumeTypes"`
 }
 
 // Validate validates this openstack metadata
@@ -56,6 +59,10 @@ func (m *OpenstackMetadata) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateSecurityGroups(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateVolumeTypes(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -185,6 +192,27 @@ func (m *OpenstackMetadata) validateSecurityGroups(formats strfmt.Registry) erro
 	return nil
 }
 
+func (m *OpenstackMetadata) validateVolumeTypes(formats strfmt.Registry) error {
+	if swag.IsZero(m.VolumeTypes) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.VolumeTypes); i++ {
+
+		if err := m.VolumeTypes[i].Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("volumeTypes" + "." + strconv.Itoa(i))
+			} else if ce, ok := err.(*errors.CompositeError); ok {
+				return ce.ValidateName("volumeTypes" + "." + strconv.Itoa(i))
+			}
+			return err
+		}
+
+	}
+
+	return nil
+}
+
 // ContextValidate validate this openstack metadata based on the context it is used
 func (m *OpenstackMetadata) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
@@ -206,6 +234,10 @@ func (m *OpenstackMetadata) ContextValidate(ctx context.Context, formats strfmt.
 	}
 
 	if err := m.contextValidateSecurityGroups(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateVolumeTypes(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -304,6 +336,24 @@ func (m *OpenstackMetadata) contextValidateSecurityGroups(ctx context.Context, f
 				}
 				return err
 			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *OpenstackMetadata) contextValidateVolumeTypes(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.VolumeTypes); i++ {
+
+		if err := m.VolumeTypes[i].ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("volumeTypes" + "." + strconv.Itoa(i))
+			} else if ce, ok := err.(*errors.CompositeError); ok {
+				return ce.ValidateName("volumeTypes" + "." + strconv.Itoa(i))
+			}
+			return err
 		}
 
 	}

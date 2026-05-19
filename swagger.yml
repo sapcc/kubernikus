@@ -406,6 +406,17 @@ definitions:
                           type: string
                         CIDR:
                           type: string
+      volumeTypes:
+        type: array
+        items:
+          x-nullable: false
+          type: object
+          x-go-name: VolumeType
+          properties:
+            name:
+              type: string
+            id:
+              type: string
   KlusterPhase:
     type: string
     enum:
