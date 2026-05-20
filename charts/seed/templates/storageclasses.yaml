@@ -12,6 +12,9 @@
     false
   {{- end -}}
 {{- end -}}
+{{- define "seed.dns-name" -}}
+  {{- . | lower | regexReplaceAll "[^a-z0-9-]" "-" | trimSuffix "-" | trimPrefix "-" -}}
+{{- end -}}
 
 {{- if and (not .Values.seedKubeadm) (not .Values.seedVirtual) .Values.openstack -}}
 
@@ -32,7 +35,7 @@ parameters:
 apiVersion: storage.k8s.io/v1
 kind: StorageClass
 metadata:
-  name: cinder-{{ $vt | lower }}
+  name: cinder-{{ include "seed.dns-name" $vt }}
 provisioner: {{ template "seed.storage-provisioner" $ }}
 allowVolumeExpansion: {{ template "seed.storage-expansion" $ }}
 volumeBindingMode: WaitForFirstConsumer
