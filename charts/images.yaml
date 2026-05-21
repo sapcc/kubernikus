@@ -8313,10 +8313,10 @@ imagesForVersion:
       tag: 38f4f8ea8d487470a1dd5b83d66b428d8b502f81
     etcd:
       repository: keppel.global.cloud.sap/ccloud/etcd
-      tag: v3.4.35
+      tag: v3.4.36
     etcdBackup:
       repository: keppel.global.cloud.sap/ccloud/etcdbrctl
-      tag: v0.25.1
+      tag: v0.41.2
     flannel:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/flannel/flannel
       tag: v0.26.3

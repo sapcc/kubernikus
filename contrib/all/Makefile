@@ -13,7 +13,10 @@ FLANNEL_VERSION=v0.17.0
 COREDNS_VERSION=1.9.1
 
 ETCD_IMAGE=gcr.io/etcd-development/etcd
-ETCD_VERSION=v3.4.35
+ETCD_VERSION=v3.4.36
+
+ETCDBRCTL_IMAGE=europe-docker.pkg.dev/gardener-project/releases/gardener/etcdbrctl
+ETCDBRCTL_VERSION=v0.41.2
 
 OPTS?=--network=host
 
@@ -32,5 +35,11 @@ etcd:
 
 etcd-push:
 	docker push ${IMAGE}/etcd:${ETCD_VERSION}
+
+etcdbrctl:
+	docker build ${OPTS} -t ${IMAGE}/etcdbrctl:${ETCDBRCTL_VERSION} --build-arg IMAGE=${ETCDBRCTL_IMAGE}:${ETCDBRCTL_VERSION} - < Dockerfile.etcdbrctl
+
+etcdbrctl-push:
+	docker push ${IMAGE}/etcdbrctl:${ETCDBRCTL_VERSION}
 
 .PHONY: all build push
