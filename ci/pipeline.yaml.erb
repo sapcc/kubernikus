@@ -28,6 +28,13 @@ REGIONS = {
 
 GROUPS             = REGIONS.values.map{ |v| v[:continent]}.uniq
 DEPLOYABLE_REGIONS = REGIONS.select{ |k, v| ["terraform"].include?(v[:e2e]) }
+
+_images_yaml = YAML.load(File.read(File.join(File.dirname(__FILE__), "..", "charts", "images.yaml")))
+_latest_k8s  = _images_yaml["imagesForVersion"].keys.sort_by { |v| Gem::Version.new(v) }.max
+ETCD_VERSION       = _images_yaml["imagesForVersion"][_latest_k8s]["etcd"]["tag"]
+ETCDBRCTL_VERSION  = _images_yaml["imagesForVersion"][_latest_k8s]["etcdBackup"]["tag"]
+ETCD_UPSTREAM      = "gcr.io/etcd-development/etcd"
+ETCDBRCTL_UPSTREAM = "europe-docker.pkg.dev/gardener-project/releases/gardener/etcdbrctl"
 %>
 
 <% REGIONS.each do |region, meta| %>
@@ -105,6 +112,12 @@ resources:
     source:
       uri: https://github.com/sapcc/kubernikus.git
 
+  - name: kubernikus-etcd-images.git
+    type: git
+    source:
+      uri: https://github.com/sapcc/kubernikus.git
+      branch: master
+
   - name: docs-builder.image
     type: registry-image
     check_every: 24h
@@ -122,6 +135,24 @@ resources:
       password: ((registry-user/keppel-ccloud.password))
       repository: keppel.eu-de-1.cloud.sap/ccloud/kubernikus
       tag: latest
+
+  - name: etcd.image
+    type: registry-image
+    check_every: 24h
+    source:
+      username: ((registry-user/keppel-ccloud.username))
+      password: ((registry-user/keppel-ccloud.password))
+      repository: keppel.eu-de-1.cloud.sap/ccloud/etcd
+      tag: <%= ETCD_VERSION %>
+
+  - name: etcdbrctl.image
+    type: registry-image
+    check_every: 24h
+    source:
+      username: ((registry-user/keppel-ccloud.username))
+      password: ((registry-user/keppel-ccloud.password))
+      repository: keppel.eu-de-1.cloud.sap/ccloud/etcdbrctl
+      tag: <%= ETCDBRCTL_VERSION %>
 
   - name: kubernikusctl.release
     type: github-release
@@ -266,6 +297,70 @@ jobs:
         params:
           image: image/image.tar
           additional_tags: kubernikus.git/.git/ref
+
+  - name: build-etcd
+    serial: true
+    plan:
+      - get: kubernikus-etcd-images.git
+      - task: args
+        config:
+          platform: linux
+          image_resource:
+            type: registry-image
+            source:
+              repository: keppel.eu-de-1.cloud.sap/ccloud-dockerhub-mirror/library/alpine
+              tag: latest
+          inputs:  [{ name: kubernikus-etcd-images.git }]
+          outputs: [{ name: kubernikus-etcd-images.git }]
+          run:
+            path: sh
+            args:
+              - -ec
+              - |
+                echo "IMAGE=<%= ETCD_UPSTREAM %>:<%= ETCD_VERSION %>" > kubernikus-etcd-images.git/build-args.txt
+      - task: build
+        privileged: true
+        config:
+          <<: *task_oci_build
+        input_mapping: { context: kubernikus-etcd-images.git }
+        params:
+          DOCKERFILE: context/contrib/all/Dockerfile.etcd
+          BUILD_ARGS_FILE: context/build-args.txt
+      - put: etcd.image
+        params:
+          image: image/image.tar
+
+  - name: build-etcdbrctl
+    serial: true
+    plan:
+      - get: kubernikus-etcd-images.git
+      - task: args
+        config:
+          platform: linux
+          image_resource:
+            type: registry-image
+            source:
+              repository: keppel.eu-de-1.cloud.sap/ccloud-dockerhub-mirror/library/alpine
+              tag: latest
+          inputs:  [{ name: kubernikus-etcd-images.git }]
+          outputs: [{ name: kubernikus-etcd-images.git }]
+          run:
+            path: sh
+            args:
+              - -ec
+              - |
+                echo "IMAGE=<%= ETCDBRCTL_UPSTREAM %>:<%= ETCDBRCTL_VERSION %>" > kubernikus-etcd-images.git/build-args.txt
+      - task: build
+        privileged: true
+        config:
+          <<: *task_oci_build
+        input_mapping: { context: kubernikus-etcd-images.git }
+        params:
+          DOCKERFILE: context/contrib/all/Dockerfile.etcdbrctl
+          BUILD_ARGS_FILE: context/build-args.txt
+      - put: etcdbrctl.image
+        params:
+          image: image/image.tar
 
   - name: replicate-images
     plan:
@@ -538,6 +633,8 @@ groups:
     jobs:
       - docs
       - build
+      - build-etcd
+      - build-etcdbrctl
       - master
       - cli
       - whitesource
