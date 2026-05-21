@@ -13,7 +13,7 @@
   {{- end -}}
 {{- end -}}
 {{- define "seed.dns-name" -}}
-  {{- . | lower | regexReplaceAll "[^a-z0-9-]" "-" | trimSuffix "-" | trimPrefix "-" -}}
+  {{- regexReplaceAll "[^a-z0-9-]" (. | lower) "-" | trimSuffix "-" | trimPrefix "-" -}}
 {{- end -}}
 
 {{- if and (not .Values.seedKubeadm) (not .Values.seedVirtual) .Values.openstack -}}
