@@ -256,6 +256,9 @@ func (c *projectClient) getVolumeTypes() ([]models.VolumeType, error) {
 			return false, err
 		}
 		for _, vt := range vtList {
+			if !vt.IsPublic {
+				continue
+			}
 			result = append(result, models.VolumeType{ID: vt.ID, Name: vt.Name})
 		}
 		return true, nil

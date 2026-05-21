@@ -32,16 +32,19 @@ parameters:
 {{- end -}}
 
 {{- range $vt := .Values.openstack.volumeTypes -}}
+{{- $name := include "seed.dns-name" $vt -}}
+{{- if $name -}}
 apiVersion: storage.k8s.io/v1
 kind: StorageClass
 metadata:
-  name: cinder-{{ include "seed.dns-name" $vt }}
+  name: cinder-{{ $name }}
 provisioner: {{ template "seed.storage-provisioner" $ }}
 allowVolumeExpansion: {{ template "seed.storage-expansion" $ }}
 volumeBindingMode: WaitForFirstConsumer
 parameters:
   type: {{ $vt }}
 ---
+{{- end -}}
 {{- end -}}
 
 apiVersion: storage.k8s.io/v1
