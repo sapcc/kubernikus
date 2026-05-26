@@ -233,11 +233,13 @@ spec:
             {{- end }}
             - --garbage-collection-policy={{ .Values.backup.garbageCollectionPolicy }}
             {{- if .Values.secure.enabled }}
+            - --endpoints=https://127.0.0.1:2379
             - --cacert=/etc/kubernetes/certs/tls-etcd-ca.pem
             - --cert=/etc/kubernetes/certs/etcd-clients-backup.pem
             - --key=/etc/kubernetes/certs/etcd-clients-backup-key.pem
             - --insecure-transport=false
             {{- else }}
+            - --endpoints=http://127.0.0.1:2379
             - --insecure-transport=true
             {{- end }}
           image: "{{ include "etcdBackup.image" . }}"
