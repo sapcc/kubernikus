@@ -33,6 +33,7 @@ type openstackValues struct {
 	Password            string `yaml:"password,omitempty" json:"password,omitempty"`
 	DomainName          string `yaml:"domainName,omitempty" json:"domainName,omitempty"`
 	ProjectID           string `yaml:"projectID,omitempty" json:"projectID,omitempty"`
+	ProjectName         string `yaml:"projectName,omitempty" json:"projectName,omitempty"`
 	ProjectDomainName   string `yaml:"projectDomainName,omitempty" json:"projectDomainName,omitempty"`
 	Region              string `yaml:"region,omitempty" json:"region,omitempty"`
 	LbSubnetID          string `yaml:"lbSubnetID,omitempty" json:"lbSubnetID,omitempty"`
@@ -199,6 +200,7 @@ func KlusterToHelmValues(kluster *v1.Kluster, secret *v1.Secret, kubernetesVersi
 				Password:          secret.Password,
 				DomainName:        secret.DomainName,
 				ProjectID:         secret.ProjectID,
+				ProjectName:       secret.ProjectName,
 				ProjectDomainName: secret.ProjectDomainName,
 			},
 			Version: versionValues{
@@ -229,6 +231,7 @@ func KlusterToHelmValues(kluster *v1.Kluster, secret *v1.Secret, kubernetesVersi
 			DomainName:          secret.DomainName,
 			Region:              secret.Region,
 			ProjectID:           kluster.Account(),
+			ProjectName:         secret.ProjectName,
 			ProjectDomainName:   secret.ProjectDomainName,
 			LbSubnetID:          kluster.Spec.Openstack.LBSubnetID,
 			LbFloatingNetworkID: kluster.Spec.Openstack.LBFloatingNetworkID,
