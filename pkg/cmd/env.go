@@ -10,7 +10,7 @@ import (
 
 func PopulateFromEnv(obj interface{}) error {
 	s := reflect.ValueOf(obj)
-	if s.Kind() != reflect.Ptr {
+	if s.Kind() != reflect.Pointer {
 		return errors.New("not a pointer")
 	}
 	//Create a zero valued copy of the passed struct
