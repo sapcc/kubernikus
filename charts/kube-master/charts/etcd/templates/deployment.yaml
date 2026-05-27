@@ -60,6 +60,14 @@ data:
   etcd.conf.yaml: |-
     name: kubernikus
     initial-cluster: default=http://127.0.0.1:2380
+{{- if (semverCompare ">= 1.34-0" .Values.version.kubernetes) }}
+    initial-advertise-peer-urls:
+      kubernikus:
+        - http://localhost:2380
+    advertise-client-urls:
+      kubernikus:
+        - {{ if .Values.secure.enabled }}https{{ else }}http{{ end }}://localhost:2379
+{{- end }}
 {{- end }}
 ---
 {{- if .Capabilities.APIVersions.Has "apps/v1" }}
@@ -325,9 +333,13 @@ spec:
 {{- end }}
 {{- if (semverCompare ">= 1.23-0" .Values.version.kubernetes) }}
             - name: POD_NAME
+{{- if (semverCompare ">= 1.34-0" .Values.version.kubernetes) }}
+              value: "kubernikus"
+{{- else }}
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.name
+{{- end }}
             - name: POD_NAMESPACE
               valueFrom:
                 fieldRef:
