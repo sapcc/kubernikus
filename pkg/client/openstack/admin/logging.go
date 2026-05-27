@@ -162,6 +162,19 @@ func (c LoggingClient) GetDomainNameByProject(projectID string) (domainName stri
 	return c.Client.GetDomainNameByProject(projectID)
 }
 
+func (c LoggingClient) GetProjectName(projectID string) (projectName string, err error) {
+	defer func(begin time.Time) {
+		c.Logger.Log(
+			"msg", "get project name by project id",
+			"project_id", projectID,
+			"took", time.Since(begin),
+			"v", 2,
+			"err", err,
+		)
+	}(time.Now())
+	return c.Client.GetProjectName(projectID)
+}
+
 func (c LoggingClient) GetDefaultServiceUserRoles() (roles []string) {
 	return c.Client.GetDefaultServiceUserRoles()
 }

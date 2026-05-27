@@ -680,6 +680,12 @@ func (op *GroundControl) createKluster(kluster *v1.Kluster) error {
 		}
 		klusterSecret.ProjectDomainName = domainNameByProject
 
+		projectName, err := adminClient.GetProjectName(klusterSecret.ProjectID)
+		if err != nil {
+			return fmt.Errorf("failed to retrieve project name: %s", err)
+		}
+		klusterSecret.ProjectName = projectName
+
 		userDomainID, err := adminClient.GetDomainID(klusterSecret.DomainName)
 		if err != nil {
 			return err

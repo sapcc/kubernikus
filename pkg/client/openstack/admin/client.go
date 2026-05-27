@@ -42,6 +42,7 @@ type AdminClient interface {
 	GetUserRoles(projectID, userName, domainName string) ([]string, error)
 	GetDefaultServiceUserRoles() []string
 	GetDomainNameByProject(projectID string) (string, error)
+	GetProjectName(projectID string) (string, error)
 }
 
 type adminClient struct {
@@ -181,6 +182,16 @@ func (c *adminClient) GetDomainNameByProject(projectID string) (string, error) {
 	}
 
 	return domain.Name, nil
+}
+
+func (c *adminClient) GetProjectName(projectID string) (string, error) {
+
+	project, err := projects.Get(c.IdentityClient, projectID).Extract()
+	if err != nil {
+		return "", err
+	}
+
+	return project.Name, nil
 }
 
 func (c *adminClient) GetDefaultServiceUserRoles() []string {

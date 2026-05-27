@@ -131,6 +131,22 @@ spec:
               path: secretAccessKey
 {{- end }}
 {{- end }}
+{{- if eq .Values.backup.storageProvider "Swift" }}
+        - name: swift-creds
+          secret:
+            secretName: {{ include "fullname" . }}
+            items:
+              - key: openstack-auth-url
+                path: authURL
+              - key: openstack-username
+                path: username
+              - key: openstack-password
+                path: password
+              - key: openstack-domain-name
+                path: domainName
+              - key: openstack-project-name
+                path: tenantName
+{{- end }}
 {{- if .Values.secure.enabled }}
         - name: certs-etcd
           secret:
@@ -282,6 +298,8 @@ spec:
 {{- else if eq .Values.backup.storageProvider "Swift" }}
             - name: STORAGE_CONTAINER
               value: {{ .Values.storageContainer }}
+            - name: OPENSTACK_APPLICATION_CREDENTIALS
+              value: /var/etcd/swift-creds
             - name: OS_AUTH_URL
               valueFrom:
                 secretKeyRef:
@@ -329,6 +347,11 @@ spec:
               mountPath: "/etc/aws/credentials"
               readOnly: true
 {{- end }}
+{{- end }}
+{{- if eq .Values.backup.storageProvider "Swift" }}
+            - name: swift-creds
+              mountPath: /var/etcd/swift-creds
+              readOnly: true
 {{- end }}
           resources:
 {{ toYaml .Values.backup.resources | indent 12 }}
