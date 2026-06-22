@@ -8316,7 +8316,7 @@ imagesForVersion:
       tag: v3.4.36
     etcdBackup:
       repository: keppel.global.cloud.sap/ccloud/etcdbrctl
-      tag: v0.41.2
+      tag: v0.25.1
     flannel:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/flannel/flannel
       tag: v0.26.3
@@ -8400,7 +8400,7 @@ imagesForVersion:
       tag: v3.4.36
     etcdBackup:
       repository: keppel.global.cloud.sap/ccloud/etcdbrctl
-      tag: v0.41.2
+      tag: v0.25.1
     flannel:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/flannel/flannel
       tag: v0.26.3

@@ -341,9 +341,7 @@ spec:
                   fieldPath: metadata.name
 {{- end }}
             - name: POD_NAMESPACE
-              valueFrom:
-                fieldRef:
-                  fieldPath: metadata.namespace
+              value: {{ include "fullname" . }} # namespace -- release name -- is used for safe guard check in backup sidecar
 {{- end }}
           volumeMounts:
             - mountPath: /var/lib/etcd
