@@ -341,7 +341,7 @@ spec:
                   fieldPath: metadata.name
 {{- end }}
             - name: POD_NAMESPACE
-              value: {{ include "fullname" . }}
+              value: {{ include "fullname" . }} # leave as is, release name is used for safe guard check in backup sidecar
 {{- end }}
           volumeMounts:
             - mountPath: /var/lib/etcd
