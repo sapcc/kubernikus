@@ -185,6 +185,7 @@ spec:
               - key: etcd-clients-backup-key.pem
                 path: etcd-clients-backup-key.pem
 {{- end }}
+{{- if (semverCompare ">= 1.34-0" .Values.version.kubernetes) }}
       initContainers:
         - name: safe-guard-check
           image: "{{ include "etcd.image" . }}"
@@ -208,6 +209,7 @@ spec:
           volumeMounts:
             - mountPath: /var/lib/etcd
               name: data
+{{- end }}
       containers:
         - name: etcd
           ports:
