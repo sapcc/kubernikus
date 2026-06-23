@@ -185,6 +185,29 @@ spec:
               - key: etcd-clients-backup-key.pem
                 path: etcd-clients-backup-key.pem
 {{- end }}
+      initContainers:
+        - name: safe-guard-check
+          image: "{{ include "etcd.image" . }}"
+          command:
+            - /bin/sh
+            - -c
+            - |
+              if [ -f /var/lib/etcd/safe_guard ]; then
+                STORED_NAMESPACE=$(cat /var/lib/etcd/safe_guard)
+                if [ "$STORED_NAMESPACE" != "$POD_NAMESPACE" ]; then
+                  echo "Namespace mismatch detected: stored=$STORED_NAMESPACE, current=$POD_NAMESPACE"
+                  echo "Removing safe_guard file due to namespace change"
+                  rm -f /var/lib/etcd/safe_guard
+                fi
+              fi
+          env:
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+          volumeMounts:
+            - mountPath: /var/lib/etcd
+              name: data
       containers:
         - name: etcd
           ports:
