@@ -7427,10 +7427,10 @@ imagesForVersion:
       tag: v1.31.10
     cinderCSIPlugin:
       repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/provider-os/cinder-csi-plugin
-      tag: v1.31.3
+      tag: v1.31.4
     cloudControllerManager:
       repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/provider-os/openstack-cloud-controller-manager
-      tag: v1.31.3
+      tag: v1.31.4
     cniPlugins:
       repository: keppel.global.cloud.sap/ccloud/cni-plugins
       tag: v1.1.1
@@ -7592,7 +7592,7 @@ imagesForVersion:
   1.31.3:
     apiserver:
       repository: keppel.global.cloud.sap/ccloud/kube-apiserver
-      tag: v1.31.3
+      tag: v1.31.4
     cinderCSIPlugin:
       repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/provider-os/cinder-csi-plugin
       tag: v1.30.1
@@ -7604,7 +7604,7 @@ imagesForVersion:
       tag: v1.1.1
     controllerManager:
       repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/kube-controller-manager
-      tag: v1.31.3
+      tag: v1.31.4
     coreDNS:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/coredns/coredns
       tag: 1.10.1
@@ -7656,10 +7656,10 @@ imagesForVersion:
       tag: v1.14.6-1.1
     kubeProxy:
       repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/kube-proxy
-      tag: v1.31.3
+      tag: v1.31.4
     kubelet:
       repository: keppel.global.cloud.sap/ccloud/kubelet
-      tag: v1.31.3
+      tag: v1.31.4
     pause:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/sapcc/pause-amd64
       tag: '3.1'
@@ -7668,7 +7668,7 @@ imagesForVersion:
       tag: v2.0.0
     scheduler:
       repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/kube-scheduler
-      tag: v1.31.3
+      tag: v1.31.4
     supported: false
     wormhole:
       repository: keppel.global.cloud.sap/ccloud/kubernikus
@@ -7763,10 +7763,10 @@ imagesForVersion:
       tag: v1.31.5
     cinderCSIPlugin:
       repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/provider-os/cinder-csi-plugin
-      tag: v1.31.3
+      tag: v1.31.4
     cloudControllerManager:
       repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/provider-os/openstack-cloud-controller-manager
-      tag: v1.31.3
+      tag: v1.31.4
     cniPlugins:
       repository: keppel.global.cloud.sap/ccloud/cni-plugins
       tag: v1.1.1
@@ -7847,10 +7847,10 @@ imagesForVersion:
       tag: v1.31.8
     cinderCSIPlugin:
       repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/provider-os/cinder-csi-plugin
-      tag: v1.31.3
+      tag: v1.31.4
     cloudControllerManager:
       repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/provider-os/openstack-cloud-controller-manager
-      tag: v1.31.3
+      tag: v1.31.4
     cniPlugins:
       repository: keppel.global.cloud.sap/ccloud/cni-plugins
       tag: v1.1.1
@@ -7931,10 +7931,10 @@ imagesForVersion:
       tag: v1.32.6
     cinderCSIPlugin:
       repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/provider-os/cinder-csi-plugin
-      tag: v1.32.0
+      tag: v1.32.1
     cloudControllerManager:
       repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/provider-os/openstack-cloud-controller-manager
-      tag: v1.32.0
+      tag: v1.32.1
     cniPlugins:
       repository: keppel.global.cloud.sap/ccloud/cni-plugins
       tag: v1.1.1
@@ -8015,10 +8015,10 @@ imagesForVersion:
       tag: v1.33.2
     cinderCSIPlugin:
       repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/provider-os/cinder-csi-plugin
-      tag: v1.33.0
+      tag: v1.33.1
     cloudControllerManager:
       repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/provider-os/openstack-cloud-controller-manager
-      tag: v1.33.0
+      tag: v1.33.1
     cniPlugins:
       repository: keppel.global.cloud.sap/ccloud/cni-plugins
       tag: v1.1.1
