@@ -41,7 +41,7 @@ spec:
       - args:
         - -conf
         - /etc/coredns/Corefile
-        image: keppel.eu-de-1.cloud.sap/ccloud-dockerhub-mirror/sapcc/coredns:1.6.2
+        image: keppel.eu-de-1.cloud.sap/ccloud-dockerhub-mirror/sapcc/coredns:1.14.1
         imagePullPolicy: IfNotPresent
         livenessProbe:
           failureThreshold: 5
