@@ -13,10 +13,10 @@ FLANNEL_VERSION=v0.17.0
 COREDNS_VERSION=1.9.1
 
 ETCD_IMAGE=gcr.io/etcd-development/etcd
-ETCD_VERSION=v3.4.36
+ETCD_VERSION=v3.5.27
 
 ETCDBRCTL_IMAGE=europe-docker.pkg.dev/gardener-project/releases/gardener/etcdbrctl
-ETCDBRCTL_VERSION=v0.41.2
+ETCDBRCTL_VERSION=v0.42.0
 
 OPTS?=--network=host
 
