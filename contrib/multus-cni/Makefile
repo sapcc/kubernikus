@@ -1,4 +1,4 @@
-MULTUS_CNI_RELEASE=3.9
+MULTUS_CNI_RELEASE=4.3.0
 IMAGE?=keppel.eu-de-1.cloud.sap/ccloud
 OS?=linux
 ARCH?=amd64
