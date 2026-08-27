@@ -37,6 +37,7 @@ ETCD_UPSTREAM      = "gcr.io/etcd-development/etcd"
 ETCDBRCTL_UPSTREAM = "europe-docker.pkg.dev/gardener-project/releases/gardener/etcdbrctl"
 
 MULTUS_CNI_RELEASE = ENV['MULTUS_CNI_RELEASE'] || File.read(File.join(File.dirname(__FILE__), "..", "contrib", "multus-cni", "Makefile"))[/^MULTUS_CNI_RELEASE\s*=\s*(\S+)/, 1]
+CNI_PLUGINS_RELEASE = ENV['CNI_PLUGINS_RELEASE'] || File.read(File.join(File.dirname(__FILE__), "..", "contrib", "cni-plugins", "Makefile"))[/^CNI_PLUGINS_RELEASE\s*=\s*(\S+)/, 1]
 %>
 
 <% REGIONS.each do |region, meta| %>
@@ -127,6 +128,13 @@ resources:
       branch: master
       paths: [ contrib/multus-cni/** ]
 
+  - name: kubernikus-cni-plugins.git
+    type: git
+    source:
+      uri: https://github.com/sapcc/kubernikus.git
+      branch: master
+      paths: [ contrib/cni-plugins/** ]
+
   - name: docs-builder.image
     type: registry-image
     check_every: 24h
@@ -171,6 +179,15 @@ resources:
       password: ((registry-user/keppel-ccloud.password))
       repository: keppel.eu-de-1.cloud.sap/ccloud/multus-cni
       tag: <%= MULTUS_CNI_RELEASE %>
+
+  - name: cni-plugins.image
+    type: registry-image
+    check_every: 24h
+    source:
+      username: ((registry-user/keppel-ccloud.username))
+      password: ((registry-user/keppel-ccloud.password))
+      repository: keppel.eu-de-1.cloud.sap/ccloud/cni-plugins
+      tag: <%= CNI_PLUGINS_RELEASE %>
 
   - name: kubernikusctl.release
     type: github-release
@@ -410,6 +427,39 @@ jobs:
           DOCKERFILE: context/contrib/multus-cni/Dockerfile
           BUILD_ARGS_FILE: context/build-args.txt
       - put: multus-cni.image
+        params:
+          image: image/image.tar
+
+  - name: build-cni-plugins
+    serial: true
+    plan:
+      - get: kubernikus-cni-plugins.git
+        trigger: true
+      - task: args
+        config:
+          platform: linux
+          image_resource:
+            type: registry-image
+            source:
+              repository: keppel.eu-de-1.cloud.sap/ccloud-dockerhub-mirror/library/alpine
+              tag: latest
+          inputs:  [{ name: kubernikus-cni-plugins.git }]
+          outputs: [{ name: kubernikus-cni-plugins.git }]
+          run:
+            path: sh
+            args:
+              - -ec
+              - |
+                echo "CNI_PLUGINS_RELEASE=<%= CNI_PLUGINS_RELEASE %>" > kubernikus-cni-plugins.git/build-args.txt
+      - task: build
+        privileged: true
+        config:
+          <<: *task_oci_build
+        input_mapping: { context: kubernikus-cni-plugins.git }
+        params:
+          DOCKERFILE: context/contrib/cni-plugins/Dockerfile
+          BUILD_ARGS_FILE: context/build-args.txt
+      - put: cni-plugins.image
         params:
           image: image/image.tar
 
@@ -687,6 +737,7 @@ groups:
       - build-etcd
       - build-etcdbrctl
       - build-multus-cni
+      - build-cni-plugins
       - master
       - cli
       - whitesource
