@@ -1,4 +1,4 @@
-CNI_PLUGINS_RELEASE=v1.1.1
+CNI_PLUGINS_RELEASE=v1.9.1
 IMAGE?=keppel.eu-de-1.cloud.sap/ccloud
 ARCH?=amd64
 
