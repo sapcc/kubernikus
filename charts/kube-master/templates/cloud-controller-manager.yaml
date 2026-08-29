@@ -99,6 +99,8 @@ spec:
 {{- end }}
             - --use-service-account-credentials=true
             - --concurrent-service-syncs=10
+            - --user-agent=kubernikus
+            - --user-agent={{ include "master.fullname" . }}
           livenessProbe:
             httpGet:
               path: /healthz
