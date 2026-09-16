@@ -91,6 +91,10 @@ func TestEnsure_CARotation(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotEmpty(t, updates)
 
+	// Wait one second so the rotated cert's NotAfter (second precision in ASN.1)
+	// is strictly after the original cert's NotAfter.
+	time.Sleep(time.Second)
+
 	// Capture original CA NotAfter and public keys
 	tlsBlock, _ := pem.Decode([]byte(store.TLSCACertificate))
 	tlsCert, _ := x509.ParseCertificate(tlsBlock.Bytes)
