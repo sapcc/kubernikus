@@ -1,6 +1,8 @@
 package util
 
 import (
+	"crypto/x509"
+	"encoding/pem"
 	"net"
 	"testing"
 	"time"
@@ -72,4 +74,43 @@ func TestLoadOrCreateCA_Rotation(t *testing.T) {
 		"subject must not change")
 	assert.Equal(t, bundle.Certificate.SubjectKeyId, bundle2.Certificate.SubjectKeyId,
 		"SubjectKeyId must be identical so existing leaf AuthorityKeyId still matches")
+}
+
+func TestEnsure_CARotation(t *testing.T) {
+	kluster := &v1.Kluster{}
+	kluster.Name = "test-kluster"
+	kluster.Spec.AdvertiseAddress = "1.2.3.4"
+	kluster.Spec.ServiceCIDR = "198.18.128.0/17"
+
+	store := &v1.Certificates{}
+	domain := "example.com"
+
+	// First Ensure — creates all CAs and leaf certs
+	factory := NewCertificateFactory(kluster, store, domain)
+	updates, err := factory.Ensure(false)
+	assert.NoError(t, err)
+	assert.NotEmpty(t, updates)
+
+	// Capture original CA NotAfter and public keys
+	tlsBlock, _ := pem.Decode([]byte(store.TLSCACertificate))
+	tlsCert, _ := x509.ParseCertificate(tlsBlock.Bytes)
+	origNotAfter := tlsCert.NotAfter
+	origPubKey := tlsCert.PublicKey
+
+	// Rotate — must replace all CA certs, same keys
+	updates2, err := factory.Ensure(true)
+	assert.NoError(t, err)
+	// All 9 CAs should appear in updates
+	caUpdates := 0
+	for _, u := range updates2 {
+		if u.Type == "CA certificate" {
+			caUpdates++
+		}
+	}
+	assert.Equal(t, 9, caUpdates)
+
+	tlsBlock2, _ := pem.Decode([]byte(store.TLSCACertificate))
+	tlsCert2, _ := x509.ParseCertificate(tlsBlock2.Bytes)
+	assert.True(t, tlsCert2.NotAfter.After(origNotAfter))
+	assert.Equal(t, origPubKey, tlsCert2.PublicKey)
 }

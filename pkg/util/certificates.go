@@ -136,7 +136,7 @@ func NewCertificateFactory(kluster *v1.Kluster, store *v1.Certificates, domain s
 	return &CertificateFactory{kluster, store, domain}
 }
 
-func (cf *CertificateFactory) Ensure() ([]CertUpdates, error) {
+func (cf *CertificateFactory) Ensure(rotate bool) ([]CertUpdates, error) {
 	apiServiceIP, err := cf.kluster.ApiServiceIP()
 	if err != nil {
 		return nil, err
@@ -149,39 +149,39 @@ func (cf *CertificateFactory) Ensure() ([]CertUpdates, error) {
 
 	certUpdates := []CertUpdates{}
 
-	tlsEtcdCA, err := loadOrCreateCA(cf.kluster, "TLSEtcd", &cf.store.TLSEtcdCACertificate, &cf.store.TLSEtcdCAPrivateKey, false, &certUpdates)
+	tlsEtcdCA, err := loadOrCreateCA(cf.kluster, "TLSEtcd", &cf.store.TLSEtcdCACertificate, &cf.store.TLSEtcdCAPrivateKey, rotate, &certUpdates)
 	if err != nil {
 		return nil, err
 	}
-	etcdClientsCA, err := loadOrCreateCA(cf.kluster, "Etcd Clients", &cf.store.EtcdClientsCACertificate, &cf.store.EtcdClientsCAPrivateKey, false, &certUpdates)
+	etcdClientsCA, err := loadOrCreateCA(cf.kluster, "Etcd Clients", &cf.store.EtcdClientsCACertificate, &cf.store.EtcdClientsCAPrivateKey, rotate, &certUpdates)
 	if err != nil {
 		return nil, err
 	}
-	_, err = loadOrCreateCA(cf.kluster, "Etcd Peers", &cf.store.EtcdPeersCACertificate, &cf.store.EtcdPeersCAPrivateKey, false, &certUpdates)
+	_, err = loadOrCreateCA(cf.kluster, "Etcd Peers", &cf.store.EtcdPeersCACertificate, &cf.store.EtcdPeersCAPrivateKey, rotate, &certUpdates)
 	if err != nil {
 		return nil, err
 	}
-	apiserverClientsCA, err := loadOrCreateCA(cf.kluster, "ApiServer Clients", &cf.store.ApiserverClientsCACertifcate, &cf.store.ApiserverClientsCAPrivateKey, false, &certUpdates)
+	apiserverClientsCA, err := loadOrCreateCA(cf.kluster, "ApiServer Clients", &cf.store.ApiserverClientsCACertifcate, &cf.store.ApiserverClientsCAPrivateKey, rotate, &certUpdates)
 	if err != nil {
 		return nil, err
 	}
-	_, err = loadOrCreateCA(cf.kluster, "ApiServer Nodes", &cf.store.ApiserverNodesCACertificate, &cf.store.ApiserverNodesCAPrivateKey, false, &certUpdates)
+	_, err = loadOrCreateCA(cf.kluster, "ApiServer Nodes", &cf.store.ApiserverNodesCACertificate, &cf.store.ApiserverNodesCAPrivateKey, rotate, &certUpdates)
 	if err != nil {
 		return nil, err
 	}
-	kubeletClientsCA, err := loadOrCreateCA(cf.kluster, "Kubelet Clients", &cf.store.KubeletClientsCACertificate, &cf.store.KubeletClientsCAPrivateKey, false, &certUpdates)
+	kubeletClientsCA, err := loadOrCreateCA(cf.kluster, "Kubelet Clients", &cf.store.KubeletClientsCACertificate, &cf.store.KubeletClientsCAPrivateKey, rotate, &certUpdates)
 	if err != nil {
 		return nil, err
 	}
-	tlsCA, err := loadOrCreateCA(cf.kluster, "TLS", &cf.store.TLSCACertificate, &cf.store.TLSCAPrivateKey, false, &certUpdates)
+	tlsCA, err := loadOrCreateCA(cf.kluster, "TLS", &cf.store.TLSCACertificate, &cf.store.TLSCAPrivateKey, rotate, &certUpdates)
 	if err != nil {
 		return nil, err
 	}
-	aggregationCA, err := loadOrCreateCA(cf.kluster, "Aggregation", &cf.store.AggregationCACertificate, &cf.store.AggregationCAPrivateKey, false, &certUpdates)
+	aggregationCA, err := loadOrCreateCA(cf.kluster, "Aggregation", &cf.store.AggregationCACertificate, &cf.store.AggregationCAPrivateKey, rotate, &certUpdates)
 	if err != nil {
 		return nil, err
 	}
-	admissionCA, err := loadOrCreateCA(cf.kluster, "Admission", &cf.store.AdmissionCACertificate, &cf.store.AdmissionCAPrivateKey, false, &certUpdates)
+	admissionCA, err := loadOrCreateCA(cf.kluster, "Admission", &cf.store.AdmissionCACertificate, &cf.store.AdmissionCAPrivateKey, rotate, &certUpdates)
 	if err != nil {
 		return nil, err
 	}
