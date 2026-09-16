@@ -63,7 +63,7 @@ func init() {
 			Region:     "Region",
 		},
 	}
-	_, err := util.NewCertificateFactory(&testKluster, &testKlusterSecret.Certificates, "kubernikus.test").Ensure()
+	_, err := util.NewCertificateFactory(&testKluster, &testKlusterSecret.Certificates, "kubernikus.test").Ensure(false)
 	if err != nil {
 		panic(err)
 	}

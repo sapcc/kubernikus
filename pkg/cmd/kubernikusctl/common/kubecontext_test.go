@@ -23,7 +23,7 @@ func TestKubernikusContext(t *testing.T) {
 	flag.Lookup("auth-url").Value.Set("http://auth.url")
 
 	factory := util.NewCertificateFactory(kluster, certs, "test.local")
-	_, err := factory.Ensure()
+	_, err := factory.Ensure(false)
 	require.NoError(t, err)
 	bundle, err := factory.UserCert(&models.Principal{Name: "exampleuser", Domain: "exampledomain"}, "http://kubernikus.url")
 	require.NoError(t, err)
