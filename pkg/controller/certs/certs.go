@@ -43,11 +43,11 @@ func (cc *certsController) Reconcile(kluster *v1.Kluster) (err error) {
 		return fmt.Errorf("couldn't get kluster secret: %s", err)
 	}
 
-	rotate := kluster.CARotation()
+	rotateCA := kluster.CARotation()
 
 	certFactory := util.NewCertificateFactory(kluster, &secret.Certificates, cc.config.Kubernikus.Domain)
 	var updates []util.CertUpdates
-	if rotate {
+	if rotateCA {
 		updates, err = certFactory.EnsureWithCARotation()
 	} else {
 		updates, err = certFactory.Ensure()
@@ -63,7 +63,7 @@ func (cc *certsController) Reconcile(kluster *v1.Kluster) (err error) {
 		cc.logger.Log("msg", "Certificates updated", "kluster", kluster.Name, "changes", fmt.Sprintf("%#v", updates))
 	}
 
-	if rotate {
+	if rotateCA {
 		if err = cc.removeRotateCAAnnotation(kluster); err != nil {
 			return fmt.Errorf("couldn't remove rotation annotation: %s", err)
 		}
