@@ -144,7 +144,7 @@ func (cf *CertificateFactory) EnsureWithCARotation() ([]CertUpdates, error) {
 	return cf.ensure(true)
 }
 
-func (cf *CertificateFactory) ensure(rotateCA bool) ([]CertUpdates, error) {
+func (cf *CertificateFactory) ensure(rotate bool) ([]CertUpdates, error) {
 	apiServiceIP, err := cf.kluster.ApiServiceIP()
 	if err != nil {
 		return nil, err
@@ -157,39 +157,39 @@ func (cf *CertificateFactory) ensure(rotateCA bool) ([]CertUpdates, error) {
 
 	certUpdates := []CertUpdates{}
 
-	tlsEtcdCA, err := loadOrCreateCA(cf.kluster, "TLSEtcd", &cf.store.TLSEtcdCACertificate, &cf.store.TLSEtcdCAPrivateKey, rotateCA, &certUpdates)
+	tlsEtcdCA, err := loadOrCreateCA(cf.kluster, "TLSEtcd", &cf.store.TLSEtcdCACertificate, &cf.store.TLSEtcdCAPrivateKey, rotate, &certUpdates)
 	if err != nil {
 		return nil, err
 	}
-	etcdClientsCA, err := loadOrCreateCA(cf.kluster, "Etcd Clients", &cf.store.EtcdClientsCACertificate, &cf.store.EtcdClientsCAPrivateKey, rotateCA, &certUpdates)
+	etcdClientsCA, err := loadOrCreateCA(cf.kluster, "Etcd Clients", &cf.store.EtcdClientsCACertificate, &cf.store.EtcdClientsCAPrivateKey, rotate, &certUpdates)
 	if err != nil {
 		return nil, err
 	}
-	_, err = loadOrCreateCA(cf.kluster, "Etcd Peers", &cf.store.EtcdPeersCACertificate, &cf.store.EtcdPeersCAPrivateKey, rotateCA, &certUpdates)
+	_, err = loadOrCreateCA(cf.kluster, "Etcd Peers", &cf.store.EtcdPeersCACertificate, &cf.store.EtcdPeersCAPrivateKey, rotate, &certUpdates)
 	if err != nil {
 		return nil, err
 	}
-	apiserverClientsCA, err := loadOrCreateCA(cf.kluster, "ApiServer Clients", &cf.store.ApiserverClientsCACertifcate, &cf.store.ApiserverClientsCAPrivateKey, rotateCA, &certUpdates)
+	apiserverClientsCA, err := loadOrCreateCA(cf.kluster, "ApiServer Clients", &cf.store.ApiserverClientsCACertifcate, &cf.store.ApiserverClientsCAPrivateKey, rotate, &certUpdates)
 	if err != nil {
 		return nil, err
 	}
-	_, err = loadOrCreateCA(cf.kluster, "ApiServer Nodes", &cf.store.ApiserverNodesCACertificate, &cf.store.ApiserverNodesCAPrivateKey, rotateCA, &certUpdates)
+	_, err = loadOrCreateCA(cf.kluster, "ApiServer Nodes", &cf.store.ApiserverNodesCACertificate, &cf.store.ApiserverNodesCAPrivateKey, rotate, &certUpdates)
 	if err != nil {
 		return nil, err
 	}
-	kubeletClientsCA, err := loadOrCreateCA(cf.kluster, "Kubelet Clients", &cf.store.KubeletClientsCACertificate, &cf.store.KubeletClientsCAPrivateKey, rotateCA, &certUpdates)
+	kubeletClientsCA, err := loadOrCreateCA(cf.kluster, "Kubelet Clients", &cf.store.KubeletClientsCACertificate, &cf.store.KubeletClientsCAPrivateKey, rotate, &certUpdates)
 	if err != nil {
 		return nil, err
 	}
-	tlsCA, err := loadOrCreateCA(cf.kluster, "TLS", &cf.store.TLSCACertificate, &cf.store.TLSCAPrivateKey, rotateCA, &certUpdates)
+	tlsCA, err := loadOrCreateCA(cf.kluster, "TLS", &cf.store.TLSCACertificate, &cf.store.TLSCAPrivateKey, rotate, &certUpdates)
 	if err != nil {
 		return nil, err
 	}
-	aggregationCA, err := loadOrCreateCA(cf.kluster, "Aggregation", &cf.store.AggregationCACertificate, &cf.store.AggregationCAPrivateKey, rotateCA, &certUpdates)
+	aggregationCA, err := loadOrCreateCA(cf.kluster, "Aggregation", &cf.store.AggregationCACertificate, &cf.store.AggregationCAPrivateKey, rotate, &certUpdates)
 	if err != nil {
 		return nil, err
 	}
-	admissionCA, err := loadOrCreateCA(cf.kluster, "Admission", &cf.store.AdmissionCACertificate, &cf.store.AdmissionCAPrivateKey, rotateCA, &certUpdates)
+	admissionCA, err := loadOrCreateCA(cf.kluster, "Admission", &cf.store.AdmissionCACertificate, &cf.store.AdmissionCAPrivateKey, rotate, &certUpdates)
 	if err != nil {
 		return nil, err
 	}
@@ -380,7 +380,7 @@ func (cf *CertificateFactory) UserCert(principal *models.Principal, apiURL strin
 
 }
 
-func loadOrCreateCA(kluster *v1.Kluster, name string, cert, key *string, rotateCA bool, certUpdates *[]CertUpdates) (*Bundle, error) {
+func loadOrCreateCA(kluster *v1.Kluster, name string, cert, key *string, rotate bool, certUpdates *[]CertUpdates) (*Bundle, error) {
 	// legacyMigration is set when the TLS CA needs to be regenerated due to a
 	// known defect (non-critical BasicConstraints or missing SubjectKeyId) rather
 	// than an operator-requested rotation.  It is tracked separately so the
@@ -409,18 +409,18 @@ func loadOrCreateCA(kluster *v1.Kluster, name string, cert, key *string, rotateC
 			legacyMigration = true
 		}
 		if legacyMigration {
-			rotateCA = true
+			rotate = true
 		}
 	}
 
-	if *cert != "" && *key != "" && !rotateCA {
+	if *cert != "" && *key != "" && !rotate {
 		return NewBundle([]byte(*key), []byte(*cert))
 	}
 
 	var existingKey *rsa.PrivateKey
 	var existingSubject []byte
 
-	if rotateCA && *cert != "" && *key != "" {
+	if rotate && *cert != "" && *key != "" {
 		// Parse existing key and subject so the rotated CA keeps the same
 		// public key (preserving SubjectKeyId / AuthorityKeyId on leaf certs)
 		// and the same subject name.
@@ -453,7 +453,7 @@ func loadOrCreateCA(kluster *v1.Kluster, name string, cert, key *string, rotateC
 	switch {
 	case legacyMigration:
 		reason = "TLS CA migration"
-	case rotateCA:
+	case rotate:
 		reason = "CA rotation requested"
 	}
 	*certUpdates = append(*certUpdates, CertUpdates{
