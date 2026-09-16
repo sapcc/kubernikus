@@ -149,39 +149,39 @@ func (cf *CertificateFactory) Ensure() ([]CertUpdates, error) {
 
 	certUpdates := []CertUpdates{}
 
-	tlsEtcdCA, err := loadOrCreateCA(cf.kluster, "TLSEtcd", &cf.store.TLSEtcdCACertificate, &cf.store.TLSEtcdCAPrivateKey, &certUpdates)
+	tlsEtcdCA, err := loadOrCreateCA(cf.kluster, "TLSEtcd", &cf.store.TLSEtcdCACertificate, &cf.store.TLSEtcdCAPrivateKey, false, &certUpdates)
 	if err != nil {
 		return nil, err
 	}
-	etcdClientsCA, err := loadOrCreateCA(cf.kluster, "Etcd Clients", &cf.store.EtcdClientsCACertificate, &cf.store.EtcdClientsCAPrivateKey, &certUpdates)
+	etcdClientsCA, err := loadOrCreateCA(cf.kluster, "Etcd Clients", &cf.store.EtcdClientsCACertificate, &cf.store.EtcdClientsCAPrivateKey, false, &certUpdates)
 	if err != nil {
 		return nil, err
 	}
-	_, err = loadOrCreateCA(cf.kluster, "Etcd Peers", &cf.store.EtcdPeersCACertificate, &cf.store.EtcdPeersCAPrivateKey, &certUpdates)
+	_, err = loadOrCreateCA(cf.kluster, "Etcd Peers", &cf.store.EtcdPeersCACertificate, &cf.store.EtcdPeersCAPrivateKey, false, &certUpdates)
 	if err != nil {
 		return nil, err
 	}
-	apiserverClientsCA, err := loadOrCreateCA(cf.kluster, "ApiServer Clients", &cf.store.ApiserverClientsCACertifcate, &cf.store.ApiserverClientsCAPrivateKey, &certUpdates)
+	apiserverClientsCA, err := loadOrCreateCA(cf.kluster, "ApiServer Clients", &cf.store.ApiserverClientsCACertifcate, &cf.store.ApiserverClientsCAPrivateKey, false, &certUpdates)
 	if err != nil {
 		return nil, err
 	}
-	_, err = loadOrCreateCA(cf.kluster, "ApiServer Nodes", &cf.store.ApiserverNodesCACertificate, &cf.store.ApiserverNodesCAPrivateKey, &certUpdates)
+	_, err = loadOrCreateCA(cf.kluster, "ApiServer Nodes", &cf.store.ApiserverNodesCACertificate, &cf.store.ApiserverNodesCAPrivateKey, false, &certUpdates)
 	if err != nil {
 		return nil, err
 	}
-	kubeletClientsCA, err := loadOrCreateCA(cf.kluster, "Kubelet Clients", &cf.store.KubeletClientsCACertificate, &cf.store.KubeletClientsCAPrivateKey, &certUpdates)
+	kubeletClientsCA, err := loadOrCreateCA(cf.kluster, "Kubelet Clients", &cf.store.KubeletClientsCACertificate, &cf.store.KubeletClientsCAPrivateKey, false, &certUpdates)
 	if err != nil {
 		return nil, err
 	}
-	tlsCA, err := loadOrCreateCA(cf.kluster, "TLS", &cf.store.TLSCACertificate, &cf.store.TLSCAPrivateKey, &certUpdates)
+	tlsCA, err := loadOrCreateCA(cf.kluster, "TLS", &cf.store.TLSCACertificate, &cf.store.TLSCAPrivateKey, false, &certUpdates)
 	if err != nil {
 		return nil, err
 	}
-	aggregationCA, err := loadOrCreateCA(cf.kluster, "Aggregation", &cf.store.AggregationCACertificate, &cf.store.AggregationCAPrivateKey, &certUpdates)
+	aggregationCA, err := loadOrCreateCA(cf.kluster, "Aggregation", &cf.store.AggregationCACertificate, &cf.store.AggregationCAPrivateKey, false, &certUpdates)
 	if err != nil {
 		return nil, err
 	}
-	admissionCA, err := loadOrCreateCA(cf.kluster, "Admission", &cf.store.AdmissionCACertificate, &cf.store.AdmissionCAPrivateKey, &certUpdates)
+	admissionCA, err := loadOrCreateCA(cf.kluster, "Admission", &cf.store.AdmissionCACertificate, &cf.store.AdmissionCAPrivateKey, false, &certUpdates)
 	if err != nil {
 		return nil, err
 	}
@@ -372,11 +372,9 @@ func (cf *CertificateFactory) UserCert(principal *models.Principal, apiURL strin
 
 }
 
-func loadOrCreateCA(kluster *v1.Kluster, name string, cert, key *string, certUpdates *[]CertUpdates) (*Bundle, error) {
-	var existingKey *rsa.PrivateKey
-	var existingSubject []byte
-	regenerate := false
-
+func loadOrCreateCA(kluster *v1.Kluster, name string, cert, key *string, rotate bool, certUpdates *[]CertUpdates) (*Bundle, error) {
+	// Legacy migration: regenerate TLS CA if it has a non-critical BasicConstraints
+	// extension or is missing SubjectKeyId, preserving the existing key and subject.
 	if name == "TLS" && *cert != "" {
 		block, _ := pem.Decode([]byte(*cert))
 		if block == nil {
@@ -388,27 +386,43 @@ func loadOrCreateCA(kluster *v1.Kluster, name string, cert, key *string, certUpd
 		}
 		for _, ext := range caCert.Extensions {
 			if ext.Id.String() == "id-ce 19" && !ext.Critical {
-				regenerate = true
+				rotate = true
 			}
 		}
 		if caCert.SubjectKeyId == nil {
-			regenerate = true
-
-			var isRSAKey bool
-			k, err := keyutil.ParsePrivateKeyPEM([]byte(*key))
-			if err != nil {
-				return nil, err
-			}
-			existingKey, isRSAKey = k.(*rsa.PrivateKey)
-			if !isRSAKey {
-				return nil, errors.New("key does not seem to be of type RSA")
-			}
-			existingSubject = caCert.RawSubject
+			rotate = true
 		}
 	}
 
-	if *cert != "" && *key != "" && !regenerate {
+	if *cert != "" && *key != "" && !rotate {
 		return NewBundle([]byte(*key), []byte(*cert))
+	}
+
+	var existingKey *rsa.PrivateKey
+	var existingSubject []byte
+
+	if rotate && *cert != "" && *key != "" {
+		// Parse existing key and subject so the rotated CA keeps the same
+		// public key (preserving SubjectKeyId / AuthorityKeyId on leaf certs)
+		// and the same subject name.
+		k, err := keyutil.ParsePrivateKeyPEM([]byte(*key))
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse existing CA key for %s: %s", name, err)
+		}
+		var isRSA bool
+		existingKey, isRSA = k.(*rsa.PrivateKey)
+		if !isRSA {
+			return nil, fmt.Errorf("existing CA key for %s is not RSA", name)
+		}
+		block, _ := pem.Decode([]byte(*cert))
+		if block == nil {
+			return nil, fmt.Errorf("failed to decode existing CA cert for %s", name)
+		}
+		caCert, err := x509.ParseCertificate(block.Bytes)
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse existing CA cert for %s: %s", name, err)
+		}
+		existingSubject = caCert.RawSubject
 	}
 
 	caBundle, err := createCA(kluster.Name, name, existingKey, existingSubject)
@@ -416,12 +430,15 @@ func loadOrCreateCA(kluster *v1.Kluster, name string, cert, key *string, certUpd
 		return nil, err
 	}
 
-	update := CertUpdates{
+	reason := "CA missing"
+	if rotate {
+		reason = "CA rotation requested"
+	}
+	*certUpdates = append(*certUpdates, CertUpdates{
 		Type:   "CA certificate",
 		Name:   name,
-		Reason: "CA missing",
-	}
-	*certUpdates = append(*certUpdates, update)
+		Reason: reason,
+	})
 
 	*cert = string(EncodeCertPEM(caBundle.Certificate))
 	*key = string(EncodePrivateKeyPEM(caBundle.PrivateKey))
