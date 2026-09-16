@@ -46,7 +46,12 @@ func (cc *certsController) Reconcile(kluster *v1.Kluster) (err error) {
 	rotate := kluster.CARotation()
 
 	certFactory := util.NewCertificateFactory(kluster, &secret.Certificates, cc.config.Kubernikus.Domain)
-	updates, err := certFactory.Ensure(rotate)
+	var updates []util.CertUpdates
+	if rotate {
+		updates, err = certFactory.EnsureWithCARotation()
+	} else {
+		updates, err = certFactory.Ensure()
+	}
 	if err != nil {
 		return fmt.Errorf("certificate renewal failed: %s", err)
 	}

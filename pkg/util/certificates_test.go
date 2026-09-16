@@ -87,7 +87,7 @@ func TestEnsure_CARotation(t *testing.T) {
 
 	// First Ensure — creates all CAs and leaf certs
 	factory := NewCertificateFactory(kluster, store, domain)
-	updates, err := factory.Ensure(false)
+	updates, err := factory.Ensure()
 	assert.NoError(t, err)
 	assert.NotEmpty(t, updates)
 
@@ -102,7 +102,7 @@ func TestEnsure_CARotation(t *testing.T) {
 	origPubKey := tlsCert.PublicKey
 
 	// Rotate — must replace all CA certs, same keys
-	updates2, err := factory.Ensure(true)
+	updates2, err := factory.EnsureWithCARotation()
 	assert.NoError(t, err)
 	// All 9 CAs should appear in updates
 	caUpdates := 0

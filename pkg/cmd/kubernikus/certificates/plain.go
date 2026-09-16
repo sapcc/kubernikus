@@ -57,7 +57,7 @@ func (o *PlainOptions) Run(c *cobra.Command) error {
 
 	var certs v1.Certificates
 	factory := util.NewCertificateFactory(kluster, &certs, "kubernikus.cloud.sap")
-	_, err = factory.Ensure(false)
+	_, err = factory.Ensure()
 	if err != nil {
 		return err
 	}

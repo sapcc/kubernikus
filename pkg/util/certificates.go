@@ -136,7 +136,15 @@ func NewCertificateFactory(kluster *v1.Kluster, store *v1.Certificates, domain s
 	return &CertificateFactory{kluster, store, domain}
 }
 
-func (cf *CertificateFactory) Ensure(rotate bool) ([]CertUpdates, error) {
+func (cf *CertificateFactory) Ensure() ([]CertUpdates, error) {
+	return cf.ensure(false)
+}
+
+func (cf *CertificateFactory) EnsureWithCARotation() ([]CertUpdates, error) {
+	return cf.ensure(true)
+}
+
+func (cf *CertificateFactory) ensure(rotate bool) ([]CertUpdates, error) {
 	apiServiceIP, err := cf.kluster.ApiServiceIP()
 	if err != nil {
 		return nil, err
