@@ -577,6 +577,9 @@ func createCA(klusterName, name string, existingKey *rsa.PrivateKey, existingSub
 		tmpl.RawSubject = existingSubject
 	}
 
+	// Go auto-populates SubjectKeyId from the public key hash. Reusing existingKey
+	// therefore preserves SubjectKeyId, which keeps AuthorityKeyId on existing leaf
+	// certs valid — nodes and services stay healthy without cert replacement.
 	certDERBytes, err := x509.CreateCertificate(cryptorand.Reader, &tmpl, &tmpl, privateKey.Public(), privateKey)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create certificate for %s CA: %s", name, err)
