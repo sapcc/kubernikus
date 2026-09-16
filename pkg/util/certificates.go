@@ -373,8 +373,16 @@ func (cf *CertificateFactory) UserCert(principal *models.Principal, apiURL strin
 }
 
 func loadOrCreateCA(kluster *v1.Kluster, name string, cert, key *string, rotate bool, certUpdates *[]CertUpdates) (*Bundle, error) {
+	// legacyMigration is set when the TLS CA needs to be regenerated due to a
+	// known defect (non-critical BasicConstraints or missing SubjectKeyId) rather
+	// than an operator-requested rotation.  It is tracked separately so the
+	// CertUpdates reason string distinguishes the two cases for operators.
+	legacyMigration := false
+
 	// Legacy migration: regenerate TLS CA if it has a non-critical BasicConstraints
 	// extension or is missing SubjectKeyId, preserving the existing key and subject.
+	// Regenerating using the existing key so SubjectKeyId is preserved,
+	// which prevents invalidating AuthorityKeyId on existing leaf certs.
 	if name == "TLS" && *cert != "" {
 		block, _ := pem.Decode([]byte(*cert))
 		if block == nil {
@@ -386,10 +394,13 @@ func loadOrCreateCA(kluster *v1.Kluster, name string, cert, key *string, rotate 
 		}
 		for _, ext := range caCert.Extensions {
 			if ext.Id.String() == "id-ce 19" && !ext.Critical {
-				rotate = true
+				legacyMigration = true
 			}
 		}
 		if caCert.SubjectKeyId == nil {
+			legacyMigration = true
+		}
+		if legacyMigration {
 			rotate = true
 		}
 	}
@@ -431,7 +442,10 @@ func loadOrCreateCA(kluster *v1.Kluster, name string, cert, key *string, rotate 
 	}
 
 	reason := "CA missing"
-	if rotate {
+	switch {
+	case legacyMigration:
+		reason = "TLS CA migration"
+	case rotate:
 		reason = "CA rotation requested"
 	}
 	*certUpdates = append(*certUpdates, CertUpdates{
