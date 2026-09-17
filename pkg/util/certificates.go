@@ -599,6 +599,7 @@ func createCA(klusterName, name string, existingKey *rsa.PrivateKey, existingSub
 	return &Bundle{PrivateKey: privateKey, Certificate: certificate}, nil
 }
 
+// isCertChangedOrExpires reports whether origCert needs to be replaced.
 func isCertChangedOrExpires(origCert, newCert, caCert *x509.Certificate, duration time.Duration) (string, bool) {
 	if !reflect.DeepEqual(origCert.DNSNames, newCert.DNSNames) {
 		return "SAN DNS changes: " + strings.Join(StringSliceDiff(origCert.DNSNames, newCert.DNSNames), " "), true
@@ -610,6 +611,10 @@ func isCertChangedOrExpires(origCert, newCert, caCert *x509.Certificate, duratio
 
 	if !bytes.Equal(origCert.AuthorityKeyId, newCert.AuthorityKeyId) {
 		return fmt.Sprintf("Authority key identifier changes: %v != %v", origCert.AuthorityKeyId, newCert.AuthorityKeyId), true
+	}
+
+	if origCert.NotBefore.Before(caCert.NotBefore) {
+		return fmt.Sprintf("CA was rotated at %s, leaf predates it", caCert.NotBefore), true
 	}
 
 	expire := time.Now().Add(duration)

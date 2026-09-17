@@ -117,4 +117,14 @@ func TestEnsure_CARotation(t *testing.T) {
 	tlsCert2, _ := x509.ParseCertificate(tlsBlock2.Bytes)
 	assert.True(t, tlsCert2.NotAfter.After(origNotAfter))
 	assert.Equal(t, origPubKey, tlsCert2.PublicKey)
+
+	// All leaf certs should also be renewed since they predate the rotated CAs
+	leafUpdates := 0
+	for _, u := range updates2 {
+		if u.Type == "Client Certificate" || u.Type == "Server Certificate" {
+			leafUpdates++
+			assert.Contains(t, u.Reason, "CA was rotated")
+		}
+	}
+	assert.True(t, leafUpdates > 0, "expected leaf certs to be renewed after CA rotation")
 }
