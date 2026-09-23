@@ -1174,7 +1174,7 @@ resources:
       username: ((registry-user/keppel-ccloud.username))
       password: ((registry-user/keppel-ccloud.password))
       repository: keppel.eu-de-1.cloud.sap/ccloud/etcd
-      tag: v3.4.36
+      tag: v3.5.34
 
   - name: etcdbrctl.image
     type: registry-image
@@ -1183,7 +1183,7 @@ resources:
       username: ((registry-user/keppel-ccloud.username))
       password: ((registry-user/keppel-ccloud.password))
       repository: keppel.eu-de-1.cloud.sap/ccloud/etcdbrctl
-      tag: v0.41.2
+      tag: v0.44.2
 
   - name: multus-cni.image
     type: registry-image
@@ -1507,7 +1507,7 @@ jobs:
             args:
               - -ec
               - |
-                echo "IMAGE=gcr.io/etcd-development/etcd:v3.4.36" > kubernikus-etcd-images.git/build-args.txt
+                echo "IMAGE=gcr.io/etcd-development/etcd:v3.5.34" > kubernikus-etcd-images.git/build-args.txt
       - task: build
         privileged: true
         config:
@@ -1539,7 +1539,7 @@ jobs:
             args:
               - -ec
               - |
-                echo "IMAGE=europe-docker.pkg.dev/gardener-project/releases/gardener/etcdbrctl:v0.41.2" > kubernikus-etcd-images.git/build-args.txt
+                echo "IMAGE=europe-docker.pkg.dev/gardener-project/releases/gardener/etcdbrctl:v0.44.2" > kubernikus-etcd-images.git/build-args.txt
       - task: build
         privileged: true
         config:
