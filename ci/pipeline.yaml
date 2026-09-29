@@ -1116,8 +1116,11 @@ slack: &slack
 resources:
   - name: docs.git
     type: git
+    check_every: 5m
     source:
       uri: https://github.com/sapcc/kubernikus.git
+      username: x-access-token
+      password: ((github-access-token/sapcc-bot))
       paths:
         - docs/**
         - contrib/kubernikus-docs-builder/**
@@ -1128,24 +1131,35 @@ resources:
     type: git
     source:
       uri: https://github.com/sapcc/kubernikus.git
+      username: x-access-token
+      password: ((github-access-token/sapcc-bot))
 
   - name: kubernikus-etcd-images.git
     type: git
+    check_every: 5m
     source:
       uri: https://github.com/sapcc/kubernikus.git
+      username: x-access-token
+      password: ((github-access-token/sapcc-bot))
       branch: master
 
   - name: kubernikus-multus.git
     type: git
+    check_every: 5m
     source:
       uri: https://github.com/sapcc/kubernikus.git
+      username: x-access-token
+      password: ((github-access-token/sapcc-bot))
       branch: master
       paths: [ contrib/multus-cni/** ]
 
   - name: kubernikus-cni-plugins.git
     type: git
+    check_every: 5m
     source:
       uri: https://github.com/sapcc/kubernikus.git
+      username: x-access-token
+      password: ((github-access-token/sapcc-bot))
       branch: master
       paths: [ contrib/cni-plugins/** ]
 
@@ -1224,8 +1238,11 @@ resources:
   - name: helm-charts.git
     type: git
     icon: github-circle
+    check_every: 5m
     source:
       uri:    https://github.com/sapcc/helm-charts.git
+      username: x-access-token
+      password: ((github-access-token/sapcc-bot))
       branch: master
       paths:  [ openstack/kubernikus/ ]
 
