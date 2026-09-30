@@ -18,6 +18,7 @@ import (
 
 	"github.com/sapcc/kubernikus/pkg/util/generator"
 	"github.com/sapcc/kubernikus/test/e2e/framework"
+	wormholeclient "github.com/sapcc/kubernikus/pkg/wormhole/client"
 )
 
 const (
@@ -69,6 +70,7 @@ func (n *NetworkTests) Run(t *testing.T) {
 		t.Run("ServicesWithDNS", n.TestServicesWithDNS)
 		t.Run("Loadbalancer", n.TestLoadbalancer)
 	})
+	t.Run("WormholeTunnel", n.TestWormholeTunnel)
 }
 
 func (n *NetworkTests) CreateNamespace(t *testing.T) {
@@ -321,4 +323,46 @@ func (n *NetworkTests) TestLoadbalancer(t *testing.T) {
 
 	err = n.Kubernetes.ClientSet.CoreV1().Services(n.Namespace).Delete(context.Background(), "e2e-lb", meta_v1.DeleteOptions{})
 	assert.NoError(t, err, "There should be no error deleting loadbalancer service: %s", err)
+}
+
+func (n *NetworkTests) TestWormholeTunnel(t *testing.T) {
+	const (
+		maxHeartbeatAge       = 3 * time.Minute
+		heartbeatPollInterval = 15 * time.Second
+		heartbeatTimeout      = 5 * time.Minute
+	)
+
+	nodes, err := n.Kubernetes.ClientSet.CoreV1().Nodes().List(
+		context.Background(), meta_v1.ListOptions{},
+	)
+	require.NoError(t, err, "failed to list nodes")
+	require.NotEmpty(t, nodes.Items, "no nodes found")
+
+	// Wait until every node has a fresh RouteBroken=False heartbeat.
+	// This proves the tunnel is actively working, not just that it booted OK.
+	err = wait.Poll(heartbeatPollInterval, heartbeatTimeout, func() (bool, error) { //nolint:staticcheck
+		freshNodes, err := n.Kubernetes.ClientSet.CoreV1().Nodes().List(
+			context.Background(), meta_v1.ListOptions{},
+		)
+		if err != nil {
+			return false, nil
+		}
+		for _, node := range freshNodes.Items {
+			for _, cond := range node.Status.Conditions {
+				if cond.Type != wormholeclient.NodeRouteBroken {
+					continue
+				}
+				if cond.Status != v1.ConditionFalse {
+					return false, nil
+				}
+				if time.Since(cond.LastHeartbeatTime.Time) > maxHeartbeatAge {
+					return false, nil
+				}
+			}
+		}
+		return true, nil
+	})
+	require.NoError(t, err,
+		"timed out waiting for all nodes to have a fresh RouteBroken=False heartbeat; "+
+			"wormhole tunnel may not be passing traffic")
 }
