@@ -1,11 +1,8 @@
 package server
 
 import (
-	"bytes"
 	"fmt"
 	"net"
-	"strconv"
-	"strings"
 	"sync"
 	"time"
 
@@ -16,13 +13,8 @@ import (
 	informers "k8s.io/client-go/informers/core/v1"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/util/workqueue"
-	utilexec "k8s.io/utils/exec"
 
-	"github.com/sapcc/kubernikus/pkg/util/iptables"
-)
-
-const (
-	KUBERNIKUS_TUNNELS iptables.Chain = "KUBERNIKUS-TUNNELS"
+	knftables "github.com/sapcc/kubernikus/pkg/util/nftables"
 )
 
 type Controller struct {
@@ -31,7 +23,7 @@ type Controller struct {
 	queue       workqueue.RateLimitingInterface // nolint: staticcheck
 	store       map[string][]route
 	storeMu     sync.RWMutex
-	iptables    iptables.Interface
+	nft         knftables.Interface
 	hijackPort  int
 	serviceCIDR string
 
@@ -43,14 +35,20 @@ type route struct {
 	identifier string
 }
 
-func NewController(informer informers.NodeInformer, serviceCIDR string, tunnel *guttle.Server, logger log.Logger) *Controller {
+func NewController(informer informers.NodeInformer, serviceCIDR string, tunnel *guttle.Server, logger log.Logger) (*Controller, error) {
 	logger = log.With(logger, "controller", "tunnel")
+
+	nft, err := knftables.New()
+	if err != nil {
+		return nil, fmt.Errorf("failed to initialize nftables: %w", err)
+	}
+
 	c := &Controller{
 		nodes:       informer,
 		tunnel:      tunnel,
 		queue:       workqueue.NewRateLimitingQueue(workqueue.NewItemExponentialFailureRateLimiter(5*time.Second, 300*time.Second)), // nolint: staticcheck
 		store:       make(map[string][]route),
-		iptables:    iptables.New(utilexec.New(), iptables.ProtocolIpv4, logger),
+		nft:         nft,
 		hijackPort:  9191,
 		serviceCIDR: serviceCIDR,
 		Logger:      logger,
@@ -83,7 +81,7 @@ func NewController(informer informers.NodeInformer, serviceCIDR string, tunnel *
 		},
 	})
 
-	return c
+	return c, nil
 }
 
 func (c *Controller) Run(threadiness int, stopCh <-chan struct{}, wg *sync.WaitGroup) {
@@ -193,7 +191,7 @@ func (c *Controller) addNode(key string, node *v1.Node) error {
 			"msg", "removing tunnel routes for node with empty spec.PodCIDR",
 			"node", identifier,
 		)
-		return c.redoIPTablesSpratz()
+		return c.syncRules()
 	}
 
 	c.Logger.Log(
@@ -221,7 +219,7 @@ func (c *Controller) addNode(key string, node *v1.Node) error {
 		return err
 	}
 
-	return c.redoIPTablesSpratz()
+	return c.syncRules()
 }
 
 func (c *Controller) storeRoute(key string, r route) {
@@ -231,8 +229,6 @@ func (c *Controller) storeRoute(key string, r route) {
 }
 
 func (c *Controller) delNode(key string) error {
-	// We can't defer the unlock here becase redoIPTablesSpratz also requests a lock
-	// take care when changing this function to not create a race
 	c.storeMu.RLock()
 	routes := c.store[key]
 	for _, route := range routes {
@@ -240,130 +236,27 @@ func (c *Controller) delNode(key string) error {
 		c.tunnel.DeleteRoute(route.cidr)
 	}
 	c.storeMu.RUnlock()
-	return c.redoIPTablesSpratz()
+	return c.syncRules()
 }
 
-func (c *Controller) redoIPTablesSpratz() error {
-	table := iptables.TableNAT
-
-	if _, err := c.iptables.EnsureChain(table, KUBERNIKUS_TUNNELS); err != nil {
-		c.Logger.Log(
-			"msg", "failed to ensure that chain exists",
-			"table", table,
-			"chain", KUBERNIKUS_TUNNELS,
-			"err", err)
-		return err
-	}
-
-	args := []string{"-m", "comment", "--comment", "kubernikus tunnels", "-j", string(KUBERNIKUS_TUNNELS)}
-	if _, err := c.iptables.EnsureRule(iptables.Append, table, iptables.ChainOutput, args...); err != nil {
-		c.Logger.Log(
-			"msg", "failed to ensure jump",
-			"table", table,
-			"target", iptables.ChainOutput,
-			"chain", KUBERNIKUS_TUNNELS,
-			"err", err)
-		return err
-	}
-
-	iptablesSaveRaw := bytes.NewBuffer(nil)
-	existingNatChains := make(map[iptables.Chain]string)
-	err := c.iptables.SaveInto(table, iptablesSaveRaw)
-	if err != nil {
-		c.Logger.Log(
-			"msg", "failed to execute iptables-save, syncing all rules",
-			"err", err)
-	} else {
-		existingNatChains = iptables.GetChainLines(table, iptablesSaveRaw.Bytes())
-	}
-
-	natChains := bytes.NewBuffer(nil)
-	natRules := bytes.NewBuffer(nil)
-	writeLine(natChains, "*nat")
-	if chain, ok := existingNatChains[KUBERNIKUS_TUNNELS]; ok {
-		writeLine(natChains, chain)
-	} else {
-		writeLine(natChains, iptables.MakeChainLine(KUBERNIKUS_TUNNELS))
-	}
-
+func (c *Controller) syncRules() error {
 	c.storeMu.RLock()
 	defer c.storeMu.RUnlock()
-	for key := range c.store {
-		err := c.writeTunnelRedirect(key, natRules)
-		if err != nil {
-			return err
+
+	var cidrs []string
+	for _, routes := range c.store {
+		for _, r := range routes {
+			cidrs = append(cidrs, r.cidr)
 		}
 	}
+	cidrs = append(cidrs, c.serviceCIDR)
 
-	writeLine(natRules,
-		"-A", string(KUBERNIKUS_TUNNELS),
-		"-m", "comment", "--comment", `"cluster service CIDR tunnel redirect"`,
-		"--dst", c.serviceCIDR,
-		"-p", "tcp",
-		"-j", "REDIRECT",
-		"--to-ports", strconv.Itoa(c.hijackPort),
-	)
-
-	writeLine(natRules, "COMMIT")
-
-	lines := append(natChains.Bytes(), natRules.Bytes()...)
 	c.Logger.Log(
-		"msg", "Restoring iptables rules",
-		"rules", lines,
+		"msg", "syncing nftables rules",
+		"cidrs", cidrs,
 		"v", 6)
 
-	err = c.iptables.RestoreAll(lines, iptables.NoFlushTables, iptables.RestoreCounters)
-	if err != nil {
-		c.Logger.Log(
-			"msg", "Failed to execute iptables-restore",
-			"err", err)
-		return err
-	}
-
-	return nil
-}
-
-func (c *Controller) writeTunnelRedirect(key string, filterRules *bytes.Buffer) error {
-	obj, exists, err := c.nodes.Informer().GetIndexer().GetByKey(key)
-	if err != nil {
-		return err
-	}
-
-	if !exists {
-		return nil
-	}
-
-	node := obj.(*v1.Node)
-	ip, err := GetNodeHostIP(node)
-	if err != nil {
-		return err
-	}
-
-	port := strconv.Itoa(c.hijackPort)
-
-	writeLine(filterRules,
-		"-A", string(KUBERNIKUS_TUNNELS),
-		"-m", "comment", "--comment", fmt.Sprintf(`"node ip tunnel redirect for %s"`, key),
-		"--dst", ip.String(),
-		"-p", "tcp",
-		"-j", "REDIRECT",
-		"--to-ports", port,
-	)
-
-	writeLine(filterRules,
-		"-A", string(KUBERNIKUS_TUNNELS),
-		"-m", "comment", "--comment", fmt.Sprintf(`"pod cidr tunnel redirect for %s"`, key),
-		"--dst", node.Spec.PodCIDR,
-		"-p", "tcp",
-		"-j", "REDIRECT",
-		"--to-ports", port,
-	)
-
-	return nil
-}
-
-func writeLine(buf *bytes.Buffer, words ...string) {
-	buf.WriteString(strings.Join(words, " ") + "\n")
+	return c.nft.SyncRules(cidrs, c.hijackPort)
 }
 
 func GetNodeHostIP(node *v1.Node) (net.IP, error) {
