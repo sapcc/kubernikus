@@ -121,5 +121,6 @@ func TestDelNode_ClearsStore(t *testing.T) {
 
 	c.storeMu.RLock()
 	defer c.storeMu.RUnlock()
-	assert.Empty(t, c.store["node1"])
+	_, exists := c.store["node1"]
+	assert.False(t, exists, "store entry should be deleted after delNode")
 }

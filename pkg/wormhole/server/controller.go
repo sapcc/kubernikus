@@ -229,13 +229,14 @@ func (c *Controller) storeRoute(key string, r route) {
 }
 
 func (c *Controller) delNode(key string) error {
-	c.storeMu.RLock()
+	c.storeMu.Lock()
 	routes := c.store[key]
 	for _, route := range routes {
 		c.tunnel.DeleteClientRoute(route.cidr, route.identifier)
 		c.tunnel.DeleteRoute(route.cidr)
 	}
-	c.storeMu.RUnlock()
+	delete(c.store, key)
+	c.storeMu.Unlock()
 	return c.syncRules()
 }
 
