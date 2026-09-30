@@ -4,10 +4,10 @@
 package nftables
 
 import (
-	"encoding/binary"
 	"net"
 
 	"github.com/google/nftables"
+	"github.com/google/nftables/binaryutil"
 	"github.com/google/nftables/expr"
 	"golang.org/x/sys/unix"
 )
@@ -42,13 +42,16 @@ func New() (Interface, error) {
 }
 
 // NewWithConn returns an Interface using the provided connection.
-// Intended for testing with nfttest.NewConn().
+// Intended for testing with nftables.WithTestDial.
 func NewWithConn(conn *nftables.Conn) Interface {
 	return &runner{conn: conn}
 }
 
 func (r *runner) SyncRules(cidrs []string, redirectPort int) error {
-	table := r.ensureTable()
+	table := r.conn.AddTable(&nftables.Table{
+		Name:   tableName,
+		Family: nftables.TableFamilyIPv4,
+	})
 
 	// Flush all existing rules in the table (atomic replace).
 	r.conn.FlushTable(table)
@@ -86,21 +89,12 @@ func (r *runner) Destroy() error {
 	return nil
 }
 
-func (r *runner) ensureTable() *nftables.Table {
-	return &nftables.Table{
-		Name:   tableName,
-		Family: nftables.TableFamilyIPv4,
-	}
-}
-
 // redirectRule builds an nftables rule:
-//   tcp daddr <ipNet> redirect to :<redirectPort>
+//
+//	tcp daddr <ipNet> redirect to :<redirectPort>
 func redirectRule(table *nftables.Table, chain *nftables.Chain, ipNet *net.IPNet, redirectPort int) *nftables.Rule {
 	ip := ipNet.IP.To4()
 	mask := ipNet.Mask
-
-	portBytes := make([]byte, 2)
-	binary.BigEndian.PutUint16(portBytes, uint16(redirectPort))
 
 	return &nftables.Rule{
 		Table: table,
@@ -134,14 +128,14 @@ func redirectRule(table *nftables.Table, chain *nftables.Chain, ipNet *net.IPNet
 				Register: 1,
 				Data:     []byte(ip),
 			},
-			// Set port in register 2
+			// Load redirect port into register 1
 			&expr.Immediate{
-				Register: 2,
-				Data:     portBytes,
+				Register: 1,
+				Data:     binaryutil.BigEndian.PutUint16(uint16(redirectPort)),
 			},
-			// REDIRECT using port from register 2
+			// REDIRECT to port in register 1
 			&expr.Redir{
-				RegisterProtoMin: 2,
+				RegisterProtoMin: 1,
 			},
 		},
 	}
