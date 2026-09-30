@@ -333,6 +333,12 @@ func SeedAutoRenewalNodeCertificates(client clientset.Interface) error {
 	err := bootstrap.CreateOrUpdateClusterRoleV1(client, &rbac.ClusterRole{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: "system:certificates.k8s.io:certificatesigningrequests:selfnodeclient",
+			Labels: map[string]string{
+				"kubernetes.io/bootstrapping": "rbac-defaults",
+			},
+			Annotations: map[string]string{
+				"rbac.authorization.kubernetes.io/autoupdate": "true",
+			},
 		},
 		Rules: []rbac.PolicyRule{
 			{
