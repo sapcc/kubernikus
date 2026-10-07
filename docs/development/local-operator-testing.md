@@ -38,13 +38,15 @@ Copy `.envrc.example` (if present) or set the following variables. `direnv` load
 ```bash
 export KS_AUTH_URL=https://identity-3.<region>.cloud.sap/v3
 export KS_USERNAME=$USER
-export KS_USER_DOMAIN_NAME=<your-user-domain>   # e.g. ccadmin or monsoon3
-export KS_PROJECT_NAME=<openstack-project>       # project where the operator authenticates
-export KS_PROJECT_DOMAIN_NAME=<project-domain>
+export KS_USER_DOMAIN_NAME=ccadmin              # operator user must be in ccadmin
+export KS_PROJECT_NAME=cloud_admin              # operator must scope to cloud_admin/ccadmin
+export KS_PROJECT_DOMAIN_NAME=ccadmin           # to have permission to create kluster service users
 export KS_NAMESPACE=kubernikus-$USER             # namespace on the control-plane cluster
 export KS_CONTEXT=<kubeconfig-context>           # e.g. k-master or k-qa-de-1
 export KS_DOMAIN=<kubernikus-domain>             # e.g. kubernikus-master.eu-nl-1.cloud.sap
 ```
+
+The operator authenticates as `ccadmin/cloud_admin` because it needs to create a dedicated OpenStack service user per kluster. Your personal project credentials (used for kluster creation via the API) are separate from this.
 
 The `.envrc` also refreshes an OpenStack token into `_scratch/.curlrc` via `spore` — adjust the `spore` command to match your region and project.
 
