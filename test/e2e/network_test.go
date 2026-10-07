@@ -18,7 +18,6 @@ import (
 
 	"github.com/sapcc/kubernikus/pkg/util/generator"
 	"github.com/sapcc/kubernikus/test/e2e/framework"
-	wormholeclient "github.com/sapcc/kubernikus/pkg/wormhole/client"
 )
 
 const (
@@ -326,43 +325,30 @@ func (n *NetworkTests) TestLoadbalancer(t *testing.T) {
 }
 
 func (n *NetworkTests) TestWormholeTunnel(t *testing.T) {
-	const (
-		maxHeartbeatAge       = 3 * time.Minute
-		heartbeatPollInterval = 15 * time.Second
-		heartbeatTimeout      = 5 * time.Minute
+	// Verify the wormhole tunnel is passing traffic by exec-ing into a pod on
+	// each node. kubectl exec goes apiserver→kubelet, which is routed through
+	// the wormhole tunnel — if the tunnel is broken, exec fails.
+	pods, err := n.Kubernetes.ClientSet.CoreV1().Pods(n.Namespace).List(
+		context.Background(), meta_v1.ListOptions{
+			LabelSelector: "app=serve-hostname",
+		},
 	)
+	require.NoError(t, err, "failed to list pods")
+	require.NotEmpty(t, pods.Items, "no pods found in namespace")
 
-	nodes, err := n.Kubernetes.ClientSet.CoreV1().Nodes().List(
-		context.Background(), meta_v1.ListOptions{},
-	)
-	require.NoError(t, err, "failed to list nodes")
-	require.NotEmpty(t, nodes.Items, "no nodes found")
-
-	// Wait until every node has a fresh RouteBroken=False heartbeat.
-	// This proves the tunnel is actively working, not just that it booted OK.
-	err = wait.Poll(heartbeatPollInterval, heartbeatTimeout, func() (bool, error) { //nolint:staticcheck
-		freshNodes, err := n.Kubernetes.ClientSet.CoreV1().Nodes().List(
-			context.Background(), meta_v1.ListOptions{},
-		)
-		if err != nil {
-			return false, nil
-		}
-		for _, node := range freshNodes.Items {
-			for _, cond := range node.Status.Conditions {
-				if cond.Type != wormholeclient.NodeRouteBroken {
-					continue
-				}
-				if cond.Status != v1.ConditionFalse {
+	for _, pod := range pods.Items {
+		pod := pod
+		t.Run(fmt.Sprintf("exec-on-%s", pod.Spec.NodeName), func(t *testing.T) {
+			cmd := []string{"sh", "-c", "echo tunnel-ok"}
+			err := wait.PollImmediate(15*time.Second, 2*time.Minute, func() (bool, error) { //nolint:staticcheck
+				stdout, _, err := n.Kubernetes.ExecCommandInContainerWithFullOutput(
+					n.Namespace, pod.Name, pod.Spec.Containers[0].Name, cmd...)
+				if err != nil {
 					return false, nil
 				}
-				if time.Since(cond.LastHeartbeatTime.Time) > maxHeartbeatAge {
-					return false, nil
-				}
-			}
-		}
-		return true, nil
-	})
-	require.NoError(t, err,
-		"timed out waiting for all nodes to have a fresh RouteBroken=False heartbeat; "+
-			"wormhole tunnel may not be passing traffic")
+				return strings.Contains(stdout, "tunnel-ok"), nil
+			})
+			assert.NoError(t, err, "exec through wormhole tunnel failed on node %s", pod.Spec.NodeName)
+		})
+	}
 }
