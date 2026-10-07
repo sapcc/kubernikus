@@ -55,11 +55,15 @@ curl -K _scratch/.curlrc -X POST http://localhost:5100/api/v1/clusters \
         "availabilityZone": "eu-nl-1a"
       }],
       "openstack": {
-        "routerID": "2e4beb64-c2b3-4665-bc45-1ea4712c9959"
+        "routerID": "<router-id>",
+        "networkID": "<network-id>",
+        "lbSubnetID": "<subnet-id>"
       }
     }
   }'
 ```
+
+If the operator logs `"found 2 networks on router"` or `"found 2 subnets for network"`, the router/network has multiple attachments and auto-configuration is not possible — you must specify `networkID` and `lbSubnetID` explicitly.
 
 To delete:
 
@@ -81,54 +85,55 @@ kubectl --context k-master -n kubernikus-jan logs -f \
     -l "app=kube-master,release=<kluster-name>" \
     -o jsonpath='{.items[0].metadata.name}') \
   -c wormhole
-
-# nftables rules on the control plane node (requires exec into wormhole container)
-kubectl --context k-master -n kubernikus-jan exec -it \
-  <apiserver-pod> -c wormhole -- nft list ruleset
 ```
 
 Replace `<kluster-name>` with the name you used in step 3.
 
 ## 5. Run the e2e suite against the kluster
 
-The e2e suite requires the kluster to be fully running (nodes Ready) before it can test network connectivity. Use `--reuse` to skip creation and destruction:
+The e2e suite requires the kluster to be fully running (nodes Ready) before it can test network connectivity. Use `--reuse` to skip creation and destruction.
+
+The e2e framework authenticates against OpenStack — use your personal credentials, not the e2e tenant from `.envrc`:
 
 ```bash
-cd test/e2e && \
-  go test -v -timeout 55m \
-    --kubernikus=$KUBERNIKUS_URL \
-    --kluster=<kluster-name> \
-    --reuse \
-    --cleanup=false \
-    -run TestRunner/Network
+PW=$(security find-generic-password -a "$USER" -s openstack -w) && \
+source .envrc && \
+OS_USERNAME=<your-username> \
+OS_USER_DOMAIN_NAME=<your-domain> \
+OS_PROJECT_NAME=<your-project> \
+OS_PROJECT_DOMAIN_NAME=<your-project-domain> \
+OS_PASSWORD="$PW" \
+CP_KUBERNIKUS_URL="" \
+go test -v -timeout 55m \
+  --kubernikus=http://localhost:5100 \
+  --kluster=<kluster-name> \
+  --reuse \
+  --cleanup=false \
+  -run TestRunner/Network \
+  ./test/e2e/
 ```
 
 For the wormhole-specific test only:
 
 ```bash
-cd test/e2e && \
-  go test -v -timeout 15m \
-    --kubernikus=$KUBERNIKUS_URL \
-    --kluster=<kluster-name> \
-    --reuse \
-    --cleanup=false \
-    -run TestRunner/Network/WormholeTunnel
+PW=$(security find-generic-password -a "$USER" -s openstack -w) && \
+source .envrc && \
+OS_USERNAME=<your-username> \
+OS_USER_DOMAIN_NAME=<your-domain> \
+OS_PROJECT_NAME=<your-project> \
+OS_PROJECT_DOMAIN_NAME=<your-project-domain> \
+OS_PASSWORD="$PW" \
+CP_KUBERNIKUS_URL="" \
+go test -v -timeout 15m \
+  --kubernikus=http://localhost:5100 \
+  --kluster=<kluster-name> \
+  --reuse \
+  --cleanup=false \
+  -run TestRunner/Network/WormholeTunnel \
+  ./test/e2e/
 ```
 
-The `WormholeTunnel` test polls `RouteBroken=False` with a heartbeat no older than 3 minutes on every node. It times out after 5 minutes — give the kluster ~2 minutes after nodes are Ready before running it.
-
-Required environment variables (already set by `.envrc`):
-
-| Variable | Purpose |
-|----------|---------|
-| `OS_AUTH_URL` | Identity endpoint for the e2e test tenant |
-| `OS_USERNAME` | e2e test user |
-| `OS_PASSWORD` | e2e test password |
-| `OS_USER_DOMAIN_NAME` | Domain of the test user |
-| `OS_PROJECT_NAME` | Project the kluster lives in |
-| `OS_PROJECT_DOMAIN_NAME` | Domain of the project |
-| `CP_KUBERNIKUS_URL` | Kubernikus API for the control plane cluster (k-master) |
-| `CP_KLUSTER` | Name of the control plane kluster (`k-master`) |
+The `WormholeTunnel` test execs into a pod on each node — this goes apiserver→kubelet through the wormhole tunnel. If the tunnel is broken, exec fails.
 
 ## 6. Clean up
 
@@ -153,7 +158,11 @@ hivemind
 
 # kluster will reconcile within seconds of the operator restarting
 # re-run the specific e2e test
-cd test/e2e && go test -v -timeout 15m --kubernikus=$KUBERNIKUS_URL \
+OS_USERNAME=<your-username> OS_USER_DOMAIN_NAME=<your-domain> \
+OS_PROJECT_NAME=<your-project> OS_PROJECT_DOMAIN_NAME=<your-project-domain> \
+OS_PASSWORD=$(security find-generic-password -a "$USER" -s openstack -w) \
+CP_KUBERNIKUS_URL="" \
+go test -v -timeout 15m --kubernikus=http://localhost:5100 \
   --kluster=<kluster-name> --reuse --cleanup=false \
-  -run TestRunner/Network/WormholeTunnel
+  -run TestRunner/Network/WormholeTunnel ./test/e2e/
 ```
