@@ -58,7 +58,10 @@ func (e *EtcdBackupTests) WaitForBackupRestore(t *testing.T) {
 	newRv := string(rv)
 	wait.PollImmediate(EtcdFailPollInterval, EtcdFailTimeout, //nolint:staticcheck
 		func() (bool, error) {
-			pod, _ := e.KubernetesControlPlane.ClientSet.CoreV1().Pods(e.Namespace).Get(context.Background(), etcdPod.Name, meta_v1.GetOptions{})
+			pod, err := e.KubernetesControlPlane.ClientSet.CoreV1().Pods(e.Namespace).Get(context.Background(), etcdPod.Name, meta_v1.GetOptions{})
+			if err != nil {
+				return false, nil
+			}
 			newRv = pod.GetResourceVersion()
 			return (newRv != rv), nil
 		})
