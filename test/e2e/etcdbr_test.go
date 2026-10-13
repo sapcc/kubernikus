@@ -58,7 +58,10 @@ func (e *EtcdBackupTests) WaitForBackupRestore(t *testing.T) {
 	newRv := string(rv)
 	wait.PollImmediate(EtcdFailPollInterval, EtcdFailTimeout, //nolint:staticcheck
 		func() (bool, error) {
-			pod, _ := e.KubernetesControlPlane.ClientSet.CoreV1().Pods(e.Namespace).Get(context.Background(), etcdPod.Name, meta_v1.GetOptions{})
+			pod, err := e.KubernetesControlPlane.ClientSet.CoreV1().Pods(e.Namespace).Get(context.Background(), etcdPod.Name, meta_v1.GetOptions{})
+			if err != nil {
+				return false, nil
+			}
 			newRv = pod.GetResourceVersion()
 			return (newRv != rv), nil
 		})
@@ -75,7 +78,10 @@ func (e *EtcdBackupTests) WaitForBackupRestore(t *testing.T) {
 
 	err = wait.PollImmediate(EtcdRestorePollInterval, EtcdRestoreTimeout, //nolint:staticcheck
 		func() (bool, error) {
-			p, _ := e.KubernetesControlPlane.ClientSet.CoreV1().Pods(e.Namespace).Get(context.Background(), apiPod.Name, meta_v1.GetOptions{})
+			p, err := e.KubernetesControlPlane.ClientSet.CoreV1().Pods(e.Namespace).Get(context.Background(), apiPod.Name, meta_v1.GetOptions{})
+			if err != nil || len(p.Status.ContainerStatuses) == 0 || len(apiPod.Status.ContainerStatuses) == 0 {
+				return false, nil
+			}
 
 			return p.Status.ContainerStatuses[0].RestartCount > apiPod.Status.ContainerStatuses[0].RestartCount && podutil.IsPodReady(p), nil
 		})
