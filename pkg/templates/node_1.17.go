@@ -812,6 +812,15 @@ storage:
       overwrite: true
       contents:
         inline: br_netfilter
+    - path: /etc/modules-load.d/iptables.conf
+      filesystem: root
+      mode: 0644
+      overwrite: true
+      contents:
+        inline: |
+          ip_tables
+          iptable_filter
+          iptable_nat
     - path: /etc/sysctl.d/30-br_netfilter.conf
       filesystem: root
       mode: 0644
