@@ -1,0 +1,27 @@
+name: "Audit policy conformance"
+# Checks that the kube-master apiserver audit policy never writes credentials into the audit
+# log. See test/charts/audit-policy-conformance.sh.
+on:
+  pull_request:
+    branches:
+      - master
+    paths:
+      - "charts/kube-master/**"
+      - "test/charts/audit-policy-*"
+      - ".github/workflows/audit-policy-conformance.yaml"
+
+jobs:
+  audit-policy-conformance:
+    runs-on: [ubuntu-latest]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v4.2.0
+
+      - name: Install yq
+        uses: mikefarah/yq@v4.53.6
+
+      - name: Run audit policy conformance check
+        run: ./test/charts/audit-policy-conformance.sh
