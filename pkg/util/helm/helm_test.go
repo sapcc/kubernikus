@@ -26,3 +26,20 @@ func TestKlusterToHelmValues(t *testing.T) {
 	// Make sure the object was overwritten
 	assert.Equal(t, mbck["backup"], "b")
 }
+
+func TestKlusterToHelmValuesKubeletServingCertificates(t *testing.T) {
+	secret := &v1.Secret{}
+
+	kluster := &v1.Kluster{}
+	b, err := KlusterToHelmValues(kluster, secret, "v1.30.14", nil, "doof")
+	assert.NoError(t, err)
+	api := b["api"].(map[string]interface{})
+	assert.NotContains(t, api, "kubeletServingCertificates")
+
+	kluster = &v1.Kluster{}
+	kluster.Annotations = map[string]string{v1.KubeletServingCertificatesAnnotationKey: "true"}
+	b, err = KlusterToHelmValues(kluster, secret, "v1.30.14", nil, "doof")
+	assert.NoError(t, err)
+	api = b["api"].(map[string]interface{})
+	assert.Equal(t, true, api["kubeletServingCertificates"])
+}
