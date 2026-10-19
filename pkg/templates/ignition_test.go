@@ -1,8 +1,13 @@
 package templates
 
 import (
+	"bytes"
+	"compress/gzip"
 	"encoding/base64"
+	"encoding/json"
 	"fmt"
+	"io"
+	"net/url"
 	"strings"
 	"testing"
 
@@ -121,4 +126,93 @@ func TestNodeLabels(t *testing.T) {
 		//Ensure we rendered the expected template
 		assert.Contains(t, string(data), fmt.Sprintf("--node-labels=kubernikus.cloud.sap/cni=true,ccloud.sap.com/nodepool=%s", pool.Name))
 	}
+}
+
+func TestServerTLSBootstrap(t *testing.T) {
+	registry := version.ImageRegistry{Versions: map[string]version.KlusterVersion{}}
+	for k, v := range imageRegistry.Versions {
+		registry.Versions[k] = v
+	}
+	registry.Versions["1.35"] = version.KlusterVersion{Kubelet: version.ImageVersion{Repository: "nase", Tag: "v1.35"}}
+
+	cases := []struct {
+		annotations map[string]string
+		expected    bool
+	}{
+		{nil, false},
+		{map[string]string{kubernikusv1.KubeletServingCertificatesAnnotationKey: "false"}, false},
+		{map[string]string{kubernikusv1.KubeletServingCertificatesAnnotationKey: "true"}, true},
+		{map[string]string{kubernikusv1.KubeletServingCertificatesAnnotationKey: " TRUE "}, true},
+	}
+
+	for _, kubeVersion := range []string{"1.27", "1.30", "1.35"} {
+		for _, c := range cases {
+			kluster := testKluster.DeepCopy()
+			kluster.Spec.Version = kubeVersion
+			kluster.Annotations = c.annotations
+
+			data, err := Ignition.GenerateNode(kluster, nil, "test", "abc123", &testKlusterSecret, false, registry, log.NewNopLogger())
+			if !assert.NoError(t, err, "Failed to generate node for version %s", kubeVersion) {
+				continue
+			}
+			kubeletConfig := ignitionFileContents(t, data, "/etc/kubernetes/kubelet/config")
+			if c.expected {
+				assert.Contains(t, kubeletConfig, "rotateCertificates: true\nserverTLSBootstrap: true\n", "version %s annotations %v", kubeVersion, c.annotations)
+			} else {
+				assert.Contains(t, kubeletConfig, "rotateCertificates: true\nnodeLeaseDurationSeconds: 20", "version %s", kubeVersion)
+				assert.NotContains(t, kubeletConfig, "serverTLSBootstrap", "version %s annotations %v", kubeVersion, c.annotations)
+			}
+		}
+	}
+}
+
+// ignitionFileContents returns the decoded contents of a file from rendered ignition JSON
+func ignitionFileContents(t *testing.T, data []byte, path string) string {
+	var config struct {
+		Storage struct {
+			Files []struct {
+				Path     string `json:"path"`
+				Contents struct {
+					Compression string `json:"compression"`
+					Source      string `json:"source"`
+				} `json:"contents"`
+			} `json:"files"`
+		} `json:"storage"`
+	}
+	if err := json.Unmarshal(data, &config); err != nil {
+		t.Fatalf("failed to parse ignition: %s", err)
+	}
+	for _, f := range config.Storage.Files {
+		if f.Path != path {
+			continue
+		}
+		header, payload, found := strings.Cut(strings.TrimPrefix(f.Contents.Source, "data:"), ",")
+		if !found {
+			t.Fatalf("unexpected source for %s: %s", path, f.Contents.Source)
+		}
+		var raw []byte
+		var err error
+		if strings.HasSuffix(header, ";base64") {
+			raw, err = base64.StdEncoding.DecodeString(payload)
+		} else {
+			var s string
+			s, err = url.PathUnescape(payload)
+			raw = []byte(s)
+		}
+		if err != nil {
+			t.Fatalf("failed to decode %s: %s", path, err)
+		}
+		if f.Contents.Compression == "gzip" {
+			r, err := gzip.NewReader(bytes.NewReader(raw))
+			if err != nil {
+				t.Fatalf("failed to gunzip %s: %s", path, err)
+			}
+			if raw, err = io.ReadAll(r); err != nil {
+				t.Fatalf("failed to gunzip %s: %s", path, err)
+			}
+		}
+		return string(raw)
+	}
+	t.Fatalf("file %s not found in ignition", path)
+	return ""
 }
