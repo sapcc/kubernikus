@@ -58,6 +58,7 @@ api:
       memory: 2Gi
   admissionConfig:
     enabled: false
+    kubeletServingCertificates: false
 
 cloudControllerManager:
   replicaCount: 1

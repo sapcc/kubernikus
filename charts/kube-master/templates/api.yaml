@@ -66,6 +66,10 @@ spec:
                 path: aggregation-aggregator.pem
               - key: aggregation-aggregator-key.pem
                 path: aggregation-aggregator-key.pem
+{{- if .Values.api.kubeletServingCertificates }}
+              - key: apiserver-nodes-ca.pem
+                path: apiserver-nodes-ca.pem
+{{- end }}
 {{- if .Values.api.admissionConfig.enabled }}
               - key: admission.pem
                 path: admission.pem
@@ -254,6 +258,9 @@ spec:
 {{- end }}
 {{- if and (.Values.openstack) (semverCompare ">= 1.20" .Values.version.kubernetes) (semverCompare "< 1.26" .Values.version.kubernetes)}}
             - --feature-gates=CSIMigration=true,CSIMigrationOpenStack=true,ExpandCSIVolumes=true
+{{- end }}
+{{- if .Values.api.kubeletServingCertificates }}
+            - --kubelet-certificate-authority=/etc/kubernetes/certs/apiserver-nodes-ca.pem
 {{- end }}
             #Cert Spratz
             - --client-ca-file=/etc/kubernetes/certs/apiserver-clients-and-nodes-ca.pem
