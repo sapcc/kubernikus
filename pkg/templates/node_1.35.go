@@ -312,6 +312,9 @@ storage:
             anonymous:
               enabled: true
           rotateCertificates: true
+          {{- if .ServerTLSBootstrap }}
+          serverTLSBootstrap: true
+          {{- end }}
           nodeLeaseDurationSeconds: 20
           cgroupDriver: systemd
           tlsCipherSuites:

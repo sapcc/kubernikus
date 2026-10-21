@@ -3,6 +3,7 @@ package v1
 import (
 	"fmt"
 	"net"
+	"strings"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
@@ -11,6 +12,10 @@ import (
 )
 
 var TerminationProtectionAnnotationKey = "kubernikus.cloud.sap/termination-protection"
+
+// KubeletServingCertificatesAnnotationKey enables serverTLSBootstrap in the kubelet config of new nodes.
+// Requires a kubelet-serving CSR approver running in the kluster.
+var KubeletServingCertificatesAnnotationKey = "kubernikus.cloud.sap/kubelet-serving-certificates"
 
 // +genclient
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
@@ -102,6 +107,10 @@ func (k *Kluster) Disabled() bool {
 
 func (k *Kluster) TerminationProtection() bool {
 	return k.Annotations[TerminationProtectionAnnotationKey] != ""
+}
+
+func (k *Kluster) KubeletServingCertificates() bool {
+	return strings.EqualFold(strings.TrimSpace(k.Annotations[KubeletServingCertificatesAnnotationKey]), "true")
 }
 
 func (k *Kluster) ClusterCIDR() string {
