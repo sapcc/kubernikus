@@ -69,6 +69,7 @@ func (n *NetworkTests) Run(t *testing.T) {
 		t.Run("ServicesWithDNS", n.TestServicesWithDNS)
 		t.Run("Loadbalancer", n.TestLoadbalancer)
 	})
+	t.Run("WormholeTunnel", n.TestWormholeTunnel)
 }
 
 func (n *NetworkTests) CreateNamespace(t *testing.T) {
@@ -321,4 +322,33 @@ func (n *NetworkTests) TestLoadbalancer(t *testing.T) {
 
 	err = n.Kubernetes.ClientSet.CoreV1().Services(n.Namespace).Delete(context.Background(), "e2e-lb", meta_v1.DeleteOptions{})
 	assert.NoError(t, err, "There should be no error deleting loadbalancer service: %s", err)
+}
+
+func (n *NetworkTests) TestWormholeTunnel(t *testing.T) {
+	// Verify the wormhole tunnel is passing traffic by exec-ing into a pod on
+	// each node. kubectl exec goes apiserver→kubelet, which is routed through
+	// the wormhole tunnel — if the tunnel is broken, exec fails.
+	pods, err := n.Kubernetes.ClientSet.CoreV1().Pods(n.Namespace).List(
+		context.Background(), meta_v1.ListOptions{
+			LabelSelector: "app=serve-hostname",
+		},
+	)
+	require.NoError(t, err, "failed to list pods")
+	require.NotEmpty(t, pods.Items, "no pods found in namespace")
+
+	for _, pod := range pods.Items {
+		pod := pod
+		t.Run(fmt.Sprintf("exec-on-%s", pod.Spec.NodeName), func(t *testing.T) {
+			cmd := []string{"sh", "-c", "echo tunnel-ok"}
+			err := wait.PollImmediate(15*time.Second, 2*time.Minute, func() (bool, error) { //nolint:staticcheck
+				stdout, _, err := n.Kubernetes.ExecCommandInContainerWithFullOutput(
+					n.Namespace, pod.Name, pod.Spec.Containers[0].Name, cmd...)
+				if err != nil {
+					return false, nil
+				}
+				return strings.Contains(stdout, "tunnel-ok"), nil
+			})
+			assert.NoError(t, err, "exec through wormhole tunnel failed on node %s", pod.Spec.NodeName)
+		})
+	}
 }

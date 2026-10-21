@@ -461,7 +461,7 @@ const (
 	opCreateChain operation = "-N"
 	opFlushChain  operation = "-F"
 	opDeleteChain operation = "-X"
-	opAppendRule  operation = "-A" //nolint:deadcode,varcheck
+	opAppendRule  operation = "-A" //nolint:unused
 	opCheckRule   operation = "-C"
 	opDeleteRule  operation = "-D"
 )
