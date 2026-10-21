@@ -191,7 +191,7 @@ func (c *Controller) addNode(key string, node *v1.Node) error {
 			"msg", "removing tunnel routes for node with empty spec.PodCIDR",
 			"node", identifier,
 		)
-		return c.syncRules()
+		return c.delNode(key)
 	}
 
 	c.Logger.Log(
@@ -203,6 +203,11 @@ func (c *Controller) addNode(key string, node *v1.Node) error {
 		return err
 	}
 	nodeCIDR := ip.String() + "/32"
+
+	// Remove the old routes of the node from the in-memory store. The code below adds the current routes.
+	c.storeMu.Lock()
+	delete(c.store, key)
+	c.storeMu.Unlock()
 
 	if err := c.tunnel.AddClientRoute(podCIDR, identifier); err != nil {
 		return err

@@ -5,6 +5,7 @@ package server
 import (
 	"testing"
 
+	"github.com/databus23/guttle"
 	"github.com/go-kit/log"
 	"github.com/google/nftables"
 	"github.com/mdlayher/netlink"
@@ -52,6 +53,7 @@ func newTestController(t *testing.T) (*Controller, *fake.Clientset) {
 
 	c := &Controller{
 		nodes:       nodeInformer,
+		tunnel:      guttle.NewServer(&guttle.ServerOptions{Logger: log.NewNopLogger()}),
 		queue:       nil, // not needed for unit tests
 		store:       make(map[string][]route),
 		nft:         knftables.NewWithConn(newTestConn(t)),
@@ -122,4 +124,85 @@ func TestDelNode_ClearsStore(t *testing.T) {
 	defer c.storeMu.RUnlock()
 	_, exists := c.store["node1"]
 	assert.False(t, exists, "store entry should be deleted after delNode")
+}
+
+type fakeNFT struct {
+	last  []string
+	calls int
+}
+
+func (f *fakeNFT) SyncRules(cidrs []string, _ int) error {
+	f.last = append([]string(nil), cidrs...)
+	f.calls++
+	return nil
+}
+
+func (f *fakeNFT) Destroy() error { return nil }
+
+func testNode(podCIDR string) *v1.Node {
+	return &v1.Node{
+		ObjectMeta: metav1.ObjectMeta{Name: "node1"},
+		Spec:       v1.NodeSpec{PodCIDR: podCIDR},
+		Status: v1.NodeStatus{
+			Addresses: []v1.NodeAddress{{Type: v1.NodeInternalIP, Address: "192.168.1.1"}},
+		},
+	}
+}
+
+func newReconcileController(t *testing.T) (*Controller, *fakeNFT) {
+	t.Helper()
+	c, _ := newTestController(t)
+	nft := &fakeNFT{}
+	c.nft = nft
+	return c, nft
+}
+
+func TestReconcile_Idempotent(t *testing.T) {
+	c, nft := newReconcileController(t)
+	require.NoError(t, c.nodes.Informer().GetIndexer().Add(testNode("10.244.1.0/24")))
+
+	for i := 0; i < 3; i++ {
+		require.NoError(t, c.reconcile("node1"))
+	}
+
+	assert.ElementsMatch(t, []string{"192.168.1.1/32", "10.244.1.0/24", "10.96.0.0/12"}, nft.last)
+	assert.Len(t, c.store["node1"], 2)
+}
+
+func TestReconcile_PodCIDRChange_ReplacesRoute(t *testing.T) {
+	c, nft := newReconcileController(t)
+	indexer := c.nodes.Informer().GetIndexer()
+	require.NoError(t, indexer.Add(testNode("10.244.1.0/24")))
+	require.NoError(t, c.reconcile("node1"))
+
+	require.NoError(t, indexer.Update(testNode("10.244.2.0/24")))
+	require.NoError(t, c.reconcile("node1"))
+
+	assert.ElementsMatch(t, []string{"192.168.1.1/32", "10.244.2.0/24", "10.96.0.0/12"}, nft.last)
+}
+
+func TestReconcile_EmptyPodCIDR_RemovesRoutes(t *testing.T) {
+	c, nft := newReconcileController(t)
+	indexer := c.nodes.Informer().GetIndexer()
+	require.NoError(t, indexer.Add(testNode("10.244.1.0/24")))
+	require.NoError(t, c.reconcile("node1"))
+
+	require.NoError(t, indexer.Update(testNode("")))
+	require.NoError(t, c.reconcile("node1"))
+
+	assert.Equal(t, []string{"10.96.0.0/12"}, nft.last)
+}
+
+func TestReconcile_NodeDeleted_RemovesRoutes(t *testing.T) {
+	c, nft := newReconcileController(t)
+	indexer := c.nodes.Informer().GetIndexer()
+	node := testNode("10.244.1.0/24")
+	require.NoError(t, indexer.Add(node))
+	require.NoError(t, c.reconcile("node1"))
+
+	require.NoError(t, indexer.Delete(node))
+	require.NoError(t, c.reconcile("node1"))
+
+	assert.Equal(t, []string{"10.96.0.0/12"}, nft.last)
+	assert.Empty(t, c.store)
 }
