@@ -11,6 +11,7 @@ import (
 )
 
 var TerminationProtectionAnnotationKey = "kubernikus.cloud.sap/termination-protection"
+var RotateCAAnnotation = "kubernikus.cloud.sap/rotate-ca"
 
 // +genclient
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
@@ -109,4 +110,8 @@ func (k *Kluster) ClusterCIDR() string {
 		return ""
 	}
 	return *k.Spec.ClusterCIDR
+}
+
+func (k *Kluster) CARotation() bool {
+	return k.Annotations[RotateCAAnnotation] == "true"
 }
