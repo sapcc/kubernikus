@@ -45,6 +45,9 @@ authentication:
   anonymous:
     enabled: true
 rotateCertificates: true
+{{- if .ServerTLSBootstrap }}
+serverTLSBootstrap: true
+{{- end }}
 nodeLeaseDurationSeconds: 20
 tlsCipherSuites:
 - TLS_CHACHA20_POLY1305_SHA256
@@ -115,10 +118,12 @@ func (d *getBootstrapConfig) Handle(params operations.GetBootstrapConfigParams, 
 		ClusterDomain        string
 		ClusterDNS           string
 		KubeletClientsCAFile string
+		ServerTLSBootstrap   bool
 	}{
 		ClusterDomain:        kluster.Spec.DNSDomain,
 		ClusterDNS:           kluster.Spec.DNSAddress,
 		KubeletClientsCAFile: "/etc/kubernetes/certs/kubelet-clients-ca.pem",
+		ServerTLSBootstrap:   kluster.KubeletServingCertificates(),
 	}
 	var kubeletConfigYAML strings.Builder
 
