@@ -1,6 +1,7 @@
 package server
 
 import (
+	"fmt"
 	"sync"
 	"time"
 
@@ -39,7 +40,10 @@ func New(options *Options) (*Server, error) {
 	if err != nil {
 		return nil, err
 	}
-	s.controller = NewController(s.factory.Core().V1().Nodes(), options.ServiceCIDR, s.tunnel.Server, options.Logger)
+	s.controller, err = NewController(s.factory.Core().V1().Nodes(), options.ServiceCIDR, s.tunnel.Server, options.Logger)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create tunnel controller: %w", err)
+	}
 
 	return s, nil
 }
