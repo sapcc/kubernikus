@@ -62,11 +62,12 @@ type etcdBackupValues struct {
 }
 
 type apiValues struct {
-	ApiserverHost      string     `yaml:"apiserverHost,omitempty" json:"apiserverHost,omitempty"`
-	WormholeHost       string     `yaml:"wormholeHost,omitempty" json:"wormholeHost,omitempty"`
-	CORSAllowedOrigins string     `yaml:"corsAllowedOrigins,omitempty" json:"corsAllowedOrigins,omitempty"`
-	SNICertSecret      string     `yaml:"sniCertSecret,omitempty" json:"sniCertSecret,omitempty"`
-	OIDC               oidcValues `yaml:"oidc,omitempty" json:"oidc,omitempty"`
+	ApiserverHost              string     `yaml:"apiserverHost,omitempty" json:"apiserverHost,omitempty"`
+	WormholeHost               string     `yaml:"wormholeHost,omitempty" json:"wormholeHost,omitempty"`
+	CORSAllowedOrigins         string     `yaml:"corsAllowedOrigins,omitempty" json:"corsAllowedOrigins,omitempty"`
+	SNICertSecret              string     `yaml:"sniCertSecret,omitempty" json:"sniCertSecret,omitempty"`
+	OIDC                       oidcValues `yaml:"oidc,omitempty" json:"oidc,omitempty"`
+	KubeletServingCertificates bool       `yaml:"kubeletServingCertificates,omitempty" json:"kubeletServingCertificates,omitempty"`
 }
 
 type versionValues struct {
@@ -209,8 +210,9 @@ func KlusterToHelmValues(kluster *v1.Kluster, secret *v1.Secret, kubernetesVersi
 			},
 		},
 		Api: apiValues{
-			ApiserverHost: apiserverURL.Hostname(),
-			WormholeHost:  wormholeURL.Hostname(),
+			ApiserverHost:              apiserverURL.Hostname(),
+			WormholeHost:               wormholeURL.Hostname(),
+			KubeletServingCertificates: kluster.KubeletServingCertificates(),
 		},
 		Dashboard: dashboardValues{
 			Enabled: conv.Value(kluster.Spec.Dashboard),

@@ -175,6 +175,7 @@ func (i *ignition) GenerateNode(kluster *kubernikusv1.Kluster, pool *models.Node
 		NoCloud                            bool
 		FlannelImage                       string
 		FlannelImageTag                    string
+		ServerTLSBootstrap                 bool
 	}{
 		TLSCA:                              secret.TLSCACertificate,
 		KubeletClientsCA:                   secret.KubeletClientsCACertificate,
@@ -216,6 +217,7 @@ func (i *ignition) GenerateNode(kluster *kubernikusv1.Kluster, pool *models.Node
 		NoCloud:                            kluster.Spec.NoCloud,
 		FlannelImage:                       images.Flannel.Repository,
 		FlannelImageTag:                    images.Flannel.Tag,
+		ServerTLSBootstrap:                 kluster.KubeletServingCertificates(),
 	}
 
 	var dataOut []byte
