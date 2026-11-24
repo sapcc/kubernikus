@@ -1902,7 +1902,7 @@ jobs:
         params:
           <<: *auth_e2e_ap-ae-1
 
-          KLUSTER_VERSION: 1.35.5
+          KLUSTER_VERSION: 1.36.5
         on_failure:
           put: slack-notification
           params:
@@ -1998,7 +1998,7 @@ jobs:
         params:
           <<: *auth_e2e_ap-au-1
 
-          KLUSTER_VERSION: 1.35.5
+          KLUSTER_VERSION: 1.36.5
         on_failure:
           put: slack-notification
           params:
@@ -2094,7 +2094,7 @@ jobs:
         params:
           <<: *auth_e2e_ap-cn-1
 
-          KLUSTER_VERSION: 1.35.5
+          KLUSTER_VERSION: 1.36.5
         on_failure:
           put: slack-notification
           params:
@@ -2190,7 +2190,7 @@ jobs:
         params:
           <<: *auth_e2e_ap-jp-1
 
-          KLUSTER_VERSION: 1.35.5
+          KLUSTER_VERSION: 1.36.5
         on_failure:
           put: slack-notification
           params:
@@ -2286,7 +2286,7 @@ jobs:
         params:
           <<: *auth_e2e_ap-sa-1
 
-          KLUSTER_VERSION: 1.35.5
+          KLUSTER_VERSION: 1.36.5
         on_failure:
           put: slack-notification
           params:
@@ -2382,7 +2382,7 @@ jobs:
         params:
           <<: *auth_e2e_la-br-1
 
-          KLUSTER_VERSION: 1.35.5
+          KLUSTER_VERSION: 1.36.5
         on_failure:
           put: slack-notification
           params:
@@ -2493,7 +2493,7 @@ jobs:
         params:
           <<: *auth_e2e_ap-jp-2
 
-          KLUSTER_VERSION: 1.35.5
+          KLUSTER_VERSION: 1.36.5
         on_failure:
           put: slack-notification
           params:
@@ -2589,7 +2589,7 @@ jobs:
         params:
           <<: *auth_e2e_na-ca-1
 
-          KLUSTER_VERSION: 1.35.5
+          KLUSTER_VERSION: 1.36.5
         on_failure:
           put: slack-notification
           params:
@@ -2685,7 +2685,7 @@ jobs:
         params:
           <<: *auth_e2e_na-us-3
 
-          KLUSTER_VERSION: 1.35.5
+          KLUSTER_VERSION: 1.36.5
         on_failure:
           put: slack-notification
           params:
@@ -2796,7 +2796,7 @@ jobs:
         params:
           <<: *auth_e2e_eu-de-1
 
-          KLUSTER_VERSION: 1.35.5
+          KLUSTER_VERSION: 1.36.5
         on_failure:
           put: slack-notification
           params:
@@ -2892,7 +2892,7 @@ jobs:
         params:
           <<: *auth_e2e_eu-de-2
 
-          KLUSTER_VERSION: 1.35.5
+          KLUSTER_VERSION: 1.36.5
         on_failure:
           put: slack-notification
           params:
@@ -2988,7 +2988,7 @@ jobs:
         params:
           <<: *auth_e2e_eu-nl-1
 
-          KLUSTER_VERSION: 1.35.5
+          KLUSTER_VERSION: 1.36.5
         on_failure:
           put: slack-notification
           params:
@@ -3084,7 +3084,7 @@ jobs:
         params:
           <<: *auth_e2e_na-us-1
 
-          KLUSTER_VERSION: 1.35.5
+          KLUSTER_VERSION: 1.36.5
         on_failure:
           put: slack-notification
           params:
@@ -3180,7 +3180,7 @@ jobs:
         params:
           <<: *auth_e2e_na-us-2
 
-          KLUSTER_VERSION: 1.35.5
+          KLUSTER_VERSION: 1.36.5
         on_failure:
           put: slack-notification
           params:
@@ -3293,7 +3293,7 @@ jobs:
 
           KLUSTER_OS_IMAGES: flatcar-stable-amd64,flatcar-beta-amd64
 
-          KLUSTER_VERSION: 1.35.5
+          KLUSTER_VERSION: 1.36.5
         on_failure:
           put: slack-notification
           params:
@@ -3339,7 +3339,7 @@ jobs:
           KLUSTER_FLAVOR: c_k_c2_m2_v2
           KLUSTER_CUSTOM_ROOT_DISK_SIZE: 64
           ISOLATE_TEST: true #not sure what this actually does
-          KLUSTER_VERSION: 1.35.5
+          KLUSTER_VERSION: 1.36.5
 groups:
   - name: deploy
     jobs:
