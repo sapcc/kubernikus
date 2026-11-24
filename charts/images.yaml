@@ -8429,10 +8429,10 @@ imagesForVersion:
     wormhole:
       repository: keppel.global.cloud.sap/ccloud/kubernikus
       tag: changeme
-  1.36.5:
+  1.36.6:
     apiserver:
       repository: keppel.global.cloud.sap/ccloud/kube-apiserver
-      tag: v1.36.5
+      tag: v1.36.6
     cinderCSIPlugin:
       repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/provider-os/cinder-csi-plugin
       tag: v1.36.0
@@ -8444,7 +8444,7 @@ imagesForVersion:
       tag: v1.1.1
     controllerManager:
       repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/kube-controller-manager
-      tag: v1.36.5
+      tag: v1.36.6
     coreDNS:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/coredns/coredns
       tag: 1.14.7
@@ -8496,10 +8496,10 @@ imagesForVersion:
       tag: v1.14.6-1.1
     kubeProxy:
       repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/kube-proxy
-      tag: v1.36.5
+      tag: v1.36.6
     kubelet:
       repository: keppel.global.cloud.sap/ccloud/kubelet
-      tag: v1.36.5
+      tag: v1.36.6
     pause:
       repository: keppel.global.cloud.sap/ccloud-dockerhub-mirror/sapcc/pause-amd64
       tag: '3.1'
@@ -8508,7 +8508,7 @@ imagesForVersion:
       tag: v2.0.0
     scheduler:
       repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/kube-scheduler
-      tag: v1.36.5
+      tag: v1.36.6
     supported: true
     wormhole:
       repository: keppel.global.cloud.sap/ccloud/kubernikus
