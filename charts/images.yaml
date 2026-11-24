@@ -8435,10 +8435,10 @@ imagesForVersion:
       tag: v1.36.5
     cinderCSIPlugin:
       repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/provider-os/cinder-csi-plugin
-      tag: v1.35.0
+      tag: v1.36.0
     cloudControllerManager:
       repository: keppel.global.cloud.sap/ccloud-registry-k8s-io-mirror/provider-os/openstack-cloud-controller-manager
-      tag: v1.35.0
+      tag: v1.36.0
     cniPlugins:
       repository: keppel.global.cloud.sap/ccloud/cni-plugins
       tag: v1.1.1
@@ -8481,7 +8481,7 @@ imagesForVersion:
       tag: 38f4f8ea8d487470a1dd5b83d66b428d8b502f81
     etcd:
       repository: keppel.global.cloud.sap/ccloud/etcd
-      tag: v3.5.34
+      tag: v3.5.36
     etcdBackup:
       repository: keppel.global.cloud.sap/ccloud/etcdbrctl
       tag: v0.44.2
