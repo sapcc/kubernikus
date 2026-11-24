@@ -30,6 +30,8 @@ const TEMPLATE_VERSION = "9"
 
 func (i *ignition) getIgnitionTemplate(kluster *kubernikusv1.Kluster) (string, error) {
 	switch {
+	case strings.HasPrefix(kluster.Spec.Version, "1.36"):
+		return Node_1_35, nil // No changes to 1.35
 	case strings.HasPrefix(kluster.Spec.Version, "1.35"):
 		return Node_1_35, nil
 	case strings.HasPrefix(kluster.Spec.Version, "1.34"):

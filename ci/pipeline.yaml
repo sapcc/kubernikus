@@ -1188,7 +1188,7 @@ resources:
       username: ((registry-user/keppel-ccloud.username))
       password: ((registry-user/keppel-ccloud.password))
       repository: keppel.eu-de-1.cloud.sap/ccloud/etcd
-      tag: v3.5.34
+      tag: v3.5.36
 
   - name: etcdbrctl.image
     type: registry-image
@@ -1524,7 +1524,7 @@ jobs:
             args:
               - -ec
               - |
-                echo "IMAGE=gcr.io/etcd-development/etcd:v3.5.34" > kubernikus-etcd-images.git/build-args.txt
+                echo "IMAGE=gcr.io/etcd-development/etcd:v3.5.36" > kubernikus-etcd-images.git/build-args.txt
       - task: build
         privileged: true
         config:
@@ -1726,30 +1726,6 @@ jobs:
       - put: all-versions.trigger
 
 
-  - name: e2e-1.33.6
-    serial: true
-    plan:
-      - in_parallel:
-        - get: secrets.git
-        - get: kubernikus.builds
-          resource: kubernikus.git
-          passed: [master]
-          trigger: true
-        - get: all-versions.trigger
-          trigger: true
-          passed: [all-versions]
-      - task: e2e_tests
-        config:
-          <<: *task_e2e_tests
-        timeout: 2h
-        params:
-          KLUSTER_VERSION: "1.33.6"
-          KLUSTER_CIDR: "100.100.0.0/16"
-          ISOLATE_TEST: "true"
-          KLUSTER_OS_IMAGES: flatcar-stable-amd64,flatcar-beta-amd64
-          <<: *auth_e2e_master
-    <<: *slack
-
   - name: e2e-1.34.6
     serial: true
     plan:
@@ -1768,7 +1744,7 @@ jobs:
         timeout: 2h
         params:
           KLUSTER_VERSION: "1.34.6"
-          KLUSTER_CIDR: "100.101.0.0/16"
+          KLUSTER_CIDR: "100.100.0.0/16"
           ISOLATE_TEST: "true"
           KLUSTER_OS_IMAGES: flatcar-stable-amd64,flatcar-beta-amd64
           <<: *auth_e2e_master
@@ -1792,6 +1768,30 @@ jobs:
         timeout: 2h
         params:
           KLUSTER_VERSION: "1.35.5"
+          KLUSTER_CIDR: "100.101.0.0/16"
+          ISOLATE_TEST: "true"
+          KLUSTER_OS_IMAGES: flatcar-stable-amd64,flatcar-beta-amd64
+          <<: *auth_e2e_master
+    <<: *slack
+
+  - name: e2e-1.36.6
+    serial: true
+    plan:
+      - in_parallel:
+        - get: secrets.git
+        - get: kubernikus.builds
+          resource: kubernikus.git
+          passed: [master]
+          trigger: true
+        - get: all-versions.trigger
+          trigger: true
+          passed: [all-versions]
+      - task: e2e_tests
+        config:
+          <<: *task_e2e_tests
+        timeout: 2h
+        params:
+          KLUSTER_VERSION: "1.36.6"
           KLUSTER_CIDR: "100.102.0.0/16"
           ISOLATE_TEST: "true"
           KLUSTER_OS_IMAGES: flatcar-stable-amd64,flatcar-beta-amd64
@@ -1804,7 +1804,7 @@ jobs:
     plan:
       - get: kubernikus.builds
         resource: kubernikus.git
-        passed: [e2e-1.33.6]
+        passed: [e2e-1.34.6]
       - task: changes
         config:
           <<: *task_github_compare_url
@@ -1902,7 +1902,7 @@ jobs:
         params:
           <<: *auth_e2e_ap-ae-1
 
-          KLUSTER_VERSION: 1.35.5
+          KLUSTER_VERSION: 1.36.6
         on_failure:
           put: slack-notification
           params:
@@ -1998,7 +1998,7 @@ jobs:
         params:
           <<: *auth_e2e_ap-au-1
 
-          KLUSTER_VERSION: 1.35.5
+          KLUSTER_VERSION: 1.36.6
         on_failure:
           put: slack-notification
           params:
@@ -2094,7 +2094,7 @@ jobs:
         params:
           <<: *auth_e2e_ap-cn-1
 
-          KLUSTER_VERSION: 1.35.5
+          KLUSTER_VERSION: 1.36.6
         on_failure:
           put: slack-notification
           params:
@@ -2190,7 +2190,7 @@ jobs:
         params:
           <<: *auth_e2e_ap-jp-1
 
-          KLUSTER_VERSION: 1.35.5
+          KLUSTER_VERSION: 1.36.6
         on_failure:
           put: slack-notification
           params:
@@ -2286,7 +2286,7 @@ jobs:
         params:
           <<: *auth_e2e_ap-sa-1
 
-          KLUSTER_VERSION: 1.35.5
+          KLUSTER_VERSION: 1.36.6
         on_failure:
           put: slack-notification
           params:
@@ -2382,7 +2382,7 @@ jobs:
         params:
           <<: *auth_e2e_la-br-1
 
-          KLUSTER_VERSION: 1.35.5
+          KLUSTER_VERSION: 1.36.6
         on_failure:
           put: slack-notification
           params:
@@ -2493,7 +2493,7 @@ jobs:
         params:
           <<: *auth_e2e_ap-jp-2
 
-          KLUSTER_VERSION: 1.35.5
+          KLUSTER_VERSION: 1.36.6
         on_failure:
           put: slack-notification
           params:
@@ -2589,7 +2589,7 @@ jobs:
         params:
           <<: *auth_e2e_na-ca-1
 
-          KLUSTER_VERSION: 1.35.5
+          KLUSTER_VERSION: 1.36.6
         on_failure:
           put: slack-notification
           params:
@@ -2685,7 +2685,7 @@ jobs:
         params:
           <<: *auth_e2e_na-us-3
 
-          KLUSTER_VERSION: 1.35.5
+          KLUSTER_VERSION: 1.36.6
         on_failure:
           put: slack-notification
           params:
@@ -2796,7 +2796,7 @@ jobs:
         params:
           <<: *auth_e2e_eu-de-1
 
-          KLUSTER_VERSION: 1.35.5
+          KLUSTER_VERSION: 1.36.6
         on_failure:
           put: slack-notification
           params:
@@ -2892,7 +2892,7 @@ jobs:
         params:
           <<: *auth_e2e_eu-de-2
 
-          KLUSTER_VERSION: 1.35.5
+          KLUSTER_VERSION: 1.36.6
         on_failure:
           put: slack-notification
           params:
@@ -2988,7 +2988,7 @@ jobs:
         params:
           <<: *auth_e2e_eu-nl-1
 
-          KLUSTER_VERSION: 1.35.5
+          KLUSTER_VERSION: 1.36.6
         on_failure:
           put: slack-notification
           params:
@@ -3084,7 +3084,7 @@ jobs:
         params:
           <<: *auth_e2e_na-us-1
 
-          KLUSTER_VERSION: 1.35.5
+          KLUSTER_VERSION: 1.36.6
         on_failure:
           put: slack-notification
           params:
@@ -3180,7 +3180,7 @@ jobs:
         params:
           <<: *auth_e2e_na-us-2
 
-          KLUSTER_VERSION: 1.35.5
+          KLUSTER_VERSION: 1.36.6
         on_failure:
           put: slack-notification
           params:
@@ -3293,7 +3293,7 @@ jobs:
 
           KLUSTER_OS_IMAGES: flatcar-stable-amd64,flatcar-beta-amd64
 
-          KLUSTER_VERSION: 1.35.5
+          KLUSTER_VERSION: 1.36.6
         on_failure:
           put: slack-notification
           params:
@@ -3339,7 +3339,7 @@ jobs:
           KLUSTER_FLAVOR: c_k_c2_m2_v2
           KLUSTER_CUSTOM_ROOT_DISK_SIZE: 64
           ISOLATE_TEST: true #not sure what this actually does
-          KLUSTER_VERSION: 1.35.5
+          KLUSTER_VERSION: 1.36.6
 groups:
   - name: deploy
     jobs:
@@ -3355,11 +3355,11 @@ groups:
       - all-versions
       - replicate-images
 
-      - e2e-1.33.6
-
       - e2e-1.34.6
 
       - e2e-1.35.5
+
+      - e2e-1.36.6
 
       - prod
 
@@ -3487,11 +3487,11 @@ groups:
       - all-versions
       - e2e-kvm
 
-      - e2e-1.33.6
-
       - e2e-1.34.6
 
       - e2e-1.35.5
+
+      - e2e-1.36.6
 
       - prod
 
