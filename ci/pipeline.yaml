@@ -1726,30 +1726,6 @@ jobs:
       - put: all-versions.trigger
 
 
-  - name: e2e-1.33.6
-    serial: true
-    plan:
-      - in_parallel:
-        - get: secrets.git
-        - get: kubernikus.builds
-          resource: kubernikus.git
-          passed: [master]
-          trigger: true
-        - get: all-versions.trigger
-          trigger: true
-          passed: [all-versions]
-      - task: e2e_tests
-        config:
-          <<: *task_e2e_tests
-        timeout: 2h
-        params:
-          KLUSTER_VERSION: "1.33.6"
-          KLUSTER_CIDR: "100.100.0.0/16"
-          ISOLATE_TEST: "true"
-          KLUSTER_OS_IMAGES: flatcar-stable-amd64,flatcar-beta-amd64
-          <<: *auth_e2e_master
-    <<: *slack
-
   - name: e2e-1.34.6
     serial: true
     plan:
@@ -1768,7 +1744,7 @@ jobs:
         timeout: 2h
         params:
           KLUSTER_VERSION: "1.34.6"
-          KLUSTER_CIDR: "100.101.0.0/16"
+          KLUSTER_CIDR: "100.100.0.0/16"
           ISOLATE_TEST: "true"
           KLUSTER_OS_IMAGES: flatcar-stable-amd64,flatcar-beta-amd64
           <<: *auth_e2e_master
@@ -1792,6 +1768,30 @@ jobs:
         timeout: 2h
         params:
           KLUSTER_VERSION: "1.35.5"
+          KLUSTER_CIDR: "100.101.0.0/16"
+          ISOLATE_TEST: "true"
+          KLUSTER_OS_IMAGES: flatcar-stable-amd64,flatcar-beta-amd64
+          <<: *auth_e2e_master
+    <<: *slack
+
+  - name: e2e-1.36.5
+    serial: true
+    plan:
+      - in_parallel:
+        - get: secrets.git
+        - get: kubernikus.builds
+          resource: kubernikus.git
+          passed: [master]
+          trigger: true
+        - get: all-versions.trigger
+          trigger: true
+          passed: [all-versions]
+      - task: e2e_tests
+        config:
+          <<: *task_e2e_tests
+        timeout: 2h
+        params:
+          KLUSTER_VERSION: "1.36.5"
           KLUSTER_CIDR: "100.102.0.0/16"
           ISOLATE_TEST: "true"
           KLUSTER_OS_IMAGES: flatcar-stable-amd64,flatcar-beta-amd64
@@ -1804,7 +1804,7 @@ jobs:
     plan:
       - get: kubernikus.builds
         resource: kubernikus.git
-        passed: [e2e-1.33.6]
+        passed: [e2e-1.34.6]
       - task: changes
         config:
           <<: *task_github_compare_url
@@ -3355,11 +3355,11 @@ groups:
       - all-versions
       - replicate-images
 
-      - e2e-1.33.6
-
       - e2e-1.34.6
 
       - e2e-1.35.5
+
+      - e2e-1.36.5
 
       - prod
 
@@ -3487,11 +3487,11 @@ groups:
       - all-versions
       - e2e-kvm
 
-      - e2e-1.33.6
-
       - e2e-1.34.6
 
       - e2e-1.35.5
+
+      - e2e-1.36.5
 
       - prod
 
