@@ -24,7 +24,7 @@ run:
       apk add --no-cache upx bash make git
 
       make bin/darwin/kubernikusctl
-      make bin/darwin/kubernikusctl.arm64 GOOARCH=arm64
+      make bin/darwin/kubernikusctl.arm64 GOARCH=arm64
       make bin/linux/kubernikusctl
       make bin/windows/kubernikusctl.exe
       upx bin/linux/*
